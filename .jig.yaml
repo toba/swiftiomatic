@@ -1,0 +1,58 @@
+nope:
+    rules:
+        - name: git-checkout-switch
+          pattern: 'git\s+(checkout|switch)\s+'
+          message: "git checkout/switch not allowed — branch changes require user approval"
+        - name: git-no-verify
+          pattern: '--no-verify'
+          message: "skipping hooks with --no-verify not allowed"
+        - name: destructive-rm
+          pattern: 'rm\s+(-[a-zA-Z]*f[a-zA-Z]*\s+|--force\s+).*(/|~|\$HOME)'
+          message: "destructive rm on broad paths not allowed"
+        - name: curl-bearer
+          pattern: 'curl.*Authorization.*Bearer'
+          message: "direct API calls with bearer tokens not allowed"
+        - name: todo-archive
+          pattern: 'todo\s+archive'
+          message: "todo archive not allowed — only user should archive issues"
+        - name: no-write-env
+          pattern: '"file_path"\s*:\s*"[^"]*\.env"'
+          tools: ["Write", "Edit"]
+          message: "writing to .env files not allowed"
+        - name: no-write-credentials
+          pattern: '"file_path"\s*:\s*"[^"]*(\.pem|\.key|\.p12|credentials\.json)"'
+          tools: ["Write", "Edit"]
+          message: "writing to credential files not allowed"
+todo:
+    path: .issues
+    default_status: ready
+    default_type: task
+citations:
+    - repo: swiftlang/swift-syntax
+      branch: main
+      notes: A set of Swift libraries for parsing, inspecting, generating, and transforming Swift source code.
+      paths:
+        high: [Sources/**/*.swift]
+        medium: [Package.swift]
+        low: [.github/**, README.md, LICENSE]
+    - repo: nicklockwood/SwiftFormat
+      branch: main
+      notes: A command-line tool and Xcode Extension for formatting Swift code
+      paths:
+        high: [Sources/**/*.swift]
+        medium: [Package.swift]
+        low: [.github/**, README.md, LICENSE]
+    - repo: realm/SwiftLint
+      branch: main
+      notes: A tool to enforce Swift style and conventions.
+      paths:
+        high: ['**/*.swift']
+        medium: [Package.swift]
+        low: [.github/**, README.md, LICENSE]
+    - repo: jpsim/SourceKitten
+      branch: main
+      notes: An adorable little framework and command line tool for interacting with SourceKit.
+      paths:
+        high: ['**/*.swift']
+        medium: [Package.swift]
+        low: [.github/**, README.md, LICENSE]

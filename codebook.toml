@@ -1,0 +1,11 @@
+words = [
+  "crashlytics",
+  "devicectl",
+  "sandboxed",
+  "simctl",
+  "spm",
+  "xcodebuild",
+  "xcodeproj",
+  "xcstrings",
+  "swiftiomatic"
+]
