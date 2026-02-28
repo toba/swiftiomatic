@@ -76,8 +76,6 @@ extension FileNameConfiguration {
         if excluded.contains(fileName) {
             return true
         }
-        return excludedPaths.contains {
-            $0.regex.firstMatch(in: filePath, range: filePath.fullNSRange) != nil
-        }
+        return excludedPaths.contains { $0.hasMatch(in: filePath) }
     }
 }

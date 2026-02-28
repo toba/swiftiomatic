@@ -9,14 +9,14 @@ enum MultilineParametersRuleExamples {
             func foo(param1: Int,
                      param2: Bool,
                      param3: [String]) { }
-            """
+            """,
         ),
         Example(
             """
             func foo(_ param1: Int, param2: Int, param3: Int) -> (Int) -> Int {
                return { x in x + param1 + param2 + param3 }
             }
-            """
+            """,
         ),
         Example("static func foo() { }"),
         Example("static func foo(param1: Int) { }"),
@@ -27,7 +27,7 @@ enum MultilineParametersRuleExamples {
             static func foo(param1: Int,
                             param2: Bool,
                             param3: [String]) { }
-            """
+            """,
         ),
         Example("protocol Foo {\n\tfunc foo() { }\n}"),
         Example("protocol Foo {\n\tfunc foo(param1: Int) { }\n}"),
@@ -40,10 +40,10 @@ enum MultilineParametersRuleExamples {
                         param2: Bool,
                         param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
-            "protocol Foo {\n\tstatic func foo(param1: Int, param2: Bool, param3: [String]) { }\n}"
+            "protocol Foo {\n\tstatic func foo(param1: Int, param2: Bool, param3: [String]) { }\n}",
         ),
         Example(
             """
@@ -52,9 +52,11 @@ enum MultilineParametersRuleExamples {
                                param2: Bool,
                                param3: [String]) { }
             }
-            """
+            """,
         ),
-        Example("protocol Foo {\n\tclass func foo(param1: Int, param2: Bool, param3: [String]) { }\n}"),
+        Example(
+            "protocol Foo {\n\tclass func foo(param1: Int, param2: Bool, param3: [String]) { }\n}",
+        ),
         Example(
             """
             protocol Foo {
@@ -62,7 +64,7 @@ enum MultilineParametersRuleExamples {
                               param2: Bool,
                               param3: [String]) { }
             }
-            """
+            """,
         ),
         Example("enum Foo {\n\tfunc foo() { }\n}"),
         Example("enum Foo {\n\tfunc foo(param1: Int) { }\n}"),
@@ -75,9 +77,11 @@ enum MultilineParametersRuleExamples {
                         param2: Bool,
                         param3: [String]) { }
             }
-            """
+            """,
         ),
-        Example("enum Foo {\n\tstatic func foo(param1: Int, param2: Bool, param3: [String]) { }\n}"),
+        Example(
+            "enum Foo {\n\tstatic func foo(param1: Int, param2: Bool, param3: [String]) { }\n}",
+        ),
         Example(
             """
             enum Foo {
@@ -85,7 +89,7 @@ enum MultilineParametersRuleExamples {
                                param2: Bool,
                                param3: [String]) { }
             }
-            """
+            """,
         ),
         Example("struct Foo {\n\tfunc foo() { }\n}"),
         Example("struct Foo {\n\tfunc foo(param1: Int) { }\n}"),
@@ -98,9 +102,11 @@ enum MultilineParametersRuleExamples {
                         param2: Bool,
                         param3: [String]) { }
             }
-            """
+            """,
         ),
-        Example("struct Foo {\n\tstatic func foo(param1: Int, param2: Bool, param3: [String]) { }\n}"),
+        Example(
+            "struct Foo {\n\tstatic func foo(param1: Int, param2: Bool, param3: [String]) { }\n}",
+        ),
         Example(
             """
             struct Foo {
@@ -108,7 +114,7 @@ enum MultilineParametersRuleExamples {
                                param2: Bool,
                                param3: [String]) { }
             }
-            """
+            """,
         ),
         Example("class Foo {\n\tfunc foo() { }\n}"),
         Example("class Foo {\n\tfunc foo(param1: Int) { }\n}"),
@@ -121,9 +127,11 @@ enum MultilineParametersRuleExamples {
                         param2: Bool,
                         param3: [String]) { }
             }
-            """
+            """,
         ),
-        Example("class Foo {\n\tclass func foo(param1: Int, param2: Bool, param3: [String]) { }\n}"),
+        Example(
+            "class Foo {\n\tclass func foo(param1: Int, param2: Bool, param3: [String]) { }\n}",
+        ),
         Example(
             """
             class Foo {
@@ -131,7 +139,7 @@ enum MultilineParametersRuleExamples {
                               param2: Bool,
                               param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -140,7 +148,7 @@ enum MultilineParametersRuleExamples {
                               param2: Bool,
                               param3: @escaping (Int, Int) -> Void = { _, _ in }) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -149,7 +157,7 @@ enum MultilineParametersRuleExamples {
                               param2: Bool,
                               param3: @escaping (Int) -> Void = { _ in }) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -158,7 +166,7 @@ enum MultilineParametersRuleExamples {
                               param2: Bool,
                               param3: @escaping ((Int) -> Void)? = nil) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -167,7 +175,7 @@ enum MultilineParametersRuleExamples {
                               param2: Bool,
                               param3: @escaping ((Int) -> Void)? = { _ in }) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -176,7 +184,7 @@ enum MultilineParametersRuleExamples {
                               param2: @escaping ((Int) -> Void)? = { _ in },
                               param3: Bool) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -185,7 +193,7 @@ enum MultilineParametersRuleExamples {
                               param2: @escaping ((Int) -> Void)? = { _ in },
                               param3: @escaping (Int, Int) -> Void = { _, _ in }) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -194,7 +202,7 @@ enum MultilineParametersRuleExamples {
                               param2: Bool,
                               param3: @escaping (Int) -> Void = { (x: Int) in }) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -203,7 +211,7 @@ enum MultilineParametersRuleExamples {
                               param2: Bool,
                               param3: @escaping (Int, (Int) -> Void) -> Void = { (x: Int, f: (Int) -> Void) in }) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -212,15 +220,15 @@ enum MultilineParametersRuleExamples {
                     param2: Bool,
                     param3: @escaping ((Int) -> Void)? = { _ in }) { }
             }
-            """
+            """,
         ),
         Example(
             "func foo() { }",
-            configuration: ["allows_single_line": false]
+            configuration: ["allows_single_line": false],
         ),
         Example(
             "func foo(param1: Int) { }",
-            configuration: ["allows_single_line": false]
+            configuration: ["allows_single_line": false],
         ),
         Example(
             """
@@ -229,7 +237,7 @@ enum MultilineParametersRuleExamples {
                          param2: Bool,
                          param3: [String]) { }
             }
-            """, configuration: ["allows_single_line": false]
+            """, configuration: ["allows_single_line": false],
         ),
         Example(
             """
@@ -238,7 +246,7 @@ enum MultilineParametersRuleExamples {
                     param1: Int
                 ) { }
             }
-            """, configuration: ["allows_single_line": false]
+            """, configuration: ["allows_single_line": false],
         ),
         Example(
             """
@@ -249,22 +257,22 @@ enum MultilineParametersRuleExamples {
                     param3: [String]
                 ) { }
             }
-            """, configuration: ["allows_single_line": false]
+            """, configuration: ["allows_single_line": false],
         ),
         Example(
             "func foo(param1: Int, param2: Bool, param3: [String]) { }",
-            configuration: ["max_number_of_single_line_parameters": 3]
+            configuration: ["max_number_of_single_line_parameters": 3],
         ),
         Example(
             "func foo(param1: Int, param2: Bool) { }",
-            configuration: ["max_number_of_single_line_parameters": 2]
+            configuration: ["max_number_of_single_line_parameters": 2],
         ),
         Example(
             """
             func foo(param1: Int,
                      param2: Bool,
                      param3: [String]) { }
-            """, configuration: ["max_number_of_single_line_parameters": 3]
+            """, configuration: ["max_number_of_single_line_parameters": 3],
         ),
         Example(
             """
@@ -273,7 +281,7 @@ enum MultilineParametersRuleExamples {
                 param2: Bool,
                 param3: [String]
             ) { }
-            """, configuration: ["max_number_of_single_line_parameters": 2]
+            """, configuration: ["max_number_of_single_line_parameters": 2],
         ),
     ]
 
@@ -284,7 +292,7 @@ enum MultilineParametersRuleExamples {
                       param2: Int, param3: Int) -> (Int) -> Int {
                return { x in x + param1 + param2 + param3 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -292,7 +300,7 @@ enum MultilineParametersRuleExamples {
                func ↓foo(param1: Int,
                          param2: Bool, param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -300,7 +308,7 @@ enum MultilineParametersRuleExamples {
                func ↓foo(param1: Int, param2: Bool,
                          param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -308,7 +316,7 @@ enum MultilineParametersRuleExamples {
                static func ↓foo(param1: Int,
                                 param2: Bool, param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -316,7 +324,7 @@ enum MultilineParametersRuleExamples {
                static func ↓foo(param1: Int, param2: Bool,
                                 param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -324,7 +332,7 @@ enum MultilineParametersRuleExamples {
                class func ↓foo(param1: Int,
                                param2: Bool, param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -332,7 +340,7 @@ enum MultilineParametersRuleExamples {
                class func ↓foo(param1: Int, param2: Bool,
                                param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -340,7 +348,7 @@ enum MultilineParametersRuleExamples {
                func ↓foo(param1: Int,
                          param2: Bool, param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -348,7 +356,7 @@ enum MultilineParametersRuleExamples {
                func ↓foo(param1: Int, param2: Bool,
                          param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -356,7 +364,7 @@ enum MultilineParametersRuleExamples {
                static func ↓foo(param1: Int,
                                 param2: Bool, param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -364,7 +372,7 @@ enum MultilineParametersRuleExamples {
                static func ↓foo(param1: Int, param2: Bool,
                                 param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -372,7 +380,7 @@ enum MultilineParametersRuleExamples {
                func ↓foo(param1: Int,
                          param2: Bool, param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -380,7 +388,7 @@ enum MultilineParametersRuleExamples {
                func ↓foo(param1: Int, param2: Bool,
                          param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -388,7 +396,7 @@ enum MultilineParametersRuleExamples {
                static func ↓foo(param1: Int,
                                 param2: Bool, param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -396,7 +404,7 @@ enum MultilineParametersRuleExamples {
                static func ↓foo(param1: Int, param2: Bool,
                                 param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -404,7 +412,7 @@ enum MultilineParametersRuleExamples {
                func ↓foo(param1: Int,
                          param2: Bool, param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -412,7 +420,7 @@ enum MultilineParametersRuleExamples {
                func ↓foo(param1: Int, param2: Bool,
                          param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -420,7 +428,7 @@ enum MultilineParametersRuleExamples {
                class func ↓foo(param1: Int,
                                param2: Bool, param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -428,7 +436,7 @@ enum MultilineParametersRuleExamples {
                class func ↓foo(param1: Int, param2: Bool,
                                param3: [String]) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -436,7 +444,7 @@ enum MultilineParametersRuleExamples {
                class func ↓foo(param1: Int,
                               param2: Bool, param3: @escaping (Int, Int) -> Void = { _, _ in }) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -444,7 +452,7 @@ enum MultilineParametersRuleExamples {
                class func ↓foo(param1: Int,
                               param2: Bool, param3: @escaping (Int) -> Void = { (x: Int) in }) { }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -452,30 +460,30 @@ enum MultilineParametersRuleExamples {
               ↓init(param1: Int, param2: Bool,
                     param3: @escaping ((Int) -> Void)? = { _ in }) { }
             }
-            """
+            """,
         ),
         Example(
             "func ↓foo(param1: Int, param2: Bool) { }",
-            configuration: ["allows_single_line": false]
+            configuration: ["allows_single_line": false],
         ),
         Example(
             "func ↓foo(param1: Int, param2: Bool, param3: [String]) { }",
-            configuration: ["allows_single_line": false]
+            configuration: ["allows_single_line": false],
         ),
         Example(
             "func ↓foo(param1: Int, param2: Bool, param3: [String]) { }",
-            configuration: ["max_number_of_single_line_parameters": 2]
+            configuration: ["max_number_of_single_line_parameters": 2],
         ),
         Example(
             """
              func ↓foo(param1: Int,
                        param2: Bool, param3: [String]) { }
-            """, configuration: ["max_number_of_single_line_parameters": 3]
+            """, configuration: ["max_number_of_single_line_parameters": 3],
         ),
         Example(
             """
             func ↓foo(param1: Int, param2: Bool, param3: [String]) { }
-            """, configuration: ["max_number_of_single_line_parameters": 2]
+            """, configuration: ["max_number_of_single_line_parameters": 2],
         ),
     ]
 }

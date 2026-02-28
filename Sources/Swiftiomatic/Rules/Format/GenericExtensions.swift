@@ -1,11 +1,3 @@
-//
-//  GenericExtensions.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 7/18/22.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -14,19 +6,21 @@ extension FormatRule {
         Use angle brackets (`extension Array<Foo>`) for generic type extensions
         instead of type constraints (`extension Array where Element == Foo`).
         """,
-        options: ["generic-types"]
+        options: ["generic-types"],
     ) { formatter in
         formatter.forEach(.keyword("extension")) { extensionIndex, _ in
             guard // Angle brackets syntax in extensions is only supported in Swift 5.7+
                 formatter.options.swiftVersion >= "5.7",
                 let typeNameIndex = formatter.index(
-                    of: .nonSpaceOrCommentOrLinebreak, after: extensionIndex
+                    of: .nonSpaceOrCommentOrLinebreak, after: extensionIndex,
                 ),
                 let extendedType = formatter.token(at: typeNameIndex)?.string,
                 // If there's already an open angle bracket after the generic type name
                 // then the extension is already using the target syntax, so there's
                 // no work to do
-                formatter.next(.nonSpaceOrCommentOrLinebreak, after: typeNameIndex) != .startOfScope("<"),
+                formatter
+                .next(.nonSpaceOrCommentOrLinebreak, after: typeNameIndex) !=
+                .startOfScope("<"),
                 let openBraceIndex = formatter.index(of: .startOfScope("{"), after: typeNameIndex),
                 let whereIndex = formatter.index(of: .keyword("where"), after: typeNameIndex),
                 whereIndex < openBraceIndex
@@ -41,9 +35,9 @@ extension FormatRule {
                         name: extendedType,
                         typeName: "Self",
                         type: .concreteType,
-                        sourceRange: typeNameIndex ... typeNameIndex
+                        sourceRange: typeNameIndex ... typeNameIndex,
                     ),
-                ]
+                ],
             )
 
             var genericTypes = [selfType]
@@ -63,7 +57,7 @@ extension FormatRule {
                     } else {
                         return genericTypeName
                     }
-                }
+                },
             )
 
             var knownGenericTypes: [(name: String, genericTypes: [String])] = [
@@ -83,7 +77,8 @@ extension FormatRule {
 
                 let typeName = String(userProvidedType[..<openAngleBracket])
                 let genericParameters = String(
-                    userProvidedType[userProvidedType.index(after: openAngleBracket) ..< closeAngleBracket]
+                    userProvidedType[userProvidedType
+                        .index(after: openAngleBracket) ..< closeAngleBracket],
                 )
                 .components(separatedBy: ",")
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -91,13 +86,14 @@ extension FormatRule {
                 knownGenericTypes.append(
                     (
                         name: typeName,
-                        genericTypes: genericParameters
-                    )
+                        genericTypes: genericParameters,
+                    ),
                 )
             }
 
             guard
-                let requiredGenericTypes = knownGenericTypes.first(where: { $0.name == extendedType })?
+                let requiredGenericTypes = knownGenericTypes
+                .first(where: { $0.name == extendedType })?
                 .genericTypes
             else {
                 return

@@ -23,7 +23,7 @@ struct AccessibilityLabelForImageRule: Rule, OptInRule {
         kind: .lint,
         minSwiftVersion: .fiveDotOne,
         nonTriggeringExamples: AccessibilityLabelForImageRuleExamples.nonTriggeringExamples,
-        triggeringExamples: AccessibilityLabelForImageRuleExamples.triggeringExamples
+        triggeringExamples: AccessibilityLabelForImageRuleExamples.triggeringExamples,
     )
 }
 
@@ -61,7 +61,7 @@ private extension AccessibilityLabelForImageRule {
                     Images that provide context should have an accessibility label or should be \
                     explicitly hidden from accessibility
                     """,
-                    severity: configuration.severity
+                    severity: configuration.severity,
                 )
                 violations.append(violation)
             }
@@ -217,23 +217,24 @@ private extension FunctionCallExprSyntax {
     /// Checks for modifiers like .accessibilityLabel(...) or .accessibilityHidden(true)
     func isDirectAccessibilityModifier(_ name: String) -> Bool {
         switch name {
-        case "accessibilityHidden":
-            return arguments.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind
-                == .keyword(.true)
-        case "accessibilityLabel", "accessibilityValue", "accessibilityHint":
-            return true
-        case "accessibility":
-            return arguments.contains { arg in
-                guard let label = arg.label?.text else { return false }
-                if ["label", "value", "hint"].contains(label) { return true }
-                if label == "hidden" {
-                    return arg.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind
-                        == .keyword(.true)
+            case "accessibilityHidden":
+                return arguments.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal
+                    .tokenKind
+                    == .keyword(.true)
+            case "accessibilityLabel", "accessibilityValue", "accessibilityHint":
+                return true
+            case "accessibility":
+                return arguments.contains { arg in
+                    guard let label = arg.label?.text else { return false }
+                    if ["label", "value", "hint"].contains(label) { return true }
+                    if label == "hidden" {
+                        return arg.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind
+                            == .keyword(.true)
+                    }
+                    return false
                 }
+            default:
                 return false
-            }
-        default:
-            return false
         }
     }
 
@@ -243,7 +244,8 @@ private extension FunctionCallExprSyntax {
 
         // Check for .accessibilityElement(children: .ignore) which exempts children
         if let childrenArg = arguments.first(where: { $0.label?.text == "children" }) {
-            let childrenValue = childrenArg.expression.as(MemberAccessExprSyntax.self)?.declName.baseName
+            let childrenValue = childrenArg.expression.as(MemberAccessExprSyntax.self)?.declName
+                .baseName
                 .text
             return childrenValue == "ignore" // Only .ignore exempts individual children
         }
@@ -254,7 +256,8 @@ private extension FunctionCallExprSyntax {
 
     /// Checks for container views that provide their own accessibility context
     func isInherentlyExemptingContainer() -> Bool {
-        guard let identifier = calledExpression.as(DeclReferenceExprSyntax.self) else { return false }
+        guard let identifier = calledExpression.as(DeclReferenceExprSyntax.self)
+        else { return false }
         let containerName = identifier.baseName.text
 
         // NavigationLink automatically exempts children

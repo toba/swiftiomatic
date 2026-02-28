@@ -14,7 +14,7 @@ struct UntypedErrorInCatchRule: Rule {
                 do {
                   try foo()
                 } catch {}
-                """
+                """,
             ),
             Example(
                 """
@@ -22,7 +22,7 @@ struct UntypedErrorInCatchRule: Rule {
                   try foo()
                 } catch Error.invalidOperation {
                 } catch {}
-                """
+                """,
             ),
             Example(
                 """
@@ -30,7 +30,7 @@ struct UntypedErrorInCatchRule: Rule {
                   try foo()
                 } catch let error as MyError {
                 } catch {}
-                """
+                """,
             ),
             Example(
                 """
@@ -38,7 +38,7 @@ struct UntypedErrorInCatchRule: Rule {
                   try foo()
                 } catch var error as MyError {
                 } catch {}
-                """
+                """,
             ),
             Example(
                 """
@@ -49,7 +49,7 @@ struct UntypedErrorInCatchRule: Rule {
                 } catch {
                     print(error)
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -58,62 +58,62 @@ struct UntypedErrorInCatchRule: Rule {
                 do {
                   try foo()
                 } ↓catch var error {}
-                """
+                """,
             ),
             Example(
                 """
                 do {
                   try foo()
                 } ↓catch let error {}
-                """
+                """,
             ),
             Example(
                 """
                 do {
                   try foo()
                 } ↓catch let someError {}
-                """
+                """,
             ),
             Example(
                 """
                 do {
                   try foo()
                 } ↓catch var someError {}
-                """
+                """,
             ),
             Example(
                 """
                 do {
                   try foo()
                 } ↓catch let e {}
-                """
+                """,
             ),
             Example(
                 """
                 do {
                   try foo()
                 } ↓catch(let error) {}
-                """
+                """,
             ),
             Example(
                 """
                 do {
                   try foo()
                 } ↓catch (let error) {}
-                """
+                """,
             ),
         ],
         corrections: [
             Example("do {\n    try foo() \n} ↓catch let error {}"): Example(
-                "do {\n    try foo() \n} catch {}"
+                "do {\n    try foo() \n} catch {}",
             ),
             Example("do {\n    try foo() \n} ↓catch(let error) {}"): Example(
-                "do {\n    try foo() \n} catch {}"
+                "do {\n    try foo() \n} catch {}",
             ),
             Example("do {\n    try foo() \n} ↓catch (let error) {}"): Example(
-                "do {\n    try foo() \n} catch {}"
+                "do {\n    try foo() \n} catch {}",
             ),
-        ]
+        ],
     )
 }
 
@@ -171,7 +171,7 @@ private extension UntypedErrorInCatchRule {
             return super.visit(
                 node
                     .with(\.catchKeyword, node.catchKeyword.with(\.trailingTrivia, .spaces(1)))
-                    .with(\.catchItems, CatchItemListSyntax([]))
+                    .with(\.catchItems, CatchItemListSyntax([])),
             )
         }
     }

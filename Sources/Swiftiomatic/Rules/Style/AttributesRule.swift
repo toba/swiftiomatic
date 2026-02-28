@@ -28,7 +28,7 @@ struct AttributesRule: Rule {
         """,
         kind: .style,
         nonTriggeringExamples: AttributesRuleExamples.nonTriggeringExamples,
-        triggeringExamples: AttributesRuleExamples.triggeringExamples
+        triggeringExamples: AttributesRuleExamples.triggeringExamples,
     )
 }
 
@@ -49,35 +49,36 @@ private extension AttributesRule {
 
             let attributesAndPlacements = node.attributesAndPlacements(
                 configuration: configuration,
-                shouldBeOnSameLine: helper.shouldBeOnSameLine
+                shouldBeOnSameLine: helper.shouldBeOnSameLine,
             )
 
             let hasViolation = helper.hasViolation(
                 locationConverter: locationConverter,
                 attributesAndPlacements: attributesAndPlacements,
-                attributesWithArgumentsAlwaysOnNewLine: configuration.attributesWithArgumentsAlwaysOnNewLine
+                attributesWithArgumentsAlwaysOnNewLine: configuration
+                    .attributesWithArgumentsAlwaysOnNewLine,
             )
 
             switch hasViolation {
-            case .argumentsAlwaysOnNewLineViolation:
-                let reason = """
-                Attributes with arguments or inside always_on_line_above must be on a new line \
-                instead of the same line
-                """
+                case .argumentsAlwaysOnNewLineViolation:
+                    let reason = """
+                    Attributes with arguments or inside always_on_line_above must be on a new line \
+                    instead of the same line
+                    """
 
-                violations.append(
-                    ReasonedRuleViolation(
-                        position: helper.violationPosition,
-                        reason: reason,
-                        severity: configuration.severityConfiguration.severity
+                    violations.append(
+                        ReasonedRuleViolation(
+                            position: helper.violationPosition,
+                            reason: reason,
+                            severity: configuration.severityConfiguration.severity,
+                        ),
                     )
-                )
-                return
-            case .violation:
-                violations.append(helper.violationPosition)
-                return
-            case .noViolation:
-                break
+                    return
+                case .violation:
+                    violations.append(helper.violationPosition)
+                    return
+                case .noViolation:
+                    break
             }
 
             let linesForAttributes =
@@ -93,13 +94,14 @@ private extension AttributesRule {
                 return
             }
 
-            let hasMultipleNewlines = node.children(viewMode: .sourceAccurate).enumerated().contains {
-                index, element in
-                if index > 0, element.leadingTrivia.hasMultipleNewlines == true {
-                    return true
+            let hasMultipleNewlines = node.children(viewMode: .sourceAccurate).enumerated()
+                .contains {
+                    index, element in
+                    if index > 0, element.leadingTrivia.hasMultipleNewlines == true {
+                        return true
+                    }
+                    return element.trailingTrivia.hasMultipleNewlines == true
                 }
-                return element.trailingTrivia.hasMultipleNewlines == true
-            }
 
             if hasMultipleNewlines {
                 violations.append(helper.violationPosition)
@@ -153,7 +155,7 @@ private struct RuleHelper {
     func hasViolation(
         locationConverter: SourceLocationConverter,
         attributesAndPlacements: [(AttributeSyntax, AttributePlacement)],
-        attributesWithArgumentsAlwaysOnNewLine: Bool
+        attributesWithArgumentsAlwaysOnNewLine: Bool,
     ) -> (Violation) {
         var linesWithAttributes: Set<Int> = [keywordLine]
         for (attribute, placement) in attributesAndPlacements {
@@ -163,20 +165,21 @@ private struct RuleHelper {
             }
 
             switch placement {
-            case .sameLineAsDeclaration:
-                if attributeStartLine != keywordLine {
-                    return .violation
-                }
-            case .dedicatedLine:
-                let hasViolation =
-                    attributeStartLine == keywordLine || linesWithAttributes.contains(attributeStartLine)
-                linesWithAttributes.insert(attributeStartLine)
-                if hasViolation {
-                    if attributesWithArgumentsAlwaysOnNewLine, shouldBeOnSameLine {
-                        return .argumentsAlwaysOnNewLineViolation
+                case .sameLineAsDeclaration:
+                    if attributeStartLine != keywordLine {
+                        return .violation
                     }
-                    return .violation
-                }
+                case .dedicatedLine:
+                    let hasViolation =
+                        attributeStartLine == keywordLine || linesWithAttributes
+                            .contains(attributeStartLine)
+                    linesWithAttributes.insert(attributeStartLine)
+                    if hasViolation {
+                        if attributesWithArgumentsAlwaysOnNewLine, shouldBeOnSameLine {
+                            return .argumentsAlwaysOnNewLineViolation
+                        }
+                        return .violation
+                    }
             }
         }
         return .noViolation
@@ -185,7 +188,7 @@ private struct RuleHelper {
 
 private extension AttributeListSyntax {
     func attributesAndPlacements(
-        configuration: AttributesConfiguration, shouldBeOnSameLine: Bool
+        configuration: AttributesConfiguration, shouldBeOnSameLine: Bool,
     )
         -> [(AttributeSyntax, AttributePlacement)]
     {
@@ -199,7 +202,9 @@ private extension AttributeListSyntax {
                 if configuration.alwaysOnNewLine.contains(atPrefixedName) {
                     return (attribute, .dedicatedLine)
                 }
-                if attribute.arguments != nil, configuration.attributesWithArgumentsAlwaysOnNewLine {
+                if attribute.arguments != nil,
+                   configuration.attributesWithArgumentsAlwaysOnNewLine
+                {
                     return (attribute, .dedicatedLine)
                 }
 
@@ -254,7 +259,7 @@ private extension AttributeListSyntax {
         return RuleHelper(
             violationPosition: keyword.positionAfterSkippingLeadingTrivia,
             keywordLine: keywordLine,
-            shouldBeOnSameLine: shouldBeOnSameLine
+            shouldBeOnSameLine: shouldBeOnSameLine,
         )
     }
 }

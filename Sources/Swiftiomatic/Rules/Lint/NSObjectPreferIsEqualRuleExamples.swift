@@ -5,14 +5,14 @@ enum NSObjectPreferIsEqualRuleExamples {
             """
             class AClass: NSObject {
             }
-            """
+            """,
         ),
         // @objc class without ==
         Example(
             """
             @objc class AClass: SomeNSObjectSubclass {
             }
-            """
+            """,
         ),
         // Class with == which does not subclass NSObject
         Example(
@@ -21,7 +21,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                 static func == (lhs: AClass, rhs: AClass) -> Bool {
                     return true
                 }
-            """
+            """,
         ),
         // NSObject subclass implementing isEqual
         Example(
@@ -31,7 +31,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     return true
                 }
             }
-            """
+            """,
         ),
         // @objc class implementing isEqual
         Example(
@@ -41,7 +41,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     return false
                 }
             }
-            """
+            """,
         ),
         // NSObject subclass implementing == with different signature
         Example(
@@ -51,7 +51,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     return true
                 }
             }
-            """
+            """,
         ),
         // Equatable struct
         Example(
@@ -61,7 +61,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     return false
                 }
             }
-            """
+            """,
         ),
         // Equatable enum
         Example(
@@ -71,7 +71,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     return true
                 }
             }
-            """
+            """,
         ),
         // Nested class is not itself inheriting from NSObject
         Example(
@@ -83,7 +83,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     }
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         // Enum inside nested class inheriting from NSObject
         Example(
@@ -101,7 +101,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     }
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
     ]
 
@@ -114,7 +114,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     return false
                 }
             }
-            """
+            """,
         ),
         // @objc class implementing ==
         Example(
@@ -124,7 +124,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     return true
                 }
             }
-            """
+            """,
         ),
         // Equatable NSObject subclass implementing ==
         Example(
@@ -134,7 +134,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     return false
                 }
             }
-            """
+            """,
         ),
         // NSObject subclass overriding isEqual and implementing ==
         Example(
@@ -151,7 +151,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     return false
                 }
             }
-            """
+            """,
         ),
         // Nested @objc class implementing ==
         Example(
@@ -186,7 +186,7 @@ enum NSObjectPreferIsEqualRuleExamples {
                     }
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
     ]
 }

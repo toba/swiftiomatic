@@ -16,7 +16,10 @@ struct SelfBindingRule: Rule {
             Example("if let this = this { return }"),
             Example("guard let this = this else { return }"),
             Example("if let this = self { return }", configuration: ["bind_identifier": "this"]),
-            Example("guard let this = self else { return }", configuration: ["bind_identifier": "this"]),
+            Example(
+                "guard let this = self else { return }",
+                configuration: ["bind_identifier": "this"],
+            ),
         ],
         triggeringExamples: [
             Example("if let ↓`self` = self { return }"),
@@ -24,7 +27,10 @@ struct SelfBindingRule: Rule {
             Example("if let ↓this = self { return }"),
             Example("guard let ↓this = self else { return }"),
             Example("if let ↓self = self { return }", configuration: ["bind_identifier": "this"]),
-            Example("guard let ↓self = self else { return }", configuration: ["bind_identifier": "this"]),
+            Example(
+                "guard let ↓self = self else { return }",
+                configuration: ["bind_identifier": "this"],
+            ),
             Example("if let ↓self { return }", configuration: ["bind_identifier": "this"]),
             Example("guard let ↓self else { return }", configuration: ["bind_identifier": "this"]),
         ],
@@ -38,14 +44,21 @@ struct SelfBindingRule: Rule {
             Example("guard let ↓this = self else { return }"):
                 Example("guard let self = self else { return }"),
             Example("if let ↓self = self { return }", configuration: ["bind_identifier": "this"]):
-                Example("if let this = self { return }", configuration: ["bind_identifier": "this"]),
+                Example(
+                    "if let this = self { return }",
+                    configuration: ["bind_identifier": "this"],
+                ),
             Example("if let ↓self { return }", configuration: ["bind_identifier": "this"]):
-                Example("if let this = self { return }", configuration: ["bind_identifier": "this"]),
+                Example(
+                    "if let this = self { return }",
+                    configuration: ["bind_identifier": "this"],
+                ),
             Example("guard let ↓self else { return }", configuration: ["bind_identifier": "this"]):
                 Example(
-                    "guard let this = self else { return }", configuration: ["bind_identifier": "this"]
+                    "guard let this = self else { return }",
+                    configuration: ["bind_identifier": "this"],
                 ),
-        ]
+        ],
     )
 }
 
@@ -68,19 +81,22 @@ private extension SelfBindingRule {
                identifierPattern.identifier.text != configuration.bindIdentifier
             {
                 var hasViolation = false
-                if let initializerIdentifier = node.initializer?.value.as(DeclReferenceExprSyntax.self) {
+                if let initializerIdentifier = node.initializer?.value
+                    .as(DeclReferenceExprSyntax.self)
+                {
                     hasViolation = initializerIdentifier.baseName.text == "self"
                 } else if node.initializer == nil {
                     hasViolation =
-                        identifierPattern.identifier.text == "self" && configuration.bindIdentifier != "self"
+                        identifierPattern.identifier.text == "self" && configuration
+                            .bindIdentifier != "self"
                 }
 
                 if hasViolation {
                     violations.append(
                         ReasonedRuleViolation(
                             position: identifierPattern.positionAfterSkippingLeadingTrivia,
-                            reason: "`self` should always be re-bound to `\(configuration.bindIdentifier)`"
-                        )
+                            reason: "`self` should always be re-bound to `\(configuration.bindIdentifier)`",
+                        ),
                     )
                 }
             }
@@ -88,7 +104,9 @@ private extension SelfBindingRule {
     }
 
     final class Rewriter: ViolationsSyntaxRewriter<ConfigurationType> {
-        override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
+        override func visit(_ node: OptionalBindingConditionSyntax)
+            -> OptionalBindingConditionSyntax
+        {
             guard let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
                   identifierPattern.identifier.text != configuration.bindIdentifier
             else {
@@ -104,8 +122,8 @@ private extension SelfBindingRule {
                         .with(
                             \.identifier,
                             identifierPattern.identifier
-                                .with(\.tokenKind, .identifier(configuration.bindIdentifier))
-                        )
+                                .with(\.tokenKind, .identifier(configuration.bindIdentifier)),
+                        ),
                 )
 
                 return super.visit(node.with(\.pattern, newPattern))
@@ -120,8 +138,8 @@ private extension SelfBindingRule {
                         .with(
                             \.identifier,
                             identifierPattern.identifier
-                                .with(\.tokenKind, .identifier(configuration.bindIdentifier))
-                        )
+                                .with(\.tokenKind, .identifier(configuration.bindIdentifier)),
+                        ),
                 )
 
                 let newInitializer = InitializerClauseSyntax(
@@ -129,9 +147,9 @@ private extension SelfBindingRule {
                         baseName: .keyword(
                             .`self`,
                             leadingTrivia: .space,
-                            trailingTrivia: identifierPattern.trailingTrivia
-                        )
-                    )
+                            trailingTrivia: identifierPattern.trailingTrivia,
+                        ),
+                    ),
                 )
 
                 let newNode =

@@ -15,7 +15,7 @@ struct Swift62ModernizationRule: Rule {
         triggeringExamples: [
             Example("↓Task.detached { await work() }"),
             Example("↓withObservationTracking { }"),
-        ]
+        ],
     )
 }
 
@@ -40,8 +40,8 @@ private extension Swift62ModernizationRule {
                         severity: .warning,
                         confidence: .low,
                         suggestion:
-                        "Use @concurrent on an async function instead — but note @concurrent inherits @TaskLocal values while Task.detached drops them"
-                    )
+                        "Use @concurrent on an async function instead — but note @concurrent inherits @TaskLocal values while Task.detached drops them",
+                    ),
                 )
             }
 
@@ -53,8 +53,8 @@ private extension Swift62ModernizationRule {
                         "withObservationTracking can be replaced with Observations AsyncSequence in Swift 6.2",
                         severity: .warning,
                         confidence: .medium,
-                        suggestion: "for await value in Observations { ... }"
-                    )
+                        suggestion: "for await value in Observations { ... }",
+                    ),
                 )
             }
         }
@@ -70,8 +70,8 @@ private extension Swift62ModernizationRule {
                     reason:
                     "weak var '\(bindingName)' — if never reassigned after init, use weak let (SE-0481)",
                     severity: .warning,
-                    confidence: .low
-                )
+                    confidence: .low,
+                ),
             )
         }
 
@@ -88,8 +88,8 @@ private extension Swift62ModernizationRule {
                         reason: "Unsafe buffer pointer — consider Span/RawSpan (macOS 26.0+)",
                         severity: .warning,
                         confidence: .low,
-                        suggestion: "Use Span<T> or RawSpan for safe, non-owning buffer access"
-                    )
+                        suggestion: "Use Span<T> or RawSpan for safe, non-owning buffer access",
+                    ),
                 )
             }
         }
@@ -106,8 +106,8 @@ private extension Swift62ModernizationRule {
                     reason:
                     "\(accessorKind) with side-effect logic — consider Observations framework if on an @Observable type",
                     severity: .warning,
-                    confidence: .low
-                )
+                    confidence: .low,
+                ),
             )
         }
     }

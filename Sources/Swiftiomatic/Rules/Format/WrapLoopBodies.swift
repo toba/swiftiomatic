@@ -1,18 +1,10 @@
-//
-//  WrapLoopBodies.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 1/3/24.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let wrapLoopBodies = FormatRule(
         help: "Wrap the bodies of inline loop statements onto a new line.",
         orderAfter: [.preferForLoop],
-        sharedOptions: ["linebreaks", "indent"]
+        sharedOptions: ["linebreaks", "indent"],
     ) { formatter in
         formatter.forEachToken(where: {
             [

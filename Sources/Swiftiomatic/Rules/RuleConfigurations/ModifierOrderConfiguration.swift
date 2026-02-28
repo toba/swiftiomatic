@@ -44,7 +44,9 @@ struct ModifierOrderConfiguration: SeverityBasedRuleConfiguration {
 
 extension SwiftDeclarationAttributeKind.ModifierGroup: AcceptableByConfigurationElement {
     init(fromAny value: Any, context ruleID: String) throws(Issue) {
-        if let value = value as? String, let newSelf = Self(rawValue: value), newSelf != .atPrefixed {
+        if let value = value as? String, let newSelf = Self(rawValue: value),
+           newSelf != .atPrefixed
+        {
             self = newSelf
         } else {
             throw .invalidConfiguration(ruleID: ruleID)

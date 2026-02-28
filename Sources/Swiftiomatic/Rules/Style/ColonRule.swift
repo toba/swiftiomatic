@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
     var configuration = ColonConfiguration()
@@ -14,7 +14,7 @@ struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
         kind: .style,
         nonTriggeringExamples: ColonRuleExamples.nonTriggeringExamples,
         triggeringExamples: ColonRuleExamples.triggeringExamples,
-        corrections: ColonRuleExamples.corrections
+        corrections: ColonRuleExamples.corrections,
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -22,7 +22,7 @@ struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severityConfiguration.severity,
-                location: Location(file: file, characterOffset: range.location)
+                location: Location(file: file, characterOffset: range.location),
             )
         }
     }
@@ -40,7 +40,8 @@ struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
                 .windowsOfThreeTokens()
                 .compactMap { previous, current, next -> ByteRange? in
                     if current.tokenKind != .colon
-                        || !configuration.applyToDictionaries && dictionaryPositions.contains(current.position)
+                        || !configuration.applyToDictionaries && dictionaryPositions
+                        .contains(current.position)
                         || positionsToSkip.contains(current.position)
                     {
                         return nil
@@ -57,18 +58,23 @@ struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
                         return nil
                     }
 
-                    if previous.trailingTrivia.isNotEmpty, !previous.trailingTrivia.containsBlockComments() {
+                    if previous.trailingTrivia.isNotEmpty,
+                       !previous.trailingTrivia.containsBlockComments()
+                    {
                         let start = ByteCount(previous.endPositionBeforeTrailingTrivia)
                         let end = ByteCount(current.endPosition)
                         return ByteRange(location: start, length: end - start)
                     }
-                    if current.trailingTrivia != [.spaces(1)], !next.leadingTrivia.containsNewlines() {
+                    if current.trailingTrivia != [.spaces(1)],
+                       !next.leadingTrivia.containsNewlines()
+                    {
                         if case .spaces(1) = current.trailingTrivia.first {
                             return nil
                         }
 
                         let flexibleRightSpacing =
-                            configuration.flexibleRightSpacing || caseStatementPositions.contains(current.position)
+                            configuration.flexibleRightSpacing || caseStatementPositions
+                                .contains(current.position)
                         if flexibleRightSpacing, current.trailingTrivia.isNotEmpty {
                             return nil
                         }
@@ -107,7 +113,7 @@ private final class ColonRuleVisitor: SyntaxVisitor {
         positionsToSkip.append(
             contentsOf: node.tokens(viewMode: .sourceAccurate)
                 .filter { $0.tokenKind == .colon }
-                .map(\.position)
+                .map(\.position),
         )
     }
 

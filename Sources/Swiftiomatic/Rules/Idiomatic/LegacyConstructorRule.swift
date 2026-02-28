@@ -63,9 +63,11 @@ struct LegacyConstructorRule: Rule {
             Example("↓CGPointMake(xPos,  yPos)"): Example("CGPoint(x: xPos,  y: yPos)"),
             Example("↓CGSizeMake(10, 10)"): Example("CGSize(width: 10, height: 10)"),
             Example("↓CGSizeMake( aWidth, aHeight )"): Example(
-                "CGSize( width: aWidth, height: aHeight )"
+                "CGSize( width: aWidth, height: aHeight )",
             ),
-            Example("↓CGRectMake(0, 0, 10, 10)"): Example("CGRect(x: 0, y: 0, width: 10, height: 10)"),
+            Example("↓CGRectMake(0, 0, 10, 10)"): Example(
+                "CGRect(x: 0, y: 0, width: 10, height: 10)",
+            ),
             Example("↓CGRectMake(xPos, yPos , width, height)"):
                 Example("CGRect(x: xPos, y: yPos , width: width, height: height)"),
             Example("↓CGVectorMake(10, 10)"): Example("CGVector(dx: 10, dy: 10)"),
@@ -74,9 +76,11 @@ struct LegacyConstructorRule: Rule {
             Example("↓NSMakePoint(xPos,  yPos   )"): Example("NSPoint(x: xPos,  y: yPos   )"),
             Example("↓NSMakeSize(10, 10)"): Example("NSSize(width: 10, height: 10)"),
             Example("↓NSMakeSize( aWidth, aHeight )"): Example(
-                "NSSize( width: aWidth, height: aHeight )"
+                "NSSize( width: aWidth, height: aHeight )",
             ),
-            Example("↓NSMakeRect(0, 0, 10, 10)"): Example("NSRect(x: 0, y: 0, width: 10, height: 10)"),
+            Example("↓NSMakeRect(0, 0, 10, 10)"): Example(
+                "NSRect(x: 0, y: 0, width: 10, height: 10)",
+            ),
             Example("↓NSMakeRect(xPos, yPos , width, height)"):
                 Example("NSRect(x: xPos, y: yPos , width: width, height: height)"),
             Example("↓NSMakeRange(10, 1)"): Example("NSRange(location: 10, length: 1)"),
@@ -99,7 +103,7 @@ struct LegacyConstructorRule: Rule {
             Example("↓UIOffsetMake(0, 10)"): Example("UIOffset(horizontal: 0, vertical: 10)"),
             Example("↓UIOffsetMake(horizontal, vertical)"):
                 Example("UIOffset(horizontal: horizontal, vertical: vertical)"),
-        ]
+        ],
     )
 
     private static let constructorsToArguments = [
@@ -167,15 +171,15 @@ private extension LegacyConstructorRule {
                     elem
                         .with(\.label, .identifier(args[index]))
                         .with(\.colon, .colonToken(trailingTrivia: .space))
-                }
+                },
             )
             let newExpression = identifierExpr.with(
                 \.baseName,
                 .identifier(
                     correctedName,
                     leadingTrivia: identifierExpr.baseName.leadingTrivia,
-                    trailingTrivia: identifierExpr.baseName.trailingTrivia
-                )
+                    trailingTrivia: identifierExpr.baseName.trailingTrivia,
+                ),
             )
             let newNode =
                 node

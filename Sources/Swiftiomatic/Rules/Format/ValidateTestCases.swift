@@ -1,17 +1,9 @@
-//
-//  ValidateTestCases.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 10/15/25.
-//  Copyright © 2025 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let validateTestCases = FormatRule(
         help: "Ensure test case methods have the correct `test` prefix or `@Test` attribute.",
-        disabledByDefault: true
+        disabledByDefault: true,
     ) { formatter in
         guard let testFramework = formatter.detectTestingFramework() else {
             return
@@ -26,10 +18,10 @@ extension FormatRule {
             for member in testClass.body where member.keyword == "func" {
                 if formatter.isLikelyTestCase(member, for: testFramework) {
                     switch testFramework {
-                    case .xcTest:
-                        formatter.addTestPrefixIfNeeded(member)
-                    case .swiftTesting:
-                        formatter.addTestAttributeIfNeeded(member)
+                        case .xcTest:
+                            formatter.addTestPrefixIfNeeded(member)
+                        case .swiftTesting:
+                            formatter.addTestAttributeIfNeeded(member)
                     }
                 }
             }
@@ -71,22 +63,28 @@ extension Formatter {
     /// its `test` prefix or `@Test` attribute.
     func isLikelyTestCase(
         _ function: Declaration,
-        for framework: TestingFramework
+        for framework: TestingFramework,
     ) -> Bool {
-        guard let functionDecl = parseFunctionDeclaration(keywordIndex: function.keywordIndex) else {
+        guard let functionDecl = parseFunctionDeclaration(keywordIndex: function.keywordIndex)
+        else {
             return false
         }
 
         let modifiers = function.modifiers
 
         // Skip if it's an override, has @objc, or is static (might be called from outside)
-        if modifiers.contains("override") || modifiers.contains("@objc") || modifiers.contains("static") {
+        if modifiers.contains("override") || modifiers.contains("@objc") || modifiers
+            .contains("static")
+        {
             return false
         }
 
         // Get function name
-        guard let nameIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: function.keywordIndex),
-              case let .identifier(name) = tokens[nameIndex]
+        guard let nameIndex = index(
+            of: .nonSpaceOrCommentOrLinebreak,
+            after: function.keywordIndex,
+        ),
+            case let .identifier(name) = tokens[nameIndex]
         else { return false }
 
         // If method has a disabled test prefix, it's not a test
@@ -128,8 +126,11 @@ extension Formatter {
 
     /// Ensures a function has a "test" prefix.
     func addTestPrefixIfNeeded(_ function: Declaration) {
-        guard let nameIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: function.keywordIndex),
-              case let .identifier(name) = tokens[nameIndex]
+        guard let nameIndex = index(
+            of: .nonSpaceOrCommentOrLinebreak,
+            after: function.keywordIndex,
+        ),
+            case let .identifier(name) = tokens[nameIndex]
         else { return }
 
         // If it already has a "test" prefix, do nothing
@@ -145,7 +146,7 @@ extension Formatter {
                     return name
                 }
                 return nil
-            }
+            },
         )
 
         // If the new name already exists elsewhere, don't rename

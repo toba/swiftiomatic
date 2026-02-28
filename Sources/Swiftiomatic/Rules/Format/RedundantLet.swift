@@ -1,17 +1,9 @@
-//
-//  RedundantLet.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 12/14/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Remove redundant let/var for unnamed variables
     static let redundantLet = FormatRule(
-        help: "Remove redundant `let`/`var` from ignored variables."
+        help: "Remove redundant `let`/`var` from ignored variables.",
     ) { formatter in
         formatter.forEach(.identifier("_")) { i, _ in
             guard formatter.next(.nonSpaceOrCommentOrLinebreak, after: i) != .delimiter(":"),
@@ -19,20 +11,23 @@ extension FormatRule {
                       of: .nonSpaceOrCommentOrLinebreak, before: i,
                       if: {
                           [.keyword("let"), .keyword("var")].contains($0)
-                      }
+                      },
                   ),
-                  let nextNonSpaceIndex = formatter.index(of: .nonSpaceOrLinebreak, after: prevIndex)
+                  let nextNonSpaceIndex = formatter.index(
+                      of: .nonSpaceOrLinebreak,
+                      after: prevIndex,
+                  )
             else {
                 return
             }
             if let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: prevIndex) {
                 switch prevToken {
-                case .keyword("if"), .keyword("guard"), .keyword("while"), .identifier("async"),
-                     .keyword where prevToken.isAttribute,
-                     .delimiter(",") where formatter.currentScope(at: i) != .startOfScope("("):
-                    return
-                default:
-                    break
+                    case .keyword("if"), .keyword("guard"), .keyword("while"), .identifier("async"),
+                         .keyword where prevToken.isAttribute,
+                         .delimiter(",") where formatter.currentScope(at: i) != .startOfScope("("):
+                        return
+                    default:
+                        break
                 }
             }
             // Crude check for Result Builder

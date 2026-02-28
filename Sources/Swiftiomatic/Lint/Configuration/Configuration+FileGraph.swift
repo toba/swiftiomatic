@@ -19,14 +19,16 @@ extension Configuration {
         // MARK: - Initializers
 
         init(
-            commandLineChildConfigs: [String], rootDirectory: String, ignoreParentAndChildConfigs: Bool
+            commandLineChildConfigs: [String], rootDirectory: String,
+            ignoreParentAndChildConfigs: Bool,
         ) {
             let verticesArray = commandLineChildConfigs.map { config in
                 Vertex(string: config, rootDirectory: rootDirectory, isInitialVertex: true)
             }
             vertices = Set(verticesArray)
             edges = Set(
-                zip(verticesArray, verticesArray.dropFirst()).map { Edge(parent: $0.0, child: $0.1) }
+                zip(verticesArray, verticesArray.dropFirst())
+                    .map { Edge(parent: $0.0, child: $0.1) },
             )
 
             self.rootDirectory = rootDirectory
@@ -38,7 +40,7 @@ extension Configuration {
             self.init(
                 commandLineChildConfigs: [],
                 rootDirectory: rootDirectory,
-                ignoreParentAndChildConfigs: false
+                ignoreParentAndChildConfigs: false,
             )
 
             isBuilt = true
@@ -49,7 +51,7 @@ extension Configuration {
         mutating func resultingConfiguration(
             enableAllRules: Bool,
             onlyRule: [String],
-            cachePath: String?
+            cachePath: String?,
         ) throws -> Configuration {
             // Build if needed
             if !isBuilt {
@@ -60,7 +62,7 @@ extension Configuration {
                 configurationData: validate(),
                 enableAllRules: enableAllRules,
                 onlyRule: onlyRule,
-                cachePath: cachePath
+                cachePath: cachePath,
             )
         }
 
@@ -89,14 +91,14 @@ extension Configuration {
         private mutating func process(
             vertex: Vertex,
             remoteConfigTimeoutOverride: TimeInterval? = nil,
-            remoteConfigTimeoutIfCachedOverride: TimeInterval? = nil
+            remoteConfigTimeoutIfCachedOverride: TimeInterval? = nil,
         ) throws {
             try vertex.build(
                 remoteConfigTimeout: remoteConfigTimeoutOverride
                     ?? Configuration.FileGraph.defaultRemoteConfigTimeout,
                 remoteConfigTimeoutIfCached: remoteConfigTimeoutIfCachedOverride
                     ?? remoteConfigTimeoutOverride
-                    ?? Configuration.FileGraph.defaultRemoteConfigTimeoutIfCached
+                    ?? Configuration.FileGraph.defaultRemoteConfigTimeoutIfCached,
             )
 
             if !ignoreParentAndChildConfigs {
@@ -104,14 +106,14 @@ extension Configuration {
                     ofType: .childConfig,
                     from: vertex,
                     remoteConfigTimeoutOverride: remoteConfigTimeoutOverride,
-                    remoteConfigTimeoutIfCachedOverride: remoteConfigTimeoutIfCachedOverride
+                    remoteConfigTimeoutIfCachedOverride: remoteConfigTimeoutIfCachedOverride,
                 )
 
                 try processPossibleReferenceIgnoringFileAbsence(
                     ofType: .parentConfig,
                     from: vertex,
                     remoteConfigTimeoutOverride: remoteConfigTimeoutOverride,
-                    remoteConfigTimeoutIfCachedOverride: remoteConfigTimeoutIfCachedOverride
+                    remoteConfigTimeoutIfCachedOverride: remoteConfigTimeoutIfCachedOverride,
                 )
             }
         }
@@ -120,14 +122,14 @@ extension Configuration {
             ofType type: EdgeType,
             from vertex: Vertex,
             remoteConfigTimeoutOverride: TimeInterval?,
-            remoteConfigTimeoutIfCachedOverride: TimeInterval?
+            remoteConfigTimeoutIfCachedOverride: TimeInterval?,
         ) throws {
             do {
                 try processPossibleReference(
                     ofType: type,
                     from: vertex,
                     remoteConfigTimeoutOverride: remoteConfigTimeoutOverride,
-                    remoteConfigTimeoutIfCachedOverride: remoteConfigTimeoutIfCachedOverride
+                    remoteConfigTimeoutIfCachedOverride: remoteConfigTimeoutIfCachedOverride,
                 )
             } catch {
                 // If a child or parent config file doesn't exist, do not fail the rest of the config tree.
@@ -139,7 +141,7 @@ extension Configuration {
                     """
                     A local configuration at \(path) was not found. \
                     Ignoring this part of the configuration.
-                    """
+                    """,
                 )
             }
         }
@@ -148,7 +150,7 @@ extension Configuration {
             ofType type: EdgeType,
             from vertex: Vertex,
             remoteConfigTimeoutOverride: TimeInterval?,
-            remoteConfigTimeoutIfCachedOverride: TimeInterval?
+            remoteConfigTimeoutIfCachedOverride: TimeInterval?,
         ) throws {
             let key =
                 type == .childConfig
@@ -158,21 +160,25 @@ extension Configuration {
             if let reference = vertex.configurationDict[key] as? String {
                 let referencedVertex = Vertex(
                     string: reference, rootDirectory: vertex.rootDirectory,
-                    isInitialVertex: false
+                    isInitialVertex: false,
                 )
 
                 // Local vertices are allowed to have local / remote references
                 // Remote vertices are only allowed to have remote references
                 if vertex.originatesFromRemote, !referencedVertex.originatesFromRemote {
-                    throw Issue.genericWarning("Remote configs are not allowed to reference local configs.")
+                    throw Issue
+                        .genericWarning(
+                            "Remote configs are not allowed to reference local configs.",
+                        )
                 }
                 let existingVertex = findPossiblyExistingVertex(sameAs: referencedVertex)
-                let existingVertexCopy = existingVertex.map { $0.copy(withNewRootDirectory: rootDirectory) }
+                let existingVertexCopy = existingVertex
+                    .map { $0.copy(withNewRootDirectory: rootDirectory) }
 
                 edges.insert(
                     type == .childConfig
                         ? Edge(parent: vertex, child: existingVertexCopy ?? referencedVertex)
-                        : Edge(parent: existingVertexCopy ?? referencedVertex, child: vertex)
+                        : Edge(parent: existingVertexCopy ?? referencedVertex, child: vertex),
                 )
 
                 if existingVertex == nil {
@@ -184,14 +190,16 @@ extension Configuration {
                             as? TimeInterval
                             ?? remoteConfigTimeoutOverride // from vertex parent
                     let remoteConfigTimeoutIfCached =
-                        vertex.configurationDict[Configuration.Key.remoteConfigTimeoutIfCached.rawValue]
+                        vertex
+                            .configurationDict[Configuration.Key.remoteConfigTimeoutIfCached
+                                .rawValue]
                             as? TimeInterval
                             ?? remoteConfigTimeoutIfCachedOverride // from vertex parent
 
                     try process(
                         vertex: referencedVertex,
                         remoteConfigTimeoutOverride: remoteConfigTimeout,
-                        remoteConfigTimeoutIfCachedOverride: remoteConfigTimeoutIfCached
+                        remoteConfigTimeoutIfCachedOverride: remoteConfigTimeoutIfCached,
                     )
                 }
             }
@@ -199,7 +207,8 @@ extension Configuration {
 
         private func findPossiblyExistingVertex(sameAs vertex: Vertex) -> Vertex? {
             vertices.first {
-                $0.originalRemoteString != nil && $0.originalRemoteString == vertex.originalRemoteString
+                $0.originalRemoteString != nil && $0.originalRemoteString == vertex
+                    .originalRemoteString
             } ?? vertices.first { $0.filePath == vertex.filePath }
         }
 
@@ -207,7 +216,10 @@ extension Configuration {
 
         /// Validates the Graph and throws failures
         /// If successful, returns array of configuration dicts that represents the graph
-        private func validate() throws -> [(configurationDict: [String: Any], rootDirectory: String)] {
+        private func validate() throws -> [(
+            configurationDict: [String: Any],
+            rootDirectory: String,
+        )] {
             /// Detect cycles via back-edge detection during DFS
             func walkDown(stack: [Vertex]) throws {
                 // Please note that the equality check (`==`), not the identity check (`===`) is used
@@ -216,7 +228,7 @@ extension Configuration {
                     throw Issue.genericWarning(
                         "There's a cycle of child / parent config references. "
                             + "Please check the hierarchy of configuration files passed via the command line "
-                            + "and the childConfig / parentConfig entries within them."
+                            + "and the childConfig / parentConfig entries within them.",
                     )
                 }
                 try children.forEach { try walkDown(stack: stack + [$0]) }
@@ -225,25 +237,27 @@ extension Configuration {
             try vertices.forEach { try walkDown(stack: [$0]) }
 
             // Detect ambiguities
-            if (edges.contains { edge in edges.filter { $0.parent == edge.parent }.count > 1 }) {
+            if (edges.contains { edge in edges.count(where: { $0.parent == edge.parent }) > 1 }) {
                 throw Issue.genericWarning(
                     "There's an ambiguity in the child / parent configuration tree: "
                         + "More than one parent is declared for a specific configuration, "
-                        + "where there should only be exactly one."
+                        + "where there should only be exactly one.",
                 )
             }
 
-            if (edges.contains { edge in edges.filter { $0.child == edge.child }.count > 1 }) {
+            if (edges.contains { edge in edges.count(where: { $0.child == edge.child }) > 1 }) {
                 throw Issue.genericWarning(
                     "There's an ambiguity in the child / parent configuration tree: "
                         + "More than one child is declared for a specific configuration, "
-                        + "where there should only be exactly one."
+                        + "where there should only be exactly one.",
                 )
             }
 
             // The graph should be like an array if validation passed -> return that array
             guard
-                let startingVertex = (vertices.first { vertex in !edges.contains { $0.child == vertex } })
+                let startingVertex = (vertices.first { vertex in
+                    !edges.contains { $0.child == vertex }
+                })
             else {
                 guard vertices.isEmpty else {
                     throw Issue.genericWarning("Unknown Configuration Error")
@@ -265,7 +279,7 @@ extension Configuration {
             return verticesToMerge.map {
                 (
                     configurationDict: $0.configurationDict,
-                    rootDirectory: $0.rootDirectory
+                    rootDirectory: $0.rootDirectory,
                 )
             }
         }
@@ -276,7 +290,7 @@ extension Configuration {
             configurationData: [(configurationDict: [String: Any], rootDirectory: String)],
             enableAllRules: Bool,
             onlyRule: [String],
-            cachePath: String?
+            cachePath: String?,
         ) throws -> Configuration {
             // Split into first & remainder; use empty dict for first if the array is empty
             let firstConfigurationData =
@@ -288,7 +302,7 @@ extension Configuration {
                 dict: firstConfigurationData.configurationDict,
                 enableAllRules: enableAllRules,
                 onlyRule: onlyRule,
-                cachePath: cachePath
+                cachePath: cachePath,
             )
 
             // Set the config's rootDirectory to rootDirectory (+ adjust included / excluded paths that relate to it).
@@ -297,7 +311,7 @@ extension Configuration {
             firstConfiguration.fileGraph = Self(rootDirectory: rootDirectory)
             firstConfiguration.makeIncludedAndExcludedPaths(
                 relativeTo: rootDirectory,
-                previousBasePath: firstConfigurationData.rootDirectory
+                previousBasePath: firstConfigurationData.rootDirectory,
             )
 
             // Build succeeding configurations
@@ -307,7 +321,7 @@ extension Configuration {
                     dict: $1.configurationDict,
                     enableAllRules: enableAllRules,
                     onlyRule: onlyRule,
-                    cachePath: cachePath
+                    cachePath: cachePath,
                 )
                 childConfiguration.fileGraph = Self(rootDirectory: $1.rootDirectory)
 

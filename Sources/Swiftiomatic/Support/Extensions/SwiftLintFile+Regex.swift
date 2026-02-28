@@ -3,7 +3,7 @@ import SourceKittenFramework
 
 func regex(
     _ pattern: String,
-    options: NSRegularExpression.Options? = nil
+    options: NSRegularExpression.Options? = nil,
 ) -> NSRegularExpression {
     // all patterns used for regular expressions in SwiftLint are string literals which have been
     // confirmed to work, so it's ok to force-try here.
@@ -28,17 +28,21 @@ extension SwiftLintFile {
         let commandPairs = zip(commands, Array(commands.dropFirst().map(Optional.init)) + [nil])
         for (command, nextCommand) in commandPairs {
             switch command.action {
-            case .disable:
-                disabledRules.formUnion(command.ruleIdentifiers)
+                case .disable:
+                    disabledRules.formUnion(command.ruleIdentifiers)
 
-            case .enable:
-                disabledRules.subtract(command.ruleIdentifiers)
+                case .enable:
+                    disabledRules.subtract(command.ruleIdentifiers)
 
-            case .invalid:
-                break
+                case .invalid:
+                    break
             }
 
-            let start = Location(file: path, line: command.line, character: command.range?.upperBound)
+            let start = Location(
+                file: path,
+                line: command.line,
+                character: command.range?.upperBound,
+            )
             let end = endOf(next: nextCommand)
             guard start < end else { continue }
             var didSetRegion = false
@@ -48,13 +52,13 @@ extension SwiftLintFile {
                 regions[index] = Region(
                     start: start,
                     end: end,
-                    disabledRuleIdentifiers: disabledRules.union(region.disabledRuleIdentifiers)
+                    disabledRuleIdentifiers: disabledRules.union(region.disabledRuleIdentifiers),
                 )
                 didSetRegion = true
             }
             if !didSetRegion {
                 regions.append(
-                    Region(start: start, end: end, disabledRuleIdentifiers: disabledRules)
+                    Region(start: start, end: end, disabledRuleIdentifiers: disabledRules),
                 )
             }
         }
@@ -74,7 +78,7 @@ extension SwiftLintFile {
             commands
                 .filter { command in
                     let commandLocation = Location(
-                        file: path, line: command.line, character: command.range?.upperBound
+                        file: path, line: command.line, character: command.range?.upperBound,
                     )
                     return rangeStart <= commandLocation && commandLocation <= rangeEnd
                 }
@@ -101,21 +105,23 @@ extension SwiftLintFile {
         return Location(file: path, line: nextLine, character: nextCharacter)
     }
 
-    func match(pattern: String, with syntaxKinds: [SyntaxKind], range: NSRange? = nil) -> [NSRange] {
+    func match(pattern: String, with syntaxKinds: [SyntaxKind],
+               range: NSRange? = nil) -> [NSRange]
+    {
         match(pattern: pattern, range: range)
             .filter { $0.1 == syntaxKinds }
             .map(\.0)
     }
 
     func match(pattern: String, range: NSRange? = nil, captureGroup: Int = 0) -> [(
-        NSRange, [SyntaxKind]
+        NSRange, [SyntaxKind],
     )] {
         let contents = stringView
         let range = range ?? contents.range
         let syntax = syntaxMap
         return regex(pattern).matches(in: contents, options: [], range: range).compactMap { match in
             let matchByteRange = contents.NSRangeToByteRange(
-                start: match.range.location, length: match.range.length
+                start: match.range.location, length: match.range.length,
             )
             return matchByteRange.map {
                 (match.range(at: captureGroup), syntax.tokens(inByteRange: $0).kinds)
@@ -123,22 +129,20 @@ extension SwiftLintFile {
         }
     }
 
-    /**
-     This function returns only matches that are not contained in a syntax kind
-     specified.
-
-     - parameter pattern: regex pattern to be matched inside file.
-     - parameter excludingSyntaxKinds: syntax kinds the matches to be filtered
-     when inside them.
-
-     - returns: An array of [NSRange] objects consisting of regex matches inside
-     file contents.
-     */
+    /// This function returns only matches that are not contained in a syntax kind
+    /// specified.
+    ///
+    /// - parameter pattern: regex pattern to be matched inside file.
+    /// - parameter excludingSyntaxKinds: syntax kinds the matches to be filtered
+    /// when inside them.
+    ///
+    /// - returns: An array of [NSRange] objects consisting of regex matches inside
+    /// file contents.
     func match(
         pattern: String,
         excludingSyntaxKinds syntaxKinds: Set<SyntaxKind>,
         range: NSRange? = nil,
-        captureGroup: Int = 0
+        captureGroup: Int = 0,
     ) -> [NSRange] {
         match(pattern: pattern, range: range, captureGroup: captureGroup)
             .filter { syntaxKinds.isDisjoint(with: $0.1) }
@@ -165,7 +169,7 @@ extension SwiftLintFile {
         invalidateCache()
     }
 
-    func write<S: StringProtocol>(_ string: S) {
+    func write(_ string: some StringProtocol) {
         guard string != contents else {
             return
         }
@@ -180,7 +184,10 @@ extension SwiftLintFile {
             queuedFatalError("can't encode '\(string)' with UTF8")
         }
         do {
-            try stringData.write(to: URL(fileURLWithPath: path, isDirectory: false), options: .atomic)
+            try stringData.write(
+                to: URL(fileURLWithPath: path, isDirectory: false),
+                options: .atomic,
+            )
         } catch {
             queuedFatalError("can't write file to \(path)")
         }

@@ -2,7 +2,7 @@ import Foundation
 import SourceKittenFramework
 
 private typealias FileTypeOffset = (
-    fileType: FileTypesOrderConfiguration.FileType, offset: ByteCount
+    fileType: FileTypesOrderConfiguration.FileType, offset: ByteCount,
 )
 
 struct FileTypesOrderRule: OptInRule {
@@ -14,7 +14,7 @@ struct FileTypesOrderRule: OptInRule {
         description: "Specifies how the types within a file should be ordered.",
         kind: .style,
         nonTriggeringExamples: FileTypesOrderRuleExamples.nonTriggeringExamples,
-        triggeringExamples: FileTypesOrderRuleExamples.triggeringExamples
+        triggeringExamples: FileTypesOrderRuleExamples.triggeringExamples,
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -24,34 +24,34 @@ struct FileTypesOrderRule: OptInRule {
 
         let extensionsSubstructures = extensionsSubstructures(
             in: file,
-            mainTypeSubstructure: mainTypeSubstructure
+            mainTypeSubstructure: mainTypeSubstructure,
         )
 
         let supportingTypesSubstructures = supportingTypesSubstructures(
             in: file,
-            mainTypeSubstructure: mainTypeSubstructure
+            mainTypeSubstructure: mainTypeSubstructure,
         )
 
         let previewProviderSubstructures = substructures(
             in: file,
-            withInheritedType: "PreviewProvider"
+            withInheritedType: "PreviewProvider",
         )
 
         let libraryContentSubstructures = substructures(
             in: file,
-            withInheritedType: "LibraryContentProvider"
+            withInheritedType: "LibraryContentProvider",
         )
 
         let mainTypeOffset: [FileTypeOffset] = [(.mainType, mainTypeSubstuctureOffset)]
         let extensionOffsets: [FileTypeOffset] = extensionsSubstructures.offsets(for: .extension)
         let supportingTypeOffsets: [FileTypeOffset] = supportingTypesSubstructures.offsets(
-            for: .supportingType
+            for: .supportingType,
         )
         let previewProviderOffsets: [FileTypeOffset] = previewProviderSubstructures.offsets(
-            for: .previewProvider
+            for: .previewProvider,
         )
         let libraryContentOffsets: [FileTypeOffset] = libraryContentSubstructures.offsets(
-            for: .libraryContentProvider
+            for: .libraryContentProvider,
         )
 
         let allOffsets =
@@ -86,14 +86,15 @@ struct FileTypesOrderRule: OptInRule {
                 let fileType = fileTypeOffset.fileType.rawValue
                 let expected = expectedTypes.map(\.rawValue).joined(separator: ",")
                 let article =
-                    ["a", "e", "i", "o", "u"].contains(fileType.substring(from: 0, length: 1)) ? "An" : "A"
+                    ["a", "e", "i", "o", "u"]
+                        .contains(fileType.substring(from: 0, length: 1)) ? "An" : "A"
 
                 let styleViolation = StyleViolation(
                     ruleDescription: Self.description,
                     severity: configuration.severityConfiguration.severity,
                     location: Location(file: file, byteOffset: fileTypeOffset.offset),
                     reason:
-                    "\(article) '\(fileType)' should not be placed amongst the file type(s) '\(expected)'"
+                    "\(article) '\(fileType)' should not be placed amongst the file type(s) '\(expected)'",
                 )
                 violations.append(styleViolation)
             }
@@ -104,7 +105,7 @@ struct FileTypesOrderRule: OptInRule {
 
     private func extensionsSubstructures(
         in file: SwiftLintFile,
-        mainTypeSubstructure: SourceKittenDictionary
+        mainTypeSubstructure: SourceKittenDictionary,
     ) -> [SourceKittenDictionary] {
         let dict = file.structureDictionary
         return dict.substructure.filter { substructure in
@@ -116,7 +117,7 @@ struct FileTypesOrderRule: OptInRule {
 
     private func supportingTypesSubstructures(
         in file: SwiftLintFile,
-        mainTypeSubstructure: SourceKittenDictionary
+        mainTypeSubstructure: SourceKittenDictionary,
     ) -> [SourceKittenDictionary] {
         var supportingTypeKinds = SwiftDeclarationKind.typeKinds
         supportingTypeKinds.insert(SwiftDeclarationKind.protocol)
@@ -133,7 +134,7 @@ struct FileTypesOrderRule: OptInRule {
 
     private func substructures(
         in file: SwiftLintFile,
-        withInheritedType inheritedType: String
+        withInheritedType inheritedType: String,
     ) -> [SourceKittenDictionary] {
         file.structureDictionary.substructure.filter { substructure in
             substructure.inheritedTypes.contains(inheritedType)
@@ -149,7 +150,8 @@ struct FileTypesOrderRule: OptInRule {
 
         let fileName = URL(fileURLWithPath: filePath, isDirectory: false)
             .lastPathComponent.replacingOccurrences(of: ".swift", with: "")
-        guard let mainTypeSubstructure = dict.substructure.first(where: { $0.name == fileName }) else {
+        guard let mainTypeSubstructure = dict.substructure.first(where: { $0.name == fileName })
+        else {
             return mainTypeSubstructure(in: file.structureDictionary)
         }
 
@@ -184,7 +186,7 @@ private extension SourceKittenDictionary {
     }
 }
 
-private extension Array where Element == SourceKittenDictionary {
+private extension [SourceKittenDictionary] {
     func offsets(for fileType: FileTypesOrderConfiguration.FileType) -> [FileTypeOffset] {
         compactMap { substructure in
             guard let offset = substructure.offset else { return nil }
@@ -196,7 +198,7 @@ private extension Array where Element == SourceKittenDictionary {
 extension FileTypesOrderRule {
     private static let _postMessage: Void = {
         Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
         ).print()
     }()
 

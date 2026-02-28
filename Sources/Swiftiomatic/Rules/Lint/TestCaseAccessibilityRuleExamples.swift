@@ -41,7 +41,7 @@ enum TestCaseAccessibilityRuleExamples {
 
                 private someFunc(hasParam: Bool) {}
             }
-            """
+            """,
         ),
 
         Example(
@@ -49,7 +49,7 @@ enum TestCaseAccessibilityRuleExamples {
             class FooTests: XCTestCase {
                 private struct MockSomething: Something {}
             }
-            """
+            """,
         ),
 
         Example(
@@ -61,7 +61,7 @@ enum TestCaseAccessibilityRuleExamples {
                     var bar = 2
                 }
             }
-            """
+            """,
         ),
 
         Example(
@@ -69,7 +69,7 @@ enum TestCaseAccessibilityRuleExamples {
             class FooTests: XCTestCase {
                 func allowedPrefixTestFoo() {}
             }
-            """, configuration: ["allowed_prefixes": ["allowedPrefix"]]
+            """, configuration: ["allowed_prefixes": ["allowedPrefix"]],
         ),
 
         // Not an XCTestCase class
@@ -83,7 +83,7 @@ enum TestCaseAccessibilityRuleExamples {
 
                 func testFoo() {}
             }
-            """
+            """,
         ),
     ]
 
@@ -116,7 +116,7 @@ enum TestCaseAccessibilityRuleExamples {
             final class BarTests: XCTestCase {
                 ↓class Nested {}
             }
-            """
+            """,
         ),
     ]
 
@@ -138,7 +138,7 @@ enum TestCaseAccessibilityRuleExamples {
 
                 ↓func helperFunction() {}
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -157,7 +157,7 @@ enum TestCaseAccessibilityRuleExamples {
 
                     private func helperFunction() {}
                 }
-                """
+                """,
             ),
     ]
 }

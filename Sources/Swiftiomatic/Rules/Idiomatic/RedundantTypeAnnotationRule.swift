@@ -36,7 +36,7 @@ struct RedundantTypeAnnotationRule: Rule {
                 }
 
                 var direction: Direction = .up
-                """
+                """,
             ),
             Example(
                 """
@@ -46,16 +46,19 @@ struct RedundantTypeAnnotationRule: Rule {
                 }
 
                 var direction = Direction.up
-                """
+                """,
             ),
-            Example("@IgnoreMe var a: Int = Int(5)", configuration: ["ignore_attributes": ["IgnoreMe"]]),
+            Example(
+                "@IgnoreMe var a: Int = Int(5)",
+                configuration: ["ignore_attributes": ["IgnoreMe"]],
+            ),
             Example(
                 """
                 var a: Int {
                     @IgnoreMe let i: Int = Int(1)
                     return i
                 }
-                """, configuration: ["ignore_attributes": ["IgnoreMe"]]
+                """, configuration: ["ignore_attributes": ["IgnoreMe"]],
             ),
             Example("var bol: Bool = true"),
             Example("var dbl: Double = 0.0"),
@@ -67,7 +70,7 @@ struct RedundantTypeAnnotationRule: Rule {
                     var url: URL = URL()
                     let myVar: Int? = 0, s: String = ""
                 }
-                """, configuration: ["ignore_properties": true]
+                """, configuration: ["ignore_properties": true],
             ),
         ],
         triggeringExamples: [
@@ -100,7 +103,7 @@ struct RedundantTypeAnnotationRule: Rule {
                     let myVar↓: Int = Int(5)
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -109,7 +112,7 @@ struct RedundantTypeAnnotationRule: Rule {
                     let myVar↓: Int = Int(5)
                   }
                 }
-                """, configuration: ["ignore_properties": true]
+                """, configuration: ["ignore_properties": true],
             ),
             Example("let a↓: [Int] = [Int]()"),
             Example("let a↓: A.B = A.B()"),
@@ -121,10 +124,11 @@ struct RedundantTypeAnnotationRule: Rule {
                 }
 
                 var direction↓: Direction = Direction.up
-                """
+                """,
             ),
             Example(
-                "@DontIgnoreMe var a↓: Int = Int(5)", configuration: ["ignore_attributes": ["IgnoreMe"]]
+                "@DontIgnoreMe var a↓: Int = Int(5)",
+                configuration: ["ignore_attributes": ["IgnoreMe"]],
             ),
             Example(
                 """
@@ -133,20 +137,23 @@ struct RedundantTypeAnnotationRule: Rule {
                     let i↓: Int = Int(1)
                     return i
                 }
-                """, configuration: ["ignore_attributes": ["IgnoreMe"]]
+                """, configuration: ["ignore_attributes": ["IgnoreMe"]],
             ),
             Example(
-                "var bol↓: Bool = true", configuration: ["consider_default_literal_types_redundant": true]
+                "var bol↓: Bool = true",
+                configuration: ["consider_default_literal_types_redundant": true],
             ),
             Example(
-                "var dbl↓: Double = 0.0", configuration: ["consider_default_literal_types_redundant": true]
+                "var dbl↓: Double = 0.0",
+                configuration: ["consider_default_literal_types_redundant": true],
             ),
             Example(
-                "var int↓: Int = 0", configuration: ["consider_default_literal_types_redundant": true]
+                "var int↓: Int = 0",
+                configuration: ["consider_default_literal_types_redundant": true],
             ),
             Example(
                 "var str↓: String = \"str\"",
-                configuration: ["consider_default_literal_types_redundant": true]
+                configuration: ["consider_default_literal_types_redundant": true],
             ),
         ],
         corrections: [
@@ -183,7 +190,7 @@ struct RedundantTypeAnnotationRule: Rule {
                     let myVar↓: Int = Int(5)
                   }
                 }
-                """
+                """,
             ):
                 Example(
                     """
@@ -192,7 +199,7 @@ struct RedundantTypeAnnotationRule: Rule {
                         let myVar = Int(5)
                       }
                     }
-                    """
+                    """,
                 ),
             Example("var num: Int = Int.random(0..<10)"): Example("var num = Int.random(0..<10)"),
             Example(
@@ -202,7 +209,7 @@ struct RedundantTypeAnnotationRule: Rule {
                     let i↓: Int = Int(1)
                     return i
                 }
-                """, configuration: ["ignore_attributes": ["IgnoreMe"]]
+                """, configuration: ["ignore_attributes": ["IgnoreMe"]],
             ):
                 Example(
                     """
@@ -211,26 +218,29 @@ struct RedundantTypeAnnotationRule: Rule {
                         let i = Int(1)
                         return i
                     }
-                    """
+                    """,
                 ),
             Example(
-                "var bol: Bool = true", configuration: ["consider_default_literal_types_redundant": true]
+                "var bol: Bool = true",
+                configuration: ["consider_default_literal_types_redundant": true],
             ):
                 Example("var bol = true"),
             Example(
-                "var dbl: Double = 0.0", configuration: ["consider_default_literal_types_redundant": true]
+                "var dbl: Double = 0.0",
+                configuration: ["consider_default_literal_types_redundant": true],
             ):
                 Example("var dbl = 0.0"),
             Example(
-                "var int: Int = 0", configuration: ["consider_default_literal_types_redundant": true]
+                "var int: Int = 0",
+                configuration: ["consider_default_literal_types_redundant": true],
             ):
                 Example("var int = 0"),
             Example(
                 "var str: String = \"str\"",
-                configuration: ["consider_default_literal_types_redundant": true]
+                configuration: ["consider_default_literal_types_redundant": true],
             ):
                 Example("var str = \"str\""),
-        ]
+        ],
     )
 }
 
@@ -263,10 +273,11 @@ private extension RedundantTypeAnnotationRule {
         }
 
         private func collectViolation(
-            forType type: TypeAnnotationSyntax, withInitializer initializer: ExprSyntax
+            forType type: TypeAnnotationSyntax, withInitializer initializer: ExprSyntax,
         ) {
             let validateLiterals = configuration.considerDefaultLiteralTypesRedundant
-            let isLiteralRedundant = validateLiterals && initializer.hasRedundant(literalType: type.type)
+            let isLiteralRedundant = validateLiterals && initializer
+                .hasRedundant(literalType: type.type)
             guard isLiteralRedundant || initializer.hasRedundant(type: type.type) else {
                 return
             }
@@ -275,8 +286,8 @@ private extension RedundantTypeAnnotationRule {
                 correction: .init(
                     start: type.position,
                     end: type.endPositionBeforeTrailingTrivia,
-                    replacement: ""
-                )
+                    replacement: "",
+                ),
             )
         }
     }
@@ -292,7 +303,8 @@ private extension ExprSyntax {
         } else if let memberAccess = `as`(MemberAccessExprSyntax.self) {
             (memberAccess.base?.accessedNames ?? []) + [memberAccess.trimmedDescription]
         } else if let genericSpecialization = `as`(GenericSpecializationExprSyntax.self) {
-            [genericSpecialization.trimmedDescription] + genericSpecialization.expression.accessedNames
+            [genericSpecialization.trimmedDescription] + genericSpecialization.expression
+                .accessedNames
         } else if let call = `as`(FunctionCallExprSyntax.self) {
             call.calledExpression.accessedNames
         } else if let arrayExpr = `as`(ArrayExprSyntax.self) {
@@ -315,16 +327,16 @@ private extension ExprSyntax {
 private extension SyntaxKind {
     var compilerInferredLiteralType: String? {
         switch self {
-        case .booleanLiteralExpr:
-            "Bool"
-        case .floatLiteralExpr:
-            "Double"
-        case .integerLiteralExpr:
-            "Int"
-        case .stringLiteralExpr:
-            "String"
-        default:
-            nil
+            case .booleanLiteralExpr:
+                "Bool"
+            case .floatLiteralExpr:
+                "Double"
+            case .integerLiteralExpr:
+                "Int"
+            case .stringLiteralExpr:
+                "String"
+            default:
+                nil
         }
     }
 }

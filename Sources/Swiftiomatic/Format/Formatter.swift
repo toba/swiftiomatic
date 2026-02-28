@@ -1,34 +1,3 @@
-//
-//  Formatter.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 12/08/2016.
-//  Copyright 2016 Nick Lockwood
-//
-//  Distributed under the permissive MIT license
-//  Get the latest version from here:
-//
-//  https://github.com/nicklockwood/SwiftFormat
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in all
-//  copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  SOFTWARE.
-//
-
 import Foundation
 
 /// This is a utility class used for manipulating a tokenized source file.
@@ -68,7 +37,7 @@ final class Formatter {
     /// Create a new formatter instance from a token array
     init(
         _ tokens: [Token], options: FormatOptions = FormatOptions(),
-        trackChanges: Bool = false, range: Range<Int>? = nil
+        trackChanges: Bool = false, range: Range<Int>? = nil,
     ) {
         self.tokens = tokens
         self.options = options
@@ -117,65 +86,71 @@ final class Formatter {
         var tokenIndex = 0
         for (i, token) in tokens.enumerated() {
             switch token {
-            case let .linebreak(_, ln):
-                line = ln + 1
-                lineIndex = i
-                tokenIndex = 0
-            case .startOfScope("//"):
-                tokenIndex = 0
-            case .startOfScope("/*"):
-                tokenIndex = i - lineIndex
-            case let .commentBody(comment):
-                guard let range = comment.range(of: "swiftformat:") else {
-                    continue
-                }
-                let comment = String(comment[range.upperBound...])
-                var parts = ArraySlice(comment.components(separatedBy: " "))
-                parts = parts[0].components(separatedBy: ":") + [parts[1...].joined(separator: " ")]
-                guard let directive = parts.popFirst(), !directive.isEmpty else {
-                    fatalError("Expected directive after 'swiftformat:' prefix", at: i)
-                    return
-                }
-                let toggle: Bool
-                switch parts.first {
-                case "next":
-                    line += 1
+                case let .linebreak(_, ln):
+                    line = ln + 1
+                    lineIndex = i
                     tokenIndex = 0
-                    toggle = false
-                    parts.removeFirst()
-                case "previous":
-                    line -= 1
+                case .startOfScope("//"):
                     tokenIndex = 0
-                    toggle = false
-                    parts.removeFirst()
-                case "this":
-                    tokenIndex = 0
-                    toggle = false
-                    parts.removeFirst()
+                case .startOfScope("/*"):
+                    tokenIndex = i - lineIndex
+                case let .commentBody(comment):
+                    guard let range = comment.range(of: "swiftformat:") else {
+                        continue
+                    }
+                    let comment = String(comment[range.upperBound...])
+                    var parts = ArraySlice(comment.components(separatedBy: " "))
+                    parts = parts[0]
+                        .components(separatedBy: ":") + [parts[1...].joined(separator: " ")]
+                    guard let directive = parts.popFirst(), !directive.isEmpty else {
+                        fatalError("Expected directive after 'swiftformat:' prefix", at: i)
+                        return
+                    }
+                    let toggle: Bool
+                    switch parts.first {
+                        case "next":
+                            line += 1
+                            tokenIndex = 0
+                            toggle = false
+                            parts.removeFirst()
+                        case "previous":
+                            line -= 1
+                            tokenIndex = 0
+                            toggle = false
+                            parts.removeFirst()
+                        case "this":
+                            tokenIndex = 0
+                            toggle = false
+                            parts.removeFirst()
+                        default:
+                            toggle = true
+                    }
+                    let args = parts.joined(separator: ":")
+                    let type: DirectiveType
+                    switch directive {
+                        case "options":
+                            // Inline options directives are not supported in this build
+                            continue
+                        case "disable":
+                            type = .disable(rules: args)
+                        case "enable":
+                            type = .enable(rules: args)
+                        case "sort":
+                            // TODO: treat sort:next/previous/this as an error
+                            // TODO: handle sort the same way as other directives
+                            continue
+                        default:
+                            fatalError("Unknown directive 'swiftformat:\(directive)'", at: i)
+                            return
+                    }
+                    directives.append(.init(
+                        type: type,
+                        toggle: toggle,
+                        line: line,
+                        index: tokenIndex,
+                    ))
                 default:
-                    toggle = true
-                }
-                let args = parts.joined(separator: ":")
-                let type: DirectiveType
-                switch directive {
-                case "options":
-                    // Inline options directives are not supported in this build
                     continue
-                case "disable":
-                    type = .disable(rules: args)
-                case "enable":
-                    type = .enable(rules: args)
-                case "sort":
-                    // TODO: treat sort:next/previous/this as an error
-                    // TODO: handle sort the same way as other directives
-                    continue
-                default:
-                    fatalError("Unknown directive 'swiftformat:\(directive)'", at: i)
-                    return
-                }
-                directives.append(.init(type: type, toggle: toggle, line: line, index: tokenIndex))
-            default:
-                continue
             }
         }
     }
@@ -187,19 +162,19 @@ final class Formatter {
         let line: Int
         let tokenIndex: Int
         switch tokens[index] {
-        case let .linebreak(_, ln):
-            line = ln + 1
-            tokenIndex = 0
-        default:
-            if let i = tokens[..<index].lastIndex(where: { $0.isLinebreak }),
-               case let .linebreak(_, ln) = tokens[i]
-            {
+            case let .linebreak(_, ln):
                 line = ln + 1
-                tokenIndex = index - i - 1
-            } else {
-                line = 1
-                tokenIndex = index
-            }
+                tokenIndex = 0
+            default:
+                if let i = tokens[..<index].lastIndex(where: { $0.isLinebreak }),
+                   case let .linebreak(_, ln) = tokens[i]
+                {
+                    line = ln + 1
+                    tokenIndex = index - i - 1
+                } else {
+                    line = 1
+                    tokenIndex = index
+                }
         }
 
         // TODO: replace with stricter format for rules (space and/or comma-delimited)
@@ -208,15 +183,15 @@ final class Formatter {
                 return false
             }
             switch directive {
-            case let .enable(rules: rules), let .disable(rules: rules):
-                return rules.range(
-                    of: "\\b(\(rule.name)|all)\\b",
-                    options: [
-                        .regularExpression, .caseInsensitive,
-                    ]
-                ) != nil
-            case .options:
-                return false
+                case let .enable(rules: rules), let .disable(rules: rules):
+                    return rules.range(
+                        of: "\\b(\(rule.name)|all)\\b",
+                        options: [
+                            .regularExpression, .caseInsensitive,
+                        ],
+                    ) != nil
+                case .options:
+                    return false
             }
         }
 
@@ -231,32 +206,32 @@ final class Formatter {
                 self.tempOptions = nil
             }
             switch directive.type {
-            case .enable where containsRule(directive.type):
-                if directive.toggle {
-                    disabledCount -= 1
-                } else if directive.line == line {
-                    disabledNext -= 1
-                } else {
-                    disabledNext = 0
-                }
-            case .disable where containsRule(directive.type):
-                if directive.toggle {
-                    disabledCount += 1
-                } else if directive.line == line {
-                    disabledNext += 1
-                } else {
-                    disabledNext = 0
-                }
-            case let .options(options):
-                if !directive.toggle {
-                    if directive.line != line {
-                        continue
+                case .enable where containsRule(directive.type):
+                    if directive.toggle {
+                        disabledCount -= 1
+                    } else if directive.line == line {
+                        disabledNext -= 1
+                    } else {
+                        disabledNext = 0
                     }
-                    tempOptions = self.options
-                }
-                self.options = options
-            case .disable, .enable:
-                continue
+                case .disable where containsRule(directive.type):
+                    if directive.toggle {
+                        disabledCount += 1
+                    } else if directive.line == line {
+                        disabledNext += 1
+                    } else {
+                        disabledNext = 0
+                    }
+                case let .options(options):
+                    if !directive.toggle {
+                        if directive.line != line {
+                            continue
+                        }
+                        tempOptions = self.options
+                    }
+                    self.options = options
+                case .disable, .enable:
+                    continue
             }
         }
         disabled = disabledCount + disabledNext > 0
@@ -293,8 +268,8 @@ final class Formatter {
                 line: originalLine(at: index),
                 rule: currentRule ?? .none,
                 filePath: options.fileInfo.filePath,
-                isMove: isMove
-            )
+                isMove: isMove,
+            ),
         )
     }
 
@@ -399,7 +374,11 @@ extension Formatter {
     {
         let max = min(range.count, tokens.count)
         for i in 0 ..< max {
-            replaceToken(at: range.lowerBound + i, with: tokens[tokens.startIndex + i], isMove: isMove)
+            replaceToken(
+                at: range.lowerBound + i,
+                with: tokens[tokens.startIndex + i],
+                isMove: isMove,
+            )
         }
         if range.count > max {
             for index in range.dropFirst(max).reversed() {
@@ -421,13 +400,13 @@ extension Formatter {
     @discardableResult
     func replaceTokens(in range: Range<Int>, with token: Token) -> Int {
         switch range.count {
-        case 1:
-            replaceToken(at: range.lowerBound, with: token)
-        case 0:
-            insert(token, at: range.lowerBound)
-        default:
-            replaceToken(at: range.lowerBound, with: token)
-            removeTokens(in: range.dropFirst())
+            case 1:
+                replaceToken(at: range.lowerBound, with: token)
+            case 0:
+                insert(token, at: range.lowerBound)
+            default:
+                replaceToken(at: range.lowerBound, with: token)
+                removeTokens(in: range.dropFirst())
         }
         return 1 - range.count
     }
@@ -465,18 +444,22 @@ extension Formatter {
 
         for step in difference {
             switch step {
-            case let .insert(lineIndex, line, movedFromLineIndex):
-                let lineRanges = tokens.lineRanges
-                if lineIndex >= lineRanges.count {
-                    insert(line, at: tokens.endIndex, isMove: movedFromLineIndex != nil)
-                } else {
-                    insert(line, at: lineRanges[lineIndex].lowerBound, isMove: movedFromLineIndex != nil)
-                }
+                case let .insert(lineIndex, line, movedFromLineIndex):
+                    let lineRanges = tokens.lineRanges
+                    if lineIndex >= lineRanges.count {
+                        insert(line, at: tokens.endIndex, isMove: movedFromLineIndex != nil)
+                    } else {
+                        insert(
+                            line,
+                            at: lineRanges[lineIndex].lowerBound,
+                            isMove: movedFromLineIndex != nil,
+                        )
+                    }
 
-            case let .remove(lineIndex, _, movedToLineIndex):
-                for index in tokens.lineRanges[lineIndex].reversed() {
-                    removeToken(at: index, isMove: movedToLineIndex != nil)
-                }
+                case let .remove(lineIndex, _, movedToLineIndex):
+                    for index in tokens.lineRanges[lineIndex].reversed() {
+                        removeToken(at: index, isMove: movedToLineIndex != nil)
+                    }
             }
         }
     }
@@ -604,10 +587,10 @@ extension Formatter {
         while enumerationIndex < tokens.count {
             let token = tokens[enumerationIndex]
             switch token {
-            case .startOfScope("//"), .startOfScope("/*"), .endOfScope("*/"), .linebreak:
-                updateEnablement(at: enumerationIndex)
-            default:
-                break
+                case .startOfScope("//"), .startOfScope("/*"), .endOfScope("*/"), .linebreak:
+                    updateEnablement(at: enumerationIndex)
+                default:
+                    break
             }
             if !onlyWhereEnabled || isEnabled {
                 body(enumerationIndex, token) // May mutate enumerationIndex
@@ -698,20 +681,27 @@ extension Formatter {
 
     /// Returns the index of the next token in the specified range of the specified type
     func index(
-        of type: TokenType, in range: CountableRange<Int>, if matches: (Token) -> Bool = { _ in true }
+        of type: TokenType, in range: CountableRange<Int>,
+        if matches: (Token) -> Bool = { _ in true },
     ) -> Int? {
         index(in: range, where: { $0.is(type) }).flatMap { matches(tokens[$0]) ? $0 : nil }
     }
 
     /// Returns the index of the next token at the current scope of the specified type
-    func index(of type: TokenType, after index: AnyIndex, if matches: (Token) -> Bool = { _ in true })
+    func index(
+        of type: TokenType,
+        after index: AnyIndex,
+        if matches: (Token) -> Bool = { _ in true },
+    )
         -> Int?
     {
         self.index(after: index, where: { $0.is(type) }).flatMap { matches(tokens[$0]) ? $0 : nil }
     }
 
     /// Returns the next token at the current scope that matches the block
-    func nextToken(after index: AnyIndex, where matches: (Token) -> Bool = { _ in true }) -> Token? {
+    func nextToken(after index: AnyIndex, where matches: (Token) -> Bool = { _ in
+        true
+    }) -> Token? {
         self.index(after: index, where: matches).map { tokens[$0] }
     }
 
@@ -724,7 +714,8 @@ extension Formatter {
 
     /// Returns the next token in the specified range of the specified type
     func next(
-        _ type: TokenType, in range: CountableRange<Int>, if matches: (Token) -> Bool = { _ in true }
+        _ type: TokenType, in range: CountableRange<Int>,
+        if matches: (Token) -> Bool = { _ in true },
     ) -> Token? {
         index(of: type, in: range, if: matches).map { tokens[$0] }
     }
@@ -737,31 +728,32 @@ extension Formatter {
         for i in range.reversed() {
             let token = tokens[i]
             switch token {
-            case .startOfScope(":")
+                case .startOfScope(":")
                 where [.endOfScope("#endif"), .endOfScope("}")].contains(scopeStack.last):
-                break
-            case .startOfScope where scopeStack.last?.isEndOfScope(token) == true:
-                scopeStack.removeLast()
-            case .startOfScope("//") where linebreakEncountered:
-                linebreakEncountered = false
-            case .startOfScope where matches(token):
-                return i
-            case .startOfScope("//") where self.token(at: range.upperBound)?.isLinebreak == true:
-                break
-            case .startOfScope:
-                return nil
-            case _ where scopeStack.isEmpty && matches(token):
-                return i
-            case .linebreak:
-                linebreakEncountered = true
-            case .endOfScope("case"), .endOfScope("default"):
-                if ![.endOfScope("#endif"), .endOfScope("}")].contains(scopeStack.last) {
-                    fallthrough
-                }
-            case .endOfScope:
-                scopeStack.append(token)
-            default:
-                break
+                    break
+                case .startOfScope where scopeStack.last?.isEndOfScope(token) == true:
+                    scopeStack.removeLast()
+                case .startOfScope("//") where linebreakEncountered:
+                    linebreakEncountered = false
+                case .startOfScope where matches(token):
+                    return i
+                case .startOfScope("//")
+                where self.token(at: range.upperBound)?.isLinebreak == true:
+                    break
+                case .startOfScope:
+                    return nil
+                case _ where scopeStack.isEmpty && matches(token):
+                    return i
+                case .linebreak:
+                    linebreakEncountered = true
+                case .endOfScope("case"), .endOfScope("default"):
+                    if ![.endOfScope("#endif"), .endOfScope("}")].contains(scopeStack.last) {
+                        fallthrough
+                    }
+                case .endOfScope:
+                    scopeStack.append(token)
+                default:
+                    break
             }
         }
         return nil
@@ -785,14 +777,15 @@ extension Formatter {
 
     /// Returns the index of the last token in the specified range of the specified type
     func lastIndex(
-        of type: TokenType, in range: CountableRange<Int>, if matches: (Token) -> Bool = { _ in true }
+        of type: TokenType, in range: CountableRange<Int>,
+        if matches: (Token) -> Bool = { _ in true },
     ) -> Int? {
         lastIndex(in: range, where: { $0.is(type) }).flatMap { matches(tokens[$0]) ? $0 : nil }
     }
 
     /// Returns the index of the previous token at the current scope of the specified type
     func index(
-        of type: TokenType, before index: AnyIndex, if matches: (Token) -> Bool = { _ in true }
+        of type: TokenType, before index: AnyIndex, if matches: (Token) -> Bool = { _ in true },
     ) -> Int? {
         self.index(before: index, where: { $0.is(type) }).flatMap { matches(tokens[$0]) ? $0 : nil }
     }
@@ -803,7 +796,11 @@ extension Formatter {
     }
 
     /// Returns the previous token at the current scope of the specified type
-    func last(_ type: TokenType, before index: AnyIndex, if matches: (Token) -> Bool = { _ in true })
+    func last(
+        _ type: TokenType,
+        before index: AnyIndex,
+        if matches: (Token) -> Bool = { _ in true },
+    )
         -> Token?
     {
         self.index(of: type, before: index, if: matches).map { tokens[$0] }
@@ -811,7 +808,8 @@ extension Formatter {
 
     /// Returns the previous token in the specified range of the specified type
     func last(
-        _ type: TokenType, in range: CountableRange<Int>, if matches: (Token) -> Bool = { _ in true }
+        _ type: TokenType, in range: CountableRange<Int>,
+        if matches: (Token) -> Bool = { _ in true },
     ) -> Token? {
         lastIndex(of: type, in: range, if: matches).map { tokens[$0] }
     }
@@ -878,7 +876,8 @@ extension Formatter {
         // search backward and replace whitespace with a single " "
         // if we find a line comment (// ...) do not make this change
         let tokenType =
-            preservingComments ? TokenType.nonSpaceOrLinebreak : TokenType.nonSpaceOrCommentOrLinebreak
+            preservingComments ? TokenType.nonSpaceOrLinebreak : TokenType
+                .nonSpaceOrCommentOrLinebreak
         guard let notWhitespace = index(of: tokenType, before: tokenIndex) else { return 0 }
         if preservingComments, tokens[notWhitespace].isCommentBody { return 0 }
 
@@ -943,14 +942,21 @@ extension Formatter {
 
 extension String {
     /// https://stackoverflow.com/a/32306142
-    func ranges(of string: some StringProtocol, options: String.CompareOptions = []) -> [Range<Index>] {
+    func ranges(of string: some StringProtocol,
+                options: String.CompareOptions = []) -> [Range<Index>]
+    {
         var result: [Range<Index>] = []
         var startIndex = startIndex
-        while startIndex < endIndex, let range = self[startIndex...].range(of: string, options: options) {
+        while startIndex < endIndex, let range = self[startIndex...].range(
+            of: string,
+            options: options,
+        ) {
             result.append(range)
             startIndex =
                 range.lowerBound < range.upperBound
-                    ? range.upperBound : index(range.lowerBound, offsetBy: 1, limitedBy: endIndex) ?? endIndex
+                    ? range
+                    .upperBound : index(range.lowerBound, offsetBy: 1, limitedBy: endIndex) ??
+                    endIndex
         }
         return result
     }

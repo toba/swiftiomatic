@@ -1,6 +1,13 @@
+import Synchronization
+
 /// Container to register and look up SwiftLint rules.
-final class RuleRegistry: @unchecked Sendable {
-    private var registeredRules = [any Rule.Type]()
+final class RuleRegistry: Sendable {
+    private struct State: @unchecked Sendable {
+        var registeredRules = [any Rule.Type]()
+        var list: RuleList?
+    }
+
+    private let state = Mutex(State())
 
     /// Shared rule registry instance.
     static let shared = RuleRegistry()
@@ -8,9 +15,16 @@ final class RuleRegistry: @unchecked Sendable {
     /// Rule list associated with this registry. Lazily created, and
     /// immutable once looked up.
     ///
-    /// - note: Adding registering more rules after this was first
+    /// - note: Registering more rules after this was first
     ///         accessed will not work.
-    private(set) lazy var list = RuleList(rules: registeredRules)
+    var list: RuleList {
+        state.withLock { state in
+            if let list = state.list { return list }
+            let list = RuleList(rules: state.registeredRules)
+            state.list = list
+            return list
+        }
+    }
 
     private init() { /* To guarantee that this is singleton. */ }
 
@@ -18,7 +32,7 @@ final class RuleRegistry: @unchecked Sendable {
     ///
     /// - parameter rules: The rules to register.
     func register(rules: [any Rule.Type]) {
-        registeredRules.append(contentsOf: rules)
+        state.withLock { $0.registeredRules.append(contentsOf: rules) }
     }
 
     /// Look up a rule for a given ID.

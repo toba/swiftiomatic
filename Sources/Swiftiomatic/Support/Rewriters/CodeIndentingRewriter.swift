@@ -2,7 +2,7 @@ import SwiftSyntax
 
 /// Rewriter that indents or unindents a syntax piece including comments and nested
 /// AST nodes (e.g. a code block in a code block).
-class CodeIndentingRewriter: SyntaxRewriter {
+final class CodeIndentingRewriter: SyntaxRewriter {
     /// Style defining whether the rewriter shall indent or unindent and whether it shall use tabs or spaces and
     /// how many of them.
     enum IndentationStyle {
@@ -29,24 +29,27 @@ class CodeIndentingRewriter: SyntaxRewriter {
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
         defer { isFirstToken = false }
         return super.visit(
-            token.with(\.leadingTrivia, Trivia(pieces: indentedTriviaPieces(for: token.leadingTrivia)))
+            token.with(
+                \.leadingTrivia,
+                Trivia(pieces: indentedTriviaPieces(for: token.leadingTrivia)),
+            ),
         )
     }
 
     private func indentedTriviaPieces(for trivia: Trivia) -> [TriviaPiece] {
         switch style {
-        case let .indentSpaces(number): indent(trivia: trivia, by: .spaces(number))
-        case let .indentTabs(number): indent(trivia: trivia, by: .tabs(number))
-        case let .unindentSpaces(number): unindent(trivia: trivia, by: .spaces(number))
-        case let .unindentTabs(number): unindent(trivia: trivia, by: .tabs(number))
+            case let .indentSpaces(number): indent(trivia: trivia, by: .spaces(number))
+            case let .indentTabs(number): indent(trivia: trivia, by: .tabs(number))
+            case let .unindentSpaces(number): unindent(trivia: trivia, by: .spaces(number))
+            case let .unindentTabs(number): unindent(trivia: trivia, by: .tabs(number))
         }
     }
 
     private func indent(trivia: Trivia, by indentation: TriviaPiece) -> [TriviaPiece] {
         let indentedPieces = trivia.pieces.flatMap { piece in
             switch piece {
-            case .newlines: [piece, indentation]
-            default: [piece]
+                case .newlines: [piece, indentation]
+                default: [piece]
             }
         }
         return isFirstToken ? [indentation] + indentedPieces : indentedPieces
@@ -62,13 +65,14 @@ class CodeIndentingRewriter: SyntaxRewriter {
                 }
             }
             switch (piece, indentation) {
-            case let (.spaces(number), .spaces(requestedNumber)) where number >= requestedNumber:
-                indentedTrivia.append(.spaces(number - requestedNumber))
-                if isFirstToken { break }
-            case let (.tabs(number), .tabs(requestedNumber)) where number >= requestedNumber:
-                indentedTrivia.append(.tabs(number - requestedNumber))
-                if isFirstToken { break }
-            default: indentedTrivia.append(piece)
+                case let (.spaces(number), .spaces(requestedNumber))
+                where number >= requestedNumber:
+                    indentedTrivia.append(.spaces(number - requestedNumber))
+                    if isFirstToken { break }
+                case let (.tabs(number), .tabs(requestedNumber)) where number >= requestedNumber:
+                    indentedTrivia.append(.tabs(number - requestedNumber))
+                    if isFirstToken { break }
+                default: indentedTrivia.append(piece)
             }
         }
         return indentedTrivia

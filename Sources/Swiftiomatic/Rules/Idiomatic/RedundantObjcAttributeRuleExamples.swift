@@ -19,7 +19,7 @@ enum RedundantObjcAttributeRuleExamples {
                     var foo: Any?
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -29,7 +29,7 @@ enum RedundantObjcAttributeRuleExamples {
                     return 0
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -37,7 +37,7 @@ enum RedundantObjcAttributeRuleExamples {
                 @objc
                 var bar: Int { return 0 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -45,7 +45,7 @@ enum RedundantObjcAttributeRuleExamples {
             extension Foo {
                 var bar: Int { return 0 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -55,7 +55,7 @@ enum RedundantObjcAttributeRuleExamples {
                 var bar: Int { return 0 }
                 var fooBar: Int { return 1 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -66,7 +66,7 @@ enum RedundantObjcAttributeRuleExamples {
                     return 0
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -77,7 +77,7 @@ enum RedundantObjcAttributeRuleExamples {
                     @objc var foo: Any?
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -85,7 +85,7 @@ enum RedundantObjcAttributeRuleExamples {
             class Foo: NSObject {
                 @objc class Bar {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -93,7 +93,7 @@ enum RedundantObjcAttributeRuleExamples {
                 @objc(addElementsObject:)
                 @NSManaged public func addToElements(_ value: BlockEditorSettingElement)
             }
-            """
+            """,
         ),
         Example(
             """
@@ -107,7 +107,7 @@ enum RedundantObjcAttributeRuleExamples {
                     NotificationCenter.default.addObserver(self, selector: #selector(handler(_:)), name: nil, object: nil)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -120,7 +120,7 @@ enum RedundantObjcAttributeRuleExamples {
 
                 var bar: Bar { .bar }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -133,7 +133,7 @@ enum RedundantObjcAttributeRuleExamples {
 
                 private var baz: Baz { .baz }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -146,7 +146,7 @@ enum RedundantObjcAttributeRuleExamples {
                     value(forKey: "baz")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -156,7 +156,7 @@ enum RedundantObjcAttributeRuleExamples {
                    case bar
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -176,7 +176,7 @@ enum RedundantObjcAttributeRuleExamples {
             class Foo: NSObject {
                 ↓@objc var bar: Any?
             }
-            """
+            """,
         ),
         Example(
             """
@@ -190,7 +190,7 @@ enum RedundantObjcAttributeRuleExamples {
                     var foo: Any?
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -201,7 +201,7 @@ enum RedundantObjcAttributeRuleExamples {
                     return 0
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -212,7 +212,7 @@ enum RedundantObjcAttributeRuleExamples {
                     return 0
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -223,7 +223,7 @@ enum RedundantObjcAttributeRuleExamples {
                     ↓@objc var foo: Any
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -234,7 +234,7 @@ enum RedundantObjcAttributeRuleExamples {
                     return 0
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -250,10 +250,10 @@ enum RedundantObjcAttributeRuleExamples {
         Example("@GKInspectable ↓@objc private var foo: String! {}"):
             Example("@GKInspectable private var foo: String! {}"),
         Example("↓@objc @NSManaged private var foo: String!"): Example(
-            "@NSManaged private var foo: String!"
+            "@NSManaged private var foo: String!",
         ),
         Example("@NSManaged ↓@objc private var foo: String!"): Example(
-            "@NSManaged private var foo: String!"
+            "@NSManaged private var foo: String!",
         ),
         Example("↓@objc @IBDesignable class Foo {}"): Example("@IBDesignable class Foo {}"),
         Example(
@@ -262,7 +262,7 @@ enum RedundantObjcAttributeRuleExamples {
             class Foo: NSObject {
                 ↓@objc var bar: Any?
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -270,7 +270,7 @@ enum RedundantObjcAttributeRuleExamples {
                 class Foo: NSObject {
                     var bar: Any?
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -284,7 +284,7 @@ enum RedundantObjcAttributeRuleExamples {
                     var foo2: Any?
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -298,7 +298,7 @@ enum RedundantObjcAttributeRuleExamples {
                         var foo2: Any?
                     }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -309,7 +309,7 @@ enum RedundantObjcAttributeRuleExamples {
                     return 0
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -319,7 +319,7 @@ enum RedundantObjcAttributeRuleExamples {
                         return 0
                     }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -330,7 +330,7 @@ enum RedundantObjcAttributeRuleExamples {
                     return 0
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -340,7 +340,7 @@ enum RedundantObjcAttributeRuleExamples {
                         return 0
                     }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -351,7 +351,7 @@ enum RedundantObjcAttributeRuleExamples {
                     ↓@objc var foo: Any
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -362,7 +362,7 @@ enum RedundantObjcAttributeRuleExamples {
                         var foo: Any
                     }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -373,7 +373,7 @@ enum RedundantObjcAttributeRuleExamples {
                     return 0
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -383,7 +383,7 @@ enum RedundantObjcAttributeRuleExamples {
                         return 0
                     }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -396,7 +396,7 @@ enum RedundantObjcAttributeRuleExamples {
                     return 0
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -406,7 +406,7 @@ enum RedundantObjcAttributeRuleExamples {
                         return 0
                     }
                 }
-                """
+                """,
             ),
     ]
 }

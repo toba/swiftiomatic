@@ -34,10 +34,10 @@ struct SwitchCaseAlignmentRule: Rule {
                     }
                   }
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
-        triggeringExamples: Examples(indentedCases: false).triggeringExamples
+        triggeringExamples: Examples(indentedCases: false).triggeringExamples,
     )
 }
 
@@ -61,7 +61,9 @@ extension SwitchCaseAlignmentRule {
             let switchKeywordPosition = node.switchKeyword.positionAfterSkippingLeadingTrivia
             let switchKeywordLocation = locationConverter.location(for: switchKeywordPosition)
 
-            if configuration.ignoreOneLiners, switchKeywordLocation.line == closingBraceLocation.line {
+            if configuration.ignoreOneLiners,
+               switchKeywordLocation.line == closingBraceLocation.line
+            {
                 return
             }
 
@@ -122,7 +124,7 @@ extension SwitchCaseAlignmentRule {
                         \(violationMarker)case false:
                             print("blue")
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -134,7 +136,7 @@ extension SwitchCaseAlignmentRule {
                                 print('blue')
                         }
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -146,7 +148,7 @@ extension SwitchCaseAlignmentRule {
                         \(violationMarker)default:
                             print('Some other number')
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -154,7 +156,7 @@ extension SwitchCaseAlignmentRule {
                         \(violationMarker)case 1: 1
                         \(violationMarker)default: 2
                     }
-                    """
+                    """,
                 ),
             ]
         }
@@ -179,7 +181,7 @@ extension SwitchCaseAlignmentRule {
                     enum SomeEnum {
                         case innocent
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -191,7 +193,7 @@ extension SwitchCaseAlignmentRule {
                             print('blue')
                         }
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -205,7 +207,7 @@ extension SwitchCaseAlignmentRule {
                     \(violationMarker)default:
                         print('Some other number')
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -215,7 +217,7 @@ extension SwitchCaseAlignmentRule {
                         \(violationMarker)default: 2
                         }
                     }
-                    """
+                    """,
                 ),
             ]
         }
@@ -232,7 +234,7 @@ extension SwitchCaseAlignmentRule {
                         \(indentation)\(violationMarker)case false:
                             \(indentation)print('blue')
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -244,7 +246,7 @@ extension SwitchCaseAlignmentRule {
                         \(indentation)print('blue')
                         }
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -252,7 +254,7 @@ extension SwitchCaseAlignmentRule {
                     \(indentation)case 1: 1
                         \(indentation)\(indentedCasesOption ? "" : violationMarker)default: 2
                     }
-                    """
+                    """,
                 ),
             ]
         }
@@ -260,11 +262,11 @@ extension SwitchCaseAlignmentRule {
         private var validOneLiners: [Example] = [
             Example(
                 "switch i { case .x: 1 default: 0 }",
-                configuration: ["ignore_one_liners": true]
+                configuration: ["ignore_one_liners": true],
             ),
             Example(
                 "let a = switch i { case .x: 1 default: 0 }",
-                configuration: ["ignore_one_liners": true]
+                configuration: ["ignore_one_liners": true],
             ),
         ]
 
@@ -272,38 +274,38 @@ extension SwitchCaseAlignmentRule {
             [
                 // Default configuration should not ignore one liners
                 Example(
-                    "switch i { \(violationMarker)case .x: 1 \(violationMarker)default: 0 }"
+                    "switch i { \(violationMarker)case .x: 1 \(violationMarker)default: 0 }",
                 ),
                 Example(
                     """
                     switch i {
                     \(violationMarker)case .x: 1 \(violationMarker)default: 0 }
-                    """, configuration: ["ignore_one_liners": true]
+                    """, configuration: ["ignore_one_liners": true],
                 ),
                 Example(
                     """
                     switch i { \(violationMarker)case .x: 1 \(violationMarker)default: 0
                     }
-                    """, configuration: ["ignore_one_liners": true]
+                    """, configuration: ["ignore_one_liners": true],
                 ),
                 Example(
                     """
                     switch i
                     { \(violationMarker)case .x: 1 \(violationMarker)default: 0 }
-                    """, configuration: ["ignore_one_liners": true]
+                    """, configuration: ["ignore_one_liners": true],
                 ),
                 Example(
                     """
                     let a = switch i {
                     case .x: 1 \(violationMarker)default: 0
                     }
-                    """, configuration: ["ignore_one_liners": true]
+                    """, configuration: ["ignore_one_liners": true],
                 ),
                 Example(
                     """
                     let a = switch i {
                     \(violationMarker)case .x: 1 \(violationMarker)default: 0 }
-                    """, configuration: ["ignore_one_liners": true]
+                    """, configuration: ["ignore_one_liners": true],
                 ),
             ]
         }

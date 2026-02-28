@@ -15,7 +15,7 @@ final class Swift62ModernizationCheck: BaseCheck {
                 message: "Task.detached may be replaceable with @concurrent",
                 suggestion:
                 "Use @concurrent on an async function instead — but note @concurrent inherits @TaskLocal values while Task.detached drops them",
-                confidence: .low
+                confidence: .low,
             )
         }
 
@@ -37,7 +37,7 @@ final class Swift62ModernizationCheck: BaseCheck {
                 severity: .low,
                 message:
                 "weak var '\(bindingName)' — if never reassigned after init, use weak let (SE-0481)",
-                confidence: .low
+                confidence: .low,
             )
         }
 
@@ -60,7 +60,7 @@ final class Swift62ModernizationCheck: BaseCheck {
                 severity: .low,
                 message: "Unsafe buffer pointer — consider Span/RawSpan (macOS 26.0+)",
                 suggestion: "Use Span<T> or RawSpan for safe, non-owning buffer access",
-                confidence: .low
+                confidence: .low,
             )
         }
 
@@ -82,7 +82,7 @@ final class Swift62ModernizationCheck: BaseCheck {
                 severity: .low,
                 message:
                 "\(accessorKind) with side-effect logic — consider Observations framework if on an @Observable type",
-                confidence: .low
+                confidence: .low,
             )
         }
 

@@ -10,7 +10,7 @@ struct NoFallthroughOnlyRule: Rule {
         "Fallthroughs can only be used if the `case` contains at least one other statement",
         kind: .idiomatic,
         nonTriggeringExamples: NoFallthroughOnlyRuleExamples.nonTriggeringExamples,
-        triggeringExamples: NoFallthroughOnlyRuleExamples.triggeringExamples
+        triggeringExamples: NoFallthroughOnlyRuleExamples.triggeringExamples,
     )
 }
 
@@ -28,7 +28,7 @@ private extension NoFallthroughOnlyRule {
             let localViolations = cases.enumerated()
                 .compactMap { index, element -> AbsolutePosition? in
                     if let fallthroughStmt = element.statements.onlyElement?.item.as(
-                        FallThroughStmtSyntax.self
+                        FallThroughStmtSyntax.self,
                     ) {
                         if case let nextCaseIndex = cases.index(after: index),
                            nextCaseIndex < cases.endIndex,

@@ -1,18 +1,10 @@
-//
-//  SinglePropertyPerLine.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 6/27/25.
-//  Copyright © 2025 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let singlePropertyPerLine = FormatRule(
         help: "Use a separate let/var declaration on its own line for every property definition.",
         disabledByDefault: true,
-        sharedOptions: ["linebreaks"]
+        sharedOptions: ["linebreaks"],
     ) { formatter in
         formatter.forEachToken { i, token in
             guard ["let", "var"].contains(token.string) else { return }
@@ -101,7 +93,8 @@ extension FormatRule {
 
                 // Replace the entire multiple property declaration with the new tokens
                 formatter.replaceTokens(
-                    in: startOfModifiers ... multiplePropertyDecl.range.upperBound, with: allReplacementTokens
+                    in: startOfModifiers ... multiplePropertyDecl.range.upperBound,
+                    with: allReplacementTokens,
                 )
             }
 
@@ -177,7 +170,7 @@ extension FormatRule {
 
                 // Replace the entire tuple declaration with the new tokens
                 formatter.replaceTokens(
-                    in: startOfModifiers ... tupleDecl.range.upperBound, with: allReplacementTokens
+                    in: startOfModifiers ... tupleDecl.range.upperBound, with: allReplacementTokens,
                 )
             }
         }
@@ -245,7 +238,8 @@ extension Formatter {
         guard ["let", "var"].contains(tokens[introducerIndex].string) else { return nil }
 
         var properties = [MultiplePropertyDeclaration.Property]()
-        guard var searchIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: introducerIndex) else {
+        guard var searchIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: introducerIndex)
+        else {
             return nil
         }
 
@@ -253,32 +247,39 @@ extension Formatter {
             let propertyIdentifierIndex = searchIndex
             var typeInformation: (colonIndex: Int, type: TypeName)?
 
-            if let colonIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: propertyIdentifierIndex),
-               tokens[colonIndex] == .delimiter(":"),
-               let startOfTypeIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: colonIndex),
-               let type = parseType(at: startOfTypeIndex)
+            if let colonIndex = index(
+                of: .nonSpaceOrCommentOrLinebreak,
+                after: propertyIdentifierIndex,
+            ),
+                tokens[colonIndex] == .delimiter(":"),
+                let startOfTypeIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: colonIndex),
+                let type = parseType(at: startOfTypeIndex)
             {
                 typeInformation = (
                     colonIndex: colonIndex,
-                    type: type
+                    type: type,
                 )
             }
 
-            let endOfTypeOrIdentifier = typeInformation?.type.range.upperBound ?? propertyIdentifierIndex
+            let endOfTypeOrIdentifier = typeInformation?.type.range
+                .upperBound ?? propertyIdentifierIndex
             var valueInformation: (assignmentIndex: Int, expressionRange: ClosedRange<Int>)?
 
             if let assignmentIndex = index(
-                of: .nonSpaceOrCommentOrLinebreak, after: endOfTypeOrIdentifier
+                of: .nonSpaceOrCommentOrLinebreak, after: endOfTypeOrIdentifier,
             ),
                 tokens[assignmentIndex] == .operator("=", .infix),
-                let startOfExpression = index(of: .nonSpaceOrCommentOrLinebreak, after: assignmentIndex),
+                let startOfExpression = index(
+                    of: .nonSpaceOrCommentOrLinebreak,
+                    after: assignmentIndex,
+                ),
                 let expressionRange = parseExpressionRange(
-                    startingAt: startOfExpression, allowConditionalExpressions: true
+                    startingAt: startOfExpression, allowConditionalExpressions: true,
                 )
             {
                 valueInformation = (
                     assignmentIndex: assignmentIndex,
-                    expressionRange: expressionRange
+                    expressionRange: expressionRange,
                 )
             }
 
@@ -298,12 +299,15 @@ extension Formatter {
                     identifierIndex: propertyIdentifierIndex,
                     typeRange: typeInformation?.type.range.range,
                     valueRange: valueInformation?.expressionRange,
-                    trailingCommaIndex: trailingCommaIndex
-                )
+                    trailingCommaIndex: trailingCommaIndex,
+                ),
             )
 
             guard let trailingCommaIndex,
-                  let followingIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: trailingCommaIndex)
+                  let followingIndex = index(
+                      of: .nonSpaceOrCommentOrLinebreak,
+                      after: trailingCommaIndex,
+                  )
             else {
                 break
             }
@@ -316,7 +320,7 @@ extension Formatter {
 
         return MultiplePropertyDeclaration(
             introducerIndex: introducerIndex,
-            properties: properties
+            properties: properties,
         )
     }
 
@@ -357,7 +361,7 @@ extension Formatter {
 
         // Parse identifiers from the pattern tuple
         let identifiers: [(name: String, range: ClosedRange<Int>)] = parseTupleArguments(
-            startOfScope: parenIndex
+            startOfScope: parenIndex,
         ).map { argument in
             (name: argument.value, range: argument.valueRange)
         }
@@ -379,19 +383,24 @@ extension Formatter {
             else { return nil }
 
             // If the type is a tuple, parse the individual tuple types
-            if tokens[typeStart] == .startOfScope("("), type.range.upperBound == endOfScope(at: typeStart) {
+            if tokens[typeStart] == .startOfScope("("),
+               type.range.upperBound == endOfScope(at: typeStart)
+            {
                 let parsedTypes = parseTupleArguments(startOfScope: typeStart)
                 propertyType = (
                     range: type.range.range,
                     tupleTypes: parsedTypes.map { type in
                         (name: type.value, range: type.valueRange)
-                    }
+                    },
                 )
             } else {
                 propertyType = (range: type.range.range, tupleTypes: nil)
             }
 
-            if let nextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: type.range.upperBound) {
+            if let nextIndex = index(
+                of: .nonSpaceOrCommentOrLinebreak,
+                after: type.range.upperBound,
+            ) {
                 parseIndex = nextIndex
             } else {
                 parseIndex = type.range.upperBound
@@ -401,7 +410,7 @@ extension Formatter {
         if tokens[parseIndex] == .operator("=", .infix) {
             guard let valueStart = index(of: .nonSpaceOrCommentOrLinebreak, after: parseIndex),
                   let expressionRange = parseExpressionRange(
-                      startingAt: valueStart, allowConditionalExpressions: true
+                      startingAt: valueStart, allowConditionalExpressions: true,
                   )
             else { return nil }
 
@@ -412,7 +421,7 @@ extension Formatter {
                 let parsedValues = parseTupleArguments(startOfScope: valueStart)
                 propertyValue = (
                     range: expressionRange,
-                    tupleValueRanges: parsedValues.map(\.valueRange)
+                    tupleValueRanges: parsedValues.map(\.valueRange),
                 )
             } else {
                 propertyValue = (range: expressionRange, tupleValueRanges: nil)
@@ -423,7 +432,7 @@ extension Formatter {
             introducerIndex: introducerIndex,
             identifiers: identifiers,
             type: propertyType,
-            value: propertyValue
+            value: propertyValue,
         )
     }
 }

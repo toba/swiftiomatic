@@ -20,7 +20,7 @@ struct VerticalWhitespaceRule: Rule {
                 // comment
 
                 import Foundation
-                """
+                """,
             ),
             Example(
                 """
@@ -28,7 +28,7 @@ struct VerticalWhitespaceRule: Rule {
                 // comment
 
                 import Foundation
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -41,7 +41,7 @@ struct VerticalWhitespaceRule: Rule {
 
 
                 import Foundation
-                """
+                """,
             ),
         ],
         corrections: [
@@ -49,7 +49,7 @@ struct VerticalWhitespaceRule: Rule {
             Example("let c = 0\n\n\nlet num = 1\n"): Example("let c = 0\n\nlet num = 1\n"),
             Example("// bca \n\n\n"): Example("// bca \n\n"),
             Example("class CCCC {\n  \n  \n  \n}"): Example("class CCCC {\n  \n}"),
-        ] // End of line autocorrections are handled by Trailing Newline Rule.
+        ], // End of line autocorrections are handled by Trailing Newline Rule.
     )
 }
 
@@ -95,22 +95,22 @@ private extension VerticalWhitespaceRule {
 
             for piece in token.leadingTrivia {
                 switch piece {
-                case let .newlines(count), let .carriageReturns(count), let .formfeeds(count),
-                     let .verticalTabs(count):
-                    process(count, 1)
-                case let .carriageReturnLineFeeds(count):
-                    process(count, 2) // CRLF is 2 bytes
-                case .spaces, .tabs:
-                    currentPosition += piece.sourceLength
-                default:
-                    // A comment breaks the chain of newlines.
-                    firstTokenAdditionalNewlines = 0
-                    if let violationPosition {
-                        report(violationPosition, consecutiveNewlines)
-                    }
-                    violationPosition = nil
-                    consecutiveNewlines = 0
-                    currentPosition += piece.sourceLength
+                    case let .newlines(count), let .carriageReturns(count), let .formfeeds(count),
+                         let .verticalTabs(count):
+                        process(count, 1)
+                    case let .carriageReturnLineFeeds(count):
+                        process(count, 2) // CRLF is 2 bytes
+                    case .spaces, .tabs:
+                        currentPosition += piece.sourceLength
+                    default:
+                        // A comment breaks the chain of newlines.
+                        firstTokenAdditionalNewlines = 0
+                        if let violationPosition {
+                            report(violationPosition, consecutiveNewlines)
+                        }
+                        violationPosition = nil
+                        consecutiveNewlines = 0
+                        currentPosition += piece.sourceLength
                 }
             }
             if let violationPosition {
@@ -124,8 +124,9 @@ private extension VerticalWhitespaceRule {
             violations.append(
                 ReasonedRuleViolation(
                     position: position,
-                    reason: configuration.configuredDescriptionReason + "; currently \(newlines - 1)"
-                )
+                    reason: configuration
+                        .configuredDescriptionReason + "; currently \(newlines - 1)",
+                ),
             )
         }
     }
@@ -138,7 +139,7 @@ private extension VerticalWhitespaceRule {
 
             func process(_ count: Int, _ create: (Int) -> TriviaPiece) {
                 let linesToPreserve = min(
-                    count, max(0, configuration.maxEmptyLines + 1 - consecutiveNewlines)
+                    count, max(0, configuration.maxEmptyLines + 1 - consecutiveNewlines),
                 )
                 consecutiveNewlines += count
 
@@ -160,24 +161,24 @@ private extension VerticalWhitespaceRule {
 
             for piece in token.leadingTrivia {
                 switch piece {
-                case let .newlines(count):
-                    process(count, TriviaPiece.newlines)
-                case let .carriageReturns(count):
-                    process(count, TriviaPiece.carriageReturns)
-                case let .carriageReturnLineFeeds(count):
-                    process(count, TriviaPiece.carriageReturnLineFeeds)
-                case let .formfeeds(count):
-                    process(count, TriviaPiece.formfeeds)
-                case let .verticalTabs(count):
-                    process(count, TriviaPiece.verticalTabs)
-                case .spaces, .tabs:
-                    pendingWhitespace.append(piece)
-                default:
-                    // Reset and pull in pending whitespace
-                    consecutiveNewlines = 0
-                    result.append(contentsOf: pendingWhitespace)
-                    result.append(piece)
-                    pendingWhitespace.removeAll()
+                    case let .newlines(count):
+                        process(count, TriviaPiece.newlines)
+                    case let .carriageReturns(count):
+                        process(count, TriviaPiece.carriageReturns)
+                    case let .carriageReturnLineFeeds(count):
+                        process(count, TriviaPiece.carriageReturnLineFeeds)
+                    case let .formfeeds(count):
+                        process(count, TriviaPiece.formfeeds)
+                    case let .verticalTabs(count):
+                        process(count, TriviaPiece.verticalTabs)
+                    case .spaces, .tabs:
+                        pendingWhitespace.append(piece)
+                    default:
+                        // Reset and pull in pending whitespace
+                        consecutiveNewlines = 0
+                        result.append(contentsOf: pendingWhitespace)
+                        result.append(piece)
+                        pendingWhitespace.removeAll()
                 }
             }
             // Pull in any remaining pending whitespace

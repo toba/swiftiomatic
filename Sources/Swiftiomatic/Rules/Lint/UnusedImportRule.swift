@@ -14,7 +14,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
         nonTriggeringExamples: UnusedImportRuleExamples.nonTriggeringExamples,
         triggeringExamples: UnusedImportRuleExamples.triggeringExamples,
         corrections: UnusedImportRuleExamples.corrections,
-        requiresFileOnDisk: true
+        requiresFileOnDisk: true,
     )
 
     func validate(file: SwiftLintFile, compilerArguments: [String]) -> [StyleViolation] {
@@ -22,8 +22,11 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: importUsage.violationRange?.location ?? 1),
-                reason: importUsage.violationReason
+                location: Location(
+                    file: file,
+                    characterOffset: importUsage.violationRange?.location ?? 1,
+                ),
+                reason: importUsage.violationReason,
             )
         }
     }
@@ -31,7 +34,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
     func correct(file: SwiftLintFile, compilerArguments: [String]) -> Int {
         let importUsages = importUsage(in: file, compilerArguments: compilerArguments)
         let matches = file.ruleEnabled(
-            violatingRanges: importUsages.compactMap(\.violationRange), for: self
+            violatingRanges: importUsages.compactMap(\.violationRange), for: self,
         )
 
         var contents = file.stringView.nsString
@@ -51,10 +54,10 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
 
         let missingImports = importUsages.compactMap { importUsage -> String? in
             switch importUsage {
-            case .unused:
-                return nil
-            case let .missing(module):
-                return module
+                case .unused:
+                    return nil
+                case let .missing(module):
+                    return module
             }
         }
 
@@ -63,10 +66,17 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
         }
 
         var insertionLocation = 0
-        if let firstImportRange = file.match(pattern: "import\\s+\\w+", with: [.keyword, .identifier])
-            .first
-        {
-            contents.getLineStart(&insertionLocation, end: nil, contentsEnd: nil, for: firstImportRange)
+        if let firstImportRange = file.match(
+            pattern: "import\\s+\\w+",
+            with: [.keyword, .identifier],
+        )
+        .first {
+            contents.getLineStart(
+                &insertionLocation,
+                end: nil,
+                contentsEnd: nil,
+                for: firstImportRange,
+            )
         }
 
         let insertionRange = NSRange(location: insertionLocation, length: 0)
@@ -76,7 +86,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
                 .map { "import \($0)" }
                 .joined(separator: "\n")
         let newContents = contents.replacingCharacters(
-            in: insertionRange, with: missingImportStatements + "\n"
+            in: insertionRange, with: missingImportStatements + "\n",
         )
         file.write(newContents)
         numberOfCorrections += missingImports.count
@@ -92,15 +102,19 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
             return []
         }
 
-        return file.getImportUsage(compilerArguments: compilerArguments, configuration: configuration)
+        return file.getImportUsage(
+            compilerArguments: compilerArguments,
+            configuration: configuration,
+        )
     }
 }
 
 private extension SwiftLintFile {
     func getImportUsage(
-        compilerArguments: [String], configuration: UnusedImportConfiguration
+        compilerArguments: [String], configuration: UnusedImportConfiguration,
     ) -> [ImportUsage] {
-        var (imports, usrFragments) = getImportsAndUSRFragments(compilerArguments: compilerArguments)
+        var (imports,
+             usrFragments) = getImportsAndUSRFragments(compilerArguments: compilerArguments)
 
         // Always disallow 'Swift' and 'SwiftShims' because they're always available without importing.
         usrFragments.remove("Swift")
@@ -110,7 +124,7 @@ private extension SwiftLintFile {
         }
 
         var unusedImports = imports.subtracting(usrFragments).subtracting(
-            configuration.alwaysKeepImports
+            configuration.alwaysKeepImports,
         )
         // Certain Swift attributes requires importing Foundation.
         if unusedImports.contains("Foundation"), containsAttributesRequiringFoundation() {
@@ -121,8 +135,8 @@ private extension SwiftLintFile {
             unusedImports.subtract(
                 operatorImports(
                     arguments: compilerArguments,
-                    processedTokenOffsets: Set(syntaxMap.tokens.map(\.offset))
-                )
+                    processedTokenOffsets: Set(syntaxMap.tokens.map(\.offset)),
+                ),
             )
         }
 
@@ -169,7 +183,7 @@ private extension SwiftLintFile {
     }
 
     func getImportsAndUSRFragments(compilerArguments: [String]) -> (
-        imports: Set<String>, usrFragments: Set<String>
+        imports: Set<String>, usrFragments: Set<String>,
     ) {
         var imports = Set<String>()
         var usrFragments = Set<String>()
@@ -186,11 +200,11 @@ private extension SwiftLintFile {
                 continue
             }
             let cursorInfoRequest = Request.cursorInfoWithoutSymbolGraph(
-                file: path!, offset: token.offset, arguments: compilerArguments
+                file: path!, offset: token.offset, arguments: compilerArguments,
             )
             guard
                 let cursorInfo = (try? cursorInfoRequest.sendIfNotDisabled()).map(
-                    SourceKittenDictionary.init
+                    SourceKittenDictionary.init,
                 )
             else {
                 Issue.missingCursorInfo(path: path, ruleID: UnusedImportRule.identifier).print()
@@ -254,7 +268,7 @@ private extension SwiftLintFile {
                 guard !processedTokenOffsets.contains(ByteCount(offset)) else { continue }
 
                 let cursorInfoRequest = Request.cursorInfoWithoutSymbolGraph(
-                    file: path!, offset: ByteCount(offset), arguments: arguments
+                    file: path!, offset: ByteCount(offset), arguments: arguments,
                 )
                 guard
                     let cursorInfo = (try? cursorInfoRequest.sendIfNotDisabled())
@@ -290,7 +304,7 @@ private extension SwiftLintFile {
                     result.append(contentsOf: [(result.last ?? 0) + lineLength])
                 }
                 .enumerated()
-                .map { ($0.offset, $0.element) }
+                .map { ($0.offset, $0.element) },
         )
     }
 
@@ -304,15 +318,17 @@ private extension SwiftLintFile {
     }
 
     func appendUsedImports(
-        cursorInfo: SourceKittenDictionary, usrFragments: inout Set<String>
+        cursorInfo: SourceKittenDictionary, usrFragments: inout Set<String>,
     ) {
-        if let rootModuleName = cursorInfo.moduleName?.split(separator: ".").first.map(String.init) {
+        if let rootModuleName = cursorInfo.moduleName?.split(separator: ".").first
+            .map(String.init)
+        {
             usrFragments.insert(rootModuleName)
             if rootModuleName == moduleToLog, let filePath = path,
                let usr = cursorInfo.value["key.usr"] as? String
             {
                 queuedPrintError(
-                    "[SWIFTLINT_LOG_MODULE_USAGE] \(rootModuleName) referenced by USR '\(usr)' in file '\(filePath)'"
+                    "[SWIFTLINT_LOG_MODULE_USAGE] \(rootModuleName) referenced by USR '\(usr)' in file '\(filePath)'",
                 )
             }
         }
@@ -340,7 +356,7 @@ private extension SwiftLintFile {
 extension UnusedImportRule {
     private static let _postMessage: Void = {
         Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
         ).print()
     }()
 

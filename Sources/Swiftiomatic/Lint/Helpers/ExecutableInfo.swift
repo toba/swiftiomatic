@@ -1,5 +1,5 @@
-import Foundation
 import MachO
+import Foundation
 
 /// Information about this executable.
 enum ExecutableInfo {
@@ -12,7 +12,10 @@ enum ExecutableInfo {
             for _ in 0 ..< header.pointee.ncmds {
                 let loadCommand = pointer.load(fromByteOffset: Int(offset), as: load_command.self)
                 if loadCommand.cmd == LC_UUID {
-                    let uuidCommand = pointer.load(fromByteOffset: Int(offset), as: uuid_command.self)
+                    let uuidCommand = pointer.load(
+                        fromByteOffset: Int(offset),
+                        as: uuid_command.self,
+                    )
                     return UUID(uuid: uuidCommand.uuid)
                 }
                 offset += UInt64(loadCommand.cmdsize)

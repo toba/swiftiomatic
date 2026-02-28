@@ -18,24 +18,24 @@ struct UnusedParameterRule: Rule {
                 func f(a: Int) {
                     _ = a
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func f(case: Int) {
                     _ = `case`
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func f(a _: Int) {}
-                """
+                """,
             ),
             Example(
                 """
                 func f(_: Int) {}
-                """
+                """,
             ),
             Example(
                 """
@@ -45,7 +45,7 @@ struct UnusedParameterRule: Rule {
                         _ = c
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -56,14 +56,14 @@ struct UnusedParameterRule: Rule {
                     }
                     return a + c
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func f(a: Int?) {
                     if let a {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -71,24 +71,24 @@ struct UnusedParameterRule: Rule {
                     let a = a
                     return a
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func f(`operator`: Int) -> Int { `operator` }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
             Example(
                 """
                 func f(↓a: Int) {}
-                """
+                """,
             ),
             Example(
                 """
                 func f(↓a: Int, b ↓c: String) {}
-                """
+                """,
             ),
             Example(
                 """
@@ -97,7 +97,7 @@ struct UnusedParameterRule: Rule {
                         _ = a
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -109,7 +109,7 @@ struct UnusedParameterRule: Rule {
                         self.a = f(a: a, b: 0)
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -119,7 +119,7 @@ struct UnusedParameterRule: Rule {
                         return f(a: a, b: 0)
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -130,7 +130,7 @@ struct UnusedParameterRule: Rule {
                     }
                     return S().f(a: c)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -138,38 +138,38 @@ struct UnusedParameterRule: Rule {
                     let a = 1
                     return a + c
                 }
-                """
+                """,
             ),
         ],
         corrections: [
             Example(
                 """
                 func f(a: Int) {}
-                """
+                """,
             ): Example(
                 """
                 func f(a _: Int) {}
-                """
+                """,
             ),
             Example(
                 """
                 func f(a b: Int) {}
-                """
+                """,
             ): Example(
                 """
                 func f(a _: Int) {}
-                """
+                """,
             ),
             Example(
                 """
                 func f(_ a: Int) {}
-                """
+                """,
             ): Example(
                 """
                 func f(_: Int) {}
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -195,7 +195,9 @@ private extension UnusedParameterRule {
 
         override func visitPost(_ node: CodeBlockItemListSyntax) {
             let declarations = scope.peek() ?? []
-            for declaration in declarations.reversed() where !referencedDeclarations.contains(declaration) {
+            for declaration in declarations.reversed()
+                where !referencedDeclarations.contains(declaration)
+            {
                 guard case let .parameter(name) = declaration,
                       let previousToken = name.previousToken(viewMode: .sourceAccurate)
                 else {
@@ -218,9 +220,9 @@ private extension UnusedParameterRule {
                         correction: .init(
                             start: startPosReplacement.0,
                             end: name.endPositionBeforeTrailingTrivia,
-                            replacement: startPosReplacement.1
-                        )
-                    )
+                            replacement: startPosReplacement.1,
+                        ),
+                    ),
                 )
             }
             super.visitPost(node)

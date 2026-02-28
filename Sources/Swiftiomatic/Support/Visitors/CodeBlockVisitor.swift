@@ -1,7 +1,9 @@
 import SwiftSyntax
 
 /// A visitor that collects style violations for all available code blocks.
-class CodeBlockVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxVisitor<Configuration> {
+class CodeBlockVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxVisitor<
+    Configuration,
+> {
     @inlinable
     override init(configuration: Configuration, file: SwiftLintFile) {
         super.init(configuration: configuration, file: file)

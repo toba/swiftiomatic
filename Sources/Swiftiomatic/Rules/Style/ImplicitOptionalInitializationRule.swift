@@ -11,7 +11,7 @@ struct ImplicitOptionalInitializationRule: Rule {
         nonTriggeringExamples: ImplicitOptionalInitializationRuleExamples.nonTriggeringExamples,
         triggeringExamples: ImplicitOptionalInitializationRuleExamples.triggeringExamples,
         corrections: ImplicitOptionalInitializationRuleExamples.corrections,
-        deprecatedAliases: ["redundant_optional_initialization"]
+        deprecatedAliases: ["redundant_optional_initialization"],
     )
 }
 
@@ -29,13 +29,14 @@ private extension ImplicitOptionalInitializationRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         var reason: String {
             switch configuration.style {
-            case .always: "Optional should be implicitly initialized without nil"
-            case .never: "Optional should be explicitly initialized to nil"
+                case .always: "Optional should be implicitly initialized without nil"
+                case .never: "Optional should be explicitly initialized to nil"
             }
         }
 
         override func visitPost(_ node: PatternBindingSyntax) {
-            guard let violationPosition = node.violationPosition(for: configuration.style) else { return }
+            guard let violationPosition = node.violationPosition(for: configuration.style)
+            else { return }
 
             violations.append(ReasonedRuleViolation(position: violationPosition, reason: reason))
         }
@@ -52,29 +53,32 @@ private extension ImplicitOptionalInitializationRule {
             numberOfCorrections += 1
 
             return switch configuration.style {
-            case .never:
-                node
-                    .with(
-                        \.initializer,
-                        InitializerClauseSyntax(
-                            equal: .equalToken(
-                                leadingTrivia: .space,
-                                trailingTrivia: .space
+                case .never:
+                    node
+                        .with(
+                            \.initializer,
+                            InitializerClauseSyntax(
+                                equal: .equalToken(
+                                    leadingTrivia: .space,
+                                    trailingTrivia: .space,
+                                ),
+                                value: ExprSyntax(NilLiteralExprSyntax(nilKeyword: .keyword(.nil))),
+                                trailingTrivia: node.typeAnnotation?.trailingTrivia ?? Trivia(),
                             ),
-                            value: ExprSyntax(NilLiteralExprSyntax(nilKeyword: .keyword(.nil))),
-                            trailingTrivia: node.typeAnnotation?.trailingTrivia ?? Trivia()
                         )
-                    )
-                    .with(\.typeAnnotation, node.typeAnnotation?.with(\.trailingTrivia, Trivia()))
-            case .always:
-                node
-                    .with(\.initializer, nil)
-                    .with(
-                        \.trailingTrivia,
-                        node.accessorBlock == nil
-                            ? node.initializer?.trailingTrivia ?? Trivia()
-                            : node.trailingTrivia
-                    )
+                        .with(
+                            \.typeAnnotation,
+                            node.typeAnnotation?.with(\.trailingTrivia, Trivia()),
+                        )
+                case .always:
+                    node
+                        .with(\.initializer, nil)
+                        .with(
+                            \.trailingTrivia,
+                            node.accessorBlock == nil
+                                ? node.initializer?.trailingTrivia ?? Trivia()
+                                : node.trailingTrivia,
+                        )
             }
         }
     }
@@ -82,7 +86,7 @@ private extension ImplicitOptionalInitializationRule {
 
 private extension PatternBindingSyntax {
     func violationPosition(
-        for style: ImplicitOptionalInitializationConfiguration.Style
+        for style: ImplicitOptionalInitializationConfiguration.Style,
     ) -> AbsolutePosition? {
         guard
             let parent = parent?.parent?.as(VariableDeclSyntax.self),

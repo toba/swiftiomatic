@@ -1,17 +1,9 @@
-//
-//  ModifiersOnSameLine.swift
-//  SwiftFormat
-//
-//  Created by cal_stephens on 5/29/25.
-//  Copyright © 2025 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Ensure all modifiers are on the same line as the declaration keyword
     static let modifiersOnSameLine = FormatRule(
-        help: "Ensure that all modifiers are on the same line as the declaration keyword."
+        help: "Ensure that all modifiers are on the same line as the declaration keyword.",
     ) { formatter in
         formatter.parseDeclarations().forEachRecursiveDeclaration { declaration in
             // Find the start of modifiers (excluding attributes)
@@ -42,7 +34,9 @@ extension FormatRule {
             // Unwrap all lines between modifiers and the declaration
             var currentIndex = declaration.keywordIndex
             while currentIndex > modifierStart {
-                guard let prevIndex = formatter.index(of: .nonSpaceOrLinebreak, before: currentIndex) else {
+                guard let prevIndex = formatter
+                    .index(of: .nonSpaceOrLinebreak, before: currentIndex)
+                else {
                     break
                 }
 

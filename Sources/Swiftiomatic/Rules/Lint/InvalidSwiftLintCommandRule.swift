@@ -16,9 +16,13 @@ struct InvalidSwiftLintCommandRule: Rule, SourceKitFreeRule {
             Example("// swiftlint:disable:previous unused_import"),
             Example("// swiftlint:disable:this unused_import"),
             Example("//swiftlint:disable:this unused_import"),
-            Example("_ = \"🤵🏼‍♀️\" // swiftlint:disable:this unused_import", excludeFromDocumentation: true),
             Example(
-                "_ = \"🤵🏼‍♀️ 🤵🏼‍♀️\" // swiftlint:disable:this unused_import", excludeFromDocumentation: true
+                "_ = \"🤵🏼‍♀️\" // swiftlint:disable:this unused_import",
+                excludeFromDocumentation: true,
+            ),
+            Example(
+                "_ = \"🤵🏼‍♀️ 🤵🏼‍♀️\" // swiftlint:disable:this unused_import",
+                excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -38,7 +42,7 @@ struct InvalidSwiftLintCommandRule: Rule, SourceKitFreeRule {
             Example("// ↓swiftlint:disable: unused_import"),
             Example("// s↓swiftlint:disable unused_import"),
             Example("// 🤵🏼‍♀️swiftlint:disable unused_import", excludeFromDocumentation: true),
-        ].skipWrappingInCommentTests()
+        ].skipWrappingInCommentTests(),
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -51,7 +55,7 @@ struct InvalidSwiftLintCommandRule: Rule, SourceKitFreeRule {
                 ? styleViolation(
                     for: command,
                     in: file,
-                    reason: "swiftlint command should be preceded by whitespace or a comment character"
+                    reason: "swiftlint command should be preceded by whitespace or a comment character",
                 )
                 : nil
         }
@@ -60,7 +64,8 @@ struct InvalidSwiftLintCommandRule: Rule, SourceKitFreeRule {
     private func invalidCommandViolations(in file: SwiftLintFile) -> [StyleViolation] {
         file.invalidCommands.map { command in
             styleViolation(
-                for: command, in: file, reason: command.invalidReason() ?? Self.description.description
+                for: command, in: file,
+                reason: command.invalidReason() ?? Self.description.description,
             )
         }
     }
@@ -71,8 +76,12 @@ struct InvalidSwiftLintCommandRule: Rule, SourceKitFreeRule {
         StyleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
-            location: Location(file: file.path, line: command.line, character: command.range?.lowerBound),
-            reason: reason
+            location: Location(
+                file: file.path,
+                line: command.line,
+                character: command.range?.lowerBound,
+            ),
+            reason: reason,
         )
     }
 }
@@ -85,7 +94,8 @@ private extension Command {
         }
         let line = file.lines[line - 1].content
         guard line.count > character,
-              let char = line[line.index(line.startIndex, offsetBy: character - 2)].unicodeScalars.first
+              let char = line[line.index(line.startIndex, offsetBy: character - 2)].unicodeScalars
+              .first
         else {
             return false
         }

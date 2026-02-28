@@ -12,7 +12,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -24,7 +24,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -36,7 +36,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -48,7 +48,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = "foo" + bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -60,7 +60,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -72,7 +72,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -84,7 +84,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -96,7 +96,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -108,7 +108,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     Self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -120,7 +120,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -132,7 +132,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -144,7 +144,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                 init(foo: String, bar: String) {
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -157,7 +157,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -171,7 +171,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -189,7 +189,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                    self.parent = parent
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -211,7 +211,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -220,7 +220,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     print("perform side effect")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -232,7 +232,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     print("perform side effect")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -243,7 +243,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -257,7 +257,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     return nil
                 }
             }
-            """
+            """,
         ),
         // Treat conditional code as if it was active.
         Example(
@@ -275,7 +275,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                 }
                 #endif
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -286,7 +286,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
 
                 init() {}
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -294,7 +294,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                 @available(*, unavailable)
                 init() {}
             }
-            """
+            """,
         ),
     ]
 
@@ -308,7 +308,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -319,7 +319,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -330,7 +330,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -341,7 +341,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -352,7 +352,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -363,7 +363,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -376,7 +376,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -387,7 +387,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -399,7 +399,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     // when all vars have default values.
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -414,7 +414,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -425,7 +425,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -438,7 +438,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -451,7 +451,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -467,7 +467,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.i = i
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -486,7 +486,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     // Padding
                 }
             }
-            """
+            """,
         ): Example(
             """
             struct Foo {
@@ -497,7 +497,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     // Padding
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -508,13 +508,13 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ): Example(
             """
             struct Foo {
                 var bar: String
             }
-            """
+            """,
         ),
         Example(
             """
@@ -525,13 +525,13 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ): Example(
             """
             private struct Foo {
                 let bar: String
             }
-            """
+            """,
         ),
         Example(
             """
@@ -542,13 +542,13 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ): Example(
             """
             fileprivate struct Foo {
                 let bar: String
             }
-            """
+            """,
         ),
         Example(
             """
@@ -559,13 +559,13 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ): Example(
             """
             internal struct Foo {
                 fileprivate var bar: String
             }
-            """
+            """,
         ),
         Example(
             """
@@ -576,13 +576,13 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ): Example(
             """
             internal struct Foo {
                 private var bar: String
             }
-            """
+            """,
         ),
         Example(
             """
@@ -595,14 +595,14 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ): Example(
             """
             struct Foo {
                 var foo: String
                 var bar: String
             }
-            """
+            """,
         ),
         Example(
             """
@@ -613,13 +613,13 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     self.bar = bar
                 }
             }
-            """
+            """,
         ): Example(
             """
             internal struct Foo {
                 var bar: String
             }
-            """
+            """,
         ),
         Example(
             """
@@ -631,13 +631,13 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     // when all vars have default values.
                 }
             }
-            """
+            """,
         ): Example(
             """
             struct Foo {
                 var bar: String = ""
             }
-            """
+            """,
         ),
         Example(
             """
@@ -650,7 +650,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ): Example(
             """
             struct Outer {
@@ -658,7 +658,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
                     let prop: Int
                 }
             }
-            """
+            """,
         ),
     ]
 }

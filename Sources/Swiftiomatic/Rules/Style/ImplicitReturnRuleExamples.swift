@@ -9,7 +9,7 @@ enum ImplicitReturnRuleExamples {
                 [1, 2].first(where: {
                     true
                 })
-                """
+                """,
             ),
         ]
 
@@ -19,14 +19,14 @@ enum ImplicitReturnRuleExamples {
                 foo.map { value in
                     ↓return value + 1
                 }
-                """
+                """,
             ),
             Example(
                 """
                 foo.map {
                     ↓return $0 + 1
                 }
-                """
+                """,
             ),
             Example("foo.map({ ↓return $0 + 1})"),
             Example(
@@ -34,7 +34,7 @@ enum ImplicitReturnRuleExamples {
                 [1, 2].first(where: {
                     ↓return true
                 })
-                """
+                """,
             ),
         ]
 
@@ -45,27 +45,27 @@ enum ImplicitReturnRuleExamples {
                     // Important comment
                     return value + 1
                 }
-                """
+                """,
             ): Example(
                 """
                 foo.map { value in
                     // Important comment
                     value + 1
                 }
-                """
+                """,
             ),
             Example(
                 """
                 foo.map {
                     return $0 + 1
                 }
-                """
+                """,
             ): Example(
                 """
                 foo.map {
                     $0 + 1
                 }
-                """
+                """,
             ),
             Example("foo.map({ return $0 + 1 })"): Example("foo.map({ $0 + 1 })"),
             Example(
@@ -73,13 +73,13 @@ enum ImplicitReturnRuleExamples {
                 [1, 2].first(where: {
                     return true
                 })
-                """
+                """,
             ): Example(
                 """
                 [1, 2].first(where: {
                     true
                 })
-                """
+                """,
             ),
         ]
     }
@@ -91,14 +91,14 @@ enum ImplicitReturnRuleExamples {
                 func foo() -> Int {
                     0
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                     func foo() -> Int { 0 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -109,7 +109,7 @@ enum ImplicitReturnRuleExamples {
                         return nil
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -117,7 +117,7 @@ enum ImplicitReturnRuleExamples {
                     let i = 4
                     return i
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -125,7 +125,7 @@ enum ImplicitReturnRuleExamples {
                     return 3
                     let i = 2
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -133,7 +133,7 @@ enum ImplicitReturnRuleExamples {
                     return g()
                     func g() -> Int { 4 }
                 }
-                """
+                """,
             ),
         ]
 
@@ -143,19 +143,19 @@ enum ImplicitReturnRuleExamples {
                 func foo() -> Int {
                     ↓return 0
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                     func foo() -> Int { ↓return 0 }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func f() { ↓return }
-                """
+                """,
             ),
         ]
 
@@ -165,13 +165,13 @@ enum ImplicitReturnRuleExamples {
                 func foo() -> Int {
                     return 0
                 }
-                """
+                """,
             ): Example(
                 """
                 func foo() -> Int {
                     0
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -180,7 +180,7 @@ enum ImplicitReturnRuleExamples {
                         return 0
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 class Foo {
@@ -188,7 +188,7 @@ enum ImplicitReturnRuleExamples {
                         0
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -197,7 +197,7 @@ enum ImplicitReturnRuleExamples {
                     ↓return
                     // Another comment
                 }
-                """
+                """,
             ): Example(
                 """
                 func f() {
@@ -205,7 +205,7 @@ enum ImplicitReturnRuleExamples {
                     \("")
                     // Another comment
                 }
-                """
+                """,
             ),
         ]
     }
@@ -222,7 +222,7 @@ enum ImplicitReturnRuleExamples {
                         }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -231,7 +231,7 @@ enum ImplicitReturnRuleExamples {
                         0
                     }
                 }
-                """
+                """,
             ),
         ]
 
@@ -246,7 +246,7 @@ enum ImplicitReturnRuleExamples {
                         }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -255,7 +255,7 @@ enum ImplicitReturnRuleExamples {
                         ↓return 0
                     }
                 }
-                """
+                """,
             ),
         ]
 
@@ -270,7 +270,7 @@ enum ImplicitReturnRuleExamples {
                         }
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 class Foo {
@@ -280,7 +280,7 @@ enum ImplicitReturnRuleExamples {
                         }
                     }
                 }
-                """
+                """,
             ),
         ]
     }
@@ -299,7 +299,7 @@ enum ImplicitReturnRuleExamples {
                         self.i = 2
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -309,7 +309,7 @@ enum ImplicitReturnRuleExamples {
                         return nil
                     }
                 }
-                """
+                """,
             ),
         ]
 
@@ -321,7 +321,7 @@ enum ImplicitReturnRuleExamples {
                         ↓return
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -330,7 +330,7 @@ enum ImplicitReturnRuleExamples {
                         ↓return nil
                     }
                 }
-                """
+                """,
             ),
         ]
 
@@ -342,7 +342,7 @@ enum ImplicitReturnRuleExamples {
                         ↓return
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 class C {
@@ -350,7 +350,7 @@ enum ImplicitReturnRuleExamples {
                         \("")
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -359,7 +359,7 @@ enum ImplicitReturnRuleExamples {
                         ↓return nil
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 class C {
@@ -367,7 +367,7 @@ enum ImplicitReturnRuleExamples {
                         nil
                     }
                 }
-                """
+                """,
             ),
         ]
     }
@@ -382,7 +382,7 @@ enum ImplicitReturnRuleExamples {
                         return res
                     }
                 }
-                """
+                """,
             ),
         ]
 
@@ -394,7 +394,7 @@ enum ImplicitReturnRuleExamples {
                         ↓return i
                     }
                 }
-                """
+                """,
             ),
         ]
 
@@ -406,7 +406,7 @@ enum ImplicitReturnRuleExamples {
                         ↓return i
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 class C {
@@ -414,7 +414,7 @@ enum ImplicitReturnRuleExamples {
                         i
                     }
                 }
-                """
+                """,
             ),
         ]
     }
@@ -428,7 +428,7 @@ enum ImplicitReturnRuleExamples {
                         ↓return true
                     })
                 }
-                """
+                """,
             ): Example(
                 """
                 func foo() -> Int {
@@ -436,7 +436,7 @@ enum ImplicitReturnRuleExamples {
                         true
                     })
                 }
-                """
+                """,
             ),
         ]
     }

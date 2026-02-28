@@ -1,11 +1,3 @@
-//
-//  OpaqueGenericParameters.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 7/5/22.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -16,7 +8,7 @@ extension FormatRule {
         primary associated types for common standard library types, so definitions like
         `T where T: Collection, T.Element == Foo` are updated to `some Collection<Foo>`.
         """,
-        options: ["some-any"]
+        options: ["some-any"],
     ) { formatter in
         formatter.forEach(.keyword) { keywordIndex, keyword in
             guard // Opaque generic parameter syntax is only supported in Swift 5.7+
@@ -36,7 +28,7 @@ extension FormatRule {
             // Parse the generics in the angle brackets (e.g. `<T, U: Fooable>`)
             formatter.parseGenericTypes(
                 from: genericParameterRange.lowerBound,
-                into: &genericTypes
+                into: &genericTypes,
             )
 
             // Parse additional conformances and constraints after the `where` keyword if present
@@ -67,9 +59,9 @@ extension FormatRule {
                 //    used in the function parameters / body and is only constrained relative
                 //    to generic types in the parent type scope). If this generic parameter
                 //    is truly unused and redundant then the compiler would emit an error.
-                let countInParameterList = formatter.tokens[argumentsRange].filter {
+                let countInParameterList = formatter.tokens[argumentsRange].count(where: {
                     $0.string == genericType.name
-                }.count
+                })
                 if countInParameterList != 1 {
                     genericType.eligibleToRemove = false
                     continue
@@ -85,7 +77,7 @@ extension FormatRule {
 
                 // If the generic type is referenced in any attributes, then it can't be removed
                 let startOfModifiers = formatter.startOfModifiers(
-                    at: keywordIndex, includingAttributes: true
+                    at: keywordIndex, includingAttributes: true,
                 )
                 let modifierTokens = formatter.tokens[startOfModifiers ..< keywordIndex]
                 if modifierTokens.contains(where: { $0.string == genericType.name }) {
@@ -108,7 +100,9 @@ extension FormatRule {
                 // type from the parent context with the same name. We can't change these, since it
                 // can cause the build to break
                 for conformance in genericType.conformances {
-                    if tokenize(conformance.name).contains(where: { $0.string == genericType.name }) {
+                    if tokenize(conformance.name)
+                        .contains(where: { $0.string == genericType.name })
+                    {
                         genericType.eligibleToRemove = false
                     }
                 }
@@ -149,9 +143,12 @@ extension FormatRule {
                     if formatter.tokens[tokenIndex] == .startOfScope("("),
                        tokenIndex != declaration.argumentsRange.lowerBound,
                        let endOfScope = formatter.endOfScope(at: tokenIndex),
-                       let tokenAfterParen = formatter.next(.nonSpaceOrCommentOrLinebreak, after: endOfScope),
+                       let tokenAfterParen = formatter.next(
+                           .nonSpaceOrCommentOrLinebreak,
+                           after: endOfScope,
+                       ),
                        [.operator("->", .infix), .keyword("throws"), .identifier("async")].contains(
-                           tokenAfterParen
+                           tokenAfterParen,
                        ),
                        // Check if the closure type parameters contains this generic type
                        formatter.tokens[tokenIndex ... endOfScope].contains(where: {
@@ -175,7 +172,8 @@ extension FormatRule {
                 // Extract the comma-separated list of function parameters,
                 // so we can check conditions on the individual parameters
                 let parameterListTokenIndices: [Int] = .init(
-                    (declaration.argumentsRange.lowerBound + 1) ..< declaration.argumentsRange.upperBound
+                    (declaration.argumentsRange.lowerBound + 1) ..< declaration.argumentsRange
+                        .upperBound,
                 )
 
                 // Split the parameter list at each comma that's directly within the paren list scope
@@ -184,7 +182,8 @@ extension FormatRule {
                         .split(whereSeparator: { index in
                             let token = formatter.tokens[index]
                             return token == .delimiter(",")
-                                && formatter.endOfScope(at: index) == declaration.argumentsRange.upperBound
+                                && formatter.endOfScope(at: index) == declaration.argumentsRange
+                                .upperBound
                         })
                         .map { parameterIndices in
                             parameterIndices.map { index in
@@ -207,7 +206,7 @@ extension FormatRule {
             let sourceRangesToRemove = Set(
                 genericsEligibleToRemove.flatMap { type in
                     [type.definitionSourceRange] + type.conformances.map(\.sourceRange)
-                }
+                },
             )
 
             if genericsEligibleToRemove.isEmpty {
@@ -225,7 +224,7 @@ extension FormatRule {
 
                 // if where clause is completely empty, we need to remove the where token as well
                 if let tokenAfterWhereKeyword = formatter.index(
-                    of: .nonSpaceOrLinebreak, after: whereClauseRange.lowerBound
+                    of: .nonSpaceOrLinebreak, after: whereClauseRange.lowerBound,
                 ),
                     whereClauseRange.upperBound <= tokenAfterWhereKeyword
                 {
@@ -235,7 +234,7 @@ extension FormatRule {
                 // remove trailing comma
                 else if let commaIndex = formatter.index(
                     of: .nonSpaceOrCommentOrLinebreak,
-                    before: whereClauseRange.upperBound + 1, if: { $0 == .delimiter(",") }
+                    before: whereClauseRange.upperBound + 1, if: { $0 == .delimiter(",") },
                 ) {
                     formatter.removeToken(at: commaIndex)
                     if formatter.tokens[commaIndex - 1].isSpace,
@@ -253,7 +252,7 @@ extension FormatRule {
                     $0.name == formatter.tokens[index].string
                 }),
                     var opaqueParameter = matchingGenericType.asOpaqueParameter(
-                        useSomeAny: formatter.options.useSomeAny
+                        useSomeAny: formatter.options.useSomeAny,
                     )
                 {
                     // If this instance of the type is followed by a `.` or `?` then we have to wrap the new type in parens
@@ -277,10 +276,10 @@ extension FormatRule {
 
             // If we left a dangling comma at the end of the generic parameter list, we need to clean it up
             if let newGenericSignatureEndIndex = formatter.endOfScope(
-                at: genericParameterRange.lowerBound
+                at: genericParameterRange.lowerBound,
             ),
                 let trailingCommaIndex = formatter.index(
-                    of: .nonSpaceOrCommentOrLinebreak, before: newGenericSignatureEndIndex
+                    of: .nonSpaceOrCommentOrLinebreak, before: newGenericSignatureEndIndex,
                 ),
                 formatter.tokens[trailingCommaIndex] == .delimiter(",")
             {
@@ -289,11 +288,13 @@ extension FormatRule {
 
             // If we removed all of the generic types, we also have to remove the angle brackets
             if let newGenericSignatureEndIndex = formatter.index(
-                of: .nonSpaceOrLinebreak, after: genericParameterRange.lowerBound
+                of: .nonSpaceOrLinebreak, after: genericParameterRange.lowerBound,
             ),
                 formatter.token(at: newGenericSignatureEndIndex) == .endOfScope(">")
             {
-                formatter.removeTokens(in: genericParameterRange.lowerBound ... newGenericSignatureEndIndex)
+                formatter
+                    .removeTokens(in: genericParameterRange
+                        .lowerBound ... newGenericSignatureEndIndex)
             }
         }
     } examples: {

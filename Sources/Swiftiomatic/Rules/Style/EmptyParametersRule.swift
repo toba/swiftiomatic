@@ -24,13 +24,15 @@ struct EmptyParametersRule: Rule {
         ],
         corrections: [
             Example("let abc: ↓(Void) -> Void = {}"): Example("let abc: () -> Void = {}"),
-            Example("func foo(completion: ↓(Void) -> Void)"): Example("func foo(completion: () -> Void)"),
+            Example("func foo(completion: ↓(Void) -> Void)"): Example(
+                "func foo(completion: () -> Void)",
+            ),
             Example("func foo(completion: ↓(Void) throws -> Void)"):
                 Example("func foo(completion: () throws -> Void)"),
             Example("let foo: ↓(Void) -> () throws -> Void)"): Example(
-                "let foo: () -> () throws -> Void)"
+                "let foo: () -> () throws -> Void)",
             ),
-        ]
+        ],
     )
 }
 

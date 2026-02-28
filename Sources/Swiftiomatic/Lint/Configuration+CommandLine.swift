@@ -1,4 +1,3 @@
-import CollectionConcurrencyKit
 import Foundation
 import SourceKittenFramework
 
@@ -18,7 +17,8 @@ private func readFilesFromScriptInputFiles() throws(SwiftLintError) -> [SwiftLin
             let environment = ProcessInfo.processInfo.environment
             let variable = "SCRIPT_INPUT_FILE_\(fileNumber)"
             guard let path = environment[variable] else {
-                throw SwiftLintError.usageError(description: "Environment variable not set: \(variable)")
+                throw SwiftLintError
+                    .usageError(description: "Environment variable not set: \(variable)")
             }
             if path.bridge().isSwiftFile() {
                 return SwiftLintFile(pathDeferringReading: path)
@@ -39,13 +39,15 @@ private func readFilesFromScriptInputFileLists() throws(SwiftLintError) -> [Swif
             let environment = ProcessInfo.processInfo.environment
             let variable = "SCRIPT_INPUT_FILE_LIST_\(fileNumber)"
             guard let path = environment[variable] else {
-                throw SwiftLintError.usageError(description: "Environment variable not set: \(variable)")
+                throw SwiftLintError
+                    .usageError(description: "Environment variable not set: \(variable)")
             }
             if path.bridge().pathExtension == "xcfilelist" {
                 guard let fileContents = FileManager.default.contents(atPath: path),
                       let textContents = String(data: fileContents, encoding: .utf8)
                 else {
-                    throw SwiftLintError.usageError(description: "Could not read file list at: \(path)")
+                    throw SwiftLintError
+                        .usageError(description: "Could not read file list at: \(path)")
                 }
                 textContents.enumerateLines { line, _ in
                     if line.isSwiftFile() {
@@ -71,9 +73,9 @@ private func fileCount(from envVar: String) throws(SwiftLintError) -> Int {
 }
 
 #if os(Linux) || os(Windows)
-    private func autoreleasepool<T>(block: () -> T) -> T {
-        block()
-    }
+private func autoreleasepool<T>(block: () -> T) -> T {
+    block()
+}
 #endif
 
 extension Configuration {
@@ -83,33 +85,45 @@ extension Configuration {
         let files = try Signposts.record(name: "Configuration.VisitLintableFiles.GetFiles") {
             try getFiles(with: visitor)
         }
-        let groupedFiles = try Signposts.record(name: "Configuration.VisitLintableFiles.GroupFiles") {
-            try groupFiles(files, visitor: visitor)
-        }
-        let lintersForFile = Signposts.record(name: "Configuration.VisitLintableFiles.LintersForFile") {
-            groupedFiles.map { file in
-                linters(for: [file.key: file.value], visitor: visitor)
+        let groupedFiles = try Signposts
+            .record(name: "Configuration.VisitLintableFiles.GroupFiles") {
+                try groupFiles(files, visitor: visitor)
             }
-        }
+        let lintersForFile = Signposts
+            .record(name: "Configuration.VisitLintableFiles.LintersForFile") {
+                groupedFiles.map { file in
+                    linters(for: [file.key: file.value], visitor: visitor)
+                }
+            }
         let duplicateFileNames = Signposts.record(
-            name: "Configuration.VisitLintableFiles.DuplicateFileNames"
+            name: "Configuration.VisitLintableFiles.DuplicateFileNames",
         ) {
             lintersForFile.map(\.duplicateFileNames)
         }
         let collected = await Signposts.record(name: "Configuration.VisitLintableFiles.Collect") {
-            await zip(lintersForFile, duplicateFileNames).asyncMap { linters, duplicateFileNames in
-                await collect(
+            var results = [([CollectedLinter], Set<String>)]()
+            for (linters, duplicateFileNames) in zip(lintersForFile, duplicateFileNames) {
+                let result = await collect(
                     linters: linters, visitor: visitor, storage: storage,
-                    duplicateFileNames: duplicateFileNames
+                    duplicateFileNames: duplicateFileNames,
                 )
+                results.append(result)
             }
+            return results
         }
         let result = await Signposts.record(name: "Configuration.VisitLintableFiles.Visit") {
-            await collected.asyncMap { linters, duplicateFileNames in
-                await visit(linters: linters, visitor: visitor, duplicateFileNames: duplicateFileNames)
+            var files = [[SwiftLintFile]]()
+            for (linters, duplicateFileNames) in collected {
+                let visited = await visit(
+                    linters: linters,
+                    visitor: visitor,
+                    duplicateFileNames: duplicateFileNames,
+                )
+                files.append(visited)
             }
+            return files
         }
-        return result.flatMap(\.self)
+        return result.flatMap { $0 }
     }
 
     private func groupFiles(_ files: [SwiftLintFile], visitor: LintableFilesVisitor)
@@ -119,7 +133,7 @@ extension Configuration {
         if files.isEmpty, !visitor.allowZeroLintableFiles {
             throw .usageError(
                 description:
-                "No lintable files found at paths: '\(visitor.options.paths.joined(separator: ", "))'"
+                "No lintable files found at paths: '\(visitor.options.paths.joined(separator: ", "))'",
             )
         }
 
@@ -129,7 +143,8 @@ extension Configuration {
 
             // Files whose configuration specifies they should be excluded will be skipped
             let shouldSkip = fileConfiguration.excludedPaths.contains { excludedRelativePath in
-                let excludedPath = fileConfigurationRootPath.appendingPathComponent(excludedRelativePath)
+                let excludedPath = fileConfigurationRootPath
+                    .appendingPathComponent(excludedRelativePath)
                 let filePathComponents = file.path?.bridge().pathComponents ?? []
                 let excludedPathComponents = excludedPath.bridge().pathComponents
                 return filePathComponents.starts(with: excludedPathComponents)
@@ -146,7 +161,9 @@ extension Configuration {
         }
 
         var pathComponents = path.bridge().pathComponents
-        for component in rootDirectory.bridge().pathComponents where pathComponents.first == component {
+        for component in rootDirectory.bridge().pathComponents
+            where pathComponents.first == component
+        {
             pathComponents.removeFirst()
         }
 
@@ -155,7 +172,7 @@ extension Configuration {
 
     private func linters(
         for filesPerConfiguration: [Configuration: [SwiftLintFile]],
-        visitor: LintableFilesVisitor
+        visitor: LintableFilesVisitor,
     ) -> [Linter] {
         let fileCount = filesPerConfiguration.reduce(0) { $0 + $1.value.count }
 
@@ -177,7 +194,7 @@ extension Configuration {
         linters: [Linter],
         visitor: LintableFilesVisitor,
         storage: RuleStorage,
-        duplicateFileNames: Set<String>
+        duplicateFileNames: Set<String>,
     ) async -> ([CollectedLinter], Set<String>) {
         let counter = CounterActor()
         let total = linters.filter(\.isCollecting).count
@@ -192,7 +209,7 @@ extension Configuration {
                     await progress.printNext()
                 } else if let filePath = linter.file.path {
                     let outputFilename = self.outputFilename(
-                        for: filePath, duplicateFileNames: duplicateFileNames
+                        for: filePath, duplicateFileNames: duplicateFileNames,
                     )
                     let collected = await counter.next()
                     if skipFile {
@@ -200,7 +217,7 @@ extension Configuration {
                             """
                             Skipping '\(outputFilename)' (\(collected)/\(total)) \
                             because its compiler arguments could not be found
-                            """
+                            """,
                         ).print()
                     } else {
                         queuedPrintError("Collecting '\(outputFilename)' (\(collected)/\(total))")
@@ -217,16 +234,32 @@ extension Configuration {
             }
         }
 
-        let collectedLinters =
-            await visitor.parallel
-                ? linters.concurrentCompactMap(collect) : linters.asyncCompactMap(collect)
+        let collectedLinters: [CollectedLinter]
+        if visitor.parallel {
+            collectedLinters = await withTaskGroup(of: CollectedLinter?.self) { group in
+                for linter in linters {
+                    group.addTask { await collect(linter) }
+                }
+                var results = [CollectedLinter]()
+                for await result in group {
+                    if let result { results.append(result) }
+                }
+                return results
+            }
+        } else {
+            var results = [CollectedLinter]()
+            for linter in linters {
+                if let result = await collect(linter) { results.append(result) }
+            }
+            collectedLinters = results
+        }
         return (collectedLinters, duplicateFileNames)
     }
 
     private func visit(
         linters: [CollectedLinter],
         visitor: LintableFilesVisitor,
-        duplicateFileNames: Set<String>
+        duplicateFileNames: Set<String>,
     ) async -> [SwiftLintFile] {
         let counter = CounterActor()
         let progress = ProgressBar(count: linters.count)
@@ -239,24 +272,44 @@ extension Configuration {
                     await progress.printNext()
                 } else if let filePath = linter.file.path {
                     let outputFilename = self.outputFilename(
-                        for: filePath, duplicateFileNames: duplicateFileNames
+                        for: filePath, duplicateFileNames: duplicateFileNames,
                     )
                     let visited = await counter.next()
                     queuedPrintError(
-                        "\(visitor.options.capitalizedVerb) '\(outputFilename)' (\(visited)/\(linters.count))"
+                        "\(visitor.options.capitalizedVerb) '\(outputFilename)' (\(visited)/\(linters.count))",
                     )
                 }
             }
 
-            await Signposts.record(name: "Configuration.Visit", span: .file(linter.file.path ?? "")) {
+            await Signposts.record(
+                name: "Configuration.Visit",
+                span: .file(linter.file.path ?? ""),
+            ) {
                 await visitor.block(linter)
             }
             return linter.file
         }
-        return await visitor.parallel ? linters.concurrentMap(visit) : linters.asyncMap(visit)
+        if visitor.parallel {
+            return await withTaskGroup(of: SwiftLintFile.self) { group in
+                for linter in linters {
+                    group.addTask { await visit(linter) }
+                }
+                var results = [SwiftLintFile]()
+                for await result in group {
+                    results.append(result)
+                }
+                return results
+            }
+        } else {
+            var results = [SwiftLintFile]()
+            for linter in linters {
+                results.append(await visit(linter))
+            }
+            return results
+        }
     }
 
-    fileprivate func getFiles(with visitor: LintableFilesVisitor) throws(SwiftLintError)
+    private func getFiles(with visitor: LintableFilesVisitor) throws(SwiftLintError)
         -> [SwiftLintFile]
     {
         let options = visitor.options
@@ -277,7 +330,7 @@ extension Configuration {
             }
             let scriptInputPaths = files.compactMap(\.path)
             return filteredPaths(
-                in: scriptInputPaths, excludeByPrefix: visitor.options.useExcludingByPrefix
+                in: scriptInputPaths, excludeByPrefix: visitor.options.useExcludingByPrefix,
             )
             .map(SwiftLintFile.init(pathDeferringReading:))
         }
@@ -295,7 +348,7 @@ extension Configuration {
             self.lintableFiles(
                 inPath: $0,
                 forceExclude: visitor.options.forceExclude,
-                excludeByPrefix: visitor.options.useExcludingByPrefix
+                excludeByPrefix: visitor.options.useExcludingByPrefix,
             )
         }
     }
@@ -304,12 +357,12 @@ extension Configuration {
         options: LintOrAnalyzeOptions,
         cache: LinterCache? = nil,
         storage: RuleStorage,
-        visitorBlock: @escaping (CollectedLinter) async -> Void
+        visitorBlock: @escaping (CollectedLinter) async -> Void,
     ) async throws -> [SwiftLintFile] {
         let visitor = try LintableFilesVisitor.create(
             options, cache: cache,
             allowZeroLintableFiles: allowZeroLintableFiles,
-            block: visitorBlock
+            block: visitorBlock,
         )
         return try await visitLintableFiles(with: visitor, storage: storage)
     }
@@ -321,7 +374,7 @@ extension Configuration {
             configurationFiles: options.configurationFiles,
             enableAllRules: options.enableAllRules,
             onlyRule: options.onlyRule,
-            cachePath: options.cachePath
+            cachePath: options.cachePath,
         )
     }
 }
@@ -331,7 +384,7 @@ private struct DuplicateCollector {
     var duplicates = Set<String>()
 }
 
-private extension Collection where Element == Linter {
+private extension Collection<Linter> {
     var duplicateFileNames: Set<String> {
         let collector = reduce(into: DuplicateCollector()) { result, linter in
             if let filename = linter.file.path?.bridge().lastPathComponent {

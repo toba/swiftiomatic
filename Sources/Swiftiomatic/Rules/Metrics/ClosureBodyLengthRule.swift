@@ -4,7 +4,7 @@ struct ClosureBodyLengthRule: Rule {
     private static let defaultWarningThreshold = 30
 
     var configuration = SeverityLevelsConfiguration<Self>(
-        warning: Self.defaultWarningThreshold, error: 100
+        warning: Self.defaultWarningThreshold, error: 100,
     )
 
     static let description = RuleDescription(
@@ -18,7 +18,7 @@ struct ClosureBodyLengthRule: Rule {
         """,
         kind: .metrics,
         nonTriggeringExamples: ClosureBodyLengthRuleExamples.nonTriggeringExamples,
-        triggeringExamples: ClosureBodyLengthRuleExamples.triggeringExamples
+        triggeringExamples: ClosureBodyLengthRuleExamples.triggeringExamples,
     )
 }
 
@@ -37,7 +37,7 @@ private extension ClosureBodyLengthRule {
                 leftBrace: node.leftBrace,
                 rightBrace: node.rightBrace,
                 violationNode: node.leftBrace,
-                objectName: "Closure"
+                objectName: "Closure",
             )
         }
     }

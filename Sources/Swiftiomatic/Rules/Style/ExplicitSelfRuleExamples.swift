@@ -8,7 +8,7 @@ enum ExplicitSelfRuleExamples {
                     self.f1()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -18,7 +18,7 @@ enum ExplicitSelfRuleExamples {
                     _ = self.p1
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -39,7 +39,7 @@ enum ExplicitSelfRuleExamples {
             func f1() {
                 A(p1: 10).$p1
             }
-            """
+            """,
         ),
     ]
 
@@ -52,7 +52,7 @@ enum ExplicitSelfRuleExamples {
                     ↓f1()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -62,7 +62,7 @@ enum ExplicitSelfRuleExamples {
                     _ = ↓p1
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -72,7 +72,7 @@ enum ExplicitSelfRuleExamples {
                     ↓f1(a: 0)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -93,7 +93,7 @@ enum ExplicitSelfRuleExamples {
             func f1() {
                 A(p1: 10).$p1
             }
-            """
+            """,
         ),
     ]
 
@@ -106,7 +106,7 @@ enum ExplicitSelfRuleExamples {
                     ↓f1()
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -116,7 +116,7 @@ enum ExplicitSelfRuleExamples {
                         self.f1()
                     }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -126,7 +126,7 @@ enum ExplicitSelfRuleExamples {
                     _ = ↓p1
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -136,7 +136,7 @@ enum ExplicitSelfRuleExamples {
                         _ = self.p1
                     }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -146,7 +146,7 @@ enum ExplicitSelfRuleExamples {
                     ↓f1(a: 0)
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -156,7 +156,7 @@ enum ExplicitSelfRuleExamples {
                         self.f1(a: 0)
                     }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -177,7 +177,7 @@ enum ExplicitSelfRuleExamples {
             func f1() {
                 A(p1: 10).$p1
             }
-            """
+            """,
         ): Example(
             """
             @propertyWrapper
@@ -197,7 +197,7 @@ enum ExplicitSelfRuleExamples {
             func f1() {
                 A(p1: 10).$p1
             }
-            """
+            """,
         ),
     ]
 }

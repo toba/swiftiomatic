@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct CommaRule: CorrectableRule, SourceKitFreeRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -21,7 +21,7 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
                 """
                 kvcStringBuffer.advanced(by: rootKVCLength)
                   .storeBytes(of: 0x2E /* '.' */, as: CChar.self)
-                """
+                """,
             ),
             Example(
                 """
@@ -29,7 +29,7 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
                   /// appends after an existing message ("<expectation> (use beNil() to match nils)")
                   case appends(ExpectationMessage, /* Appended Message */ String)
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -46,7 +46,7 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
                   value: a.identifier.flatMap { Int64($0) }↓ ,
                   reason: Self.abcd()
                 )
-                """
+                """,
             ),
             Example(
                 """
@@ -54,16 +54,24 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
                           message: My.Custom.message↓ ,
                           another: parameter, doIt: true,
                           alignment: .center)
-                """
+                """,
             ),
             Example(#"Logger.logError("Hat is too large"↓,  info: [])"#),
         ],
         corrections: [
-            Example("func abc(a: String↓,b: String) {}"): Example("func abc(a: String, b: String) {}"),
-            Example("abc(a: \"string\"↓,b: \"string\""): Example("abc(a: \"string\", b: \"string\""),
-            Example("abc(a: \"string\"↓  ,  b: \"string\""): Example("abc(a: \"string\", b: \"string\""),
+            Example("func abc(a: String↓,b: String) {}"): Example(
+                "func abc(a: String, b: String) {}",
+            ),
+            Example("abc(a: \"string\"↓,b: \"string\""): Example(
+                "abc(a: \"string\", b: \"string\"",
+            ),
+            Example("abc(a: \"string\"↓  ,  b: \"string\""): Example(
+                "abc(a: \"string\", b: \"string\"",
+            ),
             Example("enum a { case a↓  ,b }"): Example("enum a { case a, b }"),
-            Example("let a = [1↓,1]\nlet b = 1\nf(1, b)"): Example("let a = [1, 1]\nlet b = 1\nf(1, b)"),
+            Example("let a = [1↓,1]\nlet b = 1\nf(1, b)"): Example(
+                "let a = [1, 1]\nlet b = 1\nf(1, b)",
+            ),
             Example("let a = [1↓,1↓,1↓,1]"): Example("let a = [1, 1, 1, 1]"),
             Example(
                 """
@@ -73,7 +81,7 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
                   value: a.identifier.flatMap { Int64($0) }↓ ,
                   reason: Self.abcd()
                 )
-                """
+                """,
             ): Example(
                 """
                 Foo(
@@ -82,7 +90,7 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
                   value: a.identifier.flatMap { Int64($0) },
                   reason: Self.abcd()
                 )
-                """
+                """,
             ),
             Example(
                 """
@@ -90,18 +98,18 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
                           message: My.Custom.message↓ ,
                           another: parameter, doIt: true,
                           alignment: .center)
-                """
+                """,
             ): Example(
                 """
                 return Foo(bar: .baz, title: fuzz,
                           message: My.Custom.message,
                           another: parameter, doIt: true,
                           alignment: .center)
-                """
+                """,
             ),
             Example(#"Logger.logError("Hat is too large"↓,  info: [])"#):
                 Example(#"Logger.logError("Hat is too large", info: [])"#),
-        ]
+        ],
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -109,7 +117,7 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, byteOffset: $0.0.location)
+                location: Location(file: file, byteOffset: $0.0.location),
             )
         }
     }
@@ -124,18 +132,26 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
                     if current.tokenKind != .comma {
                         return nil
                     }
-                    if !previous.trailingTrivia.isEmpty, !previous.trailingTrivia.containsBlockComments() {
+                    if !previous.trailingTrivia.isEmpty,
+                       !previous.trailingTrivia.containsBlockComments()
+                    {
                         let start = ByteCount(previous.endPositionBeforeTrailingTrivia)
                         let end = ByteCount(current.endPosition)
                         let nextIsNewline = next.leadingTrivia.containsNewlines()
-                        return (ByteRange(location: start, length: end - start), shouldAddSpace: !nextIsNewline)
+                        return (
+                            ByteRange(location: start, length: end - start),
+                            shouldAddSpace: !nextIsNewline,
+                        )
                     }
                     if !current.trailingTrivia.starts(with: [.spaces(1)]),
                        !next.leadingTrivia.containsNewlines()
                     {
                         let start = ByteCount(current.position)
                         let end = ByteCount(next.positionAfterSkippingLeadingTrivia)
-                        return (ByteRange(location: start, length: end - start), shouldAddSpace: true)
+                        return (
+                            ByteRange(location: start, length: end - start),
+                            shouldAddSpace: true,
+                        )
                     }
                     return nil
                 }
@@ -148,10 +164,13 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
                     file.stringView
                         .byteRangeToNSRange(byteRange)
                         .flatMap { ($0, shouldAddSpace) }
-                }
+                },
         )
 
-        let violatingRanges = file.ruleEnabled(violatingRanges: Array(initialNSRanges.keys), for: self)
+        let violatingRanges = file.ruleEnabled(
+            violatingRanges: Array(initialNSRanges.keys),
+            for: self,
+        )
         guard violatingRanges.isNotEmpty else {
             return 0
         }
@@ -161,7 +180,7 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
             let contentsNSString = contents.bridge()
             let shouldAddSpace = initialNSRanges[range] ?? true
             contents = contentsNSString.replacingCharacters(
-                in: range, with: ",\(shouldAddSpace ? " " : "")"
+                in: range, with: ",\(shouldAddSpace ? " " : "")",
             )
         }
         file.write(contents)

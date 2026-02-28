@@ -1,9 +1,9 @@
-import ArgumentParser
 import Foundation
+import ArgumentParser
 
 struct Lint: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Lint Swift source files using SwiftLint rules"
+        abstract: "Lint Swift source files using SwiftLint rules",
     )
 
     @Argument(help: "Paths to lint (files or directories)")
@@ -15,7 +15,7 @@ struct Lint: AsyncParsableCommand {
     @Option(
         name: .long,
         help:
-        "Reporter: xcode, json, csv, checkstyle, codeclimate, emoji, github-actions-logging, gitlabJUnit, html, junit, markdown, relative-path, sonarqube, summary"
+        "Reporter: xcode, json, csv, checkstyle, codeclimate, emoji, github-actions-logging, gitlabJUnit, html, junit, markdown, relative-path, sonarqube, summary",
     )
     var reporter: String?
 
@@ -79,7 +79,7 @@ struct Lint: AsyncParsableCommand {
             disableSourceKit: noSourcekit,
             compilerLogPath: nil,
             compileCommands: nil,
-            checkForUpdates: false
+            checkForUpdates: false,
         )
 
         try await LintOrAnalyzeCommand.run(options)

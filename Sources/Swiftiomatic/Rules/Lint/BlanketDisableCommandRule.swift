@@ -39,14 +39,14 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
                 """
                 // swiftlint:disable unused_import
                 // swiftlint:enable unused_import
-                """
+                """,
             ),
             Example(
                 """
                 // swiftlint:disable unused_import unused_declaration
                 // swiftlint:enable unused_import
                 // swiftlint:enable unused_declaration
-                """
+                """,
             ),
             Example("// swiftlint:disable:this unused_import"),
             Example("// swiftlint:disable:next unused_import"),
@@ -58,22 +58,22 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
                 """
                 // swiftlint:disable unused_import ↓unused_declaration
                 // swiftlint:enable unused_import
-                """
+                """,
             ),
             Example(
                 """
                 // swiftlint:disable unused_import
                 // swiftlint:disable ↓unused_import
                 // swiftlint:enable unused_import
-                """
+                """,
             ),
             Example(
                 """
                 // swiftlint:enable ↓unused_import
-                """
+                """,
             ),
             Example("// swiftlint:disable all"),
-        ].skipWrappingInCommentTests().skipDisableCommandTests()
+        ].skipWrappingInCommentTests().skipDisableCommandTests(),
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -86,7 +86,7 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
                 violations += validateAlreadyDisabledRules(
                     for: command,
                     in: file,
-                    disabledRuleIdentifiers: disabledRuleIdentifiers
+                    disabledRuleIdentifiers: disabledRuleIdentifiers,
                 )
             }
 
@@ -94,7 +94,7 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
                 violations += validateAlreadyEnabledRules(
                     for: command,
                     in: file,
-                    disabledRuleIdentifiers: disabledRuleIdentifiers
+                    disabledRuleIdentifiers: disabledRuleIdentifiers,
                 )
             }
 
@@ -108,14 +108,15 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
             }
             if command.action == .enable {
                 disabledRuleIdentifiers.subtract(command.ruleIdentifiers)
-                command.ruleIdentifiers.forEach { ruleIdentifierToCommandMap.removeValue(forKey: $0) }
+                command.ruleIdentifiers
+                    .forEach { ruleIdentifierToCommandMap.removeValue(forKey: $0) }
             }
         }
 
         violations += validateBlanketDisables(
             in: file,
             disabledRuleIdentifiers: disabledRuleIdentifiers,
-            ruleIdentifierToCommandMap: ruleIdentifierToCommandMap
+            ruleIdentifierToCommandMap: ruleIdentifierToCommandMap,
         )
         violations += validateAlwaysBlanketDisable(file: file)
 
@@ -126,10 +127,11 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
         for command: Command,
         ruleIdentifier: RuleIdentifier,
         in file: SwiftLintFile,
-        reason: String
+        reason: String,
     ) -> StyleViolation {
         violation(
-            for: command, ruleIdentifier: ruleIdentifier.stringRepresentation, in: file, reason: reason
+            for: command, ruleIdentifier: ruleIdentifier.stringRepresentation, in: file,
+            reason: reason,
         )
     }
 
@@ -137,23 +139,23 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
         for command: Command,
         ruleIdentifier: String,
         in file: SwiftLintFile,
-        reason: String
+        reason: String,
     ) -> StyleViolation {
         StyleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
             location: command.location(of: ruleIdentifier, in: file),
-            reason: reason
+            reason: reason,
         )
     }
 
     private func validateAlreadyDisabledRules(
         for command: Command,
         in file: SwiftLintFile,
-        disabledRuleIdentifiers: Set<RuleIdentifier>
+        disabledRuleIdentifiers: Set<RuleIdentifier>,
     ) -> [StyleViolation] {
         let alreadyDisabledRuleIdentifiers = command.ruleIdentifiers.intersection(
-            disabledRuleIdentifiers
+            disabledRuleIdentifiers,
         )
         return alreadyDisabledRuleIdentifiers.map {
             let reason = "The disabled '\($0.stringRepresentation)' rule was already disabled"
@@ -164,9 +166,10 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
     private func validateAlreadyEnabledRules(
         for command: Command,
         in file: SwiftLintFile,
-        disabledRuleIdentifiers: Set<RuleIdentifier>
+        disabledRuleIdentifiers: Set<RuleIdentifier>,
     ) -> [StyleViolation] {
-        let notDisabledRuleIdentifiers = command.ruleIdentifiers.subtracting(disabledRuleIdentifiers)
+        let notDisabledRuleIdentifiers = command.ruleIdentifiers
+            .subtracting(disabledRuleIdentifiers)
         return notDisabledRuleIdentifiers.map {
             let reason = "The enabled '\($0.stringRepresentation)' rule was not disabled"
             return violation(for: command, ruleIdentifier: $0, in: file, reason: reason)
@@ -176,10 +179,10 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
     private func validateBlanketDisables(
         in file: SwiftLintFile,
         disabledRuleIdentifiers: Set<RuleIdentifier>,
-        ruleIdentifierToCommandMap: [RuleIdentifier: Command]
+        ruleIdentifierToCommandMap: [RuleIdentifier: Command],
     ) -> [StyleViolation] {
         let allowedRuleIdentifiers = configuration.allowedRuleIdentifiers.union(
-            configuration.alwaysBlanketDisableRuleIdentifiers
+            configuration.alwaysBlanketDisableRuleIdentifiers,
         )
         return disabledRuleIdentifiers.compactMap { disabledRuleIdentifier in
             if allowedRuleIdentifiers.contains(disabledRuleIdentifier.stringRepresentation) {
@@ -193,7 +196,7 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
                 or re-enable it as soon as possible`
                 """
                 return violation(
-                    for: command, ruleIdentifier: disabledRuleIdentifier, in: file, reason: reason
+                    for: command, ruleIdentifier: disabledRuleIdentifier, in: file, reason: reason,
                 )
             }
             return nil
@@ -208,9 +211,10 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
         }
 
         for command in file.commands {
-            let ruleIdentifiers: Set<String> = Set(command.ruleIdentifiers.map(\.stringRepresentation))
+            let ruleIdentifiers: Set<String> = Set(command.ruleIdentifiers
+                .map(\.stringRepresentation))
             let intersection = ruleIdentifiers.intersection(
-                configuration.alwaysBlanketDisableRuleIdentifiers
+                configuration.alwaysBlanketDisableRuleIdentifiers,
             )
             if command.action == .enable {
                 violations.append(
@@ -218,7 +222,7 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
                         let reason =
                             "The '\($0)' rule applies to the whole file and thus doesn't need to be re-enabled"
                         return violation(for: command, ruleIdentifier: $0, in: file, reason: reason)
-                    }
+                    },
                 )
             } else if command.modifier != nil {
                 violations.append(
@@ -227,7 +231,7 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
                             "The '\($0)' rule applies to the whole file and thus cannot be disabled locally "
                                 + "with 'previous', 'this' or 'next'"
                         return violation(for: command, ruleIdentifier: $0, in: file, reason: reason)
-                    }
+                    },
                 )
             }
         }

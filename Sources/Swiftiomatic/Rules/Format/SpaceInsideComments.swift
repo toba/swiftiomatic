@@ -1,18 +1,10 @@
-//
-//  SpaceInsideComments.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 8/31/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Add space inside comments, taking care not to mangle headerdoc or
     /// carefully preformatted comments, such as star boxes, etc.
     static let spaceInsideComments = FormatRule(
-        help: "Add leading and/or trailing space inside comments."
+        help: "Add leading and/or trailing space inside comments.",
     ) { formatter in
         formatter.forEach(.startOfScope("//")) { i, _ in
             guard case let .commentBody(string)? = formatter.token(at: i + 1),
@@ -20,11 +12,15 @@ extension FormatRule {
             else { return }
             if "/!:".contains(first) {
                 let nextIndex = string.index(after: string.startIndex)
-                if nextIndex < string.endIndex, case let next = string[nextIndex], !" \t/".contains(next) {
+                if nextIndex < string.endIndex, case let next = string[nextIndex],
+                   !" \t/".contains(next)
+                {
                     let string = String(string.first!) + " " + String(string.dropFirst())
                     formatter.replaceToken(at: i + 1, with: .commentBody(string))
                 }
-            } else if !" \t".contains(first), !string.hasPrefix("===") { // Special-case check for swift stdlib codebase
+            } else if !" \t".contains(first),
+                      !string.hasPrefix("===")
+            { // Special-case check for swift stdlib codebase
                 formatter.insert(.space(" "), at: i + 1)
             }
         }

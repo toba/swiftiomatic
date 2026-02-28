@@ -16,7 +16,7 @@ struct SuperfluousDisableCommandRule: SourceKitFreeRule, Sendable {
                 // swiftlint:disable colon
                 let abc:Void
                 // swiftlint:enable colon
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -26,9 +26,9 @@ struct SuperfluousDisableCommandRule: SourceKitFreeRule, Sendable {
                 // swiftlint:disable colon
                 let abc: Void
                 // swiftlint:enable colon
-                """
+                """,
             ),
-        ]
+        ],
     )
 
     func validate(file _: SwiftLintFile) -> [StyleViolation] {

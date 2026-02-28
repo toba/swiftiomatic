@@ -1,11 +1,3 @@
-//
-//  TrailingSpace.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 11/24/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -14,18 +6,20 @@ extension FormatRule {
     static let trailingSpace = FormatRule(
         help: "Remove trailing space at end of a line.",
         orderAfter: [.wrap, .wrapArguments],
-        options: ["trim-whitespace"]
+        options: ["trim-whitespace"],
     ) { formatter in
         formatter.forEach(.space) { i, _ in
             switch formatter.token(at: i + 1) {
-            case nil, .linebreak:
-                if formatter.options.truncateBlankLines || formatter.token(at: i - 1)?.isLinebreak == false {
-                    formatter.removeToken(at: i)
-                }
-            case .stringBody("") where formatter.options.truncateBlankLines:
-                formatter.removeTokens(in: i ... i + 1)
-            default:
-                break
+                case nil, .linebreak:
+                    if formatter.options.truncateBlankLines || formatter.token(at: i - 1)?
+                        .isLinebreak == false
+                    {
+                        formatter.removeToken(at: i)
+                    }
+                case .stringBody("") where formatter.options.truncateBlankLines:
+                    formatter.removeTokens(in: i ... i + 1)
+                default:
+                    break
             }
         }
     } examples: {

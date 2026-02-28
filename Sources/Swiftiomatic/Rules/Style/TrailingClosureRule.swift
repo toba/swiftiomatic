@@ -31,18 +31,19 @@ struct TrailingClosureRule: Rule {
                 if f({ true }), g({ true }) {
                     print("Hello")
                 }
-                """
+                """,
             ),
             Example(
                 """
                 for i in h({ [1,2,3] }) {
                     print(i)
                 }
-                """
+                """,
             ),
             Example("foo.reduce(0, combine: { $0 + 1 })", configuration: onlySingleMutedConfig),
             Example(
-                "offsets.sorted(by: { $0.offset < $1.offset })", configuration: onlySingleMutedConfig
+                "offsets.sorted(by: { $0.offset < $1.offset })",
+                configuration: onlySingleMutedConfig,
             ),
             Example("foo.something(0, { $0 + 1 })", configuration: onlySingleMutedConfig),
         ],
@@ -57,7 +58,7 @@ struct TrailingClosureRule: Rule {
                 for n in list {
                     n.forEach(↓{ print($0) })
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example("foo.map(↓{ $0 + 1 })", configuration: onlySingleMutedConfig),
         ],
@@ -79,25 +80,25 @@ struct TrailingClosureRule: Rule {
                 for n in list {
                     n.forEach(↓{ print($0) })
                 }
-                """
+                """,
             ): Example(
                 """
                 for n in list {
                     n.forEach { print($0) }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 f(a: 1,
                 b: 2,
                 c: { 3 })
-                """
+                """,
             ): Example(
                 """
                 f(a: 1,
                 b: 2) { 3 }
-                """
+                """,
             ),
             Example("foo.map(↓{ $0 + 1 })", configuration: onlySingleMutedConfig):
                 Example("foo.map { $0 + 1 }", configuration: onlySingleMutedConfig),
@@ -108,51 +109,51 @@ struct TrailingClosureRule: Rule {
                 for n in list {
                     n.forEach(↓{ print($0) })
                 }
-                """, configuration: onlySingleMutedConfig
+                """, configuration: onlySingleMutedConfig,
             ): Example(
                 """
                 for n in list {
                     n.forEach { print($0) }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 f(a: 1, // comment
                 b: 2, /* comment */ c: { 3 })
-                """
+                """,
             ): Example(
                 """
                 f(a: 1, // comment
                 b: 2) /* comment */ { 3 }
-                """
+                """,
             ),
             Example(
                 """
                 f(a: 2, c: /* comment */ { 3 } /* comment */)
-                """
+                """,
             ): Example(
                 """
                 f(a: 2) /* comment */ { 3 } /* comment */
-                """
+                """,
             ),
             Example(
                 """
                 f(a: 2, /* comment */ c /* comment */ : /* comment */ { 3 } /* comment */)
-                """
+                """,
             ): Example(
                 """
                 f(a: 2) /* comment */ { 3 } /* comment */
-                """
+                """,
             ),
             Example(
                 """
                 f(a: 2, /* comment1 */ c /* comment2 */ : /* comment3 */ { 3 } /* comment4 */)
-                """
+                """,
             ): Example(
                 """
                 f(a: 2) /* comment1 */ /* comment2 */ /* comment3 */ { 3 } /* comment4 */
-                """
+                """,
             ),
             Example(
                 """
@@ -161,7 +162,7 @@ struct TrailingClosureRule: Rule {
                         return cell
                     }
                 )
-                """
+                """,
             ): Example(
                 """
                 let dataSource = RxTableViewSectionedReloadDataSource(
@@ -169,9 +170,9 @@ struct TrailingClosureRule: Rule {
                         return cell
                     }
                 )
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -263,7 +264,8 @@ private extension FunctionCallExprSyntax {
 
     var lastDistinctClosureParameter: ClosureExprSyntax? {
         // If at least the last two (connected) arguments were ClosureExprSyntax, a violation should not be triggered.
-        guard arguments.count > 1, arguments.dropFirst(arguments.count - 2).allSatisfy(\.isClosureExpr)
+        guard arguments.count > 1,
+              arguments.dropFirst(arguments.count - 2).allSatisfy(\.isClosureExpr)
         else {
             return arguments.last?.expression.as(ClosureExprSyntax.self)
         }
@@ -294,7 +296,10 @@ private extension FunctionCallExprSyntax {
                 .appendingMissingSpace() ?? []
 
         return dropLastArgument()
-            .with(\.trailingClosure, lastDistinctClosureParameter.with(\.leadingTrivia, leadingTrivia))
+            .with(
+                \.trailingClosure,
+                lastDistinctClosureParameter.with(\.leadingTrivia, leadingTrivia),
+            )
             .with(\.calledExpression.trailingTrivia, [])
     }
 

@@ -22,7 +22,7 @@ struct ReturnArrowWhitespaceRule: Rule {
                     -> Int {
                     return 1
                 }
-                """
+                """,
             ),
             Example("typealias SuccessBlock = ((Data) -> Void)"),
         ],
@@ -51,7 +51,7 @@ struct ReturnArrowWhitespaceRule: Rule {
             Example("func abc()\n ↓->  Int {}"): Example("func abc()\n -> Int {}"),
             Example("func abc()↓  ->\n  Int {}"): Example("func abc() ->\n  Int {}"),
             Example("func abc()↓  ->\nInt {}"): Example("func abc() ->\nInt {}"),
-        ]
+        ],
     )
 }
 
@@ -119,7 +119,7 @@ private extension TokenSyntax {
         }
 
         return .init(
-            position: start, correction: .init(start: start, end: end, replacement: correction)
+            position: start, correction: .init(start: start, end: end, replacement: correction),
         )
     }
 }

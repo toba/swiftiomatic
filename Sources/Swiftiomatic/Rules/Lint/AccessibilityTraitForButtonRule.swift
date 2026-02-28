@@ -24,7 +24,7 @@ struct AccessibilityTraitForButtonRule: Rule {
         kind: .lint,
         minSwiftVersion: .fiveDotOne,
         nonTriggeringExamples: AccessibilityTraitForButtonRuleExamples.nonTriggeringExamples,
-        triggeringExamples: AccessibilityTraitForButtonRuleExamples.triggeringExamples
+        triggeringExamples: AccessibilityTraitForButtonRuleExamples.triggeringExamples,
     )
 }
 
@@ -63,8 +63,8 @@ private extension AccessibilityTraitForButtonRule {
                         // Position of .onTapGesture etc.
                         position: node.calledExpression.positionAfterSkippingLeadingTrivia,
                         reason: AccessibilityTraitForButtonRule.description.description,
-                        severity: configuration.severity
-                    )
+                        severity: configuration.severity,
+                    ),
                 )
             }
         }
@@ -84,7 +84,9 @@ private enum AccessibilityButtonTraitDeterminator {
         return isInsideInherentlyExemptingContainer(startingFrom: tapGestureNode)
     }
 
-    private static func hasAccessibilityTraitsInChain(tapGestureNode: FunctionCallExprSyntax) -> Bool {
+    private static func hasAccessibilityTraitsInChain(tapGestureNode: FunctionCallExprSyntax)
+        -> Bool
+    {
         // Check both directions: before the tap gesture (backwards in chain) and after (ancestors in tree)
 
         // 1. Check backwards in the modifier chain (modifiers applied before the tap gesture)
@@ -156,7 +158,7 @@ private enum AccessibilityButtonTraitDeterminator {
     }
 
     private static func isInsideInherentlyExemptingContainer(
-        startingFrom node: FunctionCallExprSyntax
+        startingFrom node: FunctionCallExprSyntax,
     ) -> Bool {
         var currentNode: Syntax? = Syntax(node)
         var depth = 0
@@ -168,14 +170,16 @@ private enum AccessibilityButtonTraitDeterminator {
             }
 
             if let funcCall = currentSyntaxNode.as(FunctionCallExprSyntax.self),
-               let identifier = funcCall.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text,
+               let identifier = funcCall.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName
+               .text,
                ["Button", "Link"].contains(identifier)
             {
                 return true
             }
 
             // Stop if we reach a new View declaration or similar boundary
-            if currentSyntaxNode.is(StructDeclSyntax.self) || currentSyntaxNode.is(ClassDeclSyntax.self)
+            if currentSyntaxNode.is(StructDeclSyntax.self) || currentSyntaxNode
+                .is(ClassDeclSyntax.self)
                 || currentSyntaxNode.is(EnumDeclSyntax.self)
             {
                 break
@@ -189,15 +193,17 @@ private enum AccessibilityButtonTraitDeterminator {
         var currentExpr: ExprSyntax? = expression
 
         // Traverse down if it's a chain of gesture modifiers like .onEnded to find the base gesture.
-        while let memberCall = currentExpr?.as(FunctionCallExprSyntax.self), // e.g. TapGesture().onEnded()
-              let memberAccess = memberCall.calledExpression.as(MemberAccessExprSyntax.self),
-              memberAccess.base != nil
+        while let memberCall = currentExpr?
+            .as(FunctionCallExprSyntax.self), // e.g. TapGesture().onEnded()
+            let memberAccess = memberCall.calledExpression.as(MemberAccessExprSyntax.self),
+            memberAccess.base != nil
         { // Ensure it's a chain like x.method()
             currentExpr = memberAccess.base
         }
 
         guard let gestureCall = currentExpr?.as(FunctionCallExprSyntax.self),
-              let gestureName = gestureCall.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName
+              let gestureName = gestureCall.calledExpression.as(DeclReferenceExprSyntax.self)?
+              .baseName
               .text,
               gestureName == "TapGesture"
         else {
@@ -227,7 +233,8 @@ private extension StructDeclSyntax {
 
 private extension FunctionCallExprSyntax {
     func isSingleTapGestureModifier() -> Bool {
-        guard let calledExpr = calledExpression.as(MemberAccessExprSyntax.self) else { return false }
+        guard let calledExpr = calledExpression.as(MemberAccessExprSyntax.self)
+        else { return false }
         let name = calledExpr.declName.baseName.text
 
         if name == "onTapGesture" {
@@ -242,14 +249,15 @@ private extension FunctionCallExprSyntax {
         if ["gesture", "simultaneousGesture", "highPriorityGesture"].contains(name) {
             guard let firstArgExpression = arguments.first?.expression else { return false }
             return AccessibilityButtonTraitDeterminator.isSingleTapGestureInstance(
-                expression: firstArgExpression
+                expression: firstArgExpression,
             )
         }
         return false
     }
 
     func providesButtonOrLinkTrait() -> Bool {
-        guard let calledExpr = calledExpression.as(MemberAccessExprSyntax.self) else { return false }
+        guard let calledExpr = calledExpression.as(MemberAccessExprSyntax.self)
+        else { return false }
         let name = calledExpr.declName.baseName.text
 
         if name == "accessibilityAddTraits" {
@@ -258,7 +266,8 @@ private extension FunctionCallExprSyntax {
         }
 
         if name == "accessibility" {
-            guard let addTraitsArg = arguments.first(where: { $0.label?.text == "addTraits" }) else {
+            guard let addTraitsArg = arguments.first(where: { $0.label?.text == "addTraits" })
+            else {
                 return false
             }
             return Self.expressionContainsButtonOrLinkTrait(addTraitsArg.expression)
@@ -281,7 +290,8 @@ private extension FunctionCallExprSyntax {
     }
 
     func isAccessibilityHiddenTrue() -> Bool {
-        guard let calledExpr = calledExpression.as(MemberAccessExprSyntax.self) else { return false }
+        guard let calledExpr = calledExpression.as(MemberAccessExprSyntax.self)
+        else { return false }
         let name = calledExpr.declName.baseName.text
 
         if name == "accessibilityHidden" {

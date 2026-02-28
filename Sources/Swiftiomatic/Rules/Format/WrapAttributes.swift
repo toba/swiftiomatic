@@ -1,11 +1,3 @@
-//
-//  WrapAttributes.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 7/26/20.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -15,12 +7,15 @@ extension FormatRule {
             "func-attributes", "type-attributes", "var-attributes", "stored-var-attributes",
             "computed-var-attributes", "complex-attributes", "non-complex-attributes",
         ],
-        sharedOptions: ["linebreaks", "max-width"]
+        sharedOptions: ["linebreaks", "max-width"],
     ) { formatter in
         formatter.forEach(.attribute) { i, _ in
             // Ignore sequential attributes
             guard let endIndex = formatter.endOfAttribute(at: i),
-                  var keywordIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: endIndex),
+                  var keywordIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak,
+                      after: endIndex,
+                  ),
                   formatter.tokens[keywordIndex].isKeyword || formatter.isModifier(at: keywordIndex)
             else {
                 return
@@ -36,27 +31,27 @@ extension FormatRule {
             // Check which `AttributeMode` option to use
             var attributeMode: AttributeMode
             switch formatter.tokens[keywordIndex].string {
-            case "func", "init", "subscript":
-                attributeMode = formatter.options.funcAttributes
-            case "class", "actor", "struct", "enum", "protocol", "extension":
-                attributeMode = formatter.options.typeAttributes
-            case "var", "let":
-                let storedOrComputedAttributeMode: AttributeMode
-                if formatter.isStoredProperty(atIntroducerIndex: keywordIndex) {
-                    storedOrComputedAttributeMode = formatter.options.storedVarAttributes
-                } else {
-                    storedOrComputedAttributeMode = formatter.options.computedVarAttributes
-                }
+                case "func", "init", "subscript":
+                    attributeMode = formatter.options.funcAttributes
+                case "class", "actor", "struct", "enum", "protocol", "extension":
+                    attributeMode = formatter.options.typeAttributes
+                case "var", "let":
+                    let storedOrComputedAttributeMode: AttributeMode
+                    if formatter.isStoredProperty(atIntroducerIndex: keywordIndex) {
+                        storedOrComputedAttributeMode = formatter.options.storedVarAttributes
+                    } else {
+                        storedOrComputedAttributeMode = formatter.options.computedVarAttributes
+                    }
 
-                // If the relevant `storedvarattrs` or `computedvarattrs` option hasn't been configured,
-                // fall back to the previous (now deprecated) `varattributes` option.
-                if storedOrComputedAttributeMode == .preserve {
-                    attributeMode = formatter.options.varAttributes
-                } else {
-                    attributeMode = storedOrComputedAttributeMode
-                }
-            default:
-                return
+                    // If the relevant `storedvarattrs` or `computedvarattrs` option hasn't been configured,
+                    // fall back to the previous (now deprecated) `varattributes` option.
+                    if storedOrComputedAttributeMode == .preserve {
+                        attributeMode = formatter.options.varAttributes
+                    } else {
+                        attributeMode = storedOrComputedAttributeMode
+                    }
+                default:
+                    return
             }
 
             // If the complexAttributes option is configured, it takes precedence over other options
@@ -72,44 +67,54 @@ extension FormatRule {
 
             // Apply the `AttributeMode`
             switch attributeMode {
-            case .preserve:
-                return
-            case .prevLine:
-                // Make sure there's a newline immediately following the attribute
-                if let nextIndex = formatter.index(of: .nonSpaceOrComment, after: endIndex),
-                   formatter.token(at: nextIndex)?.isLinebreak != true
-                {
-                    formatter.insertSpace(formatter.currentIndentForLine(at: i), at: nextIndex)
-                    formatter.insertLinebreak(at: nextIndex)
-                    // Remove any trailing whitespace left on the line with the attributes
-                    if let prevToken = formatter.token(at: nextIndex - 1), prevToken.isSpace {
-                        formatter.removeToken(at: nextIndex - 1)
+                case .preserve:
+                    return
+                case .prevLine:
+                    // Make sure there's a newline immediately following the attribute
+                    if let nextIndex = formatter.index(of: .nonSpaceOrComment, after: endIndex),
+                       formatter.token(at: nextIndex)?.isLinebreak != true
+                    {
+                        formatter.insertSpace(formatter.currentIndentForLine(at: i), at: nextIndex)
+                        formatter.insertLinebreak(at: nextIndex)
+                        // Remove any trailing whitespace left on the line with the attributes
+                        if let prevToken = formatter.token(at: nextIndex - 1), prevToken.isSpace {
+                            formatter.removeToken(at: nextIndex - 1)
+                        }
                     }
-                }
-            case .sameLine:
-                // Make sure there isn't a newline immediately following the attribute
-                if let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: endIndex),
-                   formatter.tokens[(endIndex + 1) ..< nextIndex].contains(where: \.isLinebreak)
-                {
-                    // If unwrapping the attribute causes the line to exceed the max width,
-                    // leave it as-is. The existing formatting is likely better than how
-                    // this would be re-unwrapped by the wrap rule.
-                    let startOfLine = formatter.startOfLine(at: i)
-                    let endOfLine = formatter.endOfLine(at: i)
-                    let startOfNextLine = formatter.startOfLine(at: nextIndex, excludingIndent: true)
-                    let endOfNextLine = formatter.endOfLine(at: nextIndex)
-                    let combinedLine =
-                        formatter.tokens[startOfLine ... endOfLine].map(\.string).joined()
-                            + formatter.tokens[startOfNextLine ..< endOfNextLine].map(\.string).joined()
+                case .sameLine:
+                    // Make sure there isn't a newline immediately following the attribute
+                    if let nextIndex = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak,
+                        after: endIndex,
+                    ),
+                        formatter.tokens[(endIndex + 1) ..< nextIndex]
+                        .contains(where: \.isLinebreak)
+                    {
+                        // If unwrapping the attribute causes the line to exceed the max width,
+                        // leave it as-is. The existing formatting is likely better than how
+                        // this would be re-unwrapped by the wrap rule.
+                        let startOfLine = formatter.startOfLine(at: i)
+                        let endOfLine = formatter.endOfLine(at: i)
+                        let startOfNextLine = formatter.startOfLine(
+                            at: nextIndex,
+                            excludingIndent: true,
+                        )
+                        let endOfNextLine = formatter.endOfLine(at: nextIndex)
+                        let combinedLine =
+                            formatter.tokens[startOfLine ... endOfLine].map(\.string).joined()
+                                + formatter.tokens[startOfNextLine ..< endOfNextLine].map(\.string)
+                                .joined()
 
-                    if formatter.options.maxWidth > 0, combinedLine.count > formatter.options.maxWidth {
-                        return
+                        if formatter.options.maxWidth > 0,
+                           combinedLine.count > formatter.options.maxWidth
+                        {
+                            return
+                        }
+
+                        // Replace the newline with a space so the attribute doesn't
+                        // merge with the next token.
+                        formatter.replaceTokens(in: (endIndex + 1) ..< nextIndex, with: .space(" "))
                     }
-
-                    // Replace the newline with a space so the attribute doesn't
-                    // merge with the next token.
-                    formatter.replaceTokens(in: (endIndex + 1) ..< nextIndex, with: .space(" "))
-                }
             }
         }
     } examples: {
@@ -160,11 +165,17 @@ extension Formatter {
     func isComplexAttribute(at attributeIndex: Int) -> Bool {
         assert(tokens[attributeIndex].isAttribute)
 
-        guard let startOfScopeIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: attributeIndex),
-              tokens[startOfScopeIndex] == .startOfScope("("),
-              let firstTokenInBody = index(of: .nonSpaceOrCommentOrLinebreak, after: startOfScopeIndex),
-              let endOfScopeIndex = endOfScope(at: startOfScopeIndex),
-              firstTokenInBody != endOfScopeIndex
+        guard let startOfScopeIndex = index(
+            of: .nonSpaceOrCommentOrLinebreak,
+            after: attributeIndex,
+        ),
+            tokens[startOfScopeIndex] == .startOfScope("("),
+            let firstTokenInBody = index(
+                of: .nonSpaceOrCommentOrLinebreak,
+                after: startOfScopeIndex,
+            ),
+            let endOfScopeIndex = endOfScope(at: startOfScopeIndex),
+            firstTokenInBody != endOfScopeIndex
         else { return false }
 
         // If the first argument is named with a parameter label, then this is a complex attribute:

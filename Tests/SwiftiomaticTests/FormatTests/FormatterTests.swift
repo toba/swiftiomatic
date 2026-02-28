@@ -1,733 +1,755 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite struct FormatterTests {
-    @Test func removeCurrentTokenWhileEnumerating() {
-        let input: [Token] = [
-            .identifier("foo"),
-            .identifier("bar"),
-            .identifier("baz"),
-        ]
-        var output: [Token] = []
-        let formatter = Formatter(input, options: .default)
-        formatter.forEachToken { i, token in
-            output.append(token)
-            if i == 1 {
-                formatter.removeToken(at: i)
-            }
-        }
-        #expect(output == input)
+  @Test func removeCurrentTokenWhileEnumerating() {
+    let input: [Token] = [
+      .identifier("foo"),
+      .identifier("bar"),
+      .identifier("baz"),
+    ]
+    var output: [Token] = []
+    let formatter = Formatter(input, options: .default)
+    formatter.forEachToken { i, token in
+      output.append(token)
+      if i == 1 {
+        formatter.removeToken(at: i)
+      }
     }
+    #expect(output == input)
+  }
 
-    @Test func removePreviousTokenWhileEnumerating() {
-        let input: [Token] = [
-            .identifier("foo"),
-            .identifier("bar"),
-            .identifier("baz"),
-        ]
-        var output: [Token] = []
-        let formatter = Formatter(input, options: .default)
-        formatter.forEachToken { i, token in
-            output.append(token)
-            if i == 1 {
-                formatter.removeToken(at: i - 1)
-            }
-        }
-        #expect(output == input)
+  @Test func removePreviousTokenWhileEnumerating() {
+    let input: [Token] = [
+      .identifier("foo"),
+      .identifier("bar"),
+      .identifier("baz"),
+    ]
+    var output: [Token] = []
+    let formatter = Formatter(input, options: .default)
+    formatter.forEachToken { i, token in
+      output.append(token)
+      if i == 1 {
+        formatter.removeToken(at: i - 1)
+      }
     }
+    #expect(output == input)
+  }
 
-    @Test func removeNextTokenWhileEnumerating() {
-        let input: [Token] = [
-            .identifier("foo"),
-            .identifier("bar"),
-            .identifier("baz"),
-        ]
-        var output: [Token] = []
-        let formatter = Formatter(input, options: .default)
-        formatter.forEachToken { i, token in
-            output.append(token)
-            if i == 1 {
-                formatter.removeToken(at: i + 1)
-            }
-        }
-        #expect(output == [Token](input.dropLast()))
+  @Test func removeNextTokenWhileEnumerating() {
+    let input: [Token] = [
+      .identifier("foo"),
+      .identifier("bar"),
+      .identifier("baz"),
+    ]
+    var output: [Token] = []
+    let formatter = Formatter(input, options: .default)
+    formatter.forEachToken { i, token in
+      output.append(token)
+      if i == 1 {
+        formatter.removeToken(at: i + 1)
+      }
     }
+    #expect(output == [Token](input.dropLast()))
+  }
 
-    @Test func indexBeforeComment() {
-        let input: [Token] = [
-            .identifier("foo"),
-            .startOfScope("//"),
-            .space(" "),
-            .commentBody("bar"),
-            .linebreak("\n", 1),
-        ]
-        let formatter = Formatter(input, options: .default)
-        let index = formatter.index(before: 4, where: { !$0.isSpaceOrComment })
-        #expect(index == 0)
-    }
+  @Test func indexBeforeComment() {
+    let input: [Token] = [
+      .identifier("foo"),
+      .startOfScope("//"),
+      .space(" "),
+      .commentBody("bar"),
+      .linebreak("\n", 1),
+    ]
+    let formatter = Formatter(input, options: .default)
+    let index = formatter.index(before: 4, where: { !$0.isSpaceOrComment })
+    #expect(index == 0)
+  }
 
-    @Test func indexBeforeMultilineComment() {
-        let input: [Token] = [
-            .identifier("foo"),
-            .startOfScope("/*"),
-            .space(" "),
-            .commentBody("bar"),
-            .space(" "),
-            .endOfScope("*/"),
-            .linebreak("\n", 1),
-        ]
-        let formatter = Formatter(input, options: .default)
-        let index = formatter.index(before: 6, where: { !$0.isSpaceOrComment })
-        #expect(index == 0)
-    }
+  @Test func indexBeforeMultilineComment() {
+    let input: [Token] = [
+      .identifier("foo"),
+      .startOfScope("/*"),
+      .space(" "),
+      .commentBody("bar"),
+      .space(" "),
+      .endOfScope("*/"),
+      .linebreak("\n", 1),
+    ]
+    let formatter = Formatter(input, options: .default)
+    let index = formatter.index(before: 6, where: { !$0.isSpaceOrComment })
+    #expect(index == 0)
+  }
 
-    // MARK: enable/disable directives
+  // MARK: enable/disable directives
 
-    @Test func disableRule() {
-        let input = "//swiftformat:disable spaceAroundOperators\nlet foo : Int=5;"
-        let output = "// swiftformat:disable spaceAroundOperators\nlet foo : Int=5\n"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
+  @Test func disableRule() throws {
+    let input = "//swiftformat:disable spaceAroundOperators\nlet foo : Int=5;"
+    let output = "// swiftformat:disable spaceAroundOperators\nlet foo : Int=5\n"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
 
-    @Test func directiveInMiddleOfComment() {
-        let input = "//fixme: swiftformat:disable spaceAroundOperators - bug\nlet foo : Int=5;"
-        let output = "// FIXME: swiftformat:disable spaceAroundOperators - bug\nlet foo : Int=5\n"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
+  @Test func directiveInMiddleOfComment() throws {
+    let input = "//fixme: swiftformat:disable spaceAroundOperators - bug\nlet foo : Int=5;"
+    let output = "// FIXME: swiftformat:disable spaceAroundOperators - bug\nlet foo : Int=5\n"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
 
-    @Test func disableAndReEnableRules() {
-        let input = """
-        // swiftformat:disable indent blankLinesBetweenScopes redundantSelf
-        class Foo {
-        let _foo = "foo"
-        func foo() {
-        print(self._foo)
-        }
-        }
-        // swiftformat:enable indent redundantSelf
-        class Bar {
-        let _bar = "bar"
-        func bar() {
-        print(_bar)
-        }
-        }
-        """
-        let output = """
-        // swiftformat:disable indent blankLinesBetweenScopes redundantSelf
-        class Foo {
-        let _foo = "foo"
-        func foo() {
-        print(self._foo)
-        }
-        }
-        // swiftformat:enable indent redundantSelf
-        class Bar {
-            let _bar = "bar"
-            func bar() {
-                print(_bar)
-            }
-        }
-        """
-        #expect(try format(input + "\n", rules: FormatRules.default).output == output + "\n")
-    }
-
-    @Test func disableAllRules() {
-        let input = "//swiftformat:disable all\nlet foo : Int=5;"
-        #expect(try format(input, rules: FormatRules.default).output == input)
-    }
-
-    @Test func disableAndReEnableAllRules() {
-        let input = """
-        // swiftformat:disable all
-        class Foo {
-        let _foo = "foo"
-        func foo() {
-        print(self._foo)
-        }
-        }
-        // swiftformat:enable all
-        class Bar {
-        let _bar = "bar"
-        func bar() {
-        print(_bar)
-        }
-        }
-        """
-        let output = """
-        // swiftformat:disable all
-        class Foo {
-        let _foo = "foo"
-        func foo() {
-        print(self._foo)
-        }
-        }
-        // swiftformat:enable all
-        class Bar {
-            let _bar = "bar"
-            func bar() {
-                print(_bar)
-            }
-        }
-        """
-        #expect(try format(input + "\n", rules: FormatRules.default).output == output + "\n")
-    }
-
-    @Test func disableAllRulesAndReEnableOneRule() {
-        let input = "//swiftformat:disable all\nlet foo : Int=5;\n//swiftformat:enable linebreakAtEndOfFile"
-        let output = "//swiftformat:disable all\nlet foo : Int=5;\n//swiftformat:enable linebreakAtEndOfFile\n"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func disableNext() {
-        let input = "//swiftformat:disable:next all\nlet foo : Int=5;\nlet foo : Int=5;"
-        let output = "// swiftformat:disable:next all\nlet foo : Int=5;\nlet foo: Int = 5\n"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func enableNext() {
-        let input = "//swiftformat:disable all\n//swiftformat:enable:next all\nlet foo : Int=5;\nlet foo : Int=5;"
-        let output = "//swiftformat:disable all\n//swiftformat:enable:next all\nlet foo: Int = 5\nlet foo : Int=5;"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func disableThis() {
-        let input = "let foo : Int=5; // swiftformat:disable:this all\nlet foo : Int=5;"
-        let output = "let foo : Int=5; // swiftformat:disable:this all\nlet foo: Int = 5\n"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func enableThis() {
-        let input = "//swiftformat:disable all\nlet foo : Int=5; //swiftformat:enable:this all\nlet foo : Int=5;"
-        let output = "//swiftformat:disable all\nlet foo: Int = 5 // swiftformat:enable:this all\nlet foo : Int=5;"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func disableRuleWithMultilineComment() {
-        let input = "/*swiftformat:disable spaceAroundOperators*/let foo : Int=5;"
-        let output = "/* swiftformat:disable spaceAroundOperators */ let foo : Int=5\n"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func disableAllRulesWithMultilineComment() {
-        let input = "/*swiftformat:disable all*/let foo : Int=5;"
-        let output = "/*swiftformat:disable all*/let foo : Int=5;"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func disableAndReenableAllRulesWithMultilineComment() {
-        let input = """
-        /*swiftformat:disable all*/let foo : Int=5;/*swiftformat:enable all*/let foo : Int=5;
-        """
-        let output = """
-        /*swiftformat:disable all*/let foo : Int=5; /* swiftformat:enable all */ let foo: Int = 5
-
-        """
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func disableNextWithMultilineComment() {
-        let input = "/*swiftformat:disable:next all*/\nlet foo : Int=5;\nlet foo : Int=5;"
-        let output = "/* swiftformat:disable:next all */\nlet foo : Int=5;\nlet foo: Int = 5\n"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func enableNextWithMultilineComment() {
-        let input = "//swiftformat:disable all\n/*swiftformat:enable:next all*/\nlet foo : Int=5;\nlet foo : Int=5;"
-        let output = "//swiftformat:disable all\n/*swiftformat:enable:next all*/\nlet foo: Int = 5\nlet foo : Int=5;"
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func disableLinewrap() {
-        let input = """
-        // swiftformat:disable all
-        let foo = bar.baz(some: param).quux("a string of some sort")
-        """
-        let options = FormatOptions(maxWidth: 10)
-        #expect(try format(input, rules: FormatRules.default, options: options).output == input)
-    }
-
-    @Test func malformedDirective() {
-        let input = "// swiftformat:disbible all"
-        do {
-            _ = try format(input, rules: FormatRules.default).output
-            Issue.record("Expected error")
-        } catch {
-            #expect("\(error)" == "Unknown directive 'swiftformat:disbible' on line 1")
-        }
-    }
-
-    @Test func malformedDirective2() {
-        let input = "// swiftformat: --disable all"
-        do {
-            _ = try format(input, rules: FormatRules.default).output
-            Issue.record("Expected error")
-        } catch {
-            #expect("\(error)" == "Expected directive after 'swiftformat:' prefix on line 1")
-        }
-    }
-
-    // MARK: options directive
-
-    @Test func allmanOption() {
-        let input = """
-        // swiftformat:options --allman true
-        func foo() {
-            print("bar")
-        }
-
-        """
-        let output = """
-        // swiftformat:options --allman true
-        func foo()
-        {
-            print("bar")
-        }
-
-        """
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func allmanThis() {
-        let input = """
-        func foo() // swiftformat:options:this --allman true
-        {
-            print("bar")
-        }
-
-        func foo()
-        { // swiftformat:options:this --allman true
-            print("bar")
-        }
-
-        """
-        #expect(try format(input, rules: FormatRules.default).output == input)
-    }
-
-    @Test func allmanNext() {
-        let input = """
-        func foo() // swiftformat:options:next --allman true
-        {
-            print("bar")
-        }
-
-        """
-        #expect(try format(input, rules: FormatRules.default).output == input)
-    }
-
-    @Test func allmanPrevious() {
-        let input = """
-        func foo()
-        {
-            // swiftformat:options:previous --allman true
-            print("bar")
-        }
-
-        """
-        #expect(try format(input, rules: FormatRules.default).output == input)
-    }
-
-    @Test func indentNext() {
-        let input = """
-        class Foo {
-            // swiftformat:options:next --indent 2
-            func bar() {
-                print("bar")
-            }
-
-            func baz() {
-                print("bar")
-            }
-        }
-
-        """
-        let output = """
-        class Foo {
-            // swiftformat:options:next --indent 2
-            func bar() {
-              print("bar")
-            }
-
-            func baz() {
-                print("bar")
-            }
-        }
-
-        """
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func swiftVersionNext() {
-        let input = """
-        // swiftformat:options:next --swiftversion 5.2
-        let foo1 = bar.map { $0.foo }
-        let foo2 = bar.map { $0.foo }
-
-        """
-        let output = """
-        // swiftformat:options:next --swiftversion 5.2
-        let foo1 = bar.map(\\.foo)
-        let foo2 = bar.map { $0.foo }
-
-        """
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func cumulativeOptions() {
-        let input = """
-        // swiftformat:options --self insert
-        // swiftformat:options:next --swiftversion 5.2
-        let foo1 = self.map { $0.foo }
-        // swiftformat:options --self remove
-        let foo2 = self.map { $0.foo }
-
-        """
-        let output = """
-        // swiftformat:options --self insert
-        // swiftformat:options:next --swiftversion 5.2
-        let foo1 = self.map(\\.foo)
-        // swiftformat:options --self remove
-        let foo2 = map { $0.foo }
-
-        """
-        #expect(try format(input, rules: FormatRules.default).output == output)
-    }
-
-    @Test func malformedOption() {
-        let input = """
-        // swiftformat:options blooblahbleh
-        """
-        do {
-            _ = try format(input, rules: FormatRules.default).output
-            Issue.record("Expected error")
-        } catch {
-            #expect("\(error)".contains("Unknown option blooblahbleh"))
-        }
-    }
-
-    @Test func invalidOption() {
-        let input = """
-        // swiftformat:options --foobar baz
-        """
-        do {
-            _ = try format(input, rules: FormatRules.default).output
-            Issue.record("Expected error")
-        } catch {
-            #expect("\(error)".contains("Unknown option --foobar"))
-        }
-    }
-
-    @Test func invalidOptionValue() {
-        let input = """
-        // swiftformat:options --indent baz
-        """
-        do {
-            _ = try format(input, rules: FormatRules.default).output
-            Issue.record("Expected error")
-        } catch {
-            #expect("\(error)" == "Unsupported --indent value 'baz' on line 1")
-        }
-    }
-
-    @Test func invalidEnumOptionValue() {
-        let input = """
-        // swiftformat:options --else-position prev-line
-        """
-        do {
-            _ = try format(input, rules: FormatRules.default).output
-            Issue.record("Expected error")
-        } catch {
-            #expect("\(error)" == """
-            Unsupported --else-position value 'prev-line' on line 1. Valid options are "same-line" or "next-line"
-            """)
-        }
-    }
-
-    @Test func invalidEnumOptionValue2() {
-        let input = """
-        // swiftformat:options --else-position next
-        """
-        do {
-            _ = try format(input, rules: FormatRules.default).output
-            Issue.record("Expected error")
-        } catch {
-            #expect("\(error)" == """
-            Unsupported --else-position value 'next' on line 1. Did you mean 'next-line'?
-            """)
-        }
-    }
-
-    @Test func invalidBoolOptionValue() {
-        let input = """
-        // swiftformat:options --allman always
-        """
-        do {
-            _ = try format(input, rules: FormatRules.default).output
-            Issue.record("Expected error")
-        } catch {
-            #expect("\(error)" == """
-            Unsupported --allman value 'always' on line 1. Valid options are "true" or "false"
-            """)
-        }
-    }
-
-    @Test func deprecatedOptionValue() {
-        let input = """
-        // swiftformat:options --ranges spaced
-        """
-        #expect(throws: Never.self) { try format(input, rules: FormatRules.default).output }
-    }
-
-    // MARK: linebreaks
-
-    @Test func linebreakAfterLinebreakReturnsCorrectIndex() {
-        let formatter = Formatter([
-            .linebreak("\n", 1),
-            .linebreak("\n", 1),
-        ])
-        #expect(formatter.linebreakToken(for: 1) == .linebreak("\n", 1))
-    }
-
-    @Test func originalLinePreservedAfterFormatting() {
-        let formatter = Formatter([
-            .identifier("foo"),
-            .space(" "),
-            .startOfScope("{"),
-            .linebreak("\n", 1),
-            .linebreak("\n", 2),
-            .space("    "),
-            .identifier("bar"),
-            .linebreak("\n", 3),
-            .endOfScope("}"),
-        ])
-        FormatRule.blankLinesAtStartOfScope.apply(with: formatter)
-        #expect(formatter.tokens == [
-            .identifier("foo"),
-            .space(" "),
-            .startOfScope("{"),
-            .linebreak("\n", 2),
-            .space("    "),
-            .identifier("bar"),
-            .linebreak("\n", 3),
-            .endOfScope("}"),
-        ])
-    }
-
-    // MARK: Format range
-
-    @Test func codeOutsideRangeNotFormatted() throws {
-        let input = tokenize("""
-        func foo () {
-
-            var  bar = 5
-        }
-        """)
-        for range in [0 ..< 2, 5 ..< 7, 14 ..< 16, 17 ..< 19] {
-            #expect(try sourceCode(
-                for: format(
-                    input,
-                    rules: FormatRules.all,
-                    range: range
-                ).tokens
-            ) == sourceCode(for: input), "range \(range)")
-        }
-        let output1 = tokenize("""
-        func foo () {
-
-            var bar = 5
-        }
-        """)
-        #expect(try format(
-            input,
-            rules: [.consecutiveSpaces],
-            range: 10 ..< 13
-        ).tokens == output1)
-        let output2 = """
-        func foo () {
-            var  bar = 5
-        }
-        """
-        #expect(try sourceCode(for: format(
-            input,
-            rules: [.blankLinesAtStartOfScope],
-            range: 6 ..< 9
-        ).tokens) == output2)
-    }
-
-    // MARK: format line range
-
-    @Test func formattingRange() {
-        let input = """
-        let  badlySpaced1:Int   = 5
-        let   badlySpaced2:Int=5
-        let   badlySpaced3 : Int = 5
-        """
-        let output = """
-        let  badlySpaced1:Int   = 5
-        let badlySpaced2: Int = 5
-        let   badlySpaced3 : Int = 5
-        """
-        #expect(try format(input, lineRange: 2 ... 2).output == output)
-    }
-
-    @Test func formattingRange2() {
-        let input = """
-        enum ImagesToShow {
-        case none
-        case mentioned
-        case all
-        }
-        """
-        let output = """
-        enum ImagesToShow
-        {
-            case none
-        case mentioned
-        case all
-        }
-        """
-        let options = FormatOptions(allmanBraces: true)
-        #expect(try format(input, options: options, lineRange: 1 ... 2).output == output)
-    }
-
-    @Test func formattingRangeNoCrash() {
-        let input = """
-        func foo() {
-          if bar {
-            print(  "foo")
+  @Test func disableAndReEnableRules() throws {
+    let input = """
+      // swiftformat:disable indent blankLinesBetweenScopes redundantSelf
+      class Foo {
+      let _foo = "foo"
+      func foo() {
+      print(self._foo)
+      }
+      }
+      // swiftformat:enable indent redundantSelf
+      class Bar {
+      let _bar = "bar"
+      func bar() {
+      print(_bar)
+      }
+      }
+      """
+    let output = """
+      // swiftformat:disable indent blankLinesBetweenScopes redundantSelf
+      class Foo {
+      let _foo = "foo"
+      func foo() {
+      print(self._foo)
+      }
+      }
+      // swiftformat:enable indent redundantSelf
+      class Bar {
+          let _bar = "bar"
+          func bar() {
+              print(_bar)
           }
-        }
-        """
-        let output = """
-        func foo() {
-          if bar {
-                print("foo")
-            }
-        }
-        """
-        let inputTokens = tokenize(input), outputTokens = tokenize(output)
-        #expect(tokenRange(forLineRange: 3 ... 4, in: inputTokens) == 14 ..< 26)
-        #expect(tokenRange(forLineRange: 3 ... 4, in: outputTokens) == 14 ..< 25)
-        #expect(try format(input, lineRange: 3 ... 4).output == output)
+      }
+      """
+    #expect(try format(input + "\n", rules: FormatRules.default).output == output + "\n")
+  }
+
+  @Test func disableAllRules() throws {
+    let input = "//swiftformat:disable all\nlet foo : Int=5;"
+    #expect(try format(input, rules: FormatRules.default).output == input)
+  }
+
+  @Test func disableAndReEnableAllRules() throws {
+    let input = """
+      // swiftformat:disable all
+      class Foo {
+      let _foo = "foo"
+      func foo() {
+      print(self._foo)
+      }
+      }
+      // swiftformat:enable all
+      class Bar {
+      let _bar = "bar"
+      func bar() {
+      print(_bar)
+      }
+      }
+      """
+    let output = """
+      // swiftformat:disable all
+      class Foo {
+      let _foo = "foo"
+      func foo() {
+      print(self._foo)
+      }
+      }
+      // swiftformat:enable all
+      class Bar {
+          let _bar = "bar"
+          func bar() {
+              print(_bar)
+          }
+      }
+      """
+    #expect(try format(input + "\n", rules: FormatRules.default).output == output + "\n")
+  }
+
+  @Test func disableAllRulesAndReEnableOneRule() throws {
+    let input =
+      "//swiftformat:disable all\nlet foo : Int=5;\n//swiftformat:enable linebreakAtEndOfFile"
+    let output =
+      "//swiftformat:disable all\nlet foo : Int=5;\n//swiftformat:enable linebreakAtEndOfFile\n"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test func disableNext() throws {
+    let input = "//swiftformat:disable:next all\nlet foo : Int=5;\nlet foo : Int=5;"
+    let output = "// swiftformat:disable:next all\nlet foo : Int=5;\nlet foo: Int = 5\n"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test func enableNext() throws {
+    let input =
+      "//swiftformat:disable all\n//swiftformat:enable:next all\nlet foo : Int=5;\nlet foo : Int=5;"
+    let output =
+      "//swiftformat:disable all\n//swiftformat:enable:next all\nlet foo: Int = 5\nlet foo : Int=5;"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test func disableThis() throws {
+    let input = "let foo : Int=5; // swiftformat:disable:this all\nlet foo : Int=5;"
+    let output = "let foo : Int=5; // swiftformat:disable:this all\nlet foo: Int = 5\n"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test func enableThis() throws {
+    let input =
+      "//swiftformat:disable all\nlet foo : Int=5; //swiftformat:enable:this all\nlet foo : Int=5;"
+    let output =
+      "//swiftformat:disable all\nlet foo: Int = 5 // swiftformat:enable:this all\nlet foo : Int=5;"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test func disableRuleWithMultilineComment() throws {
+    let input = "/*swiftformat:disable spaceAroundOperators*/let foo : Int=5;"
+    let output = "/* swiftformat:disable spaceAroundOperators */ let foo : Int=5\n"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test func disableAllRulesWithMultilineComment() throws {
+    let input = "/*swiftformat:disable all*/let foo : Int=5;"
+    let output = "/*swiftformat:disable all*/let foo : Int=5;"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test func disableAndReenableAllRulesWithMultilineComment() throws {
+    let input = """
+      /*swiftformat:disable all*/let foo : Int=5;/*swiftformat:enable all*/let foo : Int=5;
+      """
+    let output = """
+      /*swiftformat:disable all*/let foo : Int=5; /* swiftformat:enable all */ let foo: Int = 5
+
+      """
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test func disableNextWithMultilineComment() throws {
+    let input = "/*swiftformat:disable:next all*/\nlet foo : Int=5;\nlet foo : Int=5;"
+    let output = "/* swiftformat:disable:next all */\nlet foo : Int=5;\nlet foo: Int = 5\n"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test func enableNextWithMultilineComment() throws {
+    let input =
+      "//swiftformat:disable all\n/*swiftformat:enable:next all*/\nlet foo : Int=5;\nlet foo : Int=5;"
+    let output =
+      "//swiftformat:disable all\n/*swiftformat:enable:next all*/\nlet foo: Int = 5\nlet foo : Int=5;"
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test func disableLinewrap() throws {
+    let input = """
+      // swiftformat:disable all
+      let foo = bar.baz(some: param).quux("a string of some sort")
+      """
+    let options = FormatOptions(maxWidth: 10)
+    #expect(try format(input, rules: FormatRules.default, options: options).output == input)
+  }
+
+  @Test func malformedDirective() {
+    let input = "// swiftformat:disbible all"
+    do {
+      _ = try format(input, rules: FormatRules.default).output
+      Issue.record("Expected error")
+    } catch {
+      #expect("\(error)" == "Unknown directive 'swiftformat:disbible' on line 1")
     }
+  }
 
-    // MARK: endOfScope
+  @Test func malformedDirective2() {
+    let input = "// swiftformat: --disable all"
+    do {
+      _ = try format(input, rules: FormatRules.default).output
+      Issue.record("Expected error")
+    } catch {
+      #expect("\(error)" == "Expected directive after 'swiftformat:' prefix on line 1")
+    }
+  }
 
-    @Test func endOfScopeInSwitch() {
-        let formatter = Formatter(tokenize("""
+  // MARK: options directive
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func allmanOption() throws {
+    let input = """
+      // swiftformat:options --allman true
+      func foo() {
+          print("bar")
+      }
+
+      """
+    let output = """
+      // swiftformat:options --allman true
+      func foo()
+      {
+          print("bar")
+      }
+
+      """
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func allmanThis() throws {
+    let input = """
+      func foo() // swiftformat:options:this --allman true
+      {
+          print("bar")
+      }
+
+      func foo()
+      { // swiftformat:options:this --allman true
+          print("bar")
+      }
+
+      """
+    #expect(try format(input, rules: FormatRules.default).output == input)
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func allmanNext() throws {
+    let input = """
+      func foo() // swiftformat:options:next --allman true
+      {
+          print("bar")
+      }
+
+      """
+    #expect(try format(input, rules: FormatRules.default).output == input)
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func allmanPrevious() throws {
+    let input = """
+      func foo()
+      {
+          // swiftformat:options:previous --allman true
+          print("bar")
+      }
+
+      """
+    #expect(try format(input, rules: FormatRules.default).output == input)
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func indentNext() throws {
+    let input = """
+      class Foo {
+          // swiftformat:options:next --indent 2
+          func bar() {
+              print("bar")
+          }
+
+          func baz() {
+              print("bar")
+          }
+      }
+
+      """
+    let output = """
+      class Foo {
+          // swiftformat:options:next --indent 2
+          func bar() {
+            print("bar")
+          }
+
+          func baz() {
+              print("bar")
+          }
+      }
+
+      """
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func swiftVersionNext() throws {
+    let input = """
+      // swiftformat:options:next --swiftversion 5.2
+      let foo1 = bar.map { $0.foo }
+      let foo2 = bar.map { $0.foo }
+
+      """
+    let output = """
+      // swiftformat:options:next --swiftversion 5.2
+      let foo1 = bar.map(\\.foo)
+      let foo2 = bar.map { $0.foo }
+
+      """
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func cumulativeOptions() throws {
+    let input = """
+      // swiftformat:options --self insert
+      // swiftformat:options:next --swiftversion 5.2
+      let foo1 = self.map { $0.foo }
+      // swiftformat:options --self remove
+      let foo2 = self.map { $0.foo }
+
+      """
+    let output = """
+      // swiftformat:options --self insert
+      // swiftformat:options:next --swiftversion 5.2
+      let foo1 = self.map(\\.foo)
+      // swiftformat:options --self remove
+      let foo2 = map { $0.foo }
+
+      """
+    #expect(try format(input, rules: FormatRules.default).output == output)
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func malformedOption() {
+    let input = """
+      // swiftformat:options blooblahbleh
+      """
+    do {
+      _ = try format(input, rules: FormatRules.default).output
+      Issue.record("Expected error")
+    } catch {
+      #expect("\(error)".contains("Unknown option blooblahbleh"))
+    }
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func invalidOption() {
+    let input = """
+      // swiftformat:options --foobar baz
+      """
+    do {
+      _ = try format(input, rules: FormatRules.default).output
+      Issue.record("Expected error")
+    } catch {
+      #expect("\(error)".contains("Unknown option --foobar"))
+    }
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func invalidOptionValue() {
+    let input = """
+      // swiftformat:options --indent baz
+      """
+    do {
+      _ = try format(input, rules: FormatRules.default).output
+      Issue.record("Expected error")
+    } catch {
+      #expect("\(error)" == "Unsupported --indent value 'baz' on line 1")
+    }
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func invalidEnumOptionValue() {
+    let input = """
+      // swiftformat:options --else-position prev-line
+      """
+    do {
+      _ = try format(input, rules: FormatRules.default).output
+      Issue.record("Expected error")
+    } catch {
+      #expect(
+        "\(error)" == """
+          Unsupported --else-position value 'prev-line' on line 1. Valid options are "same-line" or "next-line"
+          """)
+    }
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func invalidEnumOptionValue2() {
+    let input = """
+      // swiftformat:options --else-position next
+      """
+    do {
+      _ = try format(input, rules: FormatRules.default).output
+      Issue.record("Expected error")
+    } catch {
+      #expect(
+        "\(error)" == """
+          Unsupported --else-position value 'next' on line 1. Did you mean 'next-line'?
+          """)
+    }
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func invalidBoolOptionValue() {
+    let input = """
+      // swiftformat:options --allman always
+      """
+    do {
+      _ = try format(input, rules: FormatRules.default).output
+      Issue.record("Expected error")
+    } catch {
+      #expect(
+        "\(error)" == """
+          Unsupported --allman value 'always' on line 1. Valid options are "true" or "false"
+          """)
+    }
+  }
+
+  @Test(.disabled("Inline swiftformat:options not supported")) func deprecatedOptionValue() {
+    let input = """
+      // swiftformat:options --ranges spaced
+      """
+    #expect(throws: Never.self) { try format(input, rules: FormatRules.default).output }
+  }
+
+  // MARK: linebreaks
+
+  @Test func linebreakAfterLinebreakReturnsCorrectIndex() {
+    let formatter = Formatter([
+      .linebreak("\n", 1),
+      .linebreak("\n", 1),
+    ])
+    #expect(formatter.linebreakToken(for: 1) == .linebreak("\n", 1))
+  }
+
+  @Test func originalLinePreservedAfterFormatting() {
+    let formatter = Formatter([
+      .identifier("foo"),
+      .space(" "),
+      .startOfScope("{"),
+      .linebreak("\n", 1),
+      .linebreak("\n", 2),
+      .space("    "),
+      .identifier("bar"),
+      .linebreak("\n", 3),
+      .endOfScope("}"),
+    ])
+    FormatRule.blankLinesAtStartOfScope.apply(with: formatter)
+    #expect(
+      formatter.tokens == [
+        .identifier("foo"),
+        .space(" "),
+        .startOfScope("{"),
+        .linebreak("\n", 2),
+        .space("    "),
+        .identifier("bar"),
+        .linebreak("\n", 3),
+        .endOfScope("}"),
+      ])
+  }
+
+  // MARK: Format range
+
+  @Test func codeOutsideRangeNotFormatted() throws {
+    let input = tokenize(
+      """
+      func foo () {
+
+          var  bar = 5
+      }
+      """)
+    for range in [0..<2, 5..<7, 14..<16, 17..<19] {
+      #expect(
+        try sourceCode(
+          for: format(
+            input,
+            rules: FormatRules.all,
+            range: range
+          ).tokens
+        ) == sourceCode(for: input), "range \(range)")
+    }
+    let output1 = tokenize(
+      """
+      func foo () {
+
+          var bar = 5
+      }
+      """)
+    #expect(
+      try format(
+        input,
+        rules: [.consecutiveSpaces],
+        range: 10..<13
+      ).tokens == output1)
+    let output2 = """
+      func foo () {
+          var  bar = 5
+      }
+      """
+    #expect(
+      try sourceCode(
+        for: format(
+          input,
+          rules: [.blankLinesAtStartOfScope],
+          range: 6..<9
+        ).tokens) == output2)
+  }
+
+  // MARK: format line range
+
+  @Test func formattingRange() throws {
+    let input = """
+      let  badlySpaced1:Int   = 5
+      let   badlySpaced2:Int=5
+      let   badlySpaced3 : Int = 5
+      """
+    let output = """
+      let  badlySpaced1:Int   = 5
+      let badlySpaced2: Int = 5
+      let   badlySpaced3 : Int = 5
+      """
+    #expect(try format(input, lineRange: 2...2).output == output)
+  }
+
+  @Test func formattingRange2() throws {
+    let input = """
+      enum ImagesToShow {
+      case none
+      case mentioned
+      case all
+      }
+      """
+    let output = """
+      enum ImagesToShow
+      {
+          case none
+      case mentioned
+      case all
+      }
+      """
+    let options = FormatOptions(allmanBraces: true)
+    #expect(try format(input, options: options, lineRange: 1...2).output == output)
+  }
+
+  @Test func formattingRangeNoCrash() throws {
+    let input = """
+      func foo() {
+        if bar {
+          print(  "foo")
+        }
+      }
+      """
+    let output = """
+      func foo() {
+        if bar {
+              print("foo")
+          }
+      }
+      """
+    let inputTokens = tokenize(input)
+    let outputTokens = tokenize(output)
+    #expect(tokenRange(forLineRange: 3...4, in: inputTokens) == 14..<26)
+    #expect(tokenRange(forLineRange: 3...4, in: outputTokens) == 14..<25)
+    #expect(try format(input, lineRange: 3...4).output == output)
+  }
+
+  // MARK: endOfScope
+
+  @Test func endOfScopeInSwitch() {
+    let formatter = Formatter(
+      tokenize(
+        """
         switch foo {
         case bar: break
         }
         """))
-        #expect(formatter.endOfScope(at: 4) == 13)
-    }
+    #expect(formatter.endOfScope(at: 4) == 13)
+  }
 
-    // MARK: change tracking
+  // MARK: change tracking
 
-    @Test func trackChangesInFirstLine() {
-        let formatter = Formatter(tokenize("foo bar\nbaz"), trackChanges: true)
-        let tokens = formatter.tokens
-        formatter.removeLastToken()
-        #expect(formatter.tokens != tokens)
-        #expect(formatter.changes.count == 1)
-        #expect(formatter.changes.first?.line == 2)
-    }
+  @Test func trackChangesInFirstLine() {
+    let formatter = Formatter(tokenize("foo bar\nbaz"), trackChanges: true)
+    let tokens = formatter.tokens
+    formatter.removeLastToken()
+    #expect(formatter.tokens != tokens)
+    #expect(formatter.changes.count == 1)
+    #expect(formatter.changes.first?.line == 2)
+  }
 
-    @Test func trackChangesInSecondLine() throws {
-        let formatter = Formatter(tokenize("foo\nbar\nbaz"), trackChanges: true)
-        let tokens = formatter.tokens
-        try formatter.removeToken(at: #require(formatter.tokens.firstIndex(of: .identifier("bar"))))
-        #expect(formatter.tokens != tokens)
-        #expect(formatter.changes.count == 1)
-        #expect(formatter.changes.first?.line == 2)
-    }
+  @Test func trackChangesInSecondLine() throws {
+    let formatter = Formatter(tokenize("foo\nbar\nbaz"), trackChanges: true)
+    let tokens = formatter.tokens
+    try formatter.removeToken(at: #require(formatter.tokens.firstIndex(of: .identifier("bar"))))
+    #expect(formatter.tokens != tokens)
+    #expect(formatter.changes.count == 1)
+    #expect(formatter.changes.first?.line == 2)
+  }
 
-    @Test func trackChangesInLastLine() {
-        let formatter = Formatter(tokenize("foo\nbar\nbaz"), trackChanges: true)
-        let tokens = formatter.tokens
-        formatter.removeLastToken()
-        #expect(formatter.tokens != tokens)
-        #expect(formatter.changes.count == 1)
-        #expect(formatter.changes.first?.line == 3)
-    }
+  @Test func trackChangesInLastLine() {
+    let formatter = Formatter(tokenize("foo\nbar\nbaz"), trackChanges: true)
+    let tokens = formatter.tokens
+    formatter.removeLastToken()
+    #expect(formatter.tokens != tokens)
+    #expect(formatter.changes.count == 1)
+    #expect(formatter.changes.first?.line == 3)
+  }
 
-    @Test func trackChangesInSingleLine() {
-        let formatter = Formatter(tokenize("foo bar"), trackChanges: true)
-        let tokens = formatter.tokens
-        formatter.removeToken(at: 0)
-        #expect(formatter.tokens != tokens)
-        #expect(formatter.changes.count == 1)
-    }
+  @Test func trackChangesInSingleLine() {
+    let formatter = Formatter(tokenize("foo bar"), trackChanges: true)
+    let tokens = formatter.tokens
+    formatter.removeToken(at: 0)
+    #expect(formatter.tokens != tokens)
+    #expect(formatter.changes.count == 1)
+  }
 
-    @Test func trackChangesIgnoresLinebreakIndex() {
-        let formatter = Formatter(tokenize("\n\n"), trackChanges: true)
-        var tokens = formatter.tokens
-        tokens.insert(tokens.removeLast(), at: 0)
-        #expect(formatter.tokens != tokens)
-        formatter.replaceTokens(in: 0 ..< 2, with: tokens)
-        #expect(formatter.changes.isEmpty)
-    }
+  @Test func trackChangesIgnoresLinebreakIndex() {
+    let formatter = Formatter(tokenize("\n\n"), trackChanges: true)
+    var tokens = formatter.tokens
+    tokens.insert(tokens.removeLast(), at: 0)
+    #expect(formatter.tokens != tokens)
+    formatter.replaceTokens(in: 0..<2, with: tokens)
+    #expect(formatter.changes.isEmpty)
+  }
 
-    @Test func trackRemovalOfBlankLineFollowedByBlankLine() {
-        let formatter = Formatter(tokenize("foo\n\n\n"), trackChanges: true)
-        let tokens = formatter.tokens
-        formatter.removeToken(at: 2)
-        #expect(formatter.tokens != tokens)
-        #expect(formatter.changes.count == 1)
-        #expect(formatter.changes.first?.line == 2)
-    }
+  @Test func trackRemovalOfBlankLineFollowedByBlankLine() {
+    let formatter = Formatter(tokenize("foo\n\n\n"), trackChanges: true)
+    let tokens = formatter.tokens
+    formatter.removeToken(at: 2)
+    #expect(formatter.tokens != tokens)
+    #expect(formatter.changes.count == 1)
+    #expect(formatter.changes.first?.line == 2)
+  }
 
-    @Test func trackRemovalOfBlankLineAfterBlankLine() {
-        let formatter = Formatter(tokenize("foo\n\n\n"), trackChanges: true)
-        let tokens = formatter.tokens
-        formatter.removeLastToken()
-        #expect(formatter.tokens != tokens)
-        #expect(formatter.changes.count == 1)
-        #expect(formatter.changes.first?.line == 3)
-    }
+  @Test func trackRemovalOfBlankLineAfterBlankLine() {
+    let formatter = Formatter(tokenize("foo\n\n\n"), trackChanges: true)
+    let tokens = formatter.tokens
+    formatter.removeLastToken()
+    #expect(formatter.tokens != tokens)
+    #expect(formatter.changes.count == 1)
+    #expect(formatter.changes.first?.line == 3)
+  }
 
-    @Test func moveTokensToEarlierPositionTrackedAsMoves() {
-        let formatter = Formatter(tokenize("foo()\nbar()\n"), trackChanges: true)
-        formatter.moveTokens(in: 4 ... 7, to: 0)
-        #expect(sourceCode(for: formatter.tokens) == "bar()\nfoo()\n")
-        #expect(!formatter.changes.isEmpty)
-        #expect(formatter.changes.allSatisfy(\.isMove))
-    }
+  @Test func moveTokensToEarlierPositionTrackedAsMoves() {
+    let formatter = Formatter(tokenize("foo()\nbar()\n"), trackChanges: true)
+    formatter.moveTokens(in: 4...7, to: 0)
+    #expect(sourceCode(for: formatter.tokens) == "bar()\nfoo()\n")
+    #expect(!formatter.changes.isEmpty)
+    #expect(formatter.changes.allSatisfy { $0.isMove })
+  }
 
-    @Test func moveTokensToFollowingPositionTrackedAsMoves() {
-        let formatter = Formatter(tokenize("foo()\nbar()\n"), trackChanges: true)
-        formatter.moveTokens(in: 0 ... 3, to: 8)
-        #expect(sourceCode(for: formatter.tokens) == "bar()\nfoo()\n")
-        #expect(!formatter.changes.isEmpty)
-        #expect(formatter.changes.allSatisfy(\.isMove))
-    }
+  @Test func moveTokensToFollowingPositionTrackedAsMoves() {
+    let formatter = Formatter(tokenize("foo()\nbar()\n"), trackChanges: true)
+    formatter.moveTokens(in: 0...3, to: 8)
+    #expect(sourceCode(for: formatter.tokens) == "bar()\nfoo()\n")
+    #expect(!formatter.changes.isEmpty)
+    #expect(formatter.changes.allSatisfy { $0.isMove })
+  }
 
-    @Test func replaceAllTokensTracksMoves() {
-        let input: [Token] = [
-            tokenize("foo()"), [.linebreak("\n", 0)],
-            [.linebreak("\n", 1)],
-            tokenize("foobar()"), [.linebreak("\n", 2)],
-            [.linebreak("\n", 3)],
-            tokenize("bar()"), [.linebreak("\n", 4)],
-            [.linebreak("\n", 5)],
-            tokenize("baaz()"), [.linebreak("\n", 6)],
-        ].flatMap { $0 }
+  @Test func replaceAllTokensTracksMoves() {
+    let input: [Token] = [
+      tokenize("foo()"), [.linebreak("\n", 0)],
+      [.linebreak("\n", 1)],
+      tokenize("foobar()"), [.linebreak("\n", 2)],
+      [.linebreak("\n", 3)],
+      tokenize("bar()"), [.linebreak("\n", 4)],
+      [.linebreak("\n", 5)],
+      tokenize("baaz()"), [.linebreak("\n", 6)],
+    ].flatMap { $0 }
 
-        let output: [Token] = [
-            tokenize("bar()"), [.linebreak("\n", 4)],
-            [.linebreak("\n", 1)],
-            tokenize("barfoo()"), [.linebreak("\n", 2)],
-            [.linebreak("\n", 3)],
-            tokenize("foo()"), [.linebreak("\n", 0)],
-            [.linebreak("\n", 5)],
-            tokenize("quux()"), [.linebreak("\n", 6)],
-        ].flatMap { $0 }
+    let output: [Token] = [
+      tokenize("bar()"), [.linebreak("\n", 4)],
+      [.linebreak("\n", 1)],
+      tokenize("barfoo()"), [.linebreak("\n", 2)],
+      [.linebreak("\n", 3)],
+      tokenize("foo()"), [.linebreak("\n", 0)],
+      [.linebreak("\n", 5)],
+      tokenize("quux()"), [.linebreak("\n", 6)],
+    ].flatMap { $0 }
 
-        let formatter = Formatter(input, trackChanges: true)
-        formatter.diffAndReplaceTokens(in: ClosedRange(formatter.tokens.indices), with: output)
-        #expect(sourceCode(for: formatter.tokens) == sourceCode(for: output))
+    let formatter = Formatter(input, trackChanges: true)
+    formatter.diffAndReplaceTokens(in: ClosedRange(formatter.tokens.indices), with: output)
+    #expect(sourceCode(for: formatter.tokens) == sourceCode(for: output))
 
-        // The changes should include both moves and non-moves
-        #expect(formatter.changes.contains(where: \.isMove))
-        #expect(formatter.changes.contains(where: { !$0.isMove }))
-    }
+    // The changes should include both moves and non-moves
+    #expect(formatter.changes.contains { $0.isMove })
+    #expect(formatter.changes.contains { !$0.isMove })
+  }
 }

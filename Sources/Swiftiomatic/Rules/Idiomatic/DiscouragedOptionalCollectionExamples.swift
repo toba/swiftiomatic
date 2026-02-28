@@ -190,7 +190,10 @@ enum DiscouragedOptionalCollectionExamples {
         wrapExample("struct", "static func foo(input: ↓[String: [String: String]]?) {}"),
         wrapExample("struct", "static func foo(input: [String: ↓[String: String]?]) {}"),
         wrapExample("struct", "static func foo(input: ↓[String: ↓[String: String]?]?) {}"),
-        wrapExample("struct", "static func foo<K, V>(_ dict1: [K: V], _ dict2: ↓[K: V]?) -> [K: V]"),
+        wrapExample(
+            "struct",
+            "static func foo<K, V>(_ dict1: [K: V], _ dict2: ↓[K: V]?) -> [K: V]",
+        ),
         wrapExample("struct", "static func foo<K, V>(dict1: [K: V], dict2: ↓[K: V]?) -> [K: V]"),
 
         wrapExample("enum", "func foo(input: ↓[String: String]?) {}"),
@@ -214,13 +217,13 @@ private func wrapExample(
     _ type: String,
     _ test: String,
     file: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
 ) -> Example {
     Example(
         """
         \(type) Foo {
             \(test)
         }
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }

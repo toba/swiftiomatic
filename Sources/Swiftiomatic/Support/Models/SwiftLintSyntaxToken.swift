@@ -32,7 +32,7 @@ struct SwiftLintSyntaxToken {
     }
 }
 
-extension Array where Element == SwiftLintSyntaxToken {
+extension [SwiftLintSyntaxToken] {
     /// The kinds for these tokens.
     var kinds: [SyntaxKind] {
         compactMap(\.kind)

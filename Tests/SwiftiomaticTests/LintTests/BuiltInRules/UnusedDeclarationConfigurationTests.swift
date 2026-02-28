@@ -1,21 +1,23 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite struct UnusedDeclarationConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func parseConfiguration() throws {
-        var testee = UnusedDeclarationConfiguration()
-        let config = [
-            "severity": "warning",
-            "include_public_and_open": true,
-            "related_usrs_to_skip": ["a", "b"],
-        ] as [String: any Sendable]
+  @Test func parseConfiguration() throws {
+    var testee = UnusedDeclarationConfiguration()
+    let config =
+      [
+        "severity": "warning",
+        "include_public_and_open": true,
+        "related_usrs_to_skip": ["a", "b"],
+      ] as [String: any Sendable]
 
-        try testee.apply(configuration: config)
+    try testee.apply(configuration: config)
 
-        #expect(testee.severityConfiguration.severity == .warning)
-        #expect(testee.includePublicAndOpen)
-        #expect(testee.relatedUSRsToSkip == ["a", "b", "s:7SwiftUI15PreviewProviderP"])
-    }
+    #expect(testee.severityConfiguration.severity == .warning)
+    #expect(testee.includePublicAndOpen)
+    #expect(testee.relatedUSRsToSkip == ["a", "b", "s:7SwiftUI15PreviewProviderP"])
+  }
 }

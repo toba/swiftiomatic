@@ -19,7 +19,7 @@ struct DynamicInlineRule: Rule {
             Example("class C {\n@inline(__always) dynamic internal ↓func f() {}\n}"),
             Example("class C {\n@inline(__always)\ndynamic ↓func f() {}\n}"),
             Example("class C {\n@inline(__always)\ndynamic\n↓func f() {}\n}"),
-        ]
+        ],
     )
 }
 
@@ -33,7 +33,8 @@ private extension DynamicInlineRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionDeclSyntax) {
             if node.modifiers.contains(where: { $0.name.text == "dynamic" }),
-               node.attributes.contains(where: { $0.as(AttributeSyntax.self)?.isInlineAlways == true })
+               node.attributes
+               .contains(where: { $0.as(AttributeSyntax.self)?.isInlineAlways == true })
             {
                 violations.append(node.funcKeyword.positionAfterSkippingLeadingTrivia)
             }
@@ -44,6 +45,7 @@ private extension DynamicInlineRule {
 private extension AttributeSyntax {
     var isInlineAlways: Bool {
         attributeNameText == "inline"
-            && arguments?.firstToken(viewMode: .sourceAccurate)?.tokenKind == .identifier("__always")
+            && arguments?.firstToken(viewMode: .sourceAccurate)?
+            .tokenKind == .identifier("__always")
     }
 }

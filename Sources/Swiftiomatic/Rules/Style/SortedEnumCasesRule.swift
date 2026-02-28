@@ -17,7 +17,7 @@ struct SortedEnumCasesRule: Rule {
                     case b
                     case c
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -25,7 +25,7 @@ struct SortedEnumCasesRule: Rule {
                     case example
                     case exBoyfriend
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -34,14 +34,14 @@ struct SortedEnumCasesRule: Rule {
                     case B
                     case c
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum foo {
                     case a, b, c
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -49,7 +49,7 @@ struct SortedEnumCasesRule: Rule {
                     case a
                     case b, c
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -57,7 +57,7 @@ struct SortedEnumCasesRule: Rule {
                     case a(foo: Foo)
                     case b(String), c
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -65,7 +65,7 @@ struct SortedEnumCasesRule: Rule {
                     case a
                     case b, C, d
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -75,7 +75,7 @@ struct SortedEnumCasesRule: Rule {
                     case a
                     case c, f, d
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -86,7 +86,7 @@ struct SortedEnumCasesRule: Rule {
                     ↓case a
                     case c
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -95,21 +95,21 @@ struct SortedEnumCasesRule: Rule {
                     ↓case a
                     case c
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum foo {
                     case ↓b, ↓a, c
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum foo {
                     case ↓B, ↓a, c
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -117,7 +117,7 @@ struct SortedEnumCasesRule: Rule {
                     ↓case b, c
                     ↓case a
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -125,7 +125,7 @@ struct SortedEnumCasesRule: Rule {
                     case a
                     case b, ↓d, ↓c
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -133,9 +133,9 @@ struct SortedEnumCasesRule: Rule {
                     case a(foo: Foo)
                     case ↓c, ↓b(String)
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

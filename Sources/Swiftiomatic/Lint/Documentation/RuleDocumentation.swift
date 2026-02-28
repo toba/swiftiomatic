@@ -21,7 +21,8 @@ struct RuleDocumentation {
     /// Note: For ConditionallySourceKitFree rules, this returns true since we can't
     /// determine at the type level if they're effectively SourceKit-free.
     var usesSourceKit: Bool {
-        !(ruleType is any SourceKitFreeRule.Type) || (ruleType is any ConditionallySourceKitFree.Type)
+        !(ruleType is any SourceKitFreeRule.Type) ||
+            (ruleType is any ConditionallySourceKitFree.Type)
     }
 
     /// If this rule is disabled by default.
@@ -59,7 +60,11 @@ struct RuleDocumentation {
     /// The contents of the file for this rule documentation.
     var fileContents: String {
         let description = ruleType.description
-        var content = [h1(description.name), description.description, detailsSummary(ruleType.init())]
+        var content = [
+            h1(description.name),
+            description.description,
+            detailsSummary(ruleType.init()),
+        ]
         if let formattedRationale = description.formattedRationale {
             content += [h2("Rationale")]
             content.append(formattedRationale)
@@ -71,7 +76,8 @@ struct RuleDocumentation {
             content += [h2("Non Triggering Examples")]
             content += nonTriggeringExamples.map(formattedCode)
         }
-        let triggeringExamples = description.triggeringExamples.filter { !$0.excludeFromDocumentation }
+        let triggeringExamples = description.triggeringExamples
+            .filter { !$0.excludeFromDocumentation }
         if triggeringExamples.isNotEmpty {
             content += [h2("Triggering Examples")]
             content += triggeringExamples.map(formattedCode)
@@ -84,7 +90,7 @@ struct RuleDocumentation {
            let configuredRule = try? ruleType.init(configuration: config)
         {
             let configDescription = configuredRule.createConfigurationDescription(
-                exclusiveOptions: Set(config.keys)
+                exclusiveOptions: Set(config.keys),
             )
             return """
             ```swift

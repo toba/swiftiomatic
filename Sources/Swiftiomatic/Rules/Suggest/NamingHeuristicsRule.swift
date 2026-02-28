@@ -18,7 +18,7 @@ struct NamingHeuristicsRule: Rule {
         triggeringExamples: [
             Example("var ↓enabled: Bool = true"),
             Example("static func ↓createWidget() -> Widget { }"),
-        ]
+        ],
     )
 }
 
@@ -36,7 +36,8 @@ private extension NamingHeuristicsRule {
             let name = node.name.text
             guard name.hasSuffix("able") || name.hasSuffix("ible") else { return }
 
-            let methods = node.memberBlock.members.compactMap { $0.decl.as(FunctionDeclSyntax.self) }
+            let methods = node.memberBlock.members
+                .compactMap { $0.decl.as(FunctionDeclSyntax.self) }
             let hasActionVerbs = methods.contains { method in
                 let n = method.name.text
                 return NamingHelpers.actionVerbPrefixes.contains { n.hasPrefix($0) }
@@ -51,21 +52,25 @@ private extension NamingHeuristicsRule {
                         severity: .warning,
                         confidence: .low,
                         suggestion: name.replacingSuffix("able", with: "ing")
-                            ?? name.replacingSuffix("ible", with: "ing")
-                    )
+                            ?? name.replacingSuffix("ible", with: "ing"),
+                    ),
                 )
             }
         }
 
         override func visitPost(_ node: VariableDeclSyntax) {
             for binding in node.bindings {
-                guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self) else { continue }
+                guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self)
+                else { continue }
                 let name = pattern.identifier.text
 
                 if let typeAnnotation = binding.typeAnnotation,
                    typeAnnotation.type.trimmedDescription == "Bool"
                 {
-                    checkBoolNaming(name: name, position: pattern.positionAfterSkippingLeadingTrivia)
+                    checkBoolNaming(
+                        name: name,
+                        position: pattern.positionAfterSkippingLeadingTrivia,
+                    )
                 }
             }
         }
@@ -82,8 +87,8 @@ private extension NamingHeuristicsRule {
                     "Factory method '\(name)' should use 'make' prefix per Swift API Design Guidelines",
                     severity: .warning,
                     confidence: .medium,
-                    suggestion: suggestion
-                )
+                    suggestion: suggestion,
+                ),
             )
         }
 
@@ -95,8 +100,8 @@ private extension NamingHeuristicsRule {
                         reason: "Bool property '\(name)' doesn't read as an assertion",
                         severity: .warning,
                         confidence: .low,
-                        suggestion: "Consider a name like 'is\(name.capitalized)' or 'has\(name.capitalized)'"
-                    )
+                        suggestion: "Consider a name like 'is\(name.capitalized)' or 'has\(name.capitalized)'",
+                    ),
                 )
             }
         }

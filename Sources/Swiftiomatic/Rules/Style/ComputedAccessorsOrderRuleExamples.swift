@@ -9,7 +9,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         set { _abc = newValue }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -18,7 +18,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         return 20
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -27,7 +27,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         return 20
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -37,14 +37,14 @@ enum ComputedAccessorsOrderRuleExamples {
                         set { _abc = newValue }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                     var foo: Int
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -53,7 +53,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         return getValueFromDisk()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -62,26 +62,26 @@ enum ComputedAccessorsOrderRuleExamples {
                         return "get"
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 protocol Foo {
                     var foo: Int { get }
-                """
+                """,
             ),
             Example(
                 """
                 protocol Foo {
                     var foo: Int { get set }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 protocol Foo {
                     var foo: Int { set get }
-                """
+                """,
             ),
             Example(
                 """
@@ -97,7 +97,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         return Bar().bar
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -105,7 +105,7 @@ enum ComputedAccessorsOrderRuleExamples {
                     @inline(__always) get { return 0 }
                     set { print(newValue) }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -118,7 +118,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         self.count = newValue
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -128,7 +128,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         set { self._bar = newValue }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -138,7 +138,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         set(newValue) { self._bar = newValue }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -152,7 +152,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -166,7 +166,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -175,7 +175,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         return 20
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -185,28 +185,28 @@ enum ComputedAccessorsOrderRuleExamples {
                         set { _abc = newValue }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 protocol Foo {
                     subscript(i: Int) -> Int { get }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 protocol Foo {
                     subscript(i: Int) -> Int { get set }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 protocol Foo {
                     subscript(i: Int) -> Int { set get }
                 }
-                """
+                """,
             ),
         ]
     }
@@ -225,7 +225,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -239,7 +239,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -247,7 +247,7 @@ enum ComputedAccessorsOrderRuleExamples {
                     ↓set { print(newValue) }
                     get { return 20 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -257,7 +257,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         get { _bar }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -271,7 +271,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -285,7 +285,7 @@ enum ComputedAccessorsOrderRuleExamples {
                         }
                     }
                 }
-                """
+                """,
             ),
         ]
     }

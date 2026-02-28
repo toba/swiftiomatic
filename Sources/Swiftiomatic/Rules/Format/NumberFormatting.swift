@@ -1,11 +1,3 @@
-//
-//  NumberFormatting.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 1/17/17.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -20,7 +12,7 @@ extension FormatRule {
         options: [
             "decimal-grouping", "binary-grouping", "octal-grouping", "hex-grouping",
             "fraction-grouping", "exponent-grouping", "hex-literal-case", "exponent-case",
-        ]
+        ],
     ) { formatter in
         formatter.forEachToken { i, token in
             guard case let .number(number, type) = token else {
@@ -31,44 +23,44 @@ extension FormatRule {
             let exponentSeparator: String
             let parts: [String]
             switch type {
-            case .integer, .decimal:
-                grouping = formatter.options.decimalGrouping
-                prefix = ""
-                exponentSeparator = formatter.options.uppercaseExponent ? "E" : "e"
-                parts = number.components(separatedBy: CharacterSet(charactersIn: ".eE"))
-            case .binary:
-                grouping = formatter.options.binaryGrouping
-                prefix = "0b"
-                exponentSeparator = ""
-                parts = [String(number[prefix.endIndex...])]
-            case .octal:
-                grouping = formatter.options.octalGrouping
-                prefix = "0o"
-                exponentSeparator = ""
-                parts = [String(number[prefix.endIndex...])]
-            case .hex:
-                grouping = formatter.options.hexGrouping
-                prefix = "0x"
-                exponentSeparator = formatter.options.uppercaseExponent ? "P" : "p"
-                parts = number[prefix.endIndex...].components(
-                    separatedBy: CharacterSet(charactersIn: ".pP")
-                ).map {
-                    formatter.options.uppercaseHex ? $0.uppercased() : $0.lowercased()
-                }
+                case .integer, .decimal:
+                    grouping = formatter.options.decimalGrouping
+                    prefix = ""
+                    exponentSeparator = formatter.options.uppercaseExponent ? "E" : "e"
+                    parts = number.components(separatedBy: CharacterSet(charactersIn: ".eE"))
+                case .binary:
+                    grouping = formatter.options.binaryGrouping
+                    prefix = "0b"
+                    exponentSeparator = ""
+                    parts = [String(number[prefix.endIndex...])]
+                case .octal:
+                    grouping = formatter.options.octalGrouping
+                    prefix = "0o"
+                    exponentSeparator = ""
+                    parts = [String(number[prefix.endIndex...])]
+                case .hex:
+                    grouping = formatter.options.hexGrouping
+                    prefix = "0x"
+                    exponentSeparator = formatter.options.uppercaseExponent ? "P" : "p"
+                    parts = number[prefix.endIndex...].components(
+                        separatedBy: CharacterSet(charactersIn: ".pP"),
+                    ).map {
+                        formatter.options.uppercaseHex ? $0.uppercased() : $0.lowercased()
+                    }
             }
             var main = parts[0]
             var fraction = ""
             var exponent = ""
             switch parts.count {
-            case 2 where number.contains("."):
-                fraction = parts[1]
-            case 2:
-                exponent = parts[1]
-            case 3:
-                fraction = parts[1]
-                exponent = parts[2]
-            default:
-                break
+                case 2 where number.contains("."):
+                    fraction = parts[1]
+                case 2:
+                    exponent = parts[1]
+                case 3:
+                    fraction = parts[1]
+                    exponent = parts[2]
+                default:
+                    break
             }
             formatter.applyGrouping(grouping, to: &main)
             if formatter.options.fractionGrouping {
@@ -104,10 +96,10 @@ extension FormatRule {
 extension Formatter {
     func applyGrouping(_ grouping: Grouping, to number: inout String) {
         switch grouping {
-        case .none, .group:
-            number = number.replacingOccurrences(of: "_", with: "")
-        case .ignore:
-            return
+            case .none, .group:
+                number = number.replacingOccurrences(of: "_", with: "")
+            case .ignore:
+                return
         }
         guard case let .group(group, threshold) = grouping, group > 0, number.count >= threshold
         else {

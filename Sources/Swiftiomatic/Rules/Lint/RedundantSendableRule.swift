@@ -20,7 +20,8 @@ struct RedundantSendableRule: Rule {
             Example("@MainActor struct ↓S: Sendable {}"),
             Example("actor ↓A: Sendable {}"),
             Example(
-                "@MyActor enum ↓E: Sendable { case a }", configuration: ["global_actors": ["MyActor"]]
+                "@MyActor enum ↓E: Sendable { case a }",
+                configuration: ["global_actors": ["MyActor"]],
             ),
         ],
         corrections: [
@@ -29,24 +30,25 @@ struct RedundantSendableRule: Rule {
             Example("actor A: Sendable /* trailing comment */{}"):
                 Example("actor A /* trailing comment */{}"),
             Example(
-                "@MyActor enum E: Sendable { case a }", configuration: ["global_actors": ["MyActor"]]
+                "@MyActor enum E: Sendable { case a }",
+                configuration: ["global_actors": ["MyActor"]],
             ):
                 Example("@MyActor enum E { case a }"),
             Example(
                 """
                 actor A: B, Sendable, C // comment
                 {}
-                """
+                """,
             ):
                 Example(
                     """
                     actor A: B, C // comment
                     {}
-                    """
+                    """,
                 ),
             Example("@MainActor struct P: A, Sendable {}"):
                 Example("@MainActor struct P: A {}"),
-        ]
+        ],
     )
 }
 
@@ -108,7 +110,9 @@ private extension RedundantSendableRule {
             super.visit(removeRedundantSendable(from: node))
         }
 
-        private func removeRedundantSendable<T: DeclGroupSyntax & NamedDeclSyntax>(from decl: T) -> T {
+        private func removeRedundantSendable<T: DeclGroupSyntax & NamedDeclSyntax>(from decl: T)
+            -> T
+        {
             if decl.conformsToSendable, decl.isIsolatedToActor(actors: configuration.globalActors) {
                 numberOfCorrections += 1
                 return decl.withoutSendable
@@ -137,12 +141,16 @@ private extension DeclGroupSyntax where Self: NamedDeclSyntax {
             return with(
                 \.inheritanceClause,
                 inheritanceClause
-                    .with(\.inheritedTypes, inheritedTypes.with(\.[lastIndex], lastType.withoutComma))
+                    .with(
+                        \.inheritedTypes,
+                        inheritedTypes.with(\.[lastIndex], lastType.withoutComma),
+                    ),
             )
         }
         return with(\.inheritanceClause, nil)
             .with(
-                \.name.trailingTrivia, inheritanceClause.leadingTrivia + inheritanceClause.trailingTrivia
+                \.name.trailingTrivia,
+                inheritanceClause.leadingTrivia + inheritanceClause.trailingTrivia,
             )
     }
 }

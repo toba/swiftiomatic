@@ -1,11 +1,3 @@
-//
-//  BlankLinesAtStartOfScope.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 2/1/18.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -13,7 +5,7 @@ extension FormatRule {
     /// that starts a new scope.
     static let blankLinesAtStartOfScope = FormatRule(
         help: "Remove leading blank line at the start of a scope.",
-        options: ["type-blank-lines"]
+        options: ["type-blank-lines"],
     ) { formatter in
         formatter.forEach(.startOfScope) { i, token in
             guard ["{", "(", "[", "<", ":"].contains(token.string) else { return }
@@ -24,7 +16,10 @@ extension FormatRule {
             if formatter.isStartOfClosure(at: startOfScope),
                let endOfScope = formatter.endOfScope(at: startOfScope),
                startOfScope + 1 < endOfScope,
-               let inKeywordIndex = formatter.index(of: .keyword("in"), in: startOfScope + 1 ..< endOfScope),
+               let inKeywordIndex = formatter.index(
+                   of: .keyword("in"),
+                   in: startOfScope + 1 ..< endOfScope,
+               ),
                formatter.startOfScope(at: inKeywordIndex) == startOfScope
             {
                 startOfScope = inKeywordIndex
@@ -38,12 +33,12 @@ extension FormatRule {
 
             if formatter.isStartOfTypeBody(at: startOfScope) {
                 switch formatter.options.typeBlankLines {
-                case .insert:
-                    formatter.addLeadingBlankLineIfNeeded(in: rangeInsideScope)
-                case .remove:
-                    formatter.removeLeadingBlankLinesIfPresent(in: rangeInsideScope)
-                case .preserve:
-                    break
+                    case .insert:
+                        formatter.addLeadingBlankLineIfNeeded(in: rangeInsideScope)
+                    case .remove:
+                        formatter.removeLeadingBlankLinesIfPresent(in: rangeInsideScope)
+                    case .preserve:
+                        break
                 }
             } else {
                 formatter.removeLeadingBlankLinesIfPresent(in: rangeInsideScope)

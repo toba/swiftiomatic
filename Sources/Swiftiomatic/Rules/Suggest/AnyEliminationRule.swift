@@ -17,7 +17,7 @@ struct AnyEliminationRule: Rule {
             Example("var value: ↓Any = 0"),
             Example("func process(_ dict: ↓[String: Any]) {}"),
             Example("let x = value ↓as! String"),
-        ]
+        ],
     )
 }
 
@@ -49,8 +49,8 @@ private extension AnyEliminationRule {
                         reason: "[String: \(value)] dictionary should be a Codable struct",
                         severity: .warning,
                         confidence: .medium,
-                        suggestion: "Define a struct with typed properties instead"
-                    )
+                        suggestion: "Define a struct with typed properties instead",
+                    ),
                 )
             }
         }
@@ -63,22 +63,23 @@ private extension AnyEliminationRule {
                         reason: "Force cast 'as!' — trace back to where the type was erased",
                         severity: .warning,
                         confidence: .medium,
-                        suggestion: "Use generics or a typed API to avoid the cast"
-                    )
+                        suggestion: "Use generics or a typed API to avoid the cast",
+                    ),
                 )
             }
         }
 
         private func checkForAny(in type: TypeSyntax) {
-            guard let match = AnyTypeHelpers.classifyAnyType(type.trimmedDescription) else { return }
+            guard let match = AnyTypeHelpers.classifyAnyType(type.trimmedDescription)
+            else { return }
             violations.append(
                 ReasonedRuleViolation(
                     position: type.positionAfterSkippingLeadingTrivia,
                     reason: match.message,
                     severity: .warning,
                     confidence: match == .any ? .medium : .low,
-                    suggestion: match.suggestion
-                )
+                    suggestion: match.suggestion,
+                ),
             )
         }
     }

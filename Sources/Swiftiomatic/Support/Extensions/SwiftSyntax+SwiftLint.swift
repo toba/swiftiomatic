@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 // swiftlint:disable file_length
 
@@ -33,7 +33,7 @@ extension SyntaxProtocol {
 
     func isContainedIn(regions: [SourceRange], locationConverter: SourceLocationConverter) -> Bool {
         positionAfterSkippingLeadingTrivia.isContainedIn(
-            regions: regions, locationConverter: locationConverter
+            regions: regions, locationConverter: locationConverter,
         )
     }
 }
@@ -50,7 +50,7 @@ extension Range<AbsolutePosition> {
     func toSourceKittenByteRange() -> ByteRange {
         ByteRange(
             location: ByteCount(lowerBound),
-            length: ByteCount(upperBound.utf8Offset) - ByteCount(lowerBound.utf8Offset)
+            length: ByteCount(upperBound.utf8Offset) - ByteCount(lowerBound.utf8Offset),
         )
     }
 }
@@ -129,11 +129,11 @@ extension DeclModifierListSyntax {
 extension DeclModifierSyntax {
     var asAccessLevelModifier: TokenKind? {
         switch name.tokenKind {
-        case .keyword(.open), .keyword(.public), .keyword(.package), .keyword(.internal),
-             .keyword(.fileprivate), .keyword(.private):
-            return name.tokenKind
-        default:
-            return nil
+            case .keyword(.open), .keyword(.public), .keyword(.package), .keyword(.internal),
+                 .keyword(.fileprivate), .keyword(.private):
+                return name.tokenKind
+            default:
+                return nil
         }
     }
 
@@ -330,10 +330,10 @@ extension Trivia {
 extension TriviaPiece {
     var isHorizontalWhitespace: Bool {
         switch self {
-        case .spaces, .tabs:
-            return true
-        default:
-            return false
+            case .spaces, .tabs:
+                return true
+            default:
+                return false
         }
     }
 }
@@ -406,7 +406,7 @@ private extension String {
     }
 }
 
-private class SuperCallVisitor: SyntaxVisitor {
+private final class SuperCallVisitor: SyntaxVisitor {
     private let expectedFunctionName: String
     private(set) var superCallsCount = 0
 

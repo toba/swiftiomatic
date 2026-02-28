@@ -33,14 +33,14 @@ enum ColonRuleExamples {
             case .bar:
                 _ = something()
             }
-            """
+            """,
         ),
         Example("object.method(x: 5, y: \"string\")"),
         Example(
             """
             object.method(x: 5, y:
                           "string")
-            """
+            """,
         ),
         Example("object.method(5, y: \"string\")"),
         Example("func abc() { def(ghi: jkl) }"),
@@ -52,14 +52,14 @@ enum ColonRuleExamples {
             let aaa = Self.bbb ? Self.ccc : Self.ddd else {
             return nil
             Example("}
-            """
+            """,
         ),
         Example("range.flatMap(file.syntaxMap.kinds(inByteRange:)) ?? []"),
         Example(
             """
             @objc(receiveReply:)
             public class func receiveReply(_ reply: bad_instruction_exception_reply_t) -> CInt { 0 }
-            """
+            """,
         ),
         Example(
             #"""
@@ -68,7 +68,7 @@ enum ColonRuleExamples {
             case "aghb", "caucasianalbanian": return .caucasianAlbanian
             default:                          return nil
             }
-            """#
+            """#,
         ),
         Example(
             """
@@ -76,7 +76,7 @@ enum ColonRuleExamples {
               associativity: left
             }
             infix operator |> : PipelinePrecedence
-            """
+            """,
         ),
         Example(
             """
@@ -87,7 +87,7 @@ enum ColonRuleExamples {
               case 0x2029 /* PARAGRAPH SEPARATOR */: return true
               default: return false
             }
-            """
+            """,
         ),
     ]
 
@@ -149,7 +149,7 @@ enum ColonRuleExamples {
             switch foo {
             case .bar↓ : return baz
             }
-            """
+            """,
         ),
         Example("private var action↓:(() -> Void)?"),
     ]
@@ -202,15 +202,21 @@ enum ColonRuleExamples {
         Example("class Foo<T: Equatable>↓:Bar {}"): Example("class Foo<T: Equatable>: Bar {}"),
         Example("class Foo<T↓:Equatable> {}"): Example("class Foo<T: Equatable> {}"),
         Example("class Foo<T↓ : Equatable> {}"): Example("class Foo<T: Equatable> {}"),
-        Example("object.method(x: 5, y↓ : \"string\")"): Example("object.method(x: 5, y: \"string\")"),
-        Example("object.method(x↓:5, y: \"string\")"): Example("object.method(x: 5, y: \"string\")"),
-        Example("object.method(x↓:  5, y: \"string\")"): Example("object.method(x: 5, y: \"string\")"),
+        Example("object.method(x: 5, y↓ : \"string\")"): Example(
+            "object.method(x: 5, y: \"string\")",
+        ),
+        Example("object.method(x↓:5, y: \"string\")"): Example(
+            "object.method(x: 5, y: \"string\")",
+        ),
+        Example("object.method(x↓:  5, y: \"string\")"): Example(
+            "object.method(x: 5, y: \"string\")",
+        ),
         Example("func abc() { def(ghi↓:jkl) }"): Example("func abc() { def(ghi: jkl) }"),
         Example("func abc(def: Void) { ghi(jkl↓:mno) }"): Example(
-            "func abc(def: Void) { ghi(jkl: mno) }"
+            "func abc(def: Void) { ghi(jkl: mno) }",
         ),
         Example("class ABC { let def = ghi(jkl↓:mno) } }"): Example(
-            "class ABC { let def = ghi(jkl: mno) } }"
+            "class ABC { let def = ghi(jkl: mno) } }",
         ),
         Example("func foo() { let dict = [1↓ : 1] }"): Example("func foo() { let dict = [1: 1] }"),
         Example(
@@ -221,7 +227,7 @@ enum ColonRuleExamples {
                     let bar = [\"key\"↓   : \"value\"]
                 #endif
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -231,21 +237,21 @@ enum ColonRuleExamples {
                         let bar = [\"key\": \"value\"]
                     #endif
                 }
-                """
+                """,
             ),
         Example(
             """
             switch foo {
             case .bar↓ : return baz
             }
-            """
+            """,
         ):
             Example(
                 """
                 switch foo {
                 case .bar: return baz
                 }
-                """
+                """,
             ),
         Example("private var action↓:(() -> Void)?"): Example("private var action: (() -> Void)?"),
     ]

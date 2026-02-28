@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct TodoRule: Rule {
     var configuration = TodoConfiguration()
@@ -23,7 +23,7 @@ struct TodoRule: Rule {
             Example("/* ↓TODO: */"),
             Example("/** ↓FIXME: */"),
             Example("/** ↓TODO: */"),
-        ].skipWrappingInCommentTests()
+        ].skipWrappingInCommentTests(),
     )
 }
 
@@ -38,11 +38,11 @@ private extension TodoRule {
         override func visitPost(_ node: TokenSyntax) {
             let leadingViolations = node.leadingTrivia.violations(
                 offset: node.position,
-                for: configuration.only
+                for: configuration.only,
             )
             let trailingViolations = node.trailingTrivia.violations(
                 offset: node.endPositionBeforeTrailingTrivia,
-                for: configuration.only
+                for: configuration.only,
             )
             violations.append(contentsOf: leadingViolations + trailingViolations)
         }
@@ -52,7 +52,7 @@ private extension TodoRule {
 private extension Trivia {
     func violations(
         offset: AbsolutePosition,
-        for todoKeywords: [TodoConfiguration.TodoKeyword]
+        for todoKeywords: [TodoConfiguration.TodoKeyword],
     ) -> [ReasonedRuleViolation] {
         var position = offset
         var violations = [ReasonedRuleViolation]()
@@ -67,46 +67,47 @@ private extension Trivia {
 private extension TriviaPiece {
     func violations(
         offset: AbsolutePosition,
-        for todoKeywords: [TodoConfiguration.TodoKeyword]
+        for todoKeywords: [TodoConfiguration.TodoKeyword],
     ) -> [ReasonedRuleViolation] {
         switch self {
-        case let .blockComment(comment),
-             let .lineComment(comment),
-             let .docBlockComment(comment),
-             let .docLineComment(comment):
-            // Construct a regex string considering only keywords.
-            let searchKeywords = todoKeywords.map(\.rawValue).joined(separator: "|")
-            let matches = regex(#"\b((?:\#(searchKeywords))(?::|\b))"#)
-                .matches(in: comment, range: comment.bridge().fullNSRange)
-            return matches.reduce(into: []) { violations, match in
-                guard let annotationRange = Range(match.range(at: 1), in: comment) else {
-                    return
+            case let .blockComment(comment),
+                 let .lineComment(comment),
+                 let .docBlockComment(comment),
+                 let .docLineComment(comment):
+                // Construct a regex string considering only keywords.
+                let searchKeywords = todoKeywords.map(\.rawValue).joined(separator: "|")
+                let matches = regex(#"\b((?:\#(searchKeywords))(?::|\b))"#)
+                    .matches(in: comment, range: comment.bridge().fullNSRange)
+                return matches.reduce(into: []) { violations, match in
+                    guard let annotationRange = Range(match.range(at: 1), in: comment) else {
+                        return
+                    }
+
+                    let maxLengthOfMessage = 30
+
+                    // customizing the reason message to be specific to fixme or todo
+                    let kind = comment[annotationRange].hasPrefix("FIXME") ? "FIXMEs" : "TODOs"
+                    let message = comment[annotationRange.upperBound...]
+                        .trimmingCharacters(in: .whitespaces)
+                        .truncated(maxLength: maxLengthOfMessage)
+                        .prefix { $0 != "\n" }
+
+                    let reason: String
+                    if message.isEmpty {
+                        reason = "\(kind) should be resolved"
+                    } else {
+                        reason = "\(kind) should be resolved (\(message))"
+                    }
+
+                    let violation = ReasonedRuleViolation(
+                        position: offset
+                            .advanced(by: comment[..<annotationRange.lowerBound].utf8.count),
+                        reason: reason,
+                    )
+                    violations.append(violation)
                 }
-
-                let maxLengthOfMessage = 30
-
-                // customizing the reason message to be specific to fixme or todo
-                let kind = comment[annotationRange].hasPrefix("FIXME") ? "FIXMEs" : "TODOs"
-                let message = comment[annotationRange.upperBound...]
-                    .trimmingCharacters(in: .whitespaces)
-                    .truncated(maxLength: maxLengthOfMessage)
-                    .prefix { $0 != "\n" }
-
-                let reason: String
-                if message.isEmpty {
-                    reason = "\(kind) should be resolved"
-                } else {
-                    reason = "\(kind) should be resolved (\(message))"
-                }
-
-                let violation = ReasonedRuleViolation(
-                    position: offset.advanced(by: comment[..<annotationRange.lowerBound].utf8.count),
-                    reason: reason
-                )
-                violations.append(violation)
-            }
-        default:
-            return []
+            default:
+                return []
         }
     }
 }

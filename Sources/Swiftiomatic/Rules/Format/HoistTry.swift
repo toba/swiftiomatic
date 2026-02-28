@@ -1,17 +1,9 @@
-//
-//  HoistTry.swift
-//  SwiftFormat
-//
-//  Created by Facundo Menzella on 2/25/23.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let hoistTry = FormatRule(
         help: "Move inline `try` keyword(s) to start of expression.",
-        options: ["throw-capturing"]
+        options: ["throw-capturing"],
     ) { formatter in
         let names = formatter.options.throwCapturing.union(["expect", "XCTUnwrap"])
         formatter.forEachToken(where: {

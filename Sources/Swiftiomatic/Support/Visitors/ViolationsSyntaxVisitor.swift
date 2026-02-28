@@ -71,11 +71,12 @@ class ViolationsSyntaxVisitor<Configuration: RuleConfiguration>: SyntaxVisitor {
     }
 
     private func shallSkip(_ node: some DeclSyntaxProtocol) -> SyntaxVisitorContinueKind {
-        skippableDeclarations.contains { $0 == node.syntaxNodeType } ? .skipChildren : .visitChildren
+        skippableDeclarations
+            .contains { $0 == node.syntaxNodeType } ? .skipChildren : .visitChildren
     }
 }
 
-extension Array where Element == any DeclSyntaxProtocol.Type {
+extension [any DeclSyntaxProtocol.Type] {
     /// All visitable declaration syntax types.
     static let all: Self = [
         ActorDeclSyntax.self,

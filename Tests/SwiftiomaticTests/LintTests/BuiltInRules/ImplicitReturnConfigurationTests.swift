@@ -1,40 +1,42 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite struct ImplicitReturnConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func implicitReturnConfigurationFromDictionary() throws {
-        var configuration = ImplicitReturnConfiguration(includedKinds: Set<ImplicitReturnConfiguration.ReturnKind>())
-        let config: [String: Any] = [
-            "severity": "error",
-            "included": [
-                "closure",
-                "function",
-                "getter",
-                "initializer",
-                "subscript",
-            ],
-        ]
+  @Test func implicitReturnConfigurationFromDictionary() throws {
+    var configuration = ImplicitReturnConfiguration(
+      includedKinds: Set<ImplicitReturnConfiguration.ReturnKind>())
+    let config: [String: Any] = [
+      "severity": "error",
+      "included": [
+        "closure",
+        "function",
+        "getter",
+        "initializer",
+        "subscript",
+      ],
+    ]
 
-        try configuration.apply(configuration: config)
-        let expectedKinds: Set<ImplicitReturnConfiguration.ReturnKind> = Set([
-            .closure,
-            .function,
-            .getter,
-            .initializer,
-            .subscript,
-        ])
-        #expect(configuration.severityConfiguration.severity == .error)
-        #expect(configuration.includedKinds == expectedKinds)
+    try configuration.apply(configuration: config)
+    let expectedKinds: Set<ImplicitReturnConfiguration.ReturnKind> = Set([
+      .closure,
+      .function,
+      .getter,
+      .initializer,
+      .subscript,
+    ])
+    #expect(configuration.severityConfiguration.severity == .error)
+    #expect(configuration.includedKinds == expectedKinds)
+  }
+
+  @Test func implicitReturnConfigurationThrowsOnUnrecognizedModifierGroup() {
+    var configuration = ImplicitReturnConfiguration()
+    let config = ["included": ["foreach"]] as [String: any Sendable]
+
+    checkError(Issue.invalidConfiguration(ruleID: ImplicitReturnRule.identifier)) {
+      try configuration.apply(configuration: config)
     }
-
-    @Test func implicitReturnConfigurationThrowsOnUnrecognizedModifierGroup() {
-        var configuration = ImplicitReturnConfiguration()
-        let config = ["included": ["foreach"]] as [String: any Sendable]
-
-        checkError(Issue.invalidConfiguration(ruleID: ImplicitReturnRule.identifier)) {
-            try configuration.apply(configuration: config)
-        }
-    }
+  }
 }

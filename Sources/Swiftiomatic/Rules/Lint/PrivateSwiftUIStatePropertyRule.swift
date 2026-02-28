@@ -20,7 +20,7 @@ struct PrivateSwiftUIStatePropertyRule: Rule {
         kind: .lint,
         nonTriggeringExamples: PrivateSwiftUIStatePropertyRuleExamples.nonTriggeringExamples,
         triggeringExamples: PrivateSwiftUIStatePropertyRuleExamples.triggeringExamples,
-        corrections: PrivateSwiftUIStatePropertyRuleExamples.corrections
+        corrections: PrivateSwiftUIStatePropertyRuleExamples.corrections,
     )
 }
 
@@ -138,7 +138,7 @@ private extension PrivateSwiftUIStatePropertyRule {
                 let privateModifier = DeclModifierSyntax(
                     leadingTrivia: node.bindingSpecifier.leadingTrivia,
                     name: .keyword(.private),
-                    trailingTrivia: .space
+                    trailingTrivia: .space,
                 )
 
                 let bindingSpecifier = node.bindingSpecifier.with(\.leadingTrivia, [])
@@ -152,7 +152,8 @@ private extension PrivateSwiftUIStatePropertyRule {
             // If any existing, violating access modifiers are present
             // then we should extract their trivia and
             // append it to the inserted private access level modifier
-            let existingAccessLevelModifiers = node.modifiers.filter { $0.asAccessLevelModifier != nil }
+            let existingAccessLevelModifiers = node.modifiers
+                .filter { $0.asAccessLevelModifier != nil }
             // Remove any existing access control modifiers, but preserve any of their leading and trailing trivia
             // Existing trivia will be appended to the rewritten access modifier
             let previousAccessModifierLeadingTrivia =
@@ -174,11 +175,11 @@ private extension PrivateSwiftUIStatePropertyRule {
             let privateModifier = DeclModifierSyntax(
                 leadingTrivia: previousAccessModifierLeadingTrivia,
                 name: .keyword(.private),
-                trailingTrivia: previousAccessModifierTrailingTrivia.merging(.space)
+                trailingTrivia: previousAccessModifierTrailingTrivia.merging(.space),
             )
 
             return DeclSyntax(
-                node.with(\.modifiers, [privateModifier] + filteredModifiers)
+                node.with(\.modifiers, [privateModifier] + filteredModifiers),
             )
         }
     }

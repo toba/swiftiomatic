@@ -6,7 +6,7 @@ private let outputQueue: DispatchQueue = {
     let queue = DispatchQueue(
         label: "io.realm.swiftlint.outputQueue",
         qos: .userInteractive,
-        target: .global(qos: .userInteractive)
+        target: .global(qos: .userInteractive),
     )
 
     defer {
@@ -28,7 +28,7 @@ private func setupAtExitHandler() {
 /// A thread-safe version of Swift's standard `print()`.
 ///
 /// - parameter object: Object to print.
-func queuedPrint<T: Sendable>(_ object: T) {
+func queuedPrint(_ object: some Sendable) {
     outputQueue.async {
         print(object)
     }

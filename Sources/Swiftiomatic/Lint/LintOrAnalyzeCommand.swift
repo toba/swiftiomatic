@@ -1,7 +1,7 @@
 @preconcurrency import Darwin
-import Dispatch
 import Foundation
 import SourceKittenFramework
+import Synchronization
 
 // swiftlint:disable file_length
 
@@ -10,19 +10,19 @@ enum LintOrAnalyzeMode {
 
     var imperative: String {
         switch self {
-        case .lint:
-            return "lint"
-        case .analyze:
-            return "analyze"
+            case .lint:
+                return "lint"
+            case .analyze:
+                return "analyze"
         }
     }
 
     var verb: String {
         switch self {
-        case .lint:
-            return "linting"
-        case .analyze:
-            return "analyzing"
+            case .lint:
+                return "linting"
+            case .analyze:
+                return "analyzing"
         }
     }
 }
@@ -75,7 +75,7 @@ enum LintOrAnalyzeCommand {
                     description: """
                     Could not change working directory to '\(workingDirectory)'. \
                     Make sure it exists and is accessible.
-                    """
+                    """,
                 )
             }
         }
@@ -91,7 +91,7 @@ enum LintOrAnalyzeCommand {
             try Baseline(violations: builder.unfilteredViolations).write(toPath: baselineOutputPath)
         }
         let numberOfSeriousViolations = try Signposts.record(
-            name: "LintOrAnalyzeCommand.PostProcessViolations"
+            name: "LintOrAnalyzeCommand.PostProcessViolations",
         ) {
             try postProcessViolations(files: files, builder: builder)
         }
@@ -107,11 +107,10 @@ enum LintOrAnalyzeCommand {
         -> [SwiftLintFile]
     {
         let options = builder.options
-        let visitorMutationQueue = DispatchQueue(label: "io.realm.swiftlint.lintVisitorMutation")
         let baseline = try baseline(options, builder.configuration)
         return try await builder.configuration.visitLintableFiles(
             options: options, cache: builder.cache,
-            storage: builder.storage
+            storage: builder.storage,
         ) { linter in
             let currentViolations: [StyleViolation]
             if options.benchmark {
@@ -124,24 +123,24 @@ enum LintOrAnalyzeCommand {
                     options: options,
                     strict: builder.configuration.strict,
                     lenient: builder.configuration.lenient,
-                    violations: violationsBeforeLeniency
+                    violations: violationsBeforeLeniency,
                 )
-                visitorMutationQueue.sync {
-                    builder.fileBenchmark.record(file: linter.file, from: start)
-                    currentRuleTimes.forEach { builder.ruleBenchmark.record(id: $0, time: $1) }
+                builder.state.withLock { state in
+                    state.fileBenchmark.record(file: linter.file, from: start)
+                    currentRuleTimes.forEach { state.ruleBenchmark.record(id: $0, time: $1) }
                 }
             } else {
                 currentViolations = applyLeniency(
                     options: options,
                     strict: builder.configuration.strict,
                     lenient: builder.configuration.lenient,
-                    violations: linter.styleViolations(using: builder.storage)
+                    violations: linter.styleViolations(using: builder.storage),
                 )
             }
             let filteredViolations = baseline?.filter(currentViolations) ?? currentViolations
-            visitorMutationQueue.sync {
-                builder.unfilteredViolations += currentViolations
-                builder.violations += filteredViolations
+            builder.state.withLock { state in
+                state.unfilteredViolations += currentViolations
+                state.violations += filteredViolations
             }
 
             linter.file.invalidateCache()
@@ -151,32 +150,35 @@ enum LintOrAnalyzeCommand {
 
     private static func postProcessViolations(
         files: [SwiftLintFile],
-        builder: LintOrAnalyzeResultBuilder
+        builder: LintOrAnalyzeResultBuilder,
     ) throws -> Int {
         let options = builder.options
         let configuration = builder.configuration
-        if isWarningThresholdBroken(configuration: configuration, violations: builder.violations),
+        let violations = builder.violations
+        if isWarningThresholdBroken(configuration: configuration, violations: violations),
            !options.lenient
         {
-            builder.violations.append(
-                createThresholdViolation(threshold: configuration.warningThreshold!)
-            )
-            builder.report(violations: [builder.violations.last!], realtimeCondition: true)
+            let threshold = createThresholdViolation(threshold: configuration.warningThreshold!)
+            builder.state.withLock { $0.violations.append(threshold) }
+            builder.report(violations: [threshold], realtimeCondition: true)
         }
-        builder.report(violations: builder.violations, realtimeCondition: false)
-        let numberOfSeriousViolations = builder.violations.filter { $0.severity == .error }.count
+        let allViolations = builder.violations
+        builder.report(violations: allViolations, realtimeCondition: false)
+        let numberOfSeriousViolations = allViolations.count(where: { $0.severity == .error })
         if !options.quiet {
             printStatus(
-                violations: builder.violations, files: files, serious: numberOfSeriousViolations,
-                verb: options.verb
+                violations: allViolations, files: files, serious: numberOfSeriousViolations,
+                verb: options.verb,
             )
         }
         if options.benchmark {
-            builder.fileBenchmark.save()
-            for (id, time) in CustomRuleTimer.shared.dump() {
-                builder.ruleBenchmark.record(id: id, time: time)
+            builder.state.withLock { state in
+                state.fileBenchmark.save()
+                for (id, time) in CustomRuleTimer.shared.dump() {
+                    state.ruleBenchmark.record(id: id, time: time)
+                }
+                state.ruleBenchmark.save()
             }
-            builder.ruleBenchmark.save()
             if !options.quiet, let memoryUsage = memoryUsage() {
                 queuedPrintError(memoryUsage)
             }
@@ -204,23 +206,23 @@ enum LintOrAnalyzeCommand {
     }
 
     private static func printStatus(
-        violations: [StyleViolation], files: [SwiftLintFile], serious: Int, verb: String
+        violations: [StyleViolation], files: [SwiftLintFile], serious: Int, verb: String,
     ) {
         let pluralSuffix = { (collection: [Any]) -> String in
             collection.count != 1 ? "s" : ""
         }
         queuedPrintError(
             "Done \(verb)! Found \(violations.count) violation\(pluralSuffix(violations)), "
-                + "\(serious) serious in \(files.count) file\(pluralSuffix(files))."
+                + "\(serious) serious in \(files.count) file\(pluralSuffix(files)).",
         )
     }
 
     private static func isWarningThresholdBroken(
         configuration: Configuration,
-        violations: [StyleViolation]
+        violations: [StyleViolation],
     ) -> Bool {
         guard let warningThreshold = configuration.warningThreshold else { return false }
-        let numberOfWarningViolations = violations.filter { $0.severity == .warning }.count
+        let numberOfWarningViolations = violations.count(where: { $0.severity == .warning })
         return numberOfWarningViolations >= warningThreshold
     }
 
@@ -229,13 +231,13 @@ enum LintOrAnalyzeCommand {
             identifier: "warning_threshold",
             name: "Warning Threshold",
             description: "Number of warnings thrown is above the threshold",
-            kind: .lint
+            kind: .lint,
         )
         return StyleViolation(
             ruleDescription: description,
             severity: .error,
             location: Location(file: "", line: 0, character: 0),
-            reason: "Number of warnings exceeded threshold of \(threshold)."
+            reason: "Number of warnings exceeded threshold of \(threshold).",
         )
     }
 
@@ -243,34 +245,34 @@ enum LintOrAnalyzeCommand {
         options: LintOrAnalyzeOptions,
         strict: Bool,
         lenient: Bool,
-        violations: [StyleViolation]
+        violations: [StyleViolation],
     ) -> [StyleViolation] {
         let leniency = options.leniency(strict: strict, lenient: lenient)
 
         switch leniency {
-        case (false, false):
-            return violations
+            case (false, false):
+                return violations
 
-        case (false, true):
-            return violations.map {
-                if $0.severity == .error {
-                    return $0.with(severity: .warning)
+            case (false, true):
+                return violations.map {
+                    if $0.severity == .error {
+                        return $0.with(severity: .warning)
+                    }
+                    return $0
                 }
-                return $0
-            }
 
-        case (true, false):
-            return violations.map {
-                if $0.severity == .warning {
-                    return $0.with(severity: .error)
+            case (true, false):
+                return violations.map {
+                    if $0.severity == .warning {
+                        return $0.with(severity: .error)
+                    }
+                    return $0
                 }
-                return $0
-            }
 
-        case (true, true):
-            queuedFatalError(
-                "Invalid command line or config options: 'strict' and 'lenient' are mutually exclusive."
-            )
+            case (true, true):
+                queuedFatalError(
+                    "Invalid command line or config options: 'strict' and 'lenient' are mutually exclusive.",
+                )
         }
     }
 
@@ -283,10 +285,10 @@ enum LintOrAnalyzeCommand {
                 .visitLintableFiles(options: options, cache: nil, storage: storage) { linter in
                     if options.format {
                         switch configuration.indentation {
-                        case .tabs:
-                            linter.format(useTabs: true, indentWidth: 4)
-                        case let .spaces(count):
-                            linter.format(useTabs: false, indentWidth: count)
+                            case .tabs:
+                                linter.format(useTabs: true, indentWidth: 4)
+                            case let .spaces(count):
+                                linter.format(useTabs: false, indentWidth: count)
                         }
                     }
 
@@ -299,7 +301,7 @@ enum LintOrAnalyzeCommand {
                                 Correction(
                                     ruleName: $0.0,
                                     filePath: linter.file.path,
-                                    numberOfCorrections: $0.1
+                                    numberOfCorrections: $0.1,
                                 )
                             }
                             if options.progress {
@@ -329,18 +331,30 @@ enum LintOrAnalyzeCommand {
     }
 }
 
-private class LintOrAnalyzeResultBuilder {
-    var fileBenchmark = Benchmark(name: "files")
-    var ruleBenchmark = Benchmark(name: "rules")
-    /// All detected violations, unfiltered by the baseline, if any.
-    var unfilteredViolations = [StyleViolation]()
-    /// The violations to be reported, possibly filtered by a baseline, plus any threshold violations.
-    var violations = [StyleViolation]()
+private final class LintOrAnalyzeResultBuilder {
+    struct MutableState {
+        var fileBenchmark = Benchmark(name: "files")
+        var ruleBenchmark = Benchmark(name: "rules")
+        /// All detected violations, unfiltered by the baseline, if any.
+        var unfilteredViolations = [StyleViolation]()
+        /// The violations to be reported, possibly filtered by a baseline, plus any threshold violations.
+        var violations = [StyleViolation]()
+    }
+
+    let state = Mutex(MutableState())
     let storage = RuleStorage()
     let configuration: Configuration
     let reporter: any Reporter.Type
     let cache: LinterCache?
     let options: LintOrAnalyzeOptions
+
+    var unfilteredViolations: [StyleViolation] {
+        get { state.withLock { $0.unfilteredViolations } }
+    }
+
+    var violations: [StyleViolation] {
+        get { state.withLock { $0.violations } }
+    }
 
     init(_ options: LintOrAnalyzeOptions) {
         let config = Signposts.record(name: "LintOrAnalyzeCommand.ParseConfiguration") {
@@ -365,7 +379,9 @@ private class LintOrAnalyzeResultBuilder {
     }
 
     func report(violations: [StyleViolation], realtimeCondition: Bool) {
-        if (reporter.isRealtime && (!options.progress || options.output != nil)) == realtimeCondition {
+        if (reporter.isRealtime && (!options.progress || options.output != nil)) ==
+            realtimeCondition
+        {
             let report = reporter.generateReport(violations)
             if !report.isEmpty {
                 options.writeToOutput(report)
@@ -395,7 +411,9 @@ extension LintOrAnalyzeOptions {
     typealias Leniency = (strict: Bool, lenient: Bool)
 
     /// Config file settings can be overridden by either `--strict` or `--lenient` command line options.
-    func leniency(strict configurationStrict: Bool, lenient configurationLenient: Bool) -> Leniency {
+    func leniency(strict configurationStrict: Bool,
+                  lenient configurationLenient: Bool) -> Leniency
+    {
         let strict = strict || (configurationStrict && !lenient)
         let lenient = lenient || (configurationLenient && !self.strict)
         return Leniency(strict: strict, lenient: lenient)
@@ -422,7 +440,10 @@ private func memoryUsage() -> String? {
     }
 
     if kerr == KERN_SUCCESS {
-        let bytes = Measurement<UnitInformationStorage>(value: Double(info.resident_size), unit: .bytes)
+        let bytes = Measurement<UnitInformationStorage>(
+            value: Double(info.resident_size),
+            unit: .bytes,
+        )
         let formatted = ByteCountFormatter().string(from: bytes)
         return "Memory used: \(formatted)"
     }

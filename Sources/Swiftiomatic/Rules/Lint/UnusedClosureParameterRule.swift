@@ -12,7 +12,7 @@ struct UnusedClosureParameterRule: Rule {
         kind: .lint,
         nonTriggeringExamples: UnusedClosureParameterRuleExamples.nonTriggering,
         triggeringExamples: UnusedClosureParameterRuleExamples.triggering,
-        corrections: UnusedClosureParameterRuleExamples.corrections
+        corrections: UnusedClosureParameterRuleExamples.corrections,
     )
 }
 
@@ -71,11 +71,14 @@ private extension UnusedClosureParameterRule {
                     numberOfCorrections += 1
                     let newParameterList = newParams.parameters.with(
                         \.[index],
-                        param.with(\.firstName, name.with(\.tokenKind, .wildcard))
+                        param.with(\.firstName, name.with(\.tokenKind, .wildcard)),
                     )
                     newParams = newParams.with(\.parameters, newParameterList)
                 }
-                let newNode = node.with(\.signature, signature.with(\.parameterClause, .init(newParams)))
+                let newNode = node.with(
+                    \.signature,
+                    signature.with(\.parameterClause, .init(newParams)),
+                )
                 return super.visit(newNode)
             }
 
@@ -90,10 +93,13 @@ private extension UnusedClosureParameterRule {
                 numberOfCorrections += 1
                 newParams = newParams.with(
                     \.[index],
-                    param.with(\.name, param.name.with(\.tokenKind, .wildcard))
+                    param.with(\.name, param.name.with(\.tokenKind, .wildcard)),
                 )
             }
-            let newNode = node.with(\.signature, signature.with(\.parameterClause, .init(newParams)))
+            let newNode = node.with(
+                \.signature,
+                signature.with(\.parameterClause, .init(newParams)),
+            )
             return super.visit(newNode)
         }
     }
@@ -130,18 +136,20 @@ private extension ClosureExprSyntax {
                 }
                 return ClosureParam(
                     position: param.name.positionAfterSkippingLeadingTrivia,
-                    name: param.name.text.removingDollarsAndBackticks
+                    name: param.name.text.removingDollarsAndBackticks,
                 )
             }
         }
-        if let params = signature?.parameterClause?.as(ClosureParameterClauseSyntax.self)?.parameters {
+        if let params = signature?.parameterClause?.as(ClosureParameterClauseSyntax.self)?
+            .parameters
+        {
             return params.compactMap { param in
                 if param.firstName.tokenKind == .wildcard {
                     return nil
                 }
                 return ClosureParam(
                     position: param.firstName.positionAfterSkippingLeadingTrivia,
-                    name: param.firstName.text.removingDollarsAndBackticks
+                    name: param.firstName.text.removingDollarsAndBackticks,
                 )
             }
         }

@@ -14,7 +14,7 @@ struct SwiftUILayoutRule: Rule {
         ],
         triggeringExamples: [
             Example("NavigationStack { ↓NavigationStack { Text(\"Hello\") } }"),
-        ]
+        ],
     )
 }
 
@@ -37,17 +37,17 @@ private extension SwiftUILayoutRule {
             }
 
             if let issue = SwiftUIContainerHelpers.checkNestedNavigationStack(
-                callee: callee, containerStack: containerStack
+                callee: callee, containerStack: containerStack,
             ) {
                 emitIssue(issue, at: node)
             }
             if let issue = SwiftUIContainerHelpers.checkListInsideScrollView(
-                callee: callee, containerStack: containerStack
+                callee: callee, containerStack: containerStack,
             ) {
                 emitIssue(issue, at: node)
             }
             if let issue = SwiftUIContainerHelpers.checkGeometryReaderInsideScrollView(
-                callee: callee, containerStack: containerStack
+                callee: callee, containerStack: containerStack,
             ) {
                 emitIssue(issue, at: node)
             }
@@ -55,7 +55,7 @@ private extension SwiftUILayoutRule {
             containerStack.append(callee)
 
             if let issue = SwiftUIContainerHelpers.checkMultipleUnboundedContainers(
-                containerStack: containerStack
+                containerStack: containerStack,
             ) {
                 emitIssue(issue, at: node)
             }
@@ -73,7 +73,7 @@ private extension SwiftUILayoutRule {
 
         private func emitIssue(
             _ issue: SwiftUIContainerHelpers.LayoutIssue,
-            at node: FunctionCallExprSyntax
+            at node: FunctionCallExprSyntax,
         ) {
             violations.append(
                 ReasonedRuleViolation(
@@ -81,8 +81,8 @@ private extension SwiftUILayoutRule {
                     reason: issue.reason,
                     severity: issue.isHighSeverity ? .error : .warning,
                     confidence: issue.isHighSeverity ? .high : .medium,
-                    suggestion: issue.suggestion
-                )
+                    suggestion: issue.suggestion,
+                ),
             )
         }
     }

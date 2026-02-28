@@ -1,5 +1,3 @@
-// FormatEngine.swift — Simplified public API for the SwiftFormat engine
-
 import Foundation
 
 /// A configured formatting engine that can format or lint Swift source code.
@@ -9,7 +7,7 @@ struct FormatEngine: Sendable {
 
     init(
         rules: [FormatRule] = FormatRules.default,
-        options: FormatOptions = .default
+        options: FormatOptions = .default,
     ) {
         self.rules = rules
         self.options = options
@@ -18,14 +16,21 @@ struct FormatEngine: Sendable {
     /// Format Swift source code, returning the formatted output.
     func format(_ source: String) throws -> String {
         let tokens = tokenize(source)
-        let output = try applyRules(rules, to: tokens, with: options, trackChanges: true, range: nil)
+        let output = try applyRules(
+            rules,
+            to: tokens,
+            with: options,
+            trackChanges: true,
+            range: nil,
+        )
         return sourceCode(for: output.tokens)
     }
 
     /// Lint Swift source code, returning changes that would be made.
     func lint(_ source: String) throws -> [Formatter.Change] {
         let tokens = tokenize(source)
-        return try applyRules(rules, to: tokens, with: options, trackChanges: true, range: nil).changes
+        return try applyRules(rules, to: tokens, with: options, trackChanges: true, range: nil)
+            .changes
     }
 
     /// Lint Swift source code with a file path for diagnostic output.
@@ -40,7 +45,7 @@ struct FormatEngine: Sendable {
     init(
         enable: [String] = [],
         disable: [String] = [],
-        options: FormatOptions = .default
+        options: FormatOptions = .default,
     ) {
         var activeRules = FormatRules.default
         if !enable.isEmpty {

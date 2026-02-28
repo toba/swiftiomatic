@@ -1,18 +1,10 @@
-//
-//  RedundantInit.swift
-//  SwiftFormat
-//
-//  Created by Alejandro Martínez on 6/19/17.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Strip redundant `.init` from type instantiations
     static let redundantInit = FormatRule(
         help: "Remove explicit `init` if not required.",
-        orderAfter: [.propertyTypes]
+        orderAfter: [.propertyTypes],
     ) { formatter in
         formatter.forEach(.identifier("init")) { initIndex, _ in
             guard
@@ -20,30 +12,40 @@ extension FormatRule {
                     of: .nonSpaceOrCommentOrLinebreak, before: initIndex,
                     if: {
                         $0.isOperator(".")
-                    }
+                    },
                 ),
                 let openParenOrOpenBraceIndex = formatter.index(
                     of: .nonSpaceOrLinebreak, after: initIndex,
                     if: {
                         $0 == .startOfScope("(") || $0 == .startOfScope("{")
-                    }
-                ), let closeParenOrCloseBraceIndex = formatter.endOfScope(at: openParenOrOpenBraceIndex),
+                    },
+                ),
+                let closeParenOrCloseBraceIndex = formatter
+                .endOfScope(at: openParenOrOpenBraceIndex),
                 formatter.last(.nonSpaceOrCommentOrLinebreak, before: closeParenOrCloseBraceIndex)
                 != .delimiter(":"),
-                let prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: dotIndex),
+                let prevIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak,
+                    before: dotIndex,
+                ),
                 let prevToken = formatter.token(at: prevIndex),
                 formatter.isValidEndOfType(at: prevIndex),
                 // Find and parse the type that comes before the .init call
                 let startOfTypeIndex = Array(0 ..< dotIndex).reversed().last(where: { typeIndex in
                     guard let type = formatter.parseType(at: typeIndex) else { return false }
                     return
-                        (formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: type.range.upperBound)
-                                == dotIndex
-                                // Since `Foo.init` is potentially a valid type, the `.init` may be parsed as part of the type name
-                                || type.range.upperBound == initIndex)
-                            // If this is actually a method call like `type(of: foo).init()`, the token before the "type"
-                            // (which in this case looks like a tuple) will be an identifier.
-                            && !(formatter.last(.nonSpaceOrComment, before: typeIndex)?.isIdentifier ?? false)
+                        (formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak,
+                            after: type.range.upperBound,
+                        )
+                            == dotIndex
+                            // Since `Foo.init` is potentially a valid type, the `.init` may be parsed as part of the type name
+                            || type.range.upperBound == initIndex)
+                        // If this is actually a method call like `type(of: foo).init()`, the token before the "type"
+                        // (which in this case looks like a tuple) will be an identifier.
+                        &&
+                        !(formatter.last(.nonSpaceOrComment, before: typeIndex)?
+                            .isIdentifier ?? false)
                 }),
                 let type = formatter.parseType(at: startOfTypeIndex),
                 // Filter out values that start with a lowercase letter.
@@ -59,16 +61,16 @@ extension FormatRule {
             }
             var j = dotIndex
             while let prevIndex = formatter.index(
-                of: prevToken, before: j
+                of: prevToken, before: j,
             )
                 ?? formatter.index(
-                    of: .startOfScope, before: j
+                    of: .startOfScope, before: j,
                 )
             {
                 j = prevIndex
                 if prevToken == formatter.tokens[prevIndex],
                    let prevPrevToken = formatter.last(
-                       .nonSpaceOrCommentOrLinebreak, before: prevIndex
+                       .nonSpaceOrCommentOrLinebreak, before: prevIndex,
                    ), [.keyword("let"), .keyword("var")].contains(prevPrevToken)
                 {
                     return

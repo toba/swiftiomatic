@@ -17,7 +17,7 @@ struct MultilineCallArgumentsRule: Rule {
                     param3: []
                 )
                 """,
-                configuration: ["max_number_of_single_line_parameters": 2]
+                configuration: ["max_number_of_single_line_parameters": 2],
             ),
             Example(
                 """
@@ -25,21 +25,21 @@ struct MultilineCallArgumentsRule: Rule {
                     param2: false,
                     param3: [])
                 """,
-                configuration: ["max_number_of_single_line_parameters": 1]
+                configuration: ["max_number_of_single_line_parameters": 1],
             ),
             Example(
                 "foo(param1: 1, param2: false)",
-                configuration: ["max_number_of_single_line_parameters": 2]
+                configuration: ["max_number_of_single_line_parameters": 2],
             ),
             Example(
                 "Enum.foo(param1: 1, param2: false)",
-                configuration: ["max_number_of_single_line_parameters": 2]
+                configuration: ["max_number_of_single_line_parameters": 2],
             ),
             Example("foo(param1: 1)", configuration: ["allows_single_line": false]),
             Example("Enum.foo(param1: 1)", configuration: ["allows_single_line": false]),
             Example(
                 "Enum.foo(param1: 1, param2: 2, param3: 3)",
-                configuration: ["allows_single_line": true]
+                configuration: ["allows_single_line": true],
             ),
             Example(
                 """
@@ -49,35 +49,38 @@ struct MultilineCallArgumentsRule: Rule {
                     param3: 3
                 )
                 """,
-                configuration: ["allows_single_line": false]
+                configuration: ["allows_single_line": false],
             ),
         ],
         triggeringExamples: [
             Example(
                 "↓foo(param1: 1, param2: false, param3: [])",
-                configuration: ["max_number_of_single_line_parameters": 2]
+                configuration: ["max_number_of_single_line_parameters": 2],
             ),
             Example(
                 "↓Enum.foo(param1: 1, param2: false, param3: [])",
-                configuration: ["max_number_of_single_line_parameters": 2]
+                configuration: ["max_number_of_single_line_parameters": 2],
             ),
             Example(
                 """
                 ↓foo(param1: 1, param2: false,
                         param3: [])
                 """,
-                configuration: ["max_number_of_single_line_parameters": 3]
+                configuration: ["max_number_of_single_line_parameters": 3],
             ),
             Example(
                 """
                 ↓Enum.foo(param1: 1, param2: false,
                         param3: [])
                 """,
-                configuration: ["max_number_of_single_line_parameters": 3]
+                configuration: ["max_number_of_single_line_parameters": 3],
             ),
             Example("↓foo(param1: 1, param2: false)", configuration: ["allows_single_line": false]),
-            Example("↓Enum.foo(param1: 1, param2: false)", configuration: ["allows_single_line": false]),
-        ]
+            Example(
+                "↓Enum.foo(param1: 1, param2: false)",
+                configuration: ["allows_single_line": false],
+            ),
+        ],
     )
 }
 
@@ -93,7 +96,7 @@ private extension MultilineCallArgumentsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionCallExprSyntax) {
             if containsViolation(
-                parameterPositions: node.arguments.map(\.positionAfterSkippingLeadingTrivia)
+                parameterPositions: node.arguments.map(\.positionAfterSkippingLeadingTrivia),
             ) {
                 violations.append(node.calledExpression.positionAfterSkippingLeadingTrivia)
             }
@@ -119,7 +122,9 @@ private extension MultilineCallArgumentsRule {
                     return numberOfParameters > 1
                 }
 
-                if let maxNumberOfSingleLineParameters = configuration.maxNumberOfSingleLineParameters {
+                if let maxNumberOfSingleLineParameters = configuration
+                    .maxNumberOfSingleLineParameters
+                {
                     return numberOfParameters > maxNumberOfSingleLineParameters
                 }
 

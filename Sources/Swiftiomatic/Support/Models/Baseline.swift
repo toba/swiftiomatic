@@ -20,8 +20,8 @@ private struct BaselineViolation: Codable, Hashable, Comparable {
                 // comparisons are independent of the absolute path
                 file: location.relativeFile,
                 line: location.line,
-                character: location.character
-            )
+                character: location.character,
+            ),
         )
         self.text = text
     }
@@ -85,23 +85,23 @@ struct Baseline: Equatable {
         let relativePathViolations = BaselineViolations(violations)
         let violationsWithAbsolutePaths = filter(
             relativePathViolations: relativePathViolations,
-            baselineViolations: baselineViolations
+            baselineViolations: baselineViolations,
         )
         return violations.filter { violationsWithAbsolutePaths.contains($0) }
     }
 
     private func filter(
-        relativePathViolations: BaselineViolations, baselineViolations: BaselineViolations
+        relativePathViolations: BaselineViolations, baselineViolations: BaselineViolations,
     ) -> Set<StyleViolation> {
         if relativePathViolations == baselineViolations {
             return []
         }
 
         let violationsByRuleIdentifier = relativePathViolations.groupedByRuleIdentifier(
-            filteredBy: baselineViolations
+            filteredBy: baselineViolations,
         )
         let baselineViolationsByRuleIdentifier = baselineViolations.groupedByRuleIdentifier(
-            filteredBy: relativePathViolations
+            filteredBy: relativePathViolations,
         )
 
         var filteredViolations: Set<BaselineViolation> = []
@@ -137,16 +137,20 @@ struct Baseline: Equatable {
     ///
     /// - parameter otherBaseline: The other `Baseline`.
     func compare(_ otherBaseline: Self) -> [StyleViolation] {
-        otherBaseline.baseline.flatMap { relativePath, otherBaselineViolations -> Set<StyleViolation> in
-            if let baselineViolations = baseline[relativePath] {
-                return filter(
-                    relativePathViolations: otherBaselineViolations, baselineViolations: baselineViolations
-                )
+        otherBaseline.baseline
+            .flatMap { relativePath, otherBaselineViolations -> Set<StyleViolation> in
+                if let baselineViolations = baseline[relativePath] {
+                    return filter(
+                        relativePathViolations: otherBaselineViolations,
+                        baselineViolations: baselineViolations,
+                    )
+                }
+                return Set(otherBaselineViolations.violationsWithAbsolutePaths)
+            }.sorted {
+                $0.location == $1.location ? $0.ruleIdentifier < $1.ruleIdentifier : $0
+                    .location < $1
+                    .location
             }
-            return Set(otherBaselineViolations.violationsWithAbsolutePaths)
-        }.sorted {
-            $0.location == $1.location ? $0.ruleIdentifier < $1.ruleIdentifier : $0.location < $1.location
-        }
     }
 }
 
@@ -155,7 +159,9 @@ private struct LineCache {
 
     mutating func text(at location: Location) -> String {
         let line = (location.line ?? 0) - 1
-        if line > 0, let file = location.file, let content = cached(file: file), line < content.count {
+        if line > 0, let file = location.file, let content = cached(file: file),
+           line < content.count
+        {
             return content[line]
         }
         return ""
@@ -173,7 +179,7 @@ private struct LineCache {
     }
 }
 
-private extension Sequence where Element == BaselineViolation {
+private extension Sequence<BaselineViolation> {
     init(_ violations: [StyleViolation]) where Self == BaselineViolations {
         var lineCache = LineCache()
         self = violations.map { $0.baselineViolation(text: lineCache.text(at: $0.location)) }
@@ -190,7 +196,10 @@ private extension Sequence where Element == BaselineViolation {
     func groupedByRuleIdentifier(filteredBy existingViolations: [BaselineViolation] = [])
         -> ViolationsPerRule
     {
-        Dictionary(grouping: Set(self).subtracting(existingViolations), by: \.violation.ruleIdentifier)
+        Dictionary(
+            grouping: Set(self).subtracting(existingViolations),
+            by: \.violation.ruleIdentifier,
+        )
     }
 }
 
@@ -203,7 +212,7 @@ private extension StyleViolation {
                 nil
             }
         let newLocation = Location(
-            file: absolutePath, line: location.line, character: location.character
+            file: absolutePath, line: location.line, character: location.character,
         )
         return with(location: newLocation)
     }

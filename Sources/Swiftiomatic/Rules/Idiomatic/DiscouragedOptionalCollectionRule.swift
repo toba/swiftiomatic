@@ -9,7 +9,7 @@ struct DiscouragedOptionalCollectionRule: Rule {
         description: "Prefer empty collection over optional collection",
         kind: .idiomatic,
         nonTriggeringExamples: DiscouragedOptionalCollectionExamples.nonTriggeringExamples,
-        triggeringExamples: DiscouragedOptionalCollectionExamples.triggeringExamples
+        triggeringExamples: DiscouragedOptionalCollectionExamples.triggeringExamples,
     )
 }
 

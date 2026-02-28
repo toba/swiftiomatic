@@ -19,7 +19,7 @@ struct ConditionalReturnsOnNewlineRule: Rule {
                 """
                 guard something
                 else { return }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -31,9 +31,9 @@ struct ConditionalReturnsOnNewlineRule: Rule {
             Example(
                 """
                 ↓guard condition else { XCTFail(); return }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -53,7 +53,8 @@ private extension ConditionalReturnsOnNewlineRule {
                 return
             }
 
-            if let elseBody = node.elseBody?.as(CodeBlockSyntax.self), let elseKeyword = node.elseKeyword,
+            if let elseBody = node.elseBody?.as(CodeBlockSyntax.self),
+               let elseKeyword = node.elseKeyword,
                isReturn(elseBody.statements.lastReturn, onTheSameLineAs: elseKeyword)
             {
                 violations.append(node.ifKeyword.positionAfterSkippingLeadingTrivia)
@@ -78,7 +79,7 @@ private extension ConditionalReturnsOnNewlineRule {
             }
 
             return locationConverter.location(
-                for: returnStmt.returnKeyword.positionAfterSkippingLeadingTrivia
+                for: returnStmt.returnKeyword.positionAfterSkippingLeadingTrivia,
             ).line == locationConverter.location(for: token.positionAfterSkippingLeadingTrivia).line
         }
     }

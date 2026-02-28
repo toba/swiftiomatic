@@ -47,7 +47,8 @@ struct RuleList {
 
         // Add rules where configuration exists
         for (key, configuration) in configurationDict {
-            guard let identifier = identifier(for: key), let ruleType = list[identifier] else { continue }
+            guard let identifier = identifier(for: key),
+                  let ruleType = list[identifier] else { continue }
             guard rules[identifier] == nil else { throw .duplicatedConfigurations(rule: ruleType) }
             do {
                 let configuredRule = try ruleType.init(configuration: configuration)
@@ -56,7 +57,7 @@ struct RuleList {
                         || ([Any].array(of: configuration))?.isEmpty == false
                 rules[identifier] = ConfigurationRuleWrapper(
                     rule: configuredRule,
-                    initializedWithNonEmptyConfiguration: isConfigured
+                    initializedWithNonEmptyConfiguration: isConfigured,
                 )
                 continue
             } catch let issue as Issue {

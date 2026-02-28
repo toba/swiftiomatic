@@ -1,11 +1,3 @@
-//
-//  PreferFinalClasses.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 2025-08-25.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -16,7 +8,7 @@ extension FormatRule {
         add a doc comment with mentioning "base class" or "subclass", make the class `open`, \
         or use a `// swiftformat:disable:next preferFinalClasses` directive.
         """,
-        disabledByDefault: true
+        disabledByDefault: true,
     ) { formatter in
         let declarations = formatter.parseDeclarations()
 
@@ -28,8 +20,14 @@ extension FormatRule {
             let keywordIndex = declaration.keywordIndex
 
             // Check if class already has final or open modifiers
-            let hasFinalModifier = formatter.modifiersForDeclaration(at: keywordIndex, contains: "final")
-            let hasOpenModifier = formatter.modifiersForDeclaration(at: keywordIndex, contains: "open")
+            let hasFinalModifier = formatter.modifiersForDeclaration(
+                at: keywordIndex,
+                contains: "final",
+            )
+            let hasOpenModifier = formatter.modifiersForDeclaration(
+                at: keywordIndex,
+                contains: "open",
+            )
 
             // Only add final if the class doesn't already have final or open
             guard !hasFinalModifier, !hasOpenModifier else { return }
@@ -43,12 +41,15 @@ extension FormatRule {
             if let classBody = declaration.body {
                 for childDeclaration in classBody {
                     guard
-                        formatter.modifiersForDeclaration(at: childDeclaration.keywordIndex, contains: "open")
+                        formatter.modifiersForDeclaration(
+                            at: childDeclaration.keywordIndex,
+                            contains: "open",
+                        )
                     else { continue }
 
                     // Replace "open" with "public" for direct child declarations
                     if let openIndex = formatter.indexOfModifier(
-                        "open", forDeclarationAt: childDeclaration.keywordIndex
+                        "open", forDeclarationAt: childDeclaration.keywordIndex,
                     ) {
                         formatter.replaceToken(at: openIndex, with: .keyword("public"))
                     }

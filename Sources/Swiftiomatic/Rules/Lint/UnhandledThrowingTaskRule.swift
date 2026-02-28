@@ -19,21 +19,21 @@ struct UnhandledThrowingTaskRule: Rule {
                 Task<Void, Never> {
                   try await myThrowingFunction()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 Task {
                   try? await myThrowingFunction()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 Task {
                   try! await myThrowingFunction()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -41,7 +41,7 @@ struct UnhandledThrowingTaskRule: Rule {
                   let text = try myThrowingFunction()
                   return text
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -52,7 +52,7 @@ struct UnhandledThrowingTaskRule: Rule {
                     print(e)
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -68,42 +68,42 @@ struct UnhandledThrowingTaskRule: Rule {
 
                   try something()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let task = Task {
                   try await myThrowingFunction()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 var task = Task {
                   try await myThrowingFunction()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 try await Task {
                   try await myThrowingFunction()
                 }.value
-                """
+                """,
             ),
             Example(
                 """
                 executor.task = Task {
                   try await isolatedOpen(.init(executor.asUnownedSerialExecutor()))
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let result = await Task {
                   throw CancellationError()
                 }.result
-                """
+                """,
             ),
             Example(
                 """
@@ -112,7 +112,7 @@ struct UnhandledThrowingTaskRule: Rule {
                     try await someThrowingFunction()
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -122,7 +122,7 @@ struct UnhandledThrowingTaskRule: Rule {
                     try await someThrowingFunction()
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -131,7 +131,7 @@ struct UnhandledThrowingTaskRule: Rule {
                       try someThrowingFunc()
                   }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -140,7 +140,7 @@ struct UnhandledThrowingTaskRule: Rule {
                 ↓Task {
                   try await myThrowingFunction()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -148,7 +148,7 @@ struct UnhandledThrowingTaskRule: Rule {
                   let text = try myThrowingFunction()
                   return text
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -157,7 +157,7 @@ struct UnhandledThrowingTaskRule: Rule {
                     try myThrowingFunction()
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -168,7 +168,7 @@ struct UnhandledThrowingTaskRule: Rule {
                     print(e)
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -177,28 +177,28 @@ struct UnhandledThrowingTaskRule: Rule {
                     throw FooError.bar
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 ↓Task {
                   throw FooError.bar
                 }
-                """
+                """,
             ),
             Example(
                 """
                 ↓Task<_, _> {
                   throw FooError.bar
                 }
-                """
+                """,
             ),
             Example(
                 """
                 ↓Task<Void,_> {
                   throw FooError.bar
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -209,7 +209,7 @@ struct UnhandledThrowingTaskRule: Rule {
                     try bar()
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -220,7 +220,7 @@ struct UnhandledThrowingTaskRule: Rule {
                     throw BarError()
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -229,9 +229,9 @@ struct UnhandledThrowingTaskRule: Rule {
                     try await someThrowingFunction()
                   }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -338,7 +338,10 @@ private final class ThrowsVisitor: SyntaxVisitor {
         }
 
         // Check the catch clause tree for unhandled throws.
-        if ThrowsVisitor(viewMode: .sourceAccurate).walk(tree: lastCatchClause, handler: \.doesThrow) {
+        if ThrowsVisitor(viewMode: .sourceAccurate).walk(
+            tree: lastCatchClause,
+            handler: \.doesThrow,
+        ) {
             doesThrow = true
         }
 

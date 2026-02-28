@@ -17,11 +17,11 @@ enum RuleIdentifier: Hashable, ExpressibleByStringLiteral, Comparable, Sendable 
     /// The spelling of the string for this identifier.
     var stringRepresentation: String {
         switch self {
-        case .all:
-            return Self.allStringRepresentation
+            case .all:
+                return Self.allStringRepresentation
 
-        case let .single(identifier):
-            return identifier
+            case let .single(identifier):
+                return identifier
         }
     }
 

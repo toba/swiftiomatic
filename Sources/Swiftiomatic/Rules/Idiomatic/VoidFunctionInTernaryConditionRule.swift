@@ -17,41 +17,41 @@ struct VoidFunctionInTernaryConditionRule: Rule {
                 } else {
                     exit()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 var price: Double {
                     return hasDiscount ? calculatePriceWithDiscount() : calculateRegularPrice()
                 }
-                """
+                """,
             ),
             Example("foo(x == 2 ? a() : b())"),
             Example(
                 """
                 chevronView.image = collapsed ? .icon(.mediumChevronDown) : .icon(.mediumChevronUp)
-                """
+                """,
             ),
             Example(
                 """
                 array.map { elem in
                     elem.isEmpty() ? .emptyValue() : .number(elem)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func compute(data: [Int]) -> Int {
                     data.isEmpty ? 0 : expensiveComputation(data)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 var value: Int {
                     mode == .fast ? fastComputation() : expensiveComputation()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -60,7 +60,7 @@ struct VoidFunctionInTernaryConditionRule: Rule {
                         mode == .fast ? fastComputation() : expensiveComputation()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -68,13 +68,13 @@ struct VoidFunctionInTernaryConditionRule: Rule {
                     get {
                         index == 0 ? defaultValue() : compute(index)
                     }
-                """
+                """,
             ),
             Example(
                 """
                 subscript(index: Int) -> Int {
                     index == 0 ? defaultValue() : compute(index)
-                """
+                """,
             ),
             Example(
                 """
@@ -84,7 +84,7 @@ struct VoidFunctionInTernaryConditionRule: Rule {
                 a *= b ? c() : d()
                 a &<<= b ? c() : d()
                 a &-= b ? c() : d()
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -95,7 +95,7 @@ struct VoidFunctionInTernaryConditionRule: Rule {
                     elem.isEmpty() ↓? .emptyValue() : .number(elem)
                     return 1
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -106,14 +106,14 @@ struct VoidFunctionInTernaryConditionRule: Rule {
                         : self.tableView.insertRows(at: [IndexPath(row: 0, section: section)], with: .automatic)
                     self.tableView.scrollToRow(at: IndexPath(row: NSNotFound, section: section), at: .top, animated: true)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 subscript(index: Int) -> Int {
                     index == 0 ↓? something() : somethingElse(index)
                     return index
-                """
+                """,
             ),
             Example(
                 """
@@ -121,7 +121,7 @@ struct VoidFunctionInTernaryConditionRule: Rule {
                     mode == .fast ↓? something() : somethingElse()
                     return 0
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -131,7 +131,7 @@ struct VoidFunctionInTernaryConditionRule: Rule {
                         return 0
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -140,9 +140,9 @@ struct VoidFunctionInTernaryConditionRule: Rule {
                         index == 0 ↓? something() : somethingElse(index)
                         return index
                     }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

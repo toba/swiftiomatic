@@ -1,5 +1,5 @@
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct TypeContentsOrderRule: Rule {
     var configuration = TypeContentsOrderConfiguration()
@@ -10,7 +10,7 @@ struct TypeContentsOrderRule: Rule {
         description: "Specifies the order of subtypes, properties, methods & more within a type.",
         kind: .style,
         nonTriggeringExamples: TypeContentsOrderRuleExamples.nonTriggeringExamples,
-        triggeringExamples: TypeContentsOrderRuleExamples.triggeringExamples
+        triggeringExamples: TypeContentsOrderRuleExamples.triggeringExamples,
     )
 }
 
@@ -88,13 +88,14 @@ private extension TypeContentsOrderRule {
                     let content = category.rawValue
                     let expected = expectedTypesContents.map(\.rawValue).joined(separator: ",")
                     let article =
-                        ["a", "e", "i", "o", "u"].contains(content.substring(from: 0, length: 1)) ? "An" : "A"
+                        ["a", "e", "i", "o", "u"]
+                            .contains(content.substring(from: 0, length: 1)) ? "An" : "A"
                     violations.append(
                         .init(
                             position: sortedCategories[index].position,
                             reason:
-                            "\(article) '\(content)' should not be placed amongst the type content(s) '\(expected)'"
-                        )
+                            "\(article) '\(content)' should not be placed amongst the type content(s) '\(expected)'",
+                        ),
                     )
                 }
             }
@@ -102,7 +103,7 @@ private extension TypeContentsOrderRule {
 
         // swiftlint:disable:next cyclomatic_complexity
         private func categorize(member: MemberBlockItemSyntax) -> (
-            position: AbsolutePosition, category: TypeContent
+            position: AbsolutePosition, category: TypeContent,
         )? {
             let decl = member.decl
             if let decl = decl.as(EnumCaseDeclSyntax.self) {
@@ -112,14 +113,18 @@ private extension TypeContentsOrderRule {
                 return (decl.typealiasKeyword.positionAfterSkippingLeadingTrivia, .typeAlias)
             }
             if let decl = decl.as(AssociatedTypeDeclSyntax.self) {
-                return (decl.associatedtypeKeyword.positionAfterSkippingLeadingTrivia, .associatedType)
+                return (
+                    decl.associatedtypeKeyword.positionAfterSkippingLeadingTrivia,
+                    .associatedType,
+                )
             }
             if let decl = decl.asProtocol((any DeclGroupSyntax).self) {
                 return (decl.introducer.positionAfterSkippingLeadingTrivia, .subtype)
             }
             if let decl = decl.as(VariableDeclSyntax.self) {
                 let position =
-                    decl.modifiers.first(where: \.isStaticOrClass)?.positionAfterSkippingLeadingTrivia
+                    decl.modifiers.first(where: \.isStaticOrClass)?
+                        .positionAfterSkippingLeadingTrivia
                         ?? decl.bindingSpecifier.positionAfterSkippingLeadingTrivia
                 if decl.modifiers.containsStaticOrClass {
                     return (position, .typeProperty)
@@ -134,7 +139,8 @@ private extension TypeContentsOrderRule {
             }
             if let decl = decl.as(FunctionDeclSyntax.self) {
                 let position =
-                    decl.modifiers.first(where: \.isStaticOrClass)?.positionAfterSkippingLeadingTrivia
+                    decl.modifiers.first(where: \.isStaticOrClass)?
+                        .positionAfterSkippingLeadingTrivia
                         ?? decl.funcKeyword.positionAfterSkippingLeadingTrivia
                 if decl.modifiers.containsStaticOrClass {
                     return (position, .typeMethod)

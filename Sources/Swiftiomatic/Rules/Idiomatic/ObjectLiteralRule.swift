@@ -11,7 +11,7 @@ struct ObjectLiteralRule: Rule {
         nonTriggeringExamples: [
             Example("let image = #imageLiteral(resourceName: \"image.jpg\")"),
             Example(
-                "let color = #colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)"
+                "let color = #colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)",
             ),
             Example("let image = UIImage(named: aVariable)"),
             Example("let image = UIImage(named: \"interpolated \\(variable)\")"),
@@ -25,16 +25,16 @@ struct ObjectLiteralRule: Rule {
                 [
                     Example("let image = ↓\(prefix)Image\(method)(named: \"foo\")"),
                     Example(
-                        "let color = ↓\(prefix)Color\(method)(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)"
+                        "let color = ↓\(prefix)Color\(method)(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)",
                     ),
                     // swiftlint:disable:next line_length
                     Example(
-                        "let color = ↓\(prefix)Color\(method)(red: 100 / 255.0, green: 50 / 255.0, blue: 0, alpha: 1)"
+                        "let color = ↓\(prefix)Color\(method)(red: 100 / 255.0, green: 50 / 255.0, blue: 0, alpha: 1)",
                     ),
                     Example("let color = ↓\(prefix)Color\(method)(white: 0.5, alpha: 1)"),
                 ]
             }
-        }
+        },
     )
 }
 
@@ -76,7 +76,10 @@ private extension ObjectLiteralRule {
         private func isColorInit(node: FunctionCallExprSyntax, name: String) -> Bool {
             guard inits(forClasses: ["UIColor", "NSColor"]).contains(name),
                   case let argumentsNames = node.arguments.compactMap(\.label?.text),
-                  argumentsNames == ["red", "green", "blue", "alpha"] || argumentsNames == ["white", "alpha"]
+                  argumentsNames == ["red", "green", "blue", "alpha"] || argumentsNames == [
+                      "white",
+                      "alpha",
+                  ]
             else {
                 return false
             }

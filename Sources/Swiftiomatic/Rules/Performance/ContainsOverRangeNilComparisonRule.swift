@@ -18,7 +18,7 @@ struct ContainsOverRangeNilComparisonRule: Rule {
             [
                 Example("↓myString.range(of: \"Test\") \(comparison) nil"),
             ]
-        }
+        },
     )
 }
 

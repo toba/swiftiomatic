@@ -1,293 +1,321 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite struct LineLengthRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    private static let longString = String(repeating: "a", count: 121)
+  private static let longString = String(repeating: "a", count: 121)
 
-    private let longFunctionDeclarations = [
-        Example("""
-            public func superDuperLongFunctionDeclaration(a: String, b: String, \
-            c: String, d: String, e: String, f: String, g: String, h: String, i: String, \
-            j: String, k: String, l: String, m: String, n: String, o: String, p: String, \
-            q: String, r: String, s: String, t: String, u: String, v: String, w: String, \
-            x: String, y: String, z: String) {}
+  private let longFunctionDeclarations = [
+    Example(
+      """
+      public func superDuperLongFunctionDeclaration(a: String, b: String, \
+      c: String, d: String, e: String, f: String, g: String, h: String, i: String, \
+      j: String, k: String, l: String, m: String, n: String, o: String, p: String, \
+      q: String, r: String, s: String, t: String, u: String, v: String, w: String, \
+      x: String, y: String, z: String) {}
 
-            """),
-        Example("""
-            func superDuperLongFunctionDeclaration(a: String, b: String, \
-            c: String, d: String, e: String, f: String, g: String, h: String, i: String, \
-            j: String, k: String, l: String, m: String, n: String, o: String, p: String, \
-            q: String, r: String, s: String, t: String, u: String, v: String, w: String, \
-            x: String, y: String, z: String) {}
+      """),
+    Example(
+      """
+      func superDuperLongFunctionDeclaration(a: String, b: String, \
+      c: String, d: String, e: String, f: String, g: String, h: String, i: String, \
+      j: String, k: String, l: String, m: String, n: String, o: String, p: String, \
+      q: String, r: String, s: String, t: String, u: String, v: String, w: String, \
+      x: String, y: String, z: String) {}
 
-            """),
-        Example("""
-            struct S {
-                public init(a: String, b: String, c: String, d: String, e: String, f: String, \
-                            g: String, h: String, i: String, j: String, k: String, l: String, \
-                            m: String, n: String, o: String, p: String, q: String, r: String, \
-                            s: String, t: String, u: String, v: String, w: String, x: String, \
-                            y: String, z: String) throws {
-                    // ...
-                }
-            }
-            """),
-        Example("""
-            struct S {
-                subscript(a: String, b: String, c: String, d: String, e: String, f: String, \
-                          g: String, h: String, i: String, j: String, k: String, l: String, \
-                          m: String, n: String, o: String, p: String, q: String, r: String, \
-                          s: String, t: String, u: String, v: String, w: String, x: String, \
-                          y: String, z: String) -> Int {
-                    // ...
-                    return 0
-                }
-            }
-            """),
-    ]
-    private let longFunctionCalls = [
-        Example("""
-            superDuperLongFunctionCall(a: "A", b: "B", c: "C", d: "D", e: "E", f: "F", \
-            g: "G", h: "H", i: "I", j: "J", k: "K", l: "L", m: "M", n: "N", o: "O", p: "P", \
-            q: "Q", r: "R", s: "S", t: "T", u: "U", v: "V", w: "W", x: "X", y: "Y", z: "Z")
-            """),
-        Example("""
-            func test() {
-                let _ = superDuperLongFunctionCall(a: "A", b: "B", c: "C", d: "D", e: "E", f: "F", \
-                g: "G", h: "H", i: "I", j: "J", k: "K", l: "L", m: "M", n: "N", o: "O", p: "P", \
-                q: "Q", r: "R", s: "S", t: "T", u: "U", v: "V", w: "W", x: "X", y: "Y", z: "Z")
-            }
-            """),
-    ]
+      """),
+    Example(
+      """
+      struct S {
+          public init(a: String, b: String, c: String, d: String, e: String, f: String, \
+                      g: String, h: String, i: String, j: String, k: String, l: String, \
+                      m: String, n: String, o: String, p: String, q: String, r: String, \
+                      s: String, t: String, u: String, v: String, w: String, x: String, \
+                      y: String, z: String) throws {
+              // ...
+          }
+      }
+      """),
+    Example(
+      """
+      struct S {
+          subscript(a: String, b: String, c: String, d: String, e: String, f: String, \
+                    g: String, h: String, i: String, j: String, k: String, l: String, \
+                    m: String, n: String, o: String, p: String, q: String, r: String, \
+                    s: String, t: String, u: String, v: String, w: String, x: String, \
+                    y: String, z: String) -> Int {
+              // ...
+              return 0
+          }
+      }
+      """),
+  ]
+  private let longFunctionCalls = [
+    Example(
+      """
+      superDuperLongFunctionCall(a: "A", b: "B", c: "C", d: "D", e: "E", f: "F", \
+      g: "G", h: "H", i: "I", j: "J", k: "K", l: "L", m: "M", n: "N", o: "O", p: "P", \
+      q: "Q", r: "R", s: "S", t: "T", u: "U", v: "V", w: "W", x: "X", y: "Y", z: "Z")
+      """),
+    Example(
+      """
+      func test() {
+          let _ = superDuperLongFunctionCall(a: "A", b: "B", c: "C", d: "D", e: "E", f: "F", \
+          g: "G", h: "H", i: "I", j: "J", k: "K", l: "L", m: "M", n: "N", o: "O", p: "P", \
+          q: "Q", r: "R", s: "S", t: "T", u: "U", v: "V", w: "W", x: "X", y: "Y", z: "Z")
+      }
+      """),
+  ]
 
-    private let longComment = Example(String(repeating: "/", count: 121) + "\n")
-    private let longBlockComment = Example("/*" + String(repeating: " ", count: 121) + "*/\n")
-    private let longRealBlockComment = Example("""
-        /*
-        \(LineLengthRuleTests.longString)
-        */
+  private let longComment = Example(String(repeating: "/", count: 121) + "\n")
+  private let longBlockComment = Example("/*" + String(repeating: " ", count: 121) + "*/\n")
+  private let longRealBlockComment = Example(
+    """
+    /*
+    \(LineLengthRuleTests.longString)
+    */
 
-        """)
-    private let declarationWithTrailingLongComment = Example("let foo = 1 " + String(repeating: "/", count: 121) + "\n")
-    private let interpolatedString = Example("print(\"\\(value)" + String(repeating: "A", count: 113) + "\" )\n")
-    private let plainString = Example("print(\"" + LineLengthRuleTests.longString + ")\"\n")
+    """)
+  private let declarationWithTrailingLongComment = Example(
+    "let foo = 1 " + String(repeating: "/", count: 121) + "\n")
+  private let interpolatedString = Example(
+    "print(\"\\(value)" + String(repeating: "A", count: 113) + "\" )\n")
+  private let plainString = Example("print(\"" + LineLengthRuleTests.longString + ")\"\n")
 
-    private let multilineString = Example("""
-        let multilineString = \"\"\"
-        \(LineLengthRuleTests.longString)
-        \"\"\"
+  private let multilineString = Example(
+    """
+    let multilineString = \"\"\"
+    \(LineLengthRuleTests.longString)
+    \"\"\"
 
-        """)
-    private let tripleStringSingleLine = Example(
-        "let tripleString = \"\"\"\(LineLengthRuleTests.longString)\"\"\"\n"
+    """)
+  private let tripleStringSingleLine = Example(
+    "let tripleString = \"\"\"\(LineLengthRuleTests.longString)\"\"\"\n"
+  )
+  private let poundStringSingleLine = Example(
+    "let poundString = #\"\(LineLengthRuleTests.longString)\"#\n")
+  private let multilineStringWithExpression = Example(
+    """
+    let multilineString = \"\"\"
+    \(LineLengthRuleTests.longString)
+
+    \"\"\"; let a = 1
+    """)
+  private let multilineStringWithNewlineExpression = Example(
+    """
+    let multilineString = \"\"\"
+    \(LineLengthRuleTests.longString)
+
+    \"\"\"
+    ; let a = 1
+    """)
+  private let multilineStringFail = Example(
+    """
+    let multilineString = "A" +
+    "\(LineLengthRuleTests.longString)"
+
+    """)
+  private let multilineStringWithFunction = Example(
+    """
+    let multilineString = \"\"\"
+    \(LineLengthRuleTests.longString)
+    \"\"\".functionCall()
+    """)
+
+  // Regex literal examples
+  private let regexLiteral = Example(
+    """
+    let emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$|^\(LineLengthRuleTests.longString)$/
+
+    """)
+  private let regexLiteralWithCapture = Example(
+    """
+    let urlRegex = /^(https?:\\/\\/)?(www\\.)?([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})(\\/\(LineLengthRuleTests.longString))?$/
+
+    """)
+  private let regexLiteralMultiline = Example(
+    """
+    let complexRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$|^very\\.long\\.regex\\.pattern\\.here\\.with\\.many\\.dots\\.and\\.extra\\.text$/
+
+    """)
+  private let regexLiteralFail = Example(
+    """
+    let longRegexString = "\(LineLengthRuleTests.longString)"
+
+    """)
+
+  @Test func lineLength() {
+    verifyRule(LineLengthRule.description, commentDoesntViolate: false, stringDoesntViolate: false)
+  }
+
+  @Test func lineLengthWithIgnoreFunctionDeclarationsEnabled() {
+    let baseDescription = LineLengthRule.description
+    let description = baseDescription.with(
+      nonTriggeringExamples: baseDescription.nonTriggeringExamples + longFunctionDeclarations,
+      triggeringExamples: longFunctionCalls
     )
-    private let poundStringSingleLine = Example("let poundString = #\"\(LineLengthRuleTests.longString)\"#\n")
-    private let multilineStringWithExpression = Example("""
-        let multilineString = \"\"\"
-        \(LineLengthRuleTests.longString)
 
-        \"\"\"; let a = 1
-        """)
-    private let multilineStringWithNewlineExpression = Example("""
-        let multilineString = \"\"\"
-        \(LineLengthRuleTests.longString)
+    verifyRule(
+      description,
+      ruleConfiguration: ["ignores_function_declarations": true],
+      commentDoesntViolate: false,
+      stringDoesntViolate: false
+    )
+  }
 
-        \"\"\"
-        ; let a = 1
-        """)
-    private let multilineStringFail = Example("""
-        let multilineString = "A" +
-        "\(LineLengthRuleTests.longString)"
+  @Test func lineLengthWithIgnoreCommentsEnabled() {
+    let baseDescription = LineLengthRule.description
+    let triggeringExamples = longFunctionDeclarations + [declarationWithTrailingLongComment]
+    let nonTriggeringExamples = [longComment, longBlockComment, longRealBlockComment]
 
-        """)
-    private let multilineStringWithFunction = Example("""
-        let multilineString = \"\"\"
-        \(LineLengthRuleTests.longString)
-        \"\"\".functionCall()
-        """)
+    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+      .with(triggeringExamples: triggeringExamples)
 
-    // Regex literal examples
-    private let regexLiteral = Example("""
-        let emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$|^\(LineLengthRuleTests.longString)$/
+    verifyRule(
+      description, ruleConfiguration: ["ignores_comments": true],
+      commentDoesntViolate: false, stringDoesntViolate: false, skipCommentTests: true)
+  }
 
-        """)
-    private let regexLiteralWithCapture = Example("""
-        let urlRegex = /^(https?:\\/\\/)?(www\\.)?([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})(\\/\(LineLengthRuleTests.longString))?$/
+  @Test func lineLengthWithIgnoreURLsEnabled() {
+    let url = "https://github.com/realm/SwiftLint"
+    let triggeringLines = [Example(String(repeating: "/", count: 121) + "\(url)\n")]
+    let nonTriggeringLines = [
+      Example("\(url) " + String(repeating: "/", count: 118) + " \(url)\n"),
+      Example("\(url)/" + String(repeating: "a", count: 120)),
+    ]
 
-        """)
-    private let regexLiteralMultiline = Example("""
-        let complexRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$|^very\\.long\\.regex\\.pattern\\.here\\.with\\.many\\.dots\\.and\\.extra\\.text$/
+    let baseDescription = LineLengthRule.description
+    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
+    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
 
-        """)
-    private let regexLiteralFail = Example("""
-        let longRegexString = "\(LineLengthRuleTests.longString)"
+    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+      .with(triggeringExamples: triggeringExamples)
 
-        """)
+    verifyRule(
+      description, ruleConfiguration: ["ignores_urls": true],
+      commentDoesntViolate: false, stringDoesntViolate: false)
+  }
 
-    @Test func lineLength() {
-        verifyRule(LineLengthRule.description, commentDoesntViolate: false, stringDoesntViolate: false)
-    }
+  @Test func lineLengthWithIgnoreInterpolatedStringsTrue() {
+    let triggeringLines = [plainString]
+    let nonTriggeringLines = [interpolatedString]
 
-    @Test func lineLengthWithIgnoreFunctionDeclarationsEnabled() {
-        let baseDescription = LineLengthRule.description
-        let description = baseDescription.with(
-            nonTriggeringExamples: baseDescription.nonTriggeringExamples + longFunctionDeclarations,
-            triggeringExamples: longFunctionCalls
-        )
+    let baseDescription = LineLengthRule.description
+    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
+    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
 
-        verifyRule(
-            description,
-            ruleConfiguration: ["ignores_function_declarations": true],
-            commentDoesntViolate: false,
-            stringDoesntViolate: false
-        )
-    }
+    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+      .with(triggeringExamples: triggeringExamples)
 
-    @Test func lineLengthWithIgnoreCommentsEnabled() {
-        let baseDescription = LineLengthRule.description
-        let triggeringExamples = longFunctionDeclarations + [declarationWithTrailingLongComment]
-        let nonTriggeringExamples = [longComment, longBlockComment, longRealBlockComment]
+    verifyRule(
+      description, ruleConfiguration: ["ignores_interpolated_strings": true],
+      commentDoesntViolate: false, stringDoesntViolate: false)
+  }
 
-        let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-                                         .with(triggeringExamples: triggeringExamples)
+  @Test func lineLengthWithIgnoreMultilineStringsTrue() {
+    let triggeringLines = [
+      multilineStringFail,
+      tripleStringSingleLine,
+      poundStringSingleLine,
+    ]
+    let nonTriggeringLines = [
+      multilineString,
+      multilineStringWithExpression,
+      multilineStringWithNewlineExpression,
+      multilineStringWithFunction,
+    ]
 
-        verifyRule(description, ruleConfiguration: ["ignores_comments": true],
-                   commentDoesntViolate: false, stringDoesntViolate: false, skipCommentTests: true)
-    }
+    let baseDescription = LineLengthRule.description
+    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
+    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
 
-    @Test func lineLengthWithIgnoreURLsEnabled() {
-        let url = "https://github.com/realm/SwiftLint"
-        let triggeringLines = [Example(String(repeating: "/", count: 121) + "\(url)\n")]
-        let nonTriggeringLines = [
-            Example("\(url) " + String(repeating: "/", count: 118) + " \(url)\n"),
-            Example("\(url)/" + String(repeating: "a", count: 120)),
-        ]
+    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+      .with(triggeringExamples: triggeringExamples)
 
-        let baseDescription = LineLengthRule.description
-        let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
-        let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
+    verifyRule(
+      description, ruleConfiguration: ["ignores_multiline_strings": true],
+      commentDoesntViolate: false, stringDoesntViolate: false)
+  }
 
-        let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-                                         .with(triggeringExamples: triggeringExamples)
+  @Test func lineLengthWithIgnoreInterpolatedStringsFalse() {
+    let triggeringLines = [plainString, interpolatedString]
 
-        verifyRule(description, ruleConfiguration: ["ignores_urls": true],
-                   commentDoesntViolate: false, stringDoesntViolate: false)
-    }
+    let baseDescription = LineLengthRule.description
+    let nonTriggeringExamples = baseDescription.nonTriggeringExamples
+    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
 
-    @Test func lineLengthWithIgnoreInterpolatedStringsTrue() {
-        let triggeringLines = [plainString]
-        let nonTriggeringLines = [interpolatedString]
+    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+      .with(triggeringExamples: triggeringExamples)
 
-        let baseDescription = LineLengthRule.description
-        let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
-        let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
+    verifyRule(
+      description, ruleConfiguration: ["ignores_interpolated_strings": false],
+      commentDoesntViolate: false, stringDoesntViolate: false)
+  }
 
-        let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-            .with(triggeringExamples: triggeringExamples)
+  @Test func lineLengthWithExcludedLinesPatterns() {
+    let nonTriggeringLines = [plainString, interpolatedString]
 
-        verifyRule(description, ruleConfiguration: ["ignores_interpolated_strings": true],
-                   commentDoesntViolate: false, stringDoesntViolate: false)
-    }
+    let baseDescription = LineLengthRule.description
+    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
+    let triggeringExamples = baseDescription.triggeringExamples
 
-    @Test func lineLengthWithIgnoreMultilineStringsTrue() {
-        let triggeringLines = [
-            multilineStringFail,
-            tripleStringSingleLine,
-            poundStringSingleLine,
-        ]
-        let nonTriggeringLines = [
-            multilineString,
-            multilineStringWithExpression,
-            multilineStringWithNewlineExpression,
-            multilineStringWithFunction,
-        ]
+    let description =
+      baseDescription
+      .with(nonTriggeringExamples: nonTriggeringExamples)
+      .with(triggeringExamples: triggeringExamples)
 
-        let baseDescription = LineLengthRule.description
-        let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
-        let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
+    verifyRule(
+      description,
+      ruleConfiguration: ["excluded_lines_patterns": ["^print"]],
+      commentDoesntViolate: false,
+      stringDoesntViolate: false
+    )
+  }
 
-        let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-            .with(triggeringExamples: triggeringExamples)
+  @Test func lineLengthWithEmptyExcludedLinesPatterns() {
+    let triggeringLines = [plainString, interpolatedString]
 
-        verifyRule(description, ruleConfiguration: ["ignores_multiline_strings": true],
-                   commentDoesntViolate: false, stringDoesntViolate: false)
-    }
+    let baseDescription = LineLengthRule.description
+    let nonTriggeringExamples = baseDescription.nonTriggeringExamples
+    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
 
-    @Test func lineLengthWithIgnoreInterpolatedStringsFalse() {
-        let triggeringLines = [plainString, interpolatedString]
+    let description =
+      baseDescription
+      .with(nonTriggeringExamples: nonTriggeringExamples)
+      .with(triggeringExamples: triggeringExamples)
 
-        let baseDescription = LineLengthRule.description
-        let nonTriggeringExamples = baseDescription.nonTriggeringExamples
-        let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
+    verifyRule(
+      description,
+      ruleConfiguration: ["excluded_lines_patterns": []],
+      commentDoesntViolate: false,
+      stringDoesntViolate: false
+    )
+  }
 
-        let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-            .with(triggeringExamples: triggeringExamples)
+  @Test func lineLengthWithIgnoreRegexLiteralsTrue() {
+    let triggeringLines = [
+      regexLiteralFail,
+      plainString,
+    ]
+    let nonTriggeringLines = [
+      regexLiteral,
+      regexLiteralWithCapture,
+      regexLiteralMultiline,
+    ]
 
-        verifyRule(description, ruleConfiguration: ["ignores_interpolated_strings": false],
-                   commentDoesntViolate: false, stringDoesntViolate: false)
-    }
+    let baseDescription = LineLengthRule.description
+    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
+    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
 
-    @Test func lineLengthWithExcludedLinesPatterns() {
-        let nonTriggeringLines = [plainString, interpolatedString]
+    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+      .with(triggeringExamples: triggeringExamples)
 
-        let baseDescription = LineLengthRule.description
-        let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
-        let triggeringExamples = baseDescription.triggeringExamples
-
-        let description = baseDescription
-            .with(nonTriggeringExamples: nonTriggeringExamples)
-            .with(triggeringExamples: triggeringExamples)
-
-        verifyRule(
-            description,
-            ruleConfiguration: ["excluded_lines_patterns": ["^print"]],
-            commentDoesntViolate: false,
-            stringDoesntViolate: false
-        )
-    }
-
-    @Test func lineLengthWithEmptyExcludedLinesPatterns() {
-        let triggeringLines = [plainString, interpolatedString]
-
-        let baseDescription = LineLengthRule.description
-        let nonTriggeringExamples = baseDescription.nonTriggeringExamples
-        let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
-
-        let description = baseDescription
-            .with(nonTriggeringExamples: nonTriggeringExamples)
-            .with(triggeringExamples: triggeringExamples)
-
-        verifyRule(
-            description,
-            ruleConfiguration: ["excluded_lines_patterns": []],
-            commentDoesntViolate: false,
-            stringDoesntViolate: false
-        )
-    }
-
-    @Test func lineLengthWithIgnoreRegexLiteralsTrue() {
-        let triggeringLines = [
-            regexLiteralFail,
-            plainString,
-        ]
-        let nonTriggeringLines = [
-            regexLiteral,
-            regexLiteralWithCapture,
-            regexLiteralMultiline,
-        ]
-
-        let baseDescription = LineLengthRule.description
-        let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
-        let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
-
-        let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-            .with(triggeringExamples: triggeringExamples)
-
-        verifyRule(description,
-                   ruleConfiguration: ["ignores_regex_literals": true],
-                   commentDoesntViolate: false,
-                   stringDoesntViolate: false)
-    }
+    verifyRule(
+      description,
+      ruleConfiguration: ["ignores_regex_literals": true],
+      commentDoesntViolate: false,
+      stringDoesntViolate: false)
+  }
 }

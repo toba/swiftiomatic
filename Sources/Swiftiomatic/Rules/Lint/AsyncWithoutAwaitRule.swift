@@ -10,7 +10,7 @@ struct AsyncWithoutAwaitRule: Rule {
         kind: .lint,
         nonTriggeringExamples: AsyncWithoutAwaitRuleExamples.nonTriggeringExamples,
         triggeringExamples: AsyncWithoutAwaitRuleExamples.triggeringExamples,
-        corrections: AsyncWithoutAwaitRuleExamples.corrections
+        corrections: AsyncWithoutAwaitRuleExamples.corrections,
     )
 }
 
@@ -68,7 +68,8 @@ extension AsyncWithoutAwaitRule {
 
         override func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
             if node.body != nil {
-                let asyncToken = Syntax(node).needsToKeepAsync ? nil : node.effectSpecifiers?.asyncSpecifier
+                let asyncToken = Syntax(node).needsToKeepAsync ? nil : node.effectSpecifiers?
+                    .asyncSpecifier
                 functionScopes.push(.init(asyncToken: asyncToken))
             }
             return .visitChildren
@@ -179,8 +180,8 @@ extension AsyncWithoutAwaitRule {
                 correction: .init(
                     start: asyncToken.positionAfterSkippingLeadingTrivia,
                     end: asyncToken.endPosition,
-                    replacement: ""
-                )
+                    replacement: "",
+                ),
             )
         }
     }

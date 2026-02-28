@@ -11,7 +11,7 @@ struct LegacyConstantRule: Rule {
         kind: .idiomatic,
         nonTriggeringExamples: LegacyConstantRuleExamples.nonTriggeringExamples,
         triggeringExamples: LegacyConstantRuleExamples.triggeringExamples,
-        corrections: LegacyConstantRuleExamples.corrections
+        corrections: LegacyConstantRuleExamples.corrections,
     )
 }
 
@@ -69,7 +69,8 @@ private extension FunctionCallExprSyntax {
     var isLegacyPiExpression: Bool {
         guard
             let calledExpression = calledExpression.as(DeclReferenceExprSyntax.self),
-            calledExpression.baseName.text == "CGFloat" || calledExpression.baseName.text == "Float",
+            calledExpression.baseName.text == "CGFloat" || calledExpression.baseName
+            .text == "Float",
             let argument = arguments.onlyElement?.expression.as(DeclReferenceExprSyntax.self),
             argument.baseName.text == "M_PI"
         else {

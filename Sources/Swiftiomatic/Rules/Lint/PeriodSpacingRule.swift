@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftIDEUtils
+import SourceKittenFramework
 
 struct PeriodSpacingRule: SourceKitFreeRule, OptInRule, SubstitutionCorrectableRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -21,7 +21,7 @@ struct PeriodSpacingRule: SourceKitFreeRule, OptInRule, SubstitutionCorrectableR
                 """
                 // value: Multiline.
                 //        Comment.
-                """
+                """,
             ),
             Example(
                 """
@@ -30,29 +30,40 @@ struct PeriodSpacingRule: SourceKitFreeRule, OptInRule, SubstitutionCorrectableR
 
                 - Sentence 2 new line characters after.
                 **/
-                """
+                """,
             ),
         ],
         triggeringExamples: [
             Example(
-                "/* Only god knows why. ↓ This symbol does nothing. */", testWrappingInComment: false
+                "/* Only god knows why. ↓ This symbol does nothing. */",
+                testWrappingInComment: false,
             ),
-            Example("// Only god knows why. ↓ This symbol does nothing.", testWrappingInComment: false),
+            Example(
+                "// Only god knows why. ↓ This symbol does nothing.",
+                testWrappingInComment: false,
+            ),
             Example("// Single. Double. ↓ End.", testWrappingInComment: false),
             Example("// Single. Double. ↓ Triple. ↓  End.", testWrappingInComment: false),
             Example("// Triple. ↓  Quad. ↓   End.", testWrappingInComment: false),
-            Example("///   - code: Identifier of the error. ↓ Integer.", testWrappingInComment: false),
+            Example(
+                "///   - code: Identifier of the error. ↓ Integer.",
+                testWrappingInComment: false,
+            ),
         ],
         corrections: [
-            Example("/* Why. ↓ Symbol does nothing. */"): Example("/* Why. Symbol does nothing. */"),
+            Example("/* Why. ↓ Symbol does nothing. */"): Example(
+                "/* Why. Symbol does nothing. */",
+            ),
             Example("// Why. ↓ Symbol does nothing."): Example("// Why. Symbol does nothing."),
             Example("// Single. Double. ↓ End."): Example("// Single. Double. End."),
-            Example("// Single. Double. ↓ Triple. ↓  End."): Example("// Single. Double. Triple. End."),
+            Example("// Single. Double. ↓ Triple. ↓  End."): Example(
+                "// Single. Double. Triple. End.",
+            ),
             Example("// Triple. ↓  Quad. ↓   End."): Example("// Triple. Quad. End."),
             Example("///   - code: Identifier. ↓ Integer."): Example(
-                "///   - code: Identifier. Integer."
+                "///   - code: Identifier. Integer.",
             ),
-        ]
+        ],
     )
 
     func violationRanges(in file: SwiftLintFile) -> [NSRange] {
@@ -74,9 +85,10 @@ struct PeriodSpacingRule: SourceKitFreeRule, OptInRule, SubstitutionCorrectableR
                                     ByteRange(
                                         // Safe to mix NSRange offsets with byte offsets here because the
                                         // regex can't contain multi-byte characters
-                                        location: ByteCount(range.lowerBound.value + result.range.lowerBound + 2),
-                                        length: ByteCount(result.range.length.advanced(by: -2))
-                                    )
+                                        location: ByteCount(range.lowerBound.value + result.range
+                                            .lowerBound + 2),
+                                        length: ByteCount(result.range.length.advanced(by: -2)),
+                                    ),
                                 )
                             }
                     }
@@ -89,7 +101,7 @@ struct PeriodSpacingRule: SourceKitFreeRule, OptInRule, SubstitutionCorrectableR
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: range.location)
+                location: Location(file: file, characterOffset: range.location),
             )
         }
     }

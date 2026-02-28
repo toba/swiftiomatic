@@ -20,7 +20,7 @@ struct ExplicitACLRule: Rule {
                 class Foo {
                   private let bar = 5
                 }
-                """
+                """,
             ),
             Example("internal func a() { let a =  }"),
             Example("private func a() { func innerFunction() { } }"),
@@ -31,14 +31,14 @@ struct ExplicitACLRule: Rule {
                 internal protocol A {
                   func b()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 internal protocol A {
                   var b: Int
                 }
-                """
+                """,
             ),
             Example("internal class A { deinit {} }"),
             Example("extension A: Equatable {}"),
@@ -48,14 +48,14 @@ struct ExplicitACLRule: Rule {
                 extension Foo {
                     internal func bar() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
                 internal enum Foo {
                     case bar
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -65,7 +65,7 @@ struct ExplicitACLRule: Rule {
                         return result
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -79,7 +79,7 @@ struct ExplicitACLRule: Rule {
                         }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -89,7 +89,7 @@ struct ExplicitACLRule: Rule {
                         let b = 2
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -108,7 +108,7 @@ struct ExplicitACLRule: Rule {
                     ↓func bar() {}
                     static ↓func baz() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -118,9 +118,9 @@ struct ExplicitACLRule: Rule {
                         ↓let b = 2
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

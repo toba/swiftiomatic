@@ -51,7 +51,9 @@ struct ControlStatementRule: Rule {
             Example("↓if(condition) {}"): Example("if condition {}"),
             Example("↓if (condition == endIndex) {}"): Example("if condition == endIndex {}"),
             Example("↓if ((a || b) && (c || d)) {}"): Example("if (a || b) && (c || d) {}"),
-            Example("↓if ((min...max).contains(value)) {}"): Example("if (min...max).contains(value) {}"),
+            Example("↓if ((min...max).contains(value)) {}"): Example(
+                "if (min...max).contains(value) {}",
+            ),
             Example("↓guard (condition) else {}"): Example("guard condition else {}"),
             Example("↓while (condition) {}"): Example("while condition {}"),
             Example("↓while(condition) {}"): Example("while condition {}"),
@@ -61,21 +63,21 @@ struct ControlStatementRule: Rule {
             Example("do { ; } ↓while (condition) {}"): Example("do { ; } while condition {}"),
             Example("↓switch (foo) {}"): Example("switch foo {}"),
             Example("do {} ↓catch(let error as NSError) {}"): Example(
-                "do {} catch let error as NSError {}"
+                "do {} catch let error as NSError {}",
             ),
             Example("↓if (max(a, b) < c) {}"): Example("if max(a, b) < c {}"),
             Example(
                 """
                 if (a),
                    ( b == 1 ) {}
-                """
+                """,
             ): Example(
                 """
                 if a,
                    b == 1 {}
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -199,11 +201,11 @@ extension ExprSyntax {
 
     private func containsTrailingClosure(_ node: Syntax) -> Bool {
         switch node.as(SyntaxEnum.self) {
-        case let .functionCallExpr(node):
-            node.trailingClosure != nil || node.calledExpression.is(ClosureExprSyntax.self)
-        case let .sequenceExpr(node):
-            node.elements.contains { containsTrailingClosure(Syntax($0)) }
-        default: false
+            case let .functionCallExpr(node):
+                node.trailingClosure != nil || node.calledExpression.is(ClosureExprSyntax.self)
+            case let .sequenceExpr(node):
+                node.elements.contains { containsTrailingClosure(Syntax($0)) }
+            default: false
         }
     }
 }
@@ -245,7 +247,10 @@ private extension CatchItemListSyntax {
             if let expression = item.unwrapped {
                 return
                     item
-                        .with(\.pattern, PatternSyntax(ExpressionPatternSyntax(expression: expression)))
+                        .with(
+                            \.pattern,
+                            PatternSyntax(ExpressionPatternSyntax(expression: expression)),
+                        )
                         .with(\.leadingTrivia, item.leadingTrivia)
                         .with(\.trailingTrivia, item.trailingTrivia)
             }

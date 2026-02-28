@@ -17,11 +17,11 @@ enum IdentifierDeclaration: Hashable {
     /// The name of the declared identifier (e.g. in `let a = 1` this is `a`).
     fileprivate var name: String {
         switch self {
-        case let .parameter(name): name.text
-        case let .localVariable(name): name.text
-        case let .implicitVariable(name): name
-        case .wildcard: "_"
-        case .lookupBoundary: ""
+            case let .parameter(name): name.text
+            case let .localVariable(name): name.text
+            case let .implicitVariable(name): name
+            case .wildcard: "_"
+            case .lookupBoundary: ""
         }
     }
 
@@ -90,20 +90,26 @@ class DeclaredIdentifiersTrackingVisitor<Configuration: RuleConfiguration>:
             collectIdentifiers(from: whileStmt.conditions)
         } else if let pattern = grandParent.as(ForStmtSyntax.self)?.pattern {
             collectIdentifiers(from: pattern)
-        } else if let parameters = grandParent.as(FunctionDeclSyntax.self)?.signature.parameterClause
+        } else if let parameters = grandParent.as(FunctionDeclSyntax.self)?.signature
+            .parameterClause
             .parameters
         {
             collectIdentifiers(from: parameters)
-        } else if let parameters = grandParent.as(InitializerDeclSyntax.self)?.signature.parameterClause
+        } else if let parameters = grandParent.as(InitializerDeclSyntax.self)?.signature
+            .parameterClause
             .parameters
         {
             collectIdentifiers(from: parameters)
-        } else if let parameters = grandParent.as(SubscriptDeclSyntax.self)?.parameterClause.parameters {
+        } else if let parameters = grandParent.as(SubscriptDeclSyntax.self)?.parameterClause
+            .parameters
+        {
             collectIdentifiers(from: parameters)
-        } else if let closureParameters = parent.as(ClosureExprSyntax.self)?.signature?.parameterClause {
+        } else if let closureParameters = parent.as(ClosureExprSyntax.self)?.signature?
+            .parameterClause
+        {
             collectIdentifiers(from: closureParameters)
         } else if let switchCase = parent.as(SwitchCaseSyntax.self)?.label.as(
-            SwitchCaseLabelSyntax.self
+            SwitchCaseLabelSyntax.self,
         ) {
             collectIdentifiers(from: switchCase)
         } else if let catchClause = grandParent.as(CatchClauseSyntax.self) {
@@ -159,18 +165,20 @@ class DeclaredIdentifiersTrackingVisitor<Configuration: RuleConfiguration>:
         }
     }
 
-    private func collectIdentifiers(from closureParameters: ClosureSignatureSyntax.ParameterClause) {
+    private func collectIdentifiers(from closureParameters: ClosureSignatureSyntax
+        .ParameterClause)
+    {
         switch closureParameters {
-        case let .parameterClause(parameters):
-            for param in parameters.parameters {
-                let name = param.secondName ?? param.firstName
-                scope.addToCurrentScope(.parameter(name: name))
-            }
-        case let .simpleInput(parameters):
-            for param in parameters {
-                let name = param.name
-                scope.addToCurrentScope(.parameter(name: name))
-            }
+            case let .parameterClause(parameters):
+                for param in parameters.parameters {
+                    let name = param.secondName ?? param.firstName
+                    scope.addToCurrentScope(.parameter(name: name))
+                }
+            case let .simpleInput(parameters):
+                for param in parameters {
+                    let name = param.name
+                    scope.addToCurrentScope(.parameter(name: name))
+                }
         }
     }
 
@@ -188,7 +196,8 @@ class DeclaredIdentifiersTrackingVisitor<Configuration: RuleConfiguration>:
                 labeledExpr.expression.as(PatternExprSyntax.self)
             }
             .map { patternExpr -> any PatternSyntaxProtocol in
-                patternExpr.pattern.as(ValueBindingPatternSyntax.self)?.pattern ?? patternExpr.pattern
+                patternExpr.pattern.as(ValueBindingPatternSyntax.self)?.pattern ?? patternExpr
+                    .pattern
             }
             .forEach {
                 collectIdentifiers(from: PatternSyntax(fromProtocol: $0))

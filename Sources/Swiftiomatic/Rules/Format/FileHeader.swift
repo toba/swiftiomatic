@@ -1,11 +1,3 @@
-//
-//  FileHeader.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 3/7/17.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -14,34 +6,34 @@ extension FormatRule {
         help: "Use specified source file header template for all files.",
         runOnceOnly: true,
         options: ["header", "date-format", "timezone"],
-        sharedOptions: ["linebreaks"]
+        sharedOptions: ["linebreaks"],
     ) { formatter in
         var headerTokens = [Token]()
         var directives = [String]()
         switch formatter.options.fileHeader {
-        case .ignore:
-            return
-        case var .replace(string):
-            let file = formatter.options.fileInfo
-            let options = ReplacementOptions(
-                dateFormat: formatter.options.dateFormat,
-                timeZone: formatter.options.timeZone
-            )
+            case .ignore:
+                return
+            case var .replace(string):
+                let file = formatter.options.fileInfo
+                let options = ReplacementOptions(
+                    dateFormat: formatter.options.dateFormat,
+                    timeZone: formatter.options.timeZone,
+                )
 
-            for (key, replacement) in formatter.options.fileInfo.replacements {
-                if let replacementStr = replacement.resolve(file, options) {
-                    while let range = string.range(of: "{\(key.rawValue)}") {
-                        string.replaceSubrange(range, with: replacementStr)
+                for (key, replacement) in formatter.options.fileInfo.replacements {
+                    if let replacementStr = replacement.resolve(file, options) {
+                        while let range = string.range(of: "{\(key.rawValue)}") {
+                            string.replaceSubrange(range, with: replacementStr)
+                        }
                     }
                 }
-            }
-            headerTokens = tokenize(string)
-            directives = headerTokens.compactMap {
-                guard case let .commentBody(body) = $0 else {
-                    return nil
+                headerTokens = tokenize(string)
+                directives = headerTokens.compactMap {
+                    guard case let .commentBody(body) = $0 else {
+                        return nil
+                    }
+                    return body.commentDirective
                 }
-                return body.commentDirective
-            }
         }
 
         guard let headerRange = formatter.headerCommentTokenRange(includingDirectives: directives)
@@ -60,8 +52,8 @@ extension FormatRule {
            headerTokens
            == Array(
                formatter.tokens[
-                   lastHeaderTokenIndex + 1 ... endIndex
-               ]
+                   lastHeaderTokenIndex + 1 ... endIndex,
+               ],
            )
         {
             lastHeaderTokenIndex += headerTokens.count
@@ -73,7 +65,7 @@ extension FormatRule {
             headerTokens.append(.linebreak(formatter.options.linebreak, headerLinebreaks + 1))
             if lastHeaderTokenIndex < formatter.tokens.count - 2,
                !formatter.tokens[lastHeaderTokenIndex + 1 ... lastHeaderTokenIndex + 2].allSatisfy(
-                   \.isLinebreak
+                   \.isLinebreak,
                )
             {
                 headerTokens.append(.linebreak(formatter.options.linebreak, headerLinebreaks + 2))
@@ -83,12 +75,12 @@ extension FormatRule {
             of: .nonSpace, after: lastHeaderTokenIndex,
             if: {
                 $0.isLinebreak
-            }
+            },
         ) {
             lastHeaderTokenIndex = index
         }
         formatter.replaceTokens(
-            in: headerRange.startIndex ..< lastHeaderTokenIndex + 1, with: headerTokens
+            in: headerRange.startIndex ..< lastHeaderTokenIndex + 1, with: headerTokens,
         )
     } examples: {
         """

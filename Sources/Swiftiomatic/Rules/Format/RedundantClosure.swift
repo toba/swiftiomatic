@@ -1,11 +1,3 @@
-//
-//  RedundantClosure.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 9/28/21.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -14,7 +6,7 @@ extension FormatRule {
         Removes redundant closures bodies, containing a single statement,
         which are called immediately.
         """,
-        orderAfter: [.redundantReturn]
+        orderAfter: [.redundantReturn],
     ) { formatter in
         formatter.forEach(.startOfScope("{")) { closureStartIndex, _ in
             var startIndex = closureStartIndex
@@ -23,10 +15,10 @@ extension FormatRule {
                // Closures that are called immediately are redundant
                // (as long as there's exactly one statement inside them)
                var closureCallOpenParenIndex = formatter.index(
-                   of: .nonSpaceOrCommentOrLinebreak, after: closureEndIndex
+                   of: .nonSpaceOrCommentOrLinebreak, after: closureEndIndex,
                ),
                var closureCallCloseParenIndex = formatter.index(
-                   of: .nonSpaceOrCommentOrLinebreak, after: closureCallOpenParenIndex
+                   of: .nonSpaceOrCommentOrLinebreak, after: closureCallOpenParenIndex,
                ),
                formatter.token(at: closureCallOpenParenIndex) == .startOfScope("("),
                formatter.token(at: closureCallCloseParenIndex) == .endOfScope(")"),
@@ -40,7 +32,7 @@ extension FormatRule {
                 let hasSingleSimpleExpression = formatter.blockBodyHasSingleStatement(
                     atStartOfScope: closureStartIndex,
                     includingConditionalStatements: false,
-                    includingReturnStatements: true
+                    includingReturnStatements: true,
                 )
 
                 // Whether or not this closure has a single if/switch expression in its body.
@@ -52,7 +44,7 @@ extension FormatRule {
                             atStartOfScope: closureStartIndex,
                             includingConditionalStatements: true,
                             includingReturnStatements: true,
-                            includingReturnInConditionalStatements: false
+                            includingReturnInConditionalStatements: false,
                         )
 
                 guard hasSingleSimpleExpression || hasSingleConditionalExpression else {
@@ -67,7 +59,10 @@ extension FormatRule {
                 for inIndex in closureStartIndex ... closureEndIndex
                     where formatter.token(at: inIndex) == .keyword("in")
                 {
-                    if !formatter.indexIsWithinNestedClosure(inIndex, startOfScopeIndex: closureStartIndex) {
+                    if !formatter.indexIsWithinNestedClosure(
+                        inIndex,
+                        startOfScopeIndex: closureStartIndex,
+                    ) {
                         return
                     }
                 }
@@ -78,12 +73,16 @@ extension FormatRule {
                 //    We could expand this to be user-provided if necessary.
                 for i in closureStartIndex ... closureEndIndex {
                     switch formatter.tokens[i] {
-                    case .identifier("fatalError"), .identifier("preconditionFailure"), .keyword("throw"):
-                        if !formatter.indexIsWithinNestedClosure(i, startOfScopeIndex: closureStartIndex) {
-                            return
-                        }
-                    default:
-                        break
+                        case .identifier("fatalError"), .identifier("preconditionFailure"),
+                             .keyword("throw"):
+                            if !formatter.indexIsWithinNestedClosure(
+                                i,
+                                startOfScopeIndex: closureStartIndex,
+                            ) {
+                                return
+                            }
+                        default:
+                            break
                     }
                 }
 
@@ -92,7 +91,7 @@ extension FormatRule {
                     of: .nonSpaceOrCommentOrLinebreak, before: startIndex,
                     if: {
                         $0 == .keyword("await")
-                    }
+                    },
                 ) {
                     startIndex = prevIndex
                 }
@@ -100,7 +99,7 @@ extension FormatRule {
                     of: .nonSpaceOrCommentOrLinebreak, before: startIndex,
                     if: {
                         $0 == .keyword("try")
-                    }
+                    },
                 ) {
                     startIndex = prevIndex
                 }
@@ -111,7 +110,7 @@ extension FormatRule {
                     // Find the `{` start of scope or `=` and verify that the entire following expression consists of just this closure.
                     var startOfScopeContainingClosure = formatter.startOfScope(at: startIndex)
                     var assignmentBeforeClosure = formatter.index(
-                        of: .operator("=", .infix), before: startIndex
+                        of: .operator("=", .infix), before: startIndex,
                     )
 
                     if let assignmentBeforeClosure,
@@ -123,29 +122,33 @@ extension FormatRule {
 
                     let potentialStartOfExpressionContainingClosure: Int?
                     switch (startOfScopeContainingClosure, assignmentBeforeClosure) {
-                    case (nil, nil):
-                        potentialStartOfExpressionContainingClosure = nil
-                    case (.some(let startOfScope), nil):
-                        guard formatter.tokens[startOfScope] == .startOfScope("{") else { return }
-                        potentialStartOfExpressionContainingClosure = startOfScope
-                    case (nil, let .some(assignmentBeforeClosure)):
-                        potentialStartOfExpressionContainingClosure = assignmentBeforeClosure
-                    case let (.some(startOfScope), .some(assignmentBeforeClosure)):
-                        potentialStartOfExpressionContainingClosure = max(startOfScope, assignmentBeforeClosure)
+                        case (nil, nil):
+                            potentialStartOfExpressionContainingClosure = nil
+                        case (.some(let startOfScope), nil):
+                            guard formatter.tokens[startOfScope] == .startOfScope("{")
+                            else { return }
+                            potentialStartOfExpressionContainingClosure = startOfScope
+                        case (nil, let .some(assignmentBeforeClosure)):
+                            potentialStartOfExpressionContainingClosure = assignmentBeforeClosure
+                        case let (.some(startOfScope), .some(assignmentBeforeClosure)):
+                            potentialStartOfExpressionContainingClosure = max(
+                                startOfScope,
+                                assignmentBeforeClosure,
+                            )
                     }
 
                     if let potentialStartOfExpressionContainingClosure {
                         guard
                             var startOfExpressionIndex = formatter.index(
                                 of: .nonSpaceOrCommentOrLinebreak,
-                                after: potentialStartOfExpressionContainingClosure
+                                after: potentialStartOfExpressionContainingClosure,
                             )
                         else { return }
 
                         // Skip over any return token that may be present
                         if formatter.tokens[startOfExpressionIndex] == .keyword("return"),
                            let nextTokenIndex = formatter.index(
-                               of: .nonSpaceOrCommentOrLinebreak, after: startOfExpressionIndex
+                               of: .nonSpaceOrCommentOrLinebreak, after: startOfExpressionIndex,
                            )
                         {
                             startOfExpressionIndex = nextTokenIndex
@@ -154,7 +157,7 @@ extension FormatRule {
                         // Parse the expression and require that entire expression is simply just this closure.
                         guard
                             let expressionRange = formatter.parseExpressionRange(
-                                startingAt: startOfExpressionIndex
+                                startingAt: startOfExpressionIndex,
                             ),
                             expressionRange == startIndex ... closureCallCloseParenIndex
                         else { return }
@@ -165,11 +168,17 @@ extension FormatRule {
                 // we can't remove the closure since the build would break
                 // if the method is `@discardableResult`
                 // https://github.com/nicklockwood/SwiftFormat/issues/1236
-                if let equalsIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startIndex),
-                   formatter.token(at: equalsIndex) == .operator("=", .infix),
-                   let colonIndex = formatter.index(of: .delimiter(":"), before: equalsIndex),
-                   let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: colonIndex),
-                   formatter.endOfVoidType(at: nextIndex) != nil
+                if let equalsIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak,
+                    before: startIndex,
+                ),
+                    formatter.token(at: equalsIndex) == .operator("=", .infix),
+                    let colonIndex = formatter.index(of: .delimiter(":"), before: equalsIndex),
+                    let nextIndex = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak,
+                        after: colonIndex,
+                    ),
+                    formatter.endOfVoidType(at: nextIndex) != nil
                 {
                     return
                 }
@@ -200,7 +209,7 @@ extension FormatRule {
 
                 // Remove the initial return token, and any trailing space, if present.
                 if let returnIndex = formatter.index(
-                    of: .nonSpaceOrCommentOrLinebreak, after: closureStartIndex
+                    of: .nonSpaceOrCommentOrLinebreak, after: closureStartIndex,
                 ),
                     formatter.token(at: returnIndex)?.string == "return"
                 {

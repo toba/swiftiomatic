@@ -18,7 +18,7 @@ struct NoEmptyBlockRule: Rule {
                 var flag = true {
                     willSet { /* do something */ }
                 }
-                """
+                """,
             ),
 
             Example(
@@ -28,7 +28,7 @@ struct NoEmptyBlockRule: Rule {
 
                     deinit { /* do something */ }
                 }
-                """
+                """,
             ),
 
             Example(
@@ -57,7 +57,7 @@ struct NoEmptyBlockRule: Rule {
                 repeat { /* do something */ } while (flag)
 
                 while i < 10 { /* do something */ }
-                """
+                """,
             ),
 
             Example(
@@ -67,7 +67,7 @@ struct NoEmptyBlockRule: Rule {
                 var flag = true {
                     willSet {}
                 }
-                """, configuration: ["disabled_block_types": ["function_bodies"]]
+                """, configuration: ["disabled_block_types": ["function_bodies"]],
             ),
 
             Example(
@@ -77,7 +77,7 @@ struct NoEmptyBlockRule: Rule {
 
                     deinit {}
                 }
-                """, configuration: ["disabled_block_types": ["initializer_bodies"]]
+                """, configuration: ["disabled_block_types": ["initializer_bodies"]],
             ),
 
             Example(
@@ -100,7 +100,7 @@ struct NoEmptyBlockRule: Rule {
                 repeat {} while (flag)
 
                 while i < 10 {}
-                """, configuration: ["disabled_block_types": ["statement_blocks"]]
+                """, configuration: ["disabled_block_types": ["statement_blocks"]],
             ),
             Example(
                 """
@@ -110,13 +110,13 @@ struct NoEmptyBlockRule: Rule {
                 f { _ in
                     // comment
                 }
-                """
+                """,
             ),
             Example(
                 """
                 f {}
                 {}()
-                """, configuration: ["disabled_block_types": ["closure_blocks"]]
+                """, configuration: ["disabled_block_types": ["closure_blocks"]],
             ),
         ],
         triggeringExamples: [
@@ -127,7 +127,7 @@ struct NoEmptyBlockRule: Rule {
                 var flag = true {
                     willSet ↓{}
                 }
-                """
+                """,
             ),
 
             Example(
@@ -137,7 +137,7 @@ struct NoEmptyBlockRule: Rule {
 
                     deinit ↓{}
                 }
-                """
+                """,
             ),
 
             Example(
@@ -160,19 +160,19 @@ struct NoEmptyBlockRule: Rule {
                 repeat ↓{} while (flag)
 
                 while i < 10 ↓{}
-                """
+                """,
             ),
             Example(
                 """
                 f ↓{}
-                """
+                """,
             ),
             Example(
                 """
                 Button ↓{} label: ↓{}
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -217,19 +217,19 @@ private extension NoEmptyBlockRule {
 private extension CodeBlockSyntax {
     var codeBlockType: NoEmptyBlockConfiguration.CodeBlockType? {
         switch parent?.kind {
-        case .functionDecl, .accessorDecl:
-            .functionBodies
-        case .initializerDecl, .deinitializerDecl:
-            .initializerBodies
-        case .forStmt, .doStmt, .whileStmt, .repeatStmt, .ifExpr, .catchClause, .deferStmt:
-            .statementBlocks
-        case .closureExpr:
-            .closureBlocks
-        case .guardStmt:
-            // No need to handle this case since Empty Block of `guard` is compile error.
-            nil
-        default:
-            nil
+            case .functionDecl, .accessorDecl:
+                .functionBodies
+            case .initializerDecl, .deinitializerDecl:
+                .initializerBodies
+            case .forStmt, .doStmt, .whileStmt, .repeatStmt, .ifExpr, .catchClause, .deferStmt:
+                .statementBlocks
+            case .closureExpr:
+                .closureBlocks
+            case .guardStmt:
+                // No need to handle this case since Empty Block of `guard` is compile error.
+                nil
+            default:
+                nil
         }
     }
 }

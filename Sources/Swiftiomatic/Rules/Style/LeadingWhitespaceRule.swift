@@ -18,12 +18,12 @@ struct LeadingWhitespaceRule: CorrectableRule, SourceKitFreeRule {
         ].skipMultiByteOffsetTests().skipDisableCommandTests(),
         corrections: [
             Example("\n //", testMultiByteOffsets: false): Example("//"),
-        ]
+        ],
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
         let countOfLeadingWhitespace = file.contents.countOfLeadingCharacters(
-            in: .whitespacesAndNewlines
+            in: .whitespacesAndNewlines,
         )
         if countOfLeadingWhitespace == 0 {
             return []
@@ -33,7 +33,7 @@ struct LeadingWhitespaceRule: CorrectableRule, SourceKitFreeRule {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file.path, line: 1)
+                location: Location(file: file.path, line: 1),
             ),
         ]
     }
@@ -52,7 +52,7 @@ struct LeadingWhitespaceRule: CorrectableRule, SourceKitFreeRule {
             file.contents.index(
                 file.contents.startIndex,
                 offsetBy: spaceCount,
-                limitedBy: file.contents.endIndex
+                limitedBy: file.contents.endIndex,
             ) ?? file.contents.endIndex
         file.write(String(file.contents[indexEnd...]))
         return 1

@@ -8,7 +8,8 @@ struct SelfInPropertyInitializationRule: Rule {
         name: "Self in Property Initialization",
         description:
         "`self` refers to the unapplied `NSObject.self()` method, which is likely not expected; "
-            + "make the variable `lazy` to be able to refer to the current instance or use `ClassName.self`",
+            +
+            "make the variable `lazy` to be able to refer to the current instance or use `ClassName.self`",
         kind: .lint,
         nonTriggeringExamples: [
             Example(
@@ -18,7 +19,7 @@ struct SelfInPropertyInitializationRule: Rule {
                         return UIButton()
                     }()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -29,7 +30,7 @@ struct SelfInPropertyInitializationRule: Rule {
                         return button
                     }()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -40,7 +41,7 @@ struct SelfInPropertyInitializationRule: Rule {
                         return button
                     }()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -53,7 +54,7 @@ struct SelfInPropertyInitializationRule: Rule {
                         return collectionView
                     }()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -76,7 +77,7 @@ struct SelfInPropertyInitializationRule: Rule {
                     func calculateA() -> String { "A" }
                     func calculateB() -> String { "B" }
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
@@ -84,7 +85,7 @@ struct SelfInPropertyInitializationRule: Rule {
                     let keyPath: Any = \\String.self
                     let someType: Any = String.self
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -97,7 +98,7 @@ struct SelfInPropertyInitializationRule: Rule {
                         return button
                     }()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -108,9 +109,9 @@ struct SelfInPropertyInitializationRule: Rule {
                         return button
                     }()
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

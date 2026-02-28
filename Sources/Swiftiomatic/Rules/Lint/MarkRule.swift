@@ -11,7 +11,7 @@ struct MarkRule: Rule {
         kind: .lint,
         nonTriggeringExamples: MarkRuleExamples.nonTriggeringExamples,
         triggeringExamples: MarkRuleExamples.triggeringExamples,
-        corrections: MarkRuleExamples.corrections
+        corrections: MarkRuleExamples.corrections,
     )
 }
 
@@ -90,7 +90,7 @@ extension TokenSyntax {
                     "MARK[^\\s:]",
                     "[Mm]ark",
                     "MARK",
-                ].map(basePattern).joined(separator: "|")
+                ].map(basePattern).joined(separator: "|"),
             ) + capturingGroup(hyphenOrEmpty)
 
         private static let anySpace = " *"
@@ -114,11 +114,15 @@ extension TokenSyntax {
 
         private static func basePattern(_ pattern: String) -> String {
             nonCapturingGroup(
-                "\(twoOrThreeSlashes)\(anySpace)\(pattern)\(anySpace)\(colonOrEmpty)\(anySpace)"
+                "\(twoOrThreeSlashes)\(anySpace)\(pattern)\(anySpace)\(colonOrEmpty)\(anySpace)",
             )
         }
 
-        private static func replace(_ target: String, range nsrange: NSRange, to replaceString: String)
+        private static func replace(
+            _ target: String,
+            range nsrange: NSRange,
+            to replaceString: String,
+        )
             -> String
         {
             guard nsrange.length > 0, let range = Range(nsrange, in: target) else {
@@ -137,18 +141,18 @@ extension TokenSyntax {
             defer { utf8Offset += piece.sourceLength.utf8Length }
 
             switch piece {
-            case let .lineComment(comment), let .docLineComment(comment):
-                for correct in Mark.lint(in: comment) {
-                    let position = position.advanced(by: utf8Offset)
-                    results.append(
-                        ViolationResult(position: position) { pieces in
-                            pieces[index] = .lineComment(correct())
-                        }
-                    )
-                }
+                case let .lineComment(comment), let .docLineComment(comment):
+                    for correct in Mark.lint(in: comment) {
+                        let position = position.advanced(by: utf8Offset)
+                        results.append(
+                            ViolationResult(position: position) { pieces in
+                                pieces[index] = .lineComment(correct())
+                            },
+                        )
+                    }
 
-            default:
-                break
+                default:
+                    break
             }
         }
 

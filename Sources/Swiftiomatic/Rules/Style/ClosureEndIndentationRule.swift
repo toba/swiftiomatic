@@ -1,5 +1,5 @@
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct ClosureEndIndentationRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -11,7 +11,7 @@ struct ClosureEndIndentationRule: Rule {
         kind: .style,
         nonTriggeringExamples: ClosureEndIndentationRuleExamples.nonTriggeringExamples,
         triggeringExamples: ClosureEndIndentationRuleExamples.triggeringExamples,
-        corrections: ClosureEndIndentationRuleExamples.corrections
+        corrections: ClosureEndIndentationRuleExamples.corrections,
     )
 }
 
@@ -28,7 +28,7 @@ private extension ClosureEndIndentationRule {
         override func visitPost(_ node: ClosureExprSyntax) {
             // Get locations of opening and closing braces
             let leftBraceLocation = locationConverter.location(
-                for: node.leftBrace.positionAfterSkippingLeadingTrivia
+                for: node.leftBrace.positionAfterSkippingLeadingTrivia,
             )
             let rightBracePositionAfterTrivia = node.rightBrace.positionAfterSkippingLeadingTrivia
             let rightBraceLocation = locationConverter.location(for: rightBracePositionAfterTrivia)
@@ -49,7 +49,8 @@ private extension ClosureEndIndentationRule {
             let anchorLineNumber = anchorLocation.line
 
             // Calculate expected indentation
-            let expectedIndentationColumn = getFirstNonWhitespaceColumn(onLine: anchorLineNumber) - 1
+            let expectedIndentationColumn = getFirstNonWhitespaceColumn(onLine: anchorLineNumber) -
+                1
 
             // Calculate actual indentation of the closing brace
             let actualIndentationColumn = rightBraceLocation.column - 1
@@ -70,14 +71,14 @@ private extension ClosureEndIndentationRule {
                         // The range to replace is the trivia before the brace.
                         (
                             locationConverter.position(ofLine: rightBraceLocation.line, column: 1),
-                            ""
+                            "",
                         )
                     } else {
                         // If no newline, we need to add one. The replacement will be inserted
                         // after the previous token and before the closing brace.
                         (
                             node.rightBrace.positionAfterSkippingLeadingTrivia,
-                            "\n"
+                            "\n",
                         )
                     }
 
@@ -91,9 +92,9 @@ private extension ClosureEndIndentationRule {
                             start: correctionStartPosition,
                             end: node.rightBrace.positionAfterSkippingLeadingTrivia,
                             replacement: correctionPartBeforeIndentation
-                                + String(repeating: " ", count: max(0, expectedIndentationColumn))
-                        )
-                    )
+                                + String(repeating: " ", count: max(0, expectedIndentationColumn)),
+                        ),
+                    ),
                 )
             }
         }
@@ -126,10 +127,10 @@ private extension ClosureEndIndentationRule {
                 {
                     // Get the location of the opening paren and first argument
                     let leftParenLocation = locationConverter.location(
-                        for: leftParen.positionAfterSkippingLeadingTrivia
+                        for: leftParen.positionAfterSkippingLeadingTrivia,
                     )
                     let firstArgLocation = locationConverter.location(
-                        for: firstArg.positionAfterSkippingLeadingTrivia
+                        for: firstArg.positionAfterSkippingLeadingTrivia,
                     )
 
                     // If first argument is on the same line as the opening paren, don't apply the rule
@@ -173,7 +174,9 @@ private extension ClosureEndIndentationRule {
         /// - Parameter expression: The expression to find the anchor for.
         /// - Returns: The absolute position of the anchor token.
         private func anchor(for expression: ExprSyntax) -> AbsolutePosition {
-            if let memberAccess = expression.as(MemberAccessExprSyntax.self), let base = memberAccess.base {
+            if let memberAccess = expression.as(MemberAccessExprSyntax.self),
+               let base = memberAccess.base
+            {
                 let baseAnchor = anchor(for: base)
 
                 let memberStartPosition = memberAccess.period.positionAfterSkippingLeadingTrivia

@@ -18,7 +18,7 @@ struct CyclomaticComplexityRule: Rule {
                     }
                     if false { }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -36,7 +36,7 @@ struct CyclomaticComplexityRule: Rule {
                     default: return 1
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -46,7 +46,7 @@ struct CyclomaticComplexityRule: Rule {
                         if true {}; if true {}; if true {}; if true {}; if true {}
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -73,9 +73,9 @@ struct CyclomaticComplexityRule: Rule {
                         }
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -107,7 +107,7 @@ extension CyclomaticComplexityRule {
 
         private func validate(body: CodeBlockSyntax, violationToken: TokenSyntax) {
             let complexity = ComplexityVisitor(
-                ignoresCaseStatements: configuration.ignoresCaseStatements
+                ignoresCaseStatements: configuration.ignoresCaseStatements,
             ).walk(tree: body, handler: \.complexity)
 
             for parameter in configuration.params where complexity > parameter.value {
@@ -118,7 +118,7 @@ extension CyclomaticComplexityRule {
                 let violation = ReasonedRuleViolation(
                     position: violationToken.positionAfterSkippingLeadingTrivia,
                     reason: reason,
-                    severity: parameter.severity
+                    severity: parameter.severity,
                 )
                 violations.append(violation)
                 return
@@ -126,7 +126,7 @@ extension CyclomaticComplexityRule {
         }
     }
 
-    private class ComplexityVisitor: SyntaxVisitor {
+    private final class ComplexityVisitor: SyntaxVisitor {
         private(set) var complexity = 0
         let ignoresCaseStatements: Bool
 

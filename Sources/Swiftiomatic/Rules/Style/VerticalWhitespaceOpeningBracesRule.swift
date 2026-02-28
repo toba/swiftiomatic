@@ -23,7 +23,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
 
                 }
             */
-            """
+            """,
         ),
     ]
 
@@ -34,13 +34,13 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
             ↓
               print("x is 5")
             }
-            """
+            """,
         ): Example(
             """
             if x == 5 {
               print("x is 5")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -49,13 +49,13 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
 
               print("x is 5")
             }
-            """
+            """,
         ): Example(
             """
             if x == 5 {
               print("x is 5")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -63,13 +63,13 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
             ↓
               let x = 5
             }
-            """
+            """,
         ): Example(
             """
             struct MyStruct {
               let x = 5
             }
-            """
+            """,
         ),
         Example(
             """
@@ -80,7 +80,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
                 }
               }
             }
-            """
+            """,
         ): Example(
             """
             class X {
@@ -89,7 +89,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
                 }
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -99,7 +99,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
             2,
             3
             ]
-            """
+            """,
         ): Example(
             """
             [
@@ -107,7 +107,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
             2,
             3
             ]
-            """
+            """,
         ),
         Example(
             """
@@ -116,14 +116,14 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
               x: 5,
               y:6
             )
-            """
+            """,
         ): Example(
             """
             foo(
               x: 5,
               y:6
             )
-            """
+            """,
         ),
         Example(
             """
@@ -133,7 +133,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
                 print(x)
               }
             }
-            """
+            """,
         ): Example(
             """
             func foo() {
@@ -141,7 +141,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
                 print(x)
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -149,13 +149,13 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
             ↓
                 guard let img = image else { return }
             }
-            """
+            """,
         ): Example(
             """
             KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: nil) { image, _, _, _ in
                 guard let img = image else { return }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -164,14 +164,14 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
               self.dismiss(animated: false, completion: {
               })
             }
-            """
+            """,
         ): Example(
             """
             foo({ }) { _ in
               self.dismiss(animated: false, completion: {
               })
             }
-            """
+            """,
         ),
     ]
 
@@ -186,7 +186,7 @@ extension VerticalWhitespaceOpeningBracesRule: OptInRule {
         kind: .style,
         nonTriggeringExamples: (violatingToValidExamples.values + nonTriggeringExamples).sorted(),
         triggeringExamples: Array(violatingToValidExamples.keys).sorted(),
-        corrections: violatingToValidExamples.removingViolationMarkers()
+        corrections: violatingToValidExamples.removingViolationMarkers(),
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -194,17 +194,21 @@ extension VerticalWhitespaceOpeningBracesRule: OptInRule {
 
         return file.violatingRanges(for: pattern).map { violationRange in
             let substring = file.contents.substring(
-                from: violationRange.location, length: violationRange.length
+                from: violationRange.location, length: violationRange.length,
             )
             let substringRange = NSRange(location: 0, length: substring.count)
-            let matchResult = patternRegex.firstMatch(in: substring, options: [], range: substringRange)!
+            let matchResult = patternRegex.firstMatch(
+                in: substring,
+                options: [],
+                range: substringRange,
+            )!
             let violatingSubrange = matchResult.range(at: 2)
             let characterOffset = violationRange.location + violatingSubrange.location + 1
 
             return StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: characterOffset)
+                location: Location(file: file, characterOffset: characterOffset),
             )
         }
     }
@@ -213,7 +217,7 @@ extension VerticalWhitespaceOpeningBracesRule: OptInRule {
 extension VerticalWhitespaceOpeningBracesRule: CorrectableRule {
     func correct(file: SwiftLintFile) -> Int {
         let violatingRanges = file.ruleEnabled(
-            violatingRanges: file.violatingRanges(for: pattern), for: self
+            violatingRanges: file.violatingRanges(for: pattern), for: self,
         )
         guard violatingRanges.isNotEmpty else {
             return 0
@@ -225,7 +229,7 @@ extension VerticalWhitespaceOpeningBracesRule: CorrectableRule {
                 in: fileContents,
                 options: [],
                 range: violationRange,
-                withTemplate: "$1$3"
+                withTemplate: "$1$3",
             )
         }
         file.write(fileContents)
@@ -236,7 +240,7 @@ extension VerticalWhitespaceOpeningBracesRule: CorrectableRule {
 extension VerticalWhitespaceOpeningBracesRule {
     private static let _postMessage: Void = {
         Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
         ).print()
     }()
 

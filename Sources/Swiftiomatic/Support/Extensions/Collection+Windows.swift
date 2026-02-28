@@ -98,7 +98,7 @@ extension WindowsOfCountCollection: Collection {
     subscript(index: Index) -> Base.SubSequence {
         precondition(
             index.lowerBound != index.upperBound,
-            "Windows index is out of range"
+            "Windows index is out of range",
         )
         return base[index.lowerBound ..< index.upperBound]
     }
@@ -126,7 +126,7 @@ extension WindowsOfCountCollection: Collection {
     func index(
         _ i: Index,
         offsetBy distance: Int,
-        limitedBy limit: Index
+        limitedBy limit: Index,
     ) -> Index? {
         guard distance != 0 else { return i }
         guard limit != i else { return nil }
@@ -155,7 +155,7 @@ extension WindowsOfCountCollection: Collection {
     }
 
     func offsetForward(
-        _ i: Index, by distance: Int, limitedBy limit: Index
+        _ i: Index, by distance: Int, limitedBy limit: Index,
     ) -> Index? {
         assert(distance > 0)
         assert(limit > i)
@@ -184,12 +184,12 @@ extension WindowsOfCountCollection: Collection {
                   let lowerBound = base.index(
                       i.upperBound,
                       offsetBy: distance - windowSize,
-                      limitedBy: limit.lowerBound
+                      limitedBy: limit.lowerBound,
                   ),
                   let indexBeforeUpperBound = base.index(
                       lowerBound,
                       offsetBy: windowSize - 1,
-                      limitedBy: limit.upperBound
+                      limitedBy: limit.upperBound,
                   )
             else { return nil }
 
@@ -199,7 +199,7 @@ extension WindowsOfCountCollection: Collection {
 
             return Index(
                 lowerBound: lowerBound,
-                upperBound: base.index(after: indexBeforeUpperBound)
+                upperBound: base.index(after: indexBeforeUpperBound),
             )
         } else {
             //  input: [x|x x x x x x|x x x x x]
@@ -210,7 +210,7 @@ extension WindowsOfCountCollection: Collection {
                 let indexBeforeUpperBound = base.index(
                     i.upperBound,
                     offsetBy: distance - 1,
-                    limitedBy: limit.upperBound
+                    limitedBy: limit.upperBound,
                 )
             else { return nil }
 
@@ -225,13 +225,13 @@ extension WindowsOfCountCollection: Collection {
 
             return Index(
                 lowerBound: base.index(i.lowerBound, offsetBy: distance),
-                upperBound: base.index(after: indexBeforeUpperBound)
+                upperBound: base.index(after: indexBeforeUpperBound),
             )
         }
     }
 
     func offsetBackward(
-        _ i: Index, by distance: Int, limitedBy limit: Index
+        _ i: Index, by distance: Int, limitedBy limit: Index,
     ) -> Index? {
         assert(distance > 0)
         assert(limit < i)
@@ -250,13 +250,13 @@ extension WindowsOfCountCollection: Collection {
                 let upperBound = base.index(
                     base.endIndex,
                     offsetBy: -(distance - 1),
-                    limitedBy: limit.upperBound
+                    limitedBy: limit.upperBound,
                 )
             else { return nil }
 
             return Index(
                 lowerBound: base.index(upperBound, offsetBy: -windowSize),
-                upperBound: upperBound
+                upperBound: upperBound,
             )
         } else if distance >= windowSize {
             // Avoid traversing `self[i.lowerBound..<i.upperBound]` when the upper
@@ -271,13 +271,13 @@ extension WindowsOfCountCollection: Collection {
                   let upperBound = base.index(
                       i.lowerBound,
                       offsetBy: -(distance - windowSize),
-                      limitedBy: limit.upperBound
+                      limitedBy: limit.upperBound,
                   )
             else { return nil }
 
             return Index(
                 lowerBound: base.index(upperBound, offsetBy: -windowSize),
-                upperBound: upperBound
+                upperBound: upperBound,
             )
         } else {
             //  input: [x x x x x|x x x x x x|x]
@@ -288,13 +288,13 @@ extension WindowsOfCountCollection: Collection {
                 let lowerBound = base.index(
                     i.lowerBound,
                     offsetBy: -distance,
-                    limitedBy: limit.lowerBound
+                    limitedBy: limit.lowerBound,
                 )
             else { return nil }
 
             return Index(
                 lowerBound: lowerBound,
-                upperBound: base.index(i.lowerBound, offsetBy: -distance)
+                upperBound: base.index(i.lowerBound, offsetBy: -distance),
             )
         }
     }
@@ -335,12 +335,12 @@ extension WindowsOfCountCollection: BidirectionalCollection
         if index == endIndex {
             return Index(
                 lowerBound: base.index(index.lowerBound, offsetBy: -windowSize),
-                upperBound: index.upperBound
+                upperBound: index.upperBound,
             )
         } else {
             return Index(
                 lowerBound: base.index(before: index.lowerBound),
-                upperBound: base.index(before: index.upperBound)
+                upperBound: base.index(before: index.upperBound),
             )
         }
     }

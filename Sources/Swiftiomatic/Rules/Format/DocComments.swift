@@ -1,18 +1,10 @@
-//
-//  DocComments.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 10/19/22.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let docComments = FormatRule(
         help: "Use doc comments for API declarations, otherwise use regular comments.",
         orderAfter: [.fileHeader],
-        options: ["doc-comments"]
+        options: ["doc-comments"],
     ) { formatter in
         formatter.forEach(.startOfScope) { index, token in
             guard [.startOfScope("//"), .startOfScope("/*")].contains(token),
@@ -35,7 +27,10 @@ extension FormatRule {
             if token == .startOfScope("//"), !isTrailingComment {
                 var i = index
                 while let prevLineIndex = formatter.index(of: .linebreak, before: i),
-                      case let lineStartIndex = formatter.startOfLine(at: prevLineIndex, excludingIndent: true),
+                      case let lineStartIndex = formatter.startOfLine(
+                          at: prevLineIndex,
+                          excludingIndent: true,
+                      ),
                       formatter.token(at: lineStartIndex) == .startOfScope("//")
                 {
                     commentIndices.append(lineStartIndex)
@@ -53,7 +48,7 @@ extension FormatRule {
 
             guard
                 let useDocComment = formatter.shouldBeDocComment(
-                    at: commentIndices, endOfComment: endOfComment
+                    at: commentIndices, endOfComment: endOfComment,
                 )
             else {
                 return
@@ -71,18 +66,18 @@ extension FormatRule {
             var preserveRegularComments = false
             if useDocComment,
                let declarationKeyword = formatter.index(
-                   after: endOfComment, where: \.isDeclarationTypeKeyword
+                   after: endOfComment, where: \.isDeclarationTypeKeyword,
                ),
                let endOfDeclaration = formatter._endOfDeclarationInTypeBody(
-                   atDeclarationKeyword: declarationKeyword
+                   atDeclarationKeyword: declarationKeyword,
                ),
                let nextDeclarationKeyword = formatter.index(
                    after: endOfDeclaration,
-                   where: \.isDeclarationTypeKeyword
+                   where: \.isDeclarationTypeKeyword,
                )
             {
                 let linebreaksBetweenDeclarations = formatter.tokens[
-                    declarationKeyword ... nextDeclarationKeyword
+                    declarationKeyword ... nextDeclarationKeyword,
                 ]
                 .filter(\.isLinebreak).count
 
@@ -99,12 +94,12 @@ extension FormatRule {
             // `.startOfScope("/*"), .commentBody("* ...")`
             let startOfDocCommentBody: String
             switch token.string {
-            case "//":
-                startOfDocCommentBody = "/"
-            case "/*":
-                startOfDocCommentBody = "*"
-            default:
-                return
+                case "//":
+                    startOfDocCommentBody = "/"
+                case "/*":
+                    startOfDocCommentBody = "*"
+                default:
+                    return
             }
 
             let isDocComment = formatter.isDocComment(startOfComment: index)
@@ -118,7 +113,8 @@ extension FormatRule {
                 } else if !useDocComment || isTrailingComment, isDocComment,
                           !formatter.options.preserveDocComments
                 {
-                    let prefix = commentBody.string.prefix(while: { String($0) == startOfDocCommentBody })
+                    let prefix = commentBody.string
+                        .prefix(while: { String($0) == startOfDocCommentBody })
 
                     // Do nothing if this is a unusual comment like `//////////////////`
                     // or `/****************`. We can't just remove one of the tokens, because
@@ -130,7 +126,7 @@ extension FormatRule {
 
                     formatter.replaceToken(
                         at: index + 1,
-                        with: .commentBody(String(commentBody.string.dropFirst()))
+                        with: .commentBody(String(commentBody.string.dropFirst())),
                     )
                 }
 
@@ -161,16 +157,21 @@ extension Formatter {
     /// considering the following type declaration and surrounding context.
     func shouldBeDocComment(
         at indices: [Int],
-        endOfComment: Int
+        endOfComment: Int,
     ) -> Bool? {
         guard let startIndex = indices.min(),
-              let nextDeclarationIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: endOfComment)
+              let nextDeclarationIndex = index(
+                  of: .nonSpaceOrCommentOrLinebreak,
+                  after: endOfComment,
+              )
         else { return false }
 
         // Check if this is a directive like MARK or swiftformat:disable etc.
         // In that case just preserve the comment as-is.
         for index in indices {
-            if case let .commentBody(body)? = next(.nonSpace, after: index), body.isCommentDirective {
+            if case let .commentBody(body)? = next(.nonSpace, after: index),
+               body.isCommentDirective
+            {
                 return nil
             }
         }
@@ -194,7 +195,7 @@ extension Formatter {
         // If there are blank lines between comment and declaration, comment is not treated as doc comment
         let trailingTokens = tokens[(endOfComment - 1) ... nextDeclarationIndex]
         let lines = trailingTokens.split(
-            omittingEmptySubsequences: false, whereSeparator: \.isLinebreak
+            omittingEmptySubsequences: false, whereSeparator: \.isLinebreak,
         )
         if lines.contains(where: { $0.allSatisfy(\.isSpace) }) {
             return false

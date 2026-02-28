@@ -1,17 +1,27 @@
 import Foundation
 import SourceKittenFramework
+import Synchronization
+
+struct SourceKitDisabledError: Swift.Error, CustomStringConvertible {
+    let description = "SourceKit is disabled by configuration."
+}
 
 extension Request {
-    nonisolated(unsafe) static var disableSourceKitOverride = false
+    private static let _disableSourceKitOverride = Mutex(false)
+
+    static var disableSourceKitOverride: Bool {
+        get { _disableSourceKitOverride.withLock { $0 } }
+        set { _disableSourceKitOverride.withLock { $0 = newValue } }
+    }
 
     static var disableSourceKit: Bool {
         #if SWIFTLINT_DISABLE_SOURCEKIT
-            // Compile-time
-            true
+        // Compile-time
+        true
         #else
-            // Runtime
-            ProcessInfo.processInfo.environment["SWIFTLINT_DISABLE_SOURCEKIT"] != nil
-                || disableSourceKitOverride
+        // Runtime
+        ProcessInfo.processInfo.environment["SWIFTLINT_DISABLE_SOURCEKIT"] != nil
+            || disableSourceKitOverride
         #endif
     }
 
@@ -26,8 +36,10 @@ extension Request {
                     guard let ruleType = RuleRegistry.shared.rule(forID: ruleID) else {
                         queuedFatalError(
                             """
-                            Rule '\(ruleID)' not found in RuleRegistry. This indicates a configuration or wiring issue.
-                            """
+                            Rule '\(
+                                ruleID
+                            )' not found in RuleRegistry. This indicates a configuration or wiring issue.
+                            """,
                         )
                     }
 
@@ -39,24 +51,27 @@ extension Request {
                     {
                         queuedFatalError(
                             """
-                            '\(ruleID)' is a SourceKitFreeRule and should not be making requests to SourceKit.
-                            """
+                            '\(
+                                ruleID
+                            )' is a SourceKitFreeRule and should not be making requests to SourceKit.
+                            """,
                         )
                     }
                 }
             } else {
-                // No rule context and not explicitly allowed
-                queuedFatalError(
+                // No rule context — allow but warn (non-fatal to support parallel test execution
+                // where @TaskLocal context may not propagate through all dispatch paths)
+                queuedPrintError(
                     """
-                    SourceKit request made outside of rule execution context without explicit permission.
-                    Use CurrentRule.$allowSourceKitRequestWithoutRule.withValue(true) { ... } for allowed exceptions.
-                    """
+                    warning: SourceKit request made outside of rule execution context. \
+                    Use CurrentRule.$allowSourceKitRequestWithoutRule.withValue(true) { ... } for explicit allowance.
+                    """,
                 )
             }
         }
 
         guard !Self.disableSourceKit else {
-            queuedFatalError("SourceKit is disabled by configuration.")
+            throw SourceKitDisabledError()
         }
         return try send()
     }

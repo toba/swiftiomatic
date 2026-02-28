@@ -26,8 +26,8 @@ final class StructuralDuplicationCheck: BaseCheck {
                 name: node.name.text,
                 file: filePath,
                 line: loc.line,
-                fingerprint: fingerprint
-            )
+                fingerprint: fingerprint,
+            ),
         )
 
         return .visitChildren
@@ -38,7 +38,7 @@ final class StructuralDuplicationCheck: BaseCheck {
     /// - Parameter allCollected: Combined fingerprint data from all files.
     /// - Returns: Findings for groups of 2+ functions sharing an identical fingerprint.
     func generateDuplicationFindings(
-        allCollected: [(name: String, file: String, line: Int, fingerprint: String)]
+        allCollected: [(name: String, file: String, line: Int, fingerprint: String)],
     ) -> [Finding] {
         var groups: [String: [(name: String, file: String, line: Int)]] = [:]
 
@@ -47,8 +47,8 @@ final class StructuralDuplicationCheck: BaseCheck {
                 (
                     name: entry.name,
                     file: entry.file,
-                    line: entry.line
-                )
+                    line: entry.line,
+                ),
             )
         }
 
@@ -73,8 +73,8 @@ final class StructuralDuplicationCheck: BaseCheck {
                         column: 1,
                         message: "Function '\(member.name)' is structurally identical to \(peers)",
                         suggestion: "Consider extracting shared logic into a common function",
-                        confidence: confidence
-                    )
+                        confidence: confidence,
+                    ),
                 )
             }
         }

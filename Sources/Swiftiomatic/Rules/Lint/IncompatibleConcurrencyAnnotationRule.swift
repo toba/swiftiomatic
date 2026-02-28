@@ -20,7 +20,7 @@ struct IncompatibleConcurrencyAnnotationRule: Rule {
         minSwiftVersion: .six,
         nonTriggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.nonTriggeringExamples,
         triggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.triggeringExamples,
-        corrections: IncompatibleConcurrencyAnnotationRuleExamples.corrections
+        corrections: IncompatibleConcurrencyAnnotationRuleExamples.corrections,
     )
 }
 
@@ -68,7 +68,7 @@ private extension IncompatibleConcurrencyAnnotationRule {
 
         private func collectViolations(
             _ node: some WithModifiersSyntax & WithAttributesSyntax,
-            introducer: TokenSyntax
+            introducer: TokenSyntax,
         ) {
             if preconcurrencyRequired(for: node, with: configuration.globalActors) {
                 violations.append(at: introducer.positionAfterSkippingLeadingTrivia)
@@ -117,7 +117,7 @@ private extension IncompatibleConcurrencyAnnotationRule {
 
 private func preconcurrencyRequired(
     for syntax: some WithModifiersSyntax & WithAttributesSyntax,
-    with globalActors: Set<String>
+    with globalActors: Set<String>,
 ) -> Bool {
     guard syntax.isPublic, !syntax.isPreconcurrency else {
         return false
@@ -131,7 +131,9 @@ private func preconcurrencyRequired(
     if required { return true }
 
     // Check generic type constraints for `@Sendable`.
-    if let whereClause = syntax.asProtocol((any WithGenericParametersSyntax).self)?.genericWhereClause {
+    if let whereClause = syntax.asProtocol((any WithGenericParametersSyntax).self)?
+        .genericWhereClause
+    {
         required =
             required
                 || whereClause.requirements.contains { requirement in
@@ -151,7 +153,10 @@ private func preconcurrencyRequired(
     let visitor = SendableTypeVisitor(globalActors: globalActors)
     if let parameterClause {
         required =
-            required || parameterClause.parameters.contains { visitor.walk(tree: $0, handler: \.found) }
+            required || parameterClause.parameters.contains { visitor.walk(
+                tree: $0,
+                handler: \.found,
+            ) }
         if required { return true }
     }
 
@@ -176,7 +181,7 @@ private extension WithAttributesSyntax where Self: WithModifiersSyntax {
 
     var withPreconcurrencyPrepended: Self {
         let leadingWhitespace = Trivia(
-            pieces: leadingTrivia.reversed().prefix(while: \.isSpaceOrTab).reversed()
+            pieces: leadingTrivia.reversed().prefix(while: \.isSpaceOrTab).reversed(),
         )
         let attribute = AttributeListSyntax.Element.attribute("@preconcurrency")
             .with(\.leadingTrivia, leadingTrivia)

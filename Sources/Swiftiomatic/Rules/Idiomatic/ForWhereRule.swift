@@ -12,7 +12,7 @@ struct ForWhereRule: Rule {
             Example(
                 """
                 for user in users where user.id == 1 { }
-                """
+                """,
             ),
             // if let
             Example(
@@ -20,7 +20,7 @@ struct ForWhereRule: Rule {
                 for user in users {
                   if let id = user.id { }
                 }
-                """
+                """,
             ),
             // if var
             Example(
@@ -28,7 +28,7 @@ struct ForWhereRule: Rule {
                 for user in users {
                   if var id = user.id { }
                 }
-                """
+                """,
             ),
             // if with else
             Example(
@@ -36,7 +36,7 @@ struct ForWhereRule: Rule {
                 for user in users {
                   if user.id == 1 { } else { }
                 }
-                """
+                """,
             ),
             // if with else if
             Example(
@@ -45,7 +45,7 @@ struct ForWhereRule: Rule {
                   if user.id == 1 {
                   } else if user.id == 2 { }
                 }
-                """
+                """,
             ),
             // if is not the only expression inside for
             Example(
@@ -54,7 +54,7 @@ struct ForWhereRule: Rule {
                   if user.id == 1 { }
                   print(user)
                 }
-                """
+                """,
             ),
             // if a variable is used
             Example(
@@ -63,7 +63,7 @@ struct ForWhereRule: Rule {
                   let id = user.id
                   if id == 1 { }
                 }
-                """
+                """,
             ),
             // if something is after if
             Example(
@@ -72,7 +72,7 @@ struct ForWhereRule: Rule {
                   if user.id == 1 { }
                   return true
                 }
-                """
+                """,
             ),
             // condition with multiple clauses
             Example(
@@ -80,14 +80,14 @@ struct ForWhereRule: Rule {
                 for user in users {
                   if user.id == 1 && user.age > 18 { }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 for user in users {
                   if user.id == 1, user.age > 18 { }
                 }
-                """
+                """,
             ),
             // if case
             Example(
@@ -97,14 +97,14 @@ struct ForWhereRule: Rule {
                     return index
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 for user in users {
                   if user.id == 1 { return true }
                 }
-                """, configuration: ["allow_for_as_filter": true]
+                """, configuration: ["allow_for_as_filter": true],
             ),
             Example(
                 """
@@ -114,7 +114,7 @@ struct ForWhereRule: Rule {
                     return derivedValue != 0
                   }
                 }
-                """, configuration: ["allow_for_as_filter": true]
+                """, configuration: ["allow_for_as_filter": true],
             ),
         ],
         triggeringExamples: [
@@ -123,7 +123,7 @@ struct ForWhereRule: Rule {
                 for user in users {
                   ↓if user.id == 1 { return true }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -133,7 +133,7 @@ struct ForWhereRule: Rule {
                         subview.removeFromSuperview()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -143,9 +143,9 @@ struct ForWhereRule: Rule {
                         subview.removeFromSuperview()
                     }
                 }
-                """, configuration: ["allow_for_as_filter": true]
+                """, configuration: ["allow_for_as_filter": true],
             ),
-        ]
+        ],
     )
 }
 
@@ -159,7 +159,8 @@ private extension ForWhereRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: ForStmtSyntax) {
             guard node.whereClause == nil,
-                  let onlyExprStmt = node.body.statements.onlyElement?.item.as(ExpressionStmtSyntax.self),
+                  let onlyExprStmt = node.body.statements.onlyElement?.item
+                  .as(ExpressionStmtSyntax.self),
                   let ifExpr = onlyExprStmt.expression.as(IfExprSyntax.self),
                   ifExpr.elseBody == nil,
                   !ifExpr.containsOptionalBinding,

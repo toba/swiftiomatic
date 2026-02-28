@@ -19,7 +19,7 @@ struct FunctionDefaultParameterAtEndRule: Rule {
                 """
                 class A: B {
                   override func foo(bar: Int = 0, baz: String) {}
-                """
+                """,
             ),
             Example("func foo(bar: Int = 0, completion: @escaping CompletionHandler) {}"),
             Example(
@@ -27,31 +27,33 @@ struct FunctionDefaultParameterAtEndRule: Rule {
                 func foo(a: Int, b: CGFloat = 0) {
                   let block = { (error: Error?) in }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func foo(a: String, b: String? = nil,
                          c: String? = nil, d: @escaping AlertActionHandler = { _ in }) {}
-                """
+                """,
             ),
-            Example("override init?(for date: Date = Date(), coordinate: CLLocationCoordinate2D) {}"),
+            Example(
+                "override init?(for date: Date = Date(), coordinate: CLLocationCoordinate2D) {}",
+            ),
             Example(
                 """
                 func handleNotification(_ userInfo: NSDictionary,
                                         userInteraction: Bool = false,
                                         completionHandler: ((UIBackgroundFetchResult) -> Void)?) {}
-                """
+                """,
             ),
             Example(
                 """
                 func write(withoutNotifying tokens: [NotificationToken] =  {}, _ block: (() throws -> Int)) {}
-                """
+                """,
             ),
             Example(
                 """
                 func expect<T>(file: String = #file, _ expression: @autoclosure () -> (() throws -> T)) -> Expectation<T> {}
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example("func foo(bar: Int, baz: Int = 0, z: () -> Void) {}"),
             Example("func foo(bar: Int, baz: Int = 0, z: () -> Void, x: Int = 0) {}"),
@@ -60,13 +62,15 @@ struct FunctionDefaultParameterAtEndRule: Rule {
         triggeringExamples: [
             Example("func foo(↓bar: Int = 0, baz: String) {}"),
             Example("private func foo(↓bar: Int = 0, baz: String) {}"),
-            Example("public init?(↓for date: Date = Date(), coordinate: CLLocationCoordinate2D) {}"),
+            Example(
+                "public init?(↓for date: Date = Date(), coordinate: CLLocationCoordinate2D) {}",
+            ),
             Example("func foo(bar: Int, ↓baz: Int = 0, z: () -> Void, x: Int) {}"),
             Example(
                 "func foo(isolation: isolated (any Actor)? = #isolation, bar: String) {}",
-                configuration: ["ignore_first_isolation_inheritance_parameter": false]
+                configuration: ["ignore_first_isolation_inheritance_parameter": false],
             ),
-        ]
+        ],
     )
 }
 

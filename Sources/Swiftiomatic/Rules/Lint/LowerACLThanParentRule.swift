@@ -73,16 +73,16 @@ struct LowerACLThanParentRule: Rule {
                 struct Foo {
                     ↓public func bar() {}
                 }
-                """
+                """,
             ):
                 Example(
                     """
                     struct Foo {
                         func bar() {}
                     }
-                    """
+                    """,
                 ),
-        ]
+        ],
     )
 }
 
@@ -118,12 +118,12 @@ private extension LowerACLThanParentRule {
                 newNode = DeclModifierSyntax(
                     leadingTrivia: node.leadingTrivia,
                     name: .keyword(.public),
-                    trailingTrivia: .space
+                    trailingTrivia: .space,
                 )
             } else {
                 newNode = DeclModifierSyntax(
                     leadingTrivia: node.leadingTrivia,
-                    name: .identifier("")
+                    name: .identifier(""),
                 )
             }
 
@@ -139,27 +139,33 @@ private extension DeclModifierSyntax {
         }
 
         switch name.tokenKind {
-        case .keyword(.internal)
+            case .keyword(.internal)
             where nearestNominalParent.modifiers?.containsPrivateOrFileprivate() == true:
-            return true
-        case .keyword(.internal) where nearestNominalParent.modifiers?.accessLevelModifier == nil:
-            guard let nominalExtension = nearestNominalParent.nearestNominalExtensionDeclParent() else {
-                return false
-            }
-            return nominalExtension.modifiers?.containsPrivateOrFileprivate() == true
-        case .keyword(.public)
+                return true
+            case .keyword(.internal)
+            where nearestNominalParent.modifiers?.accessLevelModifier == nil:
+                guard let nominalExtension = nearestNominalParent
+                    .nearestNominalExtensionDeclParent()
+                else {
+                    return false
+                }
+                return nominalExtension.modifiers?.containsPrivateOrFileprivate() == true
+            case .keyword(.public)
             where nearestNominalParent.modifiers?.containsPrivateOrFileprivate() == true
             || nearestNominalParent.modifiers?.contains(keyword: .internal) == true:
-            return true
-        case .keyword(.public) where nearestNominalParent.modifiers?.accessLevelModifier == nil:
-            guard let nominalExtension = nearestNominalParent.nearestNominalExtensionDeclParent() else {
                 return true
-            }
-            return nominalExtension.modifiers?.contains(keyword: .public) == false
-        case .keyword(.open) where nearestNominalParent.modifiers?.contains(keyword: .open) == false:
-            return true
-        default:
-            return false
+            case .keyword(.public) where nearestNominalParent.modifiers?.accessLevelModifier == nil:
+                guard let nominalExtension = nearestNominalParent
+                    .nearestNominalExtensionDeclParent()
+                else {
+                    return true
+                }
+                return nominalExtension.modifiers?.contains(keyword: .public) == false
+            case .keyword(.open)
+            where nearestNominalParent.modifiers?.contains(keyword: .open) == false:
+                return true
+            default:
+                return false
         }
     }
 }

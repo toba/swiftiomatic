@@ -6,7 +6,7 @@ struct GenericTypeNameRule: Rule {
         minLengthWarning: 1,
         minLengthError: 0,
         maxLengthWarning: 20,
-        maxLengthError: 1000
+        maxLengthError: 1000,
     )
 
     static let description = RuleDescription(
@@ -27,7 +27,7 @@ struct GenericTypeNameRule: Rule {
             Example("func foo(_ options: Set<type>) {}"),
             Example("func < <T: Comparable>(lhs: T?, rhs: T?) -> Bool"),
             Example(
-                "func configureWith(data: Either<MessageThread, (project: Project, backing: Backing)>)"
+                "func configureWith(data: Either<MessageThread, (project: Project, backing: Backing)>)",
             ),
             Example("typealias StringDictionary<T> = Dictionary<String, T>"),
             Example("typealias BackwardTriple<T1, T2, T3> = (T3, T2, T1)"),
@@ -52,7 +52,7 @@ struct GenericTypeNameRule: Rule {
                     Example("\(type) Foo<↓\(String(repeating: "T", count: 21))> {}"),
                     Example("\(type) Foo<↓type> {}"),
                 ]
-            }
+            },
     )
 }
 
@@ -78,10 +78,12 @@ private extension GenericTypeNameRule {
                     ReasonedRuleViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: """
-                        Generic type name '\(name)' should only contain alphanumeric and other allowed characters
+                        Generic type name '\(
+                            name
+                        )' should only contain alphanumeric and other allowed characters
                         """,
-                        severity: configuration.unallowedSymbolsSeverity.severity
-                    )
+                        severity: configuration.unallowedSymbolsSeverity.severity,
+                    ),
                 )
             } else if let caseCheckSeverity = configuration.validatesStartWithLowercase.severity,
                       !String(name[name.startIndex]).isUppercase()
@@ -90,8 +92,8 @@ private extension GenericTypeNameRule {
                     ReasonedRuleViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Generic type name '\(name)' should start with an uppercase character",
-                        severity: caseCheckSeverity
-                    )
+                        severity: caseCheckSeverity,
+                    ),
                 )
             } else if let severity = configuration.severity(forLength: name.count) {
                 let reason =
@@ -101,8 +103,8 @@ private extension GenericTypeNameRule {
                     ReasonedRuleViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: reason,
-                        severity: severity
-                    )
+                        severity: severity,
+                    ),
                 )
             }
         }

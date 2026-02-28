@@ -10,16 +10,18 @@ struct IsDisjointRule: Rule {
         kind: .idiomatic,
         nonTriggeringExamples: [
             Example("_ = Set(syntaxKinds).isDisjoint(with: commentAndStringKindsSet)"),
-            Example("let isObjc = !objcAttributes.isDisjoint(with: dictionary.enclosedSwiftAttributes)"),
+            Example(
+                "let isObjc = !objcAttributes.isDisjoint(with: dictionary.enclosedSwiftAttributes)",
+            ),
             Example("_ = Set(syntaxKinds).intersection(commentAndStringKindsSet)"),
             Example("_ = !objcAttributes.intersection(dictionary.enclosedSwiftAttributes)"),
         ],
         triggeringExamples: [
             Example("_ = Set(syntaxKinds).↓intersection(commentAndStringKindsSet).isEmpty"),
             Example(
-                "let isObjc = !objcAttributes.↓intersection(dictionary.enclosedSwiftAttributes).isEmpty"
+                "let isObjc = !objcAttributes.↓intersection(dictionary.enclosedSwiftAttributes).isEmpty",
             ),
-        ]
+        ],
     )
 }
 
@@ -35,14 +37,15 @@ private extension IsDisjointRule {
             guard
                 node.declName.baseName.text == "isEmpty",
                 let firstBase = node.base?.asFunctionCall,
-                let firstBaseCalledExpression = firstBase.calledExpression.as(MemberAccessExprSyntax.self),
+                let firstBaseCalledExpression = firstBase.calledExpression
+                .as(MemberAccessExprSyntax.self),
                 firstBaseCalledExpression.declName.baseName.text == "intersection"
             else {
                 return
             }
 
             violations.append(
-                firstBaseCalledExpression.declName.baseName.positionAfterSkippingLeadingTrivia
+                firstBaseCalledExpression.declName.baseName.positionAfterSkippingLeadingTrivia,
             )
         }
     }

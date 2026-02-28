@@ -15,7 +15,7 @@ struct TypesafeArrayInitRule: AnalyzerRule {
                 enum MyError: Error {}
                 let myResult: Result<String, MyError> = .success("")
                 let result: Result<Any, MyError> = myResult.map { $0 }
-                """
+                """,
             ),
             Example(
                 """
@@ -27,7 +27,7 @@ struct TypesafeArrayInitRule: AnalyzerRule {
                 }
                 let ints = IntArray()
                 let intsCopy = ints.map { $0 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -36,19 +36,19 @@ struct TypesafeArrayInitRule: AnalyzerRule {
                 func f<Seq: Sequence>(s: Seq) -> [Seq.Element] {
                     s.↓map({ $0 })
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func f(array: [Int]) -> [Int] {
                     array.↓map { $0 }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let myInts = [1, 2, 3].↓map { return $0 }
-                """
+                """,
             ),
             Example(
                 """
@@ -56,10 +56,10 @@ struct TypesafeArrayInitRule: AnalyzerRule {
                     func next() -> Int? { nil }
                 }
                 let array = Generator().↓map { i in i }
-                """
+                """,
             ),
         ],
-        requiresFileOnDisk: true
+        requiresFileOnDisk: true,
     )
 
     private static let parentRule = ArrayInitRule()
@@ -68,13 +68,13 @@ struct TypesafeArrayInitRule: AnalyzerRule {
             """
             \\Q<Self, T where Self : \\E(?:Sequence|Collection)> \
             \\Q(Self) -> ((Self.Element) throws -> T) throws -> [T]\\E
-            """
+            """,
         ),
         regex(
             """
             \\Q<Self, T, E where Self : \\E(?:Sequence|Collection), \
             \\QE : Error> (Self) -> ((Self.Element) throws(E) -> T) throws(E) -> [T]\\E
-            """
+            """,
         ),
     ]
 
@@ -92,7 +92,7 @@ struct TypesafeArrayInitRule: AnalyzerRule {
                     return false
                 }
                 let cursorInfo = Request.cursorInfoWithoutSymbolGraph(
-                    file: filePath, offset: offset, arguments: compilerArguments
+                    file: filePath, offset: offset, arguments: compilerArguments,
                 )
                 guard let request = try? cursorInfo.sendIfNotDisabled() else {
                     return false

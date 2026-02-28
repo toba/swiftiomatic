@@ -18,23 +18,23 @@ struct PrivateOutletRule: Rule {
             // allow_private_set
             Example(
                 "class Foo { @IBOutlet private(set) var label: UILabel? }",
-                configuration: ["allow_private_set": true]
+                configuration: ["allow_private_set": true],
             ),
             Example(
                 "class Foo { @IBOutlet private(set) var label: UILabel! }",
-                configuration: ["allow_private_set": true]
+                configuration: ["allow_private_set": true],
             ),
             Example(
                 "class Foo { @IBOutlet weak private(set) var label: UILabel? }",
-                configuration: ["allow_private_set": true]
+                configuration: ["allow_private_set": true],
             ),
             Example(
                 "class Foo { @IBOutlet private(set) weak var label: UILabel? }",
-                configuration: ["allow_private_set": true]
+                configuration: ["allow_private_set": true],
             ),
             Example(
                 "class Foo { @IBOutlet fileprivate(set) weak var label: UILabel? }",
-                configuration: ["allow_private_set": true]
+                configuration: ["allow_private_set": true],
             ),
         ],
         triggeringExamples: [
@@ -73,9 +73,9 @@ struct PrivateOutletRule: Rule {
                         ellipsisButtonDidTouch?(self)
                     }
                 }
-                """, configuration: ["allow_private_set": false], excludeFromDocumentation: true
+                """, configuration: ["allow_private_set": false], excludeFromDocumentation: true,
             ),
-        ]
+        ],
     )
 }
 
@@ -98,7 +98,9 @@ private extension PrivateOutletRule {
                 return
             }
 
-            if configuration.allowPrivateSet, decl.modifiers.containsPrivateOrFileprivate(setOnly: true) {
+            if configuration.allowPrivateSet,
+               decl.modifiers.containsPrivateOrFileprivate(setOnly: true)
+            {
                 return
             }
 

@@ -15,14 +15,14 @@ struct EnumCaseAssociatedValuesLengthRule: Rule {
                     case fullTime(name: String, retirement: Date, designation: String, contactNumber: Int)
                     case partTime(name: String, age: Int, contractEndDate: Date)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum Barcode {
                     case upc(Int, Int, Int, Int)
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -32,16 +32,16 @@ struct EnumCaseAssociatedValuesLengthRule: Rule {
                     case ↓fullTime(name: String, retirement: Date, age: Int, designation: String, contactNumber: Int)
                     case ↓partTime(name: String, contractEndDate: Date, age: Int, designation: String, contactNumber: Int)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum Barcode {
                     case ↓upc(Int, Int, Int, Int, Int, Int)
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -80,8 +80,8 @@ private extension EnumCaseAssociatedValuesLengthRule {
                 ReasonedRuleViolation(
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason: reason,
-                    severity: violationSeverity
-                )
+                    severity: violationSeverity,
+                ),
             )
         }
     }

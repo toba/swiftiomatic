@@ -5,7 +5,7 @@ struct UnusedDeclarationConfiguration: SeverityBasedRuleConfiguration {
     private(set) var includePublicAndOpen = false
     @ConfigurationElement(
         key: "related_usrs_to_skip",
-        postprocessor: { $0.insert("s:7SwiftUI15PreviewProviderP") }
+        postprocessor: { $0.insert("s:7SwiftUI15PreviewProviderP") },
     )
     private(set) var relatedUSRsToSkip = Set<String>()
     typealias Parent = UnusedDeclarationRule

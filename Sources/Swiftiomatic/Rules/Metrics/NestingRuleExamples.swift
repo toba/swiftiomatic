@@ -20,13 +20,11 @@ enum NestingRuleExamples {
                     \(type) Example_0 {
                         \(type) Example_1 {}
                     }
-                    """
+                    """,
                 ),
 
-                /*
-                     all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
-                     are flattend in a file structure so limits do not change
-                    */
+                // all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
+                // are flattend in a file structure so limits do not change
                 .init(
                     """
                     var example: Int {
@@ -35,7 +33,7 @@ enum NestingRuleExamples {
                         }
                         return 5
                     }
-                    """
+                    """,
                 ),
 
                 // didSet is not present in file structure although there is such a swift declaration kind
@@ -48,7 +46,7 @@ enum NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
 
                 // extensions are counted as a type level
@@ -57,7 +55,7 @@ enum NestingRuleExamples {
                     extension Example_0 {
                         \(type) Example_1 {}
                     }
-                    """
+                    """,
                 ),
             ]
         }
@@ -71,13 +69,11 @@ enum NestingRuleExamples {
                     func f_2() {}
                 }
             }
-            """
+            """,
         ),
 
-        /*
-             all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
-             are flattend in a file structure so level limits do not change
-            */
+        // all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
+        // are flattend in a file structure so level limits do not change
         .init(
             """
             var example: Int {
@@ -88,7 +84,7 @@ enum NestingRuleExamples {
                 }
                 return 5
             }
-            """
+            """,
         ),
 
         // didSet is not present in file structure although there is such a swift declaration kind
@@ -103,7 +99,7 @@ enum NestingRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
 
         // extensions are counted as a type level
@@ -116,7 +112,7 @@ enum NestingRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -128,7 +124,7 @@ enum NestingRuleExamples {
                     \(type) Example_0 {
                         protocol Example_1 {}
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -138,7 +134,7 @@ enum NestingRuleExamples {
                         }
                         return 5
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -149,14 +145,14 @@ enum NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
                     extension Example_0 {
                         protocol Example_1 {}
                     }
-                    """
+                    """,
                 ),
             ]
         }
@@ -179,7 +175,7 @@ enum NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
 
                 // closure var example
@@ -195,7 +191,7 @@ enum NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
 
                 // function closure parameter example
@@ -211,7 +207,7 @@ enum NestingRuleExamples {
                             }
                         }
                     })
-                    """
+                    """,
                 ),
             ]
         }
@@ -232,7 +228,7 @@ enum NestingRuleExamples {
                             protocol P {}
                         }
                     }
-                    """
+                    """,
                 ),
 
                 // default maximum nesting level for both type and function within closures and statements
@@ -260,7 +256,7 @@ enum NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
             ]
         }
@@ -276,7 +272,7 @@ enum NestingRuleExamples {
                 }
             }
             """,
-            configuration: ["ignore_coding_keys": true]
+            configuration: ["ignore_coding_keys": true],
         ),
     ]
 }
@@ -302,13 +298,11 @@ extension NestingRuleExamples {
                             ↓\(type) Example_2 {}
                         }
                     }
-                    """
+                    """,
                 ),
 
-                /*
-                    all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
-                    are flattend in a file structure so limits do not change
-                    */
+                // all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
+                // are flattend in a file structure so limits do not change
                 .init(
                     """
                     var example: Int {
@@ -319,7 +313,7 @@ extension NestingRuleExamples {
                         }
                         return 5
                     }
-                    """
+                    """,
                 ),
 
                 // didSet is not present in file structure although there is such a swift declaration kind
@@ -334,7 +328,7 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
 
                 // extensions are counted as a type level, violation of default maximum type nesting level
@@ -345,7 +339,7 @@ extension NestingRuleExamples {
                             ↓\(type) Example_2 {}
                         }
                     }
-                    """
+                    """,
                 ),
             ]
         }
@@ -361,13 +355,11 @@ extension NestingRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
 
-        /*
-            all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
-            are flattend in a file structure so level limits do not change
-            */
+        // all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
+        // are flattend in a file structure so level limits do not change
         .init(
             """
             var example: Int {
@@ -380,7 +372,7 @@ extension NestingRuleExamples {
                 }
                 return 5
             }
-            """
+            """,
         ),
 
         // didSet is not present in file structure although there is such a swift declaration kind
@@ -397,7 +389,7 @@ extension NestingRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
 
         // extensions are counted as a type level, violation of default maximum function nesting level
@@ -412,7 +404,7 @@ extension NestingRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -438,7 +430,7 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
 
                 // closure var example
@@ -458,7 +450,7 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
 
                 // function closure parameter example
@@ -476,7 +468,7 @@ extension NestingRuleExamples {
                             }
                         }
                     })
-                    """
+                    """,
                 ),
             ]
         }
@@ -491,7 +483,7 @@ extension NestingRuleExamples {
                             ↓protocol Example_2 {}
                         }
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -503,7 +495,7 @@ extension NestingRuleExamples {
                         }
                         return 5
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -516,7 +508,7 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -525,7 +517,7 @@ extension NestingRuleExamples {
                             ↓protocol Example_2 {}
                         }
                     }
-                    """
+                    """,
                 ),
             ]
         }
@@ -549,7 +541,7 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
 
                 // violation of default maximum nesting level for both type and function within closures and statements
@@ -583,7 +575,7 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """
+                    """,
                 ),
             ]
         }
@@ -598,7 +590,7 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-            """
+            """,
         ),
     ]
 
@@ -613,7 +605,7 @@ extension NestingRuleExamples {
                 }
             }
             """,
-            configuration: ["ignore_coding_keys": true]
+            configuration: ["ignore_coding_keys": true],
         ),
         Example(
             """
@@ -624,7 +616,7 @@ extension NestingRuleExamples {
               }
             }
             """,
-            configuration: ["ignore_coding_keys": true]
+            configuration: ["ignore_coding_keys": true],
         ),
     ]
 }

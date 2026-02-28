@@ -19,7 +19,7 @@ enum OperatorUsageWhitespaceRuleExamples {
         Example("let foo = GenericType<(UIViewController) -> Void>()"),
         Example("let foo = Foo<Bar<T>, Baz>()"),
         Example(
-            "let foo = SignalProducer<Signal<Value, Error>, Error>([ self.signal, next ]).flatten(.concat)"
+            "let foo = SignalProducer<Signal<Value, Error>, Error>([ self.signal, next ]).flatten(.concat)",
         ),
         Example("\"let foo =  1\""),
         Example(
@@ -28,13 +28,13 @@ enum OperatorUsageWhitespaceRuleExamples {
             case hello   = 1
             case hello2  = 1
             }
-            """
+            """,
         ),
         Example(
             """
             let something = Something<GenericParameter1,
                                       GenericParameter2>()
-            """
+            """,
         ),
         Example(
             """
@@ -42,7 +42,7 @@ enum OperatorUsageWhitespaceRuleExamples {
                 return compileCommands[path] ??
                     compileCommands[path.path(relativeTo: FileManager.default.currentDirectoryPath)]
             }
-            """
+            """,
         ),
         Example(
             """
@@ -51,7 +51,7 @@ enum OperatorUsageWhitespaceRuleExamples {
                     && lhs.originalRemoteString == rhs.originalRemoteString
                     && lhs.rootDirectory == rhs.rootDirectory
             }
-            """
+            """,
         ),
         Example(
             """
@@ -60,7 +60,7 @@ enum OperatorUsageWhitespaceRuleExamples {
                     lhs.originalRemoteString == rhs.originalRemoteString &&
                     lhs.rootDirectory == rhs.rootDirectory
             }
-            """
+            """,
         ),
         Example(
             #"""
@@ -68,7 +68,7 @@ enum OperatorUsageWhitespaceRuleExamples {
                 "\\S\(mainPatternGroups)" + // Regexp will match if expression not begin with comma
                 "|" +                       // or
                 "\(mainPatternGroups)"      // Regexp will match if expression begins with comma
-            """#
+            """#,
         ),
         Example(
             #"""
@@ -76,7 +76,7 @@ enum OperatorUsageWhitespaceRuleExamples {
                 "\\S\(mainPatternGroups)" + // Regexp will match if expression not begin with comma
                 "|"                       + // or
                 "\(mainPatternGroups)"      // Regexp will match if expression begins with comma
-            """#
+            """#,
         ),
         Example("typealias Foo = Bar"),
         Example(
@@ -84,7 +84,7 @@ enum OperatorUsageWhitespaceRuleExamples {
             protocol A {
                 associatedtype B = C
             }
-            """
+            """,
         ),
         Example("tabbedViewController.title = nil"),
         Example(
@@ -95,14 +95,14 @@ enum OperatorUsageWhitespaceRuleExamples {
                    >>> effect({ log.debug("Done syncing. Work was done? \(workWasDone)") })
                    >>> { workWasDone ? storage.doneUpdatingMetadataAfterUpload() : succeed() }    // A closure
                    >>> effect({ log.debug("Done.") })
-            """#, excludeFromDocumentation: true
+            """#, excludeFromDocumentation: true,
         ),
         Example(
             """
             func success(for item: Item) {
                 item.successHandler??()
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -112,7 +112,7 @@ enum OperatorUsageWhitespaceRuleExamples {
             }
             """,
             configuration: ["allowed_no_space_operators": ["<--<"]],
-            excludeFromDocumentation: true
+            excludeFromDocumentation: true,
         ),
     ]
 
@@ -140,7 +140,7 @@ enum OperatorUsageWhitespaceRuleExamples {
             case one↓  =  1
             case two  = 1
             }
-            """
+            """,
         ),
         Example(
             """
@@ -148,7 +148,7 @@ enum OperatorUsageWhitespaceRuleExamples {
             case one  = 1
             case two↓  =  1
             }
-            """
+            """,
         ),
         Example(
             """
@@ -156,7 +156,7 @@ enum OperatorUsageWhitespaceRuleExamples {
             case one↓   = 1
             case two↓  = 1
             }
-            """
+            """,
         ),
         Example("typealias Foo↓ =  Bar"),
         Example(
@@ -164,7 +164,7 @@ enum OperatorUsageWhitespaceRuleExamples {
             protocol A {
                 associatedtype B↓  = C
             }
-            """
+            """,
         ),
         Example("tabbedViewController.title↓  = nil"),
         Example("let foo = bar ? 0↓:1"),
@@ -186,7 +186,7 @@ enum OperatorUsageWhitespaceRuleExamples {
         Example("let v8 = Int8(1)↓  << 6"): Example("let v8 = Int8(1) << 6"),
         Example("let v8 = 1↓ <<  (6)"): Example("let v8 = 1 << (6)"),
         Example("let v8 = 1↓ <<  (6)\n let foo = 1 > 2"): Example(
-            "let v8 = 1 << (6)\n let foo = 1 > 2"
+            "let v8 = 1 << (6)\n let foo = 1 > 2",
         ),
         Example("let foo↓  = \"1\""): Example("let foo = \"1\""),
         Example("let foo↓ =  \"1\""): Example("let foo = \"1\""),

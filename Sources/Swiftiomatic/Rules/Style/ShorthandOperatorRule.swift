@@ -23,7 +23,7 @@ struct ShorthandOperatorRule: Rule {
                 public func -= (lhs: inout Foo, rhs: Int) {
                     lhs = lhs - rhs
                 }
-                """
+                """,
             ),
             Example("var helloWorld = \"world!\"\n helloWorld = \"Hello, \" + helloWorld"),
             Example("angle = someCheck ? angle : -angle"),
@@ -37,7 +37,7 @@ struct ShorthandOperatorRule: Rule {
             Example("↓self.aProperty = self.aProperty * 1"),
             Example("↓n = n + i / outputLength"),
             Example("↓n = n - i / outputLength"),
-        ]
+        ],
     )
 
     fileprivate static let allOperators = ["-", "/", "+", "*"]
@@ -86,10 +86,10 @@ private extension ShorthandOperatorRule {
 private extension TokenSyntax {
     var binaryOperator: String? {
         switch tokenKind {
-        case let .binaryOperator(str):
-            return str
-        default:
-            return nil
+            case let .binaryOperator(str):
+                return str
+            default:
+                return nil
         }
     }
 }

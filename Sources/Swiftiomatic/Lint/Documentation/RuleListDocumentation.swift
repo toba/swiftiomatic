@@ -34,7 +34,8 @@ struct RuleListDocumentation {
 
     private var indexContents: String {
         let defaultRuleDocumentations = ruleDocumentations.filter { !$0.isOptInRule }
-        let optInRuleDocumentations = ruleDocumentations.filter { $0.isOptInRule && !$0.isAnalyzerRule }
+        let optInRuleDocumentations = ruleDocumentations
+            .filter { $0.isOptInRule && !$0.isAnalyzerRule }
         let analyzerRuleDocumentations = ruleDocumentations.filter(\.isAnalyzerRule)
 
         return """
@@ -64,7 +65,7 @@ struct RuleListDocumentation {
         let rulesUsingSourceKit = linterRuleDocumentations.filter(\.usesSourceKit)
         let rulesNotUsingSourceKit = linterRuleDocumentations.filter { !$0.usesSourceKit }
         let percentUsingSourceKit = Int(
-            rulesUsingSourceKit.count * 100 / linterRuleDocumentations.count
+            rulesUsingSourceKit.count * 100 / linterRuleDocumentations.count,
         )
         let enabledSourceKitRules = rulesUsingSourceKit.filter(\.isEnabledByDefault)
         let disabledSourceKitRules = rulesUsingSourceKit.filter(\.isDisabledByDefault)
@@ -79,7 +80,8 @@ struct RuleListDocumentation {
         Rules written using SwiftSyntax tend to be significantly faster and have fewer false positives
         than rules that use SourceKit to get source structure information.
 
-        \(rulesUsingSourceKit.count) out of \(linterRuleDocumentations.count) (\(percentUsingSourceKit)%)
+        \(rulesUsingSourceKit.count) out of \(linterRuleDocumentations
+            .count) (\(percentUsingSourceKit)%)
         of SwiftLint's linter rules use SourceKit.
 
         ## Rules Using SourceKit

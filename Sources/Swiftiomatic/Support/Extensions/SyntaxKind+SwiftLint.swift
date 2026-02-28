@@ -2,7 +2,8 @@
 
 extension SyntaxKind {
     init?(shortName: Swift.String) {
-        guard let kind = SyntaxKind(rawValue: "source.lang.swift.syntaxtype.\(shortName.lowercased())")
+        guard let kind =
+            SyntaxKind(rawValue: "source.lang.swift.syntaxtype.\(shortName.lowercased())")
         else {
             return nil
         }

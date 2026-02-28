@@ -1,6 +1,6 @@
 import Foundation
-@preconcurrency import SourceKittenFramework
 import Synchronization
+@preconcurrency import SourceKittenFramework
 
 /// SourceKit-backed type resolver using SourceKitten.
 ///
@@ -33,7 +33,7 @@ final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
         let request = Request.cursorInfo(
             file: file,
             offset: ByteCount(offset),
-            arguments: compilerArgs
+            arguments: compilerArgs,
         )
         guard let response = try? request.send() else { return nil }
 
@@ -74,7 +74,8 @@ final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
         ])
         guard let response = try? request.send() else { return [] }
 
-        guard let types = response["key.expression_type_list"] as? [[String: Any]] else { return [] }
+        guard let types = response["key.expression_type_list"] as? [[String: Any]]
+        else { return [] }
 
         return types.compactMap { entry in
             guard let offset = entry["key.expression_offset"] as? Int64,
@@ -84,7 +85,7 @@ final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
             return ExpressionTypeInfo(
                 offset: Int(offset),
                 length: Int(length),
-                typeName: typeName
+                typeName: typeName,
             )
         }
     }
@@ -106,8 +107,8 @@ final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
             symbols.append(
                 IndexSymbol(
                     name: name, usr: usr, kind: symbolKind,
-                    offset: offset, line: line, column: column
-                )
+                    offset: offset, line: line, column: column,
+                ),
             )
 
             // Recurse into child entities

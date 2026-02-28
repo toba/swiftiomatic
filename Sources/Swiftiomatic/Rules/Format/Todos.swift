@@ -1,17 +1,9 @@
-//
-//  Todos.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 8/23/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Ensure that TODO, MARK and FIXME comments are followed by a : as required
     static let todos = FormatRule(
-        help: "Use correct formatting for `TODO:`, `MARK:` or `FIXME:` comments."
+        help: "Use correct formatting for `TODO:`, `MARK:` or `FIXME:` comments.",
     ) { formatter in
         formatter.forEachToken { i, token in
             guard case var .commentBody(string) = token else {
@@ -23,7 +15,7 @@ extension FormatRule {
                    of: .startOfScope, before: i,
                    if: {
                        $0 == .startOfScope("//")
-                   }
+                   },
                )
             {
                 if let prevLinebreak = formatter.index(of: .linebreak, before: scopeStart),
@@ -37,7 +29,11 @@ extension FormatRule {
                     return
                 }
                 removedSpace = true
-                string = string.replacingOccurrences(of: "^/(\\s+)", with: "", options: .regularExpression)
+                string = string.replacingOccurrences(
+                    of: "^/(\\s+)",
+                    with: "",
+                    options: .regularExpression,
+                )
             }
             for pair in [
                 "todo:": "TODO:",
@@ -66,7 +62,7 @@ extension FormatRule {
                 suffix = "- " + suffix.dropFirst()
             }
             formatter.replaceToken(
-                at: i, with: .commentBody(tag + ":" + (suffix.isEmpty ? "" : " \(suffix)"))
+                at: i, with: .commentBody(tag + ":" + (suffix.isEmpty ? "" : " \(suffix)")),
             )
             if removedSpace {
                 formatter.insertSpace(" ", at: i)

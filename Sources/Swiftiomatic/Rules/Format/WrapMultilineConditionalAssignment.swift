@@ -1,11 +1,3 @@
-//
-//  WrapMultilineConditionalAssignment.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 11/18/23.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -13,26 +5,27 @@ extension FormatRule {
         help: "Wrap multiline conditional assignment expressions after the assignment operator.",
         disabledByDefault: true,
         orderAfter: [.conditionalAssignment],
-        sharedOptions: ["linebreaks"]
+        sharedOptions: ["linebreaks"],
     ) { formatter in
         formatter.forEach(.keyword) { startOfCondition, keywordToken in
             guard [.keyword("if"), .keyword("switch")].contains(keywordToken),
                   let assignmentIndex = formatter.index(
-                      of: .nonSpaceOrCommentOrLinebreak, before: startOfCondition
+                      of: .nonSpaceOrCommentOrLinebreak, before: startOfCondition,
                   ),
                   formatter.tokens[assignmentIndex] == .operator("=", .infix),
                   let endOfPropertyDefinition = formatter.index(
-                      of: .nonSpaceOrCommentOrLinebreak, before: assignmentIndex
+                      of: .nonSpaceOrCommentOrLinebreak, before: assignmentIndex,
                   )
             else { return }
 
             // Verify the RHS of the assignment is an if/switch expression
             guard
                 let startOfConditionalExpression = formatter.index(
-                    of: .nonSpaceOrCommentOrLinebreak, after: assignmentIndex
+                    of: .nonSpaceOrCommentOrLinebreak, after: assignmentIndex,
                 ),
                 ["if", "switch"].contains(formatter.tokens[startOfConditionalExpression].string),
-                let conditionalBranches = formatter.conditionalBranches(at: startOfConditionalExpression),
+                let conditionalBranches = formatter
+                .conditionalBranches(at: startOfConditionalExpression),
                 let lastBranch = conditionalBranches.last
             else { return }
 
@@ -45,7 +38,7 @@ extension FormatRule {
             if !formatter.onSameLine(endOfPropertyDefinition, assignmentIndex),
                formatter.last(.nonSpaceOrComment, before: assignmentIndex)?.isLinebreak == true,
                let previousToken = formatter.index(
-                   of: .nonSpaceOrCommentOrLinebreak, before: assignmentIndex
+                   of: .nonSpaceOrCommentOrLinebreak, before: assignmentIndex,
                ),
                formatter.onSameLine(endOfPropertyDefinition, previousToken)
             {
@@ -61,9 +54,11 @@ extension FormatRule {
             }
 
             // And there should be a line break between the `=` and the `if` / `switch` keyword
-            else if !formatter.tokens[(assignmentIndex + 1) ..< startOfConditionalExpression].contains(
-                where: \.isLinebreak
-            ) {
+            else if !formatter.tokens[(assignmentIndex + 1) ..< startOfConditionalExpression]
+                .contains(
+                    where: \.isLinebreak,
+                )
+            {
                 formatter.insertLinebreak(at: startOfConditionalExpression - 1)
             }
         }

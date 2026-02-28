@@ -1,4 +1,3 @@
-import FilenameMatcher
 import Foundation
 
 extension Configuration {
@@ -16,7 +15,7 @@ extension Configuration {
     func lintableFiles(
         inPath path: String,
         forceExclude: Bool,
-        excludeByPrefix: Bool
+        excludeByPrefix: Bool,
     ) -> [SwiftLintFile] {
         lintablePaths(inPath: path, forceExclude: forceExclude, excludeByPrefix: excludeByPrefix)
             .parallelCompactMap {
@@ -38,7 +37,7 @@ extension Configuration {
         inPath path: String,
         forceExclude: Bool,
         excludeByPrefix: Bool,
-        fileManager: some LintableFileManager = FileManager.default
+        fileManager: some LintableFileManager = FileManager.default,
     ) -> [String] {
         let excluder = createExcluder(excludeByPrefix: excludeByPrefix)
 
@@ -47,7 +46,7 @@ extension Configuration {
             return fileManager.filesToLint(
                 inPath: path,
                 rootDirectory: rootDirectory,
-                excluder: forceExclude ? excluder : .noExclusion
+                excluder: forceExclude ? excluder : .noExclusion,
             )
         }
 
@@ -56,7 +55,7 @@ extension Configuration {
             return fileManager.filesToLint(
                 inPath: path,
                 rootDirectory: rootDirectory,
-                excluder: excluder
+                excluder: excluder,
             )
         }
 
@@ -65,7 +64,7 @@ extension Configuration {
             fileManager.filesToLint(
                 inPath: $0,
                 rootDirectory: rootDirectory,
-                excluder: excluder
+                excluder: excluder,
             )
         }
 
@@ -75,10 +74,10 @@ extension Configuration {
 
     private func makeUnique(paths: [String]) -> [String] {
         #if os(Linux)
-            let result = NSMutableOrderedSet(capacity: paths.count)
-            result.addObjects(from: paths)
+        let result = NSMutableOrderedSet(capacity: paths.count)
+        result.addObjects(from: paths)
         #else
-            let result = NSOrderedSet(array: paths)
+        let result = NSOrderedSet(array: paths)
         #endif
         return result.array as! [String] // swiftlint:disable:this force_cast
     }
@@ -97,13 +96,13 @@ extension Configuration {
                 prefixes:
                 excludedPaths
                     .flatMap { Glob.resolveGlob($0) }
-                    .map { $0.absolutePathStandardized() }
+                    .map { $0.absolutePathStandardized() },
             )
         }
         return .matching(
-            matchers: excludedPaths.flatMap {
-                Glob.createFilenameMatchers(root: rootDirectory, pattern: $0)
-            }
+            patterns: excludedPaths.flatMap {
+                Glob.createGlobPatterns(root: rootDirectory, pattern: $0)
+            },
         )
     }
 }

@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftIDEUtils
+import SourceKittenFramework
 
 struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -14,93 +14,93 @@ struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
             Example(
                 """
                 // This is a comment
-                """
+                """,
             ),
             Example(
                 """
                 /// Triple slash comment
-                """
+                """,
             ),
             Example(
                 """
                 // Multiline double-slash
                 // comment
-                """
+                """,
             ),
             Example(
                 """
                 /// Multiline triple-slash
                 /// comment
-                """
+                """,
             ),
             Example(
                 """
                 /// Multiline triple-slash
                 ///   - This is indented
-                """
+                """,
             ),
             Example(
                 """
                 // - MARK: Mark comment
-                """
+                """,
             ),
             Example(
                 """
                 //: Swift Playground prose section
-                """
+                """,
             ),
             Example(
                 """
                 ///////////////////////////////////////////////
                 // Comment with some lines of slashes boxing it
                 ///////////////////////////////////////////////
-                """
+                """,
             ),
             Example(
                 """
                 //:#localized(key: "SwiftPlaygroundLocalizedProse")
-                """
+                """,
             ),
             Example(
                 """
                 /* Asterisk comment */
-                """
+                """,
             ),
             Example(
                 """
                 /*
                     Multiline asterisk comment
                 */
-                """
+                """,
             ),
             Example(
                 """
                 /*:
                     Multiline Swift Playground prose section
                 */
-                """
+                """,
             ),
             Example(
                 """
                 /*#-editable-code Swift Playground editable area*/default/*#-end-editable-code*/
-                """
+                """,
             ),
         ],
         triggeringExamples: [
             Example(
                 """
                 //↓Something
-                """
+                """,
             ),
             Example(
                 """
                 //↓MARK
-                """
+                """,
             ),
             Example(
                 """
                 //↓👨‍👨‍👦‍👦Something
-                """
+                """,
             ),
             Example(
                 """
@@ -109,28 +109,28 @@ struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
                     print("Something")
                 }
                 //↓We should improve above function
-                """
+                """,
             ),
             Example(
                 """
                 ///↓This is a comment
-                """
+                """,
             ),
             Example(
                 """
                 /// Multiline triple-slash
                 ///↓This line is incorrect, though
-                """
+                """,
             ),
             Example(
                 """
                 //↓- MARK: Mark comment
-                """
+                """,
             ),
             Example(
                 """
                 //:↓Swift Playground prose section
-                """
+                """,
             ),
         ],
         corrections: [
@@ -140,12 +140,12 @@ struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
                 """
                 /// Multiline triple-slash
                 ///↓This line is incorrect, though
-                """
+                """,
             ): Example(
                 """
                 /// Multiline triple-slash
                 /// This line is incorrect, though
-                """
+                """,
             ),
             Example(
                 """
@@ -154,7 +154,7 @@ struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
                     print("Something")
                 }
                 //↓We should improve above function
-                """
+                """,
             ): Example(
                 """
                 func a() {
@@ -162,9 +162,9 @@ struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
                     print("Something")
                 }
                 // We should improve above function
-                """
+                """,
             ),
-        ]
+        ],
     )
 
     func violationRanges(in file: SwiftLintFile) -> [NSRange] {
@@ -180,19 +180,23 @@ struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
                         // Look for 2+ slash characters followed immediately by
                         // a non-colon, non-whitespace character or by a colon
                         // followed by a non-whitespace character other than #
-                        regex(#"^(?:\/){2,}+(?:[^\s:]|:[^\s#])"#).matches(in: commentBody, options: .anchored)
-                            .compactMap { result in
-                                // Set the location to be directly before the first non-slash,
-                                // non-whitespace character which was matched
-                                file.stringView.byteRangeToNSRange(
-                                    ByteRange(
-                                        // Safe to mix NSRange offsets with byte offsets here because the regex can't
-                                        // contain multi-byte characters
-                                        location: ByteCount(range.lowerBound.value + result.range.upperBound - 1),
-                                        length: 0
-                                    )
-                                )
-                            }
+                        regex(#"^(?:\/){2,}+(?:[^\s:]|:[^\s#])"#).matches(
+                            in: commentBody,
+                            options: .anchored,
+                        )
+                        .compactMap { result in
+                            // Set the location to be directly before the first non-slash,
+                            // non-whitespace character which was matched
+                            file.stringView.byteRangeToNSRange(
+                                ByteRange(
+                                    // Safe to mix NSRange offsets with byte offsets here because the regex can't
+                                    // contain multi-byte characters
+                                    location: ByteCount(range.lowerBound.value + result.range
+                                        .upperBound - 1),
+                                    length: 0,
+                                ),
+                            )
+                        }
                     }
             }
             .flatMap(\.self)
@@ -203,7 +207,7 @@ struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: range.location)
+                location: Location(file: file, characterOffset: range.location),
             )
         }
     }

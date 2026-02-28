@@ -1,17 +1,9 @@
-//
-//  LeadingDelimiters.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 3/11/19.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let leadingDelimiters = FormatRule(
         help: "Move leading delimiters to the end of the previous line.",
-        sharedOptions: ["linebreaks"]
+        sharedOptions: ["linebreaks"],
     ) { formatter in
         formatter.forEach(.delimiter) { i, _ in
             guard
@@ -19,7 +11,7 @@ extension FormatRule {
                     of: .nonSpace, before: i,
                     if: {
                         $0.isLinebreak
-                    }
+                    },
                 )
             else {
                 return

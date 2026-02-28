@@ -18,7 +18,7 @@ struct ExplicitInitRule: Rule {
                         super.init()
                     }
                 }
-                """
+                """,
             ), // super
             Example(
                 """
@@ -30,27 +30,27 @@ struct ExplicitInitRule: Rule {
                         self.init(n: 1)
                     }
                 }
-                """
+                """,
             ), // self
             Example(
                 """
                 [1].flatMap(String.init)
-                """
+                """,
             ), // pass init as closure
             Example(
                 """
                 [String.self].map { $0.init(1) }
-                """
+                """,
             ), // initialize from a metatype value
             Example(
                 """
                 [String.self].map { type in type.init(1) }
-                """
+                """,
             ), // initialize from a metatype value
             Example(
                 """
                 Observable.zip(obs1, obs2, resultSelector: MyType.init).asMaybe()
-                """
+                """,
             ),
             Example("_ = GleanMetrics.Tabs.someType.init()"),
             Example(
@@ -60,26 +60,26 @@ struct ExplicitInitRule: Rule {
                   obs2,
                   resultSelector: MyType.init
                 ).asMaybe()
-                """
+                """,
             ),
         ],
         triggeringExamples: [
             Example(
                 """
                 [1].flatMap{String↓.init($0)}
-                """
+                """,
             ),
             Example(
                 """
                 [String.self].map { Type in Type↓.init(1) }
-                """
+                """,
             ), // Starting with capital letter assumes a type
             Example(
                 """
                 func foo() -> [String] {
                     return [1].flatMap { String↓.init($0) }
                 }
-                """
+                """,
             ),
             Example("_ = GleanMetrics.Tabs.GroupedTabExtra↓.init()"),
             Example("_ = Set<KsApi.Category>↓.init()"),
@@ -90,13 +90,13 @@ struct ExplicitInitRule: Rule {
                   obs2,
                   resultSelector: { MyType↓.init($0, $1) }
                 ).asMaybe()
-                """
+                """,
             ),
             Example(
                 """
                 let int = In🤓t↓
                 .init(1.0)
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
@@ -104,7 +104,7 @@ struct ExplicitInitRule: Rule {
 
 
                 .init(1.0)
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
@@ -112,33 +112,33 @@ struct ExplicitInitRule: Rule {
 
 
                       .init(1.0)
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         corrections: [
             Example(
                 """
                 [1].flatMap{String↓.init($0)}
-                """
+                """,
             ):
                 Example(
                     """
                     [1].flatMap{String($0)}
-                    """
+                    """,
                 ),
             Example(
                 """
                 func foo() -> [String] {
                     return [1].flatMap { String↓.init($0) }
                 }
-                """
+                """,
             ):
                 Example(
                     """
                     func foo() -> [String] {
                         return [1].flatMap { String($0) }
                     }
-                    """
+                    """,
                 ),
             Example(
                 """
@@ -149,7 +149,7 @@ struct ExplicitInitRule: Rule {
                     }
                 #endif
                 }
-                """
+                """,
             ):
                 Example(
                     """
@@ -160,18 +160,18 @@ struct ExplicitInitRule: Rule {
                         }
                     #endif
                     }
-                    """
+                    """,
                 ),
             Example(
                 """
                 let int = Int↓
                 .init(1.0)
-                """
+                """,
             ):
                 Example(
                     """
                     let int = Int(1.0)
-                    """
+                    """,
                 ),
             Example(
                 """
@@ -179,12 +179,12 @@ struct ExplicitInitRule: Rule {
 
 
                 .init(1.0)
-                """
+                """,
             ):
                 Example(
                     """
                     let int = Int(1.0)
-                    """
+                    """,
                 ),
             Example(
                 """
@@ -192,12 +192,12 @@ struct ExplicitInitRule: Rule {
 
 
                       .init(1.0)
-                """
+                """,
             ):
                 Example(
                     """
                     let int = Int(1.0)
-                    """
+                    """,
                 ),
             Example(
                 """
@@ -208,7 +208,7 @@ struct ExplicitInitRule: Rule {
 
 
 
-                """
+                """,
             ):
                 Example(
                     """
@@ -216,7 +216,7 @@ struct ExplicitInitRule: Rule {
 
 
 
-                    """
+                    """,
                 ),
             Example(
                 """
@@ -224,7 +224,7 @@ struct ExplicitInitRule: Rule {
                     // comment
                     A↓.init(e: e)
                 }
-                """
+                """,
             ):
                 Example(
                     """
@@ -232,13 +232,13 @@ struct ExplicitInitRule: Rule {
                         // comment
                         A(e: e)
                     }
-                    """
+                    """,
                 ),
             Example("_ = GleanMetrics.Tabs.GroupedTabExtra↓.init()"):
                 Example("_ = GleanMetrics.Tabs.GroupedTabExtra()"),
             Example("_ = Set<KsApi.Category>↓.init()"):
                 Example("_ = Set<KsApi.Category>()"),
-        ]
+        ],
     )
 }
 
@@ -257,7 +257,8 @@ extension ExplicitInitRule: OptInRule {}
 private extension ExplicitInitRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionCallExprSyntax) {
-            guard let calledExpression = node.calledExpression.as(MemberAccessExprSyntax.self) else {
+            guard let calledExpression = node.calledExpression.as(MemberAccessExprSyntax.self)
+            else {
                 return
             }
 
@@ -265,9 +266,14 @@ private extension ExplicitInitRule {
                 violations.append(violationPosition)
             }
 
-            if configuration.includeBareInit, let violationPosition = calledExpression.bareInitPosition {
+            if configuration.includeBareInit,
+               let violationPosition = calledExpression.bareInitPosition
+            {
                 let reason = "Prefer named constructors over .init and type inference"
-                violations.append(ReasonedRuleViolation(position: violationPosition, reason: reason))
+                violations.append(ReasonedRuleViolation(
+                    position: violationPosition,
+                    reason: reason,
+                ))
             }
         }
     }
@@ -315,7 +321,7 @@ private extension ExprSyntax {
             return true
         }
         if let expr = `as`(GenericSpecializationExprSyntax.self)?.expression.as(
-            DeclReferenceExprSyntax.self
+            DeclReferenceExprSyntax.self,
         ),
             expr.baseName.text.startsWithUppercase
         {

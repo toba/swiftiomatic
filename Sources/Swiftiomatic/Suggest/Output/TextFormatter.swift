@@ -43,9 +43,9 @@ enum TextFormatter {
 
     private static func confidenceMarker(_ confidence: Confidence) -> String {
         switch confidence {
-        case .high: "●"
-        case .medium: "◐"
-        case .low: "○"
+            case .high: "●"
+            case .medium: "◐"
+            case .low: "○"
         }
     }
 }

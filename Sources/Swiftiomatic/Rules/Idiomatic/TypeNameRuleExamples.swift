@@ -12,14 +12,14 @@ enum TypeNameRuleExamples {
             protocol Foo {
               associatedtype Bar
             }
-            """
+            """,
         ),
         Example(
             """
             protocol Foo {
               associatedtype Bar: Equatable
             }
-            """
+            """,
         ),
         Example("enum MyType {\ncase value\n}"),
         Example("protocol P {}", configuration: ["validate_protocols": false]),
@@ -30,7 +30,7 @@ enum TypeNameRuleExamples {
                 case x, y, z
               }
             }
-            """
+            """,
         ),
     ]
 
@@ -43,7 +43,10 @@ enum TypeNameRuleExamples {
         Example("struct ↓\(repeatElement("A", count: 41).joined()) {}"),
         Example("class ↓MyView_Previews"),
         Example("private struct ↓_MyView_Previews"),
-        Example("struct ↓MyView_Previews_Previews: PreviewProvider", excludeFromDocumentation: true),
+        Example(
+            "struct ↓MyView_Previews_Previews: PreviewProvider",
+            excludeFromDocumentation: true,
+        ),
         Example("typealias ↓X = Void"),
         Example("private typealias ↓Foo_Bar = Void"),
         Example("private typealias ↓foo = Void"),
@@ -53,21 +56,21 @@ enum TypeNameRuleExamples {
             protocol Foo {
               associatedtype ↓X
             }
-            """
+            """,
         ),
         Example(
             """
             protocol Foo {
               associatedtype ↓Foo_Bar: Equatable
             }
-            """
+            """,
         ),
         Example(
             """
             protocol Foo {
               associatedtype ↓\(repeatElement("A", count: 41).joined())
             }
-            """
+            """,
         ),
         Example("protocol ↓X {}"),
     ]

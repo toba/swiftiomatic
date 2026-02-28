@@ -1,30 +1,22 @@
 import Foundation
+import Synchronization
 
 extension Configuration {
     // MARK: Caching Configurations By Identifier (In-Memory)
 
-    private nonisolated(unsafe) static var cachedConfigurationsByIdentifier = [
-        String: Configuration
-    ]()
-    private static let cachedConfigurationsByIdentifierLock = NSLock()
+    private static let cachedConfigurationsByIdentifier = Mutex([String: Configuration]())
 
     /// Since the cache is stored in a static var, this function is used to reset the cache during tests
     static func resetCache() {
-        cachedConfigurationsByIdentifierLock.lock()
-        cachedConfigurationsByIdentifier = [:]
-        cachedConfigurationsByIdentifierLock.unlock()
+        cachedConfigurationsByIdentifier.withLock { $0.removeAll() }
     }
 
     func setCached(forIdentifier identifier: String) {
-        Self.cachedConfigurationsByIdentifierLock.lock()
-        Self.cachedConfigurationsByIdentifier[identifier] = self
-        Self.cachedConfigurationsByIdentifierLock.unlock()
+        Self.cachedConfigurationsByIdentifier.withLock { $0[identifier] = self }
     }
 
     static func getCached(forIdentifier identifier: String) -> Configuration? {
-        cachedConfigurationsByIdentifierLock.lock()
-        defer { cachedConfigurationsByIdentifierLock.unlock() }
-        return cachedConfigurationsByIdentifier[identifier]
+        cachedConfigurationsByIdentifier.withLock { $0[identifier] }
     }
 
     /// Returns a copy of the current `Configuration` with its `computedCacheDescription` property set to the value of
@@ -39,19 +31,14 @@ extension Configuration {
 
     // MARK: Nested Config Is Self Cache
 
-    private nonisolated(unsafe) static var nestedConfigIsSelfByIdentifier = [String: Bool]()
-    private static let nestedConfigIsSelfByIdentifierLock = NSLock()
+    private static let nestedConfigIsSelfByIdentifier = Mutex([String: Bool]())
 
     static func setIsNestedConfigurationSelf(forIdentifier identifier: String, value: Bool) {
-        nestedConfigIsSelfByIdentifierLock.lock()
-        nestedConfigIsSelfByIdentifier[identifier] = value
-        nestedConfigIsSelfByIdentifierLock.unlock()
+        nestedConfigIsSelfByIdentifier.withLock { $0[identifier] = value }
     }
 
     static func getIsNestedConfigurationSelf(forIdentifier identifier: String) -> Bool {
-        nestedConfigIsSelfByIdentifierLock.lock()
-        defer { Self.nestedConfigIsSelfByIdentifierLock.unlock() }
-        return nestedConfigIsSelfByIdentifier[identifier] ?? false
+        nestedConfigIsSelfByIdentifier.withLock { $0[identifier] ?? false }
     }
 
     // MARK: SwiftLint Cache (On-Disk)
@@ -90,7 +77,7 @@ extension Configuration {
 
         do {
             try FileManager.default.createDirectory(
-                at: folder, withIntermediateDirectories: true, attributes: nil
+                at: folder, withIntermediateDirectories: true, attributes: nil,
             )
         } catch {
             Issue.genericWarning("Cannot create cache: " + error.localizedDescription).print()

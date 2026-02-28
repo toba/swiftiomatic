@@ -57,8 +57,8 @@ enum DiagnosticSeverity: String, Codable, Sendable, Comparable {
 
     private var rank: Int {
         switch self {
-        case .warning: 0
-        case .error: 1
+            case .warning: 0
+            case .error: 1
         }
     }
 

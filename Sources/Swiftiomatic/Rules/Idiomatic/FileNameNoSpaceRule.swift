@@ -8,7 +8,7 @@ struct FileNameNoSpaceRule: OptInRule, SourceKitFreeRule {
         identifier: "file_name_no_space",
         name: "File Name no Space",
         description: "File name should not contain any whitespace",
-        kind: .idiomatic
+        kind: .idiomatic,
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -24,7 +24,7 @@ struct FileNameNoSpaceRule: OptInRule, SourceKitFreeRule {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: filePath, line: 1)
+                location: Location(file: filePath, line: 1),
             ),
         ]
     }

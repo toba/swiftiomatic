@@ -15,7 +15,7 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                   case int(Int)
                   case short(Int16)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -23,7 +23,7 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                   case one = 1
                   case two = 2
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -31,7 +31,7 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                   case one = 1.1
                   case two = 2.2
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -39,14 +39,14 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                   case one = "one"
                   case two = "two"
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum Status: String, Codable {
                     case OK, ACCEPTABLE
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -54,7 +54,7 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                     case ok
                     case maybeAcceptable = "maybe_acceptable"
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -63,7 +63,7 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                     case notAcceptable
                     case maybeAcceptable = "maybe_acceptable"
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -72,7 +72,7 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                     case notAcceptable
                     case maybeAcceptable = -1
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -83,7 +83,7 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                     case ↓notAcceptable
                     case maybeAcceptable = "maybe_acceptable"
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -92,7 +92,7 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                    case ↓notAcceptable
                    case maybeAcceptable = "maybe_acceptable"
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -101,7 +101,7 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                    case ↓notAcceptable
                    case maybeAcceptable = "maybe_acceptable"
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -110,9 +110,9 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
                     case ↓notAcceptable
                     case maybeAcceptable = "maybe_acceptable"
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

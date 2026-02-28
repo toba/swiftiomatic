@@ -19,7 +19,7 @@ struct ClosingBraceRule: Rule {
         ],
         corrections: [
             Example("[].map({ ↓} )"): Example("[].map({ })"),
-        ]
+        ],
     )
 }
 

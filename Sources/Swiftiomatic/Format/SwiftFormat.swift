@@ -1,34 +1,3 @@
-//
-//  SwiftFormat.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 12/08/2016.
-//  Copyright 2016 Nick Lockwood
-//
-//  Distributed under the permissive MIT license
-//  Get the latest version from here:
-//
-//  https://github.com/nicklockwood/SwiftFormat
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in all
-//  copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  SOFTWARE.
-//
-
 import Foundation
 
 /// The current SwiftFormat version
@@ -50,16 +19,16 @@ let languageModes = [
 /// The default language mode for the given Swift compiler version
 func defaultLanguageMode(for compilerVersion: Version) -> Version {
     switch compilerVersion {
-    case "4.0" ..< "4.2":
-        return "4"
-    case "4.2":
-        return "4.2"
-    case "5.0" ..< "6.0":
-        return "5"
-    case "6.0"...:
-        return "5"
-    default:
-        return .undefined
+        case "4.0" ..< "4.2":
+            return "4"
+        case "4.2":
+            return "4.2"
+        case "5.0" ..< "6.0":
+            return "5"
+        case "6.0"...:
+            return "5"
+        default:
+            return .undefined
     }
 }
 
@@ -73,7 +42,7 @@ enum FormatError: Error, CustomStringConvertible, LocalizedError {
     static func invalidOption(
         _ option: String,
         for argumentName: String,
-        with validOptions: [String]
+        with validOptions: [String],
     ) -> Self {
         let message = "Unsupported --\(argumentName) value '\(option)'"
         guard let match = option.bestMatch(in: validOptions) else {
@@ -84,11 +53,11 @@ enum FormatError: Error, CustomStringConvertible, LocalizedError {
 
     var description: String {
         switch self {
-        case let .reading(string),
-             let .writing(string),
-             let .parsing(string),
-             let .options(string):
-            return string
+            case let .reading(string),
+                 let .writing(string),
+                 let .parsing(string),
+                 let .options(string):
+                return string
         }
     }
 
@@ -117,10 +86,10 @@ func offsetForToken(at index: Int, in tokens: [Token], tabWidth: Int) -> SourceO
     var column = 1
     for token in tokens[..<index].reversed() {
         switch token {
-        case let .linebreak(_, line):
-            return SourceOffset(line: line + 1, column: column)
-        default:
-            column += token.columnWidth(tabWidth: tabWidth)
+            case let .linebreak(_, line):
+                return SourceOffset(line: line + 1, column: column)
+            default:
+                column += token.columnWidth(tabWidth: tabWidth)
         }
     }
     return SourceOffset(line: 1, column: column)
@@ -192,26 +161,28 @@ func parsingError(for tokens: [Token], options: FormatOptions, allowErrorsInFrag
     guard
         let index = tokens.firstIndex(where: {
             guard (options.fragment && allowErrorsInFragments) || !$0.isError else { return true }
-            guard !options.ignoreConflictMarkers, case let .operator(string, _) = $0 else { return false }
-            return string.hasPrefix("<<<<<") || string.hasPrefix("=====") || string.hasPrefix(">>>>>")
+            guard !options.ignoreConflictMarkers,
+                  case let .operator(string, _) = $0 else { return false }
+            return string.hasPrefix("<<<<<") || string.hasPrefix("=====") || string
+                .hasPrefix(">>>>>")
         })
     else {
         return nil
     }
     let message: String
     switch tokens[index] {
-    case .error(""):
-        message = "Unexpected end of file"
-    case let .error(string):
-        if string.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            message = "Inconsistent whitespace in multi-line string literal"
-        } else {
-            message = "Unexpected token \(string)"
-        }
-    case let .operator(string, _):
-        message = "Found conflict marker \(string)"
-    default:
-        preconditionFailure()
+        case .error(""):
+            message = "Unexpected end of file"
+        case let .error(string):
+            if string.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                message = "Inconsistent whitespace in multi-line string literal"
+            } else {
+                message = "Unexpected token \(string)"
+            }
+        case let .operator(string, _):
+            message = "Found conflict marker \(string)"
+        default:
+            preconditionFailure()
     }
     let offset = offsetForToken(at: index, in: tokens, tabWidth: options.tabWidth)
     return .parsing("\(message) at \(offset)")
@@ -229,7 +200,7 @@ func applyRules(
     with options: FormatOptions,
     trackChanges: Bool,
     range originalRange: Range<Int>?,
-    maxIterations: Int = 10
+    maxIterations: Int = 10,
 ) throws -> (tokens: [Token], changes: [Formatter.Change]) {
     precondition(maxIterations > 1)
 
@@ -270,7 +241,7 @@ func applyRules(
                string.contains(key.placeholder)
             {
                 throw FormatError.options(
-                    "Failed to apply \(key.placeholder) template in file header as required info is unavailable"
+                    "Failed to apply \(key.placeholder) template in file header as required info is unavailable",
                 )
             }
         }
@@ -312,7 +283,7 @@ func applyRules(
     for iteration in 0 ..< maxIterations {
         let formatter = Formatter(
             tokens, options: options,
-            trackChanges: trackChanges, range: range
+            trackChanges: trackChanges, range: range,
         )
         for rule in rules {
             rule.apply(with: formatter)
@@ -331,7 +302,8 @@ func applyRules(
         var newTokens = formatter.tokens
         if let oldRange = range, let newRange = formatter.range {
             newTokens = Array(
-                tokens[..<oldRange.lowerBound] + newTokens[newRange] + tokens[oldRange.upperBound...]
+                tokens[..<oldRange.lowerBound] + newTokens[newRange] +
+                    tokens[oldRange.upperBound...],
             )
             range = oldRange.lowerBound ..< (oldRange.lowerBound + newRange.count)
         }
@@ -391,7 +363,7 @@ func applyRules(
 /// Format a pre-parsed token array
 func format(
     _ tokens: [Token], rules: [FormatRule] = FormatRules.default,
-    options: FormatOptions = .default, range: Range<Int>? = nil
+    options: FormatOptions = .default, range: Range<Int>? = nil,
 ) throws -> (tokens: [Token], changes: [Formatter.Change]) {
     try applyRules(rules, to: tokens, with: options, trackChanges: true, range: range)
 }
@@ -399,7 +371,7 @@ func format(
 /// Format code with specified rules and options
 func format(
     _ source: String, rules: [FormatRule] = FormatRules.default,
-    options: FormatOptions = .default, lineRange: ClosedRange<Int>? = nil
+    options: FormatOptions = .default, lineRange: ClosedRange<Int>? = nil,
 ) throws -> (output: String, changes: [Formatter.Change]) {
     let tokens = tokenize(source)
     let range = lineRange.map { tokenRange(forLineRange: $0, in: tokens) }
@@ -410,7 +382,7 @@ func format(
 /// Lint a pre-parsed token array
 func lint(
     _ tokens: [Token], rules: [FormatRule] = FormatRules.default,
-    options: FormatOptions = .default, range: Range<Int>? = nil
+    options: FormatOptions = .default, range: Range<Int>? = nil,
 ) throws -> [Formatter.Change] {
     try applyRules(rules, to: tokens, with: options, trackChanges: true, range: range).changes
 }
@@ -418,7 +390,7 @@ func lint(
 /// Lint code with specified rules and options
 func lint(
     _ source: String, rules: [FormatRule] = FormatRules.default,
-    options: FormatOptions = .default, lineRange: ClosedRange<Int>? = nil
+    options: FormatOptions = .default, lineRange: ClosedRange<Int>? = nil,
 ) throws -> [Formatter.Change] {
     let tokens = tokenize(source)
     let range = lineRange.map { tokenRange(forLineRange: $0, in: tokens) }

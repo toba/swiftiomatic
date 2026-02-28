@@ -18,7 +18,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         Self.baz()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -27,7 +27,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         print(Self.baz)
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -36,7 +36,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         type(of: param).bar()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -45,7 +45,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         print(type(of: self))
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -56,7 +56,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         ↓type(of: self).baz()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -65,7 +65,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         print(↓type(of: self).baz)
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -74,7 +74,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         print(↓Swift.type(of: self).baz)
                     }
                 }
-                """
+                """,
             ),
         ],
         corrections: [
@@ -85,7 +85,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         ↓type(of: self).baz()
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 class Foo {
@@ -93,7 +93,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         Self.baz()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -102,7 +102,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         print(↓type(of: self).baz)
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 class Foo {
@@ -110,7 +110,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         print(Self.baz)
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -119,7 +119,7 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         print(↓Swift.type(of: self).baz)
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 class Foo {
@@ -127,9 +127,9 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
                         print(Self.baz)
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -156,7 +156,9 @@ private extension PreferSelfTypeOverTypeOfSelfRule {
 
     final class Rewriter: ViolationsSyntaxRewriter<ConfigurationType> {
         override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
-            guard let function = node.base?.as(FunctionCallExprSyntax.self), function.hasViolation else {
+            guard let function = node.base?.as(FunctionCallExprSyntax.self),
+                  function.hasViolation
+            else {
                 return super.visit(node)
             }
             numberOfCorrections += 1

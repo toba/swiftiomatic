@@ -57,12 +57,12 @@ struct PreferConditionListRule: Rule {
                 """
                 if a &&
                    b {}
-                """
+                """,
             ): Example(
                 """
                 if a,
                    b {}
-                """
+                """,
             ),
             Example("guard a && b && c else {}"):
                 Example("guard a, b, c else {}"),
@@ -88,7 +88,7 @@ struct PreferConditionListRule: Rule {
                 Example("if a, b || (f {}) {}"),
             Example("if a ↓&& !f {} {}"):
                 Example("if a, !(f {}) {}"),
-        ]
+        ],
     )
 }
 
@@ -150,7 +150,7 @@ extension PreferConditionListRule {
                     elements[index] = ConditionElementSyntax(
                         condition: .expression(opExpr.leftOperand.with(\.trailingTrivia, [])),
                         trailingComma: .commaToken(),
-                        trailingTrivia: opToken.trailingTrivia
+                        trailingTrivia: opToken.trailingTrivia,
                     )
                     modifiedIndices.insert(index)
 
@@ -158,9 +158,9 @@ extension PreferConditionListRule {
                         ConditionElementSyntax(
                             condition: .expression(opExpr.rightOperand.with(\.trailingTrivia, [])),
                             trailingComma: index == elements.count - 1 ? nil : .commaToken(),
-                            trailingTrivia: .space
+                            trailingTrivia: .space,
                         ),
-                        at: index + 1
+                        at: index + 1,
                     )
                     modifiedIndices.insert(index + 1)
                     // Don't increment the index to re-evaluate `elements[index]`.
@@ -185,7 +185,7 @@ extension PreferConditionListRule {
                         \.condition,
                         .expression(ParenthesizedTrailingClosureRewriter().visit(expr))
                             .with(\.leadingTrivia, expr.leadingTrivia)
-                            .with(\.trailingTrivia, expr.trailingTrivia)
+                            .with(\.trailingTrivia, expr.trailingTrivia),
                     )
                 }
             }
@@ -206,7 +206,7 @@ private extension ExprSyntax {
 private final class ParenthesizedTrailingClosureRewriter: SyntaxRewriter {
     override func visitAny(_ node: Syntax) -> Syntax? {
         if let opToken = node.as(InfixOperatorExprSyntax.self)?.operator.as(
-            BinaryOperatorExprSyntax.self
+            BinaryOperatorExprSyntax.self,
         )?.operator,
             ["&&", "||"].contains(opToken.text)
         {
@@ -228,8 +228,8 @@ private final class ParenthesizedTrailingClosureRewriter: SyntaxRewriter {
                 TupleExprSyntax(
                     elements: LabeledExprListSyntax([
                         LabeledExprSyntax(label: nil, expression: node.with(\.trailingTrivia, [])),
-                    ])
-                )
+                    ]),
+                ),
             )
             .with(\.leadingTrivia, node.leadingTrivia)
             .with(\.trailingTrivia, node.trailingTrivia)

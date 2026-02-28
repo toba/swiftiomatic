@@ -9,7 +9,7 @@ struct QuickDiscouragedCallRule: Rule {
         description: "Discouraged call inside 'describe' and/or 'context' block.",
         kind: .lint,
         nonTriggeringExamples: QuickDiscouragedCallRuleExamples.nonTriggeringExamples,
-        triggeringExamples: QuickDiscouragedCallRuleExamples.triggeringExamples
+        triggeringExamples: QuickDiscouragedCallRuleExamples.triggeringExamples,
     )
 }
 
@@ -55,7 +55,9 @@ private extension QuickDiscouragedCallRule {
         }
 
         override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-            if let calledName = node.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text {
+            if let calledName = node.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName
+                .text
+            {
                 if let kind = QuickCallKind(rawValue: calledName) {
                     if let closure = node.trailingClosure {
                         quickScope.push((kind, closure.statements.id))
@@ -66,7 +68,10 @@ private extension QuickDiscouragedCallRule {
                 }
             }
             if let scope = quickScope.lastSuspiciousScope(node) {
-                violations.append(.violation(at: node.positionAfterSkippingLeadingTrivia, kind: scope.kind))
+                violations.append(.violation(
+                    at: node.positionAfterSkippingLeadingTrivia,
+                    kind: scope.kind,
+                ))
                 return .skipChildren
             }
             quickScope.push(nil)
@@ -78,14 +83,14 @@ private extension QuickDiscouragedCallRule {
                 if let scope = quickScope.lastSuspiciousScope(node),
                    let initializer = binding.initializer,
                    FunctionCallFinder(viewMode: .sourceAccurate).walk(
-                       tree: initializer.value, handler: \.found
+                       tree: initializer.value, handler: \.found,
                    )
                 {
                     violations.append(
                         .violation(
                             at: initializer.value.positionAfterSkippingLeadingTrivia,
-                            kind: scope.kind
-                        )
+                            kind: scope.kind,
+                        ),
                     )
                 }
             }
@@ -101,7 +106,10 @@ private extension QuickDiscouragedCallRule {
             else {
                 return .visitChildren
             }
-            violations.append(.violation(at: call.positionAfterSkippingLeadingTrivia, kind: scope.kind))
+            violations.append(.violation(
+                at: call.positionAfterSkippingLeadingTrivia,
+                kind: scope.kind,
+            ))
             return .skipChildren
         }
 

@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 /// The placement of a segment of Swift in a collection of source files.
 struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
@@ -94,12 +94,12 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
 private extension Optional where Wrapped: Comparable {
     static func < (lhs: Optional, rhs: Optional) -> Bool {
         switch (lhs, rhs) {
-        case let (lhs?, rhs?):
-            return lhs < rhs
-        case (nil, _?):
-            return true
-        default:
-            return false
+            case let (lhs?, rhs?):
+                return lhs < rhs
+            case (nil, _?):
+                return true
+            default:
+                return false
         }
     }
 }

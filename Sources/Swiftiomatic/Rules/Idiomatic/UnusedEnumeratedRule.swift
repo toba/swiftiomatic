@@ -29,7 +29,7 @@ struct UnusedEnumeratedRule: Rule {
                     $1.enumerated().forEach { print($0, $1) }
                     return $0
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -38,7 +38,7 @@ struct UnusedEnumeratedRule: Rule {
                     let (i, e) = $0
                     print(i)
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -56,7 +56,7 @@ struct UnusedEnumeratedRule: Rule {
                     $1.↓enumerated().forEach { print($1) }
                     return $0
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -64,7 +64,7 @@ struct UnusedEnumeratedRule: Rule {
                     $1.enumerated().forEach { print($0, $1) }
                     return 1
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -80,7 +80,7 @@ struct UnusedEnumeratedRule: Rule {
                     }
                     return $0
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
@@ -88,16 +88,16 @@ struct UnusedEnumeratedRule: Rule {
                     $1.forEach { print($0) }
                     return $1
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
                 list.↓enumerated().forEach {
                     let (i, _) = $0
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -143,7 +143,8 @@ extension UnusedEnumeratedRule {
             addViolation(
                 zeroPosition: firstTokenIsUnderscore
                     ? firstElement.positionAfterSkippingLeadingTrivia : nil,
-                onePosition: firstTokenIsUnderscore ? nil : secondElement.positionAfterSkippingLeadingTrivia
+                onePosition: firstTokenIsUnderscore ? nil : secondElement
+                    .positionAfterSkippingLeadingTrivia,
             )
         }
 
@@ -151,16 +152,18 @@ extension UnusedEnumeratedRule {
             guard node.isEnumerated,
                   let parent = node.parent,
                   parent.as(MemberAccessExprSyntax.self)?.declName.baseName.text != "filter",
-                  let trailingClosure = parent.parent?.as(FunctionCallExprSyntax.self)?.trailingClosure
+                  let trailingClosure = parent.parent?.as(FunctionCallExprSyntax.self)?
+                  .trailingClosure
             else {
                 return .visitChildren
             }
 
             if let parameterClause = trailingClosure.signature?.parameterClause {
-                guard let parameterClause = parameterClause.as(ClosureShorthandParameterListSyntax.self),
-                      parameterClause.count == 2,
-                      let firstElement = parameterClause.first,
-                      let secondElement = parameterClause.last
+                guard let parameterClause = parameterClause
+                    .as(ClosureShorthandParameterListSyntax.self),
+                    parameterClause.count == 2,
+                    let firstElement = parameterClause.first,
+                    let secondElement = parameterClause.last
                 else {
                     return .visitChildren
                 }
@@ -175,7 +178,7 @@ extension UnusedEnumeratedRule {
                     zeroPosition: firstTokenIsUnderscore
                         ? firstElement.positionAfterSkippingLeadingTrivia : nil,
                     onePosition: firstTokenIsUnderscore
-                        ? nil : secondElement.positionAfterSkippingLeadingTrivia
+                        ? nil : secondElement.positionAfterSkippingLeadingTrivia,
                 )
             } else {
                 nextClosureId = trailingClosure.id
@@ -197,11 +200,13 @@ extension UnusedEnumeratedRule {
         }
 
         override func visitPost(_: ClosureExprSyntax) {
-            if let closure = closures.pop(), (closure.zeroPosition != nil) != (closure.onePosition != nil) {
+            if let closure = closures.pop(),
+               (closure.zeroPosition != nil) != (closure.onePosition != nil)
+            {
                 addViolation(
                     zeroPosition: closure.onePosition,
                     onePosition: closure.zeroPosition,
-                    enumeratedPosition: closure.enumeratedPosition
+                    enumeratedPosition: closure.enumeratedPosition,
                 )
             }
         }
@@ -216,7 +221,8 @@ extension UnusedEnumeratedRule {
             }
             closures.modifyLast {
                 if node.baseName.text == "$0" {
-                    let member = node.parent?.as(MemberAccessExprSyntax.self)?.declName.baseName.text
+                    let member = node.parent?.as(MemberAccessExprSyntax.self)?.declName.baseName
+                        .text
                     if member == "element" || member == "1" {
                         $0.onePosition = node.positionAfterSkippingLeadingTrivia
                     } else {
@@ -234,7 +240,7 @@ extension UnusedEnumeratedRule {
         private func addViolation(
             zeroPosition: AbsolutePosition?,
             onePosition: AbsolutePosition?,
-            enumeratedPosition: AbsolutePosition? = nil
+            enumeratedPosition: AbsolutePosition? = nil,
         ) {
             var position: AbsolutePosition?
             var reason: String?

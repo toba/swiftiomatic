@@ -83,7 +83,7 @@ final class FireAndForgetTaskCheck: BaseCheck {
                 message:
                 "Task created in SwiftUI View \(location) — runs on every evaluation, not tied to view lifecycle",
                 suggestion: "Use .task { } modifier to tie the Task to the view's lifecycle",
-                confidence: .medium
+                confidence: .medium,
             )
             return
         }
@@ -92,25 +92,25 @@ final class FireAndForgetTaskCheck: BaseCheck {
         let scope = TaskDetectionHelpers.enclosingScope(of: node)
 
         switch scope {
-        case .deinit, .viewDidDisappear:
-            addFinding(
-                at: node,
-                category: .agentReview,
-                severity: .high,
-                message:
-                "Fire-and-forget Task in \(scope.description) — work continues after teardown with no cancellation handle",
-                suggestion: "Assign to a stored property or use structured concurrency",
-                confidence: .high
-            )
-        case .general:
-            addFinding(
-                at: node,
-                category: .agentReview,
-                severity: .low,
-                message: "Fire-and-forget Task — result not captured, cancellation not possible",
-                suggestion: "Assign to a variable if cancellation matters: `let task = Task { ... }`",
-                confidence: .medium
-            )
+            case .deinit, .viewDidDisappear:
+                addFinding(
+                    at: node,
+                    category: .agentReview,
+                    severity: .high,
+                    message:
+                    "Fire-and-forget Task in \(scope.description) — work continues after teardown with no cancellation handle",
+                    suggestion: "Assign to a stored property or use structured concurrency",
+                    confidence: .high,
+                )
+            case .general:
+                addFinding(
+                    at: node,
+                    category: .agentReview,
+                    severity: .low,
+                    message: "Fire-and-forget Task — result not captured, cancellation not possible",
+                    suggestion: "Assign to a variable if cancellation matters: `let task = Task { ... }`",
+                    confidence: .medium,
+                )
         }
     }
 
@@ -126,7 +126,7 @@ final class FireAndForgetTaskCheck: BaseCheck {
                     message:
                     ".onAppear contains Task { } — use .task modifier instead for automatic cancellation",
                     suggestion: "Replace .onAppear { Task { ... } } with .task { ... }",
-                    confidence: .high
+                    confidence: .high,
                 )
                 return
             }
@@ -142,7 +142,7 @@ final class FireAndForgetTaskCheck: BaseCheck {
                         message:
                         ".onAppear contains Task { } — use .task modifier instead for automatic cancellation",
                         suggestion: "Replace .onAppear { Task { ... } } with .task { ... }",
-                        confidence: .high
+                        confidence: .high,
                     )
                     return
                 }

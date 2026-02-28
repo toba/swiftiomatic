@@ -16,7 +16,7 @@ struct DirectReturnRule: Rule {
                     let a = 1
                     return b
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -27,7 +27,7 @@ struct DirectReturnRule: Rule {
                         return b
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -36,7 +36,7 @@ struct DirectReturnRule: Rule {
                     f()
                     return b
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -46,7 +46,7 @@ struct DirectReturnRule: Rule {
                         return i
                     }(1)
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -56,7 +56,7 @@ struct DirectReturnRule: Rule {
                     let ↓b = 2
                     return b
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -67,7 +67,7 @@ struct DirectReturnRule: Rule {
                         return b
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -75,7 +75,7 @@ struct DirectReturnRule: Rule {
                     let a = 1, ↓b = true
                     return b
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -85,7 +85,7 @@ struct DirectReturnRule: Rule {
                         return b
                     }(1)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -98,7 +98,7 @@ struct DirectReturnRule: Rule {
                         return b
                     }
                 }
-                """
+                """,
             ),
         ],
         corrections: [
@@ -108,13 +108,13 @@ struct DirectReturnRule: Rule {
                     let b = 2
                     return b
                 }
-                """
+                """,
             ): Example(
                 """
                 func f() -> Int {
                     return 2
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -128,7 +128,7 @@ struct DirectReturnRule: Rule {
                     }
                     func f() -> Int { 1 }
                 }
-                """
+                """,
             ): Example(
                 """
                 struct S {
@@ -140,7 +140,7 @@ struct DirectReturnRule: Rule {
                     }
                     func f() -> Int { 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -148,14 +148,14 @@ struct DirectReturnRule: Rule {
                     let a = 1, b = true
                     return b
                 }
-                """
+                """,
             ): Example(
                 """
                 func f() -> Bool {
                     let a = 1
                     return true
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -167,7 +167,7 @@ struct DirectReturnRule: Rule {
                         return b
                     }(1)
                 }
-                """
+                """,
             ): Example(
                 """
                 func f() -> Int {
@@ -177,7 +177,7 @@ struct DirectReturnRule: Rule {
                         return 2
                     }(1)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -185,13 +185,13 @@ struct DirectReturnRule: Rule {
                     let view = instantiateView() as! UIView // swiftlint:disable:this force_cast
                     return view
                 }
-                """
+                """,
             ): Example(
                 """
                 func f() -> UIView {
                     return instantiateView() as! UIView // swiftlint:disable:this force_cast
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -199,13 +199,13 @@ struct DirectReturnRule: Rule {
                     let view = instantiateView() as! UIView // swiftlint:disable:this force_cast
                     return view // return the view
                 }
-                """
+                """,
             ): Example(
                 """
                 func f() -> UIView {
                     return instantiateView() as! UIView // swiftlint:disable:this force_cast // return the view
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -213,15 +213,15 @@ struct DirectReturnRule: Rule {
                     let b  :  Bool  =  true
                     return b
                 }
-                """
+                """,
             ): Example(
                 """
                 func f() -> Bool {
                     return true as Bool
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -275,23 +275,29 @@ private extension DirectReturnRule {
                 initExpression = ExprSyntax(
                     fromProtocol: AsExprSyntax(
                         expression: initExpression.trimmed,
-                        asKeyword: .keyword(.as).with(\.leadingTrivia, .space).with(\.trailingTrivia, .space),
-                        type: type.trimmed
-                    )
+                        asKeyword: .keyword(.as).with(\.leadingTrivia, .space).with(
+                            \.trailingTrivia,
+                            .space,
+                        ),
+                        type: type.trimmed,
+                    ),
                 )
             }
             if newBindingList.isNotEmpty {
                 newStmtList.append(
                     CodeBlockItemSyntax(
                         item: .decl(
-                            DeclSyntax(varDecl.with(\.bindings, PatternBindingListSyntax(newBindingList)))
-                        )
-                    )
+                            DeclSyntax(varDecl.with(
+                                \.bindings,
+                                PatternBindingListSyntax(newBindingList),
+                            )),
+                        ),
+                    ),
                 )
                 newStmtList.append(
                     CodeBlockItemSyntax(
-                        item: .stmt(StmtSyntax(returnStmt.with(\.expression, initExpression)))
-                    )
+                        item: .stmt(StmtSyntax(returnStmt.with(\.expression, initExpression))),
+                    ),
                 )
             } else {
                 let leadingTrivia =
@@ -307,10 +313,10 @@ private extension DirectReturnRule {
                                 returnStmt
                                     .with(\.expression, initExpression)
                                     .with(\.leadingTrivia, leadingTrivia)
-                                    .with(\.trailingTrivia, trailingTrivia)
-                            )
-                        )
-                    )
+                                    .with(\.trailingTrivia, trailingTrivia),
+                            ),
+                        ),
+                    ),
                 )
             }
             return super.visit(CodeBlockItemListSyntax(newStmtList))
@@ -322,7 +328,8 @@ private extension CodeBlockItemListSyntax {
     var violation: (PatternBindingSyntax, ReturnStmtSyntax)? {
         guard count >= 2, let last = last?.item,
               let returnStmt = last.as(ReturnStmtSyntax.self),
-              let identifier = returnStmt.expression?.as(DeclReferenceExprSyntax.self)?.baseName.text,
+              let identifier = returnStmt.expression?.as(DeclReferenceExprSyntax.self)?.baseName
+              .text,
               let varDecl = dropLast().last?.item.as(VariableDeclSyntax.self)
         else {
             return nil

@@ -18,7 +18,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .baz: break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -28,7 +28,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case (_, .baz): break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -40,7 +40,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                 case (_, _):
                     break
                 }
-                """
+                """,
             ),
             // https://github.com/apple/swift/issues/61817
             Example(
@@ -53,7 +53,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                 case .none:
                   break
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -64,7 +64,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .baz: break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -73,7 +73,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .baz: break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -81,7 +81,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .bar↓?, .baz↓?: break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -90,7 +90,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .baz: break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -100,7 +100,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case (_, .bar↓?): break
                  default: break
                 }
-                """
+                """,
             ),
         ],
         corrections: [
@@ -111,7 +111,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .baz: break
                  default: break
                 }
-                """
+                """,
             ): Example(
                 """
                 switch foo {
@@ -119,7 +119,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .baz: break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -128,7 +128,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .baz: break
                  default: break
                 }
-                """
+                """,
             ): Example(
                 """
                 switch foo {
@@ -136,7 +136,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .baz: break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -144,14 +144,14 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .bar↓?, .baz↓?: break
                  default: break
                 }
-                """
+                """,
             ): Example(
                 """
                 switch foo {
                  case .bar, .baz: break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -160,7 +160,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .baz: break
                  default: break
                 }
-                """
+                """,
             ): Example(
                 """
                 switch foo {
@@ -168,7 +168,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case .baz: break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -178,7 +178,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case (_, .bar↓?): break
                  default: break
                 }
-                """
+                """,
             ): Example(
                 """
                 switch foo {
@@ -187,7 +187,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case (_, .bar): break
                  default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -197,7 +197,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case (_, false?): break
                  default: break
                 }
-                """
+                """,
             ): Example(
                 """
                 switch foo {
@@ -206,9 +206,9 @@ struct OptionalEnumCaseMatchingRule: Rule {
                  case (_, false?): break
                  default: break
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -239,7 +239,7 @@ private extension OptionalEnumCaseMatchingRule {
                 let optionalChainingExpressions = expression.optionalChainingExpressions()
                 for optionalChainingExpression in optionalChainingExpressions {
                     violations.append(
-                        optionalChainingExpression.questionMark.positionAfterSkippingLeadingTrivia
+                        optionalChainingExpression.questionMark.positionAfterSkippingLeadingTrivia,
                     )
                 }
             }
@@ -266,7 +266,10 @@ private extension OptionalEnumCaseMatchingRule {
                         .with(\.pattern, newPattern)
                         .with(
                             \.whereClause,
-                            node.whereClause?.with(\.leadingTrivia, expression.questionMark.trailingTrivia)
+                            node.whereClause?.with(
+                                \.leadingTrivia,
+                                expression.questionMark.trailingTrivia,
+                            ),
                         )
                 return super.visit(newNode)
             }
@@ -274,19 +277,26 @@ private extension OptionalEnumCaseMatchingRule {
                 var newExpression = expression
                 for element in expression.elements {
                     guard
-                        let optionalChainingExpression = element.expression.as(OptionalChainingExprSyntax.self),
+                        let optionalChainingExpression = element.expression
+                        .as(OptionalChainingExprSyntax.self),
                         !optionalChainingExpression.expression.isDiscardAssignmentOrBoolLiteral
                     else {
                         continue
                     }
                     numberOfCorrections += 1
-                    let newElement = element.with(\.expression, optionalChainingExpression.expression)
+                    let newElement = element.with(
+                        \.expression,
+                        optionalChainingExpression.expression,
+                    )
                     if let index = expression.elements.index(of: element) {
                         newExpression.elements = newExpression.elements.with(\.[index], newElement)
                     }
                 }
 
-                let newPattern = PatternSyntax(pattern.with(\.expression, ExprSyntax(newExpression)))
+                let newPattern = PatternSyntax(pattern.with(
+                    \.expression,
+                    ExprSyntax(newExpression),
+                ))
                 let newNode = node.with(\.pattern, newPattern)
                 return super.visit(newNode)
             }

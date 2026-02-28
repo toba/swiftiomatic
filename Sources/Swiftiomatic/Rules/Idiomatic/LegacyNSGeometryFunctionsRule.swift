@@ -73,7 +73,7 @@ struct LegacyNSGeometryFunctionsRule: Rule {
             Example("↓NSIntersectsRect(rect1, rect2 )\n↓NSWidth(rect  )"):
                 Example("rect1.intersects(rect2)\nrect.width"),
             Example("↓NSIntersectionRect(rect1, rect2)"): Example("rect1.intersection(rect2)"),
-        ]
+        ],
     )
 
     private static let legacyFunctions: [String: LegacyFunctionRewriteStrategy] = [
@@ -116,7 +116,7 @@ private extension LegacyNSGeometryFunctionsRule {
         init(configuration: ConfigurationType, file: SwiftLintFile) {
             super.init(
                 configuration: configuration, file: file,
-                legacyFunctions: LegacyNSGeometryFunctionsRule.legacyFunctions
+                legacyFunctions: LegacyNSGeometryFunctionsRule.legacyFunctions,
             )
         }
     }
@@ -125,7 +125,7 @@ private extension LegacyNSGeometryFunctionsRule {
         init(configuration: ConfigurationType, file: SwiftLintFile) {
             super.init(
                 configuration: configuration, file: file,
-                legacyFunctions: LegacyNSGeometryFunctionsRule.legacyFunctions
+                legacyFunctions: LegacyNSGeometryFunctionsRule.legacyFunctions,
             )
         }
     }

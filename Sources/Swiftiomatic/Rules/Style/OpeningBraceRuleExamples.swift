@@ -19,7 +19,7 @@ enum OpeningBraceRuleExamples {
                     print(centre)
                 }()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -29,14 +29,14 @@ enum OpeningBraceRuleExamples {
                     print(centre)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             func f() -> () -> Void {
                 {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -46,7 +46,7 @@ enum OpeningBraceRuleExamples {
                 return ""
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -56,21 +56,21 @@ enum OpeningBraceRuleExamples {
                     { "Do something here" }
                 )
             )
-            """
+            """,
         ),
         Example(##"let pattern = #/(\{(?<key>\w+)\})/#"##),
         Example(
             """
             if c {}
             else {}
-            """
+            """,
         ),
         Example(
             """
                 if c /* comment */ {
                     return
                 }
-            """
+            """,
         ),
     ]
 
@@ -92,7 +92,7 @@ enum OpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -108,7 +108,7 @@ enum OpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -123,7 +123,7 @@ enum OpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ),
         Example("if let a = b↓{ }"),
         Example("while a == b↓{ }"),
@@ -151,7 +151,7 @@ enum OpeningBraceRuleExamples {
                 return ""
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -165,14 +165,14 @@ enum OpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ),
         Example(
             """
             precedencegroup Group↓{
               assignment: true
             }
-            """
+            """,
         ),
         Example(
             """
@@ -182,7 +182,7 @@ enum OpeningBraceRuleExamples {
                 return _swift_stdlib_threadLocalStorageGet().assumingMemoryBound(
                     to: _ThreadLocalStorage.self)
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -200,7 +200,7 @@ enum OpeningBraceRuleExamples {
             func run_Array_method2x(_ N: Int) {
 
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -215,7 +215,7 @@ enum OpeningBraceRuleExamples {
                    print("Brackets")
                }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -224,7 +224,7 @@ enum OpeningBraceRuleExamples {
             ↓{
                 // code here
             }
-            """
+            """,
         ),
         Example(
             """
@@ -239,7 +239,7 @@ enum OpeningBraceRuleExamples {
                     print(foo + bar)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -249,13 +249,13 @@ enum OpeningBraceRuleExamples {
             ↓{
                 print(a)
             }
-            """
+            """,
         ),
         Example(
             """
             if c  ↓{}
             else /* comment */  ↓{}
-            """
+            """,
         ),
     ]
 
@@ -273,13 +273,13 @@ enum OpeningBraceRuleExamples {
             actor MyActor  {
 
             }
-            """
+            """,
         ): Example(
             """
             actor MyActor {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -287,52 +287,52 @@ enum OpeningBraceRuleExamples {
             {
 
             }
-            """
+            """,
         ): Example(
             """
             actor MyActor {
 
             }
-            """
+            """,
         ),
         Example(
             """
             actor MyActor<T>  {
 
             }
-            """
+            """,
         ): Example(
             """
             actor MyActor<T> {
 
             }
-            """
+            """,
         ),
         Example(
             """
             actor MyActor<T> where T: U  {
 
             }
-            """
+            """,
         ): Example(
             """
             actor MyActor<T> where T: U {
 
             }
-            """
+            """,
         ),
         Example(
             """
             class Rule  {
 
             }
-            """
+            """,
         ): Example(
             """
             class Rule {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -340,52 +340,52 @@ enum OpeningBraceRuleExamples {
             {
 
             }
-            """
+            """,
         ): Example(
             """
             class Rule {
 
             }
-            """
+            """,
         ),
         Example(
             """
             class Rule<T>  {
 
             }
-            """
+            """,
         ): Example(
             """
             class Rule<T> {
 
             }
-            """
+            """,
         ),
         Example(
             """
             class Rule<T>: NSObject  {
 
             }
-            """
+            """,
         ): Example(
             """
             class Rule<T>: NSObject {
 
             }
-            """
+            """,
         ),
         Example(
             """
             class Rule<T>: NSObject where T: U  {
 
             }
-            """
+            """,
         ): Example(
             """
             class Rule<T>: NSObject where T: U {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -393,26 +393,26 @@ enum OpeningBraceRuleExamples {
             {
 
             }
-            """
+            """,
         ): Example(
             """
             enum Rule {
 
             }
-            """
+            """,
         ),
         Example(
             """
             enum Rule: E  {
 
             }
-            """
+            """,
         ): Example(
             """
             enum Rule: E {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -420,26 +420,26 @@ enum OpeningBraceRuleExamples {
             {
 
             }
-            """
+            """,
         ): Example(
             """
             extension Rule {
 
             }
-            """
+            """,
         ),
         Example(
             """
             protocol Rule  {
 
             }
-            """
+            """,
         ): Example(
             """
             protocol Rule {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -447,13 +447,13 @@ enum OpeningBraceRuleExamples {
             {
 
             }
-            """
+            """,
         ): Example(
             """
             struct Rule {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -461,13 +461,13 @@ enum OpeningBraceRuleExamples {
             {
 
             }
-            """
+            """,
         ): Example(
             """
             struct Rule  : A {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -477,7 +477,7 @@ enum OpeningBraceRuleExamples {
             {
 
             }
-            """
+            """,
         ): Example(
             """
             do {
@@ -485,7 +485,7 @@ enum OpeningBraceRuleExamples {
             } catch {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -494,7 +494,7 @@ enum OpeningBraceRuleExamples {
             } catch MyError.unknown  {
 
             }
-            """
+            """,
         ): Example(
             """
             do {
@@ -502,7 +502,7 @@ enum OpeningBraceRuleExamples {
             } catch MyError.unknown {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -511,7 +511,7 @@ enum OpeningBraceRuleExamples {
             } catch let error  {
 
             }
-            """
+            """,
         ): Example(
             """
             do {
@@ -519,33 +519,33 @@ enum OpeningBraceRuleExamples {
             } catch let error {
 
             }
-            """
+            """,
         ),
         Example(
             """
             defer  {
 
             }
-            """
+            """,
         ): Example(
             """
             defer {
 
             }
-            """
+            """,
         ),
         Example(
             """
             do  {
 
             }
-            """
+            """,
         ): Example(
             """
             do {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -553,26 +553,26 @@ enum OpeningBraceRuleExamples {
             {
 
             }
-            """
+            """,
         ): Example(
             """
             for a in b {
 
             }
-            """
+            """,
         ),
         Example(
             """
             for a in b where a == c  {
 
             }
-            """
+            """,
         ): Example(
             """
             for a in b where a == c {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -580,15 +580,17 @@ enum OpeningBraceRuleExamples {
             {
               return ""
             }
-            """
+            """,
         ): Example(
             """
             guard a == b else {
               return ""
             }
-            """
+            """,
         ),
-        Example("if\n\tlet a = b,\n\tlet c = d{ }\n"): Example("if\n\tlet a = b,\n\tlet c = d { }\n"),
+        Example("if\n\tlet a = b,\n\tlet c = d{ }\n"): Example(
+            "if\n\tlet a = b,\n\tlet c = d { }\n",
+        ),
         Example(
             """
             if varDecl.parent?.is(CodeBlockItemSyntax.self) == true // Local variable declaration
@@ -597,7 +599,7 @@ enum OpeningBraceRuleExamples {
             { // Complex or collection type
                 return .visitChildren
             }
-            """
+            """,
         ): Example(
             """
             if varDecl.parent?.is(CodeBlockItemSyntax.self) == true // Local variable declaration
@@ -605,33 +607,33 @@ enum OpeningBraceRuleExamples {
                 || !node.type.is(SimpleTypeIdentifierSyntax.self) { // Complex or collection type
                 return .visitChildren
             }
-            """
+            """,
         ),
         Example(
             """
             repeat  {
 
             } while a
-            """
+            """,
         ): Example(
             """
             repeat {
 
             } while a
-            """
+            """,
         ),
         Example(
             """
             while a  {
 
             }
-            """
+            """,
         ): Example(
             """
             while a {
 
             }
-            """
+            """,
         ),
         Example("class Rule{}"): Example("class Rule {}"),
         Example("actor Rule{}"): Example("actor Rule {}"),
@@ -647,7 +649,7 @@ enum OpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ): Example(
             """
             class Rule {
@@ -657,7 +659,7 @@ enum OpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -668,7 +670,7 @@ enum OpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ): Example(
             """
             class Rule {
@@ -678,33 +680,33 @@ enum OpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ),
         Example(
             """
             precedencegroup Group{
               assignment: true
             }
-            """
+            """,
         ): Example(
             """
             precedencegroup Group {
               assignment: true
             }
-            """
+            """,
         ),
         Example(
             """
                 if c /* comment */    {
                     return
                 }
-            """
+            """,
         ): Example(
             """
                 if c /* comment */ {
                     return
                 }
-            """
+            """,
         ),
         // https://github.com/realm/SwiftLint/issues/5598
         Example(
@@ -713,13 +715,13 @@ enum OpeningBraceRuleExamples {
                 {
                     return
                 }
-            """
+            """,
         ): Example(
             """
                 if c { // A comment
                     return
                 }
-            """
+            """,
         ),
         // https://github.com/realm/SwiftLint/issues/5751
         Example(
@@ -728,13 +730,13 @@ enum OpeningBraceRuleExamples {
                 { // Another comment
                     return
                 }
-            """
+            """,
         ): Example(
             """
                 if c { // A comment // Another comment
                     return
                 }
-            """
+            """,
         ),
         // https://github.com/realm/SwiftLint/issues/5751
         Example(
@@ -748,7 +750,7 @@ enum OpeningBraceRuleExamples {
                     do2()
                 }
             }
-            """
+            """,
         ): Example(
             """
             func foo() {
@@ -758,7 +760,7 @@ enum OpeningBraceRuleExamples {
                     do2()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -768,7 +770,7 @@ enum OpeningBraceRuleExamples {
             {
                 // code here
             }
-            """
+            """,
         ): Example(
             """
             if
@@ -777,7 +779,7 @@ enum OpeningBraceRuleExamples {
             {
                 // code here
             }
-            """
+            """,
         ),
     ]
 }

@@ -1,15 +1,12 @@
 import Foundation
-import SourceKittenFramework
-import SwiftDiagnostics
+import SwiftParser
+import SwiftSyntax
 import SwiftIDEUtils
 import SwiftOperators
-import SwiftParser
+import SwiftDiagnostics
+import SourceKittenFramework
 import SwiftParserDiagnostics
-import SwiftSyntax
-
-#if canImport(Darwin)
-    import Darwin
-#endif
+import Synchronization
 
 private typealias FileCacheKey = UUID
 
@@ -72,9 +69,12 @@ package typealias AssertHandler = () -> Void
 private let assertHandlerCache = Cache { (_: SwiftLintFile) -> AssertHandler? in nil }
 
 private final class Cache<T>: Sendable {
-    private nonisolated(unsafe) var values = [FileCacheKey: T]()
+    private struct Box: @unchecked Sendable {
+        var values = [FileCacheKey: T]()
+    }
+
+    private let storage = Mutex(Box())
     private let factory: @Sendable (SwiftLintFile) -> T
-    private let lock = PlatformLock()
 
     fileprivate init(_ factory: @escaping @Sendable (SwiftLintFile) -> T) {
         self.factory = factory
@@ -82,30 +82,30 @@ private final class Cache<T>: Sendable {
 
     fileprivate func get(_ file: SwiftLintFile) -> T {
         let key = file.cacheKey
-        return lock.doLocked {
-            if let cachedValue = values[key] {
+        return storage.withLock { box in
+            if let cachedValue = box.values[key] {
                 return cachedValue
             }
             let value = factory(file)
-            values[key] = value
+            box.values[key] = value
             return value
         }
     }
 
     fileprivate func invalidate(_ file: SwiftLintFile) {
-        lock.doLocked { values.removeValue(forKey: file.cacheKey) }
+        storage.withLock { _ = $0.values.removeValue(forKey: file.cacheKey) }
     }
 
     fileprivate func clear() {
-        lock.doLocked { values.removeAll(keepingCapacity: false) }
+        storage.withLock { $0.values.removeAll(keepingCapacity: false) }
     }
 
     fileprivate func set(key: FileCacheKey, value: T) {
-        lock.doLocked { values[key] = value }
+        storage.withLock { $0.values[key] = value }
     }
 
     fileprivate func unset(key: FileCacheKey) {
-        lock.doLocked { values.removeValue(forKey: key) }
+        storage.withLock { _ = $0.values.removeValue(forKey: key) }
     }
 }
 
@@ -243,18 +243,3 @@ extension SwiftLintFile {
     }
 }
 
-private final class PlatformLock: Sendable {
-    private nonisolated(unsafe) let primitiveLock: UnsafeMutablePointer<os_unfair_lock>
-
-    init() {
-        primitiveLock = UnsafeMutablePointer<os_unfair_lock>.allocate(capacity: 1)
-        primitiveLock.initialize(to: os_unfair_lock())
-    }
-
-    @discardableResult
-    func doLocked<U>(_ closure: () -> U) -> U {
-        os_unfair_lock_lock(primitiveLock)
-        defer { os_unfair_lock_unlock(primitiveLock) }
-        return closure()
-    }
-}

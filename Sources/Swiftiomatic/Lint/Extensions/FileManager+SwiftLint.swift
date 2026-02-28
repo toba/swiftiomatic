@@ -1,4 +1,4 @@
-import FilenameMatcher
+import Darwin.POSIX
 import Foundation
 import SourceKittenFramework
 
@@ -25,9 +25,9 @@ protocol LintableFileManager: Sendable {
 }
 
 /// An excluder for filtering out files that should not be linted.
-enum Excluder: @unchecked Sendable {
-    /// Full matching excluder using filename matchers.
-    case matching(matchers: [FilenameMatcher])
+enum Excluder: Sendable {
+    /// Full matching excluder using glob patterns via fnmatch(3).
+    case matching(patterns: [String])
     /// Prefix-based excluder using path prefixes.
     case byPrefix(prefixes: [String])
     /// An excluder that does not exclude any files.
@@ -35,12 +35,12 @@ enum Excluder: @unchecked Sendable {
 
     func excludes(path: String) -> Bool {
         switch self {
-        case let .matching(matchers):
-            matchers.contains(where: { $0.match(filename: path) })
-        case let .byPrefix(prefixes):
-            prefixes.contains(where: { path.hasPrefix($0) })
-        case .noExclusion:
-            false
+            case let .matching(patterns):
+                patterns.contains { fnmatch($0, path, FNM_PATHNAME) == 0 }
+            case let .byPrefix(prefixes):
+                prefixes.contains(where: { path.hasPrefix($0) })
+            case .noExclusion:
+                false
         }
     }
 }
@@ -49,12 +49,12 @@ extension FileManager: LintableFileManager, @unchecked @retroactive Sendable {
     func filesToLint(
         inPath path: String,
         rootDirectory: String? = nil,
-        excluder: Excluder
+        excluder: Excluder,
     ) -> [String] {
         let absolutePath = URL(
             fileURLWithPath: path.absolutePathRepresentation(
-                rootDirectory: rootDirectory ?? currentDirectoryPath
-            )
+                rootDirectory: rootDirectory ?? currentDirectoryPath,
+            ),
         )
 
         // If path is a file, filter and return it directly.
@@ -67,7 +67,8 @@ extension FileManager: LintableFileManager, @unchecked @retroactive Sendable {
         if case .noExclusion = excluder {
             return subpaths(atPath: absolutePath.filepath)?.parallelCompactMap { element in
                 let absoluteElementPath = URL(fileURLWithPath: element, relativeTo: absolutePath)
-                return absoluteElementPath.isSwiftFile ? absoluteElementPath.standardized.filepath : nil
+                return absoluteElementPath.isSwiftFile ? absoluteElementPath.standardized
+                    .filepath : nil
             } ?? []
         }
 
@@ -75,7 +76,9 @@ extension FileManager: LintableFileManager, @unchecked @retroactive Sendable {
     }
 
     private func collectFiles(atPath absolutePath: URL, excluder: Excluder) -> [String] {
-        guard let root = absolutePath.filepathGuarded, let enumerator = enumerator(atPath: root) else {
+        guard let root = absolutePath.filepathGuarded,
+              let enumerator = enumerator(atPath: root)
+        else {
             return []
         }
 
@@ -84,7 +87,8 @@ extension FileManager: LintableFileManager, @unchecked @retroactive Sendable {
 
         while let element = enumerator.nextObject() as? String {
             let absoluteElementPath = URL(fileURLWithPath: element, relativeTo: absolutePath)
-            guard let absoluteStandardizedElementPath = absoluteElementPath.standardized.filepathGuarded
+            guard let absoluteStandardizedElementPath = absoluteElementPath.standardized
+                .filepathGuarded
             else {
                 continue
             }
@@ -104,7 +108,10 @@ extension FileManager: LintableFileManager, @unchecked @retroactive Sendable {
 
         return files
             + directoriesToWalk.parallelFlatMap {
-                collectFiles(atPath: URL(fileURLWithPath: $0, isDirectory: true), excluder: excluder)
+                collectFiles(
+                    atPath: URL(fileURLWithPath: $0, isDirectory: true),
+                    excluder: excluder,
+                )
             }
     }
 

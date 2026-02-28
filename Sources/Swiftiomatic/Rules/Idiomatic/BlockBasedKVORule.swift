@@ -15,7 +15,7 @@ struct BlockBasedKVORule: Rule {
                 let observer = foo.observe(\.value, options: [.new]) { (foo, change) in
                    print(change.newValue)
                 }
-                """#
+                """#,
             ),
         ],
         triggeringExamples: [
@@ -26,7 +26,7 @@ struct BlockBasedKVORule: Rule {
                                               change: [NSKeyValueChangeKey : Any]?,
                                               context: UnsafeMutableRawPointer?) {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -35,9 +35,9 @@ struct BlockBasedKVORule: Rule {
                                               change: Dictionary<NSKeyValueChangeKey, Any>?,
                                               context: UnsafeMutableRawPointer?) {}
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -66,7 +66,8 @@ private extension BlockBasedKVORule {
                 "String?", "Any?", "[NSKeyValueChangeKey:Any]?", "UnsafeMutableRawPointer?",
             ]
             let secondTypes = [
-                "String?", "Any?", "Dictionary<NSKeyValueChangeKey,Any>?", "UnsafeMutableRawPointer?",
+                "String?", "Any?", "Dictionary<NSKeyValueChangeKey,Any>?",
+                "UnsafeMutableRawPointer?",
             ]
             if types == firstTypes || types == secondTypes {
                 violations.append(node.funcKeyword.positionAfterSkippingLeadingTrivia)

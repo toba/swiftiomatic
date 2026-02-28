@@ -18,49 +18,49 @@ struct SingleTestClassRule: SourceKitFreeRule, OptInRule {
                 """
                 ↓class FooTests: QuickSpec {  }
                 ↓class BarTests: QuickSpec {  }
-                """
+                """,
             ),
             Example(
                 """
                 ↓class FooTests: QuickSpec {  }
                 ↓class BarTests: QuickSpec {  }
                 ↓class TotoTests: QuickSpec {  }
-                """
+                """,
             ),
             Example(
                 """
                 ↓class FooTests: XCTestCase {  }
                 ↓class BarTests: XCTestCase {  }
-                """
+                """,
             ),
             Example(
                 """
                 ↓class FooTests: XCTestCase {  }
                 ↓class BarTests: XCTestCase {  }
                 ↓class TotoTests: XCTestCase {  }
-                """
+                """,
             ),
             Example(
                 """
                 ↓class FooTests: QuickSpec {  }
                 ↓class BarTests: XCTestCase {  }
-                """
+                """,
             ),
             Example(
                 """
                 ↓class FooTests: QuickSpec {  }
                 ↓class BarTests: XCTestCase {  }
                 class TotoTests {  }
-                """
+                """,
             ),
             Example(
                 """
                 final ↓class FooTests: QuickSpec {  }
                 ↓class BarTests: XCTestCase {  }
                 class TotoTests {  }
-                """
+                """,
             ),
-        ]
+        ],
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -74,7 +74,7 @@ struct SingleTestClassRule: SourceKitFreeRule, OptInRule {
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: file, position: position.position),
-                reason: "\(classes.count) test classes found in this file"
+                reason: "\(classes.count) test classes found in this file",
             )
         }
     }
@@ -89,7 +89,7 @@ private extension SingleTestClassRule {
         override func visitPost(_ node: ClassDeclSyntax) {
             guard
                 node.inheritanceClause.containsInheritedType(
-                    inheritedTypes: configuration.testParentClasses
+                    inheritedTypes: configuration.testParentClasses,
                 )
             else {
                 return

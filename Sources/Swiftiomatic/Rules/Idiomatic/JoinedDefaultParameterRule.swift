@@ -19,14 +19,14 @@ struct JoinedDefaultParameterRule: Rule {
                 """
                 let foo = bar.filter(toto)
                              .joined(↓separator: ""),
-                """
+                """,
             ),
             Example(
                 """
                 func foo() -> String {
                   return ["1", "2"].joined(↓separator: "")
                 }
-                """
+                """,
             ),
         ],
         corrections: [
@@ -37,7 +37,7 @@ struct JoinedDefaultParameterRule: Rule {
                 Example("func foo() -> String {\n   return [\"1\", \"2\"].joined()\n}"),
             Example("class C {\n#if true\nlet foo = bar.joined(↓separator: \"\")\n#endif\n}"):
                 Example("class C {\n#if true\nlet foo = bar.joined()\n#endif\n}"),
-        ]
+        ],
     )
 }
 

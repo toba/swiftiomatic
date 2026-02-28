@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct ExpiringTodoRule: Rule {
     enum ExpiryViolationLevel {
@@ -10,12 +10,12 @@ struct ExpiringTodoRule: Rule {
 
         var reason: String {
             switch self {
-            case .approachingExpiry:
-                "TODO/FIXME is approaching its expiry and should be resolved soon"
-            case .expired:
-                "TODO/FIXME has expired and must be resolved"
-            case .badFormatting:
-                "Expiring TODO/FIXME is incorrectly formatted"
+                case .approachingExpiry:
+                    "TODO/FIXME is approaching its expiry and should be resolved soon"
+                case .expired:
+                    "TODO/FIXME has expired and must be resolved"
+                case .badFormatting:
+                    "Expiring TODO/FIXME is incorrectly formatted"
             }
         }
     }
@@ -42,7 +42,7 @@ struct ExpiringTodoRule: Rule {
             Example("// FIXME: [↓1/14/2019]"),
             Example("// FIXME: [↓10/14/2019]"),
             Example("// TODO: [↓9999/14/10]"),
-        ].skipWrappingInCommentTests()
+        ].skipWrappingInCommentTests(),
     )
 
     var configuration = ExpiringTodoConfiguration()
@@ -62,7 +62,8 @@ private extension ExpiringTodoRule {
             let pattern = #"""
             \b(?:TODO|FIXME)(?::|\b)(?:(?!\b(?:TODO|FIXME)(?::|\b)).)*?\#
             \\#(configuration.dateDelimiters.opening)\#
-            (\d{1,4}\\#(configuration.dateSeparator)\d{1,4}\\#(configuration.dateSeparator)\d{1,4})\#
+            (\d{1,4}\\#(configuration.dateSeparator)\d{1,4}\\#(configuration
+                .dateSeparator)\d{1,4})\#
             \\#(configuration.dateDelimiters.closing)
             """#
             return Swiftiomatic.regex(pattern)
@@ -73,11 +74,11 @@ private extension ExpiringTodoRule {
             for token in node.tokens(viewMode: .sourceAccurate) {
                 processTrivia(
                     token.leadingTrivia,
-                    baseOffset: token.position.utf8Offset
+                    baseOffset: token.position.utf8Offset,
                 )
                 processTrivia(
                     token.trailingTrivia,
-                    baseOffset: token.endPositionBeforeTrailingTrivia.utf8Offset
+                    baseOffset: token.endPositionBeforeTrailingTrivia.utf8Offset,
                 )
             }
 
@@ -121,7 +122,11 @@ private extension ExpiringTodoRule {
         }
 
         private func processComment(_ commentText: String, offset: Int) {
-            let matches = regex.matches(in: commentText, options: [], range: commentText.fullNSRange)
+            let matches = regex.matches(
+                in: commentText,
+                options: [],
+                range: commentText.fullNSRange,
+            )
             let nsStringComment = commentText.bridge()
 
             for match in matches {
@@ -143,7 +148,7 @@ private extension ExpiringTodoRule {
                     let violation = ReasonedRuleViolation(
                         position: matchPosition,
                         reason: violationLevel.reason,
-                        severity: severity
+                        severity: severity,
                     )
                     violations.append(violation)
                 }
@@ -159,12 +164,12 @@ private extension ExpiringTodoRule {
 
         private func getSeverity(for violationLevel: ExpiryViolationLevel) -> ViolationSeverity? {
             switch violationLevel {
-            case .approachingExpiry:
-                configuration.approachingExpirySeverity.severity
-            case .expired:
-                configuration.expiredSeverity.severity
-            case .badFormatting:
-                configuration.badFormattingSeverity.severity
+                case .approachingExpiry:
+                    configuration.approachingExpirySeverity.severity
+                case .expired:
+                    configuration.expiredSeverity.severity
+                case .badFormatting:
+                    configuration.badFormattingSeverity.severity
             }
         }
 
@@ -180,7 +185,7 @@ private extension ExpiringTodoRule {
             let approachingDate = Calendar.current.date(
                 byAdding: .day,
                 value: -configuration.approachingExpiryThreshold,
-                to: expiryDate
+                to: expiryDate,
             )
 
             guard let approachingDate else {
@@ -201,20 +206,20 @@ private extension Date {
 private extension TriviaPiece {
     var isLineComment: Bool {
         switch self {
-        case .lineComment, .docLineComment:
-            true
-        default:
-            false
+            case .lineComment, .docLineComment:
+                true
+            default:
+                false
         }
     }
 
     var commentText: String? {
         switch self {
-        case let .lineComment(text), let .blockComment(text),
-             let .docLineComment(text), let .docBlockComment(text):
-            text
-        default:
-            nil
+            case let .lineComment(text), let .blockComment(text),
+                 let .docLineComment(text), let .docBlockComment(text):
+                text
+            default:
+                nil
         }
     }
 }

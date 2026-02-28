@@ -9,7 +9,7 @@ struct ImplicitGetterRule: Rule {
         description: "Computed read-only properties and subscripts should avoid using the get keyword.",
         kind: .style,
         nonTriggeringExamples: ImplicitGetterRuleExamples.nonTriggeringExamples,
-        triggeringExamples: ImplicitGetterRuleExamples.triggeringExamples
+        triggeringExamples: ImplicitGetterRuleExamples.triggeringExamples,
     )
 }
 
@@ -24,10 +24,10 @@ private enum ViolationKind {
 
     var violationDescription: String {
         switch self {
-        case .subscript:
-            return "Computed read-only subscripts should avoid using the get keyword"
-        case .property:
-            return "Computed read-only properties should avoid using the get keyword"
+            case .subscript:
+                return "Computed read-only subscripts should avoid using the get keyword"
+            case .property:
+                return "Computed read-only properties should avoid using the get keyword"
         }
     }
 }
@@ -50,8 +50,8 @@ private extension ImplicitGetterRule {
             violations.append(
                 ReasonedRuleViolation(
                     position: getAccessor.positionAfterSkippingLeadingTrivia,
-                    reason: kind.violationDescription
-                )
+                    reason: kind.violationDescription,
+                ),
             )
         }
     }

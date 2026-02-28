@@ -8,7 +8,7 @@ private func wrapInSwitch(_ str: String, file: StaticString = #filePath, line: U
         switch foo {
             \(str)
         }
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }
 
@@ -43,7 +43,7 @@ struct SwitchCaseOnNewlineRule: Rule {
                 case let .myCase(code: lhsErrorCode, description: _)
                  where lhsErrorCode > 10:
                 return false
-                """
+                """,
             ),
             wrapInSwitch("case #selector(aFunction(_:)):\n return false"),
             Example(
@@ -52,7 +52,7 @@ struct SwitchCaseOnNewlineRule: Rule {
                   let loadedToken = try tokenManager.decodeToken(from: response)
                   return loadedToken
                 } catch { throw error }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -65,7 +65,7 @@ struct SwitchCaseOnNewlineRule: Rule {
             wrapInSwitch("↓case #selector(aFunction(_:)): return false"),
             wrapInSwitch("↓case let .myCase(value)\n where value > 10: return false"),
             wrapInSwitch("↓case .first,\n .second: return false"),
-        ]
+        ],
     )
 }
 
@@ -80,7 +80,8 @@ extension SwitchCaseOnNewlineRule: OptInRule {}
 private extension SwitchCaseOnNewlineRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: SwitchCaseSyntax) {
-            let caseEndLine = locationConverter.location(for: node.label.endPositionBeforeTrailingTrivia)
+            let caseEndLine = locationConverter
+                .location(for: node.label.endPositionBeforeTrailingTrivia)
                 .line
             let statementsPosition = node.statements.positionAfterSkippingLeadingTrivia
             let statementStartLine = locationConverter.location(for: statementsPosition).line

@@ -1,5 +1,5 @@
-import SwiftBasicFormat
 import SwiftSyntax
+import SwiftBasicFormat
 
 struct ReturnValueFromVoidFunctionRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -11,7 +11,7 @@ struct ReturnValueFromVoidFunctionRule: Rule {
         kind: .idiomatic,
         minSwiftVersion: .fiveDotOne,
         nonTriggeringExamples: ReturnValueFromVoidFunctionRuleExamples.nonTriggeringExamples,
-        triggeringExamples: ReturnValueFromVoidFunctionRuleExamples.triggeringExamples
+        triggeringExamples: ReturnValueFromVoidFunctionRuleExamples.triggeringExamples,
     )
 }
 
@@ -59,11 +59,13 @@ private extension ReturnValueFromVoidFunctionRule {
                                     .with(\.expression, nil)
                                     .with(
                                         \.leadingTrivia,
-                                        .newline + (returnStmt.leadingTrivia.indentation(isOnNewline: false) ?? [])
+                                        .newline +
+                                            (returnStmt.leadingTrivia
+                                                .indentation(isOnNewline: false) ?? []),
                                     )
-                                    .with(\.trailingTrivia, returnStmt.trailingTrivia)
-                            )
-                        )
+                                    .with(\.trailingTrivia, returnStmt.trailingTrivia),
+                            ),
+                        ),
                     ),
                 ]
             return super.visit(CodeBlockItemListSyntax(newStmtList))

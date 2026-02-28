@@ -1,5 +1,3 @@
-// GENERATED FILE. DO NOT EDIT!
-
 /// The reporters list containing all the reporters built into SwiftLint.
 nonisolated(unsafe) let reportersList: [any Reporter.Type] = [
     CSVReporter.self,

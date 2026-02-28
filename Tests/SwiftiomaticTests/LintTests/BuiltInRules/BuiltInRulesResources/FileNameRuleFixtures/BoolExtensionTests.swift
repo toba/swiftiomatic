@@ -1,8 +1,9 @@
-@testable import SomeModule
 import XCTest
 
+@testable import SomeModule
+
 final class BoolExtensionTests: SwiftLintTestCase {
-    func testExample() {
-        // some code
-    }
+  func testExample() {
+    // some code
+  }
 }

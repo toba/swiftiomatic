@@ -1,5 +1,6 @@
 import Foundation // swiftlint:disable:this file_name
 import SourceKittenFramework
+import Synchronization
 
 extension Configuration.FileGraph.FilePath {
     // MARK: - Properties: Remote Cache
@@ -21,31 +22,36 @@ extension Configuration.FileGraph.FilePath {
 
     /// This dictionary has URLs as its keys and contents of those URLs as its values
     /// In production mode, this should be empty. For tests, it may be filled.
-    nonisolated(unsafe) static var mockedNetworkResults: [String: String] = [:]
+    private static let _mockedNetworkResults = Mutex([String: String]())
+
+    static var mockedNetworkResults: [String: String] {
+        get { _mockedNetworkResults.withLock { $0 } }
+        set { _mockedNetworkResults.withLock { $0 = newValue } }
+    }
 
     // MARK: - Methods: Resolving
 
     mutating func resolve(
         remoteConfigTimeout: Double,
-        remoteConfigTimeoutIfCached: Double
+        remoteConfigTimeoutIfCached: Double,
     ) throws -> String {
         switch self {
-        case let .existing(path):
-            return path
+            case let .existing(path):
+                return path
 
-        case let .promised(urlString):
-            return try resolve(
-                urlString: urlString,
-                remoteConfigTimeout: remoteConfigTimeout,
-                remoteConfigTimeoutIfCached: remoteConfigTimeoutIfCached
-            )
+            case let .promised(urlString):
+                return try resolve(
+                    urlString: urlString,
+                    remoteConfigTimeout: remoteConfigTimeout,
+                    remoteConfigTimeoutIfCached: remoteConfigTimeoutIfCached,
+                )
         }
     }
 
     private mutating func resolve(
         urlString: String,
         remoteConfigTimeout: Double,
-        remoteConfigTimeoutIfCached: Double
+        remoteConfigTimeoutIfCached: Double,
     ) throws -> String {
         // Always use top level as root directory for remote files
         let rootDirectory = FileManager.default.currentDirectoryPath.bridge().standardizingPath
@@ -60,7 +66,7 @@ extension Configuration.FileGraph.FilePath {
             // Handle wrong url format
             guard let url = URL(string: urlString) else {
                 throw Issue.genericWarning(
-                    "Invalid configuration entry: \"\(urlString)\" isn't a valid url."
+                    "Invalid configuration entry: \"\(urlString)\" isn't a valid url.",
                 )
             }
 
@@ -100,7 +106,7 @@ extension Configuration.FileGraph.FilePath {
                     urlString: urlString,
                     cachedFilePath: cachedFilePath,
                     taskDone: taskDone,
-                    timeout: timeout
+                    timeout: timeout,
                 )
             }
 
@@ -110,7 +116,7 @@ extension Configuration.FileGraph.FilePath {
         // Handle file write failure
         guard
             let filePath = cache(
-                configString: configString, from: urlString, rootDirectory: rootDirectory
+                configString: configString, from: urlString, rootDirectory: rootDirectory,
             )
         else {
             return try handleFileWriteFailure(urlString: urlString, cachedFilePath: cachedFilePath)
@@ -125,17 +131,17 @@ extension Configuration.FileGraph.FilePath {
         urlString: String,
         cachedFilePath: String?,
         taskDone: Bool,
-        timeout: TimeInterval
+        timeout: TimeInterval,
     ) throws -> String {
         if let cachedFilePath {
             if taskDone {
                 queuedPrintError(
-                    "warning: Unable to load remote config from \"\(urlString)\". Using cached version as a fallback."
+                    "warning: Unable to load remote config from \"\(urlString)\". Using cached version as a fallback.",
                 )
             } else {
                 queuedPrintError(
                     "warning: Timeout (\(timeout) sec): Unable to load remote config from \"\(urlString)\". "
-                        + "Using cached version as a fallback."
+                        + "Using cached version as a fallback.",
                 )
             }
 
@@ -145,12 +151,12 @@ extension Configuration.FileGraph.FilePath {
         if taskDone {
             throw Issue.genericWarning(
                 "Unable to load remote config from \"\(urlString)\". "
-                    + "Also didn't found cached version to fallback to."
+                    + "Also didn't found cached version to fallback to.",
             )
         }
         throw Issue.genericWarning(
             "Timeout (\(timeout) sec): Unable to load remote config from \"\(urlString)\". "
-                + "Also didn't found cached version to fallback to."
+                + "Also didn't found cached version to fallback to.",
         )
     }
 
@@ -159,13 +165,13 @@ extension Configuration.FileGraph.FilePath {
     {
         if let cachedFilePath {
             queuedPrintError(
-                "warning: Unable to cache remote config from \"\(urlString)\". Using cached version as a fallback."
+                "warning: Unable to cache remote config from \"\(urlString)\". Using cached version as a fallback.",
             )
             self = .existing(path: cachedFilePath)
             return cachedFilePath
         }
         throw Issue.genericWarning(
-            "Unable to cache remote config from \"\(urlString)\". Also didn't found cached version to fallback to."
+            "Unable to cache remote config from \"\(urlString)\". Also didn't found cached version to fallback to.",
         )
     }
 
@@ -176,7 +182,9 @@ extension Configuration.FileGraph.FilePath {
         return FileManager.default.fileExists(atPath: path) ? path : nil
     }
 
-    private func cache(configString: String, from urlString: String, rootDirectory: String) -> String? {
+    private func cache(configString: String, from urlString: String,
+                       rootDirectory: String) -> String?
+    {
         // Do cache maintenance
         do {
             try maintainRemoteConfigCache(rootDirectory: rootDirectory)
@@ -198,7 +206,7 @@ extension Configuration.FileGraph.FilePath {
         return FileManager.default.createFile(
             atPath: path,
             contents: Data(configString.utf8),
-            attributes: [:]
+            attributes: [:],
         ) ? path : nil
     }
 
@@ -208,7 +216,8 @@ extension Configuration.FileGraph.FilePath {
         for char in invalidCharacters {
             adjustedUrlString = adjustedUrlString.replacingOccurrences(of: char, with: "_")
         }
-        adjustedUrlString = adjustedUrlString.trimmingCharacters(in: CharacterSet(charactersIn: "."))
+        adjustedUrlString = adjustedUrlString
+            .trimmingCharacters(in: CharacterSet(charactersIn: "."))
         let path =
             Configuration.FileGraph.FilePath.versionedRemoteCachePath + "/\(adjustedUrlString).yml"
         return path.bridge().absolutePathRepresentation(rootDirectory: rootDirectory)
@@ -232,18 +241,22 @@ extension Configuration.FileGraph.FilePath {
         let directory = Configuration.FileGraph.FilePath.versionedRemoteCachePath
             .bridge().absolutePathRepresentation(rootDirectory: rootDirectory)
         if !FileManager.default.fileExists(atPath: directory) {
-            try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(
+                atPath: directory,
+                withIntermediateDirectories: true,
+            )
         }
 
         // Delete all cache folders except for the current version's folder
         let directoryWithoutVersionNum = directory.components(separatedBy: "/").dropLast().joined(
-            separator: "/"
+            separator: "/",
         )
         try (FileManager.default.subpathsOfDirectory(atPath: directoryWithoutVersionNum)).forEach {
             if !$0.contains("/"), $0 != Configuration.FileGraph.FilePath.remoteCacheVersionNumber {
                 try FileManager.default.removeItem(
                     atPath:
-                    $0.bridge().absolutePathRepresentation(rootDirectory: directoryWithoutVersionNum)
+                    $0.bridge()
+                        .absolutePathRepresentation(rootDirectory: directoryWithoutVersionNum),
                 )
             }
         }
@@ -257,21 +270,21 @@ extension Configuration.FileGraph.FilePath {
                 FileManager.default.createFile(
                     atPath: Configuration.FileGraph.FilePath.gitignorePath,
                     contents: Data(newGitignoreAppendix.utf8),
-                    attributes: [:]
+                    attributes: [:],
                 )
             else {
                 throw Issue.genericWarning("Issue maintaining remote config cache.")
             }
         } else {
             var contents = try String(
-                contentsOfFile: Configuration.FileGraph.FilePath.gitignorePath, encoding: .utf8
+                contentsOfFile: Configuration.FileGraph.FilePath.gitignorePath, encoding: .utf8,
             )
             if !contents.contains(requiredGitignoreAppendix) {
                 contents += "\n\n\(newGitignoreAppendix)"
                 try contents.write(
                     toFile: Configuration.FileGraph.FilePath.gitignorePath,
                     atomically: true,
-                    encoding: .utf8
+                    encoding: .utf8,
                 )
             }
         }

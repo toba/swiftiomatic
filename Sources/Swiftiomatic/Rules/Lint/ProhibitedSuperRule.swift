@@ -15,7 +15,7 @@ struct ProhibitedSuperRule: Rule {
                     override func loadView() {
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -24,7 +24,7 @@ struct ProhibitedSuperRule: Rule {
                         self.method1()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -36,7 +36,7 @@ struct ProhibitedSuperRule: Rule {
                         }
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -47,7 +47,7 @@ struct ProhibitedSuperRule: Rule {
                         super.loadView()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -57,7 +57,7 @@ struct ProhibitedSuperRule: Rule {
                         super.providePlaceholder(at:url, completionHandler: completionHandler)
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -68,7 +68,7 @@ struct ProhibitedSuperRule: Rule {
                         self.method2()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -79,9 +79,9 @@ struct ProhibitedSuperRule: Rule {
                         }
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -113,8 +113,8 @@ private extension ProhibitedSuperRule {
             violations.append(
                 ReasonedRuleViolation(
                     position: body.leftBrace.endPositionBeforeTrailingTrivia,
-                    reason: "Method '\(name)' should not call to super function"
-                )
+                    reason: "Method '\(name)' should not call to super function",
+                ),
             )
         }
     }

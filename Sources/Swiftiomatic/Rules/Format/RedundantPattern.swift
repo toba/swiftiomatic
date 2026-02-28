@@ -1,17 +1,9 @@
-//
-//  RedundantPattern.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 12/14/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Remove redundant pattern in case statements
     static let redundantPattern = FormatRule(
-        help: "Remove redundant pattern matching parameter syntax."
+        help: "Remove redundant pattern matching parameter syntax.",
     ) { formatter in
         formatter.forEach(.startOfScope("(")) { i, _ in
             let prevIndex = formatter.index(of: .nonSpaceOrComment, before: i)
@@ -34,13 +26,13 @@ extension FormatRule {
             {
                 if let endOfScopeIndex = formatter.index(
                     before: prevIndex,
-                    where: { tkn in tkn == .endOfScope("case") || tkn == .keyword("case") }
+                    where: { tkn in tkn == .endOfScope("case") || tkn == .keyword("case") },
                 ),
                     let varOrLetIndex = formatter.index(
                         after: endOfScopeIndex,
                         where: { tkn in
                             tkn == .keyword("let") || tkn == .keyword("var")
-                        }
+                        },
                     ),
                     let operatorIndex = formatter.index(of: .operator, before: prevIndex),
                     varOrLetIndex < operatorIndex
@@ -76,12 +68,12 @@ extension Formatter {
         var isEmpty = true
         for token in tokens[range.lowerBound ..< range.upperBound] {
             switch token {
-            case .identifier("_"):
-                isEmpty = false
-            case .space, .linebreak, .delimiter(","), .keyword("let"), .keyword("var"):
-                break
-            default:
-                return false
+                case .identifier("_"):
+                    isEmpty = false
+                case .space, .linebreak, .delimiter(","), .keyword("let"), .keyword("var"):
+                    break
+                default:
+                    return false
             }
         }
         return !isEmpty

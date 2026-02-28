@@ -11,7 +11,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -20,7 +20,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                     Link("Open link", destination: myUrl)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -33,7 +33,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         .accessibility(addTraits: .isLink)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -46,7 +46,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -59,7 +59,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -72,7 +72,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         .accessibilityAddTraits([.isHeader, .isLink])
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -85,7 +85,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         .accessibility(addTraits: .isButton)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -98,7 +98,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         .accessibility(addTraits: .isButton)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -113,7 +113,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -126,7 +126,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         .accessibility(addTraits: .isButton)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -146,7 +146,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                     .accessibility(addTraits: .isButton)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -159,7 +159,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         .accessibilityAddTraits(.isButton)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -172,7 +172,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         .accessibilityAddTraits(.isLink)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -185,7 +185,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         .accessibility(addTraits: [.isButton])
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -197,7 +197,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         })
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -212,7 +212,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -225,7 +225,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -237,7 +237,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -249,7 +249,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         })
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -261,7 +261,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -276,7 +276,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -288,7 +288,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         })
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -300,7 +300,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         })
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -312,7 +312,7 @@ enum AccessibilityTraitForButtonRuleExamples {
                         })
                 }
             }
-            """
+            """,
         ),
     ]
 }

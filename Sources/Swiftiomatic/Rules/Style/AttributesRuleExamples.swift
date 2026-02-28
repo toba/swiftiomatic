@@ -13,7 +13,9 @@ enum AttributesRuleExamples {
         Example("@IBAction func buttonPressed(button: UIButton)"),
         Example("@objc\n @IBAction func buttonPressed(button: UIButton)"),
         Example("@available(iOS 9.0, *)\n func animate(view: UIStackView)"),
-        Example("@available(*, deprecated, message: \"A message\")\n func animate(view: UIStackView)"),
+        Example(
+            "@available(*, deprecated, message: \"A message\")\n func animate(view: UIStackView)",
+        ),
         Example("@nonobjc\n final class X {}"),
         Example("@available(iOS 9.0, *)\n class UIStackView {}"),
         Example("@NSApplicationMain\n class AppDelegate: NSObject, NSApplicationDelegate {}"),
@@ -36,7 +38,7 @@ enum AttributesRuleExamples {
                 @available(*, unavailable, renamed: \"isOptional\")
                 public var optional: Bool { fatalError() }
             }
-            """
+            """,
         ),
         Example("@GKInspectable var maxSpeed: Float"),
         Example("@discardableResult\n func a() -> Int"),
@@ -53,26 +55,26 @@ enum AttributesRuleExamples {
             @available (iOS 11.0, *)
             class DeleteMeTests: XCTestCase {
             }
-            """
+            """,
         ),
         Example(
             """
             @objc
             internal func foo(identifier: String, completion: @escaping (() -> Void)) {}
-            """
+            """,
         ),
         Example(
             """
             @objc
             internal func foo(identifier: String, completion: @autoclosure (() -> Bool)) {}
-            """
+            """,
         ),
         Example(
             """
             func printBoolOrTrue(_ expression: @autoclosure () throws -> Bool?) rethrows {
               try print(expression() ?? true)
             }
-            """
+            """,
         ),
         Example(
             """
@@ -84,14 +86,14 @@ enum AttributesRuleExamples {
               )
               static func foo(first: String) {}
             }
-            """
+            """,
         ),
         Example(
             """
             func refreshable(action: @escaping @Sendable () async -> Void) -> some View {
                 modifier(RefreshableModifier(action: action))
             }
-            """
+            """,
         ),
         Example(
             """
@@ -100,7 +102,7 @@ enum AttributesRuleExamples {
             @NSApplicationMain
             @MainActor
             final class AppDelegate: NSAppDelegate {}
-            """
+            """,
         ),
         Example(
             #"""
@@ -113,7 +115,7 @@ enum AttributesRuleExamples {
                 @Persisted(primaryKey: true) var id: Int
             }
             """#, configuration: ["attributes_with_arguments_always_on_line_above": false],
-            excludeFromDocumentation: true
+            excludeFromDocumentation: true,
         ),
     ]
 
@@ -159,7 +161,7 @@ enum AttributesRuleExamples {
                 )
                 var entities: FetchedResults
             }
-            """#, excludeFromDocumentation: true
+            """#, excludeFromDocumentation: true,
         ),
     ]
 }

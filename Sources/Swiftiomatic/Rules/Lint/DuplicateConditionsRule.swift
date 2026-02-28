@@ -16,7 +16,7 @@ struct DuplicateConditionsRule: Rule {
                 } else if y == "s" {
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -26,7 +26,7 @@ struct DuplicateConditionsRule: Rule {
                 if x < 5 {
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -35,7 +35,7 @@ struct DuplicateConditionsRule: Rule {
                 } else if x < 5 {
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -44,7 +44,7 @@ struct DuplicateConditionsRule: Rule {
                     foo()
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -54,7 +54,7 @@ struct DuplicateConditionsRule: Rule {
                 case \"a\" where y == "t":
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -63,7 +63,7 @@ struct DuplicateConditionsRule: Rule {
                 } else if let x = maybePqr {
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -72,7 +72,7 @@ struct DuplicateConditionsRule: Rule {
                 } else if let x = maybePqr, let z = x.maybeY {
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -81,14 +81,14 @@ struct DuplicateConditionsRule: Rule {
                 } else if case .q = x {
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 if true {
                     if true { foo() }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -101,7 +101,7 @@ struct DuplicateConditionsRule: Rule {
                 } else if ↓x < 5 {
                     baz()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -114,7 +114,7 @@ struct DuplicateConditionsRule: Rule {
                         baz()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -125,7 +125,7 @@ struct DuplicateConditionsRule: Rule {
                 } else if ↓y == "s", x < 5 {
                     baz()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -135,7 +135,7 @@ struct DuplicateConditionsRule: Rule {
                 case \"c\", ↓\"a\":
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -145,7 +145,7 @@ struct DuplicateConditionsRule: Rule {
                 case ↓\"a\" where y == "s":
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -154,7 +154,7 @@ struct DuplicateConditionsRule: Rule {
                 } else if ↓let xyz = maybeXyz {
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -163,7 +163,7 @@ struct DuplicateConditionsRule: Rule {
                 } else if ↓let x = maybeAbc, let z = x.maybeY {
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -172,7 +172,7 @@ struct DuplicateConditionsRule: Rule {
                 } else if ↓#available(macOS 10.15, *) {
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -181,16 +181,16 @@ struct DuplicateConditionsRule: Rule {
                 } else if ↓case .p = x {
                     bar()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 if ↓x < 5 {}
                 else if ↓x < 5 {}
                 else if ↓x < 5 {}
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

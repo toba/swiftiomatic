@@ -3,7 +3,7 @@ import SwiftSyntaxBuilder
 
 /// Visitor that collects violations when legacy functions are called.
 class LegacyFunctionVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxVisitor<
-    Configuration
+    Configuration,
 > {
     @usableFromInline let legacyFunctions: [String: LegacyFunctionRewriteStrategy]
 
@@ -17,7 +17,7 @@ class LegacyFunctionVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxV
     init(
         configuration: Configuration,
         file: SwiftLintFile,
-        legacyFunctions: [String: LegacyFunctionRewriteStrategy]
+        legacyFunctions: [String: LegacyFunctionRewriteStrategy],
     ) {
         self.legacyFunctions = legacyFunctions
         super.init(configuration: configuration, file: file)
@@ -43,16 +43,16 @@ enum LegacyFunctionRewriteStrategy: Sendable {
 
     fileprivate var expectedInitialArguments: Int {
         switch self {
-        case .equal: 2
-        case .property: 1
-        case .function(name: _, let argumentLabels, reversed: _): argumentLabels.count + 1
+            case .equal: 2
+            case .property: 1
+            case .function(name: _, let argumentLabels, reversed: _): argumentLabels.count + 1
         }
     }
 }
 
 /// Rewriter that corrects legacy function calls to their modern equivalents.
 class LegacyFunctionRewriter<Configuration: RuleConfiguration>: ViolationsSyntaxRewriter<
-    Configuration
+    Configuration,
 > {
     @usableFromInline let legacyFunctions: [String: LegacyFunctionRewriteStrategy]
 
@@ -66,7 +66,7 @@ class LegacyFunctionRewriter<Configuration: RuleConfiguration>: ViolationsSyntax
     init(
         configuration: Configuration,
         file: SwiftLintFile,
-        legacyFunctions: [String: LegacyFunctionRewriteStrategy]
+        legacyFunctions: [String: LegacyFunctionRewriteStrategy],
     ) {
         self.legacyFunctions = legacyFunctions
         super.init(configuration: configuration, file: file)
@@ -83,20 +83,20 @@ class LegacyFunctionRewriter<Configuration: RuleConfiguration>: ViolationsSyntax
         let rewriteStrategy = legacyFunctions[funcName]
         let expr: ExprSyntax
         switch rewriteStrategy {
-        case .equal:
-            expr = "\(trimmedArguments[0]) == \(trimmedArguments[1])"
-        case let .property(name: propertyName):
-            expr = "\(trimmedArguments[0]).\(raw: propertyName)"
-        case let .function(
-            name: functionName, argumentLabels: argumentLabels, reversed: reversed
+            case .equal:
+                expr = "\(trimmedArguments[0]) == \(trimmedArguments[1])"
+            case let .property(name: propertyName):
+                expr = "\(trimmedArguments[0]).\(raw: propertyName)"
+            case let .function(
+            name: functionName, argumentLabels: argumentLabels, reversed: reversed,
         ):
-            let arguments = reversed ? trimmedArguments.reversed() : trimmedArguments
-            let params = zip(argumentLabels, arguments.dropFirst())
-                .map { $0.isEmpty ? "\($1)" : "\($0): \($1)" }
-                .joined(separator: ", ")
-            expr = "\(arguments[0]).\(raw: functionName)(\(raw: params))"
-        case .none:
-            return super.visit(node)
+                let arguments = reversed ? trimmedArguments.reversed() : trimmedArguments
+                let params = zip(argumentLabels, arguments.dropFirst())
+                    .map { $0.isEmpty ? "\($1)" : "\($0): \($1)" }
+                    .joined(separator: ", ")
+                expr = "\(arguments[0]).\(raw: functionName)(\(raw: params))"
+            case .none:
+                return super.visit(node)
         }
 
         return
@@ -108,7 +108,7 @@ class LegacyFunctionRewriter<Configuration: RuleConfiguration>: ViolationsSyntax
 
 private extension FunctionCallExprSyntax {
     func isLegacyFunctionExpression(
-        legacyFunctions: [String: LegacyFunctionRewriteStrategy]
+        legacyFunctions: [String: LegacyFunctionRewriteStrategy],
     ) -> Bool {
         guard let calledExpression = calledExpression.as(DeclReferenceExprSyntax.self),
               let rewriteStrategy = legacyFunctions[calledExpression.baseName.text],

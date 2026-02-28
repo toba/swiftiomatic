@@ -8,19 +8,19 @@ enum SortedImportsRuleExamples {
             import BBB
             import CCC
             import DDD
-            """
+            """,
         ),
         Example(
             """
             import Alamofire
             import API
-            """
+            """,
         ),
         Example(
             """
             import labc
             import Ldef
-            """
+            """,
         ),
         Example(
             """
@@ -28,19 +28,19 @@ enum SortedImportsRuleExamples {
             import AAA
             import BBB
             import CCC
-            """
+            """,
         ),
         Example(
             """
             @testable import AAA
             import   CCC
-            """
+            """,
         ),
         Example(
             """
             import AAA
             @testable import   CCC
-            """
+            """,
         ),
         Example(
             """
@@ -55,7 +55,7 @@ enum SortedImportsRuleExamples {
             #endif
             import AAA
             import BBB
-            """
+            """,
         ),
         Example(
             """
@@ -66,7 +66,7 @@ enum SortedImportsRuleExamples {
 
             // some comment
             import FFF // a comment
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -78,38 +78,38 @@ enum SortedImportsRuleExamples {
             // some comment
             import AAA // a comment
             import NNN
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
             @testable import AAA
               @testable import BBB
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
             @testable import BBB
               import AAA
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
             @_exported import BBB
               @testable import AAA
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
             @_exported @testable import BBB
               import AAA
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
             @_exported @testable import BBB
               public import BBB
               import AAA
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -119,19 +119,19 @@ enum SortedImportsRuleExamples {
             fileprivate import CCC
             private import BBB
             import AAA
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
             @_exported @testable public import BBB
             @_exported @testable private import BBB
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
             @_exported public import BBB
             @_exported @testable import BBB
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
     ].skipMultiByteOffsetTests()
 
@@ -142,7 +142,7 @@ enum SortedImportsRuleExamples {
             import ZZZ
             import ↓BBB
             import CCC
-            """
+            """,
         ),
         Example(
             """
@@ -150,19 +150,19 @@ enum SortedImportsRuleExamples {
             // comment
             import ↓CCC
             import ↓AAA
-            """
+            """,
         ),
         Example(
             """
             @testable import CCC
             import   ↓AAA
-            """
+            """,
         ),
         Example(
             """
             import CCC
             @testable import   ↓AAA
-            """
+            """,
         ),
         Example(
             """
@@ -177,43 +177,43 @@ enum SortedImportsRuleExamples {
             #endif
             import AAA
             import BBB
-            """
+            """,
         ),
         Example(
             """
               @testable import BBB
             @testable import ↓AAA
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
               import AAA
             @testable import ↓BBB
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
               import BBB
             @testable import ↓AAA
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
               @testable import AAA
             @_exported import ↓BBB
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
               import AAA
             @_exported @testable import ↓BBB
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
               import AAA
               public import ↓BBB
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -223,7 +223,7 @@ enum SortedImportsRuleExamples {
               internal import ↓DDD
               package import ↓EEE
               public import ↓FFF
-            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true
+            """, configuration: groupByAttributesConfiguration, excludeFromDocumentation: true,
         ),
     ]
 
@@ -234,25 +234,25 @@ enum SortedImportsRuleExamples {
             import ZZZ
             import BBB
             import CCC
-            """, testMultiByteOffsets: false
+            """, testMultiByteOffsets: false,
         ): Example(
             """
             import AAA
             import BBB
             import CCC
             import ZZZ
-            """
+            """,
         ),
         Example(
             """
             import BBB // comment
             import AAA
-            """, testMultiByteOffsets: false
+            """, testMultiByteOffsets: false,
         ): Example(
             """
             import AAA
             import BBB // comment
-            """
+            """,
         ),
         Example(
             """
@@ -260,36 +260,36 @@ enum SortedImportsRuleExamples {
             // comment
             import CCC
             import AAA
-            """, testMultiByteOffsets: false
+            """, testMultiByteOffsets: false,
         ): Example(
             """
             import AAA
             import BBB
             // comment
             import CCC
-            """
+            """,
         ),
         Example(
             """
             @testable import CCC
             import  AAA
-            """, testMultiByteOffsets: false
+            """, testMultiByteOffsets: false,
         ): Example(
             """
             import  AAA
             @testable import CCC
-            """
+            """,
         ),
         Example(
             """
             import CCC
             @testable import  AAA
-            """, testMultiByteOffsets: false
+            """, testMultiByteOffsets: false,
         ): Example(
             """
             @testable import  AAA
             import CCC
-            """
+            """,
         ),
         Example(
             """
@@ -304,7 +304,7 @@ enum SortedImportsRuleExamples {
             #endif
             import AAA
             import BBB
-            """, testMultiByteOffsets: false
+            """, testMultiByteOffsets: false,
         ): Example(
             """
             import EEE.A
@@ -318,7 +318,7 @@ enum SortedImportsRuleExamples {
             #endif
             import AAA
             import BBB
-            """
+            """,
         ),
         Example(
             """
@@ -326,14 +326,14 @@ enum SortedImportsRuleExamples {
 
               import BBB
               import AAA
-            """
+            """,
         ): Example(
             """
               // comment
 
               import AAA
               import BBB
-            """
+            """,
         ),
         Example(
             """
@@ -344,7 +344,7 @@ enum SortedImportsRuleExamples {
 
             // some comment
             import FFF // a comment
-            """
+            """,
         ): Example(
             """
             // header
@@ -354,7 +354,7 @@ enum SortedImportsRuleExamples {
 
             // some comment
             import FFF // a comment
-            """
+            """,
         ),
         Example(
             """
@@ -364,7 +364,7 @@ enum SortedImportsRuleExamples {
             import BBB
             // another comment
             import AAA
-            """
+            """,
         ): Example(
             """
             // header
@@ -373,7 +373,7 @@ enum SortedImportsRuleExamples {
             import AAA
             // comment
             import BBB
-            """
+            """,
         ),
         Example(
             """
@@ -382,7 +382,7 @@ enum SortedImportsRuleExamples {
             import class CCC
             import BBB
             import LLL
-            """
+            """,
         ): Example(
             """
             // header
@@ -390,7 +390,7 @@ enum SortedImportsRuleExamples {
             import BBB
             import class CCC
             import LLL
-            """
+            """,
         ),
         Example(
             """
@@ -399,7 +399,7 @@ enum SortedImportsRuleExamples {
             import AAA
             import class CCC2.View
             import CCC1
-            """
+            """,
         ): Example(
             """
             // header
@@ -407,73 +407,73 @@ enum SortedImportsRuleExamples {
             import AAA
             import CCC1
             import class CCC2.View
-            """
+            """,
         ),
         Example(
             """
               @testable import BBB
             @testable import AAA
-            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false
+            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false,
         ): Example(
             """
             @testable import AAA
               @testable import BBB
-            """
+            """,
         ),
         Example(
             """
               import AAA
             @testable import BBB
-            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false
+            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false,
         ): Example(
             """
             @testable import BBB
               import AAA
-            """
+            """,
         ),
         Example(
             """
               import BBB
             @testable import AAA
-            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false
+            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false,
         ): Example(
             """
             @testable import AAA
               import BBB
-            """
+            """,
         ),
         Example(
             """
               @testable import AAA
             @_exported import BBB
-            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false
+            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false,
         ): Example(
             """
             @_exported import BBB
               @testable import AAA
-            """
+            """,
         ),
         Example(
             """
               import AAA
             @_exported @testable import BBB
-            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false
+            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false,
         ): Example(
             """
             @_exported @testable import BBB
               import AAA
-            """
+            """,
         ),
         Example(
             """
               public import AAA
             @_exported @testable import BBB
-            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false
+            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false,
         ): Example(
             """
             @_exported @testable import BBB
               public import AAA
-            """
+            """,
         ),
         Example(
             """
@@ -484,7 +484,7 @@ enum SortedImportsRuleExamples {
             package import EEE
             // A comment that needs to be shifted along with the import
             public import FFF
-            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false
+            """, configuration: groupByAttributesConfiguration, testMultiByteOffsets: false,
         ): Example(
             """
             // A comment that needs to be shifted along with the import
@@ -494,7 +494,7 @@ enum SortedImportsRuleExamples {
             fileprivate import CCC
             private import BBB
             import AAA
-            """
+            """,
         ),
     ]
 }

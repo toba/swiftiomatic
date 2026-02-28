@@ -13,7 +13,7 @@ final class AgentReviewCheck: BaseCheck {
                 category: .agentReview,
                 severity: .low,
                 message: ".absoluteString used — verify this isn't a file URL (use .path for file URLs)",
-                confidence: .low
+                confidence: .low,
             )
         }
 
@@ -30,7 +30,7 @@ final class AgentReviewCheck: BaseCheck {
                     category: .agentReview,
                     severity: .low,
                     message: ".absoluteString used — verify this isn't a file URL (use .path for file URLs)",
-                    confidence: .low
+                    confidence: .low,
                 )
             }
         }
@@ -44,7 +44,7 @@ final class AgentReviewCheck: BaseCheck {
         guard let inheritance = node.inheritanceClause else { return .visitChildren }
         let inheritedTypes = inheritance.inheritedTypes.map(\.type.trimmedDescription)
 
-        if inheritedTypes.contains("Error") && !inheritedTypes.contains("LocalizedError") {
+        if inheritedTypes.contains("Error"), !inheritedTypes.contains("LocalizedError") {
             addFinding(
                 at: node,
                 category: .agentReview,
@@ -52,7 +52,7 @@ final class AgentReviewCheck: BaseCheck {
                 message:
                 "Error enum '\(node.name.text)' doesn't conform to LocalizedError — verify if user-facing",
                 suggestion: "Add LocalizedError conformance with errorDescription",
-                confidence: .low
+                confidence: .low,
             )
         }
 
@@ -71,7 +71,7 @@ final class AgentReviewCheck: BaseCheck {
                 severity: .low,
                 message:
                 "nonisolated(unsafe) on '\(bindingName)' — verify the value is actually Sendable in Swift 6.2",
-                confidence: .low
+                confidence: .low,
             )
         }
 

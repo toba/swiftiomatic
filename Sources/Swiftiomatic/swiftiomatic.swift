@@ -1,5 +1,5 @@
-import ArgumentParser
 import Foundation
+import ArgumentParser
 
 @main
 struct SwiftiomaticCLI: AsyncParsableCommand {
@@ -7,7 +7,7 @@ struct SwiftiomaticCLI: AsyncParsableCommand {
         abstract: "AST-based Swift code analysis and formatting",
         version: "0.1.0",
         subcommands: [Scan.self, FormatCommand.self, Lint.self, ListRules.self],
-        defaultSubcommand: Scan.self
+        defaultSubcommand: Scan.self,
     )
 }
 
@@ -15,7 +15,7 @@ struct SwiftiomaticCLI: AsyncParsableCommand {
 
 struct Scan: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Run analysis checks on Swift source files"
+        abstract: "Run analysis checks on Swift source files",
     )
 
     @Argument(help: "Paths to scan (files or directories)")
@@ -46,7 +46,8 @@ struct Scan: AsyncParsableCommand {
     var projectRoot: String?
 
     @Option(
-        name: .long, parsing: .upToNextOption, help: "Explicit compiler arguments (with --sourcekit)"
+        name: .long, parsing: .upToNextOption,
+        help: "Explicit compiler arguments (with --sourcekit)",
     )
     var compilerArgs: [String] = []
 
@@ -58,7 +59,7 @@ struct Scan: AsyncParsableCommand {
                 Set(
                     category.compactMap { name in
                         Category.allCases.first { $0.rawValue == name }
-                    }
+                    },
                 )
             }
 
@@ -75,8 +76,8 @@ struct Scan: AsyncParsableCommand {
                     FileHandle.standardError.write(
                         Data(
                             "warning: --sourcekit: failed to discover compiler args from '\(root)'; falling back to syntax-only analysis\n"
-                                .utf8
-                        )
+                                .utf8,
+                        ),
                     )
                 }
             }
@@ -86,7 +87,7 @@ struct Scan: AsyncParsableCommand {
             categories: categories,
             minConfidence: minConfidence,
             minSeverity: minSeverity,
-            typeResolver: resolver
+            typeResolver: resolver,
         )
 
         let findings = await analyzer.analyze(paths: paths)
@@ -102,11 +103,11 @@ struct Scan: AsyncParsableCommand {
             print("Total: \(findings.count)")
         } else {
             switch format {
-            case .text:
-                print(TextFormatter.format(findings))
-            case .json:
-                let diagnostics = findings.map { $0.toDiagnostic() }
-                try print(DiagnosticFormatter.formatJSON(diagnostics))
+                case .text:
+                    print(TextFormatter.format(findings))
+                case .json:
+                    let diagnostics = findings.map { $0.toDiagnostic() }
+                    try print(DiagnosticFormatter.formatJSON(diagnostics))
             }
         }
 
@@ -122,7 +123,7 @@ struct ListRules: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "list-rules",
         abstract: "List available rules across all engines",
-        aliases: ["list-checks"]
+        aliases: ["list-checks"],
     )
 
     @Option(name: .long, help: "Filter by engine: suggest, lint, or format")
@@ -140,26 +141,26 @@ struct ListRules: ParsableCommand {
         }
 
         switch format {
-        case .text:
-            for entry in entries {
-                var flags: [String] = []
-                if entry.isDeprecated { flags.append("deprecated") }
-                if !entry.isEnabled { flags.append("disabled") }
-                if entry.canAutoFix { flags.append("autofix") }
-                if entry.isCrossFile { flags.append("cross-file") }
-                if entry.requiresSourceKit { flags.append("sourcekit") }
-                let suffix = flags.isEmpty ? "" : " (\(flags.joined(separator: ", ")))"
-                print("[\(entry.engine.rawValue)] \(entry.id) — \(entry.name)\(suffix)")
-            }
-            print("\nTotal: \(entries.count) rules")
-        case .json:
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            if let data = try? encoder.encode(entries),
-               let json = String(data: data, encoding: .utf8)
-            {
-                print(json)
-            }
+            case .text:
+                for entry in entries {
+                    var flags: [String] = []
+                    if entry.isDeprecated { flags.append("deprecated") }
+                    if !entry.isEnabled { flags.append("disabled") }
+                    if entry.canAutoFix { flags.append("autofix") }
+                    if entry.isCrossFile { flags.append("cross-file") }
+                    if entry.requiresSourceKit { flags.append("sourcekit") }
+                    let suffix = flags.isEmpty ? "" : " (\(flags.joined(separator: ", ")))"
+                    print("[\(entry.engine.rawValue)] \(entry.id) — \(entry.name)\(suffix)")
+                }
+                print("\nTotal: \(entries.count) rules")
+            case .json:
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+                if let data = try? encoder.encode(entries),
+                   let json = String(data: data, encoding: .utf8)
+                {
+                    print(json)
+                }
         }
     }
 }

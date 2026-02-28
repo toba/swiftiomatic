@@ -1,5 +1,5 @@
 typealias DiscouragedObjectLiteralConfiguration = ObjectLiteralConfiguration<
-    DiscouragedObjectLiteralRule
+    DiscouragedObjectLiteralRule,
 >
 
 struct ObjectLiteralConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration {

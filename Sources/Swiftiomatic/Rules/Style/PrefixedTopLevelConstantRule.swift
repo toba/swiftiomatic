@@ -19,7 +19,7 @@ struct PrefixedTopLevelConstantRule: Rule {
                 struct Foo {
                     let bar = 20.0
                 }
-                """
+                """,
             ),
             Example("private var foo = 20.0"),
             Example("public var foo = false"),
@@ -31,21 +31,21 @@ struct PrefixedTopLevelConstantRule: Rule {
                 """
                 let
                     kFoo = true
-                """
+                """,
             ),
             Example(
                 """
                 var foo: Int {
                     return a + b
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let kFoo = {
                     return a + b
                 }()
-                """
+                """,
             ),
             Example(
                 """
@@ -53,7 +53,7 @@ struct PrefixedTopLevelConstantRule: Rule {
                     let bar = ""
                     return bar
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -62,7 +62,7 @@ struct PrefixedTopLevelConstantRule: Rule {
                     print(result)
                     exit()
                 }
-                """
+                """,
             ),
             Example(
                 #"""
@@ -72,7 +72,7 @@ struct PrefixedTopLevelConstantRule: Rule {
                         print("\(number) is a small number")
                     }
                 }
-                """#
+                """#,
             ),
         ],
         triggeringExamples: [
@@ -85,16 +85,16 @@ struct PrefixedTopLevelConstantRule: Rule {
                 """
                 let
                     ↓foo = true
-                """
+                """,
             ),
             Example(
                 """
                 let ↓foo = {
                     return a + b
                 }()
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

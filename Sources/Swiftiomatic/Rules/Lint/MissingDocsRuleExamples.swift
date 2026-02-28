@@ -10,7 +10,7 @@ enum MissingDocsRuleExamples {
             }
             // no docs
             public class B: A { override public func b() {} }
-            """
+            """,
         ),
         // externally-defined superclass member is documented, but subclass member is not
         Example(
@@ -20,7 +20,7 @@ enum MissingDocsRuleExamples {
             public class B: NSObject {
             // no docs
             override public var description: String { fatalError() } }
-            """
+            """,
         ),
         Example(
             """
@@ -31,19 +31,19 @@ enum MissingDocsRuleExamples {
                 func f() {}
                 deinit {}
             }
-            """
+            """,
         ),
         Example(
             """
             public extension A {}
-            """
+            """,
         ),
         Example(
             """
             enum E {
                 case A
             }
-            """
+            """,
         ),
         Example(
             """
@@ -51,21 +51,21 @@ enum MissingDocsRuleExamples {
             public class A {
                 public init() {}
             }
-            """, configuration: ["excludes_trivial_init": true]
+            """, configuration: ["excludes_trivial_init": true],
         ),
         Example(
             """
             class C {
                 public func f() {}
             }
-            """, configuration: ["evaluate_effective_access_control_level": true]
+            """, configuration: ["evaluate_effective_access_control_level": true],
         ),
         Example(
             """
             public struct S: ~Copyable, P {
                 public init() {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -75,7 +75,7 @@ enum MissingDocsRuleExamples {
             #else
             public func f() async {}
             #endif
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -87,7 +87,7 @@ enum MissingDocsRuleExamples {
             #else
             public func f() async {}
             #endif
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
     ]
 
@@ -110,7 +110,7 @@ enum MissingDocsRuleExamples {
             public struct C: A {
                 public let b: Int
             }
-            """
+            """,
         ),
         // Violation marker is on `static` keyword.
         Example(
@@ -119,7 +119,7 @@ enum MissingDocsRuleExamples {
             public class C {
                 public static ↓let i = 1
             }
-            """
+            """,
         ),
         // `excludes_extensions` only excludes the extension declaration itself; not its children.
         Example(
@@ -141,7 +141,7 @@ enum MissingDocsRuleExamples {
                     func f() {}
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -152,7 +152,7 @@ enum MissingDocsRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -161,14 +161,14 @@ enum MissingDocsRuleExamples {
                     public static ↓let i = 1
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             extension E {
                 public ↓func f() {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -176,21 +176,21 @@ enum MissingDocsRuleExamples {
             public class A {
                 public ↓init(argument: String) {}
             }
-            """, configuration: ["excludes_trivial_init": true]
+            """, configuration: ["excludes_trivial_init": true],
         ),
         Example(
             """
             public ↓struct C: A {
                 public ↓let b: Int
             }
-            """, configuration: ["excludes_inherited_types": false]
+            """, configuration: ["excludes_inherited_types": false],
         ),
         Example(
             """
             public ↓extension A {
                 public ↓func f() {}
             }
-            """, configuration: ["excludes_extensions": false]
+            """, configuration: ["excludes_extensions": false],
         ),
         Example(
             """
@@ -201,14 +201,14 @@ enum MissingDocsRuleExamples {
                     return j
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             #if os(macOS)
             public ↓func f() {}
             #endif
-            """
+            """,
         ),
         Example(
             """
@@ -217,7 +217,7 @@ enum MissingDocsRuleExamples {
                 func f() {}
                 init(_ i: Int) { self = .A }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -228,7 +228,7 @@ enum MissingDocsRuleExamples {
                     init(_ i: Int) { self = .A }
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         // Nested types inherit the ACL from the declaring extension.
         Example(
@@ -240,7 +240,7 @@ enum MissingDocsRuleExamples {
                     ↓case A
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -250,21 +250,21 @@ enum MissingDocsRuleExamples {
                 }
                 static ↓var a: Int { 1 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
             class C {
                 public ↓func f() {}
             }
-            """, configuration: ["evaluate_effective_access_control_level": false]
+            """, configuration: ["evaluate_effective_access_control_level": false],
         ),
         Example(
             """
             public ↓struct S: ~Copyable, ~Escapable {
                 public ↓init() {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -273,7 +273,7 @@ enum MissingDocsRuleExamples {
             public func f() {}
             public ↓func g() {}
             #endif
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
     ]
 }

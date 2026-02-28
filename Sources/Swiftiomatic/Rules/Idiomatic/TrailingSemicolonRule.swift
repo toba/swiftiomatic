@@ -21,7 +21,7 @@ struct TrailingSemicolonRule: Rule {
             Example("let a = 0↓;\n"): Example("let a = 0\n"),
             Example("let a = 0↓;\nlet b = 1"): Example("let a = 0\nlet b = 1"),
             Example("let foo = 12↓;  // comment\n"): Example("let foo = 12  // comment\n"),
-        ]
+        ],
     )
 }
 

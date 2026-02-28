@@ -1,11 +1,3 @@
-//
-//  Wrap.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 11/17/19.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -16,12 +8,14 @@ extension FormatRule {
             "wrap-string-interpolation",
         ],
         sharedOptions: [
-            "wrap-arguments", "wrap-parameters", "wrap-collections", "closing-paren", "call-site-paren",
+            "wrap-arguments", "wrap-parameters", "wrap-collections", "closing-paren",
+            "call-site-paren",
             "indent",
-            "trim-whitespace", "linebreaks", "tab-width", "max-width", "smart-tabs", "wrap-return-type",
+            "trim-whitespace", "linebreaks", "tab-width", "max-width", "smart-tabs",
+            "wrap-return-type",
             "wrap-conditions", "wrap-type-aliases", "wrap-ternary", "wrap-effects",
             "allow-partial-wrapping",
-        ]
+        ],
     ) { formatter in
         let maxWidth = formatter.options.maxWidth
         guard maxWidth > 0 else { return }
@@ -29,7 +23,7 @@ extension FormatRule {
         // Wrap collections first to avoid conflict
         formatter.wrapCollectionsAndArguments(
             completePartialWrapping: false,
-            wrapSingleArguments: false
+            wrapSingleArguments: false,
         )
 
         // Wrap other line types
@@ -39,10 +33,10 @@ extension FormatRule {
 
         func isLinewrapToken(_ token: Token?) -> Bool {
             switch token {
-            case .delimiter, .operator(_, .infix):
-                return true
-            default:
-                return false
+                case .delimiter, .operator(_, .infix):
+                    return true
+                default:
+                    return false
             }
         }
 
@@ -73,7 +67,7 @@ extension FormatRule {
 
         formatter.wrapCollectionsAndArguments(
             completePartialWrapping: true,
-            wrapSingleArguments: true
+            wrapSingleArguments: true,
         )
     } examples: {
         nil

@@ -15,33 +15,33 @@ struct LetVarWhitespaceRule: Rule {
                 var x = 1
 
                 var y = 2
-                """
+                """,
             ),
             Example(
                 """
                 let a = 5
 
                 var x = 1
-                """
+                """,
             ),
             Example(
                 """
                 var a = 0
-                """
+                """,
             ),
             Example(
                 """
                 let a = 1 +
                     2
                 let b = 5
-                """
+                """,
             ),
             Example(
                 """
                 var x: Int {
                     return 0
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -50,7 +50,7 @@ struct LetVarWhitespaceRule: Rule {
 
                     return a
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -59,7 +59,7 @@ struct LetVarWhitespaceRule: Rule {
 
                 func f() {}
                 #endif
-                """
+                """,
             ),
             Example(
                 """
@@ -67,45 +67,45 @@ struct LetVarWhitespaceRule: Rule {
                 let a = 0
                 #warning("TODO: remove it")
                 let b = 0
-                """
+                """,
             ),
             Example(
                 """
                 #error("TODO: remove it")
                 let a = 0
-                """
+                """,
             ),
             Example(
                 """
                 @available(swift 4)
                 let a = 0
-                """
+                """,
             ),
             Example(
                 """
                 @objc
                 var s: String = ""
-                """
+                """,
             ),
             Example(
                 """
                 @objc
                 func a() {}
-                """
+                """,
             ),
             Example(
                 """
                 var x = 0
                 lazy
                 var y = 0
-                """
+                """,
             ),
             Example(
                 """
                 @available(OSX, introduced: 10.6)
                 @available(*, deprecated)
                 var x = 0
-                """
+                """,
             ),
             Example(
                 """
@@ -113,7 +113,7 @@ struct LetVarWhitespaceRule: Rule {
                 // swiftlint:disable force_cast
 
                 let x = bar as! Bar
-                """
+                """,
             ),
             Example(
                 """
@@ -123,7 +123,7 @@ struct LetVarWhitespaceRule: Rule {
 
                 @Attribute
                 func f() {}
-                """
+                """,
             ),
             // Don't trigger on local variable declarations.
             Example(
@@ -132,7 +132,7 @@ struct LetVarWhitespaceRule: Rule {
                     let a = 0
                     return a
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -142,7 +142,7 @@ struct LetVarWhitespaceRule: Rule {
                 }
 
                 func f() {}
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 #"""
@@ -155,33 +155,33 @@ struct LetVarWhitespaceRule: Rule {
                 var format = false
                 @Flag(help: "help")
                 var useAlternativeExcluding = false
-                """#, excludeFromDocumentation: true
+                """#, excludeFromDocumentation: true,
             ),
         ].map(Self.wrapIntoClass) + [
             Example(
                 """
                 a = 2
-                """
+                """,
             ),
             Example(
                 """
                 a = 2
 
                 var b = 3
-                """
+                """,
             ),
             Example(
                 """
                 #warning("message")
                 let a = 2
-                """
+                """,
             ),
             Example(
                 """
                 #if os(macOS)
                 let a = 2
                 #endif
-                """
+                """,
             ),
             // Don't trigger in closure bodies.
             Example(
@@ -190,7 +190,7 @@ struct LetVarWhitespaceRule: Rule {
                     let a = 1
                     return a
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -202,7 +202,7 @@ struct LetVarWhitespaceRule: Rule {
                     return 1
                     #endif
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -210,27 +210,27 @@ struct LetVarWhitespaceRule: Rule {
                 """
                 let a
                 ↓func x() {}
-                """
+                """,
             ),
             Example(
                 """
                 var x = 0
                 ↓@objc func f() {}
-                """
+                """,
             ),
             Example(
                 """
                 var x = 0
                 ↓@objc
                 func f() {}
-                """
+                """,
             ),
             Example(
                 """
                 @objc func f() {
                 }
                 ↓var x = 0
-                """
+                """,
             ),
             Example(
                 """
@@ -240,7 +240,7 @@ struct LetVarWhitespaceRule: Rule {
                 @Wapper
                 var isEnabled = true
                 ↓func g() {}
-                """
+                """,
             ),
             Example(
                 """
@@ -248,14 +248,14 @@ struct LetVarWhitespaceRule: Rule {
                 let a = 0
                 ↓func f() {}
                 #endif
-                """
+                """,
             ),
         ].map(Self.wrapIntoClass) + [
             Example(
                 """
                 let a = 2
                 ↓b = 1
-                """
+                """,
             ),
             Example(
                 """
@@ -266,9 +266,9 @@ struct LetVarWhitespaceRule: Rule {
                 func f() {}
                 ↓let a = 1
                 #endif
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
-        ]
+        ],
     )
 
     private static func wrapIntoClass(_ example: Example) -> Example {
@@ -298,7 +298,7 @@ private extension LetVarWhitespaceRule {
 
         private func collectViolations<List: SyntaxCollection>(
             from members: List,
-            using unwrap: (List.Element) -> any SyntaxProtocol
+            using unwrap: (List.Element) -> any SyntaxProtocol,
         ) {
             for member in members {
                 guard case let item = unwrap(member),
@@ -313,7 +313,8 @@ private extension LetVarWhitespaceRule {
                 else {
                     continue
                 }
-                if item.kind != nextItem.kind, item.kind == .variableDecl || nextItem.kind == .variableDecl,
+                if item.kind != nextItem.kind,
+                   item.kind == .variableDecl || nextItem.kind == .variableDecl,
                    !(item.trailingTrivia + nextItem.leadingTrivia).containsAtLeastTwoNewlines
                 {
                     violations.append(nextItem.positionAfterSkippingLeadingTrivia)
@@ -352,9 +353,9 @@ private extension Trivia {
 private extension CodeBlockItemSyntax {
     var unwrap: any SyntaxProtocol {
         switch item {
-        case let .decl(decl): decl
-        case let .stmt(stmt): stmt
-        case let .expr(expr): expr
+            case let .decl(decl): decl
+            case let .stmt(stmt): stmt
+            case let .expr(expr): expr
         }
     }
 }

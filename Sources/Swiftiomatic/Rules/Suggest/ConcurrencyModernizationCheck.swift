@@ -26,7 +26,7 @@ final class ConcurrencyModernizationCheck: BaseCheck {
                     severity: .medium,
                     message: "Function '\(node.name.text)' uses completion handler pattern",
                     suggestion: "Convert to async/await",
-                    confidence: .high
+                    confidence: .high,
                 )
                 break
             }
@@ -47,7 +47,7 @@ final class ConcurrencyModernizationCheck: BaseCheck {
                 severity: .medium,
                 message: "DispatchQueue.async can be replaced with structured concurrency",
                 suggestion: "Use Task { @MainActor in ... } or async function",
-                confidence: .medium
+                confidence: .medium,
             )
 
             if typeResolver?.isAvailable == true {
@@ -55,8 +55,8 @@ final class ConcurrencyModernizationCheck: BaseCheck {
                 dispatchQueries.append(
                     DispatchQueueQuery(
                         offset: node.calledExpression.positionAfterSkippingLeadingTrivia.utf8Offset,
-                        findingIndex: findingIdx
-                    )
+                        findingIndex: findingIdx,
+                    ),
                 )
             }
         }
@@ -69,7 +69,7 @@ final class ConcurrencyModernizationCheck: BaseCheck {
                 severity: .medium,
                 message: "DispatchGroup can be replaced with TaskGroup",
                 suggestion: "Use withTaskGroup or withThrowingTaskGroup",
-                confidence: .medium
+                confidence: .medium,
             )
         }
 
@@ -81,7 +81,7 @@ final class ConcurrencyModernizationCheck: BaseCheck {
                 severity: .medium,
                 message: "Lock-based synchronization can be replaced with Mutex",
                 suggestion: "Use Mutex<Value> for state protection",
-                confidence: .medium
+                confidence: .medium,
             )
         }
 
@@ -98,7 +98,7 @@ final class ConcurrencyModernizationCheck: BaseCheck {
                 severity: .medium,
                 message:
                 "Class '\(node.name.text)' uses @unchecked Sendable — check if Mutex would enable proper Sendable",
-                confidence: .low
+                confidence: .low,
             )
         }
         return .visitChildren
@@ -109,7 +109,8 @@ final class ConcurrencyModernizationCheck: BaseCheck {
 
         for query in dispatchQueries {
             guard query.findingIndex < findings.count else { continue }
-            guard let resolved = await resolver.resolveType(inFile: filePath, offset: query.offset) else {
+            guard let resolved = await resolver.resolveType(inFile: filePath, offset: query.offset)
+            else {
                 continue
             }
 
@@ -125,7 +126,7 @@ final class ConcurrencyModernizationCheck: BaseCheck {
                     column: findings[query.findingIndex].column,
                     message: findings[query.findingIndex].message,
                     suggestion: findings[query.findingIndex].suggestion,
-                    confidence: .high
+                    confidence: .high,
                 )
             }
         }

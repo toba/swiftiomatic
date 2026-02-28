@@ -1,18 +1,10 @@
-//
-//  RedundantNilInit.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 12/5/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Remove or insert  redundant `= nil` initialization for Optional properties
     static let redundantNilInit = FormatRule(
         help: "Remove/insert redundant `nil` default value (Optional vars are nil by default).",
-        options: ["nil-init"]
+        options: ["nil-init"],
     ) { formatter in
         let declarations = formatter.parseDeclarations()
         declarations.forEachRecursiveDeclaration { declaration in
@@ -52,34 +44,38 @@ extension FormatRule {
             }
 
             guard
-                let propertyDeclaration = formatter.parsePropertyDeclaration(atIntroducerIndex: varIndex),
+                let propertyDeclaration = formatter
+                .parsePropertyDeclaration(atIntroducerIndex: varIndex),
                 let type = propertyDeclaration.type,
                 type.isOptionalType
             else { return }
 
             switch formatter.options.nilInit {
-            case .remove:
-                // Remove `= nil` if it exists
-                if let valueInfo = propertyDeclaration.value,
-                   formatter.tokens[valueInfo.expressionRange] == [.identifier("nil")]
-                {
-                    // Remove from the space before = to the end of the value
-                    let startIndex =
-                        formatter.index(
-                            of: .nonSpaceOrCommentOrLinebreak, before: valueInfo.assignmentIndex,
-                            if: { !$0.isSpaceOrCommentOrLinebreak }
-                        ) ?? valueInfo.assignmentIndex - 1
-                    formatter.removeTokens(in: startIndex + 1 ... valueInfo.expressionRange.upperBound)
-                }
+                case .remove:
+                    // Remove `= nil` if it exists
+                    if let valueInfo = propertyDeclaration.value,
+                       formatter.tokens[valueInfo.expressionRange] == [.identifier("nil")]
+                    {
+                        // Remove from the space before = to the end of the value
+                        let startIndex =
+                            formatter.index(
+                                of: .nonSpaceOrCommentOrLinebreak,
+                                before: valueInfo.assignmentIndex,
+                                if: { !$0.isSpaceOrCommentOrLinebreak },
+                            ) ?? valueInfo.assignmentIndex - 1
+                        formatter
+                            .removeTokens(in: startIndex + 1 ... valueInfo.expressionRange
+                                .upperBound)
+                    }
 
-            case .insert:
-                // Insert `= nil` if it doesn't exist and this is a stored property
-                if propertyDeclaration.value == nil, declaration.isStoredProperty {
-                    let tokens: [Token] = [
-                        .space(" "), .operator("=", .infix), .space(" "), .identifier("nil"),
-                    ]
-                    formatter.insert(tokens, at: type.range.upperBound + 1)
-                }
+                case .insert:
+                    // Insert `= nil` if it doesn't exist and this is a stored property
+                    if propertyDeclaration.value == nil, declaration.isStoredProperty {
+                        let tokens: [Token] = [
+                            .space(" "), .operator("=", .infix), .space(" "), .identifier("nil"),
+                        ]
+                        formatter.insert(tokens, at: type.range.upperBound + 1)
+                    }
             }
         }
 

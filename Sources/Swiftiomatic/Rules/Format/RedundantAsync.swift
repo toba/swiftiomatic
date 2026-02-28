@@ -1,18 +1,10 @@
-//
-//  RedundantAsync.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 2025-09-18.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let redundantAsync = FormatRule(
         help:
         "Remove redundant `async` keyword from function declarations that don't contain any await expressions.",
-        options: ["redundant-async"]
+        options: ["redundant-async"],
     ) { formatter in
         let testFramework = formatter.detectTestingFramework()
         if formatter.options.redundantAsync == .testsOnly, testFramework == nil {

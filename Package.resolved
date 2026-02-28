@@ -1,15 +1,6 @@
 {
-  "originHash" : "87c4e19c6e29f0fdd40cc9848648b1defdaaffc38f7f05b3ec8a290de53bb636",
+  "originHash" : "9bc38c419314df934b9c46d443c765c05a78473dbff69ccd90e4d7f7e67a6f5b",
   "pins" : [
-    {
-      "identity" : "collectionconcurrencykit",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/JohnSundell/CollectionConcurrencyKit.git",
-      "state" : {
-        "revision" : "b4f23e24b5a1bff301efc5e70871083ca029ff95",
-        "version" : "0.2.0"
-      }
-    },
     {
       "identity" : "sourcekitten",
       "kind" : "remoteSourceControl",
@@ -29,30 +20,12 @@
       }
     },
     {
-      "identity" : "swift-filename-matcher",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ileitch/swift-filename-matcher",
-      "state" : {
-        "revision" : "eef5ac0b6b3cdc64b3039b037bed2def8a1edaeb",
-        "version" : "2.0.1"
-      }
-    },
-    {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax.git",
       "state" : {
         "revision" : "65b02a90ad2cc213e09309faeb7f6909e0a8577a",
         "version" : "604.0.0-prerelease-2026-01-20"
-      }
-    },
-    {
-      "identity" : "swiftytexttable",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/scottrhoyt/SwiftyTextTable.git",
-      "state" : {
-        "revision" : "c6df6cf533d120716bff38f8ff9885e1ce2a4ac3",
-        "version" : "0.9.0"
       }
     },
     {

@@ -10,8 +10,8 @@ struct IndentationWidthRule: OptInRule {
 
         func spacesEquivalent(indentationWidth: Int) -> Int {
             switch self {
-            case let .tabs(tabs): return tabs * indentationWidth
-            case let .spaces(spaces): return spaces
+                case let .tabs(tabs): return tabs * indentationWidth
+                case let .spaces(spaces): return spaces
             }
         }
     }
@@ -38,14 +38,16 @@ struct IndentationWidthRule: OptInRule {
             Example("firstLine\n        secondLine"),
             Example("firstLine\n\tsecondLine\n\n↓\t\t\tfourthLine"),
             Example("firstLine\n    secondLine\n        thirdLine\n↓ fourthLine"),
-        ].skipWrappingInCommentTests()
+        ].skipWrappingInCommentTests(),
     )
 
     // MARK: - Initializers
 
     // MARK: - Methods: Validation
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] { // swiftlint:disable:this function_body_length
+    func validate(file: SwiftLintFile)
+        -> [StyleViolation]
+    { // swiftlint:disable:this function_body_length
         var violations: [StyleViolation] = []
         var previousLineIndentations: [Indentation] = []
 
@@ -54,7 +56,7 @@ struct IndentationWidthRule: OptInRule {
 
             // Skip line if it's a whitespace-only line
             let indentationCharacterCount = line.content.countOfLeadingCharacters(
-                in: CharacterSet(charactersIn: " \t")
+                in: CharacterSet(charactersIn: " \t"),
             )
             if line.content.count == indentationCharacterCount { continue }
 
@@ -64,8 +66,8 @@ struct IndentationWidthRule: OptInRule {
 
             // Get space and tab count in prefix
             let prefix = String(line.content.prefix(indentationCharacterCount))
-            let tabCount = prefix.filter { $0 == "\t" }.count
-            let spaceCount = prefix.filter { $0 == " " }.count
+            let tabCount = prefix.count(where: { $0 == "\t" })
+            let spaceCount = prefix.count(where: { $0 == " " })
 
             // Determine indentation
             let indentation: Indentation
@@ -77,8 +79,9 @@ struct IndentationWidthRule: OptInRule {
                         severity: configuration.severityConfiguration.severity,
                         location: Location(file: file, characterOffset: line.range.location),
                         reason: "Code should be indented with tabs or "
-                            + "\(configuration.indentationWidth) spaces, but not both in the same line"
-                    )
+                            +
+                            "\(configuration.indentationWidth) spaces, but not both in the same line",
+                    ),
                 )
 
                 // Model this line's indentation using spaces (although it's tabs & spaces) to let parsing continue
@@ -100,8 +103,8 @@ struct IndentationWidthRule: OptInRule {
                             ruleDescription: Self.description,
                             severity: configuration.severityConfiguration.severity,
                             location: Location(file: file, characterOffset: line.range.location),
-                            reason: "The first line shall not be indented"
-                        )
+                            reason: "The first line shall not be indented",
+                        ),
                     )
                 }
 
@@ -116,7 +119,8 @@ struct IndentationWidthRule: OptInRule {
             if !linesValidationResult.contains(true) {
                 let isIndentation =
                     previousLineIndentations.last.map {
-                        indentation.spacesEquivalent(indentationWidth: configuration.indentationWidth)
+                        indentation
+                            .spacesEquivalent(indentationWidth: configuration.indentationWidth)
                             >= $0.spacesEquivalent(indentationWidth: configuration.indentationWidth)
                     } ?? true
 
@@ -128,8 +132,9 @@ struct IndentationWidthRule: OptInRule {
                         location: Location(file: file, characterOffset: line.range.location),
                         reason: isIndentation
                             ? "Code should be indented using one tab or \(indentWidth) spaces"
-                            : "Code should be unindented by multiples of one tab or multiples of \(indentWidth) spaces"
-                    )
+                            :
+                            "Code should be unindented by multiples of one tab or multiples of \(indentWidth) spaces",
+                    ),
                 )
             }
 
@@ -198,12 +203,14 @@ struct IndentationWidthRule: OptInRule {
     /// - parameter lastIndentation: The indentation of the previous line.
     ///
     /// - returns: Whether the specified indentation is valid.
-    private func validate(indentation: Indentation, comparingTo lastIndentation: Indentation) -> Bool {
+    private func validate(indentation: Indentation,
+                          comparingTo lastIndentation: Indentation) -> Bool
+    {
         let currentSpaceEquivalent = indentation.spacesEquivalent(
-            indentationWidth: configuration.indentationWidth
+            indentationWidth: configuration.indentationWidth,
         )
         let lastSpaceEquivalent = lastIndentation.spacesEquivalent(
-            indentationWidth: configuration.indentationWidth
+            indentationWidth: configuration.indentationWidth,
         )
 
         return
@@ -211,7 +218,7 @@ struct IndentationWidthRule: OptInRule {
             currentSpaceEquivalent == lastSpaceEquivalent + configuration.indentationWidth
             || ((lastSpaceEquivalent - currentSpaceEquivalent) >= 0
                 && (lastSpaceEquivalent - currentSpaceEquivalent).isMultiple(
-                    of: configuration.indentationWidth
+                    of: configuration.indentationWidth,
                 )) // Allow unindent if it stays in the grid
     }
 }
@@ -219,7 +226,7 @@ struct IndentationWidthRule: OptInRule {
 extension IndentationWidthRule {
     private static let _postMessage: Void = {
         Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
         ).print()
     }()
 

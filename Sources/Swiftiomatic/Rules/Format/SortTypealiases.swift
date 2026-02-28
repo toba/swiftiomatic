@@ -1,25 +1,18 @@
-//
-//  SortTypealiases.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 5/6/23.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let sortTypealiases = FormatRule(
         help: "Sort protocol composition typealiases alphabetically.",
-        sharedOptions: ["linebreaks"]
+        sharedOptions: ["linebreaks"],
     ) { formatter in
         formatter.forEach(.keyword("typealias")) { typealiasIndex, _ in
             guard
-                let (equalsIndex, andTokenIndices, endIndex) = formatter.parseProtocolCompositionTypealias(
-                    at: typealiasIndex
+                let (equalsIndex, andTokenIndices, endIndex) = formatter
+                .parseProtocolCompositionTypealias(
+                    at: typealiasIndex,
                 ),
                 let typealiasNameIndex = formatter.index(
-                    of: .nonSpaceOrCommentOrLinebreak, before: equalsIndex
+                    of: .nonSpaceOrCommentOrLinebreak, before: equalsIndex,
                 )
             else {
                 return
@@ -32,8 +25,9 @@ extension FormatRule {
             let delimiters = [equalsIndex] + andTokenIndices
             var parsedElements:
                 [(
-                    startIndex: Int, delimiterIndex: Int, endIndex: Int, type: String, allTokens: [Token],
-                    isDuplicate: Bool
+                    startIndex: Int, delimiterIndex: Int, endIndex: Int, type: String,
+                    allTokens: [Token],
+                    isDuplicate: Bool,
                 )] = []
 
             for delimiter in delimiters.indices {
@@ -51,11 +45,15 @@ extension FormatRule {
                 } else {
                     let nextDelimiterIndex = delimiters[delimiter + 1]
                     elementEndIndex =
-                        formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: nextDelimiterIndex)
-                            ?? (nextDelimiterIndex - 1)
+                        formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak,
+                            before: nextDelimiterIndex,
+                        )
+                        ?? (nextDelimiterIndex - 1)
 
                     let endOfLine = formatter.endOfLine(at: elementEndIndex)
-                    nextElementIsOnSameLine = formatter.endOfLine(at: nextDelimiterIndex) == endOfLine
+                    nextElementIsOnSameLine = formatter
+                        .endOfLine(at: nextDelimiterIndex) == endOfLine
                 }
 
                 // Handle comments in multiline typealiases
@@ -87,8 +85,8 @@ extension FormatRule {
                         endIndex: elementEndIndex,
                         type: typeName,
                         allTokens: tokens,
-                        isDuplicate: isDuplicate
-                    )
+                        isDuplicate: isDuplicate,
+                    ),
                 )
             }
 
@@ -122,23 +120,32 @@ extension FormatRule {
                 // Revalidate all of the delimiters after sorting
                 // (the first delimiter should be `=` and all others should be `&`
                 let delimiterIndexInTokens =
-                    sortedElements[elementIndex].delimiterIndex - sortedElements[elementIndex].startIndex
+                    sortedElements[elementIndex].delimiterIndex - sortedElements[elementIndex]
+                        .startIndex
 
                 if elementIndex == firstNonDuplicateIndex {
-                    sortedElements[elementIndex].allTokens[delimiterIndexInTokens] = .operator("=", .infix)
+                    sortedElements[elementIndex].allTokens[delimiterIndexInTokens] = .operator(
+                        "=",
+                        .infix,
+                    )
                 } else {
-                    sortedElements[elementIndex].allTokens[delimiterIndexInTokens] = .operator("&", .infix)
+                    sortedElements[elementIndex].allTokens[delimiterIndexInTokens] = .operator(
+                        "&",
+                        .infix,
+                    )
                 }
 
                 // Make sure there's always a linebreak after any comments, to prevent
                 // them from accidentally commenting out following elements of the typealias
                 if elementIndex != sortedElements.indices.last,
                    sortedElements[elementIndex].allTokens.last?.isComment == true,
-                   let nextToken = formatter.nextToken(after: parsedElements[elementIndex].endIndex),
+                   let nextToken = formatter
+                   .nextToken(after: parsedElements[elementIndex].endIndex),
                    !nextToken.isLinebreak
                 {
                     sortedElements[elementIndex].allTokens
-                        .append(formatter.linebreakToken(for: parsedElements[elementIndex].endIndex))
+                        .append(formatter
+                            .linebreakToken(for: parsedElements[elementIndex].endIndex))
                 }
 
                 // If this element starts with a comment, that's because the comment
@@ -147,12 +154,15 @@ extension FormatRule {
                 if elementIndex != sortedElements.indices.first,
                    sortedElements[elementIndex].allTokens.first?.isComment == true,
                    let previousToken = formatter.lastToken(
-                       before: parsedElements[elementIndex].startIndex, where: { !$0.isSpace }
+                       before: parsedElements[elementIndex].startIndex, where: { !$0.isSpace },
                    ),
                    !previousToken.isLinebreak
                 {
                     sortedElements[elementIndex].allTokens
-                        .insert(formatter.linebreakToken(for: parsedElements[elementIndex].startIndex), at: 0)
+                        .insert(
+                            formatter.linebreakToken(for: parsedElements[elementIndex].startIndex),
+                            at: 0,
+                        )
                 }
             }
 
@@ -161,14 +171,15 @@ extension FormatRule {
             for (originalElement, newElement) in zip(parsedElements, sortedElements).reversed() {
                 if newElement.isDuplicate,
                    let tokenBeforeElement = formatter.index(
-                       of: .nonSpaceOrLinebreak, before: originalElement.startIndex
+                       of: .nonSpaceOrLinebreak, before: originalElement.startIndex,
                    )
                 {
-                    formatter.removeTokens(in: (tokenBeforeElement + 1) ... originalElement.endIndex)
+                    formatter
+                        .removeTokens(in: (tokenBeforeElement + 1) ... originalElement.endIndex)
                 } else {
                     formatter.replaceTokens(
                         in: originalElement.startIndex ... originalElement.endIndex,
-                        with: newElement.allTokens
+                        with: newElement.allTokens,
                     )
                 }
             }
@@ -176,15 +187,25 @@ extension FormatRule {
             // If sorting moved an `any` keyword to a position other than the start of the
             // composition, move it back to the start. In `any Foo & Bar`, the `any` applies
             // to the entire composition and must remain at the beginning.
-            if let newEqualsIndex = formatter.index(of: .operator("=", .infix), after: typealiasIndex),
-               let startOfType = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: newEqualsIndex),
-               let (_, _, endOfComposition) = formatter.parseProtocolCompositionTypealias(
-                   at: typealiasIndex
-               ),
-               let firstAnd = formatter.index(of: .operator("&", .infix), after: newEqualsIndex),
-               let anyIndex = formatter.index(of: .identifier("any"), in: firstAnd ... endOfComposition)
+            if let newEqualsIndex = formatter.index(
+                of: .operator("=", .infix),
+                after: typealiasIndex,
+            ),
+                let startOfType = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak,
+                    after: newEqualsIndex,
+                ),
+                let (_, _, endOfComposition) = formatter.parseProtocolCompositionTypealias(
+                    at: typealiasIndex,
+                ),
+                let firstAnd = formatter.index(of: .operator("&", .infix), after: newEqualsIndex),
+                let anyIndex = formatter.index(
+                    of: .identifier("any"),
+                    in: firstAnd ... endOfComposition,
+                )
             {
-                let removeEnd = formatter.token(at: anyIndex + 1)?.isSpace == true ? anyIndex + 1 : anyIndex
+                let removeEnd = formatter.token(at: anyIndex + 1)?
+                    .isSpace == true ? anyIndex + 1 : anyIndex
                 formatter.removeTokens(in: anyIndex ... removeEnd)
                 formatter.insert([.identifier("any"), .space(" ")], at: startOfType)
             }

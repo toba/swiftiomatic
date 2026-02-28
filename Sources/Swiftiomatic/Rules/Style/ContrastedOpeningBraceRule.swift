@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct ContrastedOpeningBraceRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -19,7 +19,7 @@ struct ContrastedOpeningBraceRule: Rule {
         kind: .style,
         nonTriggeringExamples: ContrastedOpeningBraceRuleExamples.nonTriggeringExamples,
         triggeringExamples: ContrastedOpeningBraceRuleExamples.triggeringExamples,
-        corrections: ContrastedOpeningBraceRuleExamples.corrections
+        corrections: ContrastedOpeningBraceRuleExamples.corrections,
     )
 }
 
@@ -39,8 +39,8 @@ private extension ContrastedOpeningBraceRule {
                     ReasonedRuleViolation(
                         position: bracedItem.openingPosition,
                         reason: "Opening brace should be on a separate line",
-                        correction: correction
-                    )
+                        correction: correction,
+                    ),
                 )
             }
         }
@@ -67,12 +67,12 @@ private extension ContrastedOpeningBraceRule {
                 return nil
             }
             let comment = triviaBetween.description.trimmingTrailingCharacters(
-                in: .whitespacesAndNewlines
+                in: .whitespacesAndNewlines,
             )
             return .init(
                 start: previousToken.endPositionBeforeTrailingTrivia + SourceLength(of: comment),
                 end: openingPosition,
-                replacement: "\n" + String(repeating: " ", count: parentStartColumn - 1)
+                replacement: "\n" + String(repeating: " ", count: parentStartColumn - 1),
             )
         }
     }
@@ -91,7 +91,8 @@ private extension BracedSyntax {
             return ifExpr.indentationDecidingParent
         }
         if let binding = parent?.as(PatternBindingSyntax.self) {
-            return binding.parent?.as(PatternBindingListSyntax.self)?.parent?.as(VariableDeclSyntax.self)
+            return binding.parent?.as(PatternBindingListSyntax.self)?.parent?
+                .as(VariableDeclSyntax.self)
         }
         if let closure = `as`(ClosureExprSyntax.self),
            closure.keyPathInParent == \FunctionCallExprSyntax.trailingClosure
@@ -109,7 +110,9 @@ private extension TokenSyntax {
     var previousIndentationDecidingToken: TokenSyntax {
         var indentationDecidingToken = self
         repeat {
-            if let previousToken = indentationDecidingToken.previousToken(viewMode: .sourceAccurate) {
+            if let previousToken = indentationDecidingToken
+                .previousToken(viewMode: .sourceAccurate)
+            {
                 indentationDecidingToken = previousToken
             } else {
                 break

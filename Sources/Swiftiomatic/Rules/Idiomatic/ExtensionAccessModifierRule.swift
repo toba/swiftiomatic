@@ -14,7 +14,7 @@ struct ExtensionAccessModifierRule: Rule {
                 extension Foo: SomeProtocol {
                   public var bar: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -22,7 +22,7 @@ struct ExtensionAccessModifierRule: Rule {
                   private var bar: Int { return 1 }
                   public var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -30,7 +30,7 @@ struct ExtensionAccessModifierRule: Rule {
                   private var bar: Int { return 1 }
                   public func baz() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -38,7 +38,7 @@ struct ExtensionAccessModifierRule: Rule {
                   var bar: Int { return 1 }
                   var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -46,7 +46,7 @@ struct ExtensionAccessModifierRule: Rule {
                   var bar: Int { return 1 }
                   internal var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -54,7 +54,7 @@ struct ExtensionAccessModifierRule: Rule {
                   var bar: Int { return 1 }
                   var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -62,7 +62,7 @@ struct ExtensionAccessModifierRule: Rule {
                   var bar: Int { return 1 }
                   var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -70,7 +70,7 @@ struct ExtensionAccessModifierRule: Rule {
                   var bar: Int { return 1 }
                   internal var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -78,7 +78,7 @@ struct ExtensionAccessModifierRule: Rule {
                   private var bar: Int { return 1 }
                   private var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -86,7 +86,7 @@ struct ExtensionAccessModifierRule: Rule {
                   open var bar: Int { return 1 }
                   open var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -94,7 +94,7 @@ struct ExtensionAccessModifierRule: Rule {
                     func setup() {}
                     public func update() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -102,7 +102,7 @@ struct ExtensionAccessModifierRule: Rule {
                   private var bar: Int { return 1 }
                   var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -112,7 +112,7 @@ struct ExtensionAccessModifierRule: Rule {
                     set { Foo.shared.bar = newValue }
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -122,14 +122,14 @@ struct ExtensionAccessModifierRule: Rule {
                     set { Foo.shared.bar = newValue }
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 public extension Foo {
                   private(set) var value: Int { 1 }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -139,7 +139,7 @@ struct ExtensionAccessModifierRule: Rule {
                    public var bar: Int { return 1 }
                    public var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -147,7 +147,7 @@ struct ExtensionAccessModifierRule: Rule {
                    public var bar: Int { return 1 }
                    public func baz() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -155,7 +155,7 @@ struct ExtensionAccessModifierRule: Rule {
                   ↓public func bar() {}
                   ↓public func baz() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -167,7 +167,7 @@ struct ExtensionAccessModifierRule: Rule {
 
                    public var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -180,7 +180,7 @@ struct ExtensionAccessModifierRule: Rule {
                         return uniqueValues
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -194,7 +194,7 @@ struct ExtensionAccessModifierRule: Rule {
 
                    public var baz: Int { return 1 }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -202,16 +202,16 @@ struct ExtensionAccessModifierRule: Rule {
                   ↓private func bar() {}
                   ↓private func baz() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
                 ↓extension Foo {
                   private(set) public var value: Int { 1 }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -230,10 +230,10 @@ extension ExtensionAccessModifierRule {
 
         static func from(tokenKind: TokenKind?) -> Self {
             switch tokenKind {
-            case nil:
-                return .implicit
-            case let value?:
-                return .explicit(value)
+                case nil:
+                    return .implicit
+                case let value?:
+                    return .explicit(value)
             }
         }
 
@@ -275,7 +275,8 @@ extension ExtensionAccessModifierRule {
             }
 
             let isAllowedACL = ACL.isAllowed(lastACL.acl)
-            let extensionACL = ACL.from(tokenKind: node.modifiers.accessLevelModifier?.name.tokenKind)
+            let extensionACL = ACL
+                .from(tokenKind: node.modifiers.accessLevelModifier?.name.tokenKind)
 
             if extensionACL != .implicit {
                 if !isAllowedACL || lastACL.acl != extensionACL, lastACL.acl != .implicit {
@@ -294,10 +295,10 @@ private extension MemberBlockSyntax {
             if let ifConfig = member.decl.as(IfConfigDeclSyntax.self) {
                 return ifConfig.clauses.flatMap { clause in
                     switch clause.elements {
-                    case let .decls(decls):
-                        return decls.map(\.decl)
-                    default:
-                        return []
+                        case let .decls(decls):
+                            return decls.map(\.decl)
+                        default:
+                            return []
                     }
                 }
             }

@@ -1,18 +1,10 @@
-//
-//  EmptyExtensions.swift
-//  SwiftFormat
-//
-//  Created by Manny Lopez on 7/30/24.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Remove empty, non-conforming, extensions.
     static let emptyExtensions = FormatRule(
         help: "Remove empty, non-protocol-conforming extensions.",
-        orderAfter: [.unusedPrivateDeclarations]
+        orderAfter: [.unusedPrivateDeclarations],
     ) { formatter in
         var emptyExtensions = [TypeDeclaration]()
 

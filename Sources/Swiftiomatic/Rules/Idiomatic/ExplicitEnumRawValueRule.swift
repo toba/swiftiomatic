@@ -15,7 +15,7 @@ struct ExplicitEnumRawValueRule: Rule {
                   case int(Int)
                   case short(Int16)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -23,7 +23,7 @@ struct ExplicitEnumRawValueRule: Rule {
                   case one = 1
                   case two = 2
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -31,7 +31,7 @@ struct ExplicitEnumRawValueRule: Rule {
                   case one = 1.1
                   case two = 2.2
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -39,7 +39,7 @@ struct ExplicitEnumRawValueRule: Rule {
                   case one = "one"
                   case two = "two"
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -47,7 +47,7 @@ struct ExplicitEnumRawValueRule: Rule {
                 enum Numbers: Algebra {
                   case one
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -56,14 +56,14 @@ struct ExplicitEnumRawValueRule: Rule {
                 enum Numbers: Int {
                   case one = 10, ↓two, three = 30
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum Numbers: NSInteger {
                   case ↓one
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -71,21 +71,21 @@ struct ExplicitEnumRawValueRule: Rule {
                   case ↓one
                   case ↓two
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum Numbers: String {
                    case ↓one, two = "two"
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum Numbers: Decimal {
                   case ↓one, ↓two
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -94,9 +94,9 @@ struct ExplicitEnumRawValueRule: Rule {
                       case ↓one, ↓two
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

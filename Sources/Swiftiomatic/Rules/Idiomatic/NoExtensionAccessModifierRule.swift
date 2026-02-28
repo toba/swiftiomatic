@@ -19,7 +19,7 @@ struct NoExtensionAccessModifierRule: Rule {
             Example("↓open extension String {}"),
             Example("↓internal extension String {}"),
             Example("↓fileprivate extension String {}"),
-        ]
+        ],
     )
 }
 

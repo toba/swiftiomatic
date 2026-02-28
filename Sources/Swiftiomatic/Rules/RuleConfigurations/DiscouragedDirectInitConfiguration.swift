@@ -4,7 +4,7 @@ struct DiscouragedDirectInitConfiguration: SeverityBasedRuleConfiguration {
 
     @ConfigurationElement(
         key: "types",
-        postprocessor: { $0.formUnion($0.map { name in "\(name).init" }) }
+        postprocessor: { $0.formUnion($0.map { name in "\(name).init" }) },
     )
     private(set) var discouragedInits: Set = [
         "Bundle",

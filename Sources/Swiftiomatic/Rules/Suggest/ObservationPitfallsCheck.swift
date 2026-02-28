@@ -15,7 +15,7 @@ final class ObservationPitfallsCheck: BaseCheck {
                 message:
                 "withObservationTracking with recursive onChange — consider Observations AsyncSequence",
                 suggestion: "Replace with `for await value in Observations { ... }`",
-                confidence: .medium
+                confidence: .medium,
             )
         }
 
@@ -46,7 +46,7 @@ final class ObservationPitfallsCheck: BaseCheck {
                     severity: .high,
                     message: "Observations closure missing [weak self] — may cause retain cycle",
                     suggestion: "Add [weak self] to the Observations closure",
-                    confidence: .medium
+                    confidence: .medium,
                 )
             }
         }

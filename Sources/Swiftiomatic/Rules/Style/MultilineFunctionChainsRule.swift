@@ -11,13 +11,13 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
         kind: .style,
         nonTriggeringExamples: [
             Example(
-                "let evenSquaresSum = [20, 17, 35, 4].filter { $0 % 2 == 0 }.map { $0 * $0 }.reduce(0, +)"
+                "let evenSquaresSum = [20, 17, 35, 4].filter { $0 % 2 == 0 }.map { $0 * $0 }.reduce(0, +)",
             ),
             Example(
                 """
                 let evenSquaresSum = [20, 17, 35, 4]
                     .filter { $0 % 2 == 0 }.map { $0 * $0 }.reduce(0, +)",
-                """
+                """,
             ),
             Example(
                 """
@@ -27,7 +27,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
                         print(blah)
                     }
                     .d()
-                """
+                """,
             ),
             Example(
                 """
@@ -36,14 +36,14 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
                         print(blah)
                     }
                     .d()
-                """
+                """,
             ),
             Example(
                 """
                 let chain = a.b(1, 2, 3)
                     .c { blah in print(blah) }
                     .d()
-                """
+                """,
             ),
             Example(
                 """
@@ -53,7 +53,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
                         b, 2,
                         c, 3))
                     .d()
-                """
+                """,
             ),
             Example(
                 """
@@ -68,14 +68,16 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
                      )
                     )
                   }
-                """
+                """,
             ),
-            Example("let remainingIDs = Array(Set(self.currentIDs).subtracting(Set(response.ids)))"),
+            Example(
+                "let remainingIDs = Array(Set(self.currentIDs).subtracting(Set(response.ids)))",
+            ),
             Example(
                 """
                 self.happeningNewsletterOn = self.updateCurrentUser
                     .map { $0.newsletters.happening }.skipNil().skipRepeats()
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -84,7 +86,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
                 let evenSquaresSum = [20, 17, 35, 4]
                     .filter { $0 % 2 == 0 }↓.map { $0 * $0 }
                     .reduce(0, +)
-                """
+                """,
             ),
             Example(
                 """
@@ -92,13 +94,13 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
                     .c { blah in
                         print(blah)
                     }↓.d()
-                """
+                """,
             ),
             Example(
                 """
                 let evenSquaresSum = a.b(1, 2, 3)
                     .c(2, 3, 4)↓.d()
-                """
+                """,
             ),
             Example(
                 """
@@ -106,28 +108,28 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
                         print(blah)
                     }
                     .d()
-                """
+                """,
             ),
             Example(
                 """
                 a.b {
                 //  ““
                 }↓.e()
-                """
+                """,
             ),
-        ]
+        ],
     )
 
     func validate(
         file: SwiftLintFile,
         kind: SwiftExpressionKind,
-        dictionary: SourceKittenDictionary
+        dictionary: SourceKittenDictionary,
     ) -> [StyleViolation] {
         violatingOffsets(file: file, kind: kind, dictionary: dictionary).map { offset in
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: offset)
+                location: Location(file: file, characterOffset: offset),
             )
         }
     }
@@ -135,11 +137,15 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     private func violatingOffsets(
         file: SwiftLintFile,
         kind: SwiftExpressionKind,
-        dictionary: SourceKittenDictionary
+        dictionary: SourceKittenDictionary,
     ) -> [Int] {
         let ranges = callRanges(file: file, kind: kind, dictionary: dictionary)
 
-        let calls = ranges.compactMap { range -> (dotLine: Int, dotOffset: Int, range: ByteRange)? in
+        let calls = ranges.compactMap { range -> (
+            dotLine: Int,
+            dotOffset: Int,
+            range: ByteRange
+        )? in
             guard let offset = callDotOffset(file: file, callRange: range),
                   let line = file.stringView.lineAndCharacter(forCharacterOffset: offset)?.line
             else {
@@ -191,7 +197,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
         file: SwiftLintFile,
         kind: SwiftExpressionKind,
         dictionary: SourceKittenDictionary,
-        parentCallName: String? = nil
+        parentCallName: String? = nil,
     ) -> [ByteRange] {
         guard
             kind == .call,
@@ -213,12 +219,22 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
         return subcalls.flatMap { call -> [ByteRange] in
             // Bail out early if there's no subcall, since this means there's no chain.
             guard
-                let range = subcallRange(file: file, call: call, parentName: name, parentNameOffset: offset)
+                let range = subcallRange(
+                    file: file,
+                    call: call,
+                    parentName: name,
+                    parentNameOffset: offset,
+                )
             else {
                 return []
             }
 
-            return [range] + callRanges(file: file, kind: .call, dictionary: call, parentCallName: name)
+            return [range] + callRanges(
+                file: file,
+                kind: .call,
+                dictionary: call,
+                parentCallName: name,
+            )
         }
     }
 
@@ -226,7 +242,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
         file: SwiftLintFile,
         call: SourceKittenDictionary,
         parentName: String,
-        parentNameOffset: ByteCount
+        parentNameOffset: ByteCount,
     ) -> ByteRange? {
         guard case let contents = file.stringView,
               let nameOffset = call.nameOffset,
@@ -247,7 +263,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
 
         return ByteRange(
             location: nameEndOffset + offsetDifference + bodyLength,
-            length: nameLengthDifference - bodyLength - offsetDifference
+            length: nameLengthDifference - bodyLength - offsetDifference,
         )
     }
 }
@@ -266,7 +282,7 @@ private extension SourceKittenDictionary {
 extension MultilineFunctionChainsRule {
     private static let _postMessage: Void = {
         Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
         ).print()
     }()
 

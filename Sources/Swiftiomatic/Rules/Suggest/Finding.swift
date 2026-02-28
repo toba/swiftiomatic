@@ -17,7 +17,7 @@ struct Finding: Codable, Sendable, Comparable {
         column: Int,
         message: String,
         suggestion: String? = nil,
-        confidence: Confidence
+        confidence: Confidence,
     ) {
         self.category = category
         self.severity = severity
@@ -49,7 +49,7 @@ struct Finding: Codable, Sendable, Comparable {
             column: column,
             message: message,
             suggestion: suggestion,
-            canAutoFix: false
+            canAutoFix: false,
         )
     }
 }

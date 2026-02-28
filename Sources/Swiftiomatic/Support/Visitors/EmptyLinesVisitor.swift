@@ -36,13 +36,15 @@ final class EmptyLinesVisitor: SyntaxVisitor {
 
         // Mark lines with actual code tokens (not comments).
         if token.tokenKind != .endOfFile {
-            let tokenLine = locationConverter.location(for: token.positionAfterSkippingLeadingTrivia).line
+            let tokenLine = locationConverter
+                .location(for: token.positionAfterSkippingLeadingTrivia).line
             linesWithContent.insert(tokenLine)
             lastLine = max(lastLine, tokenLine)
         } else {
             // For EOF token, we only update lastLine based on its position if there's actual content
             // EOF on line 1 with no preceding content means the file is empty.
-            let eofLine = locationConverter.location(for: token.positionAfterSkippingLeadingTrivia).line
+            let eofLine = locationConverter.location(for: token.positionAfterSkippingLeadingTrivia)
+                .line
             if eofLine > 1 || !linesWithContent.isEmpty {
                 lastLine = max(lastLine, eofLine - 1) // Don't count the EOF line itself.
             }
@@ -60,20 +62,22 @@ final class EmptyLinesVisitor: SyntaxVisitor {
             currentPosition -= piece.sourceLength
 
             switch piece {
-            case .lineComment, .blockComment, .docLineComment, .docBlockComment:
-                // Collect all lines that this comment spans.
-                let commentStartLine = locationConverter.location(for: currentPosition).line
-                let commentEndLine = locationConverter.location(for: currentPosition + piece.sourceLength)
-                    .line
-                linesWithContent.formUnion(commentStartLine ... commentEndLine)
-                lastLine = max(lastLine, commentEndLine)
-            case .newlines:
-                // Track the last line even for newlines
-                let newlineEndLine = locationConverter.location(for: currentPosition + piece.sourceLength)
-                    .line
-                lastLine = max(lastLine, newlineEndLine)
-            default:
-                break
+                case .lineComment, .blockComment, .docLineComment, .docBlockComment:
+                    // Collect all lines that this comment spans.
+                    let commentStartLine = locationConverter.location(for: currentPosition).line
+                    let commentEndLine = locationConverter
+                        .location(for: currentPosition + piece.sourceLength)
+                        .line
+                    linesWithContent.formUnion(commentStartLine ... commentEndLine)
+                    lastLine = max(lastLine, commentEndLine)
+                case .newlines:
+                    // Track the last line even for newlines
+                    let newlineEndLine = locationConverter
+                        .location(for: currentPosition + piece.sourceLength)
+                        .line
+                    lastLine = max(lastLine, newlineEndLine)
+                default:
+                    break
             }
         }
     }

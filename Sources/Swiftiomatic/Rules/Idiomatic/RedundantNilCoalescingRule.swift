@@ -18,7 +18,7 @@ struct RedundantNilCoalescingRule: Rule {
         corrections: [
             Example("var myVar: Int? = nil; let foo = myVar ↓?? nil"):
                 Example("var myVar: Int? = nil; let foo = myVar"),
-        ]
+        ],
     )
 }
 
@@ -51,7 +51,8 @@ private extension RedundantNilCoalescingRule {
                 node.count > 2,
                 let lastExpression = node.last,
                 lastExpression.is(NilLiteralExprSyntax.self),
-                let secondToLastExpression = node.dropLast().last?.as(BinaryOperatorExprSyntax.self),
+                let secondToLastExpression = node.dropLast().last?
+                .as(BinaryOperatorExprSyntax.self),
                 secondToLastExpression.operator.tokenKind.isNilCoalescingOperator
             else {
                 return super.visit(node)

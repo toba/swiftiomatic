@@ -1,4 +1,3 @@
-import FilenameMatcher
 import Foundation
 import SourceKittenFramework
 
@@ -26,7 +25,7 @@ enum Glob {
             .map { $0.absolutePathStandardized() }
     }
 
-    static func createFilenameMatchers(root: String, pattern: String) -> [FilenameMatcher] {
+    static func createGlobPatterns(root: String, pattern: String) -> [String] {
         var absolutPathPattern = pattern
         if !pattern.starts(with: root) {
             // If the root is not already part of the pattern, prepend it.
@@ -35,17 +34,17 @@ enum Glob {
         absolutPathPattern = absolutPathPattern.absolutePathStandardized()
         if pattern.hasSuffix(".swift") || pattern.hasSuffix("/**") {
             // Suffix is already well defined.
-            return [FilenameMatcher(pattern: absolutPathPattern)]
+            return [absolutPathPattern]
         }
         if pattern.hasSuffix("/") {
             // Matching all files in the folder.
-            return [FilenameMatcher(pattern: absolutPathPattern + "**")]
+            return [absolutPathPattern + "**"]
         }
         // The pattern could match files in the last folder in the path or all contained files if the last component
         // represents folders.
         return [
-            FilenameMatcher(pattern: absolutPathPattern),
-            FilenameMatcher(pattern: absolutPathPattern + "/**"),
+            absolutPathPattern,
+            absolutPathPattern + "/**",
         ]
     }
 
@@ -64,11 +63,12 @@ enum Glob {
         let searchPath = firstPart.isEmpty ? fileManager.currentDirectoryPath : firstPart
         var directories = [String]()
         do {
-            directories = try fileManager.subpathsOfDirectory(atPath: searchPath).compactMap { subpath in
-                let fullPath = firstPart.bridge().appendingPathComponent(subpath)
-                guard isDirectory(path: fullPath) else { return nil }
-                return fullPath
-            }
+            directories = try fileManager.subpathsOfDirectory(atPath: searchPath)
+                .compactMap { subpath in
+                    let fullPath = firstPart.bridge().appendingPathComponent(subpath)
+                    guard isDirectory(path: fullPath) else { return nil }
+                    return fullPath
+                }
         } catch {
             Issue.genericWarning("Error parsing file system item: \(error)").print()
         }
@@ -101,7 +101,10 @@ enum Glob {
 
     private static func isDirectory(path: String) -> Bool {
         var isDirectoryBool = ObjCBool(false)
-        let isDirectory = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectoryBool)
+        let isDirectory = FileManager.default.fileExists(
+            atPath: path,
+            isDirectory: &isDirectoryBool,
+        )
         return isDirectory && isDirectoryBool.boolValue
     }
 

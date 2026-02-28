@@ -5,7 +5,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
             class C {
                 static let primes = [2, 3, 5, 7]
                 func isPrime(i: Int) -> Bool { Self.primes.contains(i) }
-            """
+            """,
         ),
         Example(
             """
@@ -19,7 +19,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 static let j = S.i + T.i
                 static let k = { T.j }()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -27,7 +27,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 static let i = 0
                 func f() -> Int { Self.i }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -38,7 +38,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 var n: Int = C.k { didSet { m += 1 } }
                 @GreaterThan(C.j) var m: Int
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -54,7 +54,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 static let j = Self.T.R.i + Self.R.j
                 let h = Self.T.R.i + Self.R.j
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -66,14 +66,14 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 }
                 func g() -> Any { C.self }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
             struct Record<T> {
                 static func get() -> Record<T> { Record<T>() }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -81,7 +81,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 @objc var s = ""
                 @objc func f() { _ = #keyPath(C.s) }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -90,13 +90,13 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 let c: C = C()
                 func f(c: C) -> KeyPath<C, Int> { \\Self.i }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
             class C1<T> {}
             class C2: C1<C2> {}
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -104,7 +104,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
             class C2: C1<C2.C3> {
                 class C3 {}
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -114,7 +114,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                     class C4 {}
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -125,7 +125,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                     let s2 = S1<S1>()
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
     ]
 
@@ -141,7 +141,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
 
                 @objc func check(_ button: AnyObject?) {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -152,7 +152,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                     return ii
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -162,7 +162,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                     _ = [Int: ↓C]()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -175,7 +175,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 func i() -> KeyPath<↓S, Int> { \\↓S.j }
                 func j(@Wrap(-↓S.i, ↓S.i) n: Int = ↓S.i) {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -188,7 +188,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 }
                 static let h = ↓S.T.i + ↓S.R.j
             }
-            """
+            """,
         ),
         Example(
             """
@@ -197,7 +197,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 static func f() -> ↓E { ↓E.A }
                 static func g() -> ↓E { ↓E.f() }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -215,7 +215,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                     }
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -255,7 +255,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 }
                 func g(a: [↓S]) -> [↓S] { a }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -265,7 +265,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                     child = (input as! T).child
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
     ]
 
@@ -281,7 +281,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
 
                 @objc func check(_ button: AnyObject?) {}
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -294,7 +294,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
 
                     @objc func check(_ button: AnyObject?) {}
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -305,7 +305,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 static func f(_ l: Int = ↓S.i) -> Int { l*↓S.j }
                 func g() { ↓S.i + ↓S.f() + k }
             }
-            """
+            """,
         ): Example(
             """
             struct S {
@@ -315,7 +315,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 static func f(_ l: Int = Self.i) -> Int { l*Self.j }
                 func g() { Self.i + Self.f() + k }
             }
-            """
+            """,
         ),
     ]
 }

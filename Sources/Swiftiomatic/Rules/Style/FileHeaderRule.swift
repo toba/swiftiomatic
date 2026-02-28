@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct FileHeaderRule: Rule {
     var configuration = FileHeaderConfiguration()
@@ -29,9 +29,9 @@ struct FileHeaderRule: Rule {
                 //  Created by Marcelo Fabri on 27/11/16.
                 //  ↓Copyright © 2016 Realm. All rights reserved.
                 //
-                """
+                """,
             ),
-        ].skipWrappingInCommentTests()
+        ].skipWrappingInCommentTests(),
     )
 }
 
@@ -61,8 +61,8 @@ private extension FileHeaderRule {
                     violations.append(
                         ReasonedRuleViolation(
                             position: violationPosition,
-                            reason: requiredReason()
-                        )
+                            reason: requiredReason(),
+                        ),
                     )
                 }
                 return .skipChildren
@@ -81,7 +81,7 @@ private extension FileHeaderRule {
         }
 
         private func collectHeaderComments(
-            from node: SourceFileSyntax
+            from node: SourceFileSyntax,
         ) -> (start: AbsolutePosition, end: AbsolutePosition)? {
             var firstHeaderCommentStart: AbsolutePosition?
             var lastHeaderCommentEnd: AbsolutePosition?
@@ -103,7 +103,7 @@ private extension FileHeaderRule {
                     token.leadingTrivia,
                     startingAt: &currentPosition,
                     firstStart: &firstHeaderCommentStart,
-                    lastEnd: &lastHeaderCommentEnd
+                    lastEnd: &lastHeaderCommentEnd,
                 )
 
                 if triviaResult.foundNonComment || token.tokenKind != .endOfFile {
@@ -119,7 +119,7 @@ private extension FileHeaderRule {
                         token.trailingTrivia,
                         startingAt: &currentPosition,
                         firstStart: &firstHeaderCommentStart,
-                        lastEnd: &lastHeaderCommentEnd
+                        lastEnd: &lastHeaderCommentEnd,
                     )
                 }
             }
@@ -138,7 +138,7 @@ private extension FileHeaderRule {
             _ trivia: Trivia,
             startingAt currentPosition: inout AbsolutePosition,
             firstStart: inout AbsolutePosition?,
-            lastEnd: inout AbsolutePosition?
+            lastEnd: inout AbsolutePosition?,
         ) -> ProcessTriviaResult {
             for piece in trivia {
                 let pieceStart = currentPosition
@@ -160,58 +160,57 @@ private extension FileHeaderRule {
             return ProcessTriviaResult(foundNonComment: false)
         }
 
-        private func extractHeaderContent(from range: (start: AbsolutePosition, end: AbsolutePosition))
+        private func extractHeaderContent(from range: (
+            start: AbsolutePosition,
+            end: AbsolutePosition,
+        ))
             -> String?
         {
             let headerByteRange = ByteRange(
                 location: ByteCount(range.start.utf8Offset),
-                length: ByteCount(range.end.utf8Offset - range.start.utf8Offset)
+                length: ByteCount(range.end.utf8Offset - range.start.utf8Offset),
             )
 
             return file.stringView.substringWithByteRange(headerByteRange)
-                .map { $0 + "\n" } // Ensure there's a newline at the end since YAML will always add it to the regex
+                .map {
+                    $0 +
+                        "\n"
+                } // Ensure there's a newline at the end since YAML will always add it to the regex
             // when a `|` block is used to define the pattern.
         }
 
         private func checkForbiddenPattern(
-            in headerContent: String, startingAt headerStart: AbsolutePosition
+            in headerContent: String, startingAt headerStart: AbsolutePosition,
         ) {
             guard
                 let forbiddenRegex = configuration.forbiddenRegex(for: file),
-                let firstMatch = forbiddenRegex.firstMatch(
-                    in: headerContent,
-                    options: [],
-                    range: headerContent.fullNSRange
-                )
+                let firstMatch = forbiddenRegex.firstMatch(in: headerContent)
             else {
                 return
             }
 
-            // Calculate violation position
-            let matchLocationUTF16 = firstMatch.range.location
-            let headerPrefix = String(headerContent.utf16.prefix(matchLocationUTF16)) ?? ""
-            let utf8OffsetInHeader = headerPrefix.utf8.count
+            let matchStart = firstMatch.range.lowerBound
+            let utf8OffsetInHeader = headerContent[headerContent.startIndex..<matchStart].utf8.count
             let violationPosition = AbsolutePosition(
-                utf8Offset: headerStart.utf8Offset + utf8OffsetInHeader
+                utf8Offset: headerStart.utf8Offset + utf8OffsetInHeader,
             )
 
             violations.append(
                 ReasonedRuleViolation(
                     position: violationPosition,
-                    reason: forbiddenReason()
-                )
+                    reason: forbiddenReason(),
+                ),
             )
         }
 
         private func checkRequiredPattern(
-            _ requiredRegex: NSRegularExpression?,
+            _ requiredRegex: RegularExpression?,
             in headerContent: String,
-            startingAt headerStart: AbsolutePosition
+            startingAt headerStart: AbsolutePosition,
         ) {
             guard
                 let requiredRegex,
-                requiredRegex.firstMatch(in: headerContent, options: [], range: headerContent.fullNSRange)
-                == nil
+                requiredRegex.firstMatch(in: headerContent) == nil
             else {
                 return
             }
@@ -219,8 +218,8 @@ private extension FileHeaderRule {
             violations.append(
                 ReasonedRuleViolation(
                     position: headerStart,
-                    reason: requiredReason()
-                )
+                    reason: requiredReason(),
+                ),
             )
         }
 
@@ -243,20 +242,20 @@ private extension FileHeaderRule {
 private extension TriviaPiece {
     var isDocComment: Bool {
         switch self {
-        case .docLineComment, .docBlockComment:
-            return true
-        default:
-            return false
+            case .docLineComment, .docBlockComment:
+                return true
+            default:
+                return false
         }
     }
 
     var commentText: String? {
         switch self {
-        case let .lineComment(text), let .blockComment(text),
-             let .docLineComment(text), let .docBlockComment(text):
-            return text
-        default:
-            return nil
+            case let .lineComment(text), let .blockComment(text),
+                 let .docLineComment(text), let .docBlockComment(text):
+                return text
+            default:
+                return nil
         }
     }
 }

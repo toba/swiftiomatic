@@ -26,7 +26,7 @@ struct UnusedOptionalBindingRule: Rule {
             Example("if let (_, second) = getOptionalTuple(), let ↓_ = Foo.optionalValue {}"),
             Example("if let ↓(_, _, _) = getOptionalTuple(), let bar = Foo.optionalValue {}"),
             Example("func foo() { if let ↓_ = bar {} }"),
-        ]
+        ],
     )
 }
 

@@ -25,7 +25,7 @@ extension String {
     private subscript(range: Range<Int>) -> String {
         let nsrange = NSRange(
             location: range.lowerBound,
-            length: range.upperBound - range.lowerBound
+            length: range.upperBound - range.lowerBound,
         )
         if let indexRange = nsrangeToIndexRange(nsrange) {
             return String(self[indexRange])
@@ -54,12 +54,12 @@ extension String {
         let from16 =
             utf16.index(
                 utf16.startIndex, offsetBy: nsrange.location,
-                limitedBy: utf16.endIndex
+                limitedBy: utf16.endIndex,
             ) ?? utf16.endIndex
         let to16 =
             utf16.index(
                 from16, offsetBy: nsrange.length,
-                limitedBy: utf16.endIndex
+                limitedBy: utf16.endIndex,
             ) ?? utf16.endIndex
 
         guard let fromIndex = Index(from16, within: self),
@@ -117,7 +117,8 @@ extension String {
             let sharedRootDir = rootDirComps.joined(separator: "/")
             if normalizedSelf == sharedRootDir || normalizedSelf.hasPrefix(sharedRootDir + "/") {
                 let path =
-                    (0 ..< rootDirCompsCount - rootDirComps.count).map { _ in "/.." }.flatMap(\.self)
+                    (0 ..< rootDirCompsCount - rootDirComps.count).map { _ in "/.." }
+                        .flatMap(\.self)
                         + String(normalizedSelf.dropFirst(sharedRootDir.count))
                 return String(path.dropFirst()) // Remove leading '/'
             }
@@ -133,7 +134,10 @@ extension String {
     func indent(by spaces: Int, skipFirst: Bool = false, skipEmptyLines: Bool = true) -> String {
         let lines = components(separatedBy: "\n")
         if skipFirst, let firstLine = lines.first {
-            return firstLine + "\n" + lines.dropFirst().indent(by: spaces, skipEmptyLines: skipEmptyLines)
+            return firstLine + "\n" + lines.dropFirst().indent(
+                by: spaces,
+                skipEmptyLines: skipEmptyLines,
+            )
         }
         return lines.indent(by: spaces, skipEmptyLines: skipEmptyLines)
     }
@@ -158,7 +162,7 @@ extension String {
     }
 }
 
-private extension Sequence where Element == String {
+private extension Sequence<String> {
     func indent(by spaces: Int, skipEmptyLines: Bool = true) -> String {
         map { line in
             if skipEmptyLines, line.isEmpty {

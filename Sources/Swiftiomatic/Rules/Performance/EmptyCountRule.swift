@@ -1,5 +1,5 @@
-import SwiftLexicalLookup
 import SwiftSyntax
+import SwiftLexicalLookup
 import SwiftSyntaxBuilder
 
 struct EmptyCountRule: Rule {
@@ -29,7 +29,7 @@ struct EmptyCountRule: Rule {
                     let count = 0
                     return count == 0
                 }
-                """
+                """,
             ),
             Example("{ count in count == 0 }()"),
         ],
@@ -48,15 +48,15 @@ struct EmptyCountRule: Rule {
             Example("#Rule { $0.donations.↓count == 0 }", excludeFromDocumentation: true),
             Example(
                 "#Rule(param1: \"param1\", param2: \"param2\") { $0.donations.↓count == 0 }",
-                excludeFromDocumentation: true
+                excludeFromDocumentation: true,
             ),
             Example(
                 "#Rule(param1: \"param1\") { $0.donations.↓count == 0 } closure2: { doSomething() }",
-                excludeFromDocumentation: true
+                excludeFromDocumentation: true,
             ),
             Example(
                 "#Rule(param1: \"param1\") { return $0.donations.↓count == 0 }",
-                excludeFromDocumentation: true
+                excludeFromDocumentation: true,
             ),
             Example(
                 """
@@ -64,21 +64,21 @@ struct EmptyCountRule: Rule {
                     doSomething()
                     return $0.donations.↓count == 0
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
                 extension E {
                     var isEmpty: Bool { ↓count == 0 }
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
                 struct S {
                     var isEmpty: Bool { ↓count == 0 }
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         corrections: [
@@ -108,13 +108,15 @@ struct EmptyCountRule: Rule {
                 Example("isEmpty"),
             Example("↓count == 0 && [Int]().↓count == 0o00"):
                 Example("isEmpty && [Int]().isEmpty"),
-            Example("[Int]().count != 3 && [Int]().↓count != 0 || ↓count == 0 && [Int]().count > 2"):
+            Example(
+                "[Int]().count != 3 && [Int]().↓count != 0 || ↓count == 0 && [Int]().count > 2",
+            ):
                 Example("[Int]().count != 3 && ![Int]().isEmpty || isEmpty && [Int]().count > 2"),
             Example("#ExampleMacro { $0.list.↓count == 0 }"):
                 Example("#ExampleMacro { $0.list.isEmpty }"),
             Example("#Rule(param1: \"param1\") { return $0.donations.↓count == 0 }"):
                 Example("#Rule(param1: \"param1\") { return $0.donations.isEmpty }"),
-        ]
+        ],
     )
 }
 
@@ -143,7 +145,9 @@ private extension EmptyCountRule {
                 return
             }
 
-            if let (_, position) = node.countNodeAndPosition(onlyAfterDot: configuration.onlyAfterDot) {
+            if let (_, position) = node
+                .countNodeAndPosition(onlyAfterDot: configuration.onlyAfterDot)
+            {
                 violations.append(position)
             }
         }
@@ -159,12 +163,17 @@ private extension EmptyCountRule {
                 return super.visit(node)
             }
 
-            if let (count, _) = node.countNodeAndPosition(onlyAfterDot: configuration.onlyAfterDot) {
+            if let (count, _) = node
+                .countNodeAndPosition(onlyAfterDot: configuration.onlyAfterDot)
+            {
                 let newNode =
                     if let count = count.as(MemberAccessExprSyntax.self) {
                         ExprSyntax(count.with(\.declName.baseName, "isEmpty").trimmed)
                     } else {
-                        ExprSyntax(count.as(DeclReferenceExprSyntax.self)?.with(\.baseName, "isEmpty").trimmed)
+                        ExprSyntax(count.as(DeclReferenceExprSyntax.self)?.with(
+                            \.baseName,
+                            "isEmpty",
+                        ).trimmed)
                     }
                 guard let newNode else {
                     return super.visit(node)
@@ -204,8 +213,8 @@ private extension ExprSyntax {
         return result.isEmpty
             || !result.contains { result in
                 switch result {
-                case .fromScope: true
-                default: false
+                    case .fromScope: true
+                    default: false
                 }
             }
     }
@@ -229,10 +238,10 @@ private extension ExprSyntax {
 private extension TokenSyntax {
     var binaryOperator: String? {
         switch tokenKind {
-        case let .binaryOperator(str):
-            return str
-        default:
-            return nil
+            case let .binaryOperator(str):
+                return str
+            default:
+                return nil
         }
     }
 }
@@ -240,7 +249,8 @@ private extension TokenSyntax {
 private extension MacroExpansionExprSyntax {
     var isTipsRuleMacro: Bool {
         macroName.text == "Rule" && additionalTrailingClosures.isEmpty && arguments.count == 1
-            && trailingClosure.map { $0.statements.onlyElement?.item.is(ReturnStmtSyntax.self) == false }
+            && trailingClosure
+            .map { $0.statements.onlyElement?.item.is(ReturnStmtSyntax.self) == false }
             ?? false
     }
 }

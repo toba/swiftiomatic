@@ -19,7 +19,10 @@ struct EmojiReporter: Reporter {
     private static func report(for file: String, with violations: [StyleViolation]) -> String {
         let issueList =
             violations
-                .sorted { $0.severity == $1.severity ? $0.location > $1.location : $0.severity > $1.severity }
+                .sorted {
+                    $0.severity == $1.severity ? $0.location > $1.location : $0.severity > $1
+                        .severity
+                }
                 .map { violation in
                     let emoji = violation.severity == .error ? "⛔️" : "⚠️"
                     var lineString = ""

@@ -33,14 +33,14 @@ final class AnyEliminationCheck: BaseCheck {
         let key = node.key.trimmedDescription
         let value = node.value.trimmedDescription
 
-        if key == "String" && (value == "Any" || value == "any Sendable") {
+        if key == "String", value == "Any" || value == "any Sendable" {
             addFinding(
                 at: node,
                 category: .anyElimination,
                 severity: .medium,
                 message: "[String: \(value)] dictionary should be a Codable struct",
                 suggestion: "Define a struct with typed properties instead",
-                confidence: .medium
+                confidence: .medium,
             )
         }
 
@@ -57,7 +57,7 @@ final class AnyEliminationCheck: BaseCheck {
                 severity: .medium,
                 message: "Force cast 'as!' — trace back to where the type was erased",
                 suggestion: "Use generics or a typed API to avoid the cast",
-                confidence: .medium
+                confidence: .medium,
             )
         }
 
@@ -76,15 +76,15 @@ final class AnyEliminationCheck: BaseCheck {
                 severity: match == .any ? .medium : .low,
                 message: match.message,
                 suggestion: match.suggestion,
-                confidence: match == .any ? .medium : .low
+                confidence: match == .any ? .medium : .low,
             )
         } else if typeResolver?.isAvailable == true {
             aliasQueries.append(
                 AliasQuery(
                     offset: type.positionAfterSkippingLeadingTrivia.utf8Offset,
                     node: node,
-                    typeStr: typeStr
-                )
+                    typeStr: typeStr,
+                ),
             )
         }
     }
@@ -93,7 +93,8 @@ final class AnyEliminationCheck: BaseCheck {
         guard let resolver = typeResolver, !aliasQueries.isEmpty else { return }
 
         for query in aliasQueries {
-            guard let resolved = await resolver.resolveType(inFile: filePath, offset: query.offset) else {
+            guard let resolved = await resolver.resolveType(inFile: filePath, offset: query.offset)
+            else {
                 continue
             }
 
@@ -102,8 +103,8 @@ final class AnyEliminationCheck: BaseCheck {
                 let location = query.node.startLocation(
                     converter: .init(
                         fileName: filePath,
-                        tree: query.node.root
-                    )
+                        tree: query.node.root,
+                    ),
                 )
                 findings.append(
                     Finding(
@@ -114,8 +115,8 @@ final class AnyEliminationCheck: BaseCheck {
                         column: location.column,
                         message: "Type '\(query.typeStr)' resolves to 'Any' — type safety is erased",
                         suggestion: "Use a specific type, protocol, or generic parameter instead of the alias",
-                        confidence: .high
-                    )
+                        confidence: .high,
+                    ),
                 )
             }
         }

@@ -19,7 +19,7 @@ struct CompilerProtocolInitRule: Rule {
             Example("let set = ↓Set (arrayLiteral: 1, 2)"),
             Example("let set = ↓Set.init(arrayLiteral: 1, 2)"),
             Example("let set = ↓Set.init(arrayLiteral : 1, 2)"),
-        ]
+        ],
     )
 }
 
@@ -41,7 +41,9 @@ private extension CompilerProtocolInitRule {
                 return
             }
 
-            guard let name = node.functionName, ExpressibleByCompiler.allInitNames.contains(name) else {
+            guard let name = node.functionName,
+                  ExpressibleByCompiler.allInitNames.contains(name)
+            else {
                 return
             }
 
@@ -57,8 +59,8 @@ private extension CompilerProtocolInitRule {
                     ReasonedRuleViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Initializers declared in compiler protocol \(compilerProtocol.protocolName) "
-                            + "shouldn't be called directly"
-                    )
+                            + "shouldn't be called directly",
+                    ),
                 )
                 return
             }
@@ -102,13 +104,15 @@ private struct ExpressibleByCompiler {
         byStringInterpolation, byDictionaryLiteral,
     ]
 
-    static let possibleNumberOfArguments: Set<Int> = allProtocols.reduce(into: Set<Int>()) { partialResult, entry in
-        partialResult.insert(entry.arguments.count)
-    }
+    static let possibleNumberOfArguments: Set<Int> = allProtocols
+        .reduce(into: Set<Int>()) { partialResult, entry in
+            partialResult.insert(entry.arguments.count)
+        }
 
-    static let allInitNames: Set<String> = allProtocols.reduce(into: Set<String>()) { partialResult, entry in
-        partialResult.formUnion(entry.initCallNames)
-    }
+    static let allInitNames: Set<String> = allProtocols
+        .reduce(into: Set<String>()) { partialResult, entry in
+            partialResult.formUnion(entry.initCallNames)
+        }
 
     func match(arguments: [String]) -> Bool {
         self.arguments.contains(arguments)
@@ -132,63 +136,64 @@ private struct ExpressibleByCompiler {
             "IndexSet",
         ]
         return Self(
-            protocolName: "ExpressibleByArrayLiteral", types: types, arguments: [["arrayLiteral"]]
+            protocolName: "ExpressibleByArrayLiteral", types: types, arguments: [["arrayLiteral"]],
         )
     }()
 
     private static let byNilLiteral = Self(
         protocolName: "ExpressibleByNilLiteral",
         types: ["Optional"],
-        arguments: [["nilLiteral"]]
+        arguments: [["nilLiteral"]],
     )
 
     private static let byBooleanLiteral = Self(
         protocolName: "ExpressibleByBooleanLiteral",
         types: ["Bool", "NSDecimalNumber", "NSNumber", "ObjCBool"],
-        arguments: [["booleanLiteral"]]
+        arguments: [["booleanLiteral"]],
     )
 
     private static let byFloatLiteral = Self(
         protocolName: "ExpressibleByFloatLiteral",
         types: ["Decimal", "NSDecimalNumber", "NSNumber"],
-        arguments: [["floatLiteral"]]
+        arguments: [["floatLiteral"]],
     )
 
     private static let byIntegerLiteral = Self(
         protocolName: "ExpressibleByIntegerLiteral",
         types: ["Decimal", "Double", "Float", "Float80", "NSDecimalNumber", "NSNumber"],
-        arguments: [["integerLiteral"]]
+        arguments: [["integerLiteral"]],
     )
 
     private static let byUnicodeScalarLiteral = Self(
         protocolName: "ExpressibleByUnicodeScalarLiteral",
         types: ["StaticString", "String", "UnicodeScalar"],
-        arguments: [["unicodeScalarLiteral"]]
+        arguments: [["unicodeScalarLiteral"]],
     )
 
     private static let byExtendedGraphemeClusterLiteral = Self(
         protocolName: "ExpressibleByExtendedGraphemeClusterLiteral",
         types: ["Character", "StaticString", "String"],
-        arguments: [["extendedGraphemeClusterLiteral"]]
+        arguments: [["extendedGraphemeClusterLiteral"]],
     )
 
     private static let byStringLiteral = Self(
         protocolName: "ExpressibleByStringLiteral",
         types: [
-            "CSLocalizedString", "NSMutableString", "NSString", "Selector", "StaticString", "String",
+            "CSLocalizedString", "NSMutableString", "NSString", "Selector", "StaticString",
+            "String",
         ],
-        arguments: [["stringLiteral"]]
+        arguments: [["stringLiteral"]],
     )
 
     private static let byStringInterpolation = Self(
         protocolName: "ExpressibleByStringInterpolation",
         types: ["String"],
-        arguments: [["stringInterpolation"], ["stringInterpolationSegment"]]
+        arguments: [["stringInterpolation"], ["stringInterpolationSegment"]],
     )
 
     private static let byDictionaryLiteral = Self(
         protocolName: "ExpressibleByDictionaryLiteral",
         types: ["Dictionary", "DictionaryLiteral", "NSDictionary", "NSMutableDictionary"],
-        arguments: [["dictionaryLiteral"]]
+        arguments: [["dictionaryLiteral"]],
     )
 }

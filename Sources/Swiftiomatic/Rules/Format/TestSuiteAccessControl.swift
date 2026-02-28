@@ -1,18 +1,10 @@
-//
-//  TestSuiteAccessControl.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 10/15/25.
-//  Copyright © 2025 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let testSuiteAccessControl = FormatRule(
         help:
         "Test methods should be internal, and other properties / functions in a test suite should be private.",
-        disabledByDefault: true
+        disabledByDefault: true,
     ) { formatter in
         guard let testFramework = formatter.detectTestingFramework() else {
             return
@@ -30,19 +22,19 @@ extension FormatRule {
             // Process each member of the test class
             for member in testClass.body {
                 switch member.keyword {
-                case "func":
-                    formatter.validateTestFunctionAccessControl(member, for: testFramework)
+                    case "func":
+                        formatter.validateTestFunctionAccessControl(member, for: testFramework)
 
-                case "init":
-                    // Initializers should be internal unless marked as open
-                    formatter.validateTestTypeAccessControl(member)
+                    case "init":
+                        // Initializers should be internal unless marked as open
+                        formatter.validateTestTypeAccessControl(member)
 
-                case "let", "var":
-                    // Properties should be private unless they have special attributes
-                    formatter.validateTestProperty(member, for: testFramework)
+                    case "let", "var":
+                        // Properties should be private unless they have special attributes
+                        formatter.validateTestProperty(member, for: testFramework)
 
-                default:
-                    break
+                    default:
+                        break
                 }
             }
         }
@@ -96,8 +88,12 @@ extension Formatter {
     }
 
     /// Validates that a function in a test class has the correct access control.
-    func validateTestFunctionAccessControl(_ function: Declaration, for framework: TestingFramework) {
-        guard let functionDecl = parseFunctionDeclaration(keywordIndex: function.keywordIndex) else {
+    func validateTestFunctionAccessControl(
+        _ function: Declaration,
+        for framework: TestingFramework,
+    ) {
+        guard let functionDecl = parseFunctionDeclaration(keywordIndex: function.keywordIndex)
+        else {
             return
         }
 
@@ -109,13 +105,18 @@ extension Formatter {
         }
 
         // Skip if it's an override, has @objc, or is static (might be called from outside)
-        if modifiers.contains("override") || modifiers.contains("@objc") || modifiers.contains("static") {
+        if modifiers.contains("override") || modifiers.contains("@objc") || modifiers
+            .contains("static")
+        {
             return
         }
 
         // Get function name
-        guard let nameIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: function.keywordIndex),
-              case let .identifier(name) = tokens[nameIndex]
+        guard let nameIndex = index(
+            of: .nonSpaceOrCommentOrLinebreak,
+            after: function.keywordIndex,
+        ),
+            case let .identifier(name) = tokens[nameIndex]
         else { return }
 
         let treatAsTestCase =
@@ -169,10 +170,12 @@ extension Formatter {
     func removeACLModifiers(from declaration: Declaration, except exceptions: [String]) {
         for aclModifier in _FormatRules.aclModifiers where !exceptions.contains(aclModifier) {
             if let modifierIndex = indexOfModifier(
-                aclModifier, forDeclarationAt: declaration.keywordIndex
+                aclModifier, forDeclarationAt: declaration.keywordIndex,
             ) {
                 // Remove the modifier and its trailing space
-                if let nextIndex = index(of: .nonSpace, after: modifierIndex), nextIndex > modifierIndex + 1 {
+                if let nextIndex = index(of: .nonSpace, after: modifierIndex),
+                   nextIndex > modifierIndex + 1
+                {
                     removeTokens(in: modifierIndex ... (modifierIndex + 1))
                 } else {
                     removeToken(at: modifierIndex)
@@ -193,7 +196,7 @@ extension Formatter {
         // Remove any existing ACL modifier
         for aclModifier in _FormatRules.aclModifiers {
             if let modifierIndex = indexOfModifier(
-                aclModifier, forDeclarationAt: declaration.keywordIndex
+                aclModifier, forDeclarationAt: declaration.keywordIndex,
             ) {
                 // Replace the modifier with "private"
                 replaceToken(at: modifierIndex, with: .keyword("private"))

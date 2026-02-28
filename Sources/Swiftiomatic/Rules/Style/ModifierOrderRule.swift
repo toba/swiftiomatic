@@ -1,5 +1,5 @@
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct ModifierOrderRule: Rule {
     var configuration = ModifierOrderConfiguration()
@@ -10,7 +10,7 @@ struct ModifierOrderRule: Rule {
         description: "Modifier order should be consistent.",
         kind: .style,
         nonTriggeringExamples: ModifierOrderRuleExamples.nonTriggeringExamples,
-        triggeringExamples: ModifierOrderRuleExamples.triggeringExamples
+        triggeringExamples: ModifierOrderRuleExamples.triggeringExamples,
     )
 }
 
@@ -51,12 +51,14 @@ private extension ModifierOrderRule {
                     .difference(from: descriptions)
             let orderedDescriptions = descriptions.applying(differences) ?? descriptions
 
-            if let diff = zip(orderedDescriptions, descriptions).first(where: { $0.keyword != $1.keyword }) {
+            if let diff = zip(orderedDescriptions, descriptions)
+                .first(where: { $0.keyword != $1.keyword })
+            {
                 violations.append(
                     .init(
                         position: introducer.positionAfterSkippingLeadingTrivia,
-                        reason: "\(diff.0.keyword) modifier should come before \(diff.1.keyword)"
-                    )
+                        reason: "\(diff.0.keyword) modifier should come before \(diff.1.keyword)",
+                    ),
                 )
             }
         }
@@ -78,14 +80,17 @@ private extension ModifierOrderRule {
             var newModifiers = prevModifiers
             for change in differences {
                 switch change {
-                case let .remove(offset, _, _):
-                    newModifiers.remove(at: offset)
-                case let .insert(offset, element, _):
-                    let prevModifier = prevModifiers[offset]
-                    newModifiers.insert(element.with(\.leadingTrivia, prevModifier.leadingTrivia), at: offset)
-                    if offset == 0, newModifiers.count > 1 {
-                        newModifiers[1] = newModifiers[1].with(\.leadingTrivia, [])
-                    }
+                    case let .remove(offset, _, _):
+                        newModifiers.remove(at: offset)
+                    case let .insert(offset, element, _):
+                        let prevModifier = prevModifiers[offset]
+                        newModifiers.insert(
+                            element.with(\.leadingTrivia, prevModifier.leadingTrivia),
+                            at: offset,
+                        )
+                        if offset == 0, newModifiers.count > 1 {
+                            newModifiers[1] = newModifiers[1].with(\.leadingTrivia, [])
+                        }
                 }
             }
             let newNode = DeclModifierListSyntax(newModifiers)
@@ -103,7 +108,8 @@ private extension DeclModifierListSyntax {
         for modifier in self {
             let keyword = modifier.name.text
             let position = modifier.positionAfterSkippingLeadingTrivia
-            guard let group = SwiftDeclarationAttributeKind.ModifierGroup(modifierKeyword: keyword) else {
+            guard let group = SwiftDeclarationAttributeKind.ModifierGroup(modifierKeyword: keyword)
+            else {
                 continue
             }
 
@@ -117,8 +123,8 @@ private extension DeclModifierListSyntax {
                             keyword: "\(keyword)(set)",
                             modifier: modifier,
                             group: .setterACL,
-                            position: position
-                        )
+                            position: position,
+                        ),
                     )
                 }
                 continue
@@ -129,8 +135,8 @@ private extension DeclModifierListSyntax {
                     keyword: keyword,
                     modifier: modifier,
                     group: group,
-                    position: position
-                )
+                    position: position,
+                ),
             )
         }
 
@@ -141,32 +147,32 @@ private extension DeclModifierListSyntax {
 private extension SwiftDeclarationAttributeKind.ModifierGroup {
     init?(modifierKeyword: String) { // swiftlint:disable:this cyclomatic_complexity
         switch modifierKeyword {
-        case "override":
-            self = .override
-        case "weak":
-            self = .owned
-        case "final":
-            self = .final
-        case "required":
-            self = .required
-        case "convenience":
-            self = .convenience
-        case "lazy":
-            self = .lazy
-        case "dynamic":
-            self = .dynamic
-        case "nonisolated":
-            self = .isolation
-        case "private", "fileprivate", "internal", "public", "open":
-            self = .acl
-        case "mutating", "nonmutating":
-            self = .mutators
-        case "static", "class":
-            self = .typeMethods
-        case _ where modifierKeyword.hasPrefix("@"):
-            self = .atPrefixed
-        default:
-            return nil
+            case "override":
+                self = .override
+            case "weak":
+                self = .owned
+            case "final":
+                self = .final
+            case "required":
+                self = .required
+            case "convenience":
+                self = .convenience
+            case "lazy":
+                self = .lazy
+            case "dynamic":
+                self = .dynamic
+            case "nonisolated":
+                self = .isolation
+            case "private", "fileprivate", "internal", "public", "open":
+                self = .acl
+            case "mutating", "nonmutating":
+                self = .mutators
+            case "static", "class":
+                self = .typeMethods
+            case _ where modifierKeyword.hasPrefix("@"):
+                self = .atPrefixed
+            default:
+                return nil
         }
     }
 }

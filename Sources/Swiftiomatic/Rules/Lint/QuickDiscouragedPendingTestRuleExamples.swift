@@ -14,7 +14,7 @@ enum QuickDiscouragedPendingTestRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
     ]
 
@@ -26,7 +26,7 @@ enum QuickDiscouragedPendingTestRuleExamples {
                    ↓xdescribe("foo") { }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -35,7 +35,7 @@ enum QuickDiscouragedPendingTestRuleExamples {
                    ↓xcontext("foo") { }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -44,7 +44,7 @@ enum QuickDiscouragedPendingTestRuleExamples {
                    ↓xit("foo") { }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -55,7 +55,7 @@ enum QuickDiscouragedPendingTestRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -66,7 +66,7 @@ enum QuickDiscouragedPendingTestRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -79,7 +79,7 @@ enum QuickDiscouragedPendingTestRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -88,7 +88,7 @@ enum QuickDiscouragedPendingTestRuleExamples {
                    ↓pending("foo")
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -97,7 +97,7 @@ enum QuickDiscouragedPendingTestRuleExamples {
                    ↓xitBehavesLike("foo")
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -106,7 +106,7 @@ enum QuickDiscouragedPendingTestRuleExamples {
                    ↓xitBehavesLike("foo")
                }
             }
-            """
+            """,
         ),
     ]
 }

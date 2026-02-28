@@ -113,7 +113,7 @@ extension Array {
     /// - returns: The elements failing the `belongsInSecondPartition` test, followed by the elements passing the
     ///            `belongsInSecondPartition` test.
     func partitioned(by belongsInSecondPartition: (Element) throws -> Bool) rethrows -> (
-        first: ArraySlice<Element>, second: ArraySlice<Element>
+        first: ArraySlice<Element>, second: ArraySlice<Element>,
     ) {
         var copy = self
         let pivot = try copy.partition(by: belongsInSecondPartition)
@@ -157,7 +157,7 @@ extension Array {
         }
     }
 
-    private class MutableWrapper<T>: @unchecked Sendable {
+    private final class MutableWrapper<T>: @unchecked Sendable {
         let buffer: UnsafeMutableBufferPointer<T?>
 
         init(buffer: UnsafeMutableBufferPointer<T?>) {
@@ -182,7 +182,7 @@ extension Array {
         }
     }
 
-    private class ImmutableWrapper<T>: @unchecked Sendable {
+    private final class ImmutableWrapper<T>: @unchecked Sendable {
         let buffer: UnsafeBufferPointer<T>
 
         init(buffer: UnsafeBufferPointer<T>) {

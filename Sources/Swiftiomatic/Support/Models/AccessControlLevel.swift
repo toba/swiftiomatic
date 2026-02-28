@@ -20,13 +20,13 @@ enum AccessControlLevel: String, CustomStringConvertible, Sendable {
     /// - parameter value: The value used to describe this level in Swift source code.
     init?(description value: String) {
         switch value {
-        case "private": self = .private
-        case "fileprivate": self = .fileprivate
-        case "internal": self = .internal
-        case "package": self = .package
-        case "public": self = .public
-        case "open": self = .open
-        default: return nil
+            case "private": self = .private
+            case "fileprivate": self = .fileprivate
+            case "internal": self = .internal
+            case "package": self = .package
+            case "public": self = .public
+            case "open": self = .open
+            default: return nil
         }
     }
 
@@ -39,12 +39,12 @@ enum AccessControlLevel: String, CustomStringConvertible, Sendable {
 
     var description: String {
         switch self {
-        case .private: return "private"
-        case .fileprivate: return "fileprivate"
-        case .internal: return "internal"
-        case .package: return "package"
-        case .public: return "public"
-        case .open: return "open"
+            case .private: return "private"
+            case .fileprivate: return "fileprivate"
+            case .internal: return "internal"
+            case .package: return "package"
+            case .public: return "public"
+            case .open: return "open"
         }
     }
 }
@@ -52,12 +52,12 @@ enum AccessControlLevel: String, CustomStringConvertible, Sendable {
 extension AccessControlLevel: Comparable {
     private var priority: Int {
         switch self {
-        case .private: return 1
-        case .fileprivate: return 2
-        case .internal: return 3
-        case .package: return 4
-        case .public: return 5
-        case .open: return 6
+            case .private: return 1
+            case .fileprivate: return 2
+            case .internal: return 3
+            case .package: return 4
+            case .public: return 5
+            case .open: return 6
         }
     }
 

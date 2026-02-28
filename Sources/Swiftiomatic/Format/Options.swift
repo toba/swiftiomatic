@@ -1,34 +1,3 @@
-//
-//  Options.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 21/10/2016.
-//  Copyright 2016 Nick Lockwood
-//
-//  Distributed under the permissive MIT license
-//  Get the latest version from here:
-//
-//  https://github.com/nicklockwood/SwiftFormat
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in all
-//  copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  SOFTWARE.
-//
-
 import Foundation
 
 /// The indenting mode to use for #if/#endif statements
@@ -40,16 +9,16 @@ enum IndentMode: String, CaseIterable {
 
     init?(rawValue: String) {
         switch rawValue {
-        case "indent":
-            self = .indent
-        case "no-indent", "noindent":
-            self = .noIndent
-        case "preserve":
-            self = .preserve
-        case "outdent":
-            self = .outdent
-        default:
-            return nil
+            case "indent":
+                self = .indent
+            case "no-indent", "noindent":
+                self = .noIndent
+            case "preserve":
+                self = .preserve
+            case "outdent":
+                self = .outdent
+            default:
+                return nil
         }
     }
 }
@@ -64,18 +33,18 @@ enum WrapMode: String, CaseIterable {
 
     init?(rawValue: String) {
         switch rawValue {
-        case "before-first", "beforefirst":
-            self = .beforeFirst
-        case "after-first", "afterfirst":
-            self = .afterFirst
-        case "preserve":
-            self = .preserve
-        case "disabled":
-            self = .disabled
-        case "default":
-            self = .default
-        default:
-            return nil
+            case "before-first", "beforefirst":
+                self = .beforeFirst
+            case "after-first", "afterfirst":
+                self = .afterFirst
+            case "preserve":
+                self = .preserve
+            case "disabled":
+                self = .disabled
+            case "default":
+                self = .default
+            default:
+                return nil
         }
     }
 }
@@ -225,7 +194,7 @@ struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral, Custom
         lhs.rawValue.compare(
             rhs.rawValue,
             options: .numeric,
-            locale: Locale(identifier: "en_US")
+            locale: Locale(identifier: "en_US"),
         ) == .orderedAscending
     }
 
@@ -259,35 +228,35 @@ enum FileHeaderMode: Equatable, RawRepresentable, ExpressibleByStringLiteral {
 
     init?(rawValue: String) {
         switch rawValue.lowercased() {
-        case "ignore", "keep", "preserve":
-            self = .ignore
-        case "strip", "":
-            self = .replace("")
-        default:
-            // Normalize the header
-            let header = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-            let isMultiline = header.hasPrefix("/*")
-            var lines = header.components(separatedBy: "\\n")
-            lines = lines.map {
-                var line = $0
-                if !isMultiline, !line.hasPrefix("//") {
-                    line = "//\(line.isEmpty ? "" : " ")\(line)"
+            case "ignore", "keep", "preserve":
+                self = .ignore
+            case "strip", "":
+                self = .replace("")
+            default:
+                // Normalize the header
+                let header = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                let isMultiline = header.hasPrefix("/*")
+                var lines = header.components(separatedBy: "\\n")
+                lines = lines.map {
+                    var line = $0
+                    if !isMultiline, !line.hasPrefix("//") {
+                        line = "//\(line.isEmpty ? "" : " ")\(line)"
+                    }
+                    return line
                 }
-                return line
-            }
-            while lines.last?.isEmpty == true {
-                lines.removeLast()
-            }
-            self = .replace(lines.joined(separator: "\n"))
+                while lines.last?.isEmpty == true {
+                    lines.removeLast()
+                }
+                self = .replace(lines.joined(separator: "\n"))
         }
     }
 
     var rawValue: String {
         switch self {
-        case .ignore:
-            return "ignore"
-        case let .replace(string):
-            return string.isEmpty ? "strip" : string.replacingOccurrences(of: "\n", with: "\\n")
+            case .ignore:
+                return "ignore"
+            case let .replace(string):
+                return string.isEmpty ? "strip" : string.replacingOccurrences(of: "\n", with: "\\n")
         }
     }
 
@@ -295,7 +264,13 @@ enum FileHeaderMode: Equatable, RawRepresentable, ExpressibleByStringLiteral {
         guard case let .replace(str) = self else {
             return false
         }
-        let keys: [ReplacementKey] = [.createdDate, .createdYear, .author, .authorName, .authorEmail]
+        let keys: [ReplacementKey] = [
+            .createdDate,
+            .createdYear,
+            .author,
+            .authorName,
+            .authorEmail,
+        ]
         return keys.contains(where: { str.contains($0.placeholder) })
     }
 }
@@ -329,30 +304,30 @@ enum ReplacementType: Equatable, CustomStringConvertible {
 
     static func == (lhs: ReplacementType, rhs: ReplacementType) -> Bool {
         switch (lhs, rhs) {
-        case let (.constant(lhsVal), .constant(rhsVal)):
-            return lhsVal == rhsVal
-        case let (.dynamic(lhsClosure), .dynamic(rhsClosure)):
-            return lhsClosure as AnyObject === rhsClosure as AnyObject
-        default:
-            return false
+            case let (.constant(lhsVal), .constant(rhsVal)):
+                return lhsVal == rhsVal
+            case let (.dynamic(lhsClosure), .dynamic(rhsClosure)):
+                return lhsClosure as AnyObject === rhsClosure as AnyObject
+            default:
+                return false
         }
     }
 
     func resolve(_ info: FileInfo, _ options: ReplacementOptions) -> String? {
         switch self {
-        case let .constant(value):
-            return value
-        case let .dynamic(fn):
-            return fn(info, options)
+            case let .constant(value):
+                return value
+            case let .dynamic(fn):
+                return fn(info, options)
         }
     }
 
     var description: String {
         switch self {
-        case let .constant(value):
-            return value
-        case .dynamic:
-            return "dynamic"
+            case let .constant(value):
+                return value
+            case .dynamic:
+                return "dynamic"
         }
     }
 }
@@ -363,7 +338,7 @@ struct FileInfo: Equatable, CustomStringConvertible {
         .createdDate: .dynamic { info, options in
             info.creationDate?.format(
                 with: options.dateFormat,
-                timeZone: options.timeZone
+                timeZone: options.timeZone,
             )
         },
         .createdYear: .dynamic { info, _ in info.creationDate?.yearString },
@@ -381,7 +356,7 @@ struct FileInfo: Equatable, CustomStringConvertible {
     init(
         filePath: String? = nil,
         creationDate: Date? = nil,
-        replacements: [ReplacementKey: ReplacementType] = [:]
+        replacements: [ReplacementKey: ReplacementType] = [:],
     ) {
         self.filePath = filePath
         self.creationDate = creationDate
@@ -409,32 +384,32 @@ enum Grouping: Equatable, RawRepresentable, CustomStringConvertible {
 
     init?(rawValue: String) {
         switch rawValue {
-        case "ignore":
-            self = .ignore
-        case "none":
-            self = .none
-        default:
-            let parts = rawValue.components(separatedBy: ",").map {
-                $0.trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-            guard (1 ... 2).contains(parts.count),
-                  let group = parts.first.flatMap(Int.init),
-                  let threshold = parts.last.flatMap(Int.init)
-            else {
-                return nil
-            }
-            self = (group == 0) ? .none : .group(group, threshold)
+            case "ignore":
+                self = .ignore
+            case "none":
+                self = .none
+            default:
+                let parts = rawValue.components(separatedBy: ",").map {
+                    $0.trimmingCharacters(in: .whitespacesAndNewlines)
+                }
+                guard (1 ... 2).contains(parts.count),
+                      let group = parts.first.flatMap(Int.init),
+                      let threshold = parts.last.flatMap(Int.init)
+                else {
+                    return nil
+                }
+                self = (group == 0) ? .none : .group(group, threshold)
         }
     }
 
     var rawValue: String {
         switch self {
-        case .ignore:
-            return "ignore"
-        case .none:
-            return "none"
-        case let .group(group, threshold):
-            return "\(group),\(threshold)"
+            case .ignore:
+                return "ignore"
+            case .none:
+                return "none"
+            case let .group(group, threshold):
+                return "\(group),\(threshold)"
         }
     }
 
@@ -536,31 +511,31 @@ enum DateFormat: Equatable, RawRepresentable, CustomStringConvertible {
 
     init?(rawValue: String) {
         switch rawValue {
-        case "dmy":
-            self = .dayMonthYear
-        case "iso":
-            self = .iso
-        case "mdy":
-            self = .monthDayYear
-        case "system":
-            self = .system
-        default:
-            self = .custom(rawValue)
+            case "dmy":
+                self = .dayMonthYear
+            case "iso":
+                self = .iso
+            case "mdy":
+                self = .monthDayYear
+            case "system":
+                self = .system
+            default:
+                self = .custom(rawValue)
         }
     }
 
     var rawValue: String {
         switch self {
-        case .dayMonthYear:
-            return "dmy"
-        case .iso:
-            return "iso"
-        case .monthDayYear:
-            return "mdy"
-        case .system:
-            return "system"
-        case let .custom(str):
-            return str
+            case .dayMonthYear:
+                return "dmy"
+            case .iso:
+                return "iso"
+            case .monthDayYear:
+                return "mdy"
+            case .system:
+                return "system"
+            case let .custom(str):
+                return str
         }
     }
 
@@ -593,23 +568,23 @@ enum FormatTimeZone: Equatable, RawRepresentable, CustomStringConvertible {
 
     var rawValue: String {
         switch self {
-        case .system:
-            return "system"
-        case let .abbreviation(abbreviation):
-            return abbreviation
-        case let .identifier(identifier):
-            return identifier
+            case .system:
+                return "system"
+            case let .abbreviation(abbreviation):
+                return abbreviation
+            case let .identifier(identifier):
+                return identifier
         }
     }
 
     var timeZone: TimeZone? {
         switch self {
-        case .system:
-            return TimeZone.current
-        case let .abbreviation(abbreviation):
-            return TimeZone(abbreviation: abbreviation)
-        case let .identifier(identifier):
-            return TimeZone(identifier: identifier)
+            case .system:
+                return TimeZone.current
+            case let .abbreviation(abbreviation):
+                return TimeZone(abbreviation: abbreviation)
+            case let .identifier(identifier):
+                return TimeZone(identifier: identifier)
         }
     }
 
@@ -663,10 +638,10 @@ enum EquatableMacro: Equatable, RawRepresentable, CustomStringConvertible {
 
     var rawValue: String {
         switch self {
-        case .none:
-            return "none"
-        case let .macro(name, module: module):
-            return "\(name),\(module)"
+            case .none:
+                return "none"
+            case let .macro(name, module: module):
+                return "\(name),\(module)"
         }
     }
 
@@ -701,10 +676,10 @@ enum URLMacro: Equatable, RawRepresentable, CustomStringConvertible {
 
     var rawValue: String {
         switch self {
-        case .none:
-            return "none"
-        case let .macro(name, module: module):
-            return "\(name),\(module)"
+            case .none:
+                return "none"
+            case let .macro(name, module: module):
+                return "\(name),\(module)"
         }
     }
 
@@ -724,30 +699,30 @@ enum PreferSynthesizedInitMode: Equatable, CustomStringConvertible {
 
     init?(rawValue: String) {
         switch rawValue.lowercased() {
-        case "never", "false":
-            self = .never
-        case "always", "true":
-            self = .always
-        default:
-            // Parse as comma-separated list of conformances
-            let conformances = rawValue.split(separator: ",").map {
-                String($0).trimmingCharacters(in: .whitespaces)
-            }
-            guard !conformances.isEmpty, conformances.allSatisfy({ !$0.isEmpty }) else {
-                return nil
-            }
-            self = .conformances(conformances)
+            case "never", "false":
+                self = .never
+            case "always", "true":
+                self = .always
+            default:
+                // Parse as comma-separated list of conformances
+                let conformances = rawValue.split(separator: ",").map {
+                    String($0).trimmingCharacters(in: .whitespaces)
+                }
+                guard !conformances.isEmpty, conformances.allSatisfy({ !$0.isEmpty }) else {
+                    return nil
+                }
+                self = .conformances(conformances)
         }
     }
 
     var rawValue: String {
         switch self {
-        case .never:
-            return "never"
-        case .always:
-            return "always"
-        case let .conformances(list):
-            return list.joined(separator: ",")
+            case .never:
+                return "never"
+            case .always:
+                return "always"
+            case let .conformances(list):
+                return list.joined(separator: ",")
         }
     }
 
@@ -1037,7 +1012,7 @@ struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
         languageMode: Version? = nil,
         fileInfo: FileInfo = FileInfo(),
         markdownFiles: MarkdownFormattingMode = .ignore,
-        timeout: TimeInterval = 1
+        timeout: TimeInterval = 1,
     ) {
         self.lineAfterMarks = lineAfterMarks
         self.indent = indent
@@ -1146,7 +1121,9 @@ struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
         self.preserveAnonymousForEach = preserveAnonymousForEach
         self.preserveSingleLineForEach = preserveSingleLineForEach
         self.preserveDocComments = preserveDocComments
-        self.conditionalAssignmentOnlyAfterNewProperties = conditionalAssignmentOnlyAfterNewProperties
+        self
+            .conditionalAssignmentOnlyAfterNewProperties =
+            conditionalAssignmentOnlyAfterNewProperties
         self.typeDelimiterSpacing = typeDelimiterSpacing
         self.initCoderNil = initCoderNil
         self.dateFormat = dateFormat
@@ -1197,12 +1174,12 @@ struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
         return Mirror(reflecting: self).children.compactMap { child in
             var value = child.value
             switch value {
-            case let array as [String]:
-                value = array.joined(separator: ",")
-            case let set as Set<String>:
-                value = set.sorted().joined(separator: ",")
-            default:
-                break
+                case let array as [String]:
+                    value = array.joined(separator: ",")
+                case let set as Set<String>:
+                    value = set.sorted().joined(separator: ",")
+                default:
+                    break
             }
             return "\(value);".addingPercentEncoding(withAllowedCharacters: allowedCharacters)
         }.joined()

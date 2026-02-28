@@ -7,7 +7,7 @@ enum NotificationCenterDetachmentRuleExamples {
                    NotificationCenter.default.removeObserver(self)
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -16,7 +16,7 @@ enum NotificationCenterDetachmentRuleExamples {
                    NotificationCenter.default.removeObserver(otherObject)
                }
             }
-            """
+            """,
         ),
     ]
 
@@ -28,7 +28,7 @@ enum NotificationCenterDetachmentRuleExamples {
                    ↓NotificationCenter.default.removeObserver(self)
                }
             }
-            """
+            """,
         ),
     ]
 }

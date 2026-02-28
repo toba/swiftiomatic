@@ -17,7 +17,7 @@ struct LegacyRandomRule: Rule {
             Example("↓arc4random()"),
             Example("↓arc4random_uniform(83)"),
             Example("↓drand48()"),
-        ]
+        ],
     )
 }
 

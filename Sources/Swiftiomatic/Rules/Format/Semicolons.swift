@@ -1,11 +1,3 @@
-//
-//  Semicolons.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 8/24/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -13,13 +5,16 @@ extension FormatRule {
     static let semicolons = FormatRule(
         help: "Remove semicolons.",
         options: ["semicolons"],
-        sharedOptions: ["linebreaks"]
+        sharedOptions: ["linebreaks"],
     ) { formatter in
         formatter.forEach(.delimiter(";")) { i, _ in
             if let nextToken =
                 formatter
                     .next(.nonSpaceOrCommentOrLinebreak, after: i, if: { $0 != .endOfScope("}") }),
-                    let prevTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i)
+                    let prevTokenIndex = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak,
+                        before: i,
+                    )
             {
                 let prevToken = formatter.tokens[prevTokenIndex]
                 if prevToken == .keyword("return")
@@ -30,7 +25,7 @@ extension FormatRule {
                     // Not safe to remove or replace
                 } else if case .identifier = prevToken,
                           formatter.last(
-                              .nonSpaceOrCommentOrLinebreak, before: prevTokenIndex
+                              .nonSpaceOrCommentOrLinebreak, before: prevTokenIndex,
                           ) == .keyword("var")
                 {
                     // Not safe to remove or replace

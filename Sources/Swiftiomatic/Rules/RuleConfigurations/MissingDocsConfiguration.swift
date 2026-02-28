@@ -20,7 +20,8 @@ struct MissingDocsConfiguration: RuleConfiguration {
             .sorted { $0.key.rawValue < $1.key.rawValue }
         if parametersDescription.isNotEmpty {
             for (severity, values) in parametersDescription {
-                severity.rawValue => .list(values.map(\.value.description).sorted().map { .symbol($0) })
+                severity
+                    .rawValue => .list(values.map(\.value.description).sorted().map { .symbol($0) })
             }
         }
         $excludesExtensions.key => .flag(excludesExtensions)
@@ -58,7 +59,7 @@ struct MissingDocsConfiguration: RuleConfiguration {
     }
 
     private func parameters(from dict: [String: Any]) throws(Issue) -> [RuleParameter<
-        AccessControlLevel
+        AccessControlLevel,
     >]? {
         var parameters: [RuleParameter<AccessControlLevel>] = []
 
@@ -78,7 +79,9 @@ struct MissingDocsConfiguration: RuleConfiguration {
                         }
 
                 parameters.append(contentsOf: rules)
-            } else if let string = value as? String, let acl = AccessControlLevel(description: string) {
+            } else if let string = value as? String,
+                      let acl = AccessControlLevel(description: string)
+            {
                 let rule = RuleParameter<AccessControlLevel>(severity: severity, value: acl)
 
                 parameters.append(rule)

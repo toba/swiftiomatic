@@ -18,14 +18,14 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
                 DispatchQueue.main.async { () -> Void in
                     doSomething()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 registerFilter(name) { any, args throws -> Any? in
                     doSomething(any, args)
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -46,7 +46,7 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
                     }
                     return false
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -60,14 +60,14 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
                     }
                     return false
                 }
-                """
+                """,
             ),
             Example(
                 """
                 registerFilter(name) { ↓(any, args) throws -> Any? in
                     doSomething(any, args)
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         corrections: [
@@ -78,10 +78,12 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
                 Example("let foo = { bar -> Bool in return true }"),
             Example("method { ↓(foo, bar) in }"): Example("method { foo, bar in }"),
             Example("foo.map { ($0, $0) }.forEach { ↓(x, y) in }"): Example(
-                "foo.map { ($0, $0) }.forEach { x, y in }"
+                "foo.map { ($0, $0) }.forEach { x, y in }",
             ),
-            Example("foo.bar { [weak self] ↓(x, y) in }"): Example("foo.bar { [weak self] x, y in }"),
-        ]
+            Example("foo.bar { [weak self] ↓(x, y) in }"): Example(
+                "foo.bar { [weak self] x, y in }",
+            ),
+        ],
     )
 }
 
@@ -126,12 +128,16 @@ private extension UnneededParenthesesInClosureArgumentRule {
                 let isLast = idx == clause.parameters.count - 1
                 return ClosureShorthandParameterSyntax(
                     name: name,
-                    trailingComma: isLast ? nil : .commaToken(trailingTrivia: Trivia(pieces: [.spaces(1)]))
+                    trailingComma: isLast ? nil :
+                        .commaToken(trailingTrivia: Trivia(pieces: [.spaces(1)])),
                 )
             }
 
             numberOfCorrections += 1
-            let paramList = ClosureShorthandParameterListSyntax(items).with(\.trailingTrivia, .spaces(1))
+            let paramList = ClosureShorthandParameterListSyntax(items).with(
+                \.trailingTrivia,
+                .spaces(1),
+            )
             return super.visit(node.with(\.parameterClause, .init(paramList)))
         }
     }

@@ -22,7 +22,7 @@ struct EmptyParenthesesWithTrailingClosureRule: Rule {
                 }, completion: { _ in
                    ()
                 })
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -43,7 +43,7 @@ struct EmptyParenthesesWithTrailingClosureRule: Rule {
                 Example("func foo() -> [Int] {\n    return [1, 2].map { $0 + 1 }\n}"),
             Example("class C {\n#if true\nfunc f() {\n[1, 2].map↓() { $0 + 1 }\n}\n#endif\n}"):
                 Example("class C {\n#if true\nfunc f() {\n[1, 2].map { $0 + 1 }\n}\n#endif\n}"),
-        ]
+        ],
     )
 }
 
@@ -78,7 +78,10 @@ private extension EmptyParenthesesWithTrailingClosureRule {
                 node
                     .with(\.leftParen, nil)
                     .with(\.rightParen, nil)
-                    .with(\.trailingClosure, node.trailingClosure?.with(\.leadingTrivia, .spaces(1)))
+                    .with(
+                        \.trailingClosure,
+                        node.trailingClosure?.with(\.leadingTrivia, .spaces(1)),
+                    )
             return super.visit(newNode)
         }
     }

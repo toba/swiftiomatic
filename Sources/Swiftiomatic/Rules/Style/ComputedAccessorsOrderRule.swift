@@ -10,7 +10,7 @@ struct ComputedAccessorsOrderRule: Rule {
         "Getter and setters in computed properties and subscripts should be in a consistent order.",
         kind: .style,
         nonTriggeringExamples: ComputedAccessorsOrderRuleExamples.nonTriggeringExamples,
-        triggeringExamples: ComputedAccessorsOrderRuleExamples.triggeringExamples
+        triggeringExamples: ComputedAccessorsOrderRuleExamples.triggeringExamples,
     )
 }
 
@@ -39,8 +39,8 @@ extension ComputedAccessorsOrderRule {
             violations.append(
                 ReasonedRuleViolation(
                     position: firstAccessor.positionAfterSkippingLeadingTrivia,
-                    reason: reason(for: kind)
-                )
+                    reason: reason(for: kind),
+                ),
             )
         }
 
@@ -48,10 +48,10 @@ extension ComputedAccessorsOrderRule {
             let kindString = kind == .subscript ? "subscripts" : "properties"
             let orderString: String
             switch configuration.order {
-            case .getSet:
-                orderString = "getter and then the setter"
-            case .setGet:
-                orderString = "setter and then the getter"
+                case .getSet:
+                    orderString = "getter and then the setter"
+                case .setGet:
+                    orderString = "setter and then the getter"
             }
             return "Computed \(kindString) should first declare the \(orderString)"
         }

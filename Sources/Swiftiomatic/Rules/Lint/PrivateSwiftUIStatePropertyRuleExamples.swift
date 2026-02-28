@@ -5,21 +5,21 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
             struct MyApp: App {
                 @State private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
             struct MyScene: Scene {
                 @State private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
             struct CofntentView: View {
                 @State private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
@@ -30,7 +30,7 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                     @State private var showsIndicator: Bool = false
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -39,7 +39,7 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                     @State private var isPlaying: Bool = false
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -50,7 +50,7 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
 
                 @State var nonTriggeringState: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
@@ -63,35 +63,35 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
 
                 var body: some View { Text("") }
             }
-            """
+            """,
         ),
         Example(
             """
             struct ContentView: View {
                 var isPlaying = false
             }
-            """
+            """,
         ),
         Example(
             """
             struct MyApp: App {
                 @StateObject private var model = DataModel()
             }
-            """
+            """,
         ),
         Example(
             """
             struct MyScene: Scene {
                 @StateObject private var model = DataModel()
             }
-            """
+            """,
         ),
         Example(
             """
             struct ContentView: View {
                 @StateObject private var model = DataModel()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -102,21 +102,21 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
 
                 @StateObject var nonTriggeringObject = MyModel()
             }
-            """
+            """,
         ),
         Example(
             """
             struct Foo {
                 @State var bar = false
             }
-            """
+            """,
         ),
         Example(
             """
             class Foo: ObservableObject {
                 @State var bar = Bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -125,21 +125,21 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                     @State private var isPlaying: Bool = false
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             actor ContentView: View {
                 @State private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
             struct ContentViewModifier: ViewModifier {
                 @State private var isPlaying = false
             }
-            """
+            """,
         ),
     ]
 
@@ -149,21 +149,21 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
             struct MyApp: App {
                 @State ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
             struct MyScene: Scene {
                 @State ↓public var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
             struct ContentView: View {
                 @State ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
@@ -174,7 +174,7 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
 
                 @State ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
@@ -183,7 +183,7 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                     @State ↓var isPlaying: Bool = false
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -194,14 +194,14 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
 
                 @State var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
             final class ContentView: View {
                 @State ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
@@ -210,54 +210,54 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                     @State ↓var isPlaying: Bool = false
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             actor ContentView: View {
                 @State ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
             struct MyApp: App {
                 @StateObject ↓var model = DataModel()
             }
-            """
+            """,
         ),
         Example(
             """
             struct MyScene: Scene {
                 @StateObject ↓var model = DataModel()
             }
-            """
+            """,
         ),
         Example(
             """
             struct ContentView: View {
                 @StateObject ↓var model = DataModel()
             }
-            """
+            """,
         ),
         Example(
             """
             struct ContentView: View {
                 @State ↓private(set) var isPlaying = false
-            """
+            """,
         ),
         Example(
             """
             struct ContentView: View {
                 @State ↓fileprivate(set) public var isPlaying = false
-            """
+            """,
         ),
         Example(
             """
             struct ContentViewModifier: ViewModifier {
                 @State ↓var isPlaying = false
             }
-            """
+            """,
         ),
     ]
 
@@ -267,39 +267,39 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
             struct ContentView: View {
                 @State ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ): Example(
             """
             struct ContentView: View {
                 @State private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
             struct ContentView: View {
                 @State public ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ): Example(
             """
             struct ContentView: View {
                 @State private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
             struct ContentView: View {
                 @State private(set) ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ): Example(
             """
             struct ContentView: View {
                 @State private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
@@ -310,7 +310,7 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                 // This is another comment about this property
                 public ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ): Example(
             """
             struct ContentView: View {
@@ -319,7 +319,7 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                 // This is another comment about this property
                 private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
@@ -328,7 +328,7 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                 /// This will track if the content is currently playing
                 ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ): Example(
             """
             struct MyApp: App {
@@ -336,20 +336,20 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                 /// This will track if the content is currently playing
                 private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
             struct MyScene: Scene {
                 @State /* This is a comment */ ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ): Example(
             """
             struct MyScene: Scene {
                 @State /* This is a comment */ private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
         Example(
             """
@@ -358,7 +358,7 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                 /// This will track if the content is currently playing
                 ↓var isPlaying: Bool = false
             }
-            """
+            """,
         ): Example(
             """
             struct ContentView: View {
@@ -366,7 +366,7 @@ enum PrivateSwiftUIStatePropertyRuleExamples {
                 /// This will track if the content is currently playing
                 private var isPlaying: Bool = false
             }
-            """
+            """,
         ),
     ]
 }

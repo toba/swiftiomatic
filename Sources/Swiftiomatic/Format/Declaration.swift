@@ -1,11 +1,3 @@
-//
-//  Declaration.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 10/27/24.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 /// A declaration, like a property, function, or type.
 /// https://docs.swift.org/swift-book/documentation/the-swift-programming-language/declarations/
 ///
@@ -70,10 +62,10 @@ extension Declaration {
     var _keywordIndex: Int? {
         let expectedKeywordToken: Token
         switch kind {
-        case .declaration, .type:
-            expectedKeywordToken = .keyword(keyword)
-        case .conditionalCompilation:
-            expectedKeywordToken = .startOfScope("#if")
+            case .declaration, .type:
+                expectedKeywordToken = .keyword(keyword)
+            case .conditionalCompilation:
+                expectedKeywordToken = .startOfScope("#if")
         }
 
         return formatter.index(of: expectedKeywordToken, after: range.lowerBound - 1)
@@ -100,12 +92,12 @@ extension Declaration {
     @_disfavoredOverload
     var body: [Declaration]? {
         switch kind {
-        case .declaration:
-            return nil
-        case let .type(type):
-            return type.body
-        case let .conditionalCompilation(conditionalCompilation):
-            return conditionalCompilation.body
+            case .declaration:
+                return nil
+            case let .type(type):
+                return type.body
+            case let .conditionalCompilation(conditionalCompilation):
+                return conditionalCompilation.body
         }
     }
 
@@ -120,7 +112,7 @@ extension Declaration {
     /// which represents the first non-space / non-comment token in the declaration.
     func startOfModifiersIndex(includingAttributes: Bool) -> Int {
         let startOfModifiers = formatter.startOfModifiers(
-            at: keywordIndex, includingAttributes: includingAttributes
+            at: keywordIndex, includingAttributes: includingAttributes,
         )
         return max(startOfModifiers, range.lowerBound)
     }
@@ -133,7 +125,7 @@ extension Declaration {
             contains: { _, modifier in
                 allModifiers.append(modifier)
                 return false
-            }
+            },
         )
         return allModifiers
     }
@@ -295,7 +287,8 @@ final class TypeDeclaration: Declaration {
                 let parent = declaration
                 let indexInParent = childDeclaration.range.lowerBound - parent.range.lowerBound
                 childDeclarationsNeedingUpdate[childDeclaration.identity] = (
-                    originalIndexInParent: indexInParent, originalTokens: Array(childDeclaration.tokens)
+                    originalIndexInParent: indexInParent,
+                    originalTokens: Array(childDeclaration.tokens),
                 )
                 formatter.unregisterAutoUpdatingReference(childDeclaration)
             }
@@ -326,12 +319,13 @@ final class TypeDeclaration: Declaration {
             declaration.body?.forEachRecursiveDeclaration { childDeclaration in
                 guard
                     let (originalIndexInParent, originalTokens) = childDeclarationsNeedingUpdate[
-                        childDeclaration.identity
+                        childDeclaration.identity,
                     ]
                 else { return }
                 let parent = declaration
                 let newIndexInFile = parent.range.lowerBound + originalIndexInParent
-                let newRangeInFile = ClosedRange(newIndexInFile ..< (newIndexInFile + originalTokens.count))
+                let newRangeInFile =
+                    ClosedRange(newIndexInFile ..< (newIndexInFile + originalTokens.count))
                 childDeclaration.range = newRangeInFile
 
                 formatter.registerAutoUpdatingReference(childDeclaration)
@@ -350,7 +344,7 @@ extension TypeDeclaration {
     var openBraceIndex: Int {
         guard
             let openBraceIndex = formatter.index(
-                of: .startOfScope("{"), in: keywordIndex ..< range.upperBound
+                of: .startOfScope("{"), in: keywordIndex ..< range.upperBound,
             )
         else {
             assertionFailure("Declaration \(self) is no longer valid.")
@@ -368,10 +362,13 @@ extension TypeDeclaration {
     /// The generic parameters of this type, e.g. between angle brackets `Foo<Bar, Baaz>`.
     var genericParameters: (types: [Formatter.GenericType], range: ClosedRange<Int>)? {
         guard
-            let identifierIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: keywordIndex),
+            let identifierIndex = formatter.index(
+                of: .nonSpaceOrCommentOrLinebreak,
+                after: keywordIndex,
+            ),
             tokens[identifierIndex].isIdentifier,
             let openAngleBracketIndex = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: identifierIndex
+                of: .nonSpaceOrCommentOrLinebreak, after: identifierIndex,
             ),
             tokens[openAngleBracketIndex] == .startOfScope("<")
         else { return nil }
@@ -450,7 +447,7 @@ extension Declaration {
         let firstTokenIndex =
             formatter.index(
                 of: .nonSpaceOrCommentOrLinebreak,
-                after: range.lowerBound - 1
+                after: range.lowerBound - 1,
             ) ?? range.lowerBound
 
         return range.lowerBound ..< firstTokenIndex
@@ -489,15 +486,15 @@ extension Declaration {
     /// The explicit `Visibility` of this `Declaration`
     func visibility() -> Visibility? {
         switch kind {
-        case .declaration, .type:
-            return formatter.declarationVisibility(keywordIndex: keywordIndex)
+            case .declaration, .type:
+                return formatter.declarationVisibility(keywordIndex: keywordIndex)
 
-        case let .conditionalCompilation(conditionalCompilation):
-            // Conditional compilation blocks themselves don't have a category or visbility-level,
-            // but we still have to assign them a category for the sorting algorithm to function.
-            // A reasonable heuristic here is to simply use the category of the first declaration
-            // inside the conditional compilation block.
-            return conditionalCompilation.body.first?.visibility()
+            case let .conditionalCompilation(conditionalCompilation):
+                // Conditional compilation blocks themselves don't have a category or visbility-level,
+                // but we still have to assign them a category for the sorting algorithm to function.
+                // A reasonable heuristic here is to simply use the category of the first declaration
+                // inside the conditional compilation block.
+                return conditionalCompilation.body.first?.visibility()
         }
     }
 
@@ -509,6 +506,9 @@ extension Declaration {
 
     /// Removes the given visibility keyword from the given declaration
     func removeVisibility(_ visibilityKeyword: Visibility) {
-        formatter.removeDeclarationVisibility(visibilityKeyword, declarationKeywordIndex: keywordIndex)
+        formatter.removeDeclarationVisibility(
+            visibilityKeyword,
+            declarationKeywordIndex: keywordIndex,
+        )
     }
 }

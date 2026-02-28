@@ -12,19 +12,19 @@ struct FunctionNameWhitespaceConfiguration: SeverityBasedRuleConfiguration {
 
         var beforeGenericViolationReason: String {
             switch self {
-            case .noSpace, .trailingSpace:
-                "Superfluous space between function name and generic parameter(s)"
-            case .leadingSpace, .leadingTrailingSpace:
-                "Missing space between function name and generic parameter(s)"
+                case .noSpace, .trailingSpace:
+                    "Superfluous space between function name and generic parameter(s)"
+                case .leadingSpace, .leadingTrailingSpace:
+                    "Missing space between function name and generic parameter(s)"
             }
         }
 
         var afterGenericViolationReason: String {
             switch self {
-            case .noSpace, .leadingSpace:
-                "Superfluous space after generic parameter(s)"
-            case .trailingSpace, .leadingTrailingSpace:
-                "Missing space after generic parameter(s)"
+                case .noSpace, .leadingSpace:
+                    "Superfluous space after generic parameter(s)"
+                case .trailingSpace, .leadingTrailingSpace:
+                    "Missing space after generic parameter(s)"
             }
         }
     }

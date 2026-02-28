@@ -47,8 +47,8 @@ final class TypedThrowsCheck: BaseCheck {
                         offset: offset,
                         funcNode: node,
                         hasRethrows: collector.hasRethrows,
-                        knownTypes: knownTypes
-                    )
+                        knownTypes: knownTypes,
+                    ),
                 )
             }
             // If there are also known types with no unknowns, still report now
@@ -61,7 +61,7 @@ final class TypedThrowsCheck: BaseCheck {
                     message:
                     "Function '\(funcName)' throws only '\(errorType)' but declares untyped 'throws'",
                     suggestion: "func \(funcName)(...) throws(\(errorType))",
-                    confidence: collector.hasRethrows ? .medium : .high
+                    confidence: collector.hasRethrows ? .medium : .high,
                 )
             }
             return .visitChildren
@@ -75,7 +75,7 @@ final class TypedThrowsCheck: BaseCheck {
                 severity: .medium,
                 message: "Function '\(funcName)' throws only '\(errorType)' but declares untyped 'throws'",
                 suggestion: "func \(funcName)(...) throws(\(errorType))",
-                confidence: collector.hasRethrows ? .medium : .high
+                confidence: collector.hasRethrows ? .medium : .high,
             )
         }
 
@@ -102,7 +102,7 @@ final class TypedThrowsCheck: BaseCheck {
                 severity: .medium,
                 message: "Initializer throws only '\(errorType)' but declares untyped 'throws'",
                 suggestion: "init(...) throws(\(errorType))",
-                confidence: collector.hasRethrows ? .medium : .high
+                confidence: collector.hasRethrows ? .medium : .high,
             )
         }
 
@@ -114,7 +114,8 @@ final class TypedThrowsCheck: BaseCheck {
 
         // Group queries by function
         for query in throwQueries {
-            guard let resolved = await resolver.resolveType(inFile: filePath, offset: query.offset) else {
+            guard let resolved = await resolver.resolveType(inFile: filePath, offset: query.offset)
+            else {
                 continue
             }
 
@@ -126,8 +127,8 @@ final class TypedThrowsCheck: BaseCheck {
                 let location = query.funcNode.startLocation(
                     converter: .init(
                         fileName: filePath,
-                        tree: query.funcNode.root
-                    )
+                        tree: query.funcNode.root,
+                    ),
                 )
                 findings.append(
                     Finding(
@@ -139,8 +140,8 @@ final class TypedThrowsCheck: BaseCheck {
                         message:
                         "Function '\(query.funcName)' throws only '\(errorType)' but declares untyped 'throws'",
                         suggestion: "func \(query.funcName)(...) throws(\(errorType))",
-                        confidence: query.hasRethrows ? .medium : .high
-                    )
+                        confidence: query.hasRethrows ? .medium : .high,
+                    ),
                 )
             }
         }

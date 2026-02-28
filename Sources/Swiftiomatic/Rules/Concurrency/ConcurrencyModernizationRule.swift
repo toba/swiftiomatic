@@ -17,7 +17,7 @@ struct ConcurrencyModernizationRule: Rule {
             Example("↓DispatchQueue.main.async { update() }"),
             Example("↓DispatchGroup()"),
             Example("func fetch(↓completion: @escaping (Result<Data, Error>) -> Void) {}"),
-        ]
+        ],
     )
 }
 
@@ -40,8 +40,8 @@ private extension ConcurrencyModernizationRule {
                             reason: "Function '\(node.name.text)' uses completion handler pattern",
                             severity: .warning,
                             confidence: .high,
-                            suggestion: "Convert to async/await"
-                        )
+                            suggestion: "Convert to async/await",
+                        ),
                     )
                     break
                 }
@@ -58,8 +58,8 @@ private extension ConcurrencyModernizationRule {
                         reason: "DispatchQueue.async can be replaced with structured concurrency",
                         severity: .warning,
                         confidence: .medium,
-                        suggestion: "Use Task { @MainActor in ... } or async function"
-                    )
+                        suggestion: "Use Task { @MainActor in ... } or async function",
+                    ),
                 )
             }
 
@@ -70,8 +70,8 @@ private extension ConcurrencyModernizationRule {
                         reason: "DispatchGroup can be replaced with TaskGroup",
                         severity: .warning,
                         confidence: .medium,
-                        suggestion: "Use withTaskGroup or withThrowingTaskGroup"
-                    )
+                        suggestion: "Use withTaskGroup or withThrowingTaskGroup",
+                    ),
                 )
             }
 
@@ -82,8 +82,8 @@ private extension ConcurrencyModernizationRule {
                         reason: "Lock-based synchronization can be replaced with Mutex",
                         severity: .warning,
                         confidence: .medium,
-                        suggestion: "Use Mutex<Value> for state protection"
-                    )
+                        suggestion: "Use Mutex<Value> for state protection",
+                    ),
                 )
             }
         }
@@ -96,8 +96,8 @@ private extension ConcurrencyModernizationRule {
                         reason:
                         "Class '\(node.name.text)' uses @unchecked Sendable — check if Mutex would enable proper Sendable",
                         severity: .warning,
-                        confidence: .low
-                    )
+                        confidence: .low,
+                    ),
                 )
             }
         }

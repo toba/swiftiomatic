@@ -15,7 +15,7 @@ struct TypedThrowsRule: Rule {
         ],
         triggeringExamples: [
             Example("↓func parse() throws { throw ParseError.invalid }"),
-        ]
+        ],
     )
 }
 
@@ -51,8 +51,8 @@ private extension TypedThrowsRule {
                     reason: "Function '\(funcName)' throws only '\(errorType)' but declares untyped 'throws'",
                     severity: .warning,
                     confidence: collector.hasRethrows ? .medium : .high,
-                    suggestion: "func \(funcName)(...) throws(\(errorType))"
-                )
+                    suggestion: "func \(funcName)(...) throws(\(errorType))",
+                ),
             )
         }
 
@@ -77,8 +77,8 @@ private extension TypedThrowsRule {
                     reason: "Initializer throws only '\(errorType)' but declares untyped 'throws'",
                     severity: .warning,
                     confidence: collector.hasRethrows ? .medium : .high,
-                    suggestion: "init(...) throws(\(errorType))"
-                )
+                    suggestion: "init(...) throws(\(errorType))",
+                ),
             )
         }
     }

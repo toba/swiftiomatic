@@ -16,17 +16,17 @@ final class SwiftUILayoutCheck: BaseCheck {
 
         // Check for conflicts with ancestor containers before pushing.
         if let issue = SwiftUIContainerHelpers.checkNestedNavigationStack(
-            callee: callee, containerStack: containerStack
+            callee: callee, containerStack: containerStack,
         ) {
             emitIssue(issue, at: node)
         }
         if let issue = SwiftUIContainerHelpers.checkListInsideScrollView(
-            callee: callee, containerStack: containerStack
+            callee: callee, containerStack: containerStack,
         ) {
             emitIssue(issue, at: node)
         }
         if let issue = SwiftUIContainerHelpers.checkGeometryReaderInsideScrollView(
-            callee: callee, containerStack: containerStack
+            callee: callee, containerStack: containerStack,
         ) {
             emitIssue(issue, at: node)
         }
@@ -35,7 +35,7 @@ final class SwiftUILayoutCheck: BaseCheck {
 
         // After pushing, check for multiple unbounded containers in a stack.
         if let issue = SwiftUIContainerHelpers.checkMultipleUnboundedContainers(
-            containerStack: containerStack
+            containerStack: containerStack,
         ) {
             emitIssue(issue, at: node)
         }
@@ -57,14 +57,17 @@ final class SwiftUILayoutCheck: BaseCheck {
 
     // MARK: - Helpers
 
-    private func emitIssue(_ issue: SwiftUIContainerHelpers.LayoutIssue, at node: FunctionCallExprSyntax) {
+    private func emitIssue(
+        _ issue: SwiftUIContainerHelpers.LayoutIssue,
+        at node: FunctionCallExprSyntax,
+    ) {
         addFinding(
             at: node,
             category: .agentReview,
             severity: issue.isHighSeverity ? .high : .medium,
             message: issue.reason,
             suggestion: issue.suggestion,
-            confidence: issue.isHighSeverity ? .high : .medium
+            confidence: issue.isHighSeverity ? .high : .medium,
         )
     }
 }

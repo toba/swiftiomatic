@@ -1,18 +1,10 @@
-//
-//  ModifierOrder.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 7/28/20.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Standardise the order of property modifiers
     static let modifierOrder = FormatRule(
         help: "Use consistent ordering for member modifiers.",
-        options: ["modifier-order"]
+        options: ["modifier-order"],
     ) { formatter in
         formatter.forEach(.keyword) { i, token in
             guard token.isDeclarationTypeKeyword else { return }
@@ -23,37 +15,52 @@ extension FormatRule {
             }
             var lastIndex = i
             var previousIndex = lastIndex
-            loop: while let index = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: lastIndex) {
+            loop: while let index = formatter.index(
+                of: .nonSpaceOrCommentOrLinebreak,
+                before: lastIndex,
+            ) {
                 switch formatter.tokens[index] {
-                case .operator(_, .prefix), .operator(_, .infix), .keyword("case"):
-                    // Last modifier was invalid
-                    lastModifier = nil
-                    lastIndex = previousIndex
-                    break loop
-                case let token where formatter.isModifier(at: index):
-                    pushModifier()
-                    lastModifier = (token.string, [Token](formatter.tokens[index ..< lastIndex]))
-                    previousIndex = lastIndex
-                    lastIndex = index
-                case .endOfScope(")"):
-                    if case let .identifier(param)? = formatter.last(
-                        .nonSpaceOrCommentOrLinebreak, before: index
-                    ),
-                        let openParenIndex = formatter.index(of: .startOfScope("("), before: index),
-                        let index = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: openParenIndex),
-                        let token = formatter.token(at: index), formatter.isModifier(at: index)
-                    {
+                    case .operator(_, .prefix), .operator(_, .infix), .keyword("case"):
+                        // Last modifier was invalid
+                        lastModifier = nil
+                        lastIndex = previousIndex
+                        break loop
+                    case let token where formatter.isModifier(at: index):
                         pushModifier()
-                        let modifier = token.string + (param == "set" ? "(set)" : "")
-                        lastModifier = (modifier, [Token](formatter.tokens[index ..< lastIndex]))
+                        lastModifier = (
+                            token.string,
+                            [Token](formatter.tokens[index ..< lastIndex]),
+                        )
                         previousIndex = lastIndex
                         lastIndex = index
-                    } else {
+                    case .endOfScope(")"):
+                        if case let .identifier(param)? = formatter.last(
+                            .nonSpaceOrCommentOrLinebreak, before: index,
+                        ),
+                            let openParenIndex = formatter.index(
+                                of: .startOfScope("("),
+                                before: index,
+                            ),
+                            let index = formatter.index(
+                                of: .nonSpaceOrCommentOrLinebreak,
+                                before: openParenIndex,
+                            ),
+                            let token = formatter.token(at: index), formatter.isModifier(at: index)
+                        {
+                            pushModifier()
+                            let modifier = token.string + (param == "set" ? "(set)" : "")
+                            lastModifier = (
+                                modifier,
+                                [Token](formatter.tokens[index ..< lastIndex]),
+                            )
+                            previousIndex = lastIndex
+                            lastIndex = index
+                        } else {
+                            break loop
+                        }
+                    default:
+                        // Not a modifier
                         break loop
-                    }
-                default:
-                    // Not a modifier
-                    break loop
                 }
             }
             pushModifier()

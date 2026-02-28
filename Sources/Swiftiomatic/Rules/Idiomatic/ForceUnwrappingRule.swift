@@ -18,11 +18,11 @@ struct ForceUnwrappingRule: Rule {
             Example("setEditing(!editing, animated: true)"),
             Example(
                 "navigationController.setNavigationBarHidden(!navigationController."
-                    + "navigationBarHidden, animated: true)"
+                    + "navigationBarHidden, animated: true)",
             ),
             Example(
                 "if addedToPlaylist && (!self.selectedFilters.isEmpty || "
-                    + "self.searchBar?.text?.isEmpty == false) {}"
+                    + "self.searchBar?.text?.isEmpty == false) {}",
             ),
             Example("print(\"\\(xVar)!\")"),
             Example("var test = (!bar)"),
@@ -46,7 +46,7 @@ struct ForceUnwrappingRule: Rule {
                 func bla() -> String {
                     return dict["Boooo"]↓!
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -54,27 +54,27 @@ struct ForceUnwrappingRule: Rule {
                 func bla() -> String {
                     return dict["Boooo"]↓!.contains("B")
                 }
-                """
+                """,
             ),
             Example("let a = dict[\"abc\"]↓!.contains(\"B\")"),
             Example("dict[\"abc\"]↓!.bar(\"B\")"),
             Example("if dict[\"a\"]↓!↓!↓!↓! {}"),
             Example("var foo: [Bool]! = dict[\"abc\"]↓!"),
             Example(
-                "realm.objects(SwiftUTF8Object.self).filter(\"%K == %@\", \"柱нǢкƱаم👍\", utf8TestString).first↓!"
+                "realm.objects(SwiftUTF8Object.self).filter(\"%K == %@\", \"柱нǢкƱаم👍\", utf8TestString).first↓!",
             ),
             Example(
                 """
                 context("abc") {
                   var foo: [Bool]! = dict["abc"]↓!
                 }
-                """
+                """,
             ),
             Example("open var computed: String { return foo.bar↓! }"),
             Example("return self↓!"),
             Example("[1, 3, 5, 6].first { $0.isMultiple(of: 2) }↓!"),
             Example("map[\"a\"]↓!↓!"),
-        ]
+        ],
     )
 }
 

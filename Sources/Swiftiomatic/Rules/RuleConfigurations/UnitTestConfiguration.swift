@@ -9,7 +9,7 @@ struct UnitTestConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration {
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.warning)
     @ConfigurationElement(
         key: "test_parent_classes",
-        postprocessor: { $0.formUnion(["QuickSpec", "XCTestCase"]) }
+        postprocessor: { $0.formUnion(["QuickSpec", "XCTestCase"]) },
     )
     private(set) var testParentClasses = Set<String>()
     mutating func apply(configuration: Any) throws(Issue) {

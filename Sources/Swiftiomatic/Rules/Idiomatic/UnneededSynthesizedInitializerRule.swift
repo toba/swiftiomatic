@@ -26,7 +26,7 @@ struct UnneededSynthesizedInitializerRule: Rule {
         kind: .idiomatic,
         nonTriggeringExamples: UnneededSynthesizedInitializerRuleExamples.nonTriggering,
         triggeringExamples: UnneededSynthesizedInitializerRuleExamples.triggering,
-        corrections: UnneededSynthesizedInitializerRuleExamples.corrections
+        corrections: UnneededSynthesizedInitializerRuleExamples.corrections,
     )
 }
 
@@ -53,7 +53,7 @@ private extension UnneededSynthesizedInitializerRule {
                     "This \(initializerType) initializer would be synthesized automatically - "
                         + "you do not need to define it"
                 return ReasonedRuleViolation(
-                    position: $0.positionAfterSkippingLeadingTrivia, reason: reason
+                    position: $0.positionAfterSkippingLeadingTrivia, reason: reason,
                 )
             }
             return .visitChildren
@@ -120,7 +120,9 @@ extension StructDeclSyntax {
 
     /// Finds all of the initializers that could be replaced by the synthesized
     /// memberwise or default initializer(s).
-    private func findUnneededInitializers(in collector: ElementCollector) -> [InitializerDeclSyntax] {
+    private func findUnneededInitializers(in collector: ElementCollector)
+        -> [InitializerDeclSyntax]
+    {
         let initializers = collector.initializers.filter {
             $0.optionalMark == nil && !$0.hasThrowsOrRethrowsKeyword
         }
@@ -136,12 +138,13 @@ extension StructDeclSyntax {
     /// Are the initializer parameters empty, or do they match the stored properties of the struct?
     private func initializerParameters(
         _ initializerParameters: FunctionParameterListSyntax,
-        match storedProperties: [VariableDeclSyntax]
+        match storedProperties: [VariableDeclSyntax],
     ) -> Bool {
         if initializerParameters.isEmpty {
             // Are all properties initialized?
             return storedProperties.allSatisfy {
-                $0.bindingSpecifier.tokenKind == .keyword(.var) && $0.bindings.first?.initializer != nil
+                $0.bindingSpecifier.tokenKind == .keyword(.var) && $0.bindings.first?
+                    .initializer != nil
             }
         }
         guard initializerParameters.count == storedProperties.count else {
@@ -162,12 +165,15 @@ extension StructDeclSyntax {
             if property.bindingSpecifier.tokenKind == .keyword(.var),
                let initializer = property.initializer
             {
-                guard initializer.value.description == parameter.defaultValue?.value.description else {
+                guard initializer.value.description == parameter.defaultValue?.value.description
+                else {
                     return false
                 }
             } else if parameter.defaultValue != nil
                 || propertyId.identifier.text != parameter.firstName.text
-                || (propertyTypeDescription != nil && propertyTypeDescription != parameter.typeDescription)
+                ||
+                (propertyTypeDescription != nil && propertyTypeDescription != parameter
+                    .typeDescription)
             {
                 return false
             }
@@ -178,7 +184,7 @@ extension StructDeclSyntax {
     /// Does the body initialize all, and only, the stored properties for the struct?
     private func initializerBody( // swiftlint:disable:this cyclomatic_complexity
         _ initializerBody: CodeBlockSyntax?,
-        matches storedProperties: [VariableDeclSyntax]
+        matches storedProperties: [VariableDeclSyntax],
     ) -> Bool {
         guard let initializerBody, storedProperties.count == initializerBody.statements.count else {
             return false
@@ -195,19 +201,19 @@ extension StructDeclSyntax {
 
             for element in exp.elements {
                 switch Syntax(element).as(SyntaxEnum.self) {
-                case let .memberAccessExpr(element):
-                    guard element.isBaseSelf else {
+                    case let .memberAccessExpr(element):
+                        guard element.isBaseSelf else {
+                            return false
+                        }
+                        leftName = element.declName.baseName.text
+                    case let .assignmentExpr(element) where element.equal.tokenKind != .equal:
                         return false
-                    }
-                    leftName = element.declName.baseName.text
-                case let .assignmentExpr(element) where element.equal.tokenKind != .equal:
-                    return false
-                case .assignmentExpr:
-                    break
-                case let .declReferenceExpr(element):
-                    rightName = element.baseName.text
-                default:
-                    return false
+                    case .assignmentExpr:
+                        break
+                    case let .declReferenceExpr(element):
+                        rightName = element.baseName.text
+                    default:
+                        return false
                 }
             }
             guard leftName == rightName else {
@@ -237,17 +243,17 @@ extension StructDeclSyntax {
     /// memberwise initializer?
     private func initializerModifiers(
         _ modifiers: DeclModifierListSyntax?,
-        match storedProperties: [VariableDeclSyntax]
+        match storedProperties: [VariableDeclSyntax],
     ) -> Bool {
         let accessLevel = modifiers?.accessLevelModifier
         switch synthesizedInitializerAccessLevel(using: storedProperties) {
-        case .internal:
-            // No explicit access level or internal are equivalent.
-            return accessLevel == nil || accessLevel!.name.tokenKind == .keyword(.internal)
-        case .fileprivate:
-            return accessLevel?.name.tokenKind == .keyword(.fileprivate)
-        case .private:
-            return accessLevel?.name.tokenKind == .keyword(.private)
+            case .internal:
+                // No explicit access level or internal are equivalent.
+                return accessLevel == nil || accessLevel!.name.tokenKind == .keyword(.internal)
+            case .fileprivate:
+                return accessLevel?.name.tokenKind == .keyword(.fileprivate)
+            case .private:
+                return accessLevel?.name.tokenKind == .keyword(.private)
         }
     }
 }
@@ -303,10 +309,14 @@ private func synthesizedInitializerAccessLevel(using storedProperties: [Variable
         let modifiers = property.modifiers
 
         // Private takes precedence, so finding 1 private property defines the access level.
-        if modifiers.contains(where: { $0.name.tokenKind == .keyword(.private) && $0.detail == nil }) {
+        if modifiers
+            .contains(where: { $0.name.tokenKind == .keyword(.private) && $0.detail == nil })
+        {
             return .private
         }
-        if modifiers.contains(where: { $0.name.tokenKind == .keyword(.fileprivate) && $0.detail == nil }) {
+        if modifiers
+            .contains(where: { $0.name.tokenKind == .keyword(.fileprivate) && $0.detail == nil })
+        {
             hasFileprivate = true
             // Can't break here because a later property might be private.
         }

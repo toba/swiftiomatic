@@ -1,34 +1,3 @@
-//
-//  Inference.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 07/08/2018.
-//  Copyright © 2018 Nick Lockwood.
-//
-//  Distributed under the permissive MIT license
-//  Get the latest version from here:
-//
-//  https://github.com/nicklockwood/SwiftFormat
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in all
-//  copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  SOFTWARE.
-//
-
 import Foundation
 
 /// Infer default options by examining the existing source
@@ -69,39 +38,41 @@ private struct Inference {
         var scopeStack = [Token]()
         formatter.forEachToken { i, token in
             switch token {
-            case .linebreak where scopeStack.isEmpty:
-                guard case let .space(string)? = formatter.token(at: i + 1) else {
-                    break
-                }
-                if string.hasPrefix("\t") {
-                    increment("\t")
-                } else {
-                    let length = string.count
-                    let delta = previousLength - length
-                    if delta != 0 {
-                        switch formatter.token(at: i + 2) ?? .space("") {
-                        case .commentBody, .delimiter(","):
-                            return
-                        default:
-                            break
-                        }
-                        switch formatter.last(.nonSpaceOrCommentOrLinebreak, before: i) ?? .space("") {
-                        case .delimiter(","):
-                            break
-                        default:
-                            increment(String(repeating: " ", count: abs(delta)))
-                            previousLength = length
+                case .linebreak where scopeStack.isEmpty:
+                    guard case let .space(string)? = formatter.token(at: i + 1) else {
+                        break
+                    }
+                    if string.hasPrefix("\t") {
+                        increment("\t")
+                    } else {
+                        let length = string.count
+                        let delta = previousLength - length
+                        if delta != 0 {
+                            switch formatter.token(at: i + 2) ?? .space("") {
+                                case .commentBody, .delimiter(","):
+                                    return
+                                default:
+                                    break
+                            }
+                            switch formatter
+                                .last(.nonSpaceOrCommentOrLinebreak, before: i) ?? .space("")
+                            {
+                                case .delimiter(","):
+                                    break
+                                default:
+                                    increment(String(repeating: " ", count: abs(delta)))
+                                    previousLength = length
+                            }
                         }
                     }
-                }
-            case .startOfScope("/*"):
-                scopeStack.append(token)
-            case .endOfScope:
-                if let scope = scopeStack.last, token.isEndOfScope(scope) {
-                    scopeStack.removeLast()
-                }
-            default:
-                break
+                case .startOfScope("/*"):
+                    scopeStack.append(token)
+                case .endOfScope:
+                    if let scope = scopeStack.last, token.isEndOfScope(scope) {
+                        scopeStack.removeLast()
+                    }
+                default:
+                    break
             }
         }
         if let indent = indents.max(by: {
@@ -117,14 +88,14 @@ private struct Inference {
         var crlf = 0
         formatter.forEachToken { _, token in
             switch token {
-            case .linebreak("\n", _):
-                lf += 1
-            case .linebreak("\r", _):
-                cr += 1
-            case .linebreak("\r\n", _):
-                crlf += 1
-            default:
-                break
+                case .linebreak("\n", _):
+                    lf += 1
+                case .linebreak("\r", _):
+                    cr += 1
+                case .linebreak("\r\n", _):
+                    crlf += 1
+                default:
+                    break
             }
         }
         var max = lf
@@ -201,7 +172,8 @@ private struct Inference {
         var tuples = 0
         formatter.forEach(.identifier("Void")) { i, _ in
             if let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: i),
-               [.operator(".", .prefix), .operator(".", .infix), .keyword("typealias")].contains(prevToken)
+               [.operator(".", .prefix), .operator(".", .infix), .keyword("typealias")]
+               .contains(prevToken)
             {
                 return
             }
@@ -212,7 +184,10 @@ private struct Inference {
                let prevToken = formatter.token(at: prevIndex), prevToken == .operator("->", .infix),
                let nextIndex = formatter.index(of: .nonSpaceOrLinebreak, after: i),
                let nextToken = formatter.token(at: nextIndex), nextToken.string == ")",
-               formatter.next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) != .operator("->", .infix)
+               formatter.next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) != .operator(
+                   "->",
+                   .infix,
+               )
             {
                 tuples += 1
             }
@@ -227,19 +202,19 @@ private struct Inference {
             guard let linebreakIndex = formatter.index(of: .nonSpaceOrComment, before: i),
                   case .linebreak = formatter.tokens[linebreakIndex],
                   let prevTokenIndex = formatter.index(
-                      of: .nonSpaceOrCommentOrLinebreak, before: linebreakIndex + 1
+                      of: .nonSpaceOrCommentOrLinebreak, before: linebreakIndex + 1,
                   ),
                   let token = formatter.token(at: prevTokenIndex)
             else {
                 return
             }
             switch token.string {
-            case "[", ":":
-                break // do nothing
-            case ",":
-                trailing += 1
-            default:
-                noTrailing += 1
+                case "[", ":":
+                    break // do nothing
+                case ",":
+                    trailing += 1
+                default:
+                    noTrailing += 1
             }
         }
         options.trailingCommas = (trailing >= noTrailing) ? .always : .never
@@ -251,27 +226,27 @@ private struct Inference {
         var scopeStack = [Token]()
         formatter.forEachToken { i, token in
             switch token {
-            case .startOfScope:
-                scopeStack.append(token)
-            case .linebreak:
-                switch formatter.token(at: i + 1) {
-                case .space:
-                    if let nextToken = formatter.token(at: i + 2) {
-                        if case .linebreak = nextToken {
-                            untruncated += 1
-                        }
-                    } else {
-                        untruncated += 1
+                case .startOfScope:
+                    scopeStack.append(token)
+                case .linebreak:
+                    switch formatter.token(at: i + 1) {
+                        case .space:
+                            if let nextToken = formatter.token(at: i + 2) {
+                                if case .linebreak = nextToken {
+                                    untruncated += 1
+                                }
+                            } else {
+                                untruncated += 1
+                            }
+                        case .linebreak, nil:
+                            truncated += 1
+                        default:
+                            break
                     }
-                case .linebreak, nil:
-                    truncated += 1
                 default:
-                    break
-                }
-            default:
-                if let scope = scopeStack.last, token.isEndOfScope(scope) {
-                    scopeStack.removeLast()
-                }
+                    if let scope = scopeStack.last, token.isEndOfScope(scope) {
+                        scopeStack.removeLast()
+                    }
             }
         }
         options.truncateBlankLines = (truncated >= untruncated)
@@ -298,12 +273,15 @@ private struct Inference {
                let prevToken = formatter.token(at: prevTokenIndex)
             {
                 switch prevToken {
-                case .identifier, .keyword, .endOfScope, .operator("?", .postfix), .operator("!", .postfix):
-                    knr += 1
-                case .linebreak:
-                    allman += 1
-                default:
-                    break
+                    case .identifier, .keyword, .endOfScope, .operator("?", .postfix), .operator(
+                    "!",
+                    .postfix,
+                ):
+                        knr += 1
+                    case .linebreak:
+                        allman += 1
+                    default:
+                        break
                 }
             }
         }
@@ -325,27 +303,30 @@ private struct Inference {
                    let nextIndex = formatter.index(of: .nonSpaceOrLinebreak, after: nextLineIndex)
                 {
                     switch formatter.tokens[nextIndex - 1] {
-                    case let .space(innerString):
-                        if innerString.isEmpty {
-                            // Error?
-                            return
-                        } else if innerString == string {
-                            notIndented += 1
-                            if let token = formatter.next(.nonSpaceOrCommentOrLinebreak, after: nextLineIndex),
-                               case .operator(".", _) = token
-                            {
-                                preserveCandidates += 1
+                        case let .space(innerString):
+                            if innerString.isEmpty {
+                                // Error?
+                                return
+                            } else if innerString == string {
+                                notIndented += 1
+                                if let token = formatter.next(
+                                    .nonSpaceOrCommentOrLinebreak,
+                                    after: nextLineIndex,
+                                ),
+                                    case .operator(".", _) = token
+                                {
+                                    preserveCandidates += 1
+                                }
+                            } else {
+                                // Assume more indented, as less would be a mistake
+                                indented += 1
                             }
-                        } else {
-                            // Assume more indented, as less would be a mistake
-                            indented += 1
-                        }
-                    case .linebreak:
-                        // Could be noindent or outdent
-                        notIndented += 1
-                        outdented += 1
-                    default:
-                        break
+                        case .linebreak:
+                            // Could be noindent or outdent
+                            notIndented += 1
+                            outdented += 1
+                        default:
+                            break
                     }
                 }
                 // Error?
@@ -356,23 +337,23 @@ private struct Inference {
                let nextIndex = formatter.index(of: .nonSpaceOrLinebreak, after: nextLineIndex)
             {
                 switch formatter.tokens[nextIndex - 1] {
-                case let .space(string):
-                    if string.isEmpty {
-                        fallthrough
-                    } else if string == formatter.options.indent {
-                        // Could be indent or outdent
-                        indented += 1
+                    case let .space(string):
+                        if string.isEmpty {
+                            fallthrough
+                        } else if string == formatter.options.indent {
+                            // Could be indent or outdent
+                            indented += 1
+                            outdented += 1
+                        } else {
+                            // Assume more indented, as less would be a mistake
+                            outdented += 1
+                        }
+                    case .linebreak:
+                        // Could be noindent or outdent
+                        notIndented += 1
                         outdented += 1
-                    } else {
-                        // Assume more indented, as less would be a mistake
-                        outdented += 1
-                    }
-                case .linebreak:
-                    // Could be noindent or outdent
-                    notIndented += 1
-                    outdented += 1
-                default:
-                    break
+                    default:
+                        break
                 }
             }
             // Error?
@@ -486,22 +467,22 @@ private struct Inference {
         var lowercase = 0
         formatter.forEachToken { _, token in
             switch token {
-            case let .number(string, .decimal):
-                let characters = string.unicodeScalars
-                if characters.contains("e") {
-                    lowercase += 1
-                } else if characters.contains("E") {
-                    uppercase += 1
-                }
-            case let .number(string, .hex):
-                let characters = string.unicodeScalars
-                if characters.contains("p") {
-                    lowercase += 1
-                } else if characters.contains("P") {
-                    uppercase += 1
-                }
-            default:
-                break
+                case let .number(string, .decimal):
+                    let characters = string.unicodeScalars
+                    if characters.contains("e") {
+                        lowercase += 1
+                    } else if characters.contains("E") {
+                        uppercase += 1
+                    }
+                case let .number(string, .hex):
+                    let characters = string.unicodeScalars
+                    if characters.contains("p") {
+                        lowercase += 1
+                    } else if characters.contains("P") {
+                        uppercase += 1
+                    }
+                default:
+                    break
             }
         }
         options.uppercaseExponent = (uppercase > lowercase)
@@ -541,23 +522,24 @@ private struct Inference {
             var identifierFound = false
             for index in range {
                 switch formatter.tokens[index] {
-                case .keyword(keyword):
-                    keywordFound = true
-                case .identifier("_"):
-                    break
-                case .identifier where formatter.last(.nonSpaceOrComment, before: index)?.string != ".":
-                    identifierFound = true
-                    if keywordFound {
-                        count += 1
-                    }
-                case .delimiter(","):
-                    guard keywordFound || !identifierFound else { return false }
-                    keywordFound = false
-                    identifierFound = false
-                case .startOfScope("{"):
-                    return false
-                default:
-                    break
+                    case .keyword(keyword):
+                        keywordFound = true
+                    case .identifier("_"):
+                        break
+                    case .identifier
+                    where formatter.last(.nonSpaceOrComment, before: index)?.string != ".":
+                        identifierFound = true
+                        if keywordFound {
+                            count += 1
+                        }
+                    case .delimiter(","):
+                        guard keywordFound || !identifierFound else { return false }
+                        keywordFound = false
+                        identifierFound = false
+                    case .startOfScope("{"):
+                        return false
+                    default:
+                        break
                 }
             }
             return (keywordFound || !identifierFound) && count > 0
@@ -569,27 +551,38 @@ private struct Inference {
             guard let endIndex = formatter.index(of: .endOfScope(")"), after: i) else { return }
             if var prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i) {
                 if case .identifier = formatter.tokens[prevIndex] {
-                    prevIndex = formatter.index(of: .spaceOrCommentOrLinebreak, before: prevIndex) ?? -1
+                    prevIndex = formatter
+                        .index(of: .spaceOrCommentOrLinebreak, before: prevIndex) ?? -1
                     startIndex = prevIndex + 1
-                    prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startIndex) ?? 0
+                    prevIndex = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak,
+                        before: startIndex,
+                    ) ?? 0
                 }
                 let prevToken = formatter.tokens[prevIndex]
                 switch prevToken {
-                case .keyword("let"), .keyword("var"):
-                    guard
-                        let prevPrevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: prevIndex),
-                        [.keyword("case"), .endOfScope("case"), .delimiter(",")].contains(prevPrevToken)
-                    else {
-                        // Tuple assignment, not a pattern
+                    case .keyword("let"), .keyword("var"):
+                        guard
+                            let prevPrevToken = formatter.last(
+                                .nonSpaceOrCommentOrLinebreak,
+                                before: prevIndex,
+                            ),
+                            [.keyword("case"), .endOfScope("case"), .delimiter(",")]
+                            .contains(prevPrevToken)
+                        else {
+                            // Tuple assignment, not a pattern
+                            return
+                        }
+                        hoisted += 1
+                    case .keyword("case"), .endOfScope("case"), .delimiter(","):
+                        if hoistable("let", in: i + 1 ..< endIndex) || hoistable(
+                            "var",
+                            in: i + 1 ..< endIndex,
+                        ) {
+                            unhoisted += 1
+                        }
+                    default:
                         return
-                    }
-                    hoisted += 1
-                case .keyword("case"), .endOfScope("case"), .delimiter(","):
-                    if hoistable("let", in: i + 1 ..< endIndex) || hoistable("var", in: i + 1 ..< endIndex) {
-                        unhoisted += 1
-                    }
-                default:
-                    return
                 }
             }
         }
@@ -604,12 +597,13 @@ private struct Inference {
 
         func removeUsed(
             from argNames: inout [String], with associatedData: inout [some Any],
-            in range: CountableRange<Int>
+            in range: CountableRange<Int>,
         ) {
             for i in range {
                 let token = formatter.tokens[i]
                 if case .identifier = token, let index = argNames.firstIndex(of: token.unescaped()),
-                   formatter.last(.nonSpaceOrCommentOrLinebreak, before: i)?.isOperator(".") == false,
+                   formatter.last(.nonSpaceOrCommentOrLinebreak, before: i)?
+                   .isOperator(".") == false,
                    formatter.next(.nonSpaceOrCommentOrLinebreak, after: i) != .delimiter(":")
                    || formatter.currentScope(at: i) == .startOfScope("[")
                 {
@@ -623,14 +617,16 @@ private struct Inference {
         }
         // Function arguments
         formatter.forEachToken { i, token in
-            guard case let .keyword(keyword) = token, ["func", "init", "subscript"].contains(keyword),
+            guard case let .keyword(keyword) = token,
+                  ["func", "init", "subscript"].contains(keyword),
                   let startIndex = formatter.index(of: .startOfScope("("), after: i),
                   let endIndex = formatter.index(of: .endOfScope(")"), after: startIndex)
             else { return }
             let isOperator =
                 (keyword == "subscript")
                     || (keyword == "func"
-                        && formatter.next(.nonSpaceOrCommentOrLinebreak, after: i)?.isOperator == true)
+                        && formatter.next(.nonSpaceOrCommentOrLinebreak, after: i)?
+                        .isOperator == true)
             var index = startIndex
             var argNames = [String]()
             var nameIndices = [Int]()
@@ -642,7 +638,7 @@ private struct Inference {
                             if case .identifier = $0 { return true }
                             // Probably an empty argument list
                             return false
-                        }
+                        },
                     )
                 else { return }
                 guard
@@ -651,28 +647,28 @@ private struct Inference {
                 else { return }
                 let nextToken = formatter.tokens[nextIndex]
                 switch nextToken {
-                case let .identifier(name):
-                    if name == "_" {
-                        functionArgsRemoved += 1
+                    case let .identifier(name):
+                        if name == "_" {
+                            functionArgsRemoved += 1
+                            let externalNameToken = formatter.tokens[externalNameIndex]
+                            if case .identifier("_") = externalNameToken {
+                                unnamedFunctionArgsRemoved += 1
+                            }
+                        } else {
+                            argNames.append(nextToken.unescaped())
+                            nameIndices.append(externalNameIndex)
+                        }
+                    case .delimiter(":"):
                         let externalNameToken = formatter.tokens[externalNameIndex]
                         if case .identifier("_") = externalNameToken {
+                            functionArgsRemoved += 1
                             unnamedFunctionArgsRemoved += 1
+                        } else {
+                            argNames.append(externalNameToken.unescaped())
+                            nameIndices.append(externalNameIndex)
                         }
-                    } else {
-                        argNames.append(nextToken.unescaped())
-                        nameIndices.append(externalNameIndex)
-                    }
-                case .delimiter(":"):
-                    let externalNameToken = formatter.tokens[externalNameIndex]
-                    if case .identifier("_") = externalNameToken {
-                        functionArgsRemoved += 1
-                        unnamedFunctionArgsRemoved += 1
-                    } else {
-                        argNames.append(externalNameToken.unescaped())
-                        nameIndices.append(externalNameIndex)
-                    }
-                default:
-                    return
+                    default:
+                        return
                 }
                 index = formatter.index(of: .delimiter(","), after: index) ?? endIndex
             }
@@ -681,19 +677,19 @@ private struct Inference {
                       after: endIndex,
                       where: {
                           switch $0 {
-                          case .startOfScope("{"): // What we're looking for
-                              return true
-                          case .keyword("throws"),
-                               .keyword("rethrows"),
-                               .keyword("where"),
-                               .keyword("is"):
-                              return false // Keep looking
-                          case .keyword:
-                              return true // Not valid between end of arguments and start of body
-                          default:
-                              return false // Keep looking
+                              case .startOfScope("{"): // What we're looking for
+                                  return true
+                              case .keyword("throws"),
+                                   .keyword("rethrows"),
+                                   .keyword("where"),
+                                   .keyword("is"):
+                                  return false // Keep looking
+                              case .keyword:
+                                  return true // Not valid between end of arguments and start of body
+                              default:
+                                  return false // Keep looking
                           }
-                      }
+                      },
                   ), formatter.tokens[bodyStartIndex] == .startOfScope("{"),
                   let bodyEndIndex = formatter.index(of: .endOfScope("}"), after: bodyStartIndex)
             else {
@@ -726,7 +722,7 @@ private struct Inference {
             removed: inout Int, unremoved: inout Int,
             initRemoved: inout Int, initUnremoved: inout Int,
             isTypeRoot: Bool,
-            isInit: Bool
+            isInit: Bool,
         ) {
             var selfRequired: Set<String> {
                 formatter.options.selfRequired
@@ -737,7 +733,7 @@ private struct Inference {
                 isWhereClause
                     || currentScope.map { token -> Bool in
                         [.startOfScope("{"), .startOfScope(":")].contains(token)
-                    } ?? true
+                    } ?? true,
             )
             // Gather members & local variables
             let type = (isTypeRoot && typeStack.count == 1) ? typeStack.first : nil
@@ -749,74 +745,85 @@ private struct Inference {
                 var classOrStatic = false
                 outer: while let token = formatter.token(at: i) {
                     switch token {
-                    case .keyword("import"):
-                        guard let nextIndex = formatter.index(of: .identifier, after: i) else {
-                            return // error
-                        }
-                        i = nextIndex
-                    case .keyword("class"), .keyword("static"):
-                        classOrStatic = true
-                    case .keyword("repeat"):
-                        guard let nextIndex = formatter.index(of: .keyword("while"), after: i) else {
-                            return // error
-                        }
-                        i = nextIndex
-                    case .keyword("if"), .keyword("while"):
-                        guard let nextIndex = formatter.index(of: .startOfScope("{"), after: i) else {
-                            return // error
-                        }
-                        i = nextIndex
-                        continue
-                    case .keyword("switch"):
-                        guard let nextIndex = formatter.index(of: .startOfScope("{"), after: i),
-                              var endIndex = formatter.index(of: .endOfScope, after: nextIndex)
-                        else {
-                            return // error
-                        }
-                        while formatter.tokens[endIndex] != .endOfScope("}") {
-                            guard let nextIndex = formatter.index(of: .startOfScope(":"), after: endIndex),
-                                  let _endIndex = formatter.index(of: .endOfScope, after: nextIndex)
+                        case .keyword("import"):
+                            guard let nextIndex = formatter.index(of: .identifier, after: i) else {
+                                return // error
+                            }
+                            i = nextIndex
+                        case .keyword("class"), .keyword("static"):
+                            classOrStatic = true
+                        case .keyword("repeat"):
+                            guard let nextIndex = formatter.index(of: .keyword("while"), after: i)
                             else {
                                 return // error
                             }
-                            endIndex = _endIndex
-                        }
-                        i = endIndex
-                    case .keyword("var"), .keyword("let"):
-                        i += 1
-                        if isTypeRoot {
-                            if classOrStatic {
-                                formatter.processDeclaredVariables(at: &i, names: &classMembers)
-                                classOrStatic = false
-                            } else {
-                                formatter.processDeclaredVariables(at: &i, names: &members)
+                            i = nextIndex
+                        case .keyword("if"), .keyword("while"):
+                            guard let nextIndex = formatter.index(of: .startOfScope("{"), after: i)
+                            else {
+                                return // error
                             }
-                        } else {
-                            formatter.processDeclaredVariables(at: &i, names: &localNames)
-                        }
-                    case .keyword("func"):
-                        guard let nameToken = formatter.next(.nonSpaceOrCommentOrLinebreak, after: i) else {
+                            i = nextIndex
+                            continue
+                        case .keyword("switch"):
+                            guard let nextIndex = formatter.index(of: .startOfScope("{"), after: i),
+                                  var endIndex = formatter.index(of: .endOfScope, after: nextIndex)
+                            else {
+                                return // error
+                            }
+                            while formatter.tokens[endIndex] != .endOfScope("}") {
+                                guard let nextIndex = formatter.index(
+                                    of: .startOfScope(":"),
+                                    after: endIndex,
+                                ),
+                                    let _endIndex = formatter.index(
+                                        of: .endOfScope,
+                                        after: nextIndex,
+                                    )
+                                else {
+                                    return // error
+                                }
+                                endIndex = _endIndex
+                            }
+                            i = endIndex
+                        case .keyword("var"), .keyword("let"):
+                            i += 1
+                            if isTypeRoot {
+                                if classOrStatic {
+                                    formatter.processDeclaredVariables(at: &i, names: &classMembers)
+                                    classOrStatic = false
+                                } else {
+                                    formatter.processDeclaredVariables(at: &i, names: &members)
+                                }
+                            } else {
+                                formatter.processDeclaredVariables(at: &i, names: &localNames)
+                            }
+                        case .keyword("func"):
+                            guard let nameToken = formatter.next(
+                                .nonSpaceOrCommentOrLinebreak,
+                                after: i,
+                            ) else {
+                                break
+                            }
+                            if isTypeRoot {
+                                if classOrStatic {
+                                    classMembers.insert(nameToken.unescaped())
+                                    classOrStatic = false
+                                } else {
+                                    members.insert(nameToken.unescaped())
+                                }
+                            } else {
+                                localNames.insert(nameToken.unescaped())
+                            }
+                        case .startOfScope("("), .startOfScope("#if"), .startOfScope(":"):
                             break
-                        }
-                        if isTypeRoot {
-                            if classOrStatic {
-                                classMembers.insert(nameToken.unescaped())
-                                classOrStatic = false
-                            } else {
-                                members.insert(nameToken.unescaped())
-                            }
-                        } else {
-                            localNames.insert(nameToken.unescaped())
-                        }
-                    case .startOfScope("("), .startOfScope("#if"), .startOfScope(":"):
-                        break
-                    case .startOfScope:
-                        classOrStatic = false
-                        i = formatter.endOfScope(at: i) ?? (formatter.tokens.count - 1)
-                    case .endOfScope("}"), .endOfScope("case"), .endOfScope("default"):
-                        break outer
-                    default:
-                        break
+                        case .startOfScope:
+                            classOrStatic = false
+                            i = formatter.endOfScope(at: i) ?? (formatter.tokens.count - 1)
+                        case .endOfScope("}"), .endOfScope("case"), .endOfScope("default"):
+                            break outer
+                        default:
+                            break
                     }
                     i += 1
                 }
@@ -832,393 +839,443 @@ private struct Inference {
             var classOrStatic = false
             while let token = formatter.token(at: index) {
                 switch token {
-                case .keyword("is"), .keyword("as"), .keyword("try"), .keyword("await"):
-                    break
-                case .keyword("init"), .keyword("subscript"),
-                     .keyword("func") where lastKeyword != "import":
-                    lastKeyword = ""
-                    if classOrStatic {
-                        if !isTypeRoot {
-                            return // error
-                        }
-                        processFunction(
-                            at: &index, localNames: localNames, members: classMembers,
-                            typeStack: &typeStack, membersByType: &membersByType,
-                            classMembersByType: &classMembersByType,
-                            removed: &removed, unremoved: &unremoved,
-                            initRemoved: &initRemoved, initUnremoved: &initUnremoved
-                        )
-                        classOrStatic = false
-                    } else {
-                        processFunction(
-                            at: &index, localNames: localNames, members: members,
-                            typeStack: &typeStack, membersByType: &membersByType,
-                            classMembersByType: &classMembersByType,
-                            removed: &removed, unremoved: &unremoved,
-                            initRemoved: &initRemoved, initUnremoved: &initUnremoved
-                        )
-                    }
-                    assert(formatter.token(at: index) != .endOfScope("}"))
-                    continue
-                case .keyword("static"):
-                    classOrStatic = true
-                case .keyword("class"):
-                    if formatter.next(.nonSpaceOrCommentOrLinebreak, after: index)?.isIdentifier == true {
-                        fallthrough
-                    }
-                    if formatter.last(.nonSpaceOrCommentOrLinebreak, before: index) != .delimiter(":") {
-                        classOrStatic = true
-                    }
-                case .keyword("extension"), .keyword("struct"), .keyword("enum"):
-                    guard formatter.last(.nonSpaceOrCommentOrLinebreak, before: index) != .keyword("import"),
-                          let scopeStart = formatter.index(of: .startOfScope("{"), after: index)
-                    else { return }
-                    guard let nameToken = formatter.next(.identifier, after: index),
-                          case let .identifier(name) = nameToken
-                    else {
-                        return // error
-                    }
-                    // TODO: Add usingDynamicLookup logic from the main rule
-                    index = scopeStart + 1
-                    typeStack.append(name)
-                    processBody(
-                        at: &index, localNames: ["init"], members: [], typeStack: &typeStack,
-                        membersByType: &membersByType, classMembersByType: &classMembersByType,
-                        removed: &removed, unremoved: &unremoved,
-                        initRemoved: &initRemoved, initUnremoved: &initUnremoved,
-                        isTypeRoot: true, isInit: false
-                    )
-                    typeStack.removeLast()
-                case .keyword("var"), .keyword("let"):
-                    index += 1
-                    switch lastKeyword {
-                    case "lazy" where formatter.options.swiftVersion < "4":
-                        loop: while let nextIndex =
-                            formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: index)
-                        {
-                            switch formatter.tokens[nextIndex] {
-                            case .keyword("is"), .keyword("as"), .keyword("try"), .keyword("await"):
-                                break
-                            case .keyword, .startOfScope("{"):
-                                break loop
-                            default:
-                                break
-                            }
-                            index = nextIndex
-                        }
-                        lastKeyword = ""
-                    case "if", "while", "guard":
-                        assert(!isTypeRoot)
-                        // Guard is included because it's an error to reference guard vars in body
-                        var scopedNames = localNames
-                        formatter.processDeclaredVariables(at: &index, names: &scopedNames)
-                        guard let startIndex = formatter.index(of: .startOfScope("{"), after: index) else {
-                            return // error
-                        }
-                        index = startIndex + 1
-                        processBody(
-                            at: &index, localNames: scopedNames, members: members, typeStack: &typeStack,
-                            membersByType: &membersByType, classMembersByType: &classMembersByType,
-                            removed: &removed, unremoved: &unremoved,
-                            initRemoved: &initRemoved, initUnremoved: &initUnremoved,
-                            isTypeRoot: false, isInit: isInit
-                        )
-                        lastKeyword = ""
-                    default:
-                        lastKeyword = token.string
-                    }
-                    classOrStatic = false
-                case .keyword("where") where lastKeyword == "in":
-                    lastKeyword = ""
-                    var localNames = localNames
-                    guard let keywordIndex = formatter.index(of: .keyword, before: index),
-                          let prevKeywordIndex = formatter.index(of: .keyword, before: keywordIndex),
-                          let prevKeywordToken = formatter.token(at: prevKeywordIndex),
-                          case .keyword("for") = prevKeywordToken
-                    else { return }
-                    for token in formatter.tokens[prevKeywordIndex + 1 ..< keywordIndex] {
-                        if case let .identifier(name) = token, name != "_" {
-                            localNames.insert(token.unescaped())
-                        }
-                    }
-                    index += 1
-                    processBody(
-                        at: &index, localNames: localNames, members: members, typeStack: &typeStack,
-                        membersByType: &membersByType, classMembersByType: &classMembersByType,
-                        removed: &removed, unremoved: &unremoved,
-                        initRemoved: &initRemoved, initUnremoved: &initUnremoved,
-                        isTypeRoot: false, isInit: isInit
-                    )
-                    continue
-                case .keyword("while") where lastKeyword == "repeat":
-                    lastKeyword = ""
-                case let .keyword(name):
-                    lastKeyword = name
-                    lastKeywordIndex = index
-                case .startOfScope("/*"), .startOfScope("//"):
-                    index = formatter.endOfScope(at: index) ?? (formatter.tokens.count - 1)
-                    formatter.updateEnablement(at: index)
-                case .startOfScope("("):
-                    if case let .identifier(fn)? = formatter.last(
-                        .nonSpaceOrCommentOrLinebreak, before: index
-                    ),
-                        selfRequired.contains(fn) || fn == "expect"
-                    {
-                        index = formatter.index(of: .endOfScope(")"), after: index) ?? index
+                    case .keyword("is"), .keyword("as"), .keyword("try"), .keyword("await"):
                         break
-                    }
-                    fallthrough
-                case .startOfScope where token.isStringDelimiter, .startOfScope("#if"):
-                    scopeStack.append(token)
-                case .startOfScope(":"):
-                    lastKeyword = ""
-                case .startOfScope("{") where lastKeyword == "catch":
-                    lastKeyword = ""
-                    var localNames = localNames
-                    localNames.insert("error") // Implicit error argument
-                    index += 1
-                    processBody(
-                        at: &index, localNames: localNames, members: members, typeStack: &typeStack,
-                        membersByType: &membersByType, classMembersByType: &classMembersByType,
-                        removed: &removed, unremoved: &unremoved,
-                        initRemoved: &initRemoved, initUnremoved: &initUnremoved,
-                        isTypeRoot: false, isInit: isInit
-                    )
-                    continue
-                case .startOfScope("{") where lastKeyword == "in":
-                    lastKeyword = ""
-                    var localNames = localNames
-                    guard let keywordIndex = formatter.index(of: .keyword, before: index),
-                          let prevKeywordIndex = formatter.index(of: .keyword, before: keywordIndex),
-                          let prevKeywordToken = formatter.token(at: prevKeywordIndex),
-                          case .keyword("for") = prevKeywordToken
-                    else { return }
-                    for token in formatter.tokens[prevKeywordIndex + 1 ..< keywordIndex] {
-                        if case let .identifier(name) = token, name != "_" {
-                            localNames.insert(token.unescaped())
-                        }
-                    }
-                    index += 1
-                    if classOrStatic {
-                        assert(isTypeRoot)
-                        processBody(
-                            at: &index, localNames: localNames, members: classMembers, typeStack: &typeStack,
-                            membersByType: &membersByType, classMembersByType: &classMembersByType,
-                            removed: &removed, unremoved: &unremoved,
-                            initRemoved: &initRemoved, initUnremoved: &initUnremoved,
-                            isTypeRoot: false, isInit: false
-                        )
-                        classOrStatic = false
-                    } else {
-                        processBody(
-                            at: &index, localNames: localNames, members: members, typeStack: &typeStack,
-                            membersByType: &membersByType, classMembersByType: &classMembersByType,
-                            removed: &removed, unremoved: &unremoved,
-                            initRemoved: &initRemoved, initUnremoved: &initUnremoved,
-                            isTypeRoot: false, isInit: isInit
-                        )
-                    }
-                    continue
-                case .startOfScope("{") where isWhereClause:
-                    return
-                case .startOfScope("{") where lastKeyword == "switch":
-                    lastKeyword = ""
-                    index += 1
-                    loop: while let token = formatter.token(at: index) {
-                        index += 1
-                        switch token {
-                        case .endOfScope("case"), .endOfScope("default"):
-                            let localNames = localNames
-                            processBody(
-                                at: &index, localNames: localNames, members: members, typeStack: &typeStack,
-                                membersByType: &membersByType, classMembersByType: &classMembersByType,
+                    case .keyword("init"), .keyword("subscript"),
+                         .keyword("func") where lastKeyword != "import":
+                        lastKeyword = ""
+                        if classOrStatic {
+                            if !isTypeRoot {
+                                return // error
+                            }
+                            processFunction(
+                                at: &index, localNames: localNames, members: classMembers,
+                                typeStack: &typeStack, membersByType: &membersByType,
+                                classMembersByType: &classMembersByType,
                                 removed: &removed, unremoved: &unremoved,
                                 initRemoved: &initRemoved, initUnremoved: &initUnremoved,
-                                isTypeRoot: false, isInit: isInit
                             )
-                            index -= 1
-                        case .endOfScope("}"):
-                            break loop
-                        default:
-                            break
+                            classOrStatic = false
+                        } else {
+                            processFunction(
+                                at: &index, localNames: localNames, members: members,
+                                typeStack: &typeStack, membersByType: &membersByType,
+                                classMembersByType: &classMembersByType,
+                                removed: &removed, unremoved: &unremoved,
+                                initRemoved: &initRemoved, initUnremoved: &initUnremoved,
+                            )
                         }
-                    }
-                case .startOfScope("{")
-                    where ["for", "where", "if", "else", "while", "do"].contains(lastKeyword):
-                    if let scopeIndex = formatter.index(of: .startOfScope, before: index),
-                       scopeIndex > lastKeywordIndex
-                    {
-                        index = formatter.endOfScope(at: index) ?? (formatter.tokens.count - 1)
-                        break
-                    }
-                    lastKeyword = ""
-                    fallthrough
-                case .startOfScope("{") where lastKeyword == "repeat":
-                    index += 1
-                    processBody(
-                        at: &index, localNames: localNames, members: members, typeStack: &typeStack,
-                        membersByType: &membersByType, classMembersByType: &classMembersByType,
-                        removed: &removed, unremoved: &unremoved,
-                        initRemoved: &initRemoved, initUnremoved: &initUnremoved,
-                        isTypeRoot: false, isInit: isInit
-                    )
-                    continue
-                case .startOfScope("{") where lastKeyword == "var":
-                    lastKeyword = ""
-                    if formatter.isStartOfClosure(at: index) {
-                        fallthrough
-                    }
-                    var prevIndex = index - 1
-                    var name: String?
-                    while let token = formatter.token(at: prevIndex), token != .keyword("var") {
-                        if token.isLvalue,
-                           let nextToken = formatter.nextToken(
-                               after: prevIndex,
-                               where: {
-                                   !$0.isSpaceOrCommentOrLinebreak && !$0.isStartOfScope
-                               }
-                           ), nextToken.isRvalue, !nextToken.isOperator(".")
+                        assert(formatter.token(at: index) != .endOfScope("}"))
+                        continue
+                    case .keyword("static"):
+                        classOrStatic = true
+                    case .keyword("class"):
+                        if formatter.next(.nonSpaceOrCommentOrLinebreak, after: index)?
+                            .isIdentifier == true
                         {
-                            // It's a closure
                             fallthrough
                         }
-                        if case let .identifier(_name) = token {
-                            // Is the declared variable
-                            name = _name
+                        if formatter
+                            .last(.nonSpaceOrCommentOrLinebreak, before: index) != .delimiter(":")
+                        {
+                            classOrStatic = true
                         }
-                        prevIndex -= 1
-                    }
-                    if let name {
-                        processAccessors(
-                            ["get", "set", "willSet", "didSet", "init", "_modify"], for: name,
-                            at: &index, localNames: localNames, members: members,
-                            typeStack: &typeStack, membersByType: &membersByType,
-                            classMembersByType: &classMembersByType,
+                    case .keyword("extension"), .keyword("struct"), .keyword("enum"):
+                        guard formatter
+                            .last(.nonSpaceOrCommentOrLinebreak, before: index) !=
+                            .keyword("import"),
+                            let scopeStart = formatter.index(of: .startOfScope("{"), after: index)
+                        else { return }
+                        guard let nameToken = formatter.next(.identifier, after: index),
+                              case let .identifier(name) = nameToken
+                        else {
+                            return // error
+                        }
+                        // TODO: Add usingDynamicLookup logic from the main rule
+                        index = scopeStart + 1
+                        typeStack.append(name)
+                        processBody(
+                            at: &index, localNames: ["init"], members: [], typeStack: &typeStack,
+                            membersByType: &membersByType, classMembersByType: &classMembersByType,
                             removed: &removed, unremoved: &unremoved,
-                            initRemoved: &initRemoved, initUnremoved: &initUnremoved
+                            initRemoved: &initRemoved, initUnremoved: &initUnremoved,
+                            isTypeRoot: true, isInit: false,
                         )
-                    }
-                    continue
-                case .startOfScope:
-                    index = formatter.endOfScope(at: index) ?? (formatter.tokens.count - 1)
-                case .identifier("self"):
-                    guard !isTypeRoot, !localNames.contains("self"),
-                          let dotIndex = formatter.index(
-                              of: .nonSpaceOrLinebreak, after: index,
-                              if: {
-                                  $0 == .operator(".", .infix)
-                              }
-                          ),
-                          let nextIndex = formatter.index(of: .nonSpaceOrLinebreak, after: dotIndex),
-                          let name = formatter.token(at: nextIndex)?.unescaped(),
-                          !localNames.contains(name), !selfRequired.contains(name),
-                          !_FormatRules.globalSwiftFunctions.contains(name)
-                    else {
-                        break
-                    }
-                    if isInit {
-                        if formatter.next(.nonSpaceOrCommentOrLinebreak, after: nextIndex)
-                            == .operator("=", .infix)
+                        typeStack.removeLast()
+                    case .keyword("var"), .keyword("let"):
+                        index += 1
+                        switch lastKeyword {
+                            case "lazy" where formatter.options.swiftVersion < "4":
+                                loop: while let nextIndex =
+                                    formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: index)
+                                {
+                                    switch formatter.tokens[nextIndex] {
+                                        case .keyword("is"), .keyword("as"), .keyword("try"),
+                                             .keyword("await"):
+                                            break
+                                        case .keyword, .startOfScope("{"):
+                                            break loop
+                                        default:
+                                            break
+                                    }
+                                    index = nextIndex
+                                }
+                                lastKeyword = ""
+                            case "if", "while", "guard":
+                                assert(!isTypeRoot)
+                                // Guard is included because it's an error to reference guard vars in body
+                                var scopedNames = localNames
+                                formatter.processDeclaredVariables(at: &index, names: &scopedNames)
+                                guard let startIndex = formatter.index(
+                                    of: .startOfScope("{"),
+                                    after: index,
+                                ) else {
+                                    return // error
+                                }
+                                index = startIndex + 1
+                                processBody(
+                                    at: &index, localNames: scopedNames, members: members,
+                                    typeStack: &typeStack,
+                                    membersByType: &membersByType,
+                                    classMembersByType: &classMembersByType,
+                                    removed: &removed, unremoved: &unremoved,
+                                    initRemoved: &initRemoved, initUnremoved: &initUnremoved,
+                                    isTypeRoot: false, isInit: isInit,
+                                )
+                                lastKeyword = ""
+                            default:
+                                lastKeyword = token.string
+                        }
+                        classOrStatic = false
+                    case .keyword("where") where lastKeyword == "in":
+                        lastKeyword = ""
+                        var localNames = localNames
+                        guard let keywordIndex = formatter.index(of: .keyword, before: index),
+                              let prevKeywordIndex = formatter.index(
+                                  of: .keyword,
+                                  before: keywordIndex,
+                              ),
+                              let prevKeywordToken = formatter.token(at: prevKeywordIndex),
+                              case .keyword("for") = prevKeywordToken
+                        else { return }
+                        for token in formatter.tokens[prevKeywordIndex + 1 ..< keywordIndex] {
+                            if case let .identifier(name) = token, name != "_" {
+                                localNames.insert(token.unescaped())
+                            }
+                        }
+                        index += 1
+                        processBody(
+                            at: &index, localNames: localNames, members: members,
+                            typeStack: &typeStack,
+                            membersByType: &membersByType, classMembersByType: &classMembersByType,
+                            removed: &removed, unremoved: &unremoved,
+                            initRemoved: &initRemoved, initUnremoved: &initUnremoved,
+                            isTypeRoot: false, isInit: isInit,
+                        )
+                        continue
+                    case .keyword("while") where lastKeyword == "repeat":
+                        lastKeyword = ""
+                    case let .keyword(name):
+                        lastKeyword = name
+                        lastKeywordIndex = index
+                    case .startOfScope("/*"), .startOfScope("//"):
+                        index = formatter.endOfScope(at: index) ?? (formatter.tokens.count - 1)
+                        formatter.updateEnablement(at: index)
+                    case .startOfScope("("):
+                        if case let .identifier(fn)? = formatter.last(
+                            .nonSpaceOrCommentOrLinebreak, before: index,
+                        ),
+                            selfRequired.contains(fn) || fn == "expect"
                         {
-                            initUnremoved += 1
-                        } else if let scopeEnd = formatter.index(of: .endOfScope(")"), after: nextIndex),
-                                  formatter.next(.nonSpaceOrCommentOrLinebreak, after: scopeEnd)
-                                  == .operator("=", .infix)
+                            index = formatter.index(of: .endOfScope(")"), after: index) ?? index
+                            break
+                        }
+                        fallthrough
+                    case .startOfScope where token.isStringDelimiter, .startOfScope("#if"):
+                        scopeStack.append(token)
+                    case .startOfScope(":"):
+                        lastKeyword = ""
+                    case .startOfScope("{") where lastKeyword == "catch":
+                        lastKeyword = ""
+                        var localNames = localNames
+                        localNames.insert("error") // Implicit error argument
+                        index += 1
+                        processBody(
+                            at: &index, localNames: localNames, members: members,
+                            typeStack: &typeStack,
+                            membersByType: &membersByType, classMembersByType: &classMembersByType,
+                            removed: &removed, unremoved: &unremoved,
+                            initRemoved: &initRemoved, initUnremoved: &initUnremoved,
+                            isTypeRoot: false, isInit: isInit,
+                        )
+                        continue
+                    case .startOfScope("{") where lastKeyword == "in":
+                        lastKeyword = ""
+                        var localNames = localNames
+                        guard let keywordIndex = formatter.index(of: .keyword, before: index),
+                              let prevKeywordIndex = formatter.index(
+                                  of: .keyword,
+                                  before: keywordIndex,
+                              ),
+                              let prevKeywordToken = formatter.token(at: prevKeywordIndex),
+                              case .keyword("for") = prevKeywordToken
+                        else { return }
+                        for token in formatter.tokens[prevKeywordIndex + 1 ..< keywordIndex] {
+                            if case let .identifier(name) = token, name != "_" {
+                                localNames.insert(token.unescaped())
+                            }
+                        }
+                        index += 1
+                        if classOrStatic {
+                            assert(isTypeRoot)
+                            processBody(
+                                at: &index, localNames: localNames, members: classMembers,
+                                typeStack: &typeStack,
+                                membersByType: &membersByType,
+                                classMembersByType: &classMembersByType,
+                                removed: &removed, unremoved: &unremoved,
+                                initRemoved: &initRemoved, initUnremoved: &initUnremoved,
+                                isTypeRoot: false, isInit: false,
+                            )
+                            classOrStatic = false
+                        } else {
+                            processBody(
+                                at: &index, localNames: localNames, members: members,
+                                typeStack: &typeStack,
+                                membersByType: &membersByType,
+                                classMembersByType: &classMembersByType,
+                                removed: &removed, unremoved: &unremoved,
+                                initRemoved: &initRemoved, initUnremoved: &initUnremoved,
+                                isTypeRoot: false, isInit: isInit,
+                            )
+                        }
+                        continue
+                    case .startOfScope("{") where isWhereClause:
+                        return
+                    case .startOfScope("{") where lastKeyword == "switch":
+                        lastKeyword = ""
+                        index += 1
+                        loop: while let token = formatter.token(at: index) {
+                            index += 1
+                            switch token {
+                                case .endOfScope("case"), .endOfScope("default"):
+                                    let localNames = localNames
+                                    processBody(
+                                        at: &index, localNames: localNames, members: members,
+                                        typeStack: &typeStack,
+                                        membersByType: &membersByType,
+                                        classMembersByType: &classMembersByType,
+                                        removed: &removed, unremoved: &unremoved,
+                                        initRemoved: &initRemoved, initUnremoved: &initUnremoved,
+                                        isTypeRoot: false, isInit: isInit,
+                                    )
+                                    index -= 1
+                                case .endOfScope("}"):
+                                    break loop
+                                default:
+                                    break
+                            }
+                        }
+                    case .startOfScope("{")
+                    where ["for", "where", "if", "else", "while", "do"].contains(lastKeyword):
+                        if let scopeIndex = formatter.index(of: .startOfScope, before: index),
+                           scopeIndex > lastKeywordIndex
                         {
-                            initUnremoved += 1
+                            index = formatter.endOfScope(at: index) ?? (formatter.tokens.count - 1)
+                            break
+                        }
+                        lastKeyword = ""
+                        fallthrough
+                    case .startOfScope("{") where lastKeyword == "repeat":
+                        index += 1
+                        processBody(
+                            at: &index, localNames: localNames, members: members,
+                            typeStack: &typeStack,
+                            membersByType: &membersByType, classMembersByType: &classMembersByType,
+                            removed: &removed, unremoved: &unremoved,
+                            initRemoved: &initRemoved, initUnremoved: &initUnremoved,
+                            isTypeRoot: false, isInit: isInit,
+                        )
+                        continue
+                    case .startOfScope("{") where lastKeyword == "var":
+                        lastKeyword = ""
+                        if formatter.isStartOfClosure(at: index) {
+                            fallthrough
+                        }
+                        var prevIndex = index - 1
+                        var name: String?
+                        while let token = formatter.token(at: prevIndex), token != .keyword("var") {
+                            if token.isLvalue,
+                               let nextToken = formatter.nextToken(
+                                   after: prevIndex,
+                                   where: {
+                                       !$0.isSpaceOrCommentOrLinebreak && !$0.isStartOfScope
+                                   },
+                               ), nextToken.isRvalue, !nextToken.isOperator(".")
+                            {
+                                // It's a closure
+                                fallthrough
+                            }
+                            if case let .identifier(_name) = token {
+                                // Is the declared variable
+                                name = _name
+                            }
+                            prevIndex -= 1
+                        }
+                        if let name {
+                            processAccessors(
+                                ["get", "set", "willSet", "didSet", "init", "_modify"], for: name,
+                                at: &index, localNames: localNames, members: members,
+                                typeStack: &typeStack, membersByType: &membersByType,
+                                classMembersByType: &classMembersByType,
+                                removed: &removed, unremoved: &unremoved,
+                                initRemoved: &initRemoved, initUnremoved: &initUnremoved,
+                            )
+                        }
+                        continue
+                    case .startOfScope:
+                        index = formatter.endOfScope(at: index) ?? (formatter.tokens.count - 1)
+                    case .identifier("self"):
+                        guard !isTypeRoot, !localNames.contains("self"),
+                              let dotIndex = formatter.index(
+                                  of: .nonSpaceOrLinebreak, after: index,
+                                  if: {
+                                      $0 == .operator(".", .infix)
+                                  },
+                              ),
+                              let nextIndex = formatter.index(
+                                  of: .nonSpaceOrLinebreak,
+                                  after: dotIndex,
+                              ),
+                              let name = formatter.token(at: nextIndex)?.unescaped(),
+                              !localNames.contains(name), !selfRequired.contains(name),
+                              !_FormatRules.globalSwiftFunctions.contains(name)
+                        else {
+                            break
+                        }
+                        if isInit {
+                            if formatter.next(.nonSpaceOrCommentOrLinebreak, after: nextIndex)
+                                == .operator("=", .infix)
+                            {
+                                initUnremoved += 1
+                            } else if let scopeEnd = formatter.index(
+                                of: .endOfScope(")"),
+                                after: nextIndex,
+                            ),
+                                formatter.next(.nonSpaceOrCommentOrLinebreak, after: scopeEnd)
+                                == .operator("=", .infix)
+                            {
+                                initUnremoved += 1
+                            } else {
+                                unremoved += 1
+                            }
                         } else {
                             unremoved += 1
                         }
-                    } else {
-                        unremoved += 1
-                    }
-                case .identifier("type"): // Special case for type(of:)
-                    guard
-                        let parenIndex = formatter.index(
-                            of: .nonSpaceOrCommentOrLinebreak, after: index,
-                            if: {
-                                $0 == .startOfScope("(")
-                            }
-                        ),
-                        formatter.next(.nonSpaceOrCommentOrLinebreak, after: parenIndex) == .identifier("of")
-                    else {
-                        fallthrough
-                    }
-                case .identifier:
-                    guard !isTypeRoot else {
-                        break
-                    }
-                    let isAssignment: Bool
-                    if ["for", "var", "let"].contains(lastKeyword),
-                       let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: index)
-                    {
-                        switch prevToken {
-                        case .identifier, .number,
-                             .operator
-                                 where ![.operator("=", .infix), .operator(".", .prefix)].contains(prevToken),
-                             .endOfScope where prevToken.isStringDelimiter:
-                            isAssignment = false
-                            lastKeyword = ""
-                        default:
-                            isAssignment = true
+                    case .identifier("type"): // Special case for type(of:)
+                        guard
+                            let parenIndex = formatter.index(
+                                of: .nonSpaceOrCommentOrLinebreak, after: index,
+                                if: {
+                                    $0 == .startOfScope("(")
+                                },
+                            ),
+                            formatter
+                            .next(.nonSpaceOrCommentOrLinebreak, after: parenIndex) ==
+                            .identifier("of")
+                        else {
+                            fallthrough
                         }
-                    } else {
-                        isAssignment = false
-                    }
-                    if !isAssignment, token.string == "lazy" {
-                        lastKeyword = "lazy"
-                        lastKeywordIndex = index
-                    }
-                    let name = token.unescaped()
-                    guard members.contains(name), !localNames.contains(name),
-                          !isAssignment
-                          || formatter.last(.nonSpaceOrCommentOrLinebreak, before: index)
-                          == .operator("=", .infix),
-                          formatter.next(.nonSpaceOrComment, after: index) != .delimiter(":")
-                    else {
-                        break
-                    }
-                    if let lastToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: index),
-                       lastToken.isOperator(".")
-                    {
-                        break
-                    }
-                    if isInit {
-                        if formatter.next(.nonSpaceOrCommentOrLinebreak, after: index) == .operator("=", .infix) {
-                            initRemoved += 1
-                        } else if let scopeEnd = formatter.index(of: .endOfScope(")"), after: index),
-                                  formatter.next(.nonSpaceOrCommentOrLinebreak, after: scopeEnd)
-                                  == .operator("=", .infix)
+                    case .identifier:
+                        guard !isTypeRoot else {
+                            break
+                        }
+                        let isAssignment: Bool
+                        if ["for", "var", "let"].contains(lastKeyword),
+                           let prevToken = formatter.last(
+                               .nonSpaceOrCommentOrLinebreak,
+                               before: index,
+                           )
                         {
-                            initRemoved += 1
+                            switch prevToken {
+                                case .identifier, .number,
+                                     .operator
+                                         where ![.operator("=", .infix), .operator(".", .prefix)]
+                                         .contains(prevToken),
+                                     .endOfScope where prevToken.isStringDelimiter:
+                                    isAssignment = false
+                                    lastKeyword = ""
+                                default:
+                                    isAssignment = true
+                            }
+                        } else {
+                            isAssignment = false
+                        }
+                        if !isAssignment, token.string == "lazy" {
+                            lastKeyword = "lazy"
+                            lastKeywordIndex = index
+                        }
+                        let name = token.unescaped()
+                        guard members.contains(name), !localNames.contains(name),
+                              !isAssignment
+                              || formatter.last(.nonSpaceOrCommentOrLinebreak, before: index)
+                              == .operator("=", .infix),
+                              formatter.next(.nonSpaceOrComment, after: index) != .delimiter(":")
+                        else {
+                            break
+                        }
+                        if let lastToken = formatter.last(
+                            .nonSpaceOrCommentOrLinebreak,
+                            before: index,
+                        ),
+                            lastToken.isOperator(".")
+                        {
+                            break
+                        }
+                        if isInit {
+                            if formatter
+                                .next(.nonSpaceOrCommentOrLinebreak, after: index) == .operator(
+                                    "=",
+                                    .infix,
+                                )
+                            {
+                                initRemoved += 1
+                            } else if let scopeEnd = formatter.index(
+                                of: .endOfScope(")"),
+                                after: index,
+                            ),
+                                formatter.next(.nonSpaceOrCommentOrLinebreak, after: scopeEnd)
+                                == .operator("=", .infix)
+                            {
+                                initRemoved += 1
+                            } else {
+                                removed += 1
+                            }
                         } else {
                             removed += 1
                         }
-                    } else {
-                        removed += 1
-                    }
-                case .endOfScope("case"), .endOfScope("default"):
-                    return
-                case .endOfScope:
-                    if token == .endOfScope("#endif") {
-                        while let scope = scopeStack.last {
-                            scopeStack.removeLast()
-                            if scope != .startOfScope("#if") {
-                                break
-                            }
-                        }
-                    } else if let scope = scopeStack.last {
-                        assert(token.isEndOfScope(scope))
-                        scopeStack.removeLast()
-                    } else {
-                        assert(token.isEndOfScope(formatter.currentScope(at: index)!))
-                        index += 1
+                    case .endOfScope("case"), .endOfScope("default"):
                         return
-                    }
-                case .linebreak:
-                    formatter.updateEnablement(at: index)
-                default:
-                    break
+                    case .endOfScope:
+                        if token == .endOfScope("#endif") {
+                            while let scope = scopeStack.last {
+                                scopeStack.removeLast()
+                                if scope != .startOfScope("#if") {
+                                    break
+                                }
+                            }
+                        } else if let scope = scopeStack.last {
+                            assert(token.isEndOfScope(scope))
+                            scopeStack.removeLast()
+                        } else {
+                            assert(token.isEndOfScope(formatter.currentScope(at: index)!))
+                            index += 1
+                            return
+                        }
+                    case .linebreak:
+                        formatter.updateEnablement(at: index)
+                    default:
+                        break
                 }
                 index += 1
             }
@@ -1230,7 +1287,7 @@ private struct Inference {
             membersByType: inout [String: Set<String>],
             classMembersByType: inout [String: Set<String>],
             removed: inout Int, unremoved: inout Int,
-            initRemoved: inout Int, initUnremoved: inout Int
+            initRemoved: inout Int, initUnremoved: inout Int,
         ) {
             var foundAccessors = false
             var localNames = localNames
@@ -1242,7 +1299,7 @@ private struct Inference {
                     } else {
                         return false
                     }
-                }
+                },
             ), let startIndex = formatter.index(of: .startOfScope("{"), after: nextIndex) {
                 foundAccessors = true
                 index = startIndex + 1
@@ -1250,22 +1307,22 @@ private struct Inference {
                     of: .nonSpaceOrCommentOrLinebreak, after: nextIndex,
                     if: {
                         $0 == .startOfScope("(")
-                    }
+                    },
                 ), let varToken = formatter.next(.identifier, after: parenStart) {
                     localNames.insert(varToken.unescaped())
                 } else {
                     switch formatter.tokens[nextIndex].string {
-                    case "get":
-                        localNames.insert(name)
-                    case "set":
-                        localNames.insert(name)
-                        localNames.insert("newValue")
-                    case "willSet":
-                        localNames.insert("newValue")
-                    case "didSet":
-                        localNames.insert("oldValue")
-                    default:
-                        break
+                        case "get":
+                            localNames.insert(name)
+                        case "set":
+                            localNames.insert(name)
+                            localNames.insert("newValue")
+                        case "willSet":
+                            localNames.insert("newValue")
+                        case "didSet":
+                            localNames.insert("oldValue")
+                        default:
+                            break
                     }
                 }
                 processBody(
@@ -1273,11 +1330,12 @@ private struct Inference {
                     membersByType: &membersByType, classMembersByType: &classMembersByType,
                     removed: &removed, unremoved: &unremoved,
                     initRemoved: &initRemoved, initUnremoved: &initUnremoved,
-                    isTypeRoot: false, isInit: false
+                    isTypeRoot: false, isInit: false,
                 )
             }
             if foundAccessors {
-                guard let endIndex = formatter.index(of: .endOfScope("}"), after: index) else { return }
+                guard let endIndex = formatter.index(of: .endOfScope("}"), after: index)
+                else { return }
                 index = endIndex + 1
             } else {
                 index += 1
@@ -1287,7 +1345,7 @@ private struct Inference {
                     membersByType: &membersByType, classMembersByType: &classMembersByType,
                     removed: &removed, unremoved: &unremoved,
                     initRemoved: &initRemoved, initUnremoved: &initUnremoved,
-                    isTypeRoot: false, isInit: false
+                    isTypeRoot: false, isInit: false,
                 )
             }
         }
@@ -1297,7 +1355,7 @@ private struct Inference {
             membersByType: inout [String: Set<String>],
             classMembersByType: inout [String: Set<String>],
             removed: inout Int, unremoved: inout Int,
-            initRemoved: inout Int, initUnremoved: inout Int
+            initRemoved: inout Int, initUnremoved: inout Int,
         ) {
             let startToken = formatter.tokens[index]
             var localNames = localNames
@@ -1312,20 +1370,20 @@ private struct Inference {
             while index < endIndex {
                 guard let externalNameIndex = formatter.index(of: .identifier, after: index),
                       let nextIndex = formatter.index(
-                          of: .nonSpaceOrCommentOrLinebreak, after: externalNameIndex
+                          of: .nonSpaceOrCommentOrLinebreak, after: externalNameIndex,
                       )
                 else { break }
                 let token = formatter.tokens[nextIndex]
                 switch token {
-                case let .identifier(name) where name != "_":
-                    localNames.insert(token.unescaped())
-                case .delimiter(":"):
-                    let externalNameToken = formatter.tokens[externalNameIndex]
-                    if case let .identifier(name) = externalNameToken, name != "_" {
-                        localNames.insert(externalNameToken.unescaped())
-                    }
-                default:
-                    break
+                    case let .identifier(name) where name != "_":
+                        localNames.insert(token.unescaped())
+                    case .delimiter(":"):
+                        let externalNameToken = formatter.tokens[externalNameIndex]
+                        if case let .identifier(name) = externalNameToken, name != "_" {
+                            localNames.insert(externalNameToken.unescaped())
+                        }
+                    default:
+                        break
                 }
                 index = formatter.index(of: .delimiter(","), after: index) ?? endIndex
             }
@@ -1334,19 +1392,19 @@ private struct Inference {
                     after: endIndex,
                     where: {
                         switch $0 {
-                        case .startOfScope("{"): // What we're looking for
-                            return true
-                        case .keyword("throws"),
-                             .keyword("rethrows"),
-                             .keyword("where"),
-                             .keyword("is"):
-                            return false // Keep looking
-                        case .keyword:
-                            return true // Not valid between end of arguments and start of body
-                        default:
-                            return false // Keep looking
+                            case .startOfScope("{"): // What we're looking for
+                                return true
+                            case .keyword("throws"),
+                                 .keyword("rethrows"),
+                                 .keyword("where"),
+                                 .keyword("is"):
+                                return false // Keep looking
+                            case .keyword:
+                                return true // Not valid between end of arguments and start of body
+                            default:
+                                return false // Keep looking
                         }
-                    }
+                    },
                 ), formatter.tokens[bodyStartIndex] == .startOfScope("{")
             else {
                 return
@@ -1358,7 +1416,7 @@ private struct Inference {
                     members: members, typeStack: &typeStack, membersByType: &membersByType,
                     classMembersByType: &classMembersByType,
                     removed: &removed, unremoved: &unremoved,
-                    initRemoved: &initRemoved, initUnremoved: &initUnremoved
+                    initRemoved: &initRemoved, initUnremoved: &initUnremoved,
                 )
             } else {
                 index = bodyStartIndex + 1
@@ -1372,7 +1430,7 @@ private struct Inference {
                     removed: &removed, unremoved: &unremoved,
                     initRemoved: &initRemoved, initUnremoved: &initUnremoved,
                     isTypeRoot: false,
-                    isInit: startToken == .keyword("init")
+                    isInit: startToken == .keyword("init"),
                 )
             }
         }
@@ -1388,7 +1446,7 @@ private struct Inference {
             at: &index, localNames: ["init"], members: [], typeStack: &typeStack,
             membersByType: &membersByType, classMembersByType: &classMembersByType,
             removed: &removed, unremoved: &unremoved, initRemoved: &initRemoved,
-            initUnremoved: &initUnremoved, isTypeRoot: false, isInit: false
+            initUnremoved: &initUnremoved, isTypeRoot: false, isInit: false,
         )
         // if both zero or equal, should be true
         if removed >= unremoved {
@@ -1421,14 +1479,15 @@ private struct Inference {
         var sameLine = 0
         var nextLine = 0
         formatter.forEach(.keyword) { i, token in
-            guard [.keyword("else"), .keyword("catch"), .keyword("while")].contains(token) else { return }
+            guard [.keyword("else"), .keyword("catch"), .keyword("while")].contains(token)
+            else { return }
             // Check for brace
             guard
                 let braceIndex = formatter.index(
                     of: .nonSpaceOrCommentOrLinebreak, before: i,
                     if: {
                         $0 == .endOfScope("}")
-                    }
+                    },
                 )
             else { return }
             // Check this isn't an inline block
@@ -1453,7 +1512,8 @@ private struct Inference {
         formatter.forEach(.keyword("switch")) { i, _ in
             var switchIndent = ""
             if let token = formatter.token(at: i - 1), !token.isLinebreak {
-                guard case let .space(space) = token, formatter.token(at: i - 2)?.isLinebreak != false
+                guard case let .space(space) = token,
+                      formatter.token(at: i - 2)?.isLinebreak != false
                 else {
                     return
                 }
@@ -1467,12 +1527,12 @@ private struct Inference {
                 return
             }
             switch indentToken {
-            case .linebreak, .space(switchIndent):
-                noindent += 1
-            case let .space(caseIndent) where caseIndent.hasPrefix(switchIndent):
-                indent += 1
-            default:
-                break
+                case .linebreak, .space(switchIndent):
+                    noindent += 1
+                case let .space(caseIndent) where caseIndent.hasPrefix(switchIndent):
+                    indent += 1
+                default:
+                    break
             }
         }
         options.indentCase = (indent > noindent)
@@ -1545,16 +1605,18 @@ private extension Formatter {
             let digits: String
             let prefix = "0x"
             switch type {
-            case .integer:
-                digits = number
-            case .binary, .octal:
-                digits = String(number[prefix.endIndex...])
-            case .hex:
-                let endIndex = number.firstIndex { [".", "p", "P"].contains($0) } ?? number.endIndex
-                digits = String(number[prefix.endIndex ..< endIndex])
-            case .decimal:
-                let endIndex = number.firstIndex { [".", "e", "E"].contains($0) } ?? number.endIndex
-                digits = String(number[..<endIndex])
+                case .integer:
+                    digits = number
+                case .binary, .octal:
+                    digits = String(number[prefix.endIndex...])
+                case .hex:
+                    let endIndex = number.firstIndex { [".", "p", "P"].contains($0) } ?? number
+                        .endIndex
+                    digits = String(number[prefix.endIndex ..< endIndex])
+                case .decimal:
+                    let endIndex = number.firstIndex { [".", "e", "E"].contains($0) } ?? number
+                        .endIndex
+                    digits = String(number[..<endIndex])
             }
             // Get the group for this number
             var count = 0
@@ -1631,23 +1693,25 @@ private extension Formatter {
             let exp: String
             let grouping: Grouping
             switch type {
-            case .integer, .binary, .octal:
-                return
-            case .hex:
-                exp = "pP"
-                grouping = options.hexGrouping
-            case .decimal:
-                exp = "eE"
-                grouping = options.decimalGrouping
+                case .integer, .binary, .octal:
+                    return
+                case .hex:
+                    exp = "pP"
+                    grouping = options.hexGrouping
+                case .decimal:
+                    exp = "eE"
+                    grouping = options.decimalGrouping
             }
             let target: String
             switch part {
-            case .fraction where number.contains("."):
-                target = number.components(separatedBy: CharacterSet(charactersIn: ".\(exp)"))[1]
-            case .exponent where number.contains(where: { exp.contains($0) }):
-                target = number.components(separatedBy: CharacterSet(charactersIn: ".\(exp)")).last!
-            default:
-                return
+                case .fraction where number.contains("."):
+                    target = number
+                        .components(separatedBy: CharacterSet(charactersIn: ".\(exp)"))[1]
+                case .exponent where number.contains(where: { exp.contains($0) }):
+                    target = number.components(separatedBy: CharacterSet(charactersIn: ".\(exp)"))
+                        .last!
+                default:
+                    return
             }
             if target.contains("_") {
                 grouped += 1

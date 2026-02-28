@@ -40,12 +40,16 @@ struct VoidReturnRule: Rule {
             Example("let abc: () -> ↓(Void) = {}"): Example("let abc: () -> Void = {}"),
             Example("let abc: () -> ↓(   Void ) = {}"): Example("let abc: () -> Void = {}"),
             Example("func foo(completion: () -> ↓())"): Example("func foo(completion: () -> Void)"),
-            Example("func foo(completion: () -> ↓(   ))"): Example("func foo(completion: () -> Void)"),
-            Example("func foo(completion: () -> ↓(Void))"): Example("func foo(completion: () -> Void)"),
+            Example("func foo(completion: () -> ↓(   ))"): Example(
+                "func foo(completion: () -> Void)",
+            ),
+            Example("func foo(completion: () -> ↓(Void))"): Example(
+                "func foo(completion: () -> Void)",
+            ),
             Example("let foo: (ConfigurationTests) -> () throws -> ↓()"):
                 Example("let foo: (ConfigurationTests) -> () throws -> Void"),
             Example("func foo() async throws -> ↓()"): Example("func foo() async throws -> Void"),
-        ]
+        ],
     )
 }
 

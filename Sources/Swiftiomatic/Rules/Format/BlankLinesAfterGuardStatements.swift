@@ -1,6 +1,3 @@
-// Created by @NikeKov on 01.08.2024
-// Copyright © 2024 Nick Lockwood. All rights reserved.
-
 import Foundation
 
 extension FormatRule {
@@ -8,7 +5,7 @@ extension FormatRule {
         help:
         "Remove blank lines between consecutive guard statements, and insert a blank after the last guard statement.",
         disabledByDefault: true,
-        options: ["line-between-guards"]
+        options: ["line-between-guards"],
     ) { formatter in
         formatter.forEach(.keyword("guard")) { guardIndex, _ in
             guard var elseIndex = formatter.index(of: .keyword("else"), after: guardIndex) else {
@@ -28,7 +25,7 @@ extension FormatRule {
 
             guard
                 let nextNonSpaceAndNonLinebreakIndex = formatter.index(
-                    of: .nonSpaceOrLinebreak, after: endOfGuardScope
+                    of: .nonSpaceOrLinebreak, after: endOfGuardScope,
                 )
             else {
                 return

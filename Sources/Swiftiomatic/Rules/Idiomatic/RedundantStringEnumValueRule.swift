@@ -15,7 +15,7 @@ struct RedundantStringEnumValueRule: Rule {
                   case one
                   case two
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -23,7 +23,7 @@ struct RedundantStringEnumValueRule: Rule {
                   case one = 1
                   case two = 2
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -31,7 +31,7 @@ struct RedundantStringEnumValueRule: Rule {
                   case one = "ONE"
                   case two = "TWO"
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -39,14 +39,14 @@ struct RedundantStringEnumValueRule: Rule {
                   case one = "ONE"
                   case two = "two"
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum Numbers: String {
                   case one, two
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -56,23 +56,23 @@ struct RedundantStringEnumValueRule: Rule {
                   case one = ↓"one"
                   case two = ↓"two"
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum Numbers: String {
                   case one = ↓"one", two = ↓"two"
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum Numbers: String {
                   case one, two = ↓"two"
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -102,9 +102,11 @@ private extension RedundantStringEnumValueRule {
             let redundantMembersPositions =
                 enumsWithExplicitValues
                     .compactMap { element -> AbsolutePosition? in
-                        guard let stringExpr = element.rawValue?.value.as(StringLiteralExprSyntax.self),
-                              let segment = stringExpr.segments.onlyElement?.as(StringSegmentSyntax.self),
-                              segment.content.text == element.name.text
+                        guard let stringExpr = element.rawValue?.value
+                            .as(StringLiteralExprSyntax.self),
+                            let segment = stringExpr.segments.onlyElement?
+                            .as(StringSegmentSyntax.self),
+                            segment.content.text == element.name.text
                         else {
                             return nil
                         }

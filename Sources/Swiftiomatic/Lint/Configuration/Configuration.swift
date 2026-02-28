@@ -100,7 +100,7 @@ struct Configuration {
         lenient: Bool,
         baseline: String?,
         writeBaseline: String?,
-        checkForUpdates: Bool
+        checkForUpdates: Bool,
     ) {
         self.rulesWrapper = rulesWrapper
         self.fileGraph = fileGraph
@@ -181,12 +181,12 @@ struct Configuration {
         lenient: Bool = false,
         baseline: String? = nil,
         writeBaseline: String? = nil,
-        checkForUpdates: Bool = false
+        checkForUpdates: Bool = false,
     ) {
         if let pinnedVersion, pinnedVersion != LintVersion.current.value {
             queuedPrintError(
                 "warning: Currently running SwiftLint \(LintVersion.current.value) but "
-                    + "configuration specified version \(pinnedVersion)."
+                    + "configuration specified version \(pinnedVersion).",
             )
             exit(2)
         }
@@ -195,12 +195,12 @@ struct Configuration {
             rulesWrapper: RulesWrapper(
                 mode: rulesMode,
                 allRulesWrapped: allRulesWrapped ?? (try? ruleList.allRulesWrapped()) ?? [],
-                aliasResolver: { ruleList.identifier(for: $0) ?? $0 }
+                aliasResolver: { ruleList.identifier(for: $0) ?? $0 },
             ),
             fileGraph: fileGraph
                 ?? FileGraph(
                     rootDirectory: FileManager.default.currentDirectoryPath.bridge()
-                        .absolutePathStandardized()
+                        .absolutePathStandardized(),
                 ),
             includedPaths: includedPaths,
             excludedPaths: excludedPaths,
@@ -213,7 +213,7 @@ struct Configuration {
             lenient: lenient,
             baseline: baseline,
             writeBaseline: writeBaseline,
-            checkForUpdates: checkForUpdates
+            checkForUpdates: checkForUpdates,
         )
     }
 
@@ -237,7 +237,8 @@ struct Configuration {
         cachePath: String? = nil,
         ignoreParentAndChildConfigs: Bool = false,
         mockedNetworkResults: [String: String] = [:],
-        useDefaultConfigOnFailure: Bool? = nil // swiftlint:disable:this discouraged_optional_boolean
+        useDefaultConfigOnFailure: Bool? =
+            nil, // swiftlint:disable:this discouraged_optional_boolean
     ) {
         // Handle mocked network results if needed
         Self.FileGraph.FilePath.mockedNetworkResults = mockedNetworkResults
@@ -276,12 +277,12 @@ struct Configuration {
             var fileGraph = FileGraph(
                 commandLineChildConfigs: configurationFiles,
                 rootDirectory: currentWorkingDirectory,
-                ignoreParentAndChildConfigs: ignoreParentAndChildConfigs
+                ignoreParentAndChildConfigs: ignoreParentAndChildConfigs,
             )
             let resultingConfiguration = try fileGraph.resultingConfiguration(
                 enableAllRules: enableAllRules,
                 onlyRule: onlyRule,
-                cachePath: cachePath
+                cachePath: cachePath,
             )
 
             self.init(copying: resultingConfiguration)
@@ -297,7 +298,7 @@ struct Configuration {
             if useDefaultConfigOnFailure ?? !hasCustomConfigurationFiles {
                 // No files were explicitly specified, so maybe the user doesn't want a config at all -> warn
                 queuedPrintError(
-                    "\(Issue.wrap(error: error).localizedDescription) – Falling back to default configuration"
+                    "\(Issue.wrap(error: error).localizedDescription) – Falling back to default configuration",
                 )
                 self.init(rulesMode: rulesMode, cachePath: cachePath)
             } else {
@@ -311,17 +312,17 @@ struct Configuration {
     // MARK: - Methods: Internal
 
     mutating func makeIncludedAndExcludedPaths(
-        relativeTo newBasePath: String, previousBasePath: String
+        relativeTo newBasePath: String, previousBasePath: String,
     ) {
         includedPaths = includedPaths.map {
             $0.bridge().absolutePathRepresentation(rootDirectory: previousBasePath).path(
-                relativeTo: newBasePath
+                relativeTo: newBasePath,
             )
         }
 
         excludedPaths = excludedPaths.map {
             $0.bridge().absolutePathRepresentation(rootDirectory: previousBasePath).path(
-                relativeTo: newBasePath
+                relativeTo: newBasePath,
             )
         }
     }
@@ -357,7 +358,8 @@ extension Configuration: Hashable {
             && lhs.indentation == rhs.indentation && lhs.warningThreshold == rhs.warningThreshold
             && lhs.reporter == rhs.reporter
             && lhs.basedOnCustomConfigurationFiles == rhs.basedOnCustomConfigurationFiles
-            && lhs.cachePath == rhs.cachePath && lhs.rules == rhs.rules && lhs.fileGraph == rhs.fileGraph
+            && lhs.cachePath == rhs.cachePath && lhs.rules == rhs.rules && lhs.fileGraph == rhs
+            .fileGraph
             && lhs.allowZeroLintableFiles == rhs.allowZeroLintableFiles && lhs.strict == rhs.strict
             && lhs.lenient == rhs.lenient && lhs.baseline == rhs.baseline
             && lhs.writeBaseline == rhs.writeBaseline && lhs.checkForUpdates == rhs.checkForUpdates

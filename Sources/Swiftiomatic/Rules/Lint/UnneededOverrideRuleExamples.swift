@@ -8,7 +8,7 @@ enum UnneededOverrideRuleExamples {
                     print("hi")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -18,7 +18,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -27,7 +27,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -37,7 +37,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -47,7 +47,7 @@ enum UnneededOverrideRuleExamples {
                     try! super.bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -57,7 +57,7 @@ enum UnneededOverrideRuleExamples {
                     try? super.bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -67,7 +67,7 @@ enum UnneededOverrideRuleExamples {
                     await try! super.bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -77,7 +77,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar(arg: !arg)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -87,7 +87,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar(arg + 1)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -97,7 +97,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar(arg: arg.var)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -107,7 +107,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -117,7 +117,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar(arg2: arg, arg3: arg3)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -128,7 +128,7 @@ enum UnneededOverrideRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -139,7 +139,7 @@ enum UnneededOverrideRuleExamples {
                     })
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -149,7 +149,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar(value: value)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -167,7 +167,7 @@ enum UnneededOverrideRuleExamples {
                     super.qux(c: {})
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -176,7 +176,7 @@ enum UnneededOverrideRuleExamples {
                     super.setUp()
                 }
             }
-            """, configuration: ["excluded_methods": ["setUp"]]
+            """, configuration: ["excluded_methods": ["setUp"]],
         ),
     ]
 
@@ -188,7 +188,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -197,7 +197,7 @@ enum UnneededOverrideRuleExamples {
                     return super.bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -207,7 +207,7 @@ enum UnneededOverrideRuleExamples {
                     // comments don't affect this
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -216,7 +216,7 @@ enum UnneededOverrideRuleExamples {
                     await super.bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -226,7 +226,7 @@ enum UnneededOverrideRuleExamples {
                     // comments don't affect this
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -235,7 +235,7 @@ enum UnneededOverrideRuleExamples {
                     try super.bar(arg: arg)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -244,7 +244,7 @@ enum UnneededOverrideRuleExamples {
                     super.bar(animated: animated, completion: completion)
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -256,12 +256,12 @@ enum UnneededOverrideRuleExamples {
                     super.bar(animated: animated, completion: completion)
                 }
             }
-            """
+            """,
         ): Example(
             """
             class Foo {
             }
-            """
+            """,
         ),
         Example(
             """
@@ -270,12 +270,12 @@ enum UnneededOverrideRuleExamples {
                     super.bar()
                 }
             }
-            """
+            """,
         ): Example(
             """
             class Foo {
             }
-            """
+            """,
         ),
         Example(
             """
@@ -287,7 +287,7 @@ enum UnneededOverrideRuleExamples {
                 // This is another function
                 func baz() {}
             }
-            """
+            """,
         ): Example(
             """
             class Foo {
@@ -295,7 +295,7 @@ enum UnneededOverrideRuleExamples {
                 // This is another function
                 func baz() {}
             }
-            """
+            """,
         ),
         // Nothing happens to initializers by default.
         Example(
@@ -306,7 +306,7 @@ enum UnneededOverrideRuleExamples {
                     super.init(i: i)
                 }
             }
-            """
+            """,
         ): Example(
             """
             class Foo {
@@ -314,7 +314,7 @@ enum UnneededOverrideRuleExamples {
                     super.init(i: i)
                 }
             }
-            """
+            """,
         ),
     ]
 }

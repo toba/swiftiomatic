@@ -9,7 +9,7 @@ struct CollectionAlignmentRule: Rule {
         description: "All elements in a collection literal should be vertically aligned",
         kind: .style,
         nonTriggeringExamples: Examples(alignColons: false).nonTriggeringExamples,
-        triggeringExamples: Examples(alignColons: false).triggeringExamples
+        triggeringExamples: Examples(alignColons: false).triggeringExamples,
     )
 }
 
@@ -40,7 +40,8 @@ private extension CollectionAlignmentRule {
 
                 let graphemeColumn: Int
                 let graphemeClusters = String(
-                    locationConverter.sourceLines[location.line - 1].utf8.prefix(location.column - 1)
+                    locationConverter.sourceLines[location.line - 1].utf8
+                        .prefix(location.column - 1),
                 )
                 if let graphemeClusters {
                     graphemeColumn = graphemeClusters.count + 1
@@ -52,7 +53,7 @@ private extension CollectionAlignmentRule {
                     line: location.line,
                     column: graphemeColumn,
                     offset: location.offset,
-                    file: location.file
+                    file: location.file,
                 )
             }
             violations.append(contentsOf: validate(keyLocations: locations))
@@ -97,7 +98,8 @@ extension CollectionAlignmentRule {
         }
 
         var nonTriggeringExamples: [Example] {
-            let examples = alignColons ? alignColonsNonTriggeringExamples : alignLeftNonTriggeringExamples
+            let examples = alignColons ? alignColonsNonTriggeringExamples :
+                alignLeftNonTriggeringExamples
             return examples + sharedNonTriggeringExamples
         }
 
@@ -111,7 +113,7 @@ extension CollectionAlignmentRule {
                         "fizz"↓: 2,
                         "buzz"↓: 2
                     ])
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -122,7 +124,7 @@ extension CollectionAlignmentRule {
                         "delta": "d",
                         "epsilon"↓: "e"
                     ]
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -131,7 +133,7 @@ extension CollectionAlignmentRule {
                         "b"  ↓:2,
                         "c"    :      3
                     ]
-                    """
+                    """,
                 ),
             ]
         }
@@ -146,7 +148,7 @@ extension CollectionAlignmentRule {
                        "fizz": 2,
                        "buzz": 2
                     ])
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -157,7 +159,7 @@ extension CollectionAlignmentRule {
                         "delta": "d",
                       "epsilon": "e"
                     ]
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -166,13 +168,13 @@ extension CollectionAlignmentRule {
                           "b"  :2,
                            "c" :      3
                     ]
-                    """
+                    """,
                 ),
                 Example(
                     """
                     NSAttributedString(string: "…", attributes: [.font: UIFont.systemFont(ofSize: 12, weight: .regular),
                                                       .foregroundColor: UIColor(white: 0, alpha: 0.2)])
-                    """
+                    """,
                 ),
             ]
         }
@@ -187,7 +189,7 @@ extension CollectionAlignmentRule {
                        ↓"fizz": 2,
                        ↓"buzz": 2
                     ])
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -198,7 +200,7 @@ extension CollectionAlignmentRule {
                         "delta": "d",
                       ↓"epsilon": "e"
                     ]
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -207,7 +209,7 @@ extension CollectionAlignmentRule {
                                     "lunch": "sandwich",
                         ↓"dinner": "burger"
                     ]
-                    """
+                    """,
                 ),
             ]
         }
@@ -222,7 +224,7 @@ extension CollectionAlignmentRule {
                         "fizz": 2,
                         "buzz": 2
                     ])
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -233,7 +235,7 @@ extension CollectionAlignmentRule {
                         "delta": "d",
                         "epsilon": "e"
                     ]
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -242,13 +244,13 @@ extension CollectionAlignmentRule {
                                     "lunch": "sandwich",
                                     "dinner": "burger"
                     ]
-                    """
+                    """,
                 ),
                 Example(
                     """
                     NSAttributedString(string: "…", attributes: [.font: UIFont.systemFont(ofSize: 12, weight: .regular),
                                                                  .foregroundColor: UIColor(white: 0, alpha: 0.2)])
-                    """
+                    """,
                 ),
             ]
         }
@@ -262,7 +264,7 @@ extension CollectionAlignmentRule {
                             ↓CLLocationCoordinate2D(latitude: 0, longitude: 66),
                         CLLocationCoordinate2D(latitude: 0, longitude: 99)
                     ]
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -271,7 +273,7 @@ extension CollectionAlignmentRule {
                       ↓4,
                         6
                     ]
-                    """
+                    """,
                 ),
             ]
         }
@@ -285,7 +287,7 @@ extension CollectionAlignmentRule {
                         CLLocationCoordinate2D(latitude: 0, longitude: 66),
                         CLLocationCoordinate2D(latitude: 0, longitude: 99)
                     ]
-                    """
+                    """,
                 ),
                 Example(
                     """
@@ -294,26 +296,26 @@ extension CollectionAlignmentRule {
                         4,
                         6
                     ]
-                    """
+                    """,
                 ),
                 Example(
                     """
                     let abc = [1, 2, 3, 4]
-                    """
+                    """,
                 ),
                 Example(
                     """
                     let abc = [
                         1, 2, 3, 4
                     ]
-                    """
+                    """,
                 ),
                 Example(
                     """
                     let abc = [
                         "foo": "bar", "fizz": "buzz"
                     ]
-                    """
+                    """,
                 ),
             ]
         }

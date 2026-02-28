@@ -15,7 +15,7 @@ struct FallthroughRule: Rule {
                 case .bar, .bar2, .bar3:
                   something()
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -27,9 +27,9 @@ struct FallthroughRule: Rule {
                 case .bar2:
                   something()
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

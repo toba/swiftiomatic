@@ -15,7 +15,7 @@ struct DeadSymbolsRule: CollectingRule, OptInRule {
                 """
                 private func helper() {}
                 func main() { helper() }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -23,16 +23,16 @@ struct DeadSymbolsRule: CollectingRule, OptInRule {
                 """
                 ↓private func unused() {}
                 func main() { }
-                """
+                """,
             ),
-        ]
+        ],
     )
 
     func collectInfo(for file: SwiftLintFile) -> SymbolContribution {
         let collector = DeclarationReferenceCollector(viewMode: .sourceAccurate)
         collector.walk(file.syntaxTree)
         return SymbolContribution(
-            declarations: collector.declarations, references: collector.references
+            declarations: collector.declarations, references: collector.references,
         )
     }
 
@@ -61,7 +61,7 @@ struct DeadSymbolsRule: CollectingRule, OptInRule {
                         location: Location(file: filePath, line: decl.line, character: decl.column),
                         reason: "Dead private \(decl.kind): '\(decl.name)' — no references found",
                         confidence: .high,
-                        suggestion: "Remove if unused, or change visibility if needed elsewhere"
+                        suggestion: "Remove if unused, or change visibility if needed elsewhere",
                     )
                 }
     }
@@ -86,12 +86,12 @@ private final class DeclarationReferenceCollector: SyntaxVisitor {
     private var currentFile = ""
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        if isPrivate(node.modifiers) && !shouldExclude(node) {
+        if isPrivate(node.modifiers), !shouldExclude(node) {
             declarations.append(
                 SymbolDeclaration(
                     name: node.name.text, kind: "func", file: currentFile,
-                    line: 0, column: 0
-                )
+                    line: 0, column: 0,
+                ),
             )
         }
         return .visitChildren
@@ -105,8 +105,8 @@ private final class DeclarationReferenceCollector: SyntaxVisitor {
                 SymbolDeclaration(
                     name: pattern.identifier.text,
                     kind: node.bindingSpecifier.tokenKind == .keyword(.let) ? "let" : "var",
-                    file: currentFile, line: 0, column: 0
-                )
+                    file: currentFile, line: 0, column: 0,
+                ),
             )
         }
         return .visitChildren
@@ -116,8 +116,8 @@ private final class DeclarationReferenceCollector: SyntaxVisitor {
         if isPrivate(node.modifiers) {
             declarations.append(
                 SymbolDeclaration(
-                    name: node.name.text, kind: "class", file: currentFile, line: 0, column: 0
-                )
+                    name: node.name.text, kind: "class", file: currentFile, line: 0, column: 0,
+                ),
             )
         }
         return .visitChildren
@@ -127,8 +127,8 @@ private final class DeclarationReferenceCollector: SyntaxVisitor {
         if isPrivate(node.modifiers) {
             declarations.append(
                 SymbolDeclaration(
-                    name: node.name.text, kind: "struct", file: currentFile, line: 0, column: 0
-                )
+                    name: node.name.text, kind: "struct", file: currentFile, line: 0, column: 0,
+                ),
             )
         }
         return .visitChildren
@@ -137,7 +137,13 @@ private final class DeclarationReferenceCollector: SyntaxVisitor {
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         if isPrivate(node.modifiers) {
             declarations.append(
-                SymbolDeclaration(name: node.name.text, kind: "enum", file: currentFile, line: 0, column: 0)
+                SymbolDeclaration(
+                    name: node.name.text,
+                    kind: "enum",
+                    file: currentFile,
+                    line: 0,
+                    column: 0,
+                ),
             )
         }
         return .visitChildren
@@ -160,7 +166,8 @@ private final class DeclarationReferenceCollector: SyntaxVisitor {
     private func shouldExclude(_ node: FunctionDeclSyntax) -> Bool {
         let name = node.name.text
         if name == "init" || name == "deinit" { return true }
-        if node.attributes.contains(where: { $0.trimmedDescription.hasPrefix("@objc") }) { return true }
+        if node.attributes
+            .contains(where: { $0.trimmedDescription.hasPrefix("@objc") }) { return true }
         if node.modifiers.contains(where: { $0.name.text == "override" }) { return true }
         if name.hasPrefix("test") { return true }
         if name.count < 3 { return true }

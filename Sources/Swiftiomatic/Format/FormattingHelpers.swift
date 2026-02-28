@@ -1,11 +1,3 @@
-//
-//  FormattingHelpers.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 16/08/2020.
-//  Copyright © 2020 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 // MARK: shared helper methods
@@ -39,51 +31,52 @@ extension Formatter {
     /// Should the specified token be followed by a space if next token is an opening paren, bracket, etc?
     func shouldInsertSpaceAfterToken(at index: Int) -> Bool? {
         switch token(at: index) {
-        case let .keyword(keywordOrAttribute):
-            switch keywordOrAttribute {
-            case "@autoclosure":
-                if options.swiftVersion < "3",
-                   let nextIndex = self.index(of: .nonSpaceOrLinebreak, after: index),
-                   next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) == .identifier("escaping")
-                {
-                    assert(tokens[nextIndex] == .startOfScope("("))
-                    return false
+            case let .keyword(keywordOrAttribute):
+                switch keywordOrAttribute {
+                    case "@autoclosure":
+                        if options.swiftVersion < "3",
+                           let nextIndex = self.index(of: .nonSpaceOrLinebreak, after: index),
+                           next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) ==
+                           .identifier("escaping")
+                        {
+                            assert(tokens[nextIndex] == .startOfScope("("))
+                            return false
+                        }
+                        return true
+                    case "@escaping", "@noescape", "@Sendable", "@MainActor":
+                        return true
+                    case _ where keywordOrAttribute.isAttribute:
+                        if next(.nonSpaceOrCommentOrLinebreak, after: index) == .startOfScope("[") {
+                            return true
+                        }
+                        if let i = self.index(of: .startOfScope("("), after: index) {
+                            return isParameterList(at: i)
+                        }
+                        return false
+                    case "private", "fileprivate", "internal", "init", "subscript", "throws":
+                        return false
+                    case "await":
+                        return options.swiftVersion >= "5.5" || options.swiftVersion == .undefined
+                    default:
+                        return !keywordOrAttribute.isMacroOrAttribute
                 }
-                return true
-            case "@escaping", "@noescape", "@Sendable", "@MainActor":
-                return true
-            case _ where keywordOrAttribute.isAttribute:
-                if next(.nonSpaceOrCommentOrLinebreak, after: index) == .startOfScope("[") {
-                    return true
+            case let .identifier(name):
+                switch name {
+                    case "as", "is", "try": // not treated as keywords inside macro
+                        return token(at: index - 1)?.isOperator(".") != true
+                    case "unsafe":
+                        return options.swiftVersion >= "6.2" || options.swiftVersion == .undefined
+                    default:
+                        return name.isKeywordInTypeContext && isTypePosition(at: index)
                 }
-                if let i = self.index(of: .startOfScope("("), after: index) {
-                    return isParameterList(at: i)
-                }
+            case .endOfScope("]"):
+                return isInClosureArguments(at: index)
+            case .endOfScope(")"):
+                return isAttribute(at: index)
+            case .number, .endOfScope("}"), .endOfScope(">"):
                 return false
-            case "private", "fileprivate", "internal", "init", "subscript", "throws":
-                return false
-            case "await":
-                return options.swiftVersion >= "5.5" || options.swiftVersion == .undefined
             default:
-                return !keywordOrAttribute.isMacroOrAttribute
-            }
-        case let .identifier(name):
-            switch name {
-            case "as", "is", "try": // not treated as keywords inside macro
-                return token(at: index - 1)?.isOperator(".") != true
-            case "unsafe":
-                return options.swiftVersion >= "6.2" || options.swiftVersion == .undefined
-            default:
-                return name.isKeywordInTypeContext && isTypePosition(at: index)
-            }
-        case .endOfScope("]"):
-            return isInClosureArguments(at: index)
-        case .endOfScope(")"):
-            return isAttribute(at: index)
-        case .number, .endOfScope("}"), .endOfScope(">"):
-            return false
-        default:
-            return nil
+                return nil
         }
     }
 
@@ -104,7 +97,7 @@ extension Formatter {
                 of: .nonSpaceOrLinebreak, after: i,
                 if: {
                     $0 == .operator(".", .infix)
-                }
+                },
             ), !exclude.contains(selfKeyword),
             let nextIndex = index(of: .nonSpaceOrLinebreak, after: dotIndex),
             let token = token(at: nextIndex), token.isIdentifier,
@@ -117,27 +110,30 @@ extension Formatter {
         var index = i
         loop: while let scopeStart = self.index(of: .startOfScope, before: index) {
             switch tokens[scopeStart] {
-            case .startOfScope("["):
-                break
-            case .startOfScope("("):
-                if let prevIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, before: scopeStart),
-                   isSymbol(
-                       at: prevIndex,
-                       in: staticSelf
-                           ? []
-                           : options.selfRequired.union([
-                               "expect", // Special case to support autoclosure arguments in the Nimble framework
-                               "os_log", // Special case to support string interpolation inside os_log
-                           ])
-                   ) || isAttribute(at: prevIndex)
-                {
-                    return false
-                }
-            case let token:
-                if token.isStringDelimiter {
+                case .startOfScope("["):
                     break
-                }
-                break loop
+                case .startOfScope("("):
+                    if let prevIndex = self.index(
+                        of: .nonSpaceOrCommentOrLinebreak,
+                        before: scopeStart,
+                    ),
+                        isSymbol(
+                            at: prevIndex,
+                            in: staticSelf
+                                ? []
+                                : options.selfRequired.union([
+                                    "expect", // Special case to support autoclosure arguments in the Nimble framework
+                                    "os_log", // Special case to support string interpolation inside os_log
+                                ]),
+                        ) || isAttribute(at: prevIndex)
+                    {
+                        return false
+                    }
+                case let token:
+                    if token.isStringDelimiter {
+                        break
+                    }
+                    break loop
             }
             index = scopeStart
         }
@@ -149,7 +145,7 @@ extension Formatter {
     func processDeclaredVariables(
         at index: inout Int, names: inout Set<String>,
         removeSelfKeyword: String?, onlyLocal: Bool,
-        scopeAllowsImplicitSelfRebinding: Bool
+        scopeAllowsImplicitSelfRebinding: Bool,
     ) {
         let isConditional = isConditionalStatement(at: index)
         var declarationIndex: Int? = -1
@@ -157,174 +153,189 @@ extension Formatter {
         var locals = Set<String>()
         while let token = token(at: index) {
             outer: switch token {
-            case let .identifier(name) where last(.nonSpace, before: index)?.isOperator == false:
-                if name == removeSelfKeyword, isEnabled,
-                   let nextIndex = self.index(
-                       of: .nonSpaceOrCommentOrLinebreak,
-                       after: index, if: { $0 == .operator(".", .infix) }
-                   ),
-                   case .identifier? = next(
-                       .nonSpaceOrComment,
-                       after: nextIndex
-                   )
-                {
-                    _ = removeSelf(at: index, exclude: names.union(locals))
-                    break
-                }
-                switch next(.nonSpaceOrCommentOrLinebreak, after: index) {
-                case .delimiter(":") where !scopeIndexStack.isEmpty, .operator(".", _):
-                    break outer
-                default:
-                    break
-                }
-                let name = token.unescaped()
-
-                // Whether or not this property is a `let self` definition
-                // that rebinds implicit self for the remainder of scope.
-                // This is only permitted in `weak self` closures when
-                // unwrapping self like `let self = self`.
-                var isPermittedImplicitSelfRebinding = false
-                if name == "self",
-                   scopeAllowsImplicitSelfRebinding,
-                   let equalsIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index)
-                {
-                    // If we find the end of the condition instead of an = token,
-                    // then this was a shorthand `if let self` condition.
-                    if tokens[equalsIndex] == .startOfScope("{") || tokens[equalsIndex] == .delimiter(",")
-                        || tokens[equalsIndex] == .keyword("else")
+                case let .identifier(name)
+                where last(.nonSpace, before: index)?.isOperator == false:
+                    if name == removeSelfKeyword, isEnabled,
+                       let nextIndex = self.index(
+                           of: .nonSpaceOrCommentOrLinebreak,
+                           after: index, if: { $0 == .operator(".", .infix) },
+                       ),
+                       case .identifier? = next(
+                           .nonSpaceOrComment,
+                           after: nextIndex,
+                       )
                     {
-                        isPermittedImplicitSelfRebinding = true
-                    } else if tokens[equalsIndex] == Token.operator("=", .infix),
-                              let rhsSelfIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex),
-                              tokens[rhsSelfIndex] == .identifier("self"),
-                              let nextToken = next(.nonSpaceOrCommentOrLinebreak, after: rhsSelfIndex),
-                              nextToken == .startOfScope("{") || nextToken == .delimiter(",")
-                              || nextToken == .keyword("else")
-                    {
-                        isPermittedImplicitSelfRebinding = true
-                    }
-                }
-
-                if name != "_", declarationIndex != nil || !isConditional {
-                    if isPermittedImplicitSelfRebinding {
-                        assert(name == "self")
-                        names.remove("self")
-                    } else {
-                        locals.insert(name)
-                    }
-                }
-                inner: while let nextIndex = self.index(of: .nonSpace, after: index) {
-                    let token = tokens[nextIndex]
-                    if isStartOfStatement(at: nextIndex) {
-                        names.formUnion(locals)
-                    }
-                    let removeSelfKeyword =
-                        isEnabled && (options.swiftVersion >= "5.4" || isConditionalStatement(at: nextIndex))
-                            ? removeSelfKeyword : nil
-                    let include = onlyLocal ? locals : nil
-                    switch token {
-                    case .keyword("is"), .keyword("as"), .keyword("try"), .keyword("await"):
+                        _ = removeSelf(at: index, exclude: names.union(locals))
                         break
-                    case .identifier(removeSelfKeyword ?? ""):
-                        _ = removeSelf(at: nextIndex, exclude: names, include: include)
-                    case .startOfScope("<"), .startOfScope("["), .startOfScope("("),
-                         .startOfScope where token.isStringDelimiter:
-                        guard let endIndex = endOfScope(at: nextIndex) else {
-                            fatalError("Expected end of scope", at: nextIndex)
-                            return
+                    }
+                    switch next(.nonSpaceOrCommentOrLinebreak, after: index) {
+                        case .delimiter(":") where !scopeIndexStack.isEmpty, .operator(".", _):
+                            break outer
+                        default:
+                            break
+                    }
+                    let name = token.unescaped()
+
+                    // Whether or not this property is a `let self` definition
+                    // that rebinds implicit self for the remainder of scope.
+                    // This is only permitted in `weak self` closures when
+                    // unwrapping self like `let self = self`.
+                    var isPermittedImplicitSelfRebinding = false
+                    if name == "self",
+                       scopeAllowsImplicitSelfRebinding,
+                       let equalsIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index)
+                    {
+                        // If we find the end of the condition instead of an = token,
+                        // then this was a shorthand `if let self` condition.
+                        if tokens[equalsIndex] == .startOfScope("{") || tokens[equalsIndex] ==
+                            .delimiter(",")
+                            || tokens[equalsIndex] == .keyword("else")
+                        {
+                            isPermittedImplicitSelfRebinding = true
+                        } else if tokens[equalsIndex] == Token.operator("=", .infix),
+                                  let rhsSelfIndex = self.index(
+                                      of: .nonSpaceOrCommentOrLinebreak,
+                                      after: equalsIndex,
+                                  ),
+                                  tokens[rhsSelfIndex] == .identifier("self"),
+                                  let nextToken = next(
+                                      .nonSpaceOrCommentOrLinebreak,
+                                      after: rhsSelfIndex,
+                                  ),
+                                  nextToken == .startOfScope("{") || nextToken == .delimiter(",")
+                                  || nextToken == .keyword("else")
+                        {
+                            isPermittedImplicitSelfRebinding = true
                         }
-                        if let removeSelfKeyword {
-                            var i = endIndex - 1
-                            while i > nextIndex {
-                                switch tokens[i] {
-                                case .endOfScope("}"):
-                                    i = self.index(of: .startOfScope("{"), before: i) ?? i
-                                case .identifier(removeSelfKeyword):
-                                    _ = removeSelf(at: i, exclude: names, include: include)
-                                default:
-                                    break
-                                }
-                                i -= 1
-                            }
-                            index = endOfScope(at: nextIndex)!
+                    }
+
+                    if name != "_", declarationIndex != nil || !isConditional {
+                        if isPermittedImplicitSelfRebinding {
+                            assert(name == "self")
+                            names.remove("self")
                         } else {
-                            index = endIndex
+                            locals.insert(name)
                         }
-                        fallthrough
-                    case .number, .identifier:
-                        index = max(index, nextIndex)
-                        if next(
-                            .nonSpaceOrCommentOrLinebreak, after: index,
-                            if: {
-                                $0.isOperator(ofType: .infix) || $0.isOperator(ofType: .postfix)
-                                    || [
-                                        .keyword("is"), .keyword("as"), .delimiter(","),
-                                        .startOfScope("["), .startOfScope("("),
-                                    ].contains($0)
-                            }
-                        ) == nil {
+                    }
+                    inner: while let nextIndex = self.index(of: .nonSpace, after: index) {
+                        let token = tokens[nextIndex]
+                        if isStartOfStatement(at: nextIndex) {
                             names.formUnion(locals)
-                            return
                         }
-                        continue inner
-                    case .keyword("let"), .keyword("var"):
-                        names.formUnion(locals)
-                        declarationIndex = nextIndex
+                        let removeSelfKeyword =
+                            isEnabled &&
+                            (options.swiftVersion >= "5.4" || isConditionalStatement(at: nextIndex))
+                            ? removeSelfKeyword : nil
+                        let include = onlyLocal ? locals : nil
+                        switch token {
+                            case .keyword("is"), .keyword("as"), .keyword("try"), .keyword("await"):
+                                break
+                            case .identifier(removeSelfKeyword ?? ""):
+                                _ = removeSelf(at: nextIndex, exclude: names, include: include)
+                            case .startOfScope("<"), .startOfScope("["), .startOfScope("("),
+                                 .startOfScope where token.isStringDelimiter:
+                                guard let endIndex = endOfScope(at: nextIndex) else {
+                                    fatalError("Expected end of scope", at: nextIndex)
+                                    return
+                                }
+                                if let removeSelfKeyword {
+                                    var i = endIndex - 1
+                                    while i > nextIndex {
+                                        switch tokens[i] {
+                                            case .endOfScope("}"):
+                                                i = self
+                                                    .index(of: .startOfScope("{"), before: i) ?? i
+                                            case .identifier(removeSelfKeyword):
+                                                _ = removeSelf(
+                                                    at: i,
+                                                    exclude: names,
+                                                    include: include,
+                                                )
+                                            default:
+                                                break
+                                        }
+                                        i -= 1
+                                    }
+                                    index = endOfScope(at: nextIndex)!
+                                } else {
+                                    index = endIndex
+                                }
+                                fallthrough
+                            case .number, .identifier:
+                                index = max(index, nextIndex)
+                                if next(
+                                    .nonSpaceOrCommentOrLinebreak, after: index,
+                                    if: {
+                                        $0.isOperator(ofType: .infix) || $0
+                                            .isOperator(ofType: .postfix)
+                                            || [
+                                                .keyword("is"), .keyword("as"), .delimiter(","),
+                                                .startOfScope("["), .startOfScope("("),
+                                            ].contains($0)
+                                    },
+                                ) == nil {
+                                    names.formUnion(locals)
+                                    return
+                                }
+                                continue inner
+                            case .keyword("let"), .keyword("var"):
+                                names.formUnion(locals)
+                                declarationIndex = nextIndex
+                                index = nextIndex
+                                break inner
+                            case .keyword, .startOfScope("{"), .endOfScope("}"), .startOfScope(":"):
+                                names.formUnion(locals)
+                                return
+                            case .endOfScope(")"):
+                                let scopeIndex = scopeIndexStack.popLast() ?? -1
+                                if let d = declarationIndex, d > scopeIndex {
+                                    declarationIndex = nil
+                                }
+                            case .delimiter(","):
+                                if let d = declarationIndex, d >= scopeIndexStack.last ?? -1 {
+                                    declarationIndex = nil
+                                }
+                                index = nextIndex
+                                names.formUnion(locals)
+                                break inner
+                            case .endOfScope("*/"), .linebreak:
+                                updateEnablement(at: nextIndex)
+                            default:
+                                break
+                        }
                         index = nextIndex
-                        break inner
-                    case .keyword, .startOfScope("{"), .endOfScope("}"), .startOfScope(":"):
+                    }
+                case .keyword("let"), .keyword("var"):
+                    declarationIndex = index
+                case .startOfScope("("):
+                    guard declarationIndex == nil else {
+                        scopeIndexStack.append(index)
+                        break
+                    }
+                    guard let endIndex = self.index(of: .endOfScope(")"), after: index) else {
+                        fatalError("Expected )", at: index)
+                        return
+                    }
+                    guard
+                        tokens[index ..< endIndex].contains(where: {
+                            [.keyword("let"), .keyword("var")].contains($0)
+                        })
+                    else {
+                        index = endIndex
+                        break
+                    }
+                    scopeIndexStack.append(index)
+                case .startOfScope("{"):
+                    guard isStartOfClosure(at: index), let nextIndex = endOfScope(at: index) else {
+                        index -= 1
                         names.formUnion(locals)
                         return
-                    case .endOfScope(")"):
-                        let scopeIndex = scopeIndexStack.popLast() ?? -1
-                        if let d = declarationIndex, d > scopeIndex {
-                            declarationIndex = nil
-                        }
-                    case .delimiter(","):
-                        if let d = declarationIndex, d >= scopeIndexStack.last ?? -1 {
-                            declarationIndex = nil
-                        }
-                        index = nextIndex
-                        names.formUnion(locals)
-                        break inner
-                    case .endOfScope("*/"), .linebreak:
-                        updateEnablement(at: nextIndex)
-                    default:
-                        break
                     }
                     index = nextIndex
-                }
-            case .keyword("let"), .keyword("var"):
-                declarationIndex = index
-            case .startOfScope("("):
-                guard declarationIndex == nil else {
-                    scopeIndexStack.append(index)
+                case .endOfScope("*/"), .linebreak:
+                    updateEnablement(at: index)
+                default:
                     break
-                }
-                guard let endIndex = self.index(of: .endOfScope(")"), after: index) else {
-                    fatalError("Expected )", at: index)
-                    return
-                }
-                guard
-                    tokens[index ..< endIndex].contains(where: {
-                        [.keyword("let"), .keyword("var")].contains($0)
-                    })
-                else {
-                    index = endIndex
-                    break
-                }
-                scopeIndexStack.append(index)
-            case .startOfScope("{"):
-                guard isStartOfClosure(at: index), let nextIndex = endOfScope(at: index) else {
-                    index -= 1
-                    names.formUnion(locals)
-                    return
-                }
-                index = nextIndex
-            case .endOfScope("*/"), .linebreak:
-                updateEnablement(at: index)
-            default:
-                break
             }
             index += 1
         }
@@ -339,7 +350,7 @@ extension Formatter {
                     of: .nonSpace, before: endOfScope,
                     if: {
                         $0.isLinebreak
-                    }
+                    },
                 )
             else {
                 return
@@ -355,7 +366,7 @@ extension Formatter {
                 of: .nonSpaceOrCommentOrLinebreak, before: endOfScope,
                 if: {
                     $0 == .delimiter(",")
-                }
+                },
             ) {
                 removeToken(at: prevCommaIndex)
                 endOfScope -= 1
@@ -373,13 +384,13 @@ extension Formatter {
                         of: .nonSpaceOrLinebreak, before: index,
                         if: {
                             $0.isIdentifier
-                        }
+                        },
                     ),
                     let nextIndex = self.index(
                         of: .nonSpaceOrLinebreak, after: index,
                         if: {
                             $0.isIdentifier
-                        }
+                        },
                     )
                 else {
                     continue
@@ -404,7 +415,7 @@ extension Formatter {
 
         func wrapReturnAndEffectsIfNecessary(
             startOfScope: Int,
-            endOfFunctionScope: Int
+            endOfFunctionScope: Int,
         ) {
             guard token(at: startOfScope) == .startOfScope("(") else { return }
 
@@ -417,16 +428,16 @@ extension Formatter {
                 cursorIndex = parsedEffects.range.upperBound + 1
 
                 switch options.wrapEffects {
-                case .preserve: break
+                    case .preserve: break
 
-                case .ifMultiline:
-                    // If the effect is on the same line as the closing paren, wrap it
-                    guard closingParenLine == startOfLine(at: effectsIndex) else { break }
-                    cursorIndex += wrapLine(before: effectsIndex)
-                    shouldUnwrapReturnArrow = true
+                    case .ifMultiline:
+                        // If the effect is on the same line as the closing paren, wrap it
+                        guard closingParenLine == startOfLine(at: effectsIndex) else { break }
+                        cursorIndex += wrapLine(before: effectsIndex)
+                        shouldUnwrapReturnArrow = true
 
-                case .never:
-                    cursorIndex += unwrapLine(before: effectsIndex, preservingComments: false)
+                    case .never:
+                        cursorIndex += unwrapLine(before: effectsIndex, preservingComments: false)
                 }
             }
 
@@ -440,23 +451,26 @@ extension Formatter {
                 }
 
                 switch options.wrapReturnType {
-                case .preserve: break
-                case .ifMultiline:
-                    // If the return arrow is on the same line as the closing paren, wrap it
-                    guard closingParenLine == startOfLine(at: arrowIndex) else { break }
-                    cursorIndex += wrapLine(before: arrowIndex)
-                case .never:
-                    cursorIndex += unwrapLine(before: arrowIndex, preservingComments: true)
+                    case .preserve: break
+                    case .ifMultiline:
+                        // If the return arrow is on the same line as the closing paren, wrap it
+                        guard closingParenLine == startOfLine(at: arrowIndex) else { break }
+                        cursorIndex += wrapLine(before: arrowIndex)
+                    case .never:
+                        cursorIndex += unwrapLine(before: arrowIndex, preservingComments: true)
 
-                    // TODO: handle where clause
-                    if let nextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: cursorIndex - 1),
-                       tokens[nextIndex] == .startOfScope("{")
-                    {
-                        // Don't unwrap the brace line if using Allman braces
-                        if !options.allmanBraces {
-                            unwrapLine(before: nextIndex, preservingComments: true)
+                        // TODO: handle where clause
+                        if let nextIndex = index(
+                            of: .nonSpaceOrCommentOrLinebreak,
+                            after: cursorIndex - 1,
+                        ),
+                            tokens[nextIndex] == .startOfScope("{")
+                        {
+                            // Don't unwrap the brace line if using Allman braces
+                            if !options.allmanBraces {
+                                unwrapLine(before: nextIndex, preservingComments: true)
+                            }
                         }
-                    }
                 }
             }
         }
@@ -464,7 +478,7 @@ extension Formatter {
         func wrapArgumentsBeforeFirst(
             startOfScope i: Int,
             endOfScope: Int,
-            allowGrouping: Bool
+            allowGrouping: Bool,
         ) {
             // Get indent
             let indent = currentIndentForLine(at: i)
@@ -472,21 +486,22 @@ extension Formatter {
 
             keepParameterLabelsOnSameLine(
                 startOfScope: i,
-                endOfScope: &endOfScope
+                endOfScope: &endOfScope,
             )
 
             let closingParenOnSameLine: Bool
             if isFunctionCall(at: i) {
                 switch options.callSiteClosingParenPosition {
-                case .balanced: closingParenOnSameLine = false
-                case .sameLine: closingParenOnSameLine = true
-                case .default: closingParenOnSameLine = options.closingParenPosition == .sameLine
+                    case .balanced: closingParenOnSameLine = false
+                    case .sameLine: closingParenOnSameLine = true
+                    case .default: closingParenOnSameLine = options
+                    .closingParenPosition == .sameLine
                 }
             } else if tokens[i] == .startOfScope("(") {
                 switch options.closingParenPosition {
-                case .balanced: closingParenOnSameLine = false
-                case .sameLine: closingParenOnSameLine = true
-                case .default: closingParenOnSameLine = false
+                    case .balanced: closingParenOnSameLine = false
+                    case .sameLine: closingParenOnSameLine = true
+                    case .default: closingParenOnSameLine = false
                 }
             } else {
                 closingParenOnSameLine = false
@@ -514,7 +529,10 @@ extension Formatter {
                         !tokens[linebreakIndex].isLinebreak
                     {
                         insertLinebreak(at: linebreakIndex)
-                        endOfScope += 1 + insertSpace(indent + options.indent, at: linebreakIndex + 1)
+                        endOfScope += 1 + insertSpace(
+                            indent + options.indent,
+                            at: linebreakIndex + 1,
+                        )
                     }
                 }
                 index = commaIndex
@@ -536,7 +554,9 @@ extension Formatter {
                     insertLinebreak(at: nextIndex)
                     endOfScope += 1
                 }
-                if nextIndex + 1 < endOfScope, next(.nonSpace, after: nextIndex)?.isLinebreak == false {
+                if nextIndex + 1 < endOfScope,
+                   next(.nonSpace, after: nextIndex)?.isLinebreak == false
+                {
                     var indent = indent
                     if let nextNonSpaceIndex = self.index(of: .nonSpace, after: nextIndex),
                        nextNonSpaceIndex < endOfScope,
@@ -566,18 +586,20 @@ extension Formatter {
 
             wrapReturnAndEffectsIfNecessary(
                 startOfScope: i,
-                endOfFunctionScope: endOfScope
+                endOfFunctionScope: endOfScope,
             )
         }
         func wrapArgumentsAfterFirst(startOfScope i: Int, endOfScope: Int, allowGrouping: Bool) {
-            guard var firstArgumentIndex = index(of: .nonSpaceOrLinebreak, in: i + 1 ..< endOfScope) else {
+            guard var firstArgumentIndex = index(of: .nonSpaceOrLinebreak,
+                                                 in: i + 1 ..< endOfScope)
+            else {
                 return
             }
 
             var endOfScope = endOfScope
             keepParameterLabelsOnSameLine(
                 startOfScope: i,
-                endOfScope: &endOfScope
+                endOfScope: &endOfScope,
             )
 
             // Remove linebreak after opening paren
@@ -597,7 +619,9 @@ extension Formatter {
                 if let index = self.index(of: .nonSpace, before: linebreakIndex) {
                     linebreakIndex = index + 1
                 }
-                if maxWidth > 0, lineLength(upTo: commaIndex) >= maxWidth, let breakIndex = lastBreakIndex {
+                if maxWidth > 0, lineLength(upTo: commaIndex) >= maxWidth,
+                   let breakIndex = lastBreakIndex
+                {
                     endOfScope += 1 + insertSpace(indent, at: breakIndex)
                     insertLinebreak(at: breakIndex)
                     lastBreakIndex = nil
@@ -616,14 +640,16 @@ extension Formatter {
                 }
                 index = commaIndex + 1
             }
-            if maxWidth > 0, let breakIndex = lastBreakIndex, lineLength(at: breakIndex) > maxWidth {
+            if maxWidth > 0, let breakIndex = lastBreakIndex,
+               lineLength(at: breakIndex) > maxWidth
+            {
                 insertSpace(indent, at: breakIndex)
                 insertLinebreak(at: breakIndex)
             }
 
             wrapReturnAndEffectsIfNecessary(
                 startOfScope: i,
-                endOfFunctionScope: endOfScope
+                endOfFunctionScope: endOfScope,
             )
         }
 
@@ -633,8 +659,9 @@ extension Formatter {
         // -- wraptypealiases
         forEach(.keyword("typealias")) { typealiasIndex, _ in
             guard options.wrapTypealiases == .beforeFirst || options.wrapTypealiases == .afterFirst,
-                  let (equalsIndex, andTokenIndices, lastIdentifierIndex) = parseProtocolCompositionTypealias(
-                      at: typealiasIndex
+                  let (equalsIndex, andTokenIndices,
+                       lastIdentifierIndex) = parseProtocolCompositionTypealias(
+                      at: typealiasIndex,
                   )
             else { return }
 
@@ -643,18 +670,18 @@ extension Formatter {
             //  - For `beforeFirst`, we also wrap before the `=`
             let wrapIndices: [Int]
             switch options.wrapTypealiases {
-            case .afterFirst:
-                wrapIndices = andTokenIndices
-            case .beforeFirst:
-                wrapIndices = [equalsIndex] + andTokenIndices
-            case .default, .disabled, .preserve:
-                return
+                case .afterFirst:
+                    wrapIndices = andTokenIndices
+                case .beforeFirst:
+                    wrapIndices = [equalsIndex] + andTokenIndices
+                case .default, .disabled, .preserve:
+                    return
             }
 
             let didWrap = wrapMultilineStatement(
                 startIndex: typealiasIndex,
                 delimiterIndices: wrapIndices,
-                endIndex: lastIdentifierIndex
+                endIndex: lastIdentifierIndex,
             )
 
             guard didWrap else { return }
@@ -663,7 +690,8 @@ extension Formatter {
             // between the `typealias` and the `=`, we need to remove it
             let rangeBetweenTypealiasAndEquals = (typealiasIndex + 1) ..< equalsIndex
             if options.wrapTypealiases == .afterFirst,
-               let linebreakIndex = rangeBetweenTypealiasAndEquals.first(where: { tokens[$0].isLinebreak })
+               let linebreakIndex = rangeBetweenTypealiasAndEquals
+               .first(where: { tokens[$0].isLinebreak })
             {
                 removeToken(at: linebreakIndex)
                 if tokens[linebreakIndex].isSpace, tokens[linebreakIndex] != .space(" ") {
@@ -675,7 +703,10 @@ extension Formatter {
         // --wrapternary
         forEach(.operator("?", .infix)) { conditionIndex, _ in
             guard options.wrapTernaryOperators != .default,
-                  let expressionStartIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: conditionIndex),
+                  let expressionStartIndex = index(
+                      of: .nonSpaceOrCommentOrLinebreak,
+                      before: conditionIndex,
+                  ),
                   !isInStringLiteralWithWrappingDisabled(at: conditionIndex)
             else { return }
 
@@ -695,16 +726,16 @@ extension Formatter {
                   currentIndex < tokens.count
             {
                 switch tokens[currentIndex] {
-                case .operator("?", .infix):
-                    unterimatedTernaryCount += 1
-                case .operator(":", .infix):
-                    if unterimatedTernaryCount == 0 {
-                        foundColonIndex = currentIndex
-                    } else {
-                        unterimatedTernaryCount -= 1
-                    }
-                default:
-                    break
+                    case .operator("?", .infix):
+                        unterimatedTernaryCount += 1
+                    case .operator(":", .infix):
+                        if unterimatedTernaryCount == 0 {
+                            foundColonIndex = currentIndex
+                        } else {
+                            unterimatedTernaryCount -= 1
+                        }
+                    default:
+                        break
                 }
 
                 currentIndex += 1
@@ -717,7 +748,7 @@ extension Formatter {
             wrapMultilineStatement(
                 startIndex: expressionStartIndex,
                 delimiterIndices: [conditionIndex, colonIndex],
-                endIndex: endOfElseExpression
+                endIndex: endOfElseExpression,
             )
         }
 
@@ -747,35 +778,35 @@ extension Formatter {
             let hasMultipleArguments = index(of: .delimiter(","), in: i + 1 ..< endOfScope) != nil
             var isParameters = false
             switch string {
-            case "(":
-                // Don't wrap color/image literals due to Xcode bug
-                guard let prevToken = self.token(at: i - 1),
-                      prevToken != .keyword("#colorLiteral"),
-                      prevToken != .keyword("#imageLiteral")
-                else {
-                    return
-                }
-                guard
-                    hasMultipleArguments || wrapSingleArguments
-                    || index(in: i + 1 ..< endOfScope, where: { $0.isComment }) != nil
-                else {
-                    // Not an argument list, or only one argument
-                    lastIndex = i
-                    return
-                }
+                case "(":
+                    // Don't wrap color/image literals due to Xcode bug
+                    guard let prevToken = self.token(at: i - 1),
+                          prevToken != .keyword("#colorLiteral"),
+                          prevToken != .keyword("#imageLiteral")
+                    else {
+                        return
+                    }
+                    guard
+                        hasMultipleArguments || wrapSingleArguments
+                        || index(in: i + 1 ..< endOfScope, where: { $0.isComment }) != nil
+                    else {
+                        // Not an argument list, or only one argument
+                        lastIndex = i
+                        return
+                    }
 
-                isParameters = isParameterList(at: i)
-                if isParameters, options.wrapParameters != .default {
-                    mode = options.wrapParameters
-                } else {
+                    isParameters = isParameterList(at: i)
+                    if isParameters, options.wrapParameters != .default {
+                        mode = options.wrapParameters
+                    } else {
+                        mode = options.wrapArguments
+                    }
+                case "<":
                     mode = options.wrapArguments
-                }
-            case "<":
-                mode = options.wrapArguments
-            case "[":
-                mode = options.wrapCollections
-            default:
-                return
+                case "[":
+                    mode = options.wrapCollections
+                default:
+                    return
             }
             guard mode != .disabled,
                   let firstIdentifierIndex =
@@ -795,27 +826,27 @@ extension Formatter {
                let firstLinebreakIndex = index(of: .linebreak, in: i + 1 ..< endOfScope)
             {
                 switch mode {
-                case .beforeFirst:
-                    wrapArgumentsBeforeFirst(
-                        startOfScope: i,
-                        endOfScope: endOfScope,
-                        allowGrouping: options.allowPartialWrapping
-                            && firstIdentifierIndex > firstLinebreakIndex
-                    )
-                case .preserve where firstIdentifierIndex > firstLinebreakIndex:
-                    wrapArgumentsBeforeFirst(
-                        startOfScope: i,
-                        endOfScope: endOfScope,
-                        allowGrouping: options.allowPartialWrapping
-                    )
-                case .afterFirst, .preserve:
-                    wrapArgumentsAfterFirst(
-                        startOfScope: i,
-                        endOfScope: endOfScope,
-                        allowGrouping: options.allowPartialWrapping
-                    )
-                case .disabled, .default:
-                    assertionFailure() // Shouldn't happen
+                    case .beforeFirst:
+                        wrapArgumentsBeforeFirst(
+                            startOfScope: i,
+                            endOfScope: endOfScope,
+                            allowGrouping: options.allowPartialWrapping
+                                && firstIdentifierIndex > firstLinebreakIndex,
+                        )
+                    case .preserve where firstIdentifierIndex > firstLinebreakIndex:
+                        wrapArgumentsBeforeFirst(
+                            startOfScope: i,
+                            endOfScope: endOfScope,
+                            allowGrouping: options.allowPartialWrapping,
+                        )
+                    case .afterFirst, .preserve:
+                        wrapArgumentsAfterFirst(
+                            startOfScope: i,
+                            endOfScope: endOfScope,
+                            allowGrouping: options.allowPartialWrapping,
+                        )
+                    case .disabled, .default:
+                        assertionFailure() // Shouldn't happen
                 }
 
             } else if maxWidth > 0, hasMultipleArguments || wrapSingleArguments {
@@ -833,7 +864,7 @@ extension Formatter {
                         guard
                             let startOfNextScope = index(
                                 of: .startOfScope,
-                                in: startOfLastScopeOnLine + 1 ..< endOfLine
+                                in: startOfLastScopeOnLine + 1 ..< endOfLine,
                             )
                         else {
                             return nil
@@ -850,33 +881,33 @@ extension Formatter {
                     let nextNaturalWrap = indexWhereLineShouldWrap(from: endOfScope + 1)
 
                     switch (startOfNextScopeOnLine, nextNaturalWrap) {
-                    case let (.some(startOfNextScopeOnLine), .some(nextNaturalWrap)):
-                        return min(startOfNextScopeOnLine, nextNaturalWrap)
-                    case (nil, let .some(nextNaturalWrap)):
-                        return nextNaturalWrap
-                    case (.some(let startOfNextScopeOnLine), nil):
-                        return startOfNextScopeOnLine
-                    case (nil, nil):
-                        return nil
+                        case let (.some(startOfNextScopeOnLine), .some(nextNaturalWrap)):
+                            return min(startOfNextScopeOnLine, nextNaturalWrap)
+                        case (nil, let .some(nextNaturalWrap)):
+                            return nextNaturalWrap
+                        case (.some(let startOfNextScopeOnLine), nil):
+                            return startOfNextScopeOnLine
+                        case (nil, nil):
+                            return nil
                     }
                 }
 
                 func wrapArgumentsWithoutPartialWrapping() {
                     switch mode {
-                    case .preserve, .beforeFirst:
-                        wrapArgumentsBeforeFirst(
-                            startOfScope: i,
-                            endOfScope: endOfScope,
-                            allowGrouping: false
-                        )
-                    case .afterFirst:
-                        wrapArgumentsAfterFirst(
-                            startOfScope: i,
-                            endOfScope: endOfScope,
-                            allowGrouping: true
-                        )
-                    case .disabled, .default:
-                        assertionFailure() // Shouldn't happen
+                        case .preserve, .beforeFirst:
+                            wrapArgumentsBeforeFirst(
+                                startOfScope: i,
+                                endOfScope: endOfScope,
+                                allowGrouping: false,
+                            )
+                        case .afterFirst:
+                            wrapArgumentsAfterFirst(
+                                startOfScope: i,
+                                endOfScope: endOfScope,
+                                allowGrouping: true,
+                            )
+                        case .disabled, .default:
+                            assertionFailure() // Shouldn't happen
                     }
                 }
 
@@ -903,59 +934,66 @@ extension Formatter {
             let indent: String
             let endOfConditionsToken: Token
             switch token {
-            case .keyword("guard"):
-                endOfConditionsToken = .keyword("else")
-                indent = "      "
-            case .keyword("if"):
-                endOfConditionsToken = .startOfScope("{")
-                indent = "   "
-            case .keyword("while"):
-                endOfConditionsToken = .startOfScope("{")
-                indent = "      "
-            default:
-                return
+                case .keyword("guard"):
+                    endOfConditionsToken = .keyword("else")
+                    indent = "      "
+                case .keyword("if"):
+                    endOfConditionsToken = .startOfScope("{")
+                    indent = "   "
+                case .keyword("while"):
+                    endOfConditionsToken = .startOfScope("{")
+                    indent = "      "
+                default:
+                    return
             }
 
             // Only wrap when this is a control flow condition that spans multiple lines
             guard let endIndex = self.index(of: endOfConditionsToken, after: index),
                   let nextTokenIndex = self.index(of: .nonSpaceOrLinebreak, after: index),
                   !(onSameLine(index, endIndex)
-                      || self.index(of: .nonSpaceOrLinebreak, after: endOfLine(at: index)) == endIndex)
+                      || self
+                      .index(of: .nonSpaceOrLinebreak, after: endOfLine(at: index)) == endIndex)
             else { return }
 
             switch options.wrapConditions {
-            case .preserve, .disabled, .default:
-                break
-            case .beforeFirst:
-                // Wrap if the next non-whitespace-or-comment
-                // is on the same line as the control flow keyword
-                if onSameLine(index, nextTokenIndex) {
-                    insertLinebreak(at: index + 1)
-                }
-                // Re-indent lines
-                var linebreakIndex: Int? = index + 1
-                let indent = currentIndentForLine(at: index) + options.indent
-                while let index = linebreakIndex, index < endIndex {
-                    insertSpace(indent, at: index + 1)
-                    linebreakIndex = self.index(of: .linebreak, after: index)
-                }
-            case .afterFirst:
-                // Unwrap if the next non-whitespace-or-comment
-                // is not on the same line as the control flow keyword
-                if !onSameLine(index, nextTokenIndex),
-                   let linebreakIndex = self.index(of: .linebreak, in: index ..< nextTokenIndex)
-                {
-                    removeToken(at: linebreakIndex)
-                }
-                // Make sure there is exactly one space after control flow keyword
-                insertSpace(" ", at: index + 1)
-                // Re-indent lines
-                var lastIndex = index + 1
-                let indent = spaceEquivalentToTokens(from: startOfLine(at: index), upTo: index) + indent
-                while let index = self.index(of: .linebreak, after: lastIndex), index < endIndex {
-                    insertSpace(indent, at: index + 1)
-                    lastIndex = index
-                }
+                case .preserve, .disabled, .default:
+                    break
+                case .beforeFirst:
+                    // Wrap if the next non-whitespace-or-comment
+                    // is on the same line as the control flow keyword
+                    if onSameLine(index, nextTokenIndex) {
+                        insertLinebreak(at: index + 1)
+                    }
+                    // Re-indent lines
+                    var linebreakIndex: Int? = index + 1
+                    let indent = currentIndentForLine(at: index) + options.indent
+                    while let index = linebreakIndex, index < endIndex {
+                        insertSpace(indent, at: index + 1)
+                        linebreakIndex = self.index(of: .linebreak, after: index)
+                    }
+                case .afterFirst:
+                    // Unwrap if the next non-whitespace-or-comment
+                    // is not on the same line as the control flow keyword
+                    if !onSameLine(index, nextTokenIndex),
+                       let linebreakIndex = self.index(of: .linebreak, in: index ..< nextTokenIndex)
+                    {
+                        removeToken(at: linebreakIndex)
+                    }
+                    // Make sure there is exactly one space after control flow keyword
+                    insertSpace(" ", at: index + 1)
+                    // Re-indent lines
+                    var lastIndex = index + 1
+                    let indent = spaceEquivalentToTokens(
+                        from: startOfLine(at: index),
+                        upTo: index,
+                    ) +
+                        indent
+                    while let index = self.index(of: .linebreak, after: lastIndex),
+                          index < endIndex
+                    {
+                        insertSpace(indent, at: index + 1)
+                        lastIndex = index
+                    }
             }
         }
 
@@ -967,7 +1005,7 @@ extension Formatter {
         func wrapMultilineStatement(
             startIndex: Int,
             delimiterIndices: [Int],
-            endIndex: Int
+            endIndex: Int,
         ) -> Bool {
             // ** Decide whether or not this statement needs to be wrapped / re-wrapped
             let range = startOfLine(at: startIndex) ... endIndex
@@ -979,10 +1017,10 @@ extension Formatter {
             // ... or if there is at least one delimiter currently adjacent to a linebreak,
             // which means this statement is already being wrapped in some way
             // and should be re-wrapped to the expected way if necessary
-            let delimitersAdjacentToLinebreak = delimiterIndices.filter { delimiterIndex in
+            let delimitersAdjacentToLinebreak = delimiterIndices.count(where: { delimiterIndex in
                 last(.nonSpaceOrComment, before: delimiterIndex)?.is(.linebreak) == true
                     || next(.nonSpaceOrComment, after: delimiterIndex)?.is(.linebreak) == true
-            }.count
+            })
 
             if !(overMaximumWidth || delimitersAdjacentToLinebreak > 0) {
                 return false
@@ -1007,11 +1045,11 @@ extension Formatter {
                     // While we're here, make sure there's exactly one space after the delimiter
                     let updatedAndIndex = indexToWrap + 1
                     if let nextExpressionIndex = index(
-                        of: .nonSpaceOrCommentOrLinebreak, after: updatedAndIndex
+                        of: .nonSpaceOrCommentOrLinebreak, after: updatedAndIndex,
                     ) {
                         replaceTokens(
                             in: (updatedAndIndex + 1) ..< nextExpressionIndex,
-                            with: .space(" ")
+                            with: .space(" "),
                         )
                     }
                 }
@@ -1042,7 +1080,8 @@ extension Formatter {
         guard maxWidth > 0 else { return nil }
 
         func addBreakPoint(at i: Int, relativePriority: Int) {
-            guard stringLiteralDepth == 0, currentPriority + relativePriority >= lastBreakPointPriority,
+            guard stringLiteralDepth == 0,
+                  currentPriority + relativePriority >= lastBreakPointPriority,
                   !isInClosureArguments(at: i + 1),
                   next(.nonSpace, after: i + 1) != .startOfScope("//")
             else {
@@ -1061,74 +1100,77 @@ extension Formatter {
         while i < endIndex {
             var token = tokens[i]
             switch token {
-            case .linebreak:
-                return nil
-            case .keyword("#colorLiteral"), .keyword("#imageLiteral"):
-                guard let startIndex = self.index(of: .startOfScope("("), after: i),
-                      let endIndex = endOfScope(at: startIndex)
-                else {
-                    return nil // error
-                }
-                token = .space(spaceEquivalentToTokens(from: i, upTo: endIndex + 1)) // hack to get correct length
-                i = endIndex
-            case let .delimiter(string) where options.noWrapOperators.contains(string),
-                 .operator(let string, .infix) where options.noWrapOperators.contains(string):
-                // TODO: handle as/is
-                break
-            case .delimiter(","):
-                addBreakPoint(at: i, relativePriority: 0)
-            case .operator("=", .infix) where self.token(at: i + 1)?.isSpace == true:
-                addBreakPoint(at: i, relativePriority: -9)
-            case .operator(".", .infix):
-                addBreakPoint(at: i - 1, relativePriority: -2)
-            case .operator("->", .infix):
-                if isInReturnType(at: i) {
-                    currentPriority -= 5
-                }
-                addBreakPoint(at: i - 1, relativePriority: -5)
-            case .operator(_, .infix) where self.token(at: i + 1)?.isSpace == true:
-                addBreakPoint(at: i, relativePriority: -3)
-            case .startOfScope("{"):
-                if !isStartOfClosure(at: i) || next(.keyword, after: i) != .keyword("in"),
-                   next(.nonSpace, after: i) != .endOfScope("}")
-                {
-                    addBreakPoint(at: i, relativePriority: -6)
-                }
-                if isInReturnType(at: i) {
-                    currentPriority += 5
-                }
-                currentPriority -= 6
-            case .endOfScope("}"):
-                currentPriority += 6
-                if last(.nonSpace, before: i) != .startOfScope("{") {
-                    addBreakPoint(at: i - 1, relativePriority: -6)
-                }
-            case .startOfScope("("):
-                currentPriority -= 7
-            case .endOfScope(")"):
-                currentPriority += 7
-            case .startOfScope("["):
-                currentPriority -= 8
-            case .endOfScope("]"):
-                currentPriority += 8
-            case .startOfScope("<"):
-                currentPriority -= 9
-            case .endOfScope(">"):
-                currentPriority += 9
-            case .startOfScope where token.isStringDelimiter:
-                stringLiteralDepth += 1
-            case .endOfScope where token.isStringDelimiter:
-                stringLiteralDepth -= 1
-            case .keyword("else"), .keyword("where"):
-                addBreakPoint(at: i - 1, relativePriority: -1)
-            case .keyword("in"):
-                if last(.keyword, before: i) == .keyword("for") {
-                    addBreakPoint(at: i, relativePriority: -11)
+                case .linebreak:
+                    return nil
+                case .keyword("#colorLiteral"), .keyword("#imageLiteral"):
+                    guard let startIndex = self.index(of: .startOfScope("("), after: i),
+                          let endIndex = endOfScope(at: startIndex)
+                    else {
+                        return nil // error
+                    }
+                    token = .space(spaceEquivalentToTokens(
+                        from: i,
+                        upTo: endIndex + 1,
+                    )) // hack to get correct length
+                    i = endIndex
+                case let .delimiter(string) where options.noWrapOperators.contains(string),
+                     .operator(let string, .infix) where options.noWrapOperators.contains(string):
+                    // TODO: handle as/is
                     break
-                }
-                addBreakPoint(at: i, relativePriority: -5 - currentPriority)
-            default:
-                break
+                case .delimiter(","):
+                    addBreakPoint(at: i, relativePriority: 0)
+                case .operator("=", .infix) where self.token(at: i + 1)?.isSpace == true:
+                    addBreakPoint(at: i, relativePriority: -9)
+                case .operator(".", .infix):
+                    addBreakPoint(at: i - 1, relativePriority: -2)
+                case .operator("->", .infix):
+                    if isInReturnType(at: i) {
+                        currentPriority -= 5
+                    }
+                    addBreakPoint(at: i - 1, relativePriority: -5)
+                case .operator(_, .infix) where self.token(at: i + 1)?.isSpace == true:
+                    addBreakPoint(at: i, relativePriority: -3)
+                case .startOfScope("{"):
+                    if !isStartOfClosure(at: i) || next(.keyword, after: i) != .keyword("in"),
+                       next(.nonSpace, after: i) != .endOfScope("}")
+                    {
+                        addBreakPoint(at: i, relativePriority: -6)
+                    }
+                    if isInReturnType(at: i) {
+                        currentPriority += 5
+                    }
+                    currentPriority -= 6
+                case .endOfScope("}"):
+                    currentPriority += 6
+                    if last(.nonSpace, before: i) != .startOfScope("{") {
+                        addBreakPoint(at: i - 1, relativePriority: -6)
+                    }
+                case .startOfScope("("):
+                    currentPriority -= 7
+                case .endOfScope(")"):
+                    currentPriority += 7
+                case .startOfScope("["):
+                    currentPriority -= 8
+                case .endOfScope("]"):
+                    currentPriority += 8
+                case .startOfScope("<"):
+                    currentPriority -= 9
+                case .endOfScope(">"):
+                    currentPriority += 9
+                case .startOfScope where token.isStringDelimiter:
+                    stringLiteralDepth += 1
+                case .endOfScope where token.isStringDelimiter:
+                    stringLiteralDepth -= 1
+                case .keyword("else"), .keyword("where"):
+                    addBreakPoint(at: i - 1, relativePriority: -1)
+                case .keyword("in"):
+                    if last(.keyword, before: i) == .keyword("for") {
+                        addBreakPoint(at: i, relativePriority: -11)
+                        break
+                    }
+                    addBreakPoint(at: i, relativePriority: -5 - currentPriority)
+                default:
+                    break
             }
             lineLength += tokenLength(token)
             if lineLength > maxWidth, let breakPoint = lastBreakPoint, breakPoint < i,
@@ -1161,11 +1203,14 @@ extension Formatter {
             openBraceIndex = nextOpenBrace
         }
 
-        guard var indexOfFirstTokenInNewScope = index(of: .nonSpaceOrComment, after: openBraceIndex),
-              // If the scope is empty we don't need to do anything
-              !tokens[indexOfFirstTokenInNewScope].isEndOfScope,
-              // If there is already a newline after the brace we can just stop
-              !tokens[indexOfFirstTokenInNewScope].isLinebreak
+        guard var indexOfFirstTokenInNewScope = index(
+            of: .nonSpaceOrComment,
+            after: openBraceIndex,
+        ),
+            // If the scope is empty we don't need to do anything
+            !tokens[indexOfFirstTokenInNewScope].isEndOfScope,
+            // If there is already a newline after the brace we can just stop
+            !tokens[indexOfFirstTokenInNewScope].isLinebreak
         else {
             return
         }
@@ -1231,20 +1276,20 @@ extension Formatter {
         func tokenOutsideParenRequiresSpacing(at index: Int) -> Bool {
             guard let token = token(at: index) else { return false }
             switch token {
-            case .identifier, .keyword, .number, .startOfScope("#if"):
-                return true
-            default:
-                return false
+                case .identifier, .keyword, .number, .startOfScope("#if"):
+                    return true
+                default:
+                    return false
             }
         }
 
         func tokenInsideParenRequiresSpacing(at index: Int) -> Bool {
             guard let token = token(at: index) else { return false }
             switch token {
-            case .operator, .startOfScope("{"), .endOfScope("}"):
-                return true
-            default:
-                return tokenOutsideParenRequiresSpacing(at: index)
+                case .operator, .startOfScope("{"), .endOfScope("}"):
+                    return true
+                default:
+                    return tokenOutsideParenRequiresSpacing(at: index)
             }
         }
 
@@ -1282,7 +1327,7 @@ extension Formatter {
     func hoistEffectKeyword(
         _ keyword: String,
         inScopeAt scopeStart: Int,
-        isEffectCapturingAt: (Int) -> Bool
+        isEffectCapturingAt: (Int) -> Bool,
     ) {
         assert([.startOfScope("("), .startOfScope("[")].contains(tokens[scopeStart]))
         assert(["try", "await"].contains(keyword))
@@ -1329,69 +1374,73 @@ extension Formatter {
         loop: while let i = index(of: .nonSpace, before: insertIndex) {
             let prevToken = tokens[insertIndex]
             switch tokens[i] {
-            case .identifier where [.startOfScope("("), .startOfScope("[")].contains(prevToken):
-                if isEffectCapturingAt(i) {
-                    return
-                }
-            case let .operator(name, .infix) where name != "=":
-                if [.startOfScope("("), .startOfScope("[")].contains(prevToken), isEffectCapturingAt(i) {
-                    return
-                }
-            case let .keyword(name) where name.isMacro && prevToken == .startOfScope("("):
-                return
-            case .keyword where tokens[i].isAttribute && prevToken == .startOfScope("("):
-                return
-            case .keyword("try") where keyword == "await":
-                break loop
-            case let .keyword(name) where ["is", "as", "try", "await"].contains(name):
-                break
-            case .operator(_, .prefix), .stringBody,
-                 .endOfScope(")")
-                     where prevToken.isStringBody || (prevToken.isEndOfScope && prevToken.isStringDelimiter),
-                 .startOfScope where tokens[i].isStringDelimiter:
-                break
-            case _ where tokens[i].isUnwrapOperator:
-                if last(.nonSpaceOrComment, before: i) == .keyword("try") {
-                    if keyword == "try" {
-                        // Can't merge try? and try
+                case .identifier where [.startOfScope("("), .startOfScope("[")].contains(prevToken):
+                    if isEffectCapturingAt(i) {
                         return
                     }
+                case let .operator(name, .infix) where name != "=":
+                    if [.startOfScope("("), .startOfScope("[")].contains(prevToken),
+                       isEffectCapturingAt(i)
+                    {
+                        return
+                    }
+                case let .keyword(name) where name.isMacro && prevToken == .startOfScope("("):
+                    return
+                case .keyword where tokens[i].isAttribute && prevToken == .startOfScope("("):
+                    return
+                case .keyword("try") where keyword == "await":
                     break loop
-                }
-                if prevToken != .startOfScope("("), prevToken != .startOfScope("[") {
-                    fallthrough
-                }
-            case .operator(_, .postfix), .identifier, .number,
-                 .endOfScope(">"), .endOfScope("]"), .endOfScope(")"),
-                 .endOfScope where tokens[i].isStringDelimiter:
-                switch prevToken {
-                case .operator(_, .infix), .operator(_, .postfix), .stringBody, .linebreak,
-                     .startOfScope("<"), .startOfScope("["), .startOfScope("("),
-                     _ where currentScope(at: i + 1)?.isMultilineStringDelimiter == true:
+                case let .keyword(name) where ["is", "as", "try", "await"].contains(name):
                     break
+                case .operator(_, .prefix), .stringBody,
+                     .endOfScope(")")
+                         where prevToken
+                         .isStringBody ||
+                         (prevToken.isEndOfScope && prevToken.isStringDelimiter),
+                     .startOfScope where tokens[i].isStringDelimiter:
+                    break
+                case _ where tokens[i].isUnwrapOperator:
+                    if last(.nonSpaceOrComment, before: i) == .keyword("try") {
+                        if keyword == "try" {
+                            // Can't merge try? and try
+                            return
+                        }
+                        break loop
+                    }
+                    if prevToken != .startOfScope("("), prevToken != .startOfScope("[") {
+                        fallthrough
+                    }
+                case .operator(_, .postfix), .identifier, .number,
+                     .endOfScope(">"), .endOfScope("]"), .endOfScope(")"),
+                     .endOfScope where tokens[i].isStringDelimiter:
+                    switch prevToken {
+                        case .operator(_, .infix), .operator(_, .postfix), .stringBody, .linebreak,
+                             .startOfScope("<"), .startOfScope("["), .startOfScope("("),
+                             _ where currentScope(at: i + 1)?.isMultilineStringDelimiter == true:
+                            break
+                        default:
+                            break loop
+                    }
+                    if tokens[i].isEndOfScope {
+                        insertIndex = startOfScope(at: i) ?? i
+                        continue
+                    }
+                case .linebreak:
+                    if prevToken.isOperator(ofType: .infix) || prevToken.isStringBody {
+                        break
+                    } else if let i = index(
+                        of: .nonSpaceOrLinebreak, before: i,
+                        if: {
+                            $0.isOperator(ofType: .infix)
+                        },
+                    ) {
+                        insertIndex = i
+                        continue
+                    } else {
+                        break loop
+                    }
                 default:
                     break loop
-                }
-                if tokens[i].isEndOfScope {
-                    insertIndex = startOfScope(at: i) ?? i
-                    continue
-                }
-            case .linebreak:
-                if prevToken.isOperator(ofType: .infix) || prevToken.isStringBody {
-                    break
-                } else if let i = index(
-                    of: .nonSpaceOrLinebreak, before: i,
-                    if: {
-                        $0.isOperator(ofType: .infix)
-                    }
-                ) {
-                    insertIndex = i
-                    continue
-                } else {
-                    break loop
-                }
-            default:
-                break loop
             }
             insertIndex = i
         }
@@ -1407,7 +1456,8 @@ extension Formatter {
         if let effectsRange = functionDecl.effectsRange {
             // If async is present, insert throws after it to maintain correct order: async throws
             if let asyncIndex = index(
-                of: .identifier("async"), in: effectsRange.lowerBound ..< effectsRange.upperBound + 1
+                of: .identifier("async"),
+                in: effectsRange.lowerBound ..< effectsRange.upperBound + 1,
             ) {
                 insert([.space(" "), .keyword("throws")], at: asyncIndex + 1)
             } else {
@@ -1416,7 +1466,10 @@ extension Formatter {
             }
         } else {
             // If there are no effects, add after the arguments
-            insert([.space(" "), .keyword("throws")], at: functionDecl.argumentsRange.upperBound + 1)
+            insert(
+                [.space(" "), .keyword("throws")],
+                at: functionDecl.argumentsRange.upperBound + 1,
+            )
         }
     }
 
@@ -1454,7 +1507,7 @@ extension Formatter {
         atStartOfScope startOfScopeIndex: Int,
         includingConditionalStatements: Bool,
         includingReturnStatements: Bool,
-        includingReturnInConditionalStatements: Bool? = nil
+        includingReturnInConditionalStatements: Bool? = nil,
     ) -> Bool {
         guard let endOfScopeIndex = endOfScope(at: startOfScopeIndex) else { return false }
         let startOfBody = startOfBody(atStartOfScope: startOfScopeIndex)
@@ -1462,7 +1515,8 @@ extension Formatter {
         // The body should contain exactly one expression.
         // We can confirm this by parsing the body with `parseExpressionRange`,
         // and checking that the token after that expression is just the end of the scope.
-        guard var firstTokenInBody = index(of: .nonSpaceOrCommentOrLinebreak, after: startOfBody) else {
+        guard var firstTokenInBody = index(of: .nonSpaceOrCommentOrLinebreak, after: startOfBody)
+        else {
             return false
         }
 
@@ -1470,7 +1524,7 @@ extension Formatter {
         if includingReturnStatements, tokens[firstTokenInBody] == .keyword("return") {
             guard
                 let tokenAfterReturnKeyword = index(
-                    of: .nonSpaceOrCommentOrLinebreak, after: firstTokenInBody
+                    of: .nonSpaceOrCommentOrLinebreak, after: firstTokenInBody,
                 )
             else { return false }
             firstTokenInBody = tokenAfterReturnKeyword
@@ -1493,7 +1547,9 @@ extension Formatter {
                 //    "bar"
                 //  }
                 //
-                if conditionalBranchHasUnsupportedCastOperator(startOfScopeIndex: branch.startOfBranch) {
+                if conditionalBranchHasUnsupportedCastOperator(startOfScopeIndex: branch
+                    .startOfBranch)
+                {
                     return false
                 }
 
@@ -1502,7 +1558,7 @@ extension Formatter {
                     includingConditionalStatements: true,
                     includingReturnStatements: includingReturnInConditionalStatements
                         ?? includingReturnStatements,
-                    includingReturnInConditionalStatements: includingReturnInConditionalStatements
+                    includingReturnInConditionalStatements: includingReturnInConditionalStatements,
                 )
             }
 
@@ -1515,7 +1571,7 @@ extension Formatter {
 
         guard let expressionRange = parseExpressionRange(startingAt: firstTokenInBody),
               let nextIndexAfterExpression = index(
-                  of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound
+                  of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound,
               )
         else {
             return false
@@ -1543,30 +1599,33 @@ extension Formatter {
     /// finds and returns all of the statement branches.
     func conditionalBranches(at index: Int) -> [ConditionalBranch]? {
         switch tokens[index] {
-        case .keyword("await"):
-            // Skip over any `try`, `try?`, `try!`, or `await` token,
-            // which are valid before an if/switch expression.
-            if let nextToken = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index) {
-                return conditionalBranches(at: nextToken)
-            }
-            return nil
-        case .keyword("try"):
-            if let nextIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index) {
-                if tokens[nextIndex].isUnwrapOperator,
-                   let tokenAfterOperator = self.index(of: .nonSpaceOrCommentOrLinebreak, after: nextIndex)
-                {
-                    return conditionalBranches(at: tokenAfterOperator)
-                } else {
-                    return conditionalBranches(at: nextIndex)
+            case .keyword("await"):
+                // Skip over any `try`, `try?`, `try!`, or `await` token,
+                // which are valid before an if/switch expression.
+                if let nextToken = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index) {
+                    return conditionalBranches(at: nextToken)
                 }
-            }
-            return nil
-        case .keyword("if"):
-            return ifStatementBranches(at: index)
-        case .keyword("switch"):
-            return switchStatementBranches(at: index)
-        default:
-            return nil
+                return nil
+            case .keyword("try"):
+                if let nextIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index) {
+                    if tokens[nextIndex].isUnwrapOperator,
+                       let tokenAfterOperator = self.index(
+                           of: .nonSpaceOrCommentOrLinebreak,
+                           after: nextIndex,
+                       )
+                    {
+                        return conditionalBranches(at: tokenAfterOperator)
+                    } else {
+                        return conditionalBranches(at: nextIndex)
+                    }
+                }
+                return nil
+            case .keyword("if"):
+                return ifStatementBranches(at: index)
+            case .keyword("switch"):
+                return switchStatementBranches(at: index)
+            default:
+                return nil
         }
     }
 
@@ -1578,7 +1637,8 @@ extension Formatter {
         var nextConditionalBranchIndex: Int? = ifIndex
 
         while let conditionalBranchIndex = nextConditionalBranchIndex,
-              conditionalBranchIndex == ifIndex || tokens[conditionalBranchIndex] == .keyword("else"),
+              conditionalBranchIndex == ifIndex || tokens[conditionalBranchIndex] ==
+              .keyword("else"),
               let startOfBody = startOfConditionalBranchBody(after: conditionalBranchIndex),
               let endOfBody = endOfScope(at: startOfBody)
         {
@@ -1614,7 +1674,10 @@ extension Formatter {
     func switchStatementBranches(at switchIndex: Int) -> [ConditionalBranch]? {
         assert(tokens[switchIndex] == .keyword("switch"))
         guard let startOfSwitchScope = index(of: .startOfScope("{"), after: switchIndex),
-              let firstCaseIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: startOfSwitchScope),
+              let firstCaseIndex = index(
+                  of: .nonSpaceOrCommentOrLinebreak,
+                  after: startOfSwitchScope,
+              ),
               tokens[firstCaseIndex].isSwitchCaseOrDefault
         else { return nil }
 
@@ -1624,12 +1687,14 @@ extension Formatter {
         while let conditionalBranchIndex = nextConditionalBranchIndex,
               tokens[conditionalBranchIndex].isSwitchCaseOrDefault,
               let (startOfBody, endOfBody) = parseSwitchStatementCase(
-                  caseOrDefaultIndex: conditionalBranchIndex
+                  caseOrDefaultIndex: conditionalBranchIndex,
               )
         {
             branches.append((startOfBranch: startOfBody, endOfBranch: endOfBody))
 
-            if tokens[endOfBody].isSwitchCaseOrDefault || tokens[endOfBody] == .keyword("@unknown") {
+            if tokens[endOfBody]
+                .isSwitchCaseOrDefault || tokens[endOfBody] == .keyword("@unknown")
+            {
                 nextConditionalBranchIndex = endOfBody
             } else if tokens[startOfBody ..< endOfBody].contains(.startOfScope("#if")) {
                 return nil
@@ -1644,7 +1709,7 @@ extension Formatter {
     /// Parses the switch statement case starting at the given index,
     /// which should be one of: `case`, `default`, or `@unknown`.
     private func parseSwitchStatementCase(caseOrDefaultIndex: Int) -> (
-        startOfBody: Int, endOfBody: Int
+        startOfBody: Int, endOfBody: Int,
     )? {
         assert(tokens[caseOrDefaultIndex].isSwitchCaseOrDefault)
 
@@ -1703,11 +1768,11 @@ extension Formatter {
     /// Iterates backwards to support removing tokens in `handle`.
     func forEachRecursiveConditionalBranch(
         in branches: [ConditionalBranch],
-        _ handle: (ConditionalBranch) -> Void
+        _ handle: (ConditionalBranch) -> Void,
     ) {
         for branch in branches.reversed() {
             if let tokenAfterEquals = index(
-                of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch
+                of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch,
             ),
                 let conditionalBranches = conditionalBranches(at: tokenAfterEquals)
             {
@@ -1722,7 +1787,7 @@ extension Formatter {
     /// including any recursive conditional inside an individual branch
     func allRecursiveConditionalBranches(
         in branches: [ConditionalBranch],
-        satisfy branchSatisfiesCondition: (ConditionalBranch) -> Bool
+        satisfy branchSatisfiesCondition: (ConditionalBranch) -> Bool,
     )
         -> Bool
     {
@@ -1769,14 +1834,15 @@ extension Formatter {
     func switchStatementBranchesWithSpacingInfo(at switchIndex: Int)
         -> [SwitchStatementBranchWithSpacingInfo]?
     {
-        guard let switchStatementBranches = switchStatementBranches(at: switchIndex) else { return nil }
+        guard let switchStatementBranches = switchStatementBranches(at: switchIndex)
+        else { return nil }
 
         return switchStatementBranches.enumerated().compactMap {
             caseIndex, switchCase -> SwitchStatementBranchWithSpacingInfo? in
             // Exclude any comments when considering if this is a single line or multi-line branch
             var startOfBranchExcludingLeadingComments = switchCase.startOfBranch
             while let tokenAfterStartOfScope = index(
-                of: .nonSpace, after: startOfBranchExcludingLeadingComments
+                of: .nonSpace, after: startOfBranchExcludingLeadingComments,
             ),
                 tokens[tokenAfterStartOfScope].isLinebreak,
                 let commentAfterStartOfScope = index(of: .nonSpace, after: tokenAfterStartOfScope),
@@ -1793,7 +1859,7 @@ extension Formatter {
 
             var endOfBranchExcludingTrailingComments = switchCase.endOfBranch
             while let tokenBeforeEndOfScope = index(
-                of: .nonSpace, before: endOfBranchExcludingTrailingComments
+                of: .nonSpace, before: endOfBranchExcludingTrailingComments,
             ),
                 tokens[tokenBeforeEndOfScope].isLinebreak,
                 let commentBeforeEndOfScope = index(of: .nonSpace, before: tokenBeforeEndOfScope),
@@ -1806,10 +1872,10 @@ extension Formatter {
 
             guard
                 let firstTokenInBody = index(
-                    of: .nonSpaceOrLinebreak, after: startOfBranchExcludingLeadingComments
+                    of: .nonSpaceOrLinebreak, after: startOfBranchExcludingLeadingComments,
                 ),
                 let lastTokenInBody = index(
-                    of: .nonSpaceOrLinebreak, before: endOfBranchExcludingTrailingComments
+                    of: .nonSpaceOrLinebreak, before: endOfBranchExcludingTrailingComments,
                 )
             else { return nil }
 
@@ -1821,7 +1887,7 @@ extension Formatter {
             var linebreakBeforeBlankLine: Int?
 
             if let tokenBeforeEndOfScope = index(
-                of: .nonSpace, before: endOfBranchExcludingTrailingComments
+                of: .nonSpace, before: endOfBranchExcludingTrailingComments,
             ),
                 tokens[tokenBeforeEndOfScope].isLinebreak
             {
@@ -1843,7 +1909,7 @@ extension Formatter {
                 isLastCase: isLastCase,
                 isFollowedByBlankLine: isFollowedByBlankLine,
                 linebreakBeforeEndOfScope: linebreakBeforeEndOfScope,
-                linebreakBeforeBlankLine: linebreakBeforeBlankLine
+                linebreakBeforeBlankLine: linebreakBeforeBlankLine,
             )
         }
     }
@@ -1852,12 +1918,16 @@ extension Formatter {
     func isFunctionCall(at index: Int) -> Bool {
         if let openingParenIndex = self.index(of: .startOfScope("("), before: index + 1) {
             if let prevTokenIndex = self.index(
-                of: .nonSpaceOrCommentOrLinebreak, before: openingParenIndex
+                of: .nonSpaceOrCommentOrLinebreak, before: openingParenIndex,
             ),
                 tokens[prevTokenIndex].isIdentifier
             {
-                if let keywordIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, before: prevTokenIndex),
-                   tokens[keywordIndex] == .keyword("func") || tokens[keywordIndex] == .keyword("init")
+                if let keywordIndex = self.index(
+                    of: .nonSpaceOrCommentOrLinebreak,
+                    before: prevTokenIndex,
+                ),
+                    tokens[keywordIndex] == .keyword("func") || tokens[keywordIndex] ==
+                    .keyword("init")
                 {
                     return false
                 }
@@ -1880,7 +1950,7 @@ extension Formatter {
                   at: startOfScope - 1,
                   excluding: [
                       "as", "is", "try", "var", "let", "case",
-                  ]
+                  ],
               ) == "if"
         else {
             return true
@@ -1907,7 +1977,7 @@ extension Formatter {
             return startOfScopeAtIndex != startOfScopeIndex
         } else if token(at: startOfScopeAtIndex)?.isStartOfScope == true {
             return indexIsWithinNestedClosure(
-                startOfScopeAtIndex - 1, startOfScopeIndex: startOfScopeIndex
+                startOfScopeAtIndex - 1, startOfScopeIndex: startOfScopeIndex,
             )
         } else {
             return false
@@ -1936,16 +2006,16 @@ extension Formatter {
     func typeLengthExceedsOrganizationThreshold(at typeKeywordIndex: Int) -> Bool {
         let organizationThreshold: Int
         switch tokens[typeKeywordIndex].string {
-        case "class", "actor":
-            organizationThreshold = options.organizeClassThreshold
-        case "struct":
-            organizationThreshold = options.organizeStructThreshold
-        case "enum":
-            organizationThreshold = options.organizeEnumThreshold
-        case "extension":
-            organizationThreshold = options.organizeExtensionThreshold
-        default:
-            organizationThreshold = 0
+            case "class", "actor":
+                organizationThreshold = options.organizeClassThreshold
+            case "struct":
+                organizationThreshold = options.organizeStructThreshold
+            case "enum":
+                organizationThreshold = options.organizeEnumThreshold
+            case "extension":
+                organizationThreshold = options.organizeExtensionThreshold
+            default:
+                organizationThreshold = 0
         }
 
         guard organizationThreshold != 0,
@@ -1967,8 +2037,11 @@ extension Formatter {
     /// Removes any "test" prefix from the given method name
     func removeTestPrefix(fromFunctionAt funcKeywordIndex: Int) {
         // The name of a function always immediately follows the `func` keyword
-        guard let methodNameIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: funcKeywordIndex),
-              tokens[methodNameIndex].isIdentifier
+        guard let methodNameIndex = index(
+            of: .nonSpaceOrCommentOrLinebreak,
+            after: funcKeywordIndex,
+        ),
+            tokens[methodNameIndex].isIdentifier
         else { return }
 
         let methodName = tokens[methodNameIndex].string
@@ -1999,8 +2072,11 @@ extension Formatter {
     /// Updates the name of the given method / function, unless that change could cause a build failure.
     func updateFunctionName(forFunctionAt funcKeywordIndex: Int, to newMethodName: String) {
         // The name of a function always immediately follows the `func` keyword
-        guard let methodNameIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: funcKeywordIndex),
-              tokens[methodNameIndex].isIdentifier
+        guard let methodNameIndex = index(
+            of: .nonSpaceOrCommentOrLinebreak,
+            after: funcKeywordIndex,
+        ),
+            tokens[methodNameIndex].isIdentifier
         else { return }
 
         // Ensure that the new identifier is valid (e.g. starts with a letter, not a number),
@@ -2008,8 +2084,9 @@ extension Formatter {
         guard !newMethodName.isEmpty,
               newMethodName.first?.isLetter == true || newMethodName.first == "`",
               !tokens.contains(.identifier(newMethodName)),
-              !swiftKeywords.union(["Any", "Self", "self", "super", "nil", "true", "false"]).contains(
-                  newMethodName
+              !swiftKeywords.union(["Any", "Self", "self", "super", "nil", "true", "false"])
+              .contains(
+                  newMethodName,
               )
         else { return }
 
@@ -2052,7 +2129,8 @@ extension Formatter {
         }
 
         init(
-            name: String, definitionSourceRange: ClosedRange<Int>, conformances: [GenericConformance] = []
+            name: String, definitionSourceRange: ClosedRange<Int>,
+            conformances: [GenericConformance] = [],
         ) {
             self.name = name
             self.definitionSourceRange = definitionSourceRange
@@ -2065,10 +2143,11 @@ extension Formatter {
             // Protocols with primary associated types that can be used with
             // opaque parameter syntax. In the future we could make this extensible
             // so users can add their own types here.
-            let knownProtocolsWithAssociatedTypes: [(name: String, primaryAssociatedType: String)] = [
-                (name: "Collection", primaryAssociatedType: "Element"),
-                (name: "Sequence", primaryAssociatedType: "Element"),
-            ]
+            let knownProtocolsWithAssociatedTypes: [(name: String, primaryAssociatedType: String)] =
+                [
+                    (name: "Collection", primaryAssociatedType: "Element"),
+                    (name: "Sequence", primaryAssociatedType: "Element"),
+                ]
 
             let constraints = conformances.filter { $0.type == .protocolConstraint }
             let concreteTypes = conformances.filter { $0.type == .concreteType }
@@ -2102,36 +2181,40 @@ extension Formatter {
             for conformance in conformances {
                 if conformance.typeName.contains(".") {
                     switch conformance.type {
-                    case .protocolConstraint:
-                        // Constraints like `Foo.Bar: Barable` cannot be represented using
-                        // opaque generic parameter syntax
-                        return nil
-
-                    case .concreteType:
-                        // Concrete type constraints like `Foo.Element == Bar` can be
-                        // represented using opaque generic parameter syntax if we know
-                        // that it's using a primary associated type of the base protocol
-                        // (e.g. if `Foo` is a `Collection` or `Sequence`)
-                        let typeElements = conformance.typeName.components(separatedBy: ".")
-                        guard typeElements.count == 2 else { return nil }
-
-                        let associatedTypeName = typeElements[1]
-
-                        // Look up if the generic param conforms to any of the protocols
-                        // with a primary associated type matching the one we found
-                        let matchingProtocolWithAssociatedType = constraints.first(where: { genericConstraint in
-                            let knownProtocol = knownProtocolsWithAssociatedTypes.first(where: {
-                                $0.name == genericConstraint.name
-                            })
-                            return knownProtocol?.primaryAssociatedType == associatedTypeName
-                        })
-
-                        if let matchingProtocolWithAssociatedType {
-                            primaryAssociatedTypes[matchingProtocolWithAssociatedType] = conformance
-                        } else {
-                            // If this isn't the primary associated type of a protocol constraint, then we can't use it
+                        case .protocolConstraint:
+                            // Constraints like `Foo.Bar: Barable` cannot be represented using
+                            // opaque generic parameter syntax
                             return nil
-                        }
+
+                        case .concreteType:
+                            // Concrete type constraints like `Foo.Element == Bar` can be
+                            // represented using opaque generic parameter syntax if we know
+                            // that it's using a primary associated type of the base protocol
+                            // (e.g. if `Foo` is a `Collection` or `Sequence`)
+                            let typeElements = conformance.typeName.components(separatedBy: ".")
+                            guard typeElements.count == 2 else { return nil }
+
+                            let associatedTypeName = typeElements[1]
+
+                            // Look up if the generic param conforms to any of the protocols
+                            // with a primary associated type matching the one we found
+                            let matchingProtocolWithAssociatedType = constraints
+                                .first(where: { genericConstraint in
+                                    let knownProtocol = knownProtocolsWithAssociatedTypes
+                                        .first(where: {
+                                            $0.name == genericConstraint.name
+                                        })
+                                    return knownProtocol?
+                                        .primaryAssociatedType == associatedTypeName
+                                })
+
+                            if let matchingProtocolWithAssociatedType {
+                                primaryAssociatedTypes[matchingProtocolWithAssociatedType] =
+                                    conformance
+                            } else {
+                                // If this isn't the primary associated type of a protocol constraint, then we can't use it
+                                return nil
+                            }
                     }
                 }
             }
@@ -2150,7 +2233,7 @@ extension Formatter {
 
     /// Parses generic types between the angle brackets of a function declaration, or in a where clause
     func parseGenericTypes(
-        from genericSignatureStartIndex: Int
+        from genericSignatureStartIndex: Int,
     ) -> (types: [GenericType], range: ClosedRange<Int>) {
         var types = [GenericType]()
         let range = parseGenericTypes(from: genericSignatureStartIndex, into: &types)
@@ -2162,7 +2245,7 @@ extension Formatter {
     func parseGenericTypes(
         from genericSignatureStartIndex: Int,
         into genericTypes: inout [GenericType],
-        qualifyGenericTypeName: (String) -> String = \.self
+        qualifyGenericTypeName: (String) -> String = \.self,
     ) -> ClosedRange<Int> {
         assert([.startOfScope("<"), .keyword("where")].contains(tokens[genericSignatureStartIndex]))
 
@@ -2246,7 +2329,7 @@ extension Formatter {
             } else {
                 genericType = GenericType(
                     name: baseGenericTypeName,
-                    definitionSourceRange: lhsType.range.lowerBound ... currentIndex
+                    definitionSourceRange: lhsType.range.lowerBound ... currentIndex,
                 )
                 genericTypes.append(genericType)
             }
@@ -2257,8 +2340,8 @@ extension Formatter {
                         name: rhsType.string,
                         typeName: qualifyGenericTypeName(lhsType.string),
                         type: conformanceType,
-                        sourceRange: lhsType.range.lowerBound ... currentIndex
-                    )
+                        sourceRange: lhsType.range.lowerBound ... currentIndex,
+                    ),
                 )
             }
 
@@ -2297,7 +2380,7 @@ extension Formatter {
             usingDynamicLookup: Bool,
             classOrStatic: Bool,
             isTypeRoot: Bool,
-            isInit: Bool
+            isInit: Bool,
         ) {
             var explicitSelf: SelfMode {
                 staticSelf ? .remove : options.explicitSelf
@@ -2306,32 +2389,36 @@ extension Formatter {
             assert(
                 isWhereClause
                     || currentScope(at: index).map { token -> Bool in
-                        [.startOfScope("{"), .startOfScope(":"), .startOfScope("#if")].contains(token)
-                    } ?? true
+                        [.startOfScope("{"), .startOfScope(":"), .startOfScope("#if")]
+                            .contains(token)
+                    } ?? true,
             )
-            let isCaseClause = !isWhereClause && index > 0 && tokens[index - 1].isSwitchCaseOrDefault
+            let isCaseClause = !isWhereClause && index > 0 && tokens[index - 1]
+                .isSwitchCaseOrDefault
             if explicitSelf == .remove {
                 // Check if scope actually includes self before we waste a bunch of time
                 var scopeStack: [Token] = []
                 loop: for i in index ..< tokens.count {
                     let token = tokens[i]
                     switch token {
-                    case .identifier(selfKeyword):
-                        break loop // Contains self
-                    case .startOfScope("{") where isWhereClause && scopeStack.isEmpty:
-                        return // Does not contain self
-                    case .startOfScope("{"), .startOfScope("("),
-                         .startOfScope("["), .startOfScope(":"):
-                        scopeStack.append(token)
-                    case .endOfScope("}"), .endOfScope(")"), .endOfScope("]"),
-                         .endOfScope("case"), .endOfScope("default"):
-                        if scopeStack.isEmpty || (scopeStack == [.startOfScope(":")] && isCaseClause) {
-                            index = i + 1
+                        case .identifier(selfKeyword):
+                            break loop // Contains self
+                        case .startOfScope("{") where isWhereClause && scopeStack.isEmpty:
                             return // Does not contain self
-                        }
-                        _ = scopeStack.popLast()
-                    default:
-                        break
+                        case .startOfScope("{"), .startOfScope("("),
+                             .startOfScope("["), .startOfScope(":"):
+                            scopeStack.append(token)
+                        case .endOfScope("}"), .endOfScope(")"), .endOfScope("]"),
+                             .endOfScope("case"), .endOfScope("default"):
+                            if scopeStack
+                                .isEmpty || (scopeStack == [.startOfScope(":")] && isCaseClause)
+                            {
+                                index = i + 1
+                                return // Does not contain self
+                            }
+                            _ = scopeStack.popLast()
+                        default:
+                            break
                     }
                 }
             }
@@ -2354,103 +2441,112 @@ extension Formatter {
                 var classOrStatic = false
                 outer: while let token = token(at: i) {
                     switch token {
-                    case .keyword("import"):
-                        guard let nextIndex = self.index(of: .identifier, after: i) else {
-                            fatalError("Expected identifier", at: i)
-                            return
-                        }
-                        i = nextIndex
-                    case .keyword("class"), .keyword("static"):
-                        classOrStatic = true
-                    case .keyword("repeat"):
-                        if next(.nonSpaceOrCommentOrLinebreak, after: i) == .startOfScope("{") {
-                            guard let nextIndex = self.index(of: .keyword("while"), after: i) else {
-                                fatalError("Expected while", at: i)
+                        case .keyword("import"):
+                            guard let nextIndex = self.index(of: .identifier, after: i) else {
+                                fatalError("Expected identifier", at: i)
                                 return
                             }
                             i = nextIndex
-                        } else {
-                            // Probably a parameter pack
-                            break
-                        }
-                    case .keyword("if"), .keyword("for"), .keyword("while"):
-                        if explicitSelf == .insert {
-                            break
-                        }
-                        guard let nextIndex = self.index(of: .startOfScope("{"), after: i) else {
-                            fatalError("Expected {", at: i)
-                            return
-                        }
-                        i = nextIndex
-                        continue
-                    case .keyword("switch"):
-                        guard let nextIndex = self.index(of: .startOfScope("{"), after: i) else {
-                            fatalError("Expected {", at: i)
-                            return
-                        }
-                        guard var endIndex = self.index(of: .endOfScope, after: nextIndex) else {
-                            fatalError("Expected }", at: i)
-                            return
-                        }
-                        while tokens[endIndex] != .endOfScope("}") {
-                            guard let nextIndex = self.index(of: .startOfScope(":"), after: endIndex) else {
-                                fatalError("Expected :", at: i)
+                        case .keyword("class"), .keyword("static"):
+                            classOrStatic = true
+                        case .keyword("repeat"):
+                            if next(.nonSpaceOrCommentOrLinebreak, after: i) == .startOfScope("{") {
+                                guard let nextIndex = self.index(of: .keyword("while"), after: i)
+                                else {
+                                    fatalError("Expected while", at: i)
+                                    return
+                                }
+                                i = nextIndex
+                            } else {
+                                // Probably a parameter pack
+                                break
+                            }
+                        case .keyword("if"), .keyword("for"), .keyword("while"):
+                            if explicitSelf == .insert {
+                                break
+                            }
+                            guard let nextIndex = self.index(of: .startOfScope("{"), after: i)
+                            else {
+                                fatalError("Expected {", at: i)
                                 return
                             }
-                            guard let _endIndex = self.index(of: .endOfScope, after: nextIndex) else {
-                                fatalError("Expected end of scope", at: i)
+                            i = nextIndex
+                            continue
+                        case .keyword("switch"):
+                            guard let nextIndex = self.index(of: .startOfScope("{"), after: i)
+                            else {
+                                fatalError("Expected {", at: i)
                                 return
                             }
-                            endIndex = _endIndex
-                        }
-                        i = endIndex
-                    case .keyword("var"), .keyword("let"):
-                        i += 1
-                        if isTypeRoot {
-                            if classOrStatic {
-                                processDeclaredVariables(at: &i, names: &classMembers)
-                                classOrStatic = false
-                            } else {
-                                processDeclaredVariables(at: &i, names: &members)
+                            guard var endIndex = self.index(of: .endOfScope, after: nextIndex)
+                            else {
+                                fatalError("Expected }", at: i)
+                                return
                             }
-                        } else {
-                            let removeSelf =
-                                explicitSelf != .insert && !usingDynamicLookup
-                                    && ((staticSelf && classOrStatic)
-                                        || (!staticSelf && !inClosureDisallowingImplicitSelf))
-                            processDeclaredVariables(
-                                at: &i, names: &localNames,
-                                removeSelfKeyword: removeSelf ? selfKeyword : nil,
-                                onlyLocal: options.swiftVersion < "5",
-                                scopeAllowsImplicitSelfRebinding: scopeAllowsImplicitSelfRebinding
-                            )
-                        }
-                    case .keyword("func"):
-                        guard let nameToken = next(.nonSpaceOrCommentOrLinebreak, after: i) else {
+                            while tokens[endIndex] != .endOfScope("}") {
+                                guard let nextIndex = self.index(
+                                    of: .startOfScope(":"),
+                                    after: endIndex,
+                                ) else {
+                                    fatalError("Expected :", at: i)
+                                    return
+                                }
+                                guard let _endIndex = self.index(of: .endOfScope, after: nextIndex)
+                                else {
+                                    fatalError("Expected end of scope", at: i)
+                                    return
+                                }
+                                endIndex = _endIndex
+                            }
+                            i = endIndex
+                        case .keyword("var"), .keyword("let"):
+                            i += 1
+                            if isTypeRoot {
+                                if classOrStatic {
+                                    processDeclaredVariables(at: &i, names: &classMembers)
+                                    classOrStatic = false
+                                } else {
+                                    processDeclaredVariables(at: &i, names: &members)
+                                }
+                            } else {
+                                let removeSelf =
+                                    explicitSelf != .insert && !usingDynamicLookup
+                                        && ((staticSelf && classOrStatic)
+                                            || (!staticSelf && !inClosureDisallowingImplicitSelf))
+                                processDeclaredVariables(
+                                    at: &i, names: &localNames,
+                                    removeSelfKeyword: removeSelf ? selfKeyword : nil,
+                                    onlyLocal: options.swiftVersion < "5",
+                                    scopeAllowsImplicitSelfRebinding: scopeAllowsImplicitSelfRebinding,
+                                )
+                            }
+                        case .keyword("func"):
+                            guard let nameToken = next(.nonSpaceOrCommentOrLinebreak, after: i)
+                            else {
+                                break
+                            }
+                            if isTypeRoot {
+                                if classOrStatic {
+                                    classMembers.insert(nameToken.unescaped())
+                                    classOrStatic = false
+                                } else {
+                                    members.insert(nameToken.unescaped())
+                                }
+                            } else {
+                                localNames.insert(nameToken.unescaped())
+                            }
+                        case .startOfScope("("), .startOfScope("#if"), .startOfScope(":"),
+                             .startOfScope("/*"), .startOfScope("//"):
                             break
-                        }
-                        if isTypeRoot {
-                            if classOrStatic {
-                                classMembers.insert(nameToken.unescaped())
-                                classOrStatic = false
-                            } else {
-                                members.insert(nameToken.unescaped())
-                            }
-                        } else {
-                            localNames.insert(nameToken.unescaped())
-                        }
-                    case .startOfScope("("), .startOfScope("#if"), .startOfScope(":"),
-                         .startOfScope("/*"), .startOfScope("//"):
-                        break
-                    case .startOfScope:
-                        classOrStatic = false
-                        i = endOfScope(at: i) ?? (tokens.count - 1)
-                    case .endOfScope("}"), .endOfScope("case"), .endOfScope("default"):
-                        break outer
-                    case .endOfScope("*/"), .linebreak:
-                        updateEnablement(at: i)
-                    default:
-                        break
+                        case .startOfScope:
+                            classOrStatic = false
+                            i = endOfScope(at: i) ?? (tokens.count - 1)
+                        case .endOfScope("}"), .endOfScope("case"), .endOfScope("default"):
+                            break outer
+                        case .endOfScope("*/"), .linebreak:
+                            updateEnablement(at: i)
+                        default:
+                            break
                     }
                     i += 1
                 }
@@ -2468,491 +2564,552 @@ extension Formatter {
             // TODO: restructure this to use forEachToken to avoid exposing comment directives mechanism
             while let token = token(at: index) {
                 switch token {
-                case .keyword("is"), .keyword("as"), .keyword("try"), .keyword("await"):
-                    break
-                case .keyword("init"), .keyword("subscript"),
-                     .keyword("func") where lastKeyword != "import":
-                    lastKeyword = ""
-                    let members = classOrStatic ? classMembers : members
-                    processFunction(
-                        at: &index, localNames: localNames, members: members,
-                        typeStack: &typeStack, closureStack: &closureStack, membersByType: &membersByType,
-                        classMembersByType: &classMembersByType,
-                        usingDynamicLookup: usingDynamicLookup,
-                        classOrStatic: classOrStatic
-                    )
-                    classOrStatic = false
-                    continue
-                case .keyword("static"):
-                    if !isTypeRoot {
-                        fatalError("The static modifier is not valid outside a type body", at: index)
-                        return
-                    }
-                    classOrStatic = true
-                case .keyword("class")
-                    where
-                    next(.nonSpaceOrCommentOrLinebreak, after: index)?.isIdentifier == false:
-                    if last(.nonSpaceOrCommentOrLinebreak, before: index) != .delimiter(":") {
-                        if !isTypeRoot {
-                            fatalError("The class modifier is not valid outside a type body", at: index)
-                            return
-                        }
-                        classOrStatic = true
-                    }
-                case .keyword("where") where lastKeyword == "protocol", .keyword("protocol"):
-                    if let startIndex = self.index(of: .startOfScope("{"), after: index),
-                       let endIndex = endOfScope(at: startIndex)
-                    {
-                        index = endIndex
-                    }
-                case .keyword("extension"), .keyword("struct"), .keyword("enum"), .keyword("class"),
-                     .keyword("actor"),
-                     .keyword("where")
-                         where ["extension", "struct", "enum", "class", "actor"].contains(lastKeyword):
-                    let keyword = tokens[index].string
-                    guard last(.nonSpaceOrCommentOrLinebreak, before: index) != .keyword("import") else {
+                    case .keyword("is"), .keyword("as"), .keyword("try"), .keyword("await"):
                         break
-                    }
-                    guard let scopeStart = self.index(of: .startOfScope("{"), after: index),
-                          case let .identifier(name)? = next(.identifier, after: index)
-                    else {
-                        return
-                    }
-                    var usingDynamicLookup = modifiersForDeclaration(
-                        at: index,
-                        contains: "@dynamicMemberLookup"
-                    )
-                    if usingDynamicLookup {
-                        scopeStack[scopeStack.count - 1].dynamicMemberTypes.insert(name)
-                    } else if [token.string, lastKeyword].contains("extension"),
-                              scopeStack.last!.dynamicMemberTypes.contains(name)
-                    {
-                        usingDynamicLookup = true
-                    }
-                    index = scopeStart + 1
-                    typeStack.append((name: name, keyword: keyword))
-                    processBody(
-                        at: &index, localNames: ["init"], members: [],
-                        typeStack: &typeStack, closureStack: &closureStack,
-                        membersByType: &membersByType, classMembersByType: &classMembersByType,
-                        usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
-                        isTypeRoot: true, isInit: false
-                    )
-                    index -= 1
-                    typeStack.removeLast()
-                case .keyword("case") where ["if", "while", "guard", "for"].contains(lastKeyword):
-                    break
-                case .keyword("var"), .keyword("let"):
-                    lastKeywordIndex = index
-                    index += 1
-                    switch lastKeyword {
-                    case "lazy" where options.swiftVersion < "4":
-                        loop: while let nextIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index) {
-                            switch tokens[nextIndex] {
-                            case .keyword("as"), .keyword("is"), .keyword("try"), .keyword("await"):
-                                break
-                            case .keyword, .startOfScope("{"):
-                                break loop
-                            default:
-                                break
-                            }
-                            index = nextIndex
-                        }
+                    case .keyword("init"), .keyword("subscript"),
+                         .keyword("func") where lastKeyword != "import":
                         lastKeyword = ""
-                    case "if", "while", "guard", "for":
-                        // Guard is included because it's an error to reference guard vars in body
-                        var scopedNames = localNames
-                        let removeSelf =
-                            explicitSelf != .insert && !usingDynamicLookup
-                                && ((staticSelf && classOrStatic)
-                                    || (!staticSelf && !inClosureDisallowingImplicitSelf))
-                        processDeclaredVariables(
-                            at: &index, names: &scopedNames,
-                            removeSelfKeyword: removeSelf ? selfKeyword : nil,
-                            onlyLocal: false,
-                            scopeAllowsImplicitSelfRebinding: scopeAllowsImplicitSelfRebinding
-                        )
-                        while let scope = currentScope(at: index) ?? self.token(at: index),
-                              case let .startOfScope(name) = scope,
-                              ["[", "("].contains(name) || scope.isStringDelimiter,
-                              let endIndex = endOfScope(at: index)
-                        {
-                            // TODO: find less hacky workaround
-                            index = endIndex + 1
-                        }
-                        while scopeStack.last?.token == .startOfScope("(") {
-                            scopeStack.removeLast()
-                        }
-                        guard
-                            var startIndex = self.token(at: index) == .startOfScope("{")
-                            ? index : self.index(of: .startOfScope("{"), after: index)
-                        else {
-                            fatalError("Expected {", at: index)
-                            return
-                        }
-                        while isStartOfClosure(at: startIndex) {
-                            guard let i = self.index(of: .endOfScope("}"), after: startIndex) else {
-                                fatalError("Expected }", at: startIndex)
-                                return
-                            }
-                            guard let j = self.index(of: .startOfScope("{"), after: i) else {
-                                fatalError("Expected {", at: i)
-                                return
-                            }
-                            startIndex = j
-                        }
-                        index = startIndex + 1
-                        processBody(
-                            at: &index, localNames: scopedNames, members: members,
-                            typeStack: &typeStack, closureStack: &closureStack,
-                            membersByType: &membersByType, classMembersByType: &classMembersByType,
-                            usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
-                            isTypeRoot: false, isInit: isInit
-                        )
-                        index -= 1
-                        lastKeyword = ""
-                    default:
-                        lastKeyword = token.string
-                    }
-                    classOrStatic = false
-                case .keyword("where") where lastKeyword == "in",
-                     .startOfScope("{") where lastKeyword == "in" && !isStartOfClosure(at: index):
-                    lastKeyword = ""
-                    var localNames = localNames
-                    guard let keywordIndex = self.index(of: .keyword("in"), before: index),
-                          let prevKeywordIndex = self.index(of: .keyword("for"), before: keywordIndex)
-                    else {
-                        fatalError("Expected for keyword", at: index)
-                        return
-                    }
-                    for token in tokens[prevKeywordIndex + 1 ..< keywordIndex] {
-                        if case let .identifier(name) = token, name != "_" {
-                            localNames.insert(token.unescaped())
-                        }
-                    }
-                    index += 1
-                    processBody(
-                        at: &index, localNames: localNames, members: members,
-                        typeStack: &typeStack, closureStack: &closureStack,
-                        membersByType: &membersByType, classMembersByType: &classMembersByType,
-                        usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
-                        isTypeRoot: false, isInit: isInit
-                    )
-                    continue
-                case .keyword("while") where lastKeyword == "repeat":
-                    lastKeyword = ""
-                case let .keyword(name) where !name.isMacro:
-                    lastKeyword = name
-                    lastKeywordIndex = index
-                case .startOfScope("/*"), .startOfScope("//"):
-                    index = endOfScope(at: index) ?? (tokens.count - 1)
-                    updateEnablement(at: index)
-                case .startOfScope where token.isStringDelimiter, .startOfScope("#if"),
-                     .startOfScope("["), .startOfScope("("):
-                    scopeStack.append((token, []))
-                case .startOfScope(":"):
-                    lastKeyword = ""
-                case .startOfScope("{") where lastKeyword == "catch":
-                    lastKeyword = ""
-                    var localNames = localNames
-                    localNames.insert("error") // Implicit error argument
-                    index += 1
-                    processBody(
-                        at: &index, localNames: localNames, members: members,
-                        typeStack: &typeStack, closureStack: &closureStack,
-                        membersByType: &membersByType, classMembersByType: &classMembersByType,
-                        usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
-                        isTypeRoot: false, isInit: isInit
-                    )
-                    continue
-                case .startOfScope("{") where isWhereClause && scopeStack.count == 1:
-                    return
-                case .startOfScope("{") where lastKeyword == "switch" && scopeStack.count == 1:
-                    lastKeyword = ""
-                    index += 1
-                    loop: while let token = self.token(at: index) {
-                        index += 1
-                        switch token {
-                        case .endOfScope("case"), .endOfScope("default"):
-                            let localNames = localNames
-                            processBody(
-                                at: &index, localNames: localNames, members: members,
-                                typeStack: &typeStack, closureStack: &closureStack,
-                                membersByType: &membersByType, classMembersByType: &classMembersByType,
-                                usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
-                                isTypeRoot: false, isInit: isInit
-                            )
-                            index -= 1
-                        case .endOfScope("}"):
-                            break loop
-                        default:
-                            break
-                        }
-                    }
-                case .startOfScope("{")
-                    where ["for", "where", "if", "else", "while", "do"].contains(lastKeyword):
-                    if let scopeIndex = self.index(of: .startOfScope, before: index),
-                       scopeIndex > lastKeywordIndex
-                    {
-                        index = endOfScope(at: index) ?? (tokens.count - 1)
-                        break
-                    }
-                    lastKeyword = ""
-                    fallthrough
-                case .startOfScope("{") where lastKeyword == "repeat":
-                    index += 1
-                    processBody(
-                        at: &index, localNames: localNames, members: members,
-                        typeStack: &typeStack, closureStack: &closureStack,
-                        membersByType: &membersByType, classMembersByType: &classMembersByType,
-                        usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
-                        isTypeRoot: false, isInit: isInit
-                    )
-                    continue
-                case .startOfScope("{") where lastKeyword == "var":
-                    lastKeyword = ""
-                    if isStartOfClosure(at: index) {
-                        fallthrough
-                    }
-                    var prevIndex = index - 1
-                    var name: String?
-                    while let token = self.token(at: prevIndex), token != .keyword("var") {
-                        if case let .identifier(_name) = token {
-                            // Is the declared variable
-                            name = _name
-                        }
-                        prevIndex -= 1
-                    }
-                    let classOrStatic = modifiersForDeclaration(
-                        at: lastKeywordIndex,
-                        contains: { _, string in
-                            ["static", "class"].contains(string)
-                        }
-                    )
-                    if let name, classOrStatic || !staticSelf {
-                        processAccessors(
-                            ["get", "set", "willSet", "didSet", "init", "_modify"], for: name,
+                        let members = classOrStatic ? classMembers : members
+                        processFunction(
                             at: &index, localNames: localNames, members: members,
                             typeStack: &typeStack, closureStack: &closureStack,
                             membersByType: &membersByType,
                             classMembersByType: &classMembersByType,
                             usingDynamicLookup: usingDynamicLookup,
-                            classOrStatic: classOrStatic
+                            classOrStatic: classOrStatic,
                         )
-                    } else {
-                        index = (endOfScope(at: index) ?? index) + 1
-                    }
-                    continue
-                case .startOfScope("{") where isStartOfClosure(at: index):
-                    let inIndex = self.index(
-                        of: .keyword, after: index,
-                        if: {
-                            $0 == .keyword("in")
+                        classOrStatic = false
+                        continue
+                    case .keyword("static"):
+                        if !isTypeRoot {
+                            fatalError(
+                                "The static modifier is not valid outside a type body",
+                                at: index,
+                            )
+                            return
                         }
-                    )
+                        classOrStatic = true
+                    case .keyword("class")
+                    where
+                    next(.nonSpaceOrCommentOrLinebreak, after: index)?.isIdentifier == false:
+                        if last(.nonSpaceOrCommentOrLinebreak, before: index) != .delimiter(":") {
+                            if !isTypeRoot {
+                                fatalError(
+                                    "The class modifier is not valid outside a type body",
+                                    at: index,
+                                )
+                                return
+                            }
+                            classOrStatic = true
+                        }
+                    case .keyword("where") where lastKeyword == "protocol", .keyword("protocol"):
+                        if let startIndex = self.index(of: .startOfScope("{"), after: index),
+                           let endIndex = endOfScope(at: startIndex)
+                        {
+                            index = endIndex
+                        }
+                    case .keyword("extension"), .keyword("struct"), .keyword("enum"),
+                         .keyword("class"),
+                         .keyword("actor"),
+                         .keyword("where")
+                             where ["extension", "struct", "enum", "class", "actor"]
+                             .contains(lastKeyword):
+                        let keyword = tokens[index].string
+                        guard last(.nonSpaceOrCommentOrLinebreak, before: index) !=
+                            .keyword("import")
+                        else {
+                            break
+                        }
+                        guard let scopeStart = self.index(of: .startOfScope("{"), after: index),
+                              case let .identifier(name)? = next(.identifier, after: index)
+                        else {
+                            return
+                        }
+                        var usingDynamicLookup = modifiersForDeclaration(
+                            at: index,
+                            contains: "@dynamicMemberLookup",
+                        )
+                        if usingDynamicLookup {
+                            scopeStack[scopeStack.count - 1].dynamicMemberTypes.insert(name)
+                        } else if [token.string, lastKeyword].contains("extension"),
+                                  scopeStack.last!.dynamicMemberTypes.contains(name)
+                        {
+                            usingDynamicLookup = true
+                        }
+                        index = scopeStart + 1
+                        typeStack.append((name: name, keyword: keyword))
+                        processBody(
+                            at: &index, localNames: ["init"], members: [],
+                            typeStack: &typeStack, closureStack: &closureStack,
+                            membersByType: &membersByType, classMembersByType: &classMembersByType,
+                            usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
+                            isTypeRoot: true, isInit: false,
+                        )
+                        index -= 1
+                        typeStack.removeLast()
+                    case .keyword("case")
+                    where ["if", "while", "guard", "for"].contains(lastKeyword):
+                        break
+                    case .keyword("var"), .keyword("let"):
+                        lastKeywordIndex = index
+                        index += 1
+                        switch lastKeyword {
+                            case "lazy" where options.swiftVersion < "4":
+                                loop: while let nextIndex = self.index(
+                                    of: .nonSpaceOrCommentOrLinebreak,
+                                    after: index,
+                                ) {
+                                    switch tokens[nextIndex] {
+                                        case .keyword("as"), .keyword("is"), .keyword("try"),
+                                             .keyword("await"):
+                                            break
+                                        case .keyword, .startOfScope("{"):
+                                            break loop
+                                        default:
+                                            break
+                                    }
+                                    index = nextIndex
+                                }
+                                lastKeyword = ""
+                            case "if", "while", "guard", "for":
+                                // Guard is included because it's an error to reference guard vars in body
+                                var scopedNames = localNames
+                                let removeSelf =
+                                    explicitSelf != .insert && !usingDynamicLookup
+                                        && ((staticSelf && classOrStatic)
+                                            || (!staticSelf && !inClosureDisallowingImplicitSelf))
+                                processDeclaredVariables(
+                                    at: &index, names: &scopedNames,
+                                    removeSelfKeyword: removeSelf ? selfKeyword : nil,
+                                    onlyLocal: false,
+                                    scopeAllowsImplicitSelfRebinding: scopeAllowsImplicitSelfRebinding,
+                                )
+                                while let scope = currentScope(at: index) ?? self.token(at: index),
+                                      case let .startOfScope(name) = scope,
+                                      ["[", "("].contains(name) || scope.isStringDelimiter,
+                                      let endIndex = endOfScope(at: index)
+                                {
+                                    // TODO: find less hacky workaround
+                                    index = endIndex + 1
+                                }
+                                while scopeStack.last?.token == .startOfScope("(") {
+                                    scopeStack.removeLast()
+                                }
+                                guard
+                                    var startIndex = self.token(at: index) == .startOfScope("{")
+                                    ? index : self.index(of: .startOfScope("{"), after: index)
+                                else {
+                                    fatalError("Expected {", at: index)
+                                    return
+                                }
+                                while isStartOfClosure(at: startIndex) {
+                                    guard let i = self
+                                        .index(of: .endOfScope("}"), after: startIndex)
+                                    else {
+                                        fatalError("Expected }", at: startIndex)
+                                        return
+                                    }
+                                    guard let j = self.index(of: .startOfScope("{"), after: i)
+                                    else {
+                                        fatalError("Expected {", at: i)
+                                        return
+                                    }
+                                    startIndex = j
+                                }
+                                index = startIndex + 1
+                                processBody(
+                                    at: &index, localNames: scopedNames, members: members,
+                                    typeStack: &typeStack, closureStack: &closureStack,
+                                    membersByType: &membersByType,
+                                    classMembersByType: &classMembersByType,
+                                    usingDynamicLookup: usingDynamicLookup,
+                                    classOrStatic: classOrStatic,
+                                    isTypeRoot: false, isInit: isInit,
+                                )
+                                index -= 1
+                                lastKeyword = ""
+                            default:
+                                lastKeyword = token.string
+                        }
+                        classOrStatic = false
+                    case .keyword("where") where lastKeyword == "in",
+                         .startOfScope("{")
+                             where lastKeyword == "in" && !isStartOfClosure(at: index):
+                        lastKeyword = ""
+                        var localNames = localNames
+                        guard let keywordIndex = self.index(of: .keyword("in"), before: index),
+                              let prevKeywordIndex = self.index(
+                                  of: .keyword("for"),
+                                  before: keywordIndex,
+                              )
+                        else {
+                            fatalError("Expected for keyword", at: index)
+                            return
+                        }
+                        for token in tokens[prevKeywordIndex + 1 ..< keywordIndex] {
+                            if case let .identifier(name) = token, name != "_" {
+                                localNames.insert(token.unescaped())
+                            }
+                        }
+                        index += 1
+                        processBody(
+                            at: &index, localNames: localNames, members: members,
+                            typeStack: &typeStack, closureStack: &closureStack,
+                            membersByType: &membersByType, classMembersByType: &classMembersByType,
+                            usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
+                            isTypeRoot: false, isInit: isInit,
+                        )
+                        continue
+                    case .keyword("while") where lastKeyword == "repeat":
+                        lastKeyword = ""
+                    case let .keyword(name) where !name.isMacro:
+                        lastKeyword = name
+                        lastKeywordIndex = index
+                    case .startOfScope("/*"), .startOfScope("//"):
+                        index = endOfScope(at: index) ?? (tokens.count - 1)
+                        updateEnablement(at: index)
+                    case .startOfScope where token.isStringDelimiter, .startOfScope("#if"),
+                         .startOfScope("["), .startOfScope("("):
+                        scopeStack.append((token, []))
+                    case .startOfScope(":"):
+                        lastKeyword = ""
+                    case .startOfScope("{") where lastKeyword == "catch":
+                        lastKeyword = ""
+                        var localNames = localNames
+                        localNames.insert("error") // Implicit error argument
+                        index += 1
+                        processBody(
+                            at: &index, localNames: localNames, members: members,
+                            typeStack: &typeStack, closureStack: &closureStack,
+                            membersByType: &membersByType, classMembersByType: &classMembersByType,
+                            usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
+                            isTypeRoot: false, isInit: isInit,
+                        )
+                        continue
+                    case .startOfScope("{") where isWhereClause && scopeStack.count == 1:
+                        return
+                    case .startOfScope("{") where lastKeyword == "switch" && scopeStack.count == 1:
+                        lastKeyword = ""
+                        index += 1
+                        loop: while let token = self.token(at: index) {
+                            index += 1
+                            switch token {
+                                case .endOfScope("case"), .endOfScope("default"):
+                                    let localNames = localNames
+                                    processBody(
+                                        at: &index, localNames: localNames, members: members,
+                                        typeStack: &typeStack, closureStack: &closureStack,
+                                        membersByType: &membersByType,
+                                        classMembersByType: &classMembersByType,
+                                        usingDynamicLookup: usingDynamicLookup,
+                                        classOrStatic: classOrStatic,
+                                        isTypeRoot: false, isInit: isInit,
+                                    )
+                                    index -= 1
+                                case .endOfScope("}"):
+                                    break loop
+                                default:
+                                    break
+                            }
+                        }
+                    case .startOfScope("{")
+                    where ["for", "where", "if", "else", "while", "do"].contains(lastKeyword):
+                        if let scopeIndex = self.index(of: .startOfScope, before: index),
+                           scopeIndex > lastKeywordIndex
+                        {
+                            index = endOfScope(at: index) ?? (tokens.count - 1)
+                            break
+                        }
+                        lastKeyword = ""
+                        fallthrough
+                    case .startOfScope("{") where lastKeyword == "repeat":
+                        index += 1
+                        processBody(
+                            at: &index, localNames: localNames, members: members,
+                            typeStack: &typeStack, closureStack: &closureStack,
+                            membersByType: &membersByType, classMembersByType: &classMembersByType,
+                            usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
+                            isTypeRoot: false, isInit: isInit,
+                        )
+                        continue
+                    case .startOfScope("{") where lastKeyword == "var":
+                        lastKeyword = ""
+                        if isStartOfClosure(at: index) {
+                            fallthrough
+                        }
+                        var prevIndex = index - 1
+                        var name: String?
+                        while let token = self.token(at: prevIndex), token != .keyword("var") {
+                            if case let .identifier(_name) = token {
+                                // Is the declared variable
+                                name = _name
+                            }
+                            prevIndex -= 1
+                        }
+                        let classOrStatic = modifiersForDeclaration(
+                            at: lastKeywordIndex,
+                            contains: { _, string in
+                                ["static", "class"].contains(string)
+                            },
+                        )
+                        if let name, classOrStatic || !staticSelf {
+                            processAccessors(
+                                ["get", "set", "willSet", "didSet", "init", "_modify"], for: name,
+                                at: &index, localNames: localNames, members: members,
+                                typeStack: &typeStack, closureStack: &closureStack,
+                                membersByType: &membersByType,
+                                classMembersByType: &classMembersByType,
+                                usingDynamicLookup: usingDynamicLookup,
+                                classOrStatic: classOrStatic,
+                            )
+                        } else {
+                            index = (endOfScope(at: index) ?? index) + 1
+                        }
+                        continue
+                    case .startOfScope("{") where isStartOfClosure(at: index):
+                        let inIndex = self.index(
+                            of: .keyword, after: index,
+                            if: {
+                                $0 == .keyword("in")
+                            },
+                        )
 
-                    // Parse the capture list and arguments list,
-                    // and record the type of `self` capture used in the closure
-                    var captureList: [Token]?
-                    var parameterList: [Token]?
+                        // Parse the capture list and arguments list,
+                        // and record the type of `self` capture used in the closure
+                        var captureList: [Token]?
+                        var parameterList: [Token]?
 
-                    // Handle a capture list followed by an optional parameter list:
-                    // `{ [self, foo] bar in` or `{ [self, foo] in` etc.
-                    if let inIndex,
-                       let captureListStartIndex = self.index(
-                           in: (index + 1) ..< inIndex,
-                           where: {
-                               !$0.isSpaceOrCommentOrLinebreak && !$0.isAttribute
-                           }
-                       ),
-                       tokens[captureListStartIndex] == .startOfScope("["),
-                       let captureListEndIndex = endOfScope(at: captureListStartIndex)
-                    {
-                        captureList = Array(tokens[(captureListStartIndex + 1) ..< captureListEndIndex])
-                        parameterList = Array(tokens[(captureListEndIndex + 1) ..< inIndex])
-                    }
+                        // Handle a capture list followed by an optional parameter list:
+                        // `{ [self, foo] bar in` or `{ [self, foo] in` etc.
+                        if let inIndex,
+                           let captureListStartIndex = self.index(
+                               in: (index + 1) ..< inIndex,
+                               where: {
+                                   !$0.isSpaceOrCommentOrLinebreak && !$0.isAttribute
+                               },
+                           ),
+                           tokens[captureListStartIndex] == .startOfScope("["),
+                           let captureListEndIndex = endOfScope(at: captureListStartIndex)
+                        {
+                            captureList =
+                                Array(tokens[(captureListStartIndex + 1) ..< captureListEndIndex])
+                            parameterList = Array(tokens[(captureListEndIndex + 1) ..< inIndex])
+                        }
 
-                    // Handle a parameter list if present without a capture list
-                    // e.g. `{ foo, bar in`
-                    else if let inIndex,
-                            let firstTokenInClosure = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index),
-                            isInClosureArguments(at: firstTokenInClosure)
-                    {
-                        parameterList = Array(tokens[firstTokenInClosure ..< inIndex])
-                    }
+                        // Handle a parameter list if present without a capture list
+                        // e.g. `{ foo, bar in`
+                        else if let inIndex,
+                                let firstTokenInClosure = self.index(
+                                    of: .nonSpaceOrCommentOrLinebreak,
+                                    after: index,
+                                ),
+                                isInClosureArguments(at: firstTokenInClosure)
+                        {
+                            parameterList = Array(tokens[firstTokenInClosure ..< inIndex])
+                        }
 
-                    var captureListEntries = (captureList ?? []).split(
-                        separator: .delimiter(","), omittingEmptySubsequences: true
-                    )
-                    let parameterListEntries = (parameterList ?? []).split(
-                        separator: .delimiter(","), omittingEmptySubsequences: true
-                    )
+                        var captureListEntries = (captureList ?? []).split(
+                            separator: .delimiter(","), omittingEmptySubsequences: true,
+                        )
+                        let parameterListEntries = (parameterList ?? []).split(
+                            separator: .delimiter(","), omittingEmptySubsequences: true,
+                        )
 
-                    let supportedSelfCaptures = Set([
-                        "self",
-                        "unowned self",
-                        "unowned(safe) self",
-                        "unowned(unsafe) self",
-                        "weak self",
-                    ])
+                        let supportedSelfCaptures = Set([
+                            "self",
+                            "unowned self",
+                            "unowned(safe) self",
+                            "unowned(unsafe) self",
+                            "weak self",
+                        ])
 
-                    let captureEntryStrings = captureListEntries.map { captureListEntry in
-                        captureListEntry
-                            .map(\.string)
-                            .joined()
-                            .trimmingCharacters(in: .whitespacesAndNewlines)
-                    }
-
-                    let selfCapture = captureEntryStrings.first(where: {
-                        supportedSelfCaptures.contains($0)
-                    })
-
-                    captureListEntries.removeAll(where: { captureListEntry in
-                        let text =
+                        let captureEntryStrings = captureListEntries.map { captureListEntry in
                             captureListEntry
                                 .map(\.string)
                                 .joined()
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
-
-                        return text == selfCapture
-                    })
-
-                    let localDefiningDeclarations = captureListEntries + parameterListEntries
-                    var closureLocalNames = localNames
-
-                    for tokens in localDefiningDeclarations {
-                        guard
-                            let localIdentifier = tokens.first(where: {
-                                $0.isIdentifier && !_FormatRules.ownershipModifiers.contains($0.string)
-                            }), case let .identifier(name) = localIdentifier,
-                            name != "_"
-                        else {
-                            continue
-                        }
-                        closureLocalNames.insert(name)
-                    }
-
-                    // Functions defined inside closures with `[weak self]` captures can
-                    // only use implicit self once self has been unwrapped.
-                    //
-                    // When using `weak self` we add `self` to locals and will remove
-                    // it again if we encounter a `guard let self`.
-                    if options.swiftVersion >= "5.8", selfCapture == "weak self" {
-                        closureLocalNames.insert("self")
-                    }
-
-                    /// Whether or not the closure at the current index permits implicit self.
-                    ///
-                    /// SE-0269 (in Swift 5.3) allows implicit self when:
-                    ///  - the closure captures self explicitly using [self] or [unowned self]
-                    ///  - self is not a reference type
-                    ///
-                    /// SE-0365 (in Swift 5.8) additionally allows implicit self using
-                    /// [weak self] captures after self has been unwrapped.
-                    func closureAllowsImplicitSelf() -> Bool {
-                        guard options.swiftVersion >= "5.3" else {
-                            return false
                         }
 
-                        // If self is a reference type, capturing it won't create a retain cycle,
-                        // so the compiler lets us use implicit self
-                        if let enclosingTypeKeyword = typeStack.last?.keyword,
-                           enclosingTypeKeyword == "struct" || enclosingTypeKeyword == "enum"
-                        {
-                            return true
-                        }
+                        let selfCapture = captureEntryStrings.first(where: {
+                            supportedSelfCaptures.contains($0)
+                        })
 
-                        guard let selfCapture else {
-                            return false
-                        }
+                        captureListEntries.removeAll(where: { captureListEntry in
+                            let text =
+                                captureListEntry
+                                    .map(\.string)
+                                    .joined()
+                                    .trimmingCharacters(in: .whitespacesAndNewlines)
 
-                        // If self is captured strongly, or using `unowned`, then the compiler
-                        // lets us use implicit self since it's already clear that this closure
-                        // captures self strongly
-                        if selfCapture == "self"
-                            || selfCapture == "unowned self"
-                            || selfCapture == "unowned(safe) self"
-                            || selfCapture == "unowned(unsafe) self"
-                        {
-                            return true
-                        }
+                            return text == selfCapture
+                        })
 
-                        // This is also supported for `weak self` captures, but only
-                        // in Swift 5.8 or later
-                        if selfCapture == "weak self", options.swiftVersion >= "5.8" {
-                            return true
-                        }
+                        let localDefiningDeclarations = captureListEntries + parameterListEntries
+                        var closureLocalNames = localNames
 
-                        return false
-                    }
-
-                    closureStack.append(
-                        (allowsImplicitSelf: closureAllowsImplicitSelf(), selfCapture: selfCapture)
-                    )
-                    index = (inIndex ?? index) + 1
-                    processBody(
-                        at: &index, localNames: closureLocalNames, members: members,
-                        typeStack: &typeStack, closureStack: &closureStack,
-                        membersByType: &membersByType, classMembersByType: &classMembersByType,
-                        usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
-                        isTypeRoot: false, isInit: isInit
-                    )
-                    index -= 1
-                    closureStack.removeLast()
-                case .startOfScope:
-                    index = endOfScope(at: index) ?? (tokens.count - 1)
-                case .identifier(selfKeyword):
-                    guard isEnabled, explicitSelf != .insert, !isTypeRoot, !usingDynamicLookup,
-                          !staticSelf || classOrStatic,
-                          let dotIndex = self.index(
-                              of: .nonSpaceOrLinebreak, after: index,
-                              if: {
-                                  $0 == .operator(".", .infix)
-                              }
-                          ),
-                          let nextIndex = self.index(of: .nonSpaceOrLinebreak, after: dotIndex)
-                    else {
-                        break
-                    }
-                    if explicitSelf == .insert {
-                        break
-                    } else if explicitSelf == .initOnly, isInit {
-                        if next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) == .operator("=", .infix) {
-                            break
-                        } else if let scopeEnd = self.index(of: .endOfScope(")"), after: nextIndex),
-                                  next(.nonSpaceOrCommentOrLinebreak, after: scopeEnd) == .operator("=", .infix)
-                        {
-                            break
-                        }
-                    }
-                    if let closure = closureStack.last, !closure.allowsImplicitSelf {
-                        break
-                    }
-                    _ = removeSelf(at: index, exclude: localNames)
-                case .identifier("type"): // Special case for type(of:)
-                    guard
-                        let parenIndex = self.index(
-                            of: .nonSpaceOrCommentOrLinebreak, after: index,
-                            if: {
-                                $0 == .startOfScope("(")
+                        for tokens in localDefiningDeclarations {
+                            guard
+                                let localIdentifier = tokens.first(where: {
+                                    $0.isIdentifier && !_FormatRules.ownershipModifiers
+                                        .contains($0.string)
+                                }), case let .identifier(name) = localIdentifier,
+                                name != "_"
+                            else {
+                                continue
                             }
-                        ), next(.nonSpaceOrCommentOrLinebreak, after: parenIndex) == .identifier("of")
-                    else {
-                        fallthrough
-                    }
-                case .keyword where token.isMacro, .identifier:
-                    guard isEnabled && !isTypeRoot else {
-                        break
-                    }
-                    if explicitSelf == .insert {
-                        // continue
-                    } else if explicitSelf == .initOnly, isInit {
-                        if next(.nonSpaceOrCommentOrLinebreak, after: index) == .operator("=", .infix) {
+                            closureLocalNames.insert(name)
+                        }
+
+                        // Functions defined inside closures with `[weak self]` captures can
+                        // only use implicit self once self has been unwrapped.
+                        //
+                        // When using `weak self` we add `self` to locals and will remove
+                        // it again if we encounter a `guard let self`.
+                        if options.swiftVersion >= "5.8", selfCapture == "weak self" {
+                            closureLocalNames.insert("self")
+                        }
+
+                        /// Whether or not the closure at the current index permits implicit self.
+                        ///
+                        /// SE-0269 (in Swift 5.3) allows implicit self when:
+                        ///  - the closure captures self explicitly using [self] or [unowned self]
+                        ///  - self is not a reference type
+                        ///
+                        /// SE-0365 (in Swift 5.8) additionally allows implicit self using
+                        /// [weak self] captures after self has been unwrapped.
+                        func closureAllowsImplicitSelf() -> Bool {
+                            guard options.swiftVersion >= "5.3" else {
+                                return false
+                            }
+
+                            // If self is a reference type, capturing it won't create a retain cycle,
+                            // so the compiler lets us use implicit self
+                            if let enclosingTypeKeyword = typeStack.last?.keyword,
+                               enclosingTypeKeyword == "struct" || enclosingTypeKeyword == "enum"
+                            {
+                                return true
+                            }
+
+                            guard let selfCapture else {
+                                return false
+                            }
+
+                            // If self is captured strongly, or using `unowned`, then the compiler
+                            // lets us use implicit self since it's already clear that this closure
+                            // captures self strongly
+                            if selfCapture == "self"
+                                || selfCapture == "unowned self"
+                                || selfCapture == "unowned(safe) self"
+                                || selfCapture == "unowned(unsafe) self"
+                            {
+                                return true
+                            }
+
+                            // This is also supported for `weak self` captures, but only
+                            // in Swift 5.8 or later
+                            if selfCapture == "weak self", options.swiftVersion >= "5.8" {
+                                return true
+                            }
+
+                            return false
+                        }
+
+                        closureStack.append(
+                            (
+                                allowsImplicitSelf: closureAllowsImplicitSelf(),
+                                selfCapture: selfCapture,
+                            ),
+                        )
+                        index = (inIndex ?? index) + 1
+                        processBody(
+                            at: &index, localNames: closureLocalNames, members: members,
+                            typeStack: &typeStack, closureStack: &closureStack,
+                            membersByType: &membersByType, classMembersByType: &classMembersByType,
+                            usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
+                            isTypeRoot: false, isInit: isInit,
+                        )
+                        index -= 1
+                        closureStack.removeLast()
+                    case .startOfScope:
+                        index = endOfScope(at: index) ?? (tokens.count - 1)
+                    case .identifier(selfKeyword):
+                        guard isEnabled, explicitSelf != .insert, !isTypeRoot, !usingDynamicLookup,
+                              !staticSelf || classOrStatic,
+                              let dotIndex = self.index(
+                                  of: .nonSpaceOrLinebreak, after: index,
+                                  if: {
+                                      $0 == .operator(".", .infix)
+                                  },
+                              ),
+                              let nextIndex = self.index(of: .nonSpaceOrLinebreak, after: dotIndex)
+                        else {
+                            break
+                        }
+                        if explicitSelf == .insert {
+                            break
+                        } else if explicitSelf == .initOnly, isInit {
+                            if next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) == .operator(
+                                "=",
+                                .infix,
+                            ) {
+                                break
+                            } else if let scopeEnd = self.index(
+                                of: .endOfScope(")"),
+                                after: nextIndex,
+                            ),
+                                next(.nonSpaceOrCommentOrLinebreak, after: scopeEnd) ==
+                                .operator(
+                                    "=",
+                                    .infix,
+                                )
+                            {
+                                break
+                            }
+                        }
+                        if let closure = closureStack.last, !closure.allowsImplicitSelf {
+                            break
+                        }
+                        _ = removeSelf(at: index, exclude: localNames)
+                    case .identifier("type"): // Special case for type(of:)
+                        guard
+                            let parenIndex = self.index(
+                                of: .nonSpaceOrCommentOrLinebreak, after: index,
+                                if: {
+                                    $0 == .startOfScope("(")
+                                },
+                            ),
+                            next(.nonSpaceOrCommentOrLinebreak, after: parenIndex) ==
+                            .identifier("of")
+                        else {
+                            fallthrough
+                        }
+                    case .keyword where token.isMacro, .identifier:
+                        guard isEnabled && !isTypeRoot else {
+                            break
+                        }
+                        if explicitSelf == .insert {
                             // continue
-                        } else if let scopeEnd = self.index(of: .endOfScope(")"), after: index),
-                                  next(.nonSpaceOrCommentOrLinebreak, after: scopeEnd) == .operator("=", .infix)
-                        {
-                            // continue
+                        } else if explicitSelf == .initOnly, isInit {
+                            if next(.nonSpaceOrCommentOrLinebreak, after: index) == .operator(
+                                "=",
+                                .infix,
+                            ) {
+                                // continue
+                            } else if let scopeEnd = self.index(of: .endOfScope(")"), after: index),
+                                      next(.nonSpaceOrCommentOrLinebreak, after: scopeEnd) ==
+                                      .operator(
+                                          "=",
+                                          .infix,
+                                      )
+                            {
+                                // continue
+                            } else {
+                                if token.string == "lazy" {
+                                    lastKeyword = "lazy"
+                                    lastKeywordIndex = index
+                                }
+                                break
+                            }
                         } else {
                             if token.string == "lazy" {
                                 lastKeyword = "lazy"
@@ -2960,79 +3117,78 @@ extension Formatter {
                             }
                             break
                         }
-                    } else {
-                        if token.string == "lazy" {
+                        let isAssignment: Bool
+                        if ["for", "var", "let"].contains(lastKeyword),
+                           let prevToken = last(.nonSpaceOrCommentOrLinebreak, before: index)
+                        {
+                            switch prevToken {
+                                case .identifier, .number, .endOfScope,
+                                     .operator
+                                         where ![
+                                             .operator("=", .infix), .operator(".", .prefix),
+                                         ].contains(prevToken):
+                                    isAssignment = false
+                                    lastKeyword = ""
+                                default:
+                                    isAssignment = true
+                            }
+                        } else {
+                            isAssignment = false
+                        }
+                        if !isAssignment, token.string == "lazy" {
                             lastKeyword = "lazy"
                             lastKeywordIndex = index
                         }
-                        break
-                    }
-                    let isAssignment: Bool
-                    if ["for", "var", "let"].contains(lastKeyword),
-                       let prevToken = last(.nonSpaceOrCommentOrLinebreak, before: index)
-                    {
-                        switch prevToken {
-                        case .identifier, .number, .endOfScope,
-                             .operator
-                                 where ![
-                                     .operator("=", .infix), .operator(".", .prefix),
-                                 ].contains(prevToken):
-                            isAssignment = false
-                            lastKeyword = ""
-                        default:
-                            isAssignment = true
+                        let name = token.unescaped()
+                        guard members.contains(name), !localNames.contains(name),
+                              !isAssignment
+                              || last(.nonSpaceOrCommentOrLinebreak, before: index) == .operator(
+                                  "=",
+                                  .infix,
+                              ),
+                              next(.nonSpaceOrComment, after: index) != .delimiter(":")
+                        else {
+                            break
                         }
-                    } else {
-                        isAssignment = false
-                    }
-                    if !isAssignment, token.string == "lazy" {
-                        lastKeyword = "lazy"
-                        lastKeywordIndex = index
-                    }
-                    let name = token.unescaped()
-                    guard members.contains(name), !localNames.contains(name),
-                          !isAssignment
-                          || last(.nonSpaceOrCommentOrLinebreak, before: index) == .operator("=", .infix),
-                          next(.nonSpaceOrComment, after: index) != .delimiter(":")
-                    else {
-                        break
-                    }
-                    if let lastToken = last(.nonSpaceOrCommentOrLinebreak, before: index),
-                       lastToken.isOperator(".")
-                    {
-                        break
-                    }
-                    if lastKeyword.hasPrefix("@"), let startIndex = startOfScope(at: index),
-                       tokens[startIndex] == .startOfScope("("),
-                       lastKeywordIndex == self.index(of: .nonSpaceOrComment, before: startIndex)
-                    {
-                        break
-                    }
-                    insert([.identifier("self"), .operator(".", .infix)], at: index)
-                    index += 2
-                case .endOfScope("case"), .endOfScope("default"):
-                    return
-                case .endOfScope:
-                    if token == .endOfScope("#endif") {
-                        while let scope = scopeStack.last?.token, scope != .space("") {
-                            scopeStack.removeLast()
-                            if scope != .startOfScope("#if") {
-                                break
-                            }
+                        if let lastToken = last(.nonSpaceOrCommentOrLinebreak, before: index),
+                           lastToken.isOperator(".")
+                        {
+                            break
                         }
-                    } else if let scope = scopeStack.last?.token, scope != .space("") {
-                        // TODO: fix this bug
-                        assert(token.isEndOfScope(scope))
-                        scopeStack.removeLast()
-                    } else {
-                        assert(token.isEndOfScope(currentScope(at: index)!))
-                        index += 1
+                        if lastKeyword.hasPrefix("@"), let startIndex = startOfScope(at: index),
+                           tokens[startIndex] == .startOfScope("("),
+                           lastKeywordIndex == self.index(
+                               of: .nonSpaceOrComment,
+                               before: startIndex,
+                           )
+                        {
+                            break
+                        }
+                        insert([.identifier("self"), .operator(".", .infix)], at: index)
+                        index += 2
+                    case .endOfScope("case"), .endOfScope("default"):
                         return
-                    }
-                case .linebreak:
-                    updateEnablement(at: index)
-                default:
-                    break
+                    case .endOfScope:
+                        if token == .endOfScope("#endif") {
+                            while let scope = scopeStack.last?.token, scope != .space("") {
+                                scopeStack.removeLast()
+                                if scope != .startOfScope("#if") {
+                                    break
+                                }
+                            }
+                        } else if let scope = scopeStack.last?.token, scope != .space("") {
+                            // TODO: fix this bug
+                            assert(token.isEndOfScope(scope))
+                            scopeStack.removeLast()
+                        } else {
+                            assert(token.isEndOfScope(currentScope(at: index)!))
+                            index += 1
+                            return
+                        }
+                    case .linebreak:
+                        updateEnablement(at: index)
+                    default:
+                        break
                 }
                 index += 1
             }
@@ -3045,7 +3201,7 @@ extension Formatter {
             membersByType: inout [String: Set<String>],
             classMembersByType: inout [String: Set<String>],
             usingDynamicLookup: Bool,
-            classOrStatic: Bool
+            classOrStatic: Bool,
         ) {
             assert(tokens[index] == .startOfScope("{"))
             var foundAccessors = false
@@ -3054,14 +3210,14 @@ extension Formatter {
                 of: .nonSpaceOrCommentOrLinebreak, after: index,
                 if: {
                     switch $0 {
-                    case .keyword where $0.isAttribute:
-                        return true
-                    case let .identifier(name), let .keyword(name):
-                        return names.contains(name)
-                    default:
-                        return false
+                        case .keyword where $0.isAttribute:
+                            return true
+                        case let .identifier(name), let .keyword(name):
+                            return names.contains(name)
+                        default:
+                            return false
                     }
-                }
+                },
             ), let startIndex = self.index(of: .startOfScope("{"), after: nextIndex) {
                 if tokens[nextIndex].isAttribute {
                     guard let startIndex = self.index(of: .nonSpaceOrComment, after: nextIndex),
@@ -3081,7 +3237,7 @@ extension Formatter {
                     of: .nonSpaceOrCommentOrLinebreak, after: nextIndex,
                     if: {
                         $0 == .startOfScope("(")
-                    }
+                    },
                 ), let varToken = next(.identifier, after: parenStart) {
                     localNames.insert(varToken.unescaped())
                 } else {
@@ -3094,17 +3250,17 @@ extension Formatter {
                         token = tokens[nextIndex]
                     }
                     switch token.string {
-                    case "get", "_modify":
-                        localNames.insert(name)
-                    case "set", "init":
-                        localNames.insert(name)
-                        localNames.insert("newValue")
-                    case "willSet":
-                        localNames.insert("newValue")
-                    case "didSet":
-                        localNames.insert("oldValue")
-                    default:
-                        break
+                        case "get", "_modify":
+                            localNames.insert(name)
+                        case "set", "init":
+                            localNames.insert(name)
+                            localNames.insert("newValue")
+                        case "willSet":
+                            localNames.insert("newValue")
+                        case "didSet":
+                            localNames.insert("oldValue")
+                        default:
+                            break
                     }
                 }
                 processBody(
@@ -3112,7 +3268,7 @@ extension Formatter {
                     typeStack: &typeStack, closureStack: &closureStack,
                     membersByType: &membersByType, classMembersByType: &classMembersByType,
                     usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
-                    isTypeRoot: false, isInit: false
+                    isTypeRoot: false, isInit: false,
                 )
                 index -= 1
             }
@@ -3130,7 +3286,7 @@ extension Formatter {
                     typeStack: &typeStack, closureStack: &closureStack,
                     membersByType: &membersByType, classMembersByType: &classMembersByType,
                     usingDynamicLookup: usingDynamicLookup, classOrStatic: classOrStatic,
-                    isTypeRoot: false, isInit: false
+                    isTypeRoot: false, isInit: false,
                 )
             }
         }
@@ -3141,7 +3297,7 @@ extension Formatter {
             membersByType: inout [String: Set<String>],
             classMembersByType: inout [String: Set<String>],
             usingDynamicLookup: Bool,
-            classOrStatic: Bool
+            classOrStatic: Bool,
         ) {
             let funcKeywordIndex = index
             let startToken = tokens[index]
@@ -3156,19 +3312,22 @@ extension Formatter {
             index = startIndex
             while index < endIndex {
                 guard let externalNameIndex = self.index(of: .identifier, after: index),
-                      let nextIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, after: externalNameIndex)
+                      let nextIndex = self.index(
+                          of: .nonSpaceOrCommentOrLinebreak,
+                          after: externalNameIndex,
+                      )
                 else { break }
                 let token = tokens[nextIndex]
                 switch token {
-                case let .identifier(name) where name != "_":
-                    localNames.insert(token.unescaped())
-                case .delimiter(":"):
-                    let externalNameToken = tokens[externalNameIndex]
-                    if case let .identifier(name) = externalNameToken, name != "_" {
-                        localNames.insert(externalNameToken.unescaped())
-                    }
-                default:
-                    break
+                    case let .identifier(name) where name != "_":
+                        localNames.insert(token.unescaped())
+                    case .delimiter(":"):
+                        let externalNameToken = tokens[externalNameIndex]
+                        if case let .identifier(name) = externalNameToken, name != "_" {
+                            localNames.insert(externalNameToken.unescaped())
+                        }
+                    default:
+                        break
                 }
                 index = self.index(of: .delimiter(","), after: index) ?? endIndex
             }
@@ -3189,20 +3348,20 @@ extension Formatter {
                         after: endIndex,
                         where: {
                             switch $0 {
-                            case .startOfScope("{"): // What we're looking for
-                                return true
-                            case .keyword("throws"),
-                                 .keyword("rethrows"),
-                                 .keyword("where"),
-                                 .keyword("is"),
-                                 .keyword("repeat"):
-                                return false // Keep looking
-                            case .keyword where !$0.isAttribute:
-                                return true // Not valid between end of arguments and start of body
-                            default:
-                                return false // Keep looking
+                                case .startOfScope("{"): // What we're looking for
+                                    return true
+                                case .keyword("throws"),
+                                     .keyword("rethrows"),
+                                     .keyword("where"),
+                                     .keyword("is"),
+                                     .keyword("repeat"):
+                                    return false // Keep looking
+                                case .keyword where !$0.isAttribute:
+                                    return true // Not valid between end of arguments and start of body
+                                default:
+                                    return false // Keep looking
                             }
-                        }
+                        },
                     ), tokens[validBodyStartIndex] == .startOfScope("{")
                 else {
                     return
@@ -3233,7 +3392,7 @@ extension Formatter {
                     membersByType: &membersByType,
                     classMembersByType: &classMembersByType,
                     usingDynamicLookup: usingDynamicLookup,
-                    classOrStatic: classOrStatic
+                    classOrStatic: classOrStatic,
                 )
             } else {
                 index = bodyStartIndex + 1
@@ -3248,7 +3407,7 @@ extension Formatter {
                     usingDynamicLookup: usingDynamicLookup,
                     classOrStatic: classOrStatic,
                     isTypeRoot: false,
-                    isInit: startToken == .keyword("init")
+                    isInit: startToken == .keyword("init"),
                 )
             }
         }
@@ -3262,7 +3421,7 @@ extension Formatter {
             closureStack: &closureStack, membersByType: &membersByType,
             classMembersByType: &classMembersByType,
             usingDynamicLookup: false, classOrStatic: false,
-            isTypeRoot: false, isInit: false
+            isTypeRoot: false, isInit: false,
         )
     }
 
@@ -3280,7 +3439,8 @@ extension Formatter {
     func removeTrailingBlankLinesIfPresent(in range: ClosedRange<Int>) {
         let range = range.autoUpdating(in: self)
         while tokens[range.range].numberOfTrailingLinebreaks() > 1 {
-            guard let lastNewlineIndex = lastIndex(of: .linebreak, in: Range(range.range)) else { break }
+            guard let lastNewlineIndex = lastIndex(of: .linebreak, in: Range(range.range))
+            else { break }
 
             removeToken(at: lastNewlineIndex)
         }
@@ -3300,7 +3460,8 @@ extension Formatter {
     func removeLeadingBlankLinesIfPresent(in range: ClosedRange<Int>) {
         let range = range.autoUpdating(in: self)
         while tokens[range].numberOfLeadingLinebreaks() > 1 {
-            guard let firstNewlineIndex = index(of: .linebreak, in: Range(range.range)) else { break }
+            guard let firstNewlineIndex = index(of: .linebreak, in: Range(range.range))
+            else { break }
             removeTokens(in: range.lowerBound ... firstNewlineIndex)
         }
     }
@@ -3371,17 +3532,17 @@ extension Date {
         }
 
         switch format {
-        case .system:
-            formatter.dateStyle = .short
-            formatter.timeStyle = .none
-        case .dayMonthYear:
-            formatter.dateFormat = "dd/MM/yyyy"
-        case .iso:
-            formatter.dateFormat = "yyyy-MM-dd"
-        case .monthDayYear:
-            formatter.dateFormat = "MM/dd/yyyy"
-        case let .custom(format):
-            formatter.dateFormat = format
+            case .system:
+                formatter.dateStyle = .short
+                formatter.timeStyle = .none
+            case .dayMonthYear:
+                formatter.dateFormat = "dd/MM/yyyy"
+            case .iso:
+                formatter.dateFormat = "yyyy-MM-dd"
+            case .monthDayYear:
+                formatter.dateFormat = "MM/dd/yyyy"
+            case let .custom(format):
+                formatter.dateFormat = format
         }
 
         return formatter.string(from: self)

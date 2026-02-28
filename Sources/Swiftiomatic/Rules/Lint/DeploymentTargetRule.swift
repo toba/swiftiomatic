@@ -12,7 +12,7 @@ struct DeploymentTargetRule: Rule {
             + "that are satisfied by the deployment target.",
         kind: .lint,
         nonTriggeringExamples: DeploymentTargetRuleExamples.nonTriggeringExamples,
-        triggeringExamples: DeploymentTargetRuleExamples.triggeringExamples
+        triggeringExamples: DeploymentTargetRuleExamples.triggeringExamples,
     )
 }
 
@@ -29,12 +29,12 @@ private enum AvailabilityType {
 
     var displayString: String {
         switch self {
-        case .condition:
-            return "condition"
-        case .attribute:
-            return "attribute"
-        case .negativeCondition:
-            return "negative condition"
+            case .condition:
+                return "condition"
+            case .attribute:
+                return "attribute"
+            case .negativeCondition:
+                return "negative condition"
         }
     }
 }
@@ -64,7 +64,11 @@ private extension DeploymentTargetRule {
                 guard let entry = arg.argument.as(PlatformVersionSyntax.self),
                       let versionString = entry.version?.description,
                       case let platform = entry.platform,
-                      let reason = reason(platform: platform, version: versionString, violationType: .attribute)
+                      let reason = reason(
+                          platform: platform,
+                          version: versionString,
+                          violationType: .attribute,
+                      )
                 else {
                     continue
                 }
@@ -72,8 +76,8 @@ private extension DeploymentTargetRule {
                 violations.append(
                     ReasonedRuleViolation(
                         position: node.atSign.positionAfterSkippingLeadingTrivia,
-                        reason: reason
-                    )
+                        reason: reason,
+                    ),
                 )
             }
         }
@@ -81,12 +85,12 @@ private extension DeploymentTargetRule {
         override func visitPost(_ node: AvailabilityConditionSyntax) {
             let violationType: AvailabilityType
             switch node.availabilityKeyword.tokenKind {
-            case .poundUnavailable:
-                violationType = .negativeCondition
-            case .poundAvailable:
-                violationType = .condition
-            default:
-                queuedFatalError("Unknown availability check type.")
+                case .poundUnavailable:
+                    violationType = .negativeCondition
+                case .poundAvailable:
+                    violationType = .condition
+                default:
+                    queuedFatalError("Unknown availability check type.")
             }
 
             for elem in node.availabilityArguments {
@@ -94,7 +98,7 @@ private extension DeploymentTargetRule {
                       let versionString = restriction.version?.description,
                       let reason = reason(
                           platform: restriction.platform, version: versionString,
-                          violationType: violationType
+                          violationType: violationType,
                       )
                 else {
                     continue
@@ -103,8 +107,8 @@ private extension DeploymentTargetRule {
                 violations.append(
                     ReasonedRuleViolation(
                         position: node.availabilityKeyword.positionAfterSkippingLeadingTrivia,
-                        reason: reason
-                    )
+                        reason: reason,
+                    ),
                 )
             }
         }
@@ -112,7 +116,7 @@ private extension DeploymentTargetRule {
         private func reason(
             platform: TokenSyntax,
             version versionString: String,
-            violationType: AvailabilityType
+            violationType: AvailabilityType,
         ) -> String? {
             guard let platform = DeploymentTargetConfiguration.Platform(rawValue: platform.text),
                   let minVersion = platformToConfiguredMinVersion[platform.rawValue]
@@ -127,8 +131,10 @@ private extension DeploymentTargetRule {
             }
 
             return """
-            Availability \(violationType.displayString) is using a version (\(versionString)) that is \
-            satisfied by the deployment target (\(minVersion.stringValue)) for platform \(platform.rawValue)
+            Availability \(violationType
+                .displayString) is using a version (\(versionString)) that is \
+            satisfied by the deployment target (\(minVersion.stringValue)) for platform \(platform
+                .rawValue)
             """
         }
     }

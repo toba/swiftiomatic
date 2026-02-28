@@ -1,1021 +1,1031 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite struct MarkTypesTests {
-    @Test func addsMarkBeforeTypes() {
-        let input = """
-        struct Foo {}
-        class Bar {}
-        enum Baz {}
-        protocol Quux {}
-        """
+  @Test func addsMarkBeforeTypes() {
+    let input = """
+      struct Foo {}
+      class Bar {}
+      enum Baz {}
+      protocol Quux {}
+      """
 
-        let output = """
-        // MARK: - Foo
+    let output = """
+      // MARK: - Foo
 
-        struct Foo {}
+      struct Foo {}
 
-        // MARK: - Bar
+      // MARK: - Bar
 
-        class Bar {}
+      class Bar {}
 
-        // MARK: - Baz
+      // MARK: - Baz
 
-        enum Baz {}
+      enum Baz {}
 
-        // MARK: - Quux
+      // MARK: - Quux
 
-        protocol Quux {}
-        """
+      protocol Quux {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func doesntAddMarkBeforeStructWithExistingMark() {
-        let input = """
-        // MARK: - Foo
+  @Test func doesntAddMarkBeforeStructWithExistingMark() {
+    let input = """
+      // MARK: - Foo
 
-        struct Foo {}
-        extension Foo {}
-        """
+      struct Foo {}
+      extension Foo {}
+      """
 
-        testFormatting(for: input, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func correctsTypoInTypeMark() {
-        let input = """
-        // mark: foo
+  @Test func correctsTypoInTypeMark() {
+    let input = """
+      // mark: foo
 
-        struct Foo {}
-        extension Foo {}
-        """
+      struct Foo {}
+      extension Foo {}
+      """
 
-        let output = """
-        // MARK: - Foo
+    let output = """
+      // MARK: - Foo
 
-        struct Foo {}
-        extension Foo {}
-        """
+      struct Foo {}
+      extension Foo {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func updatesMarkAfterTypeIsRenamed() {
-        let input = """
-        // MARK: - FooBarControllerFactory
-
-        struct FooBarControllerBuilder {}
-        extension FooBarControllerBuilder {}
-        """
-
-        let output = """
-        // MARK: - FooBarControllerBuilder
+  @Test func updatesMarkAfterTypeIsRenamed() {
+    let input = """
+      // MARK: - FooBarControllerFactory
+
+      struct FooBarControllerBuilder {}
+      extension FooBarControllerBuilder {}
+      """
+
+    let output = """
+      // MARK: - FooBarControllerBuilder
 
-        struct FooBarControllerBuilder {}
-        extension FooBarControllerBuilder {}
-        """
+      struct FooBarControllerBuilder {}
+      extension FooBarControllerBuilder {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func addsMarkBeforeTypeWithDocComment() {
-        let input = """
-        /// This is a doc comment with several
-        /// lines of prose at the start
-        ///  - And then, after the prose,
-        ///  - a few bullet points just for fun
-        actor Foo {}
-        extension Foo {}
-        """
+  @Test func addsMarkBeforeTypeWithDocComment() {
+    let input = """
+      /// This is a doc comment with several
+      /// lines of prose at the start
+      ///  - And then, after the prose,
+      ///  - a few bullet points just for fun
+      actor Foo {}
+      extension Foo {}
+      """
 
-        let output = """
-        // MARK: - Foo
+    let output = """
+      // MARK: - Foo
 
-        /// This is a doc comment with several
-        /// lines of prose at the start
-        ///  - And then, after the prose,
-        ///  - a few bullet points just for fun
-        actor Foo {}
-        extension Foo {}
-        """
+      /// This is a doc comment with several
+      /// lines of prose at the start
+      ///  - And then, after the prose,
+      ///  - a few bullet points just for fun
+      actor Foo {}
+      extension Foo {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func fragment() {
-        let input = """
-        struct Foo {}
-        extension Foo {}
-        """
-
-        testFormatting(
-            for: input, rule: .markTypes,
-            options: FormatOptions(typeMarkComment: "TYPE DEFINITION: %t", fragment: true),
-            exclude: [.emptyExtensions]
-        )
-    }
-
-    @Test func customTypeMarkAfterFileHeader() {
-        let input = """
-        // MyFile.swift
-
-        struct Foo {}
-        extension Foo {}
-        """
-
-        let output = """
-        // MyFile.swift
-
-        // TYPE DEFINITION: Foo
-
-        struct Foo {}
-        extension Foo {}
-        """
-
-        testFormatting(
-            for: input, output, rule: .markTypes,
-            options: FormatOptions(typeMarkComment: "TYPE DEFINITION: %t"),
-            exclude: [.emptyExtensions]
-        )
-    }
-
-    @Test func doesNothingForExtensionWithoutProtocolConformance() {
-        let input = """
-        extension Foo {}
-        extension Foo {}
-        """
+  @Test func fragment() {
+    let input = """
+      struct Foo {}
+      extension Foo {}
+      """
+
+    testFormatting(
+      for: input, rule: .markTypes,
+      options: FormatOptions(typeMarkComment: "TYPE DEFINITION: %t", fragment: true),
+      exclude: [.emptyExtensions]
+    )
+  }
+
+  @Test func customTypeMarkAfterFileHeader() {
+    let input = """
+      // MyFile.swift
+
+      struct Foo {}
+      extension Foo {}
+      """
+
+    let output = """
+      // MyFile.swift
+
+      // TYPE DEFINITION: Foo
+
+      struct Foo {}
+      extension Foo {}
+      """
+
+    testFormatting(
+      for: input, output, rule: .markTypes,
+      options: FormatOptions(typeMarkComment: "TYPE DEFINITION: %t"),
+      exclude: [.emptyExtensions]
+    )
+  }
+
+  @Test func doesNothingForExtensionWithoutProtocolConformance() {
+    let input = """
+      extension Foo {}
+      extension Foo {}
+      """
 
-        testFormatting(for: input, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    func preservesExistingCommentForExtensionWithNoConformances() {
-        let input = """
-        // MARK: Description of extension
+  func preservesExistingCommentForExtensionWithNoConformances() {
+    let input = """
+      // MARK: Description of extension
 
-        extension Foo {}
-        extension Foo {}
-        """
-
-        testFormatting(for: input, rule: .markTypes)
-    }
+      extension Foo {}
+      extension Foo {}
+      """
+
+    testFormatting(for: input, rule: .markTypes)
+  }
 
-    @Test func addsMarkCommentForExtensionWithConformance() {
-        let input = """
-        extension Foo: BarProtocol {}
-        extension Foo {}
-        """
-
-        let output = """
-        // MARK: - Foo + BarProtocol
-
-        extension Foo: BarProtocol {}
-        extension Foo {}
-        """
+  @Test func addsMarkCommentForExtensionWithConformance() {
+    let input = """
+      extension Foo: BarProtocol {}
+      extension Foo {}
+      """
+
+    let output = """
+      // MARK: - Foo + BarProtocol
+
+      extension Foo: BarProtocol {}
+      extension Foo {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func updatesExtensionMarkToCorrectMark() {
-        let input = """
-        // MARK: - BarProtocol
+  @Test func updatesExtensionMarkToCorrectMark() {
+    let input = """
+      // MARK: - BarProtocol
 
-        extension Foo: BarProtocol {}
-        extension Foo {}
-        """
+      extension Foo: BarProtocol {}
+      extension Foo {}
+      """
 
-        let output = """
-        // MARK: - Foo + BarProtocol
+    let output = """
+      // MARK: - Foo + BarProtocol
 
-        extension Foo: BarProtocol {}
-        extension Foo {}
-        """
+      extension Foo: BarProtocol {}
+      extension Foo {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func addsMarkCommentForExtensionWithMultipleConformances() {
-        let input = """
-        extension Foo: BarProtocol, BazProtocol {}
-        extension Foo {}
-        """
+  @Test func addsMarkCommentForExtensionWithMultipleConformances() {
+    let input = """
+      extension Foo: BarProtocol, BazProtocol {}
+      extension Foo {}
+      """
 
-        let output = """
-        // MARK: - Foo + BarProtocol, BazProtocol
+    let output = """
+      // MARK: - Foo + BarProtocol, BazProtocol
 
-        extension Foo: BarProtocol, BazProtocol {}
-        extension Foo {}
-        """
+      extension Foo: BarProtocol, BazProtocol {}
+      extension Foo {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func updatesMarkCommentWithCorrectConformances() {
-        let input = """
-        // MARK: - Foo + BarProtocol
+  @Test func updatesMarkCommentWithCorrectConformances() {
+    let input = """
+      // MARK: - Foo + BarProtocol
 
-        extension Foo: BarProtocol, BazProtocol {}
-        extension Foo {}
-        """
+      extension Foo: BarProtocol, BazProtocol {}
+      extension Foo {}
+      """
 
-        let output = """
-        // MARK: - Foo + BarProtocol, BazProtocol
+    let output = """
+      // MARK: - Foo + BarProtocol, BazProtocol
 
-        extension Foo: BarProtocol, BazProtocol {}
-        extension Foo {}
-        """
+      extension Foo: BarProtocol, BazProtocol {}
+      extension Foo {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func customExtensionMarkComment() {
-        let input = """
-        struct Foo {}
-        extension Foo: BarProtocol {}
-        extension String: BarProtocol {}
-        """
+  @Test func customExtensionMarkComment() {
+    let input = """
+      struct Foo {}
+      extension Foo: BarProtocol {}
+      extension String: BarProtocol {}
+      """
 
-        let output = """
-        // MARK: - Foo
+    let output = """
+      // MARK: - Foo
 
-        struct Foo {}
+      struct Foo {}
 
-        // EXTENSION: - BarProtocol
+      // EXTENSION: - BarProtocol
 
-        extension Foo: BarProtocol {}
+      extension Foo: BarProtocol {}
 
-        // EXTENSION: - String: BarProtocol
+      // EXTENSION: - String: BarProtocol
 
-        extension String: BarProtocol {}
-        """
+      extension String: BarProtocol {}
+      """
 
-        testFormatting(
-            for: input, output, rule: .markTypes,
-            options: FormatOptions(
-                extensionMarkComment: "EXTENSION: - %t: %c",
-                groupedExtensionMarkComment: "EXTENSION: - %c"
-            )
-        )
-    }
+    testFormatting(
+      for: input, output, rule: .markTypes,
+      options: FormatOptions(
+        extensionMarkComment: "EXTENSION: - %t: %c",
+        groupedExtensionMarkComment: "EXTENSION: - %c"
+      )
+    )
+  }
 
-    @Test func typeAndExtensionMarksTogether() {
-        let input = """
-        struct Foo {}
-        extension Foo: Bar {}
-        extension String: Bar {}
-        """
+  @Test func typeAndExtensionMarksTogether() {
+    let input = """
+      struct Foo {}
+      extension Foo: Bar {}
+      extension String: Bar {}
+      """
 
-        let output = """
-        // MARK: - Foo
+    let output = """
+      // MARK: - Foo
 
-        struct Foo {}
+      struct Foo {}
 
-        // MARK: Bar
+      // MARK: Bar
 
-        extension Foo: Bar {}
+      extension Foo: Bar {}
 
-        // MARK: - String + Bar
+      // MARK: - String + Bar
 
-        extension String: Bar {}
-        """
+      extension String: Bar {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes)
-    }
+    testFormatting(for: input, output, rule: .markTypes)
+  }
 
-    @Test func fullyQualifiedTypeNames() {
-        let input = """
-        extension MyModule.Foo: MyModule.MyNamespace.BarProtocol, QuuxProtocol {}
-        extension MyModule.Foo {}
-        """
+  @Test func fullyQualifiedTypeNames() {
+    let input = """
+      extension MyModule.Foo: MyModule.MyNamespace.BarProtocol, QuuxProtocol {}
+      extension MyModule.Foo {}
+      """
 
-        let output = """
-        // MARK: - MyModule.Foo + MyModule.MyNamespace.BarProtocol, QuuxProtocol
+    let output = """
+      // MARK: - MyModule.Foo + MyModule.MyNamespace.BarProtocol, QuuxProtocol
 
-        extension MyModule.Foo: MyModule.MyNamespace.BarProtocol, QuuxProtocol {}
-        extension MyModule.Foo {}
-        """
+      extension MyModule.Foo: MyModule.MyNamespace.BarProtocol, QuuxProtocol {}
+      extension MyModule.Foo {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func whereClauseConformanceWithExactConstraint() {
-        let input = """
-        extension Array: BarProtocol where Element == String {}
-        extension Array {}
-        """
+  @Test func whereClauseConformanceWithExactConstraint() {
+    let input = """
+      extension Array: BarProtocol where Element == String {}
+      extension Array {}
+      """
 
-        let output = """
-        // MARK: - Array + BarProtocol
+    let output = """
+      // MARK: - Array + BarProtocol
 
-        extension Array: BarProtocol where Element == String {}
-        extension Array {}
-        """
+      extension Array: BarProtocol where Element == String {}
+      extension Array {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func whereClauseConformanceWithConformanceConstraint() {
-        let input = """
-        extension Array: BarProtocol where Element: BarProtocol {}
-        extension Array {}
-        """
+  @Test func whereClauseConformanceWithConformanceConstraint() {
+    let input = """
+      extension Array: BarProtocol where Element: BarProtocol {}
+      extension Array {}
+      """
 
-        let output = """
-        // MARK: - Array + BarProtocol
+    let output = """
+      // MARK: - Array + BarProtocol
 
-        extension Array: BarProtocol where Element: BarProtocol {}
-        extension Array {}
-        """
+      extension Array: BarProtocol where Element: BarProtocol {}
+      extension Array {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func whereClauseWithExactConstraint() {
-        let input = """
-        extension Array where Element == String {}
-        extension Array {}
-        """
+  @Test func whereClauseWithExactConstraint() {
+    let input = """
+      extension Array where Element == String {}
+      extension Array {}
+      """
 
-        testFormatting(for: input, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func whereClauseWithConformanceConstraint() {
-        let input = """
-        // MARK: [BarProtocol] helpers
+  @Test func whereClauseWithConformanceConstraint() {
+    let input = """
+      // MARK: [BarProtocol] helpers
 
-        extension Array where Element: BarProtocol {}
-        extension Rules {}
-        """
+      extension Array where Element: BarProtocol {}
+      extension Rules {}
+      """
 
-        testFormatting(for: input, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func placesMarkAfterImports() {
-        let input = """
-        import Foundation
-        import os
+  @Test func placesMarkAfterImports() {
+    let input = """
+      import Foundation
+      import os
 
-        /// All of SwiftFormat's Rule implementation
-        class Rules {}
-        extension Rules {}
-        """
+      /// All of SwiftFormat's Rule implementation
+      class Rules {}
+      extension Rules {}
+      """
 
-        let output = """
-        import Foundation
-        import os
+    let output = """
+      import Foundation
+      import os
 
-        // MARK: - Rules
+      // MARK: - Rules
 
-        /// All of SwiftFormat's Rule implementation
-        class Rules {}
-        extension Rules {}
-        """
+      /// All of SwiftFormat's Rule implementation
+      class Rules {}
+      extension Rules {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func placesMarkAfterFileHeader() {
-        let input = """
-        //  Created by Nick Lockwood on 12/08/2016.
-        //  Copyright 2016 Nick Lockwood
+  @Test func placesMarkAfterFileHeader() {
+    let input = """
+      //  Created by Nick Lockwood on 12/08/2016.
+      //  Copyright 2016 Nick Lockwood
 
-        /// All of SwiftFormat's Rule implementation
-        class Rules {}
-        extension Rules {}
-        """
+      /// All of SwiftFormat's Rule implementation
+      class Rules {}
+      extension Rules {}
+      """
 
-        let output = """
-        //  Created by Nick Lockwood on 12/08/2016.
-        //  Copyright 2016 Nick Lockwood
+    let output = """
+      //  Created by Nick Lockwood on 12/08/2016.
+      //  Copyright 2016 Nick Lockwood
 
-        // MARK: - Rules
+      // MARK: - Rules
 
-        /// All of SwiftFormat's Rule implementation
-        class Rules {}
-        extension Rules {}
-        """
+      /// All of SwiftFormat's Rule implementation
+      class Rules {}
+      extension Rules {}
+      """
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
 
-    @Test func placesMarkAfterFileHeaderAndImports() {
-        let input = """
-        //  Created by Nick Lockwood on 12/08/2016.
-        //  Copyright 2016 Nick Lockwood
+  @Test func placesMarkAfterFileHeaderAndImports() {
+    let input = """
+      //  Created by Nick Lockwood on 12/08/2016.
+      //  Copyright 2016 Nick Lockwood
 
-        import Foundation
-        import os
+      import Foundation
+      import os
 
-        /// All of SwiftFormat's Rule implementation
-        class Rules {}
-        extension Rules {}
-        """
+      /// All of SwiftFormat's Rule implementation
+      class Rules {}
+      extension Rules {}
+      """
 
-        let output = """
-        //  Created by Nick Lockwood on 12/08/2016.
-        //  Copyright 2016 Nick Lockwood
+    let output = """
+      //  Created by Nick Lockwood on 12/08/2016.
+      //  Copyright 2016 Nick Lockwood
 
-        import Foundation
-        import os
+      import Foundation
+      import os
+
+      // MARK: - Rules
 
-        // MARK: - Rules
+      /// All of SwiftFormat's Rule implementation
+      class Rules {}
+      extension Rules {}
+      """
+
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
+  }
+
+  @Test func doesNothingIfOnlyOneDeclaration() {
+    let input = """
+      //  Created by Nick Lockwood on 12/08/2016.
+      //  Copyright 2016 Nick Lockwood
+
+      import Foundation
+      import os
+
+      /// All of SwiftFormat's Rule implementation
+      class Rules {}
+      """
+
+    testFormatting(for: input, rule: .markTypes)
+  }
+
+  @Test func multipleExtensionsOfSameType() {
+    let input = """
+      extension Foo: BarProtocol {}
+      extension Foo: QuuxProtocol {}
+      """
+
+    let output = """
+      // MARK: - Foo + BarProtocol
+
+      extension Foo: BarProtocol {}
+
+      // MARK: - Foo + QuuxProtocol
+
+      extension Foo: QuuxProtocol {}
+      """
+
+    testFormatting(for: input, output, rule: .markTypes)
+  }
+
+  @Test func neverMarkTypes() {
+    let input = """
+      struct EmptyFoo {}
+      struct EmptyBar { }
+      struct EmptyBaz {
+
+      }
+      struct Quux {
+          let foo = 1
+      }
+      """
+
+    let options = FormatOptions(markTypes: .never)
+    testFormatting(
+      for: input, rule: .markTypes, options: options,
+      exclude: [
+        .emptyBraces, .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .blankLinesBetweenScopes,
+      ]
+    )
+  }
+
+  @Test func markTypesIfNotEmpty() {
+    let input = """
+      struct EmptyFoo {}
+      struct EmptyBar { }
+      struct EmptyBaz {
+
+      }
+      struct Quux {
+          let foo = 1
+      }
+      """
+
+    let output = """
+      struct EmptyFoo {}
+      struct EmptyBar { }
+      struct EmptyBaz {
 
-        /// All of SwiftFormat's Rule implementation
-        class Rules {}
-        extension Rules {}
-        """
-
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.emptyExtensions])
-    }
+      }
 
-    @Test func doesNothingIfOnlyOneDeclaration() {
-        let input = """
-        //  Created by Nick Lockwood on 12/08/2016.
-        //  Copyright 2016 Nick Lockwood
-
-        import Foundation
-        import os
-
-        /// All of SwiftFormat's Rule implementation
-        class Rules {}
-        """
-
-        testFormatting(for: input, rule: .markTypes)
-    }
-
-    @Test func multipleExtensionsOfSameType() {
-        let input = """
-        extension Foo: BarProtocol {}
-        extension Foo: QuuxProtocol {}
-        """
-
-        let output = """
-        // MARK: - Foo + BarProtocol
-
-        extension Foo: BarProtocol {}
-
-        // MARK: - Foo + QuuxProtocol
-
-        extension Foo: QuuxProtocol {}
-        """
-
-        testFormatting(for: input, output, rule: .markTypes)
-    }
-
-    @Test func neverMarkTypes() {
-        let input = """
-        struct EmptyFoo {}
-        struct EmptyBar { }
-        struct EmptyBaz {
-
-        }
-        struct Quux {
-            let foo = 1
-        }
-        """
-
-        let options = FormatOptions(markTypes: .never)
-        testFormatting(
-            for: input, rule: .markTypes, options: options,
-            exclude: [.emptyBraces, .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .blankLinesBetweenScopes]
-        )
-    }
-
-    @Test func markTypesIfNotEmpty() {
-        let input = """
-        struct EmptyFoo {}
-        struct EmptyBar { }
-        struct EmptyBaz {
+      // MARK: - Quux
 
-        }
-        struct Quux {
-            let foo = 1
-        }
-        """
+      struct Quux {
+          let foo = 1
+      }
+      """
 
-        let output = """
-        struct EmptyFoo {}
-        struct EmptyBar { }
-        struct EmptyBaz {
+    let options = FormatOptions(markTypes: .ifNotEmpty)
+    testFormatting(
+      for: input, output, rule: .markTypes, options: options,
+      exclude: [
+        .emptyBraces, .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .blankLinesBetweenScopes,
+      ]
+    )
+  }
 
-        }
+  @Test func neverMarkExtensions() {
+    let input = """
+      extension EmptyFoo: FooProtocol {}
+      extension EmptyBar: BarProtocol { }
+      extension EmptyBaz: BazProtocol {
 
-        // MARK: - Quux
+      }
+      extension Quux: QuuxProtocol {
+          let foo = 1
+      }
+      """
 
-        struct Quux {
-            let foo = 1
-        }
-        """
+    let options = FormatOptions(markExtensions: .never)
+    testFormatting(
+      for: input, rule: .markTypes, options: options,
+      exclude: [
+        .emptyBraces, .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .blankLinesBetweenScopes,
+      ]
+    )
+  }
 
-        let options = FormatOptions(markTypes: .ifNotEmpty)
-        testFormatting(
-            for: input, output, rule: .markTypes, options: options,
-            exclude: [.emptyBraces, .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .blankLinesBetweenScopes]
-        )
-    }
+  @Test func markExtensionsIfNotEmpty() {
+    let input = """
+      extension EmptyFoo: FooProtocol {}
+      extension EmptyBar: BarProtocol { }
+      extension EmptyBaz: BazProtocol {
 
-    @Test func neverMarkExtensions() {
-        let input = """
-        extension EmptyFoo: FooProtocol {}
-        extension EmptyBar: BarProtocol { }
-        extension EmptyBaz: BazProtocol {
+      }
+      extension Quux: QuuxProtocol {
+          let foo = 1
+      }
+      """
 
-        }
-        extension Quux: QuuxProtocol {
-            let foo = 1
-        }
-        """
+    let output = """
+      extension EmptyFoo: FooProtocol {}
+      extension EmptyBar: BarProtocol { }
+      extension EmptyBaz: BazProtocol {
 
-        let options = FormatOptions(markExtensions: .never)
-        testFormatting(
-            for: input, rule: .markTypes, options: options,
-            exclude: [.emptyBraces, .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .blankLinesBetweenScopes]
-        )
-    }
+      }
 
-    @Test func markExtensionsIfNotEmpty() {
-        let input = """
-        extension EmptyFoo: FooProtocol {}
-        extension EmptyBar: BarProtocol { }
-        extension EmptyBaz: BazProtocol {
+      // MARK: - Quux + QuuxProtocol
 
-        }
-        extension Quux: QuuxProtocol {
-            let foo = 1
-        }
-        """
+      extension Quux: QuuxProtocol {
+          let foo = 1
+      }
+      """
 
-        let output = """
-        extension EmptyFoo: FooProtocol {}
-        extension EmptyBar: BarProtocol { }
-        extension EmptyBaz: BazProtocol {
+    let options = FormatOptions(markExtensions: .ifNotEmpty)
+    testFormatting(
+      for: input, output, rule: .markTypes, options: options,
+      exclude: [
+        .emptyBraces, .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .blankLinesBetweenScopes,
+      ]
+    )
+  }
 
-        }
+  @Test func markExtensionsDisabled() {
+    let input = """
+      extension Foo: FooProtocol {}
 
-        // MARK: - Quux + QuuxProtocol
+      // swiftformat:disable markTypes
 
-        extension Quux: QuuxProtocol {
-            let foo = 1
-        }
-        """
+      extension Bar: BarProtocol {}
 
-        let options = FormatOptions(markExtensions: .ifNotEmpty)
-        testFormatting(
-            for: input, output, rule: .markTypes, options: options,
-            exclude: [.emptyBraces, .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .blankLinesBetweenScopes]
-        )
-    }
+      // swiftformat:enable markTypes
 
-    @Test func markExtensionsDisabled() {
-        let input = """
-        extension Foo: FooProtocol {}
+      extension Baz: BazProtocol {}
 
-        // swiftformat:disable markTypes
+      extension Quux: QuuxProtocol {}
+      """
 
-        extension Bar: BarProtocol {}
+    let output = """
+      // MARK: - Foo + FooProtocol
 
-        // swiftformat:enable markTypes
+      extension Foo: FooProtocol {}
 
-        extension Baz: BazProtocol {}
+      // swiftformat:disable markTypes
 
-        extension Quux: QuuxProtocol {}
-        """
+      extension Bar: BarProtocol {}
 
-        let output = """
-        // MARK: - Foo + FooProtocol
+      // MARK: - Baz + BazProtocol
 
-        extension Foo: FooProtocol {}
+      // swiftformat:enable markTypes
 
-        // swiftformat:disable markTypes
+      extension Baz: BazProtocol {}
 
-        extension Bar: BarProtocol {}
+      // MARK: - Quux + QuuxProtocol
 
-        // MARK: - Baz + BazProtocol
+      extension Quux: QuuxProtocol {}
+      """
 
-        // swiftformat:enable markTypes
+    testFormatting(for: input, output, rule: .markTypes)
+  }
 
-        extension Baz: BazProtocol {}
+  @Test func extensionMarkWithImportOfSameName() {
+    let input = """
+      import MagazineLayout
 
-        // MARK: - Quux + QuuxProtocol
+      // MARK: - MagazineLayout + FooProtocol
 
-        extension Quux: QuuxProtocol {}
-        """
+      extension MagazineLayout: FooProtocol {}
 
-        testFormatting(for: input, output, rule: .markTypes)
-    }
+      // MARK: - MagazineLayout + BarProtocol
 
-    @Test func extensionMarkWithImportOfSameName() {
-        let input = """
-        import MagazineLayout
+      extension MagazineLayout: BarProtocol {}
+      """
 
-        // MARK: - MagazineLayout + FooProtocol
+    testFormatting(for: input, rule: .markTypes)
+  }
 
-        extension MagazineLayout: FooProtocol {}
+  @Test func doesntUseGroupedMarkTemplateWhenSeparatedByOtherType() {
+    let input = """
+      // MARK: - MyComponent
 
-        // MARK: - MagazineLayout + BarProtocol
+      class MyComponent {}
 
-        extension MagazineLayout: BarProtocol {}
-        """
+      // MARK: - MyComponentContent
 
-        testFormatting(for: input, rule: .markTypes)
-    }
+      struct MyComponentContent {}
 
-    @Test func doesntUseGroupedMarkTemplateWhenSeparatedByOtherType() {
-        let input = """
-        // MARK: - MyComponent
+      // MARK: - MyComponent + ContentConfigurableView
 
-        class MyComponent {}
+      extension MyComponent: ContentConfigurableView {}
+      """
 
-        // MARK: - MyComponentContent
+    testFormatting(for: input, rule: .markTypes)
+  }
 
-        struct MyComponentContent {}
+  @Test func usesGroupedMarkTemplateWhenSeparatedByExtensionOfSameType() {
+    let input = """
+      // MARK: - MyComponent
 
-        // MARK: - MyComponent + ContentConfigurableView
+      class MyComponent {}
 
-        extension MyComponent: ContentConfigurableView {}
-        """
+      // MARK: Equatable
 
-        testFormatting(for: input, rule: .markTypes)
-    }
+      extension MyComponent: Equatable {}
 
-    @Test func usesGroupedMarkTemplateWhenSeparatedByExtensionOfSameType() {
-        let input = """
-        // MARK: - MyComponent
+      // MARK: ContentConfigurableView
 
-        class MyComponent {}
+      extension MyComponent: ContentConfigurableView {}
+      """
 
-        // MARK: Equatable
+    testFormatting(for: input, rule: .markTypes)
+  }
 
-        extension MyComponent: Equatable {}
+  @Test func doesntUseGroupedMarkTemplateWhenSeparatedByExtensionOfOtherType() {
+    let input = """
+      // MARK: - MyComponent
 
-        // MARK: ContentConfigurableView
+      class MyComponent {}
 
-        extension MyComponent: ContentConfigurableView {}
-        """
+      // MARK: - OtherComponent + Equatable
 
-        testFormatting(for: input, rule: .markTypes)
-    }
+      extension OtherComponent: Equatable {}
 
-    @Test func doesntUseGroupedMarkTemplateWhenSeparatedByExtensionOfOtherType() {
-        let input = """
-        // MARK: - MyComponent
+      // MARK: - MyComponent + ContentConfigurableView
 
-        class MyComponent {}
+      extension MyComponent: ContentConfigurableView {}
+      """
 
-        // MARK: - OtherComponent + Equatable
+    testFormatting(for: input, rule: .markTypes)
+  }
 
-        extension OtherComponent: Equatable {}
+  @Test func addsMarkBeforeTypesWithNoBlankLineAfterMark() {
+    let input = """
+      struct Foo {}
+      class Bar {}
+      enum Baz {}
+      protocol Quux {}
+      """
 
-        // MARK: - MyComponent + ContentConfigurableView
+    let output = """
+      // MARK: - Foo
+      struct Foo {}
 
-        extension MyComponent: ContentConfigurableView {}
-        """
+      // MARK: - Bar
+      class Bar {}
 
-        testFormatting(for: input, rule: .markTypes)
-    }
+      // MARK: - Baz
+      enum Baz {}
 
-    @Test func addsMarkBeforeTypesWithNoBlankLineAfterMark() {
-        let input = """
-        struct Foo {}
-        class Bar {}
-        enum Baz {}
-        protocol Quux {}
-        """
+      // MARK: - Quux
+      protocol Quux {}
+      """
+    let options = FormatOptions(lineAfterMarks: false)
+    testFormatting(for: input, output, rule: .markTypes, options: options)
+  }
 
-        let output = """
-        // MARK: - Foo
-        struct Foo {}
+  @Test func addsMarkForTypeInExtension() {
+    let input = """
+      enum Foo {}
 
-        // MARK: - Bar
-        class Bar {}
+      extension Foo {
+          struct Bar {
+              let baaz: Baaz
+          }
+      }
+      """
 
-        // MARK: - Baz
-        enum Baz {}
+    let output = """
+      // MARK: - Foo
 
-        // MARK: - Quux
-        protocol Quux {}
-        """
-        let options = FormatOptions(lineAfterMarks: false)
-        testFormatting(for: input, output, rule: .markTypes, options: options)
-    }
+      enum Foo {}
 
-    @Test func addsMarkForTypeInExtension() {
-        let input = """
-        enum Foo {}
+      // MARK: Foo.Bar
 
-        extension Foo {
-            struct Bar {
-                let baaz: Baaz
-            }
-        }
-        """
+      extension Foo {
+          struct Bar {
+              let baaz: Baaz
+          }
+      }
+      """
 
-        let output = """
-        // MARK: - Foo
+    testFormatting(for: input, output, rule: .markTypes)
+  }
 
-        enum Foo {}
+  @Test func doesntAddsMarkForMultipleTypesInExtension() {
+    let input = """
+      enum Foo {}
 
-        // MARK: Foo.Bar
+      extension Foo {
+          struct Bar {
+              let baaz: Baaz
+          }
 
-        extension Foo {
-            struct Bar {
-                let baaz: Baaz
-            }
-        }
-        """
+          struct Quux {
+              let baaz: Baaz
+          }
+      }
+      """
 
-        testFormatting(for: input, output, rule: .markTypes)
-    }
+    let output = """
+      // MARK: - Foo
 
-    @Test func doesntAddsMarkForMultipleTypesInExtension() {
-        let input = """
-        enum Foo {}
+      enum Foo {}
 
-        extension Foo {
-            struct Bar {
-                let baaz: Baaz
-            }
+      extension Foo {
+          struct Bar {
+              let baaz: Baaz
+          }
 
-            struct Quux {
-                let baaz: Baaz
-            }
-        }
-        """
+          struct Quux {
+              let baaz: Baaz
+          }
+      }
+      """
 
-        let output = """
-        // MARK: - Foo
+    testFormatting(for: input, output, rule: .markTypes)
+  }
 
-        enum Foo {}
+  @Test func addsMarkForTypeInExtensionNotFollowingTypeBeingExtended() {
+    let input = """
+      struct Baaz {}
 
-        extension Foo {
-            struct Bar {
-                let baaz: Baaz
-            }
+      extension Foo {
+          struct Bar {
+              let baaz: Baaz
+          }
+      }
+      """
 
-            struct Quux {
-                let baaz: Baaz
-            }
-        }
-        """
+    let output = """
+      // MARK: - Baaz
 
-        testFormatting(for: input, output, rule: .markTypes)
-    }
+      struct Baaz {}
 
-    @Test func addsMarkForTypeInExtensionNotFollowingTypeBeingExtended() {
-        let input = """
-        struct Baaz {}
+      // MARK: - Foo.Bar
 
-        extension Foo {
-            struct Bar {
-                let baaz: Baaz
-            }
-        }
-        """
+      extension Foo {
+          struct Bar {
+              let baaz: Baaz
+          }
+      }
+      """
 
-        let output = """
-        // MARK: - Baaz
+    testFormatting(for: input, output, rule: .markTypes)
+  }
 
-        struct Baaz {}
+  @Test func handlesMultipleLayersOfExtensionNesting() {
+    let input = """
+      enum Foo {}
 
-        // MARK: - Foo.Bar
+      extension Foo {
+          enum Bar {}
+      }
 
-        extension Foo {
-            struct Bar {
-                let baaz: Baaz
-            }
-        }
-        """
+      extension Foo {
+          extension Bar {
+              struct Baaz {
+                  let quux: Quux
+              }
+          }
+      }
+      """
 
-        testFormatting(for: input, output, rule: .markTypes)
-    }
+    let output = """
+      // MARK: - Foo
 
-    @Test func handlesMultipleLayersOfExtensionNesting() {
-        let input = """
-        enum Foo {}
+      enum Foo {}
 
-        extension Foo {
-            enum Bar {}
-        }
+      // MARK: Foo.Bar
 
-        extension Foo {
-            extension Bar {
-                struct Baaz {
-                    let quux: Quux
-                }
-            }
-        }
-        """
+      extension Foo {
+          enum Bar {}
+      }
 
-        let output = """
-        // MARK: - Foo
+      // MARK: Foo.Bar.Baaz
 
-        enum Foo {}
+      extension Foo {
+          extension Bar {
+              struct Baaz {
+                  let quux: Quux
+              }
+          }
+      }
+      """
 
-        // MARK: Foo.Bar
+    testFormatting(for: input, output, rule: .markTypes)
+  }
 
-        extension Foo {
-            enum Bar {}
-        }
+  @Test func markTypeLintReturnsErrorAsExpected() throws {
+    let input = """
+      struct MyStruct {}
 
-        // MARK: Foo.Bar.Baaz
+      extension MyStruct {}
+      """
 
-        extension Foo {
-            extension Bar {
-                struct Baaz {
-                    let quux: Quux
-                }
-            }
-        }
-        """
+    // Initialize rule names
+    _ = FormatRules.byName
+    let changes = try lint(input, rules: [.markTypes])
+    #expect(
+      changes == [
+        .init(line: 1, rule: .markTypes, filePath: nil, isMove: false)
+      ])
+  }
 
-        testFormatting(for: input, output, rule: .markTypes)
-    }
+  @Test func complexTypeNames() {
+    let input = """
+      extension [Foo]: TestProtocol {
+          func test() {}
+      }
 
-    @Test func markTypeLintReturnsErrorAsExpected() throws {
-        let input = """
-        struct MyStruct {}
+      extension Foo.Bar.Baaz: TestProtocol {
+          func test() {}
+      }
 
-        extension MyStruct {}
-        """
+      extension Collection<Foo>: TestProtocol {
+          func test() {}
+      }
 
-        // Initialize rule names
-        _ = FormatRules.byName
-        let changes = try lint(input, rules: [.markTypes])
-        #expect(changes == [
-            .init(line: 1, rule: .markTypes, filePath: nil, isMove: false),
-        ])
-    }
+      extension Foo?: TestProtocol {
+          func test()
+      }
+      """
 
-    @Test func complexTypeNames() {
-        let input = """
-        extension [Foo]: TestProtocol {
-            func test() {}
-        }
+    let output = """
+      // MARK: - [Foo] + TestProtocol
 
-        extension Foo.Bar.Baaz: TestProtocol {
-            func test() {}
-        }
+      extension [Foo]: TestProtocol {
+          func test() {}
+      }
 
-        extension Collection<Foo>: TestProtocol {
-            func test() {}
-        }
+      // MARK: - Foo.Bar.Baaz + TestProtocol
 
-        extension Foo?: TestProtocol {
-            func test()
-        }
-        """
+      extension Foo.Bar.Baaz: TestProtocol {
+          func test() {}
+      }
 
-        let output = """
-        // MARK: - [Foo] + TestProtocol
+      // MARK: - Collection<Foo> + TestProtocol
 
-        extension [Foo]: TestProtocol {
-            func test() {}
-        }
+      extension Collection<Foo>: TestProtocol {
+          func test() {}
+      }
 
-        // MARK: - Foo.Bar.Baaz + TestProtocol
+      // MARK: - Foo? + TestProtocol
 
-        extension Foo.Bar.Baaz: TestProtocol {
-            func test() {}
-        }
+      extension Foo?: TestProtocol {
+          func test()
+      }
+      """
 
-        // MARK: - Collection<Foo> + TestProtocol
+    testFormatting(for: input, output, rule: .markTypes)
+  }
 
-        extension Collection<Foo>: TestProtocol {
-            func test() {}
-        }
+  @Test func markCommentOnExtensionWithWrappedType() {
+    let input = """
+      extension Foo.Bar
+          .Baaz.Quux: Foo
+          .Bar.Baaz
+          .QuuxProtocol
+      {
+          func test() {}
+      }
 
-        // MARK: - Foo? + TestProtocol
+      extension [
+          String: AnyHashable
+      ]: Hashable {}
+      """
 
-        extension Foo?: TestProtocol {
-            func test()
-        }
-        """
+    let output = """
+      // MARK: - Foo.Bar.Baaz.Quux + Foo.Bar.Baaz.QuuxProtocol
 
-        testFormatting(for: input, output, rule: .markTypes)
-    }
+      extension Foo.Bar
+          .Baaz.Quux: Foo
+          .Bar.Baaz
+          .QuuxProtocol
+      {
+          func test() {}
+      }
 
-    @Test func markCommentOnExtensionWithWrappedType() {
-        let input = """
-        extension Foo.Bar
-            .Baaz.Quux: Foo
-            .Bar.Baaz
-            .QuuxProtocol
-        {
-            func test() {}
-        }
+      // MARK: - [String: AnyHashable] + Hashable
 
-        extension [
-            String: AnyHashable
-        ]: Hashable {}
-        """
+      extension [
+          String: AnyHashable
+      ]: Hashable {}
+      """
 
-        let output = """
-        // MARK: - Foo.Bar.Baaz.Quux + Foo.Bar.Baaz.QuuxProtocol
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.wrapMultilineFunctionChains])
+  }
 
-        extension Foo.Bar
-            .Baaz.Quux: Foo
-            .Bar.Baaz
-            .QuuxProtocol
-        {
-            func test() {}
-        }
+  @Test func supportsUncheckedSendable() {
+    let input = """
+      struct Foo {}
 
-        // MARK: - [String: AnyHashable] + Hashable
+      extension Foo: @unchecked Sendable {}
+      """
 
-        extension [
-            String: AnyHashable
-        ]: Hashable {}
-        """
+    let output = """
+      // MARK: - Foo
 
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.wrapMultilineFunctionChains])
-    }
+      struct Foo {}
 
-    @Test func supportsUncheckedSendable() {
-        let input = """
-        struct Foo {}
+      // MARK: @unchecked Sendable
 
-        extension Foo: @unchecked Sendable {}
-        """
+      extension Foo: @unchecked Sendable {}
+      """
 
-        let output = """
-        // MARK: - Foo
+    testFormatting(for: input, output, rule: .markTypes)
+  }
 
-        struct Foo {}
+  @Test func supportsProtocolCompositions() {
+    let input = """
+      struct Foo {}
 
-        // MARK: @unchecked Sendable
+      extension Foo: Bar & Baaz {}
+      """
 
-        extension Foo: @unchecked Sendable {}
-        """
+    let output = """
+      // MARK: - Foo
 
-        testFormatting(for: input, output, rule: .markTypes)
-    }
+      struct Foo {}
 
-    @Test func supportsProtocolCompositions() {
-        let input = """
-        struct Foo {}
+      // MARK: Bar & Baaz
 
-        extension Foo: Bar & Baaz {}
-        """
+      extension Foo: Bar & Baaz {}
+      """
 
-        let output = """
-        // MARK: - Foo
+    testFormatting(for: input, output, rule: .markTypes)
+  }
 
-        struct Foo {}
+  @Test func supportsMaybeCopiable() {
+    let input = """
+      struct Foo {}
 
-        // MARK: Bar & Baaz
+      extension Foo: ~Copyable {}
+      """
 
-        extension Foo: Bar & Baaz {}
-        """
+    let output = """
+      // MARK: - Foo
 
-        testFormatting(for: input, output, rule: .markTypes)
-    }
+      struct Foo {}
 
-    @Test func supportsMaybeCopiable() {
-        let input = """
-        struct Foo {}
+      // MARK: ~Copyable
 
-        extension Foo: ~Copyable {}
-        """
+      extension Foo: ~Copyable {}
+      """
 
-        let output = """
-        // MARK: - Foo
+    testFormatting(for: input, output, rule: .markTypes)
+  }
 
-        struct Foo {}
+  @Test func marksTypeAfterExtension() {
+    let input = """
+      extension Foo {
+          var foo: Foo { Foo() }
+          var bar: Bar { Bar() }
+      }
 
-        // MARK: ~Copyable
+      struct Baaz {
+          let foo: Foo
+          let bar: Bar
+      }
+      """
 
-        extension Foo: ~Copyable {}
-        """
+    let output = """
+      extension Foo {
+          var foo: Foo { Foo() }
+          var bar: Bar { Bar() }
+      }
 
-        testFormatting(for: input, output, rule: .markTypes)
-    }
+      // MARK: - Baaz
 
-    @Test func marksTypeAfterExtension() {
-        let input = """
-        extension Foo {
-            var foo: Foo { Foo() }
-            var bar: Bar { Bar() }
-        }
+      struct Baaz {
+          let foo: Foo
+          let bar: Bar
+      }
+      """
 
-        struct Baaz {
-            let foo: Foo
-            let bar: Bar
-        }
-        """
-
-        let output = """
-        extension Foo {
-            var foo: Foo { Foo() }
-            var bar: Bar { Bar() }
-        }
-
-        // MARK: - Baaz
-
-        struct Baaz {
-            let foo: Foo
-            let bar: Bar
-        }
-        """
-
-        testFormatting(for: input, output, rule: .markTypes, exclude: [.wrapPropertyBodies])
-    }
+    testFormatting(for: input, output, rule: .markTypes, exclude: [.wrapPropertyBodies])
+  }
 }

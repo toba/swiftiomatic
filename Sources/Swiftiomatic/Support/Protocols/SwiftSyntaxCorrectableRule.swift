@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 /// A SwiftLint CorrectableRule that performs its corrections using a SwiftSyntax `SyntaxRewriter`.
 protocol SwiftSyntaxCorrectableRule: SwiftSyntaxRule, CorrectableRule {
@@ -44,13 +44,17 @@ extension SwiftSyntaxCorrectableRule {
         let correctionRanges =
             violations
                 .filter {
-                    !$0.position.isContainedIn(regions: disabledRegions, locationConverter: locationConverter)
+                    !$0.position.isContainedIn(
+                        regions: disabledRegions,
+                        locationConverter: locationConverter,
+                    )
                 }
                 .compactMap(\.correction)
                 .compactMap { correction in
-                    file.stringView.NSRange(start: correction.start, end: correction.end).map { range in
-                        CorrectionRange(range: range, correction: correction.replacement)
-                    }
+                    file.stringView.NSRange(start: correction.start, end: correction.end)
+                        .map { range in
+                            CorrectionRange(range: range, correction: correction.replacement)
+                        }
                 }
                 .sorted { (lhs: CorrectionRange, rhs: CorrectionRange) -> Bool in
                     lhs.range.location > rhs.range.location

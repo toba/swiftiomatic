@@ -17,7 +17,7 @@ struct FunctionBodyLengthRule: Rule {
                 func f() {
                     let x = 0
                 }
-                """, configuration: Self.testConfig
+                """, configuration: Self.testConfig,
             ),
             Example(
                 """
@@ -25,7 +25,7 @@ struct FunctionBodyLengthRule: Rule {
                     let x = 0
                     let y = 1
                 }
-                """, configuration: Self.testConfig
+                """, configuration: Self.testConfig,
             ),
             Example(
                 """
@@ -36,7 +36,7 @@ struct FunctionBodyLengthRule: Rule {
                     // be
                     // ignored
                 }
-                """, configuration: Self.testConfig
+                """, configuration: Self.testConfig,
             ),
             Example(
                 """
@@ -46,7 +46,7 @@ struct FunctionBodyLengthRule: Rule {
 
 
                     }
-                """, configuration: Self.testConfig
+                """, configuration: Self.testConfig,
             ),
         ],
 
@@ -58,7 +58,7 @@ struct FunctionBodyLengthRule: Rule {
                     let y = 1
                     let z = 2
                 }
-                """, configuration: Self.testConfig
+                """, configuration: Self.testConfig,
             ),
             Example(
                 """
@@ -69,7 +69,7 @@ struct FunctionBodyLengthRule: Rule {
                         let z = 2
                     }
                 }
-                """, configuration: Self.testConfig
+                """, configuration: Self.testConfig,
             ),
             Example(
                 """
@@ -80,7 +80,7 @@ struct FunctionBodyLengthRule: Rule {
                         let z = 2
                     }
                 }
-                """, configuration: Self.testConfig
+                """, configuration: Self.testConfig,
             ),
             Example(
                 """
@@ -91,7 +91,7 @@ struct FunctionBodyLengthRule: Rule {
                         return x + y
                     }
                 }
-                """, configuration: Self.testConfig
+                """, configuration: Self.testConfig,
             ),
             Example(
                 """
@@ -114,9 +114,9 @@ struct FunctionBodyLengthRule: Rule {
                         }
                     }
                 }
-                """, configuration: Self.testConfig
+                """, configuration: Self.testConfig,
             ),
-        ]
+        ],
     )
 }
 
@@ -134,7 +134,7 @@ private extension FunctionBodyLengthRule {
                     leftBrace: body.leftBrace,
                     rightBrace: body.rightBrace,
                     violationNode: node.deinitKeyword,
-                    objectName: "Deinitializer"
+                    objectName: "Deinitializer",
                 )
             }
         }
@@ -145,7 +145,7 @@ private extension FunctionBodyLengthRule {
                     leftBrace: body.leftBrace,
                     rightBrace: body.rightBrace,
                     violationNode: node.funcKeyword,
-                    objectName: "Function"
+                    objectName: "Function",
                 )
             }
         }
@@ -156,7 +156,7 @@ private extension FunctionBodyLengthRule {
                     leftBrace: body.leftBrace,
                     rightBrace: body.rightBrace,
                     violationNode: node.initKeyword,
-                    objectName: "Initializer"
+                    objectName: "Initializer",
                 )
             }
         }
@@ -170,7 +170,7 @@ private extension FunctionBodyLengthRule {
                     leftBrace: body.leftBrace,
                     rightBrace: body.rightBrace,
                     violationNode: node.subscriptKeyword,
-                    objectName: "Subscript"
+                    objectName: "Subscript",
                 )
             }
             if case let .accessors(accessors) = body.accessors {
@@ -182,7 +182,7 @@ private extension FunctionBodyLengthRule {
                         leftBrace: body.leftBrace,
                         rightBrace: body.rightBrace,
                         violationNode: accessor.accessorSpecifier,
-                        objectName: "Accessor"
+                        objectName: "Accessor",
                     )
                 }
             }

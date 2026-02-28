@@ -19,7 +19,7 @@ struct UnusedSetterValueRule: Rule {
                         Persister.shared.aValue = newValue
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -31,7 +31,7 @@ struct UnusedSetterValueRule: Rule {
                         return Persister.shared.aValue
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -43,7 +43,7 @@ struct UnusedSetterValueRule: Rule {
                         Persister.shared.aValue = value
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -53,13 +53,13 @@ struct UnusedSetterValueRule: Rule {
                  }
                  set { }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 protocol Foo {
                     var bar: Bool { get set }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
@@ -71,7 +71,7 @@ struct UnusedSetterValueRule: Rule {
                     }
                     set {}
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -85,7 +85,7 @@ struct UnusedSetterValueRule: Rule {
                         Persister.shared.aValue = aValue
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -97,7 +97,7 @@ struct UnusedSetterValueRule: Rule {
                         return Persister.shared.aValue
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -109,7 +109,7 @@ struct UnusedSetterValueRule: Rule {
                         Persister.shared.aValue = aValue
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -122,7 +122,7 @@ struct UnusedSetterValueRule: Rule {
                         Persister.shared.aValue = aValue
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -134,7 +134,7 @@ struct UnusedSetterValueRule: Rule {
                         Persister.shared.aValue = aValue
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -146,9 +146,9 @@ struct UnusedSetterValueRule: Rule {
                         Persister.shared.aValue = aValue
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -172,7 +172,8 @@ private extension UnusedSetterValueRule {
             let variableName = node.parameters?.name.text ?? "newValue"
             let visitor = NewValueUsageVisitor(variableName: variableName)
             if !visitor.walk(tree: node, handler: \.isVariableUsed) {
-                if Syntax(node).closestVariableOrSubscript()?.modifiers?.contains(keyword: .override)
+                if Syntax(node).closestVariableOrSubscript()?.modifiers?
+                    .contains(keyword: .override)
                     == true,
                     let body = node.body, body.statements.isEmpty
                 {
@@ -222,10 +223,10 @@ private enum Either<L, R> {
 private extension Either<SubscriptDeclSyntax, VariableDeclSyntax> {
     var modifiers: DeclModifierListSyntax? {
         switch self {
-        case let .left(left):
-            return left.modifiers
-        case let .right(right):
-            return right.modifiers
+            case let .left(left):
+                return left.modifiers
+            case let .right(right):
+                return right.modifiers
         }
     }
 }

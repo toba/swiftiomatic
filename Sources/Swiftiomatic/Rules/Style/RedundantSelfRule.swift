@@ -12,7 +12,7 @@ struct RedundantSelfRule: Rule {
         nonTriggeringExamples: RedundantSelfRuleExamples.nonTriggeringExamples,
         triggeringExamples: RedundantSelfRuleExamples.triggeringExamples,
         corrections: RedundantSelfRuleExamples.corrections,
-        deprecatedAliases: ["redundant_self_in_closure"]
+        deprecatedAliases: ["redundant_self_in_closure"],
     )
 }
 
@@ -126,7 +126,9 @@ private extension RedundantSelfRule {
             if configuration.onlyInClosures, closureExprScopes.isEmpty {
                 return
             }
-            if typeDeclarations.peek() == .extension, node.isBaseSelf, hasSeenDeclaration(for: "self") {
+            if typeDeclarations.peek() == .extension, node.isBaseSelf,
+               hasSeenDeclaration(for: "self")
+            {
                 return
             }
             let declName = node.declName.baseName.text
@@ -138,8 +140,8 @@ private extension RedundantSelfRule {
                         end: node.endPositionBeforeTrailingTrivia,
                         replacement: node.declName.baseName.needsEscaping
                             ? "`\(declName)`"
-                            : declName
-                    )
+                            : declName,
+                    ),
                 )
             }
         }

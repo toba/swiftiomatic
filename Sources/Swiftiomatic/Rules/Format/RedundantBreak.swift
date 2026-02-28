@@ -1,17 +1,9 @@
-//
-//  RedundantBreak.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 1/23/19.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Remove redundant `break` keyword from switch cases
     static let redundantBreak = FormatRule(
-        help: "Remove redundant `break` in switch case."
+        help: "Remove redundant `break` in switch case.",
     ) { formatter in
         formatter.forEach(.keyword("break")) { i, _ in
             guard formatter.last(.nonSpaceOrCommentOrLinebreak, before: i) != .startOfScope(":"),
@@ -22,7 +14,9 @@ extension FormatRule {
             else {
                 return
             }
-            if !formatter.tokens[startIndex].isLinebreak || !formatter.tokens[endIndex].isLinebreak {
+            if !formatter.tokens[startIndex].isLinebreak || !formatter.tokens[endIndex]
+                .isLinebreak
+            {
                 startIndex += 1
             }
             formatter.removeTokens(in: startIndex ..< endIndex)

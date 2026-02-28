@@ -11,7 +11,7 @@ extension Configuration.FileGraph {
 
     // MARK: - Vertex
 
-    class Vertex: Hashable {
+    final class Vertex: Hashable {
         let originalRemoteString: String?
         var originatesFromRemote: Bool {
             originalRemoteString != nil
@@ -39,7 +39,7 @@ extension Configuration.FileGraph {
             } else {
                 originalRemoteString = nil
                 filePath = .existing(
-                    path: string.bridge().absolutePathRepresentation(rootDirectory: rootDirectory)
+                    path: string.bridge().absolutePathRepresentation(rootDirectory: rootDirectory),
                 )
             }
             self.isInitialVertex = isInitialVertex
@@ -47,7 +47,7 @@ extension Configuration.FileGraph {
 
         init(
             originalRemoteString: String?, originalRootDirectory: String, filePath: FilePath,
-            isInitialVertex: Bool
+            isInitialVertex: Bool,
         ) {
             self.originalRemoteString = originalRemoteString
             self.originalRootDirectory = originalRootDirectory
@@ -60,7 +60,7 @@ extension Configuration.FileGraph {
                 originalRemoteString: originalRemoteString,
                 originalRootDirectory: rootDirectory,
                 filePath: filePath,
-                isInitialVertex: isInitialVertex
+                isInitialVertex: isInitialVertex,
             )
             vertex.configurationDict = configurationDict
             return vertex
@@ -68,11 +68,11 @@ extension Configuration.FileGraph {
 
         func build(
             remoteConfigTimeout: TimeInterval,
-            remoteConfigTimeoutIfCached: TimeInterval
+            remoteConfigTimeoutIfCached: TimeInterval,
         ) throws {
             let path = try filePath.resolve(
                 remoteConfigTimeout: remoteConfigTimeout,
-                remoteConfigTimeoutIfCached: remoteConfigTimeoutIfCached
+                remoteConfigTimeoutIfCached: remoteConfigTimeoutIfCached,
             )
 
             filePath = .existing(path: path)

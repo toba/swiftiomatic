@@ -9,7 +9,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -23,7 +23,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -49,7 +49,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -63,7 +63,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -77,7 +77,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -88,7 +88,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -102,7 +102,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -113,7 +113,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -124,7 +124,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -135,7 +135,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -149,7 +149,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -160,7 +160,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -171,7 +171,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -184,7 +184,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -193,7 +193,7 @@ enum QuickDiscouragedCallRuleExamples {
                    fitBehavesLike("foo")
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -202,7 +202,7 @@ enum QuickDiscouragedCallRuleExamples {
                    xitBehavesLike("foo")
                }
             }
-            """
+            """,
         ),
     ]
 
@@ -216,7 +216,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -227,7 +227,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -238,7 +238,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -259,7 +259,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -282,7 +282,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -293,7 +293,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -304,7 +304,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -317,7 +317,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -328,7 +328,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -339,7 +339,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -352,7 +352,7 @@ enum QuickDiscouragedCallRuleExamples {
                }
             }
             #endif
-            """
+            """,
         ),
         Example(
             """
@@ -363,7 +363,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -377,7 +377,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -391,7 +391,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -405,7 +405,7 @@ enum QuickDiscouragedCallRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
     ]
 }

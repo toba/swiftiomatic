@@ -1,3 +1,3 @@
 enum Nested {
-    struct MyType {}
+  struct MyType {}
 }

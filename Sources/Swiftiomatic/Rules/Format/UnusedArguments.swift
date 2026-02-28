@@ -1,18 +1,10 @@
-//
-//  UnusedArguments.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 1/3/17.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Replace unused arguments with an underscore
     static let unusedArguments = FormatRule(
         help: "Mark unused function arguments with `_`.",
-        options: ["strip-unused-args"]
+        options: ["strip-unused-args"],
     ) { formatter in
         guard !formatter.options.fragment else { return }
 
@@ -26,7 +18,8 @@ extension FormatRule {
             let isOperator =
                 (token.string == "subscript")
                     || (token.string == "func"
-                        && formatter.next(.nonSpaceOrCommentOrLinebreak, after: i)?.isOperator == true)
+                        && formatter.next(.nonSpaceOrCommentOrLinebreak, after: i)?
+                        .isOperator == true)
 
             guard let declaration = formatter.parseFunctionDeclaration(keywordIndex: i),
                   let bodyRange = declaration.bodyRange
@@ -36,19 +29,27 @@ extension FormatRule {
             var argNames = arguments.compactMap(\.internalLabel)
 
             formatter.removeUsed(
-                from: &argNames, with: &arguments, in: bodyRange.lowerBound + 1 ..< bodyRange.upperBound
+                from: &argNames, with: &arguments,
+                in: bodyRange.lowerBound + 1 ..< bodyRange.upperBound,
             )
             for argument in arguments.reversed() {
                 // In subscripts and operators, external function labels are unnecessary
                 if isOperator {
                     // Convert `_ name:` to just `_:`
-                    if let externalLabelIndex = argument.externalLabelIndex, argument.externalLabel == nil {
-                        formatter.removeTokens(in: (externalLabelIndex + 1) ... argument.internalLabelIndex)
+                    if let externalLabelIndex = argument.externalLabelIndex,
+                       argument.externalLabel == nil
+                    {
+                        formatter
+                            .removeTokens(in: (externalLabelIndex + 1) ... argument
+                                .internalLabelIndex)
                     }
 
                     // Convert `name:` to just `_:`
                     else {
-                        formatter.replaceToken(at: argument.internalLabelIndex, with: .identifier("_"))
+                        formatter.replaceToken(
+                            at: argument.internalLabelIndex,
+                            with: .identifier("_"),
+                        )
                     }
                 }
 
@@ -56,25 +57,39 @@ extension FormatRule {
                 // when the external label is already explicitly removed.
                 else if formatter.options.stripUnusedArguments == .unnamedOnly {
                     // Convert `_ name:` to just `_:`
-                    if let externalLabelIndex = argument.externalLabelIndex, argument.externalLabel == nil {
-                        formatter.removeTokens(in: (externalLabelIndex + 1) ... argument.internalLabelIndex)
+                    if let externalLabelIndex = argument.externalLabelIndex,
+                       argument.externalLabel == nil
+                    {
+                        formatter
+                            .removeTokens(in: (externalLabelIndex + 1) ... argument
+                                .internalLabelIndex)
                     }
                 }
 
                 else {
                     // Convert `_ name:` to just `_:`
-                    if let externalLabelIndex = argument.externalLabelIndex, argument.externalLabel == nil {
-                        formatter.removeTokens(in: (externalLabelIndex + 1) ... argument.internalLabelIndex)
+                    if let externalLabelIndex = argument.externalLabelIndex,
+                       argument.externalLabel == nil
+                    {
+                        formatter
+                            .removeTokens(in: (externalLabelIndex + 1) ... argument
+                                .internalLabelIndex)
                     }
 
                     // Convert `name:` to `name _:`,
                     else if argument.externalLabelIndex == nil, !isOperator {
-                        formatter.insert([.space(" "), .identifier("_")], at: argument.internalLabelIndex + 1)
+                        formatter.insert(
+                            [.space(" "), .identifier("_")],
+                            at: argument.internalLabelIndex + 1,
+                        )
                     }
 
                     // Convert `in name:` to `in _:`
                     else {
-                        formatter.replaceToken(at: argument.internalLabelIndex, with: .identifier("_"))
+                        formatter.replaceToken(
+                            at: argument.internalLabelIndex,
+                            with: .identifier("_"),
+                        )
                     }
                 }
             }
@@ -92,58 +107,73 @@ extension FormatRule {
             while index > start {
                 let token = formatter.tokens[index]
                 switch token {
-                case .endOfScope("}"):
-                    return
-                case .endOfScope("]"):
-                    // TODO: handle unused capture list arguments
-                    index = formatter.index(of: .startOfScope("["), before: index) ?? index
-                case .endOfScope(")"):
-                    argCountStack.append(argNames.count)
-                case .startOfScope("("):
-                    argCountStack.removeLast()
-                case .delimiter(","):
-                    argCountStack[argCountStack.count - 1] = argNames.count
-                case .identifier("async")
+                    case .endOfScope("}"):
+                        return
+                    case .endOfScope("]"):
+                        // TODO: handle unused capture list arguments
+                        index = formatter.index(of: .startOfScope("["), before: index) ?? index
+                    case .endOfScope(")"):
+                        argCountStack.append(argNames.count)
+                    case .startOfScope("("):
+                        argCountStack.removeLast()
+                    case .delimiter(","):
+                        argCountStack[argCountStack.count - 1] = argNames.count
+                    case .identifier("async")
                     where
                     formatter.last(.nonSpaceOrLinebreak, before: index)?.isIdentifier == true,
-                     .operator("->", .infix), .keyword("throws"):
-                    // Everything after this was part of return value
-                    let count = argCountStack.last ?? 0
-                    argNames.removeSubrange(count ..< argNames.count)
-                    nameIndexPairs.removeSubrange(count ..< nameIndexPairs.count)
-                case let .keyword(name) where !token.isAttribute && !token.isMacro && name != "inout":
-                    return
-                case .identifier:
-                    guard argCountStack.count < 3,
-                          let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: index),
-                          [
-                              .delimiter(","), .startOfScope("("), .startOfScope("{"), .endOfScope("]"),
-                          ].contains(prevToken),
-                          let scopeStart = formatter.index(of: .startOfScope, before: index),
-                          ![.startOfScope("["), .startOfScope("<")].contains(formatter.tokens[scopeStart])
-                    else {
-                        break
-                    }
-                    let name = token.unescaped()
-                    if let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: index),
-                       let nextToken = formatter.token(at: nextIndex), case .identifier = nextToken,
-                       formatter.next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) == .delimiter(":")
-                    {
-                        let internalName = nextToken.unescaped()
-                        if internalName != "_" {
-                            argNames.append(internalName)
-                            nameIndexPairs.append((index, nextIndex))
+                         .operator("->", .infix), .keyword("throws"):
+                        // Everything after this was part of return value
+                        let count = argCountStack.last ?? 0
+                        argNames.removeSubrange(count ..< argNames.count)
+                        nameIndexPairs.removeSubrange(count ..< nameIndexPairs.count)
+                    case let .keyword(name)
+                    where !token.isAttribute && !token.isMacro && name != "inout":
+                        return
+                    case .identifier:
+                        guard argCountStack.count < 3,
+                              let prevToken = formatter.last(
+                                  .nonSpaceOrCommentOrLinebreak,
+                                  before: index,
+                              ),
+                              [
+                                  .delimiter(","), .startOfScope("("), .startOfScope("{"),
+                                  .endOfScope("]"),
+                              ].contains(prevToken),
+                              let scopeStart = formatter.index(of: .startOfScope, before: index),
+                              ![.startOfScope("["), .startOfScope("<")]
+                              .contains(formatter.tokens[scopeStart])
+                        else {
+                            break
                         }
-                    } else if name != "_" {
-                        argNames.append(name)
-                        nameIndexPairs.append((index, index))
-                    }
-                default:
-                    break
+                        let name = token.unescaped()
+                        if let nextIndex = formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak,
+                            after: index,
+                        ),
+                            let nextToken = formatter.token(at: nextIndex),
+                            case .identifier = nextToken,
+                            formatter
+                            .next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) ==
+                            .delimiter(":")
+                        {
+                            let internalName = nextToken.unescaped()
+                            if internalName != "_" {
+                                argNames.append(internalName)
+                                nameIndexPairs.append((index, nextIndex))
+                            }
+                        } else if name != "_" {
+                            argNames.append(name)
+                            nameIndexPairs.append((index, index))
+                        }
+                    default:
+                        break
                 }
                 index -= 1
             }
-            guard !argNames.isEmpty, let bodyEndIndex = formatter.index(of: .endOfScope("}"), after: i)
+            guard !argNames.isEmpty, let bodyEndIndex = formatter.index(
+                of: .endOfScope("}"),
+                after: i,
+            )
             else {
                 return
             }
@@ -197,7 +227,7 @@ extension FormatRule {
 extension Formatter {
     func removeUsed(
         from argNames: inout [String], with associatedData: inout [some Any],
-        locals: Set<String> = [], in range: CountableRange<Int>
+        locals: Set<String> = [], in range: CountableRange<Int>,
     ) {
         var isDeclaration = false
         var wasDeclaration = false
@@ -226,131 +256,136 @@ extension Formatter {
             if isStartOfStatement(at: i, treatingCollectionKeysAsStart: false),
                // Immediately following an `=` operator, if or switch keywords
                // are expressions rather than statements.
-               lastToken(before: i, where: { !$0.isSpaceOrCommentOrLinebreak })?.isOperator("=") != true
+               lastToken(before: i, where: { !$0.isSpaceOrCommentOrLinebreak })?
+               .isOperator("=") != true
             {
                 pushLocals()
                 wasDeclaration = false
             }
             let token = tokens[i]
             outer: switch token {
-            case .keyword("guard"):
-                isGuard = true
-            case .keyword("let"), .keyword("var"), .keyword("func"), .keyword("for"):
-                isDeclaration = true
-                var i = i
-                while let scopeStart = index(of: .startOfScope("("), before: i) {
-                    i = scopeStart
-                }
-                isConditional = isConditionalStatement(at: i)
-            case .identifier:
-                let name = token.unescaped()
-                guard let index = argNames.firstIndex(of: name), !locals.contains(name) else {
-                    break
-                }
-                if last(.nonSpaceOrCommentOrLinebreak, before: i)?.isOperator(".") == false,
-                   next(.nonSpaceOrCommentOrLinebreak, after: i) != .delimiter(":")
-                   || startOfScope(at: i).map({
-                       scopeType(at: $0) == .dictionary
-                   }) ?? false
-                {
-                    if isDeclaration {
-                        switch next(.nonSpaceOrCommentOrLinebreak, after: i) {
-                        case .delimiter(",") where !isConditional, .endOfScope(")"), .operator("=", .infix):
-                            tempLocals.insert(name)
-                            break outer
-                        default:
-                            break
+                case .keyword("guard"):
+                    isGuard = true
+                case .keyword("let"), .keyword("var"), .keyword("func"), .keyword("for"):
+                    isDeclaration = true
+                    var i = i
+                    while let scopeStart = index(of: .startOfScope("("), before: i) {
+                        i = scopeStart
+                    }
+                    isConditional = isConditionalStatement(at: i)
+                case .identifier:
+                    let name = token.unescaped()
+                    guard let index = argNames.firstIndex(of: name), !locals.contains(name) else {
+                        break
+                    }
+                    if last(.nonSpaceOrCommentOrLinebreak, before: i)?.isOperator(".") == false,
+                       next(.nonSpaceOrCommentOrLinebreak, after: i) != .delimiter(":")
+                       || startOfScope(at: i).map({
+                           scopeType(at: $0) == .dictionary
+                       }) ?? false
+                    {
+                        if isDeclaration {
+                            switch next(.nonSpaceOrCommentOrLinebreak, after: i) {
+                                case .delimiter(",") where !isConditional, .endOfScope(")"),
+                                     .operator(
+                                         "=",
+                                         .infix,
+                                     ):
+                                    tempLocals.insert(name)
+                                    break outer
+                                default:
+                                    break
+                            }
+                        }
+                        argNames.remove(at: index)
+                        associatedData.remove(at: index)
+                        if argNames.isEmpty {
+                            return
                         }
                     }
-                    argNames.remove(at: index)
-                    associatedData.remove(at: index)
-                    if argNames.isEmpty {
+                case .keyword("if"), .keyword("switch"):
+                    guard isConditionalAssignment(at: i),
+                          let conditinalBranches = conditionalBranches(at: i),
+                          let endIndex = conditinalBranches.last?.endOfBranch
+                    else { fallthrough }
+
+                    removeUsed(
+                        from: &argNames, with: &associatedData,
+                        locals: locals, in: i + 1 ..< endIndex,
+                    )
+                case .startOfScope("{"):
+                    guard let endIndex = endOfScope(at: i) else {
+                        fatalError("Expected }", at: i)
                         return
                     }
-                }
-            case .keyword("if"), .keyword("switch"):
-                guard isConditionalAssignment(at: i),
-                      let conditinalBranches = conditionalBranches(at: i),
-                      let endIndex = conditinalBranches.last?.endOfBranch
-                else { fallthrough }
-
-                removeUsed(
-                    from: &argNames, with: &associatedData,
-                    locals: locals, in: i + 1 ..< endIndex
-                )
-            case .startOfScope("{"):
-                guard let endIndex = endOfScope(at: i) else {
-                    fatalError("Expected }", at: i)
-                    return
-                }
-                if isStartOfClosure(at: i) {
-                    removeUsed(
-                        from: &argNames, with: &associatedData,
-                        locals: locals, in: i + 1 ..< endIndex
-                    )
-                } else if isGuard {
-                    removeUsed(
-                        from: &argNames, with: &associatedData,
-                        locals: locals, in: i + 1 ..< endIndex
-                    )
-                    pushLocals()
-                } else {
-                    let prevLocals = locals
-                    pushLocals()
-                    removeUsed(
-                        from: &argNames, with: &associatedData,
-                        locals: locals, in: i + 1 ..< endIndex
-                    )
-                    locals = prevLocals
-                }
-
-                isGuard = false
-                i = endIndex
-            case .endOfScope("case"), .endOfScope("default"):
-                pushLocals()
-                guard let colonIndex = index(of: .startOfScope(":"), after: i) else {
-                    fatalError("Expected :", at: i)
-                    return
-                }
-                guard let endIndex = endOfScope(at: colonIndex) else {
-                    fatalError(
-                        "Expected end of case statement",
-                        at: colonIndex
-                    )
-                    return
-                }
-                removeUsed(
-                    from: &argNames, with: &associatedData,
-                    locals: locals, in: i + 1 ..< endIndex
-                )
-                i = endIndex - 1
-            case .operator("=", .infix), .delimiter(":"), .startOfScope(":"),
-                 .keyword("in"), .keyword("where"):
-                wasDeclaration = isDeclaration
-                isDeclaration = false
-            case .delimiter(","):
-                if let scope = currentScope(at: i),
-                   [
-                       .startOfScope("("), .startOfScope("["), .startOfScope("<"),
-                   ].contains(scope)
-                {
-                    break
-                }
-                if isConditional {
-                    if isGuard, wasDeclaration {
+                    if isStartOfClosure(at: i) {
+                        removeUsed(
+                            from: &argNames, with: &associatedData,
+                            locals: locals, in: i + 1 ..< endIndex,
+                        )
+                    } else if isGuard {
+                        removeUsed(
+                            from: &argNames, with: &associatedData,
+                            locals: locals, in: i + 1 ..< endIndex,
+                        )
                         pushLocals()
+                    } else {
+                        let prevLocals = locals
+                        pushLocals()
+                        removeUsed(
+                            from: &argNames, with: &associatedData,
+                            locals: locals, in: i + 1 ..< endIndex,
+                        )
+                        locals = prevLocals
                     }
-                    wasDeclaration = false
-                } else {
-                    let _wasDeclaration = wasDeclaration
+
+                    isGuard = false
+                    i = endIndex
+                case .endOfScope("case"), .endOfScope("default"):
                     pushLocals()
-                    isDeclaration = _wasDeclaration
-                }
-            case .delimiter(";"):
-                pushLocals()
-                wasDeclaration = false
-            default:
-                break
+                    guard let colonIndex = index(of: .startOfScope(":"), after: i) else {
+                        fatalError("Expected :", at: i)
+                        return
+                    }
+                    guard let endIndex = endOfScope(at: colonIndex) else {
+                        fatalError(
+                            "Expected end of case statement",
+                            at: colonIndex,
+                        )
+                        return
+                    }
+                    removeUsed(
+                        from: &argNames, with: &associatedData,
+                        locals: locals, in: i + 1 ..< endIndex,
+                    )
+                    i = endIndex - 1
+                case .operator("=", .infix), .delimiter(":"), .startOfScope(":"),
+                     .keyword("in"), .keyword("where"):
+                    wasDeclaration = isDeclaration
+                    isDeclaration = false
+                case .delimiter(","):
+                    if let scope = currentScope(at: i),
+                       [
+                           .startOfScope("("), .startOfScope("["), .startOfScope("<"),
+                       ].contains(scope)
+                    {
+                        break
+                    }
+                    if isConditional {
+                        if isGuard, wasDeclaration {
+                            pushLocals()
+                        }
+                        wasDeclaration = false
+                    } else {
+                        let _wasDeclaration = wasDeclaration
+                        pushLocals()
+                        isDeclaration = _wasDeclaration
+                    }
+                case .delimiter(";"):
+                    pushLocals()
+                    wasDeclaration = false
+                default:
+                    break
             }
             i += 1
         }

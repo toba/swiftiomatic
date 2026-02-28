@@ -21,7 +21,9 @@ struct WeakDelegateRule: Rule {
             // There's no way to declare a property weak in a protocol
             Example("protocol P {\n var delegate: AnyObject? { get set }\n}"),
             Example("class Foo {\n protocol P {\n var delegate: AnyObject? { get set }\n}\n}"),
-            Example("class Foo {\n var computedDelegate: ComputedDelegate {\n return bar() \n} \n}"),
+            Example(
+                "class Foo {\n var computedDelegate: ComputedDelegate {\n return bar() \n} \n}",
+            ),
             Example(
                 """
                 class Foo {
@@ -30,12 +32,16 @@ struct WeakDelegateRule: Rule {
                             return bar()
                         }
                    }
-                """
+                """,
             ),
-            Example("struct Foo {\n @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate \n}"),
-            Example("struct Foo {\n @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate \n}"),
             Example(
-                "struct Foo {\n @WKExtensionDelegateAdaptor(ExtensionDelegate.self) var extensionDelegate \n}"
+                "struct Foo {\n @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate \n}",
+            ),
+            Example(
+                "struct Foo {\n @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate \n}",
+            ),
+            Example(
+                "struct Foo {\n @WKExtensionDelegateAdaptor(ExtensionDelegate.self) var extensionDelegate \n}",
             ),
             Example(
                 """
@@ -45,7 +51,7 @@ struct WeakDelegateRule: Rule {
                         return delegate
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -55,7 +61,7 @@ struct WeakDelegateRule: Rule {
                         return appDelegate.bar
                     }
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example("private var appDelegate: String?", excludeFromDocumentation: true),
         ],
@@ -70,9 +76,9 @@ struct WeakDelegateRule: Rule {
                             print("Updated delegate")
                         }
                    }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

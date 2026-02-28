@@ -1,18 +1,10 @@
-//
-//  HoistAwait.swift
-//  SwiftFormat
-//
-//  Created by Facundo Menzella on 2/9/23.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Reposition `await` keyword outside of the current scope.
     static let hoistAwait = FormatRule(
         help: "Move inline `await` keyword(s) to start of expression.",
-        options: ["async-capturing"]
+        options: ["async-capturing"],
     ) { formatter in
         guard formatter.options.swiftVersion >= "5.5" else { return }
 

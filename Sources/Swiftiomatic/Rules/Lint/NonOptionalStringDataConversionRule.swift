@@ -28,7 +28,7 @@ struct NonOptionalStringDataConversionRule: Rule {
             Example("↓obj.property.data(using: .utf8)", configuration: variablesIncluded),
             Example("↓getString().data(using: .utf8)", configuration: variablesIncluded),
             Example("↓getValue()?.data(using: .utf8)", configuration: variablesIncluded),
-        ]
+        ],
     )
 }
 

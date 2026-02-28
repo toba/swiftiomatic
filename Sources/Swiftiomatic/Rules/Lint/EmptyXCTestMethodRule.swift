@@ -9,7 +9,7 @@ struct EmptyXCTestMethodRule: Rule {
         description: "Empty XCTest method should be avoided",
         kind: .lint,
         nonTriggeringExamples: EmptyXCTestMethodRuleExamples.nonTriggeringExamples,
-        triggeringExamples: EmptyXCTestMethodRuleExamples.triggeringExamples
+        triggeringExamples: EmptyXCTestMethodRuleExamples.triggeringExamples,
     )
 }
 

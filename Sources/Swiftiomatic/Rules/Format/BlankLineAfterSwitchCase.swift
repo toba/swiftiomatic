@@ -1,11 +1,3 @@
-//
-//  BlankLineAfterSwitchCase.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 2/1/24.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -16,10 +8,11 @@ extension FormatRule {
         """,
         disabledByDefault: true,
         orderAfter: [.redundantBreak],
-        options: ["blank-line-after-switch-case"]
+        options: ["blank-line-after-switch-case"],
     ) { formatter in
         formatter.forEach(.keyword("switch")) { switchIndex, _ in
-            guard let switchCases = formatter.switchStatementBranchesWithSpacingInfo(at: switchIndex)
+            guard let switchCases = formatter
+                .switchStatementBranchesWithSpacingInfo(at: switchIndex)
             else { return }
 
             let shouldAlwaysInsertBlankLineAfterSwitchCase =

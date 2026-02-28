@@ -19,7 +19,7 @@ struct MultipleClosuresWithTrailingClosureRule: Rule {
                 UIView.animate(withDuration: 1.0) {
                     someView.alpha = 0.0
                 }
-                """
+                """,
             ),
             Example("foo.method { print(0) } arg2: { print(1) }"),
             Example("foo.methodWithParenArgs((0, 1), arg2: (0, 1, 2)) { $0 } arg4: { $0 }"),
@@ -33,11 +33,11 @@ struct MultipleClosuresWithTrailingClosureRule: Rule {
                 }) ↓{ _ in
                     someView.removeFromSuperview()
                 }
-                """
+                """,
             ),
             Example("foo.multipleTrailing(arg1: { $0 }) { $0 } arg3: { $0 }"),
             Example("foo.methodWithParenArgs(param1: { $0 }, param2: (0, 1), (0, 1)) { $0 }"),
-        ]
+        ],
     )
 }
 

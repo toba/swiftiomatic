@@ -1,17 +1,9 @@
-//
-//  RedundantReturn.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 3/7/17.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Remove redundant return keyword
     static let redundantReturn = FormatRule(
-        help: "Remove unneeded `return` keyword."
+        help: "Remove unneeded `return` keyword.",
     ) { formatter in
         // indices of returns that are safe to remove
         var returnIndices = [Int]()
@@ -20,7 +12,8 @@ extension FormatRule {
         //  - The following code is the original implementation of the `redundantReturn` rule
         //    and is partially redundant with the below code so could be simplified in the future.
         formatter.forEach(.keyword("return")) { i, _ in
-            guard let startIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i) else {
+            guard let startIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i)
+            else {
                 return
             }
             defer {
@@ -30,74 +23,94 @@ extension FormatRule {
                 }
             }
             switch formatter.tokens[startIndex] {
-            case .keyword("in"):
-                break
-            case .startOfScope("{"):
-                guard var prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startIndex)
-                else {
+                case .keyword("in"):
                     break
-                }
-                if formatter.options.swiftVersion < "5.1", formatter.isAccessorKeyword(at: prevIndex) {
-                    return
-                }
-                if formatter.tokens[prevIndex] == .endOfScope(")"),
-                   let j = formatter.index(of: .startOfScope("("), before: prevIndex)
-                {
-                    prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: j) ?? j
-                    if formatter.tokens[prevIndex] == .operator("?", .postfix) {
-                        prevIndex =
-                            formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: prevIndex) ?? prevIndex
-                    }
-                    let prevToken = formatter.tokens[prevIndex]
-                    guard prevToken.isIdentifier || prevToken == .keyword("init") else {
-                        return
-                    }
-                }
-                let prevToken = formatter.tokens[prevIndex]
-                guard ![.delimiter(":"), .startOfScope("(")].contains(prevToken),
-                      var prevKeywordIndex = formatter.indexOfLastSignificantKeyword(
-                          at: startIndex, excluding: ["where"]
-                      )
-                else {
-                    break
-                }
-                switch formatter.tokens[prevKeywordIndex].string {
-                case "let", "var":
-                    guard
-                        formatter.options.swiftVersion >= "5.1" || prevToken == .operator("=", .infix)
-                        || formatter.lastIndex(
-                            of: .operator("=", .infix), in: prevKeywordIndex + 1 ..< prevIndex
-                        ) != nil,
-                        !formatter.isConditionalStatement(at: prevKeywordIndex)
+                case .startOfScope("{"):
+                    guard var prevIndex = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak,
+                        before: startIndex,
+                    )
                     else {
-                        return
+                        break
                     }
-                case "func", "throws", "rethrows", "init", "subscript":
                     if formatter.options.swiftVersion < "5.1",
-                       formatter.next(.nonSpaceOrCommentOrLinebreak, after: i) != .endOfScope("}")
+                       formatter.isAccessorKeyword(at: prevIndex)
                     {
                         return
                     }
-                default:
-                    return
-                }
-            default:
-                guard
-                    let endIndex = formatter.index(
-                        of: .nonSpaceOrCommentOrLinebreak, after: i,
-                        if: {
-                            $0 == .endOfScope("}")
+                    if formatter.tokens[prevIndex] == .endOfScope(")"),
+                       let j = formatter.index(of: .startOfScope("("), before: prevIndex)
+                    {
+                        prevIndex = formatter
+                            .index(of: .nonSpaceOrCommentOrLinebreak, before: j) ?? j
+                        if formatter.tokens[prevIndex] == .operator("?", .postfix) {
+                            prevIndex =
+                                formatter.index(
+                                    of: .nonSpaceOrCommentOrLinebreak,
+                                    before: prevIndex,
+                                ) ?? prevIndex
                         }
-                    ), let startIndex = formatter.index(of: .startOfScope("{"), before: endIndex)
-                else {
-                    return
-                }
-                if !formatter.isStartOfClosure(at: startIndex),
-                   !["func", "throws", "rethrows"]
-                   .contains(formatter.lastSignificantKeyword(at: startIndex, excluding: ["where"]) ?? "")
-                {
-                    return
-                }
+                        let prevToken = formatter.tokens[prevIndex]
+                        guard prevToken.isIdentifier || prevToken == .keyword("init") else {
+                            return
+                        }
+                    }
+                    let prevToken = formatter.tokens[prevIndex]
+                    guard ![.delimiter(":"), .startOfScope("(")].contains(prevToken),
+                          var prevKeywordIndex = formatter.indexOfLastSignificantKeyword(
+                              at: startIndex, excluding: ["where"],
+                          )
+                    else {
+                        break
+                    }
+                    switch formatter.tokens[prevKeywordIndex].string {
+                        case "let", "var":
+                            guard
+                                formatter.options.swiftVersion >= "5.1" || prevToken == .operator(
+                                    "=",
+                                    .infix,
+                                )
+                                || formatter.lastIndex(
+                                    of: .operator("=", .infix),
+                                    in: prevKeywordIndex + 1 ..< prevIndex,
+                                ) != nil,
+                                !formatter.isConditionalStatement(at: prevKeywordIndex)
+                            else {
+                                return
+                            }
+                        case "func", "throws", "rethrows", "init", "subscript":
+                            if formatter.options.swiftVersion < "5.1",
+                               formatter
+                               .next(.nonSpaceOrCommentOrLinebreak, after: i) != .endOfScope("}")
+                            {
+                                return
+                            }
+                        default:
+                            return
+                    }
+                default:
+                    guard
+                        let endIndex = formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak, after: i,
+                            if: {
+                                $0 == .endOfScope("}")
+                            },
+                        ), let startIndex = formatter.index(
+                            of: .startOfScope("{"),
+                            before: endIndex,
+                        )
+                    else {
+                        return
+                    }
+                    if !formatter.isStartOfClosure(at: startIndex),
+                       !["func", "throws", "rethrows"]
+                       .contains(formatter.lastSignificantKeyword(
+                           at: startIndex,
+                           excluding: ["where"],
+                       ) ?? "")
+                    {
+                        return
+                    }
             }
             // Don't remove return if it's followed by more code
             guard let endIndex = formatter.endOfScope(at: i),
@@ -112,7 +125,9 @@ extension FormatRule {
                 return
             }
             formatter.removeToken(at: i)
-            if var nextIndex = formatter.index(of: .nonSpace, after: i - 1, if: { $0.isLinebreak }) {
+            if var nextIndex = formatter
+                .index(of: .nonSpace, after: i - 1, if: { $0.isLinebreak })
+            {
                 if let i = formatter.index(of: .nonSpaceOrLinebreak, after: nextIndex) {
                     nextIndex = i - 1
                 }
@@ -137,7 +152,7 @@ extension FormatRule {
                     ? ""
                     : formatter.lastSignificantKeyword(
                         at: startOfScopeIndex,
-                        excluding: ["throws", "where"]
+                        excluding: ["throws", "where"],
                     )
             if !isClosure,
                formatter.isConditionalStatement(at: startOfScopeIndex, excluding: ["where"])
@@ -147,13 +162,17 @@ extension FormatRule {
             }
 
             // Only strip return from conditional block if conditionalAssignment rule is enabled
-            var stripConditionalReturn = formatter.options.enabledRules.contains("conditionalAssignment")
+            var stripConditionalReturn = formatter.options.enabledRules
+                .contains("conditionalAssignment")
 
             // Don't strip return if type is opaque
             // (https://github.com/nicklockwood/SwiftFormat/issues/1819)
             if stripConditionalReturn,
                lastKeyword == "func",
-               let arrowIndex = formatter.index(of: .operator("->", .infix), before: startOfScopeIndex),
+               let arrowIndex = formatter.index(
+                   of: .operator("->", .infix),
+                   before: startOfScopeIndex,
+               ),
                formatter.tokens[arrowIndex ..< startOfScopeIndex].contains(.identifier("some"))
             {
                 stripConditionalReturn = false
@@ -165,7 +184,7 @@ extension FormatRule {
                     atStartOfScope: startOfScopeIndex,
                     includingConditionalStatements: true,
                     includingReturnStatements: true,
-                    includingReturnInConditionalStatements: stripConditionalReturn
+                    includingReturnInConditionalStatements: stripConditionalReturn,
                 )
             else {
                 return
@@ -174,13 +193,13 @@ extension FormatRule {
             // Make sure we aren't in a failable `init?`, where explicit return is required unless it's the only statement
             if !isClosure,
                let lastSignificantKeywordIndex = formatter.indexOfLastSignificantKeyword(
-                   at: startOfScopeIndex
+                   at: startOfScopeIndex,
                ),
                formatter.next(.nonSpaceOrCommentOrLinebreak, after: startOfScopeIndex)
                != .keyword("return"),
                formatter.tokens[lastSignificantKeywordIndex] == .keyword("init"),
                let nextToken = formatter.next(
-                   .nonSpaceOrCommentOrLinebreak, after: lastSignificantKeywordIndex
+                   .nonSpaceOrCommentOrLinebreak, after: lastSignificantKeywordIndex,
                ),
                nextToken == .operator("?", .postfix)
             {
@@ -191,7 +210,7 @@ extension FormatRule {
             // so we can apply additional validation first.
             guard
                 let returnKeywordRangesToRemove = formatter.returnKeywordRangesToRemove(
-                    atStartOfScope: startOfScopeIndex, returnIndices: &returnIndices
+                    atStartOfScope: startOfScopeIndex, returnIndices: &returnIndices,
                 )
             else { return }
 
@@ -230,7 +249,7 @@ extension FormatRule {
 
 extension Formatter {
     func returnKeywordRangesToRemove(
-        atStartOfScope startOfScopeIndex: Int, returnIndices: inout [Int]
+        atStartOfScope startOfScopeIndex: Int, returnIndices: inout [Int],
     ) -> [Range<Int>]? {
         var returnKeywordRangesToRemove = [Range<Int>]()
 
@@ -253,15 +272,15 @@ extension Formatter {
                 //  }
                 //
                 if conditionalBranchHasUnsupportedCastOperator(
-                    startOfScopeIndex: branch.startOfBranch
+                    startOfScopeIndex: branch.startOfBranch,
                 ) {
                     return nil
                 }
 
                 returnKeywordRangesToRemove.append(
                     contentsOf: self.returnKeywordRangesToRemove(
-                        atStartOfScope: branch.startOfBranch, returnIndices: &returnIndices
-                    ) ?? []
+                        atStartOfScope: branch.startOfBranch, returnIndices: &returnIndices,
+                    ) ?? [],
                 )
             }
         }

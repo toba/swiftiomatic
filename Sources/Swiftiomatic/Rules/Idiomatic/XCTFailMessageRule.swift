@@ -14,14 +14,14 @@ struct XCTFailMessageRule: Rule {
                 func testFoo() {
                   XCTFail("bar")
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func testFoo() {
                   XCTFail(bar)
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -30,16 +30,16 @@ struct XCTFailMessageRule: Rule {
                 func testFoo() {
                   ↓XCTFail()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func testFoo() {
                   ↓XCTFail("")
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -70,6 +70,7 @@ private extension LabeledExprListSyntax {
         if isEmpty {
             return true
         }
-        return count == 1 && first?.expression.as(StringLiteralExprSyntax.self)?.isEmptyString == true
+        return count == 1 && first?.expression.as(StringLiteralExprSyntax.self)?
+            .isEmptyString == true
     }
 }

@@ -1,11 +1,3 @@
-//
-//  InitCoderUnavailable.swift
-//  SwiftFormat
-//
-//  Created by Facundo Menzella on 8/20/20.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -16,7 +8,7 @@ extension FormatRule {
         it hasn't been implemented.
         """,
         options: ["init-coder-nil"],
-        sharedOptions: ["linebreaks"]
+        sharedOptions: ["linebreaks"],
     ) { formatter in
         let unavailableTokens = tokenize("@available(*, unavailable)")
         formatter.forEach(.identifier("required")) { i, _ in
@@ -26,7 +18,7 @@ extension FormatRule {
                 of: .nonSpaceOrCommentOrLinebreak, after: initIndex,
                 if: {
                     $0 == .operator("?", .postfix)
-                }
+                },
             ) {
                 initIndex = nextIndex
             }
@@ -36,13 +28,13 @@ extension FormatRule {
                     of: .nonSpaceOrCommentOrLinebreak, after: initIndex,
                     if: {
                         $0 == .startOfScope("(")
-                    }
+                    },
                 ),
                 let coderIndex = formatter.index(
                     of: .nonSpaceOrCommentOrLinebreak, after: parenIndex,
                     if: {
                         $0 == .identifier("coder")
-                    }
+                    },
                 ), let endParenIndex = formatter.index(of: .endOfScope(")"), after: coderIndex),
                 let braceIndex = formatter.index(of: .startOfScope("{"), after: endParenIndex)
             else { return }
@@ -53,16 +45,19 @@ extension FormatRule {
                     of: .nonSpaceOrCommentOrLinebreak, after: braceIndex,
                     if: {
                         [.endOfScope("}"), .identifier("fatalError")].contains($0)
-                    }
+                    },
                 )
             else { return }
 
             if formatter.options.initCoderNil,
                formatter.token(at: firstTokenIndex) == .identifier("fatalError"),
-               let fatalParenEndOfScope = formatter.index(of: .endOfScope, after: firstTokenIndex + 1)
+               let fatalParenEndOfScope = formatter.index(
+                   of: .endOfScope,
+                   after: firstTokenIndex + 1,
+               )
             {
                 formatter.replaceTokens(
-                    in: firstTokenIndex ... fatalParenEndOfScope, with: [.identifier("nil")]
+                    in: firstTokenIndex ... fatalParenEndOfScope, with: [.identifier("nil")],
                 )
             }
 

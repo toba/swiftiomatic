@@ -10,7 +10,7 @@ struct VerticalParameterAlignmentRule: Rule {
         "Function parameters should be aligned vertically if they're in multiple lines in a declaration",
         kind: .style,
         nonTriggeringExamples: VerticalParameterAlignmentRuleExamples.nonTriggeringExamples,
-        triggeringExamples: VerticalParameterAlignmentRuleExamples.triggeringExamples
+        triggeringExamples: VerticalParameterAlignmentRuleExamples.triggeringExamples,
     )
 }
 
@@ -23,11 +23,13 @@ extension VerticalParameterAlignmentRule: SwiftSyntaxRule {
 private extension VerticalParameterAlignmentRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionDeclSyntax) {
-            violations.append(contentsOf: violations(for: node.signature.parameterClause.parameters))
+            violations
+                .append(contentsOf: violations(for: node.signature.parameterClause.parameters))
         }
 
         override func visitPost(_ node: InitializerDeclSyntax) {
-            violations.append(contentsOf: violations(for: node.signature.parameterClause.parameters))
+            violations
+                .append(contentsOf: violations(for: node.signature.parameterClause.parameters))
         }
 
         private func violations(for params: FunctionParameterListSyntax) -> [AbsolutePosition] {

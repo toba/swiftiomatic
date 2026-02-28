@@ -1,17 +1,9 @@
-//
-//  RedundantViewBuilder.swift
-//  SwiftFormat
-//
-//  Created by Miguel Jimenez on 2025-12-14.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Remove redundant @ViewBuilder attributes
     static let redundantViewBuilder = FormatRule(
-        help: "Remove redundant @ViewBuilder attribute when it's not needed."
+        help: "Remove redundant @ViewBuilder attribute when it's not needed.",
     ) { formatter in
         // Collect all @ViewBuilder attributes to remove first (to avoid re-entrancy issues)
         var attributeIndicesToRemove = [Int]()
@@ -30,9 +22,11 @@ extension FormatRule {
                 bodyScope = property.body?.scopeRange
                 // A var named "body" is only the protocol body if it's on a View
                 // (ViewModifier.body must be a function, not a property)
-                isBodyMember = property.identifier == "body" && formatter.isViewType(declaration.parentType)
+                isBodyMember = property.identifier == "body" && formatter
+                    .isViewType(declaration.parentType)
             } else if declaration.keyword == "func",
-                      let function = formatter.parseFunctionDeclaration(keywordIndex: declaration.keywordIndex)
+                      let function = formatter
+                      .parseFunctionDeclaration(keywordIndex: declaration.keywordIndex)
             {
                 bodyScope = function.bodyRange
                 // A func named "body" is only the protocol body if it's on a ViewModifier
@@ -129,8 +123,10 @@ extension Formatter {
         var endIndex = attributeIndex
 
         let nextNonSpaceIndex = index(of: .nonSpace, after: attributeIndex)
-        let hasTrailingLinebreak = nextNonSpaceIndex != nil && tokens[nextNonSpaceIndex!].isLinebreak
-        let hasTrailingSpace = attributeIndex + 1 < tokens.count && tokens[attributeIndex + 1].isSpace
+        let hasTrailingLinebreak = nextNonSpaceIndex != nil && tokens[nextNonSpaceIndex!]
+            .isLinebreak
+        let hasTrailingSpace = attributeIndex + 1 < tokens.count && tokens[attributeIndex + 1]
+            .isSpace
 
         if hasTrailingLinebreak, let nextIndex = nextNonSpaceIndex {
             endIndex = nextIndex
@@ -154,9 +150,12 @@ extension Formatter {
     /// Whether the body is a single expression that is not a conditional (if/switch).
     /// Conditional expressions need @ViewBuilder when branches return different types.
     func scopeBodyIsSingleNonConditionalExpression(at startOfScopeIndex: Int) -> Bool {
-        guard let firstTokenInBody = index(of: .nonSpaceOrCommentOrLinebreak, after: startOfScopeIndex),
-              tokens[firstTokenInBody] != .keyword("if"),
-              tokens[firstTokenInBody] != .keyword("switch")
+        guard let firstTokenInBody = index(
+            of: .nonSpaceOrCommentOrLinebreak,
+            after: startOfScopeIndex,
+        ),
+            tokens[firstTokenInBody] != .keyword("if"),
+            tokens[firstTokenInBody] != .keyword("switch")
         else { return false }
         return scopeBodyIsSingleExpression(at: startOfScopeIndex)
     }

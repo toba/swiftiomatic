@@ -9,7 +9,7 @@ struct MultilineArgumentsRule: Rule {
         description: "Arguments should be either on the same line, or one per line",
         kind: .style,
         nonTriggeringExamples: MultilineArgumentsRuleExamples.nonTriggeringExamples,
-        triggeringExamples: MultilineArgumentsRuleExamples.triggeringExamples
+        triggeringExamples: MultilineArgumentsRuleExamples.triggeringExamples,
     )
 }
 
@@ -37,13 +37,13 @@ private extension MultilineArgumentsRule {
                 }
 
             var violatingArguments = findViolations(
-                in: wrappedArguments, functionCallLine: functionCallLine
+                in: wrappedArguments, functionCallLine: functionCallLine,
             )
 
             if configuration.onlyEnforceAfterFirstClosureOnFirstLine {
                 violatingArguments = removeViolationsBeforeFirstClosure(
                     arguments: wrappedArguments,
-                    violations: violatingArguments
+                    violations: violatingArguments,
                 )
             }
 
@@ -54,7 +54,7 @@ private extension MultilineArgumentsRule {
 
         private func findViolations(
             in arguments: [Argument],
-            functionCallLine: Int
+            functionCallLine: Int,
         ) -> [Argument] {
             var visitedLines = Set<Int>()
 
@@ -68,9 +68,9 @@ private extension MultilineArgumentsRule {
 
                 if idx == 0 {
                     switch configuration.firstArgumentLocation {
-                    case .anyLine: return nil
-                    case .nextLine: return line > functionCallLine ? nil : argument
-                    case .sameLine: return line > functionCallLine ? argument : nil
+                        case .anyLine: return nil
+                        case .nextLine: return line > functionCallLine ? nil : argument
+                        case .sameLine: return line > functionCallLine ? argument : nil
                     }
                 } else {
                     return firstVisit ? nil : argument
@@ -83,7 +83,7 @@ private extension MultilineArgumentsRule {
 
         private func removeViolationsBeforeFirstClosure(
             arguments: [Argument],
-            violations: [Argument]
+            violations: [Argument],
         ) -> [Argument] {
             guard let firstClosure = arguments.first(where: \.isClosure),
                   let firstArgument = arguments.first
@@ -96,7 +96,8 @@ private extension MultilineArgumentsRule {
                     .drop { argument in
                         // drop violations if they precede the first closure,
                         // if that closure is in the first line
-                        firstArgument.line == firstClosure.line && argument.line == firstClosure.line
+                        firstArgument.line == firstClosure.line && argument.line == firstClosure
+                            .line
                             && argument.index <= firstClosure.index
                     }
 

@@ -1,31 +1,23 @@
-//
-//  Acronyms.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 9/28/21.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let acronyms = FormatRule(
         help: "Capitalize acronyms when the first character is capitalized.",
         disabledByDefault: true,
-        options: ["acronyms", "preserve-acronyms"]
+        options: ["acronyms", "preserve-acronyms"],
     ) { formatter in
         formatter.forEachToken { i, token in
             let isComment: Bool
             var updatedText: String
             switch token {
-            case let .identifier(text) where !formatter.options.preserveAcronyms.contains(text):
-                isComment = false
-                updatedText = text
-            case let .commentBody(text):
-                isComment = true
-                updatedText = text
-            default:
-                return
+                case let .identifier(text) where !formatter.options.preserveAcronyms.contains(text):
+                    isComment = false
+                    updatedText = text
+                case let .commentBody(text):
+                    isComment = true
+                    updatedText = text
+                default:
+                    return
             }
 
             // Match acronym and return index after
@@ -71,7 +63,10 @@ extension FormatRule {
             outer: while index < updatedText.endIndex {
                 for acronym in acronyms where updatedText[index] == acronym.first {
                     if let indexAfter = match(acronym) {
-                        updatedText.replaceSubrange(index ..< indexAfter, with: acronym.uppercased())
+                        updatedText.replaceSubrange(
+                            index ..< indexAfter,
+                            with: acronym.uppercased(),
+                        )
                         index = indexAfter
                         continue outer
                     } else if let indexAfter = match(acronym.uppercased()) {

@@ -9,7 +9,7 @@ enum NoFallthroughOnlyRuleExamples {
             case 2:
                 var a = 2
             }
-            """
+            """,
         ),
         Example(
             """
@@ -21,7 +21,7 @@ enum NoFallthroughOnlyRuleExamples {
             case "b": /* comment */
                 var three = 3
             }
-            """
+            """,
         ),
         Example(
             """
@@ -32,7 +32,7 @@ enum NoFallthroughOnlyRuleExamples {
                 // comment
                 var two = 2
             }
-            """
+            """,
         ),
         Example(
             """
@@ -43,7 +43,7 @@ enum NoFallthroughOnlyRuleExamples {
             default:
                 var three = 4
             }
-            """
+            """,
         ),
         Example(
             """
@@ -56,7 +56,7 @@ enum NoFallthroughOnlyRuleExamples {
             default:
                 var four = 4
             }
-            """
+            """,
         ),
         Example(
             """
@@ -70,7 +70,7 @@ enum NoFallthroughOnlyRuleExamples {
             default:
                 let C = "C"
             }
-            """
+            """,
         ),
         Example(
             """
@@ -81,7 +81,7 @@ enum NoFallthroughOnlyRuleExamples {
             case "abc":
                 let two = 2
             }
-            """
+            """,
         ),
         Example(
             """
@@ -93,7 +93,7 @@ enum NoFallthroughOnlyRuleExamples {
             @unknown default:
                 print("it's not a")
             }
-            """
+            """,
         ),
     ]
 
@@ -106,7 +106,7 @@ enum NoFallthroughOnlyRuleExamples {
             case 2:
                 var a = 1
             }
-            """
+            """,
         ),
         Example(
             """
@@ -118,7 +118,7 @@ enum NoFallthroughOnlyRuleExamples {
             case 3:
                 var a = 3
             }
-            """
+            """,
         ),
         Example(
             """
@@ -126,7 +126,7 @@ enum NoFallthroughOnlyRuleExamples {
             case 1: // comment
                 ↓fallthrough
             }
-            """
+            """,
         ),
         Example(
             """
@@ -138,7 +138,7 @@ enum NoFallthroughOnlyRuleExamples {
             case 2:
                 var a = 2
             }
-            """
+            """,
         ),
         Example(
             """
@@ -148,7 +148,7 @@ enum NoFallthroughOnlyRuleExamples {
             default:
                 var three = 4
             }
-            """
+            """,
         ),
         Example(
             """
@@ -162,7 +162,7 @@ enum NoFallthroughOnlyRuleExamples {
             default:
                 var four = 4
             }
-            """
+            """,
         ),
         Example(
             """
@@ -175,7 +175,7 @@ enum NoFallthroughOnlyRuleExamples {
             default:
                 let B = "B"
             }
-            """
+            """,
         ),
         Example(
             """
@@ -185,7 +185,7 @@ enum NoFallthroughOnlyRuleExamples {
             case "abc":
                 let two = 2
             }
-            """
+            """,
         ),
     ]
 }

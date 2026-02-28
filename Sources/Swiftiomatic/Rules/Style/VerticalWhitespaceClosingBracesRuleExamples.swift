@@ -14,7 +14,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
 
                 }
             */
-            """
+            """,
         ),
         Example(
             """
@@ -31,7 +31,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
               // do something
               // do something
             }
-            """, configuration: beforeTrivialLinesConfiguration, excludeFromDocumentation: true
+            """, configuration: beforeTrivialLinesConfiguration, excludeFromDocumentation: true,
         ),
     ]
 
@@ -42,14 +42,14 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
               print("x is 5")
             ↓
             }
-            """
+            """,
         ):
             Example(
                 """
                 do {
                   print("x is 5")
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -58,28 +58,28 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
             ↓
 
             }
-            """
+            """,
         ):
             Example(
                 """
                 do {
                   print("x is 5")
                 }
-                """
+                """,
             ),
         Example(
             """
             do {
               print("x is 5")
             ↓\n  \n}
-            """
+            """,
         ):
             Example(
                 """
                 do {
                   print("x is 5")
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -89,7 +89,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
             3
             ↓
             ]
-            """
+            """,
         ):
             Example(
                 """
@@ -98,7 +98,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
                 2,
                 3
                 ]
-                """
+                """,
             ),
         Example(
             """
@@ -107,7 +107,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
                 y:6
             ↓
             )
-            """
+            """,
         ):
             Example(
                 """
@@ -115,7 +115,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
                     x: 5,
                     y:6
                 )
-                """
+                """,
             ),
         Example(
             """
@@ -125,7 +125,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
               }
             ↓
             }
-            """
+            """,
         ): Example(
             """
             func foo() {
@@ -133,7 +133,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
                 print(x)
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -141,14 +141,14 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
               1
             ↓
             ])
-            """, configuration: beforeTrivialLinesConfiguration
+            """, configuration: beforeTrivialLinesConfiguration,
         ):
             Example(
                 """
                 print([
                   1
                 ])
-                """, configuration: beforeTrivialLinesConfiguration
+                """, configuration: beforeTrivialLinesConfiguration,
             ),
         Example(
             """
@@ -163,7 +163,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
               return mul
             ↓
             }])
-            """, configuration: beforeTrivialLinesConfiguration
+            """, configuration: beforeTrivialLinesConfiguration,
         ):
             Example(
                 """
@@ -177,7 +177,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
                   for i in 1...5 { mul *= i }
                   return mul
                 }])
-                """, configuration: beforeTrivialLinesConfiguration
+                """, configuration: beforeTrivialLinesConfiguration,
             ),
     ]
 }

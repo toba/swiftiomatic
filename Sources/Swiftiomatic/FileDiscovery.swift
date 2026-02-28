@@ -14,7 +14,7 @@ enum FileDiscovery {
     /// Find all `.swift` files under the given paths, applying exclusions.
     static func findSwiftFiles(
         in paths: [String],
-        additionalExclusions: [String] = []
+        additionalExclusions: [String] = [],
     ) -> [String] {
         let fm = FileManager.default
         var results: [String] = []
@@ -29,7 +29,7 @@ enum FileDiscovery {
                     in: path,
                     fileManager: fm,
                     extraExclusions: extraExclusions,
-                    into: &results
+                    into: &results,
                 )
             } else if path.hasSuffix(".swift"), !isExcludedFile(path) {
                 results.append(path)
@@ -43,7 +43,7 @@ enum FileDiscovery {
         in directory: String,
         fileManager fm: FileManager,
         extraExclusions: Set<String>,
-        into results: inout [String]
+        into results: inout [String],
     ) {
         guard let enumerator = fm.enumerator(atPath: directory) else { return }
 
@@ -52,7 +52,9 @@ enum FileDiscovery {
 
             // Check directory exclusions
             let lastComponent = (relativePath as NSString).lastPathComponent
-            if excludedDirectories.contains(lastComponent) || extraExclusions.contains(lastComponent) {
+            if excludedDirectories.contains(lastComponent) || extraExclusions
+                .contains(lastComponent)
+            {
                 enumerator.skipDescendants()
                 continue
             }

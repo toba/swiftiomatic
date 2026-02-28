@@ -8,7 +8,7 @@ enum ImplicitGetterRuleExamples {
                     set { _abc = newValue }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -17,7 +17,7 @@ enum ImplicitGetterRuleExamples {
                     return 20
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -26,7 +26,7 @@ enum ImplicitGetterRuleExamples {
                     return 20
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -36,7 +36,7 @@ enum ImplicitGetterRuleExamples {
                     set { _abc = newValue }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -46,7 +46,7 @@ enum ImplicitGetterRuleExamples {
                     _modify { yield &_foo }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -58,14 +58,14 @@ enum ImplicitGetterRuleExamples {
                     get { _foo }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             class Foo {
                 var foo: Int
             }
-            """
+            """,
         ),
         Example(
             """
@@ -74,7 +74,7 @@ enum ImplicitGetterRuleExamples {
                     return getValueFromDisk()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -83,21 +83,21 @@ enum ImplicitGetterRuleExamples {
                     return "get"
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             protocol Foo {
                 var foo: Int { get }
             }
-            """
+            """,
         ),
         Example(
             """
             protocol Foo {
                 var foo: Int { get set }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -113,14 +113,14 @@ enum ImplicitGetterRuleExamples {
                     return Bar().bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             var _objCTaggedPointerBits: UInt {
                 @inline(__always) get { return 0 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -130,7 +130,7 @@ enum ImplicitGetterRuleExamples {
                     return self.count
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -140,7 +140,7 @@ enum ImplicitGetterRuleExamples {
                     set { self._bar = newValue }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -150,7 +150,7 @@ enum ImplicitGetterRuleExamples {
                     set(newValue) { self._bar = newValue }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -164,7 +164,7 @@ enum ImplicitGetterRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -178,7 +178,7 @@ enum ImplicitGetterRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -192,7 +192,7 @@ enum ImplicitGetterRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -201,7 +201,7 @@ enum ImplicitGetterRuleExamples {
                     return 20
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -211,21 +211,21 @@ enum ImplicitGetterRuleExamples {
                     set { _abc = newValue }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             protocol Foo {
                 subscript(i: Int) -> Int { get }
             }
-            """
+            """,
         ),
         Example(
             """
             protocol Foo {
                 subscript(i: Int) -> Int { get set }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -236,7 +236,7 @@ enum ImplicitGetterRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -251,7 +251,7 @@ enum ImplicitGetterRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -265,7 +265,7 @@ enum ImplicitGetterRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -274,7 +274,7 @@ enum ImplicitGetterRuleExamples {
                     ↓get{ return 20 }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -285,14 +285,14 @@ enum ImplicitGetterRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             var foo: Int {
                 ↓get { return 20 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -304,7 +304,7 @@ enum ImplicitGetterRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -313,7 +313,7 @@ enum ImplicitGetterRuleExamples {
                     ↓get { _bar }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -324,7 +324,7 @@ enum ImplicitGetterRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
     ]
 }

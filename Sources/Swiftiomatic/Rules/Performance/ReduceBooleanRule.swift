@@ -24,7 +24,7 @@ struct ReduceBooleanRule: Rule {
             Example("let allValid = validators.↓reduce(true, { $0 && $1(input) })"),
             Example("let anyValid = validators.↓reduce(false, { $0 || $1(input) })"),
             Example("nums.reduce(into: true) { (r: inout Bool, s) in r = r && (s == 3) }"),
-        ]
+        ],
     )
 }
 
@@ -51,8 +51,8 @@ private extension ReduceBooleanRule {
             violations.append(
                 ReasonedRuleViolation(
                     position: calledExpression.declName.baseName.positionAfterSkippingLeadingTrivia,
-                    reason: "Use `\(suggestedFunction)` instead"
-                )
+                    reason: "Use `\(suggestedFunction)` instead",
+                ),
             )
         }
     }

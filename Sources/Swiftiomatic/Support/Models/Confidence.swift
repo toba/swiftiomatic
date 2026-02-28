@@ -10,9 +10,9 @@ enum Confidence: String, Codable, Comparable, Sendable {
 
     private var rank: Int {
         switch self {
-        case .low: 0
-        case .medium: 1
-        case .high: 2
+            case .low: 0
+            case .medium: 1
+            case .high: 2
         }
     }
 

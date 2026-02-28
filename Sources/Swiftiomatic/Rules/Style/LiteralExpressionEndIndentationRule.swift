@@ -14,14 +14,14 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
             Example(
                 """
                 [1, 2, 3]
-                """
+                """,
             ),
             Example(
                 """
                 [1,
                  2
                 ]
-                """
+                """,
             ),
             Example(
                 """
@@ -29,14 +29,14 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
                    1,
                    2
                 ]
-                """
+                """,
             ),
             Example(
                 """
                 [
                    1,
                    2]
-                """
+                """,
             ),
             Example(
                 """
@@ -44,19 +44,19 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
                        1,
                        2
                    ]
-                """
+                """,
             ),
             Example(
                 """
                 [key: 2, key2: 3]
-                """
+                """,
             ),
             Example(
                 """
                 [key: 1,
                  key2: 2
                 ]
-                """
+                """,
             ),
             Example(
                 """
@@ -64,7 +64,7 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
                    key: 0,
                    key2: 20
                 ]
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -74,7 +74,7 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
                    1,
                    2
                    ↓]
-                """
+                """,
             ),
             Example(
                 """
@@ -82,14 +82,14 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
                        1,
                        2
                 ↓]
-                """
+                """,
             ),
             Example(
                 """
                 let x = [
                    key: value
                    ↓]
-                """
+                """,
             ),
         ],
         corrections: [
@@ -98,13 +98,13 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
                 let x = [
                    key: value
                 ↓   ]
-                """
+                """,
             ): Example(
                 """
                 let x = [
                    key: value
                 ]
-                """
+                """,
             ),
             Example(
                 """
@@ -112,14 +112,14 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
                        1,
                        2
                 ↓]
-                """
+                """,
             ): Example(
                 """
                    let x = [
                        1,
                        2
                    ]
-                """
+                """,
             ),
             Example(
                 """
@@ -127,14 +127,14 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
                    1,
                    2
                 ↓   ]
-                """
+                """,
             ): Example(
                 """
                 let x = [
                    1,
                    2
                 ]
-                """
+                """,
             ),
             Example(
                 """
@@ -145,7 +145,7 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
                    3,
                    4
                 ↓   ]
-                """
+                """,
             ): Example(
                 """
                 let x = [
@@ -155,9 +155,9 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
                    3,
                    4
                 ]
-                """
+                """,
             ),
-        ]
+        ],
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -166,7 +166,9 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
         }
     }
 
-    private func styleViolation(for violation: Violation, in file: SwiftLintFile) -> StyleViolation {
+    private func styleViolation(for violation: Violation,
+                                in file: SwiftLintFile) -> StyleViolation
+    {
         let reason =
             "\(Self.description.description); "
                 + "expected indentation of \(violation.indentationRanges.expected.length), "
@@ -176,7 +178,7 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
             ruleDescription: Self.description,
             severity: configuration.severity,
             location: Location(file: file, byteOffset: violation.endOffset),
-            reason: reason
+            reason: reason,
         )
     }
 
@@ -224,13 +226,14 @@ extension LiteralExpressionEndIndentationRule: CorrectableRule {
 
     private func actualViolationLookup(for violations: [Violation]) -> (Violation) -> Violation {
         let lookup = violations.reduce(
-            into: [NSRange: Violation]()
+            into: [NSRange: Violation](),
         ) { result, violation in
             result[violation.indentationRanges.actual] = violation
         }
 
         func actualViolation(for violation: Violation) -> Violation {
-            guard let actual = lookup[violation.indentationRanges.expected] else { return violation }
+            guard let actual = lookup[violation.indentationRanges.expected]
+            else { return violation }
             return actualViolation(for: actual)
         }
 
@@ -248,7 +251,8 @@ private extension LiteralExpressionEndIndentationRule {
     func violations(in file: SwiftLintFile) -> [Violation] {
         file.structureDictionary.traverseDepthFirst { subDict in
             guard let kind = subDict.expressionKind else { return nil }
-            guard let violation = violation(in: file, of: kind, dictionary: subDict) else { return nil }
+            guard let violation = violation(in: file, of: kind, dictionary: subDict)
+            else { return nil }
             return [violation]
         }
     }
@@ -256,13 +260,14 @@ private extension LiteralExpressionEndIndentationRule {
     private func violation(
         in file: SwiftLintFile,
         of kind: SwiftExpressionKind,
-        dictionary: SourceKittenDictionary
+        dictionary: SourceKittenDictionary,
     ) -> Violation? {
         guard kind == .dictionary || kind == .array else {
             return nil
         }
 
-        let elements = dictionary.elements.filter { $0.kind == "source.lang.swift.structure.elem.expr" }
+        let elements = dictionary.elements
+            .filter { $0.kind == "source.lang.swift.structure.elem.expr" }
 
         let contents = file.stringView
         guard elements.isNotEmpty,
@@ -300,7 +305,7 @@ private extension LiteralExpressionEndIndentationRule {
         return Violation(
             indentationRanges: (expected: expectedRange, actual: actualRange),
             endOffset: endOffset,
-            range: ByteRange(location: offset, length: length)
+            range: ByteRange(location: offset, length: length),
         )
     }
 }
@@ -308,7 +313,7 @@ private extension LiteralExpressionEndIndentationRule {
 extension LiteralExpressionEndIndentationRule {
     private static let _postMessage: Void = {
         Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
         ).print()
     }()
 

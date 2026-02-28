@@ -28,7 +28,7 @@ struct StatementPositionRule: CorrectableRule {
             Example("↓}\n else {"): Example("} else {"),
             Example("↓}\n   else if {"): Example("} else if {"),
             Example("↓}\n catch {"): Example("} catch {"),
-        ]
+        ],
     )
 
     static let uncuddledDescription = RuleDescription(
@@ -58,24 +58,24 @@ struct StatementPositionRule: CorrectableRule {
             Example("}\n  else {"): Example("}\nelse {"),
             Example("  }\ncatch {"): Example("  }\n  catch {"),
             Example("}\n\t  catch {"): Example("}\ncatch {"),
-        ]
+        ],
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
         switch configuration.statementMode {
-        case .default:
-            return defaultValidate(file: file)
-        case .uncuddledElse:
-            return uncuddledValidate(file: file)
+            case .default:
+                return defaultValidate(file: file)
+            case .uncuddledElse:
+                return uncuddledValidate(file: file)
         }
     }
 
     func correct(file: SwiftLintFile) -> Int {
         switch configuration.statementMode {
-        case .default:
-            defaultCorrect(file: file)
-        case .uncuddledElse:
-            uncuddledCorrect(file: file)
+            case .default:
+                defaultCorrect(file: file)
+            case .uncuddledElse:
+                uncuddledCorrect(file: file)
         }
     }
 }
@@ -92,7 +92,7 @@ private extension StatementPositionRule {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: range.location)
+                location: Location(file: file, characterOffset: range.location),
             )
         }
     }
@@ -116,7 +116,7 @@ private extension StatementPositionRule {
         for range in matches.reversed() {
             contents = regularExpression.stringByReplacingMatches(
                 in: contents, options: [], range: range,
-                withTemplate: "} $1"
+                withTemplate: "} $1",
             )
         }
         file.write(contents)
@@ -131,7 +131,7 @@ private extension StatementPositionRule {
             StyleViolation(
                 ruleDescription: Self.uncuddledDescription,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: range.location)
+                location: Location(file: file, characterOffset: range.location),
             )
         }
     }
@@ -157,8 +157,14 @@ private extension StatementPositionRule {
             }
             let range1 = match.range(at: 1)
             let range2 = match.range(at: 3)
-            let whitespace1 = contents.string.substring(from: range1.location, length: range1.length)
-            let whitespace2 = contents.string.substring(from: range2.location, length: range2.length)
+            let whitespace1 = contents.string.substring(
+                from: range1.location,
+                length: range1.length,
+            )
+            let whitespace2 = contents.string.substring(
+                from: range2.location,
+                length: range2.length,
+            )
             if whitespace1 == whitespace2 {
                 return nil
             }
@@ -168,14 +174,14 @@ private extension StatementPositionRule {
 
     static func uncuddledMatchFilter(
         contents: StringView,
-        syntaxMap: SwiftLintSyntaxMap
+        syntaxMap: SwiftLintSyntaxMap,
     ) -> ((NSTextCheckingResult) -> Bool) {
         { match in
             let range = match.range
             guard
                 let matchRange = contents.NSRangeToByteRange(
                     start: range.location,
-                    length: range.length
+                    length: range.length,
                 )
             else {
                 return false
@@ -199,7 +205,10 @@ private extension StatementPositionRule {
         let syntaxMap = file.syntaxMap
         let matches = Self.uncuddledRegex.matches(in: file)
         let validator = Self.uncuddledMatchValidator(contents: file.stringView)
-        let filterRanges = Self.uncuddledMatchFilter(contents: file.stringView, syntaxMap: syntaxMap)
+        let filterRanges = Self.uncuddledMatchFilter(
+            contents: file.stringView,
+            syntaxMap: syntaxMap,
+        )
         let validMatches = matches.compactMap(validator).filter(filterRanges)
             .filter { file.ruleEnabled(violatingRanges: [$0.range], for: self).isNotEmpty }
         if validMatches.isEmpty {
@@ -229,7 +238,7 @@ private extension StatementPositionRule {
 extension StatementPositionRule {
     private static let _postMessage: Void = {
         Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
         ).print()
     }()
 

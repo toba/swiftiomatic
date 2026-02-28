@@ -39,7 +39,7 @@ final class NamingHeuristicsCheck: BaseCheck {
                     "Protocol '\(name)' uses -able suffix but conformers perform the action — consider -ing suffix",
                     suggestion: name.replacingSuffix("able", with: "ing")
                         ?? name.replacingSuffix("ible", with: "ing"),
-                    confidence: .low
+                    confidence: .low,
                 )
             }
         }
@@ -68,8 +68,8 @@ final class NamingHeuristicsCheck: BaseCheck {
                         name: name,
                         offset: initExpr.positionAfterSkippingLeadingTrivia.utf8Offset,
                         length: initExpr.trimmedLength.utf8Length,
-                        node: binding
-                    )
+                        node: binding,
+                    ),
                 )
             }
         }
@@ -85,7 +85,7 @@ final class NamingHeuristicsCheck: BaseCheck {
                 severity: .low,
                 message: "Bool property '\(name)' doesn't read as an assertion",
                 suggestion: "Consider a name like 'is\(name.capitalized)' or 'has\(name.capitalized)'",
-                confidence: .low
+                confidence: .low,
             )
         }
     }
@@ -121,7 +121,7 @@ final class NamingHeuristicsCheck: BaseCheck {
                     message:
                     "Factory method '\(name)' should use 'make' prefix per Swift API Design Guidelines",
                     suggestion: suggestion,
-                    confidence: .medium
+                    confidence: .medium,
                 )
             }
         }

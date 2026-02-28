@@ -16,7 +16,7 @@ struct ExplicitTopLevelACLRule: Rule {
                 private struct S1 {
                     struct S2 {}
                 }
-                """
+                """,
             ),
             Example("internal enum A { enum B {} }"),
             Example("internal final actor Foo {}"),
@@ -33,7 +33,7 @@ struct ExplicitTopLevelACLRule: Rule {
             Example("↓protocol P {}"),
             Example("↓func a() {}"),
             Example("internal let a = 0\n↓func b() {}"),
-        ]
+        ],
     )
 }
 

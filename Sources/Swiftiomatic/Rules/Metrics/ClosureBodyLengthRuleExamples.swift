@@ -39,7 +39,7 @@ private func trailingClosure(
     commentLinesCount: Int,
     emptyLinesCount: Int,
     file: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
 ) -> Example {
     Example(
         """
@@ -48,7 +48,7 @@ private func trailingClosure(
         \(repeatElement("\t// toto\n", count: commentLinesCount).joined())\
         \(repeatElement("\t\n", count: emptyLinesCount).joined())\
         }
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }
 
@@ -56,14 +56,14 @@ private func argumentClosure(
     _ violationSymbol: String = "",
     codeLinesCount: Int,
     file: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
 ) -> Example {
     Example(
         """
         foo.bar(\(violationSymbol){ toto in
         \((0 ..< codeLinesCount).map { "\tlet a\($0) = 0\n" }.joined())\
         })
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }
 
@@ -71,14 +71,14 @@ private func labeledArgumentClosure(
     _ violationSymbol: String = "",
     codeLinesCount: Int,
     file: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
 ) -> Example {
     Example(
         """
         foo.bar(label: \(violationSymbol){ toto in
         \((0 ..< codeLinesCount).map { "\tlet a\($0) = 0\n" }.joined())\
         })
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }
 
@@ -86,7 +86,7 @@ private func multiLabeledArgumentClosures(
     _ violationSymbol: String = "",
     codeLinesCount: Int,
     file: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
 ) -> Example {
     Example(
         """
@@ -95,7 +95,7 @@ private func multiLabeledArgumentClosures(
         }, anotherLabel: \(violationSymbol){ toto in
         \((0 ..< codeLinesCount).map { "\tlet a\($0) = 0\n" }.joined())\
         })
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }
 
@@ -103,7 +103,7 @@ private func labeledAndTrailingClosures(
     _ violationSymbol: String = "",
     codeLinesCount: Int,
     file: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
 ) -> Example {
     Example(
         """
@@ -112,7 +112,7 @@ private func labeledAndTrailingClosures(
         }) \(violationSymbol){ toto in
         \((0 ..< codeLinesCount).map { "\tlet a\($0) = 0\n" }.joined())\
         }
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }
 
@@ -120,7 +120,7 @@ private func lazyInitialization(
     _ violationSymbol: String = "",
     codeLinesCount: Int,
     file: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
 ) -> Example {
     Example(
         """
@@ -129,6 +129,6 @@ private func lazyInitialization(
         \((0 ..< codeLinesCount).map { "\tlet a\($0) = 0\n" }.joined())\
         \treturn bar
         }()
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }

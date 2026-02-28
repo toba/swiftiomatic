@@ -14,26 +14,26 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
                 """
                 foo(param1: 1, param2: bar
                     param3: false, param4: true)
-                """
+                """,
             ),
             Example(
                 """
                 foo(param1: 1, param2: bar)
-                """
+                """,
             ),
             Example(
                 """
                 foo(param1: 1, param2: bar
                     param3: false,
                     param4: true)
-                """
+                """,
             ),
             Example(
                 """
                 foo(
                    param1: 1
                 ) { _ in }
-                """
+                """,
             ),
             Example(
                 """
@@ -42,7 +42,7 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
                 }, completion: { _ in
                     self.hideLoading()
                 })
-                """
+                """,
             ),
             Example(
                 """
@@ -52,7 +52,7 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
                 completion: { _ in
                     self.hideLoading()
                 })
-                """
+                """,
             ),
             Example(
                 """
@@ -61,13 +61,13 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
                 } { _ in
                     self.hideLoading()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 foo(param1: 1, param2: { _ in },
                     param3: false, param4: true)
-                """
+                """,
             ),
             Example(
                 """
@@ -78,7 +78,7 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
                        baz()
                    }
                 )
-                """
+                """,
             ),
             Example(
                 """
@@ -86,13 +86,13 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
                    0,
                    1
                 ], param3: 0)
-                """
+                """,
             ),
             Example(
                 """
                 myFunc(foo: 0,
                        bar: baz == 0)
-                """
+                """,
             ),
             Example(
                 """
@@ -105,7 +105,7 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
                 } completion: { _ in
                     // completion
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -113,26 +113,26 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
                 """
                 foo(param1: 1, param2: bar,
                                 ↓param3: false, param4: true)
-                """
+                """,
             ),
             Example(
                 """
                 foo(param1: 1, param2: bar,
                  ↓param3: false, param4: true)
-                """
+                """,
             ),
             Example(
                 """
                 foo(param1: 1, param2: bar,
                        ↓param3: false,
                        ↓param4: true)
-                """
+                """,
             ),
             Example(
                 """
                 foo(param1: 1,
                        ↓param2: { _ in })
-                """
+                """,
             ),
             Example(
                 """
@@ -140,27 +140,27 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
                     param2: { _ in
                 }, param3: 2,
                  ↓param4: 0)
-                """
+                """,
             ),
             Example(
                 """
                 foo(param1: 1, param2: { _ in },
                        ↓param3: false, param4: true)
-                """
+                """,
             ),
             Example(
                 """
                 myFunc(foo: 0,
                         ↓bar: baz == 0)
-                """
+                """,
             ),
             Example(
                 """
                 myFunc(foo: 0, bar:
                         baz == 0, ↓baz: true)
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -181,7 +181,7 @@ private extension VerticalParameterAlignmentOnCallRule {
             }
 
             var firstArgumentLocation = locationConverter.location(
-                for: firstArg.positionAfterSkippingLeadingTrivia
+                for: firstArg.positionAfterSkippingLeadingTrivia,
             )
 
             var visitedLines = Set<Int>()
@@ -221,9 +221,10 @@ private extension VerticalParameterAlignmentOnCallRule {
         private func isMultiline(argument: LabeledExprListSyntax.Element) -> Bool {
             let expression = argument.expression
             let startPosition = locationConverter.location(
-                for: expression.positionAfterSkippingLeadingTrivia
+                for: expression.positionAfterSkippingLeadingTrivia,
             )
-            let endPosition = locationConverter.location(for: expression.endPositionBeforeTrailingTrivia)
+            let endPosition = locationConverter
+                .location(for: expression.endPositionBeforeTrailingTrivia)
 
             return endPosition.line > startPosition.line
         }

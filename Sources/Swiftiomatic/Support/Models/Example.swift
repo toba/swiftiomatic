@@ -67,7 +67,7 @@ extension Example {
         testDisableCommand: Bool = true,
         file: StaticString = #filePath,
         line: UInt = #line,
-        excludeFromDocumentation: Bool = false
+        excludeFromDocumentation: Bool = false,
     ) {
         self.code = code
         self.configuration = configuration
@@ -151,7 +151,7 @@ extension Example: Comparable {
     }
 }
 
-extension Array where Element == Example {
+extension [Example] {
     /// Make these examples skip wrapping in comment tests.
     func skipWrappingInCommentTests() -> Self {
         map { $0.skipWrappingInCommentTest() }

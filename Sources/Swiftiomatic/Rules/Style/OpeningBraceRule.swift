@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct OpeningBraceRule: Rule {
     var configuration = OpeningBraceConfiguration()
@@ -19,7 +19,7 @@ struct OpeningBraceRule: Rule {
         kind: .style,
         nonTriggeringExamples: OpeningBraceRuleExamples.nonTriggeringExamples,
         triggeringExamples: OpeningBraceRuleExamples.triggeringExamples,
-        corrections: OpeningBraceRuleExamples.corrections
+        corrections: OpeningBraceRuleExamples.corrections,
     )
 }
 
@@ -154,7 +154,9 @@ private extension OpeningBraceRule {
         /// Checks if a `BracedSyntax` has a multiline predecessor.
         /// For type declarations, the predecessor is the header. For conditional statements,
         /// it is the condition list, and for functions, it is the signature.
-        private func hasMultilinePredecessors(_ body: some BracedSyntax, keyword: TokenSyntax) -> Bool {
+        private func hasMultilinePredecessors(_ body: some BracedSyntax,
+                                              keyword: TokenSyntax) -> Bool
+        {
             guard let endToken = body.previousToken(viewMode: .sourceAccurate) else {
                 return false
             }
@@ -173,8 +175,8 @@ private extension OpeningBraceRule {
                         Opening braces should be preceded by a single space and on the same line \
                         as the declaration
                         """,
-                        correction: correction
-                    )
+                        correction: correction,
+                    ),
                 )
             }
         }
@@ -191,13 +193,14 @@ private extension OpeningBraceRule {
             let previousLocation = previousToken.endLocation(converter: locationConverter)
             let leftBraceLocation = leftBrace.startLocation(converter: locationConverter)
             if previousLocation.line != leftBraceLocation.line {
-                let trailingCommentText = previousToken.trailingTrivia.description.trimmingCharacters(
-                    in: .whitespaces
-                )
+                let trailingCommentText = previousToken.trailingTrivia.description
+                    .trimmingCharacters(
+                        in: .whitespaces,
+                    )
                 return .init(
                     start: previousToken.endPositionBeforeTrailingTrivia,
                     end: openingPosition.advanced(by: trailingCommentText.isNotEmpty ? 1 : 0),
-                    replacement: trailingCommentText.isNotEmpty ? " { \(trailingCommentText)" : " "
+                    replacement: trailingCommentText.isNotEmpty ? " { \(trailingCommentText)" : " ",
                 )
             }
             if previousLocation.column + 1 == leftBraceLocation.column {
@@ -209,15 +212,16 @@ private extension OpeningBraceRule {
                 }
                 let comment = triviaBetween.description.trimmingTrailingCharacters(in: .whitespaces)
                 return .init(
-                    start: previousToken.endPositionBeforeTrailingTrivia + SourceLength(of: comment),
+                    start: previousToken
+                        .endPositionBeforeTrailingTrivia + SourceLength(of: comment),
                     end: openingPosition,
-                    replacement: " "
+                    replacement: " ",
                 )
             }
             return .init(
                 start: previousToken.endPositionBeforeTrailingTrivia,
                 end: openingPosition,
-                replacement: " "
+                replacement: " ",
             )
         }
     }

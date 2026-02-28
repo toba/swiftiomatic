@@ -20,28 +20,28 @@ struct PrivateOverFilePrivateRule: Rule {
                 extension String {
                   fileprivate func Something(){}
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                   fileprivate let myInt = 4
                 }
-                """
+                """,
             ),
             Example(
                 """
                 actor MyActor {
                   fileprivate let myInt = 4
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                   fileprivate(set) var myInt = 4
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -50,7 +50,7 @@ struct PrivateOverFilePrivateRule: Rule {
                     fileprivate struct Inner {}
                   }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -60,20 +60,20 @@ struct PrivateOverFilePrivateRule: Rule {
                 ↓fileprivate class MyClass {
                   fileprivate(set) var myInt = 4
                 }
-                """
+                """,
             ),
             Example(
                 """
                 ↓fileprivate actor MyActor {
                   fileprivate let myInt = 4
                 }
-                """
+                """,
             ),
             Example(
                 """
                     ↓fileprivate func f() {}
                     ↓fileprivate var x = 0
-                """
+                """,
             ),
         ],
         corrections: [
@@ -85,7 +85,7 @@ struct PrivateOverFilePrivateRule: Rule {
                 Example("private class MyClass { fileprivate(set) var myInt = 4 }"),
             Example("↓fileprivate actor MyActor { fileprivate(set) var myInt = 4 }"):
                 Example("private actor MyActor { fileprivate(set) var myInt = 4 }"),
-        ]
+        ],
     )
 }
 
@@ -140,14 +140,16 @@ private extension PrivateOverFilePrivateRule {
         }
 
         private func visit(withModifier node: some WithModifiersSyntax) {
-            if let modifier = node.modifiers.first(where: { $0.name.tokenKind == .keyword(.fileprivate) }) {
+            if let modifier = node.modifiers
+                .first(where: { $0.name.tokenKind == .keyword(.fileprivate) })
+            {
                 violations.append(
                     at: modifier.positionAfterSkippingLeadingTrivia,
                     correction: .init(
                         start: modifier.positionAfterSkippingLeadingTrivia,
                         end: modifier.endPositionBeforeTrailingTrivia,
-                        replacement: "private"
-                    )
+                        replacement: "private",
+                    ),
                 )
             }
         }

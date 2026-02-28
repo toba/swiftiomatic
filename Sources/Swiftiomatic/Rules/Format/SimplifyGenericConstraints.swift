@@ -1,11 +1,3 @@
-//
-//  SimplifyGenericConstraints.swift
-//  SwiftFormat
-//
-//  Created by Manuel Lopez on 10/8/25.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -13,20 +5,21 @@ extension FormatRule {
         help: """
         Use inline generic constraints (`<T: Foo>`) instead of where clauses
         (`<T> where T: Foo`) for simple protocol conformance constraints.
-        """
+        """,
     ) { formatter in
         formatter.forEach(.keyword) { keywordIndex, keyword in
             // Handle function declarations
             if keyword.string == "func" {
-                guard let declaration = formatter.parseFunctionDeclaration(keywordIndex: keywordIndex),
-                      let genericParameterRange = declaration.genericParameterRange,
-                      let whereClauseRange = declaration.whereClauseRange
+                guard let declaration = formatter
+                    .parseFunctionDeclaration(keywordIndex: keywordIndex),
+                    let genericParameterRange = declaration.genericParameterRange,
+                    let whereClauseRange = declaration.whereClauseRange
                 else { return }
 
                 formatter.simplifyGenericConstraints(
                     genericStartIndex: genericParameterRange.lowerBound,
                     genericEndIndex: genericParameterRange.upperBound,
-                    whereIndex: whereClauseRange.lowerBound
+                    whereIndex: whereClauseRange.lowerBound,
                 )
                 return
             }
@@ -36,13 +29,16 @@ extension FormatRule {
 
             // Find the type name
             guard
-                let typeNameIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: keywordIndex)
+                let typeNameIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak,
+                    after: keywordIndex,
+                )
             else { return }
 
             // Check for generic parameters
             guard
                 let genericStartIndex = formatter.index(
-                    of: .nonSpaceOrCommentOrLinebreak, after: typeNameIndex
+                    of: .nonSpaceOrCommentOrLinebreak, after: typeNameIndex,
                 ),
                 formatter.tokens[genericStartIndex] == .startOfScope("<"),
                 let genericEndIndex = formatter.endOfScope(at: genericStartIndex)
@@ -50,14 +46,17 @@ extension FormatRule {
 
             // Find the where clause
             guard let whereIndex = formatter.index(of: .keyword("where"), after: genericEndIndex),
-                  let openBraceIndex = formatter.index(of: .startOfScope("{"), after: genericEndIndex),
+                  let openBraceIndex = formatter.index(
+                      of: .startOfScope("{"),
+                      after: genericEndIndex,
+                  ),
                   whereIndex < openBraceIndex
             else { return }
 
             formatter.simplifyGenericConstraints(
                 genericStartIndex: genericStartIndex,
                 genericEndIndex: genericEndIndex,
-                whereIndex: whereIndex
+                whereIndex: whereIndex,
             )
         }
     } examples: {
@@ -82,29 +81,39 @@ extension FormatRule {
 }
 
 extension Formatter {
-    func simplifyGenericConstraints(genericStartIndex: Int, genericEndIndex _: Int, whereIndex: Int) {
+    func simplifyGenericConstraints(
+        genericStartIndex: Int,
+        genericEndIndex _: Int,
+        whereIndex: Int,
+    ) {
         // Parse generics from angle brackets
         var genericTypes = [Formatter.GenericType]()
         parseGenericTypes(
             from: genericStartIndex,
-            into: &genericTypes
+            into: &genericTypes,
         )
 
         // Parse generics from where clause
         parseGenericTypes(
             from: whereIndex,
-            into: &genericTypes
+            into: &genericTypes,
         )
 
         // Find constraints that can be moved inline
         // Only simple protocol conformances (T: Protocol) can be moved
         var constraintsToMove:
-            [(genericType: Formatter.GenericType, conformance: Formatter.GenericType.GenericConformance)] =
+            [(
+                genericType: Formatter.GenericType,
+                conformance: Formatter.GenericType.GenericConformance,
+            )] =
             []
 
         for genericType in genericTypes {
             // Check if this generic type is declared in the current function's generic parameter list
-            let isGenericDeclaredInline = isGenericTypeDeclared(genericType.name, in: genericStartIndex)
+            let isGenericDeclaredInline = isGenericTypeDeclared(
+                genericType.name,
+                in: genericStartIndex,
+            )
 
             // Check each conformance to see if it can be moved
             for conformance in genericType.conformances {
@@ -124,13 +133,15 @@ extension Formatter {
                 // Find the last non-space/comment/linebreak token in the constraint
                 guard
                     let lastSignificantIndex = index(
-                        of: .nonSpaceOrCommentOrLinebreak, before: conformance.sourceRange.upperBound + 1,
-                        if: { _ in true }
+                        of: .nonSpaceOrCommentOrLinebreak,
+                        before: conformance.sourceRange.upperBound + 1,
+                        if: { _ in true },
                     )
                 else { continue }
 
                 // Check if the constraint spans multiple lines
-                guard onSameLine(conformance.sourceRange.lowerBound, lastSignificantIndex) else { continue }
+                guard onSameLine(conformance.sourceRange.lowerBound, lastSignificantIndex)
+                else { continue }
 
                 constraintsToMove.append((genericType: genericType, conformance: conformance))
             }
@@ -163,7 +174,10 @@ extension Formatter {
 
         // Check if the where clause is now empty and remove it if so
         // Find the next significant token after the where keyword
-        if let tokenAfterWhereIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: whereClauseIndex) {
+        if let tokenAfterWhereIndex = index(
+            of: .nonSpaceOrCommentOrLinebreak,
+            after: whereClauseIndex,
+        ) {
             let tokenAfterWhere = tokens[tokenAfterWhereIndex]
             if tokenAfterWhere == .startOfScope("{") {
                 // Where clause followed by opening brace - remove everything between where and {
@@ -202,7 +216,7 @@ extension Formatter {
             if let commaIndex = index(
                 of: .nonSpaceOrCommentOrLinebreak,
                 before: openBraceIndex,
-                if: { $0 == .delimiter(",") }
+                if: { $0 == .delimiter(",") },
             ) {
                 removeToken(at: commaIndex)
                 // Clean up extra whitespace around the removed comma
@@ -226,8 +240,11 @@ extension Formatter {
             var currentIndex = updatedGenericStartIndex.index + 1
 
             while currentIndex < updatedGenericEndIndex {
-                guard let typeIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex - 1),
-                      typeIndex < updatedGenericEndIndex
+                guard let typeIndex = index(
+                    of: .nonSpaceOrCommentOrLinebreak,
+                    after: currentIndex - 1,
+                ),
+                    typeIndex < updatedGenericEndIndex
                 else { break }
 
                 if tokens[typeIndex].string == typeName {

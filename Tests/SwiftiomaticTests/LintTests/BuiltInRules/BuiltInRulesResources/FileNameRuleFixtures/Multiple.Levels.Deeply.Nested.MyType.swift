@@ -1,9 +1,9 @@
 extension Multiple {
-    enum Levels {
-        class Deeply {
-            struct Nested {
-                actor MyType {}
-            }
-        }
+  enum Levels {
+    class Deeply {
+      struct Nested {
+        actor MyType {}
+      }
     }
+  }
 }

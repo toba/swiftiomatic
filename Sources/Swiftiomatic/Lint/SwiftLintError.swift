@@ -5,8 +5,8 @@ enum SwiftLintError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case let .usageError(description):
-            return description
+            case let .usageError(description):
+                return description
         }
     }
 }

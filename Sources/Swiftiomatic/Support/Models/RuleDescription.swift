@@ -102,7 +102,7 @@ struct RuleDescription: Equatable, Sendable {
         triggeringExamples: [Example] = [],
         corrections: [Example: Example] = [:],
         deprecatedAliases: Set<String> = [],
-        requiresFileOnDisk: Bool = false
+        requiresFileOnDisk: Bool = false,
     ) {
         self.identifier = identifier
         self.name = name

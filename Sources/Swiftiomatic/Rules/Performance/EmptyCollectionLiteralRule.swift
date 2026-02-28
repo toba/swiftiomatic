@@ -24,7 +24,7 @@ struct EmptyCollectionLiteralRule: Rule {
             Example("myDict↓ == [: ]"),
             Example("myDict↓ == [ :]"),
             Example("myDict↓ == [ : ]"),
-        ]
+        ],
     )
 }
 
@@ -46,9 +46,10 @@ private extension EmptyCollectionLiteralRule {
                 let expectedLeftSquareBracketToken = node.nextToken(viewMode: .sourceAccurate),
                 expectedLeftSquareBracketToken.tokenKind == .leftSquare,
                 let expectedColonToken = expectedLeftSquareBracketToken.nextToken(
-                    viewMode: .sourceAccurate
+                    viewMode: .sourceAccurate,
                 ),
-                expectedColonToken.tokenKind == .colon || expectedColonToken.tokenKind == .rightSquare
+                expectedColonToken.tokenKind == .colon || expectedColonToken
+                .tokenKind == .rightSquare
             else {
                 return
             }

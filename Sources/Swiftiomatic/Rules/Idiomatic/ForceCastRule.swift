@@ -11,7 +11,7 @@ struct ForceCastRule: Rule {
         nonTriggeringExamples: [
             Example("NSNumber() as? Int"),
         ],
-        triggeringExamples: [Example("NSNumber() ↓as! Int")]
+        triggeringExamples: [Example("NSNumber() ↓as! Int")],
     )
 }
 

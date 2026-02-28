@@ -15,9 +15,9 @@ struct Command: Equatable {
         ///            state prior to the current action.
         package func inverse() -> Self {
             switch self {
-            case .enable: return .disable
-            case .disable: return .enable
-            case .invalid: return .invalid
+                case .enable: return .disable
+                case .disable: return .enable
+                case .invalid: return .invalid
             }
         }
     }
@@ -72,7 +72,7 @@ struct Command: Equatable {
         line: Int = 0,
         range: Range<Int>? = nil,
         modifier: Modifier? = nil,
-        trailingComment: String? = nil
+        trailingComment: String? = nil,
     ) {
         self.action = action
         self.ruleIdentifiers = ruleIdentifiers
@@ -113,7 +113,7 @@ struct Command: Equatable {
             trailingComment = String(
                 scanner
                     .string[scanner.currentIndex...]
-                    .dropFirst(Self.commentDelimiter.count)
+                    .dropFirst(Self.commentDelimiter.count),
             )
         }
         let ruleTexts = rawRuleTexts.components(separatedBy: .whitespacesAndNewlines).filter {
@@ -128,7 +128,7 @@ struct Command: Equatable {
         let modifier: Modifier?
         if hasModifier {
             let modifierString = String(
-                actionAndModifierScanner.string[actionAndModifierScanner.currentIndex...]
+                actionAndModifierScanner.string[actionAndModifierScanner.currentIndex...],
             )
             modifier = Modifier(rawValue: modifierString) ?? .invalid
         } else {
@@ -141,7 +141,7 @@ struct Command: Equatable {
             line: line,
             range: range,
             modifier: modifier,
-            trailingComment: trailingComment
+            trailingComment: trailingComment,
         )
     }
 
@@ -154,31 +154,32 @@ struct Command: Equatable {
             return [self]
         }
         switch modifier {
-        case .previous:
-            return [
-                Self(action: action, ruleIdentifiers: ruleIdentifiers, line: line - 1),
-                Self(
-                    action: action.inverse(), ruleIdentifiers: ruleIdentifiers, line: line - 1,
-                    range: 0 ..< Int.max
-                ),
-            ]
-        case .this:
-            return [
-                Self(action: action, ruleIdentifiers: ruleIdentifiers, line: line),
-                Self(
-                    action: action.inverse(), ruleIdentifiers: ruleIdentifiers, line: line, range: 0 ..< Int.max
-                ),
-            ]
-        case .next:
-            return [
-                Self(action: action, ruleIdentifiers: ruleIdentifiers, line: line + 1),
-                Self(
-                    action: action.inverse(), ruleIdentifiers: ruleIdentifiers, line: line + 1,
-                    range: 0 ..< Int.max
-                ),
-            ]
-        case .invalid:
-            return []
+            case .previous:
+                return [
+                    Self(action: action, ruleIdentifiers: ruleIdentifiers, line: line - 1),
+                    Self(
+                        action: action.inverse(), ruleIdentifiers: ruleIdentifiers, line: line - 1,
+                        range: 0 ..< Int.max,
+                    ),
+                ]
+            case .this:
+                return [
+                    Self(action: action, ruleIdentifiers: ruleIdentifiers, line: line),
+                    Self(
+                        action: action.inverse(), ruleIdentifiers: ruleIdentifiers, line: line,
+                        range: 0 ..< Int.max,
+                    ),
+                ]
+            case .next:
+                return [
+                    Self(action: action, ruleIdentifiers: ruleIdentifiers, line: line + 1),
+                    Self(
+                        action: action.inverse(), ruleIdentifiers: ruleIdentifiers, line: line + 1,
+                        range: 0 ..< Int.max,
+                    ),
+                ]
+            case .invalid:
+                return []
         }
     }
 }

@@ -13,7 +13,7 @@ struct InclusiveLanguageRule: Rule {
         """,
         kind: .style,
         nonTriggeringExamples: InclusiveLanguageRuleExamples.nonTriggeringExamples,
-        triggeringExamples: InclusiveLanguageRuleExamples.triggeringExamples
+        triggeringExamples: InclusiveLanguageRuleExamples.triggeringExamples,
     )
 }
 
@@ -119,11 +119,13 @@ private extension InclusiveLanguageRule {
             return ReasonedRuleViolation(
                 position: node.positionAfterSkippingLeadingTrivia,
                 reason:
-                "Declaration \(name) contains the term \"\(term)\" which is not considered inclusive"
+                "Declaration \(name) contains the term \"\(term)\" which is not considered inclusive",
             )
         }
 
-        private func violationTerm(for node: TokenSyntax) -> (violationTerm: String, name: String)? {
+        private func violationTerm(for node: TokenSyntax)
+            -> (violationTerm: String, name: String)?
+        {
             let name = node.text
             let lowercased = name.lowercased()
             let violationTerm = configuration.allTerms.first { term in

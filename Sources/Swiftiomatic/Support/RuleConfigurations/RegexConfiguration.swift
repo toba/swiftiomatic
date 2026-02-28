@@ -63,7 +63,7 @@ struct RegexConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Hashabl
     var description: RuleDescription {
         RuleDescription(
             identifier: identifier, name: name ?? identifier,
-            description: "", kind: .style
+            description: "", kind: .style,
         )
     }
 
@@ -132,39 +132,34 @@ struct RegexConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Hashabl
     }
 
     package func shouldValidate(filePath: String) -> Bool {
-        let pathRange = filePath.fullNSRange
         let isIncluded =
             included.isEmpty
-                || included.contains { regex in
-                    regex.regex.firstMatch(in: filePath, range: pathRange) != nil
-                }
+                || included.contains { $0.hasMatch(in: filePath) }
 
         guard isIncluded else {
             return false
         }
 
-        return excluded.allSatisfy { regex in
-            regex.regex.firstMatch(in: filePath, range: pathRange) == nil
-        }
+        return excluded.allSatisfy { !$0.hasMatch(in: filePath) }
     }
 
     private func excludedMatchKinds(from configurationDict: [String: Any]) throws(Issue) -> Set<
-        SyntaxKind
+        SyntaxKind,
     > {
         let matchKinds = [String].array(of: configurationDict["match_kinds"])
         let excludedMatchKinds = [String].array(of: configurationDict["excluded_match_kinds"])
 
         switch (matchKinds, excludedMatchKinds) {
-        case (.some(let matchKinds), nil):
-            return try SyntaxKind.allKinds.subtracting(toSyntaxKinds(matchKinds))
-        case (nil, let .some(excludedMatchKinds)):
-            return try toSyntaxKinds(excludedMatchKinds)
-        case (nil, nil):
-            return .init()
-        case (.some, .some):
-            throw .genericWarning(
-                "The configuration keys 'match_kinds' and 'excluded_match_kinds' cannot appear at the same time."
-            )
+            case (.some(let matchKinds), nil):
+                return try SyntaxKind.allKinds.subtracting(toSyntaxKinds(matchKinds))
+            case (nil, let .some(excludedMatchKinds)):
+                return try toSyntaxKinds(excludedMatchKinds)
+            case (nil, nil):
+                return .init()
+            case (.some, .some):
+                throw .genericWarning(
+                    "The configuration keys 'match_kinds' and 'excluded_match_kinds' cannot appear at the same time.",
+                )
         }
     }
 

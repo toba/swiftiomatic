@@ -41,9 +41,9 @@ enum TaskDetectionHelpers {
 
         var description: String {
             switch self {
-            case .deinit: "deinit"
-            case .viewDidDisappear: "viewDidDisappear"
-            case .general: "general scope"
+                case .deinit: "deinit"
+                case .viewDidDisappear: "viewDidDisappear"
+                case .general: "general scope"
             }
         }
     }

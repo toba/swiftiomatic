@@ -5,7 +5,7 @@ enum UnusedDeclarationRuleExamples {
                 """
                 let kConstant = 0
                 _ = kConstant
-                """
+                """,
             ),
             Example(
                 """
@@ -28,7 +28,7 @@ enum UnusedDeclarationRuleExamples {
 
                 let changes = [Change.insert(0), .delete(0)]
                 _ = changes.deletes()
-                """
+                """,
             ),
             Example(
                 """
@@ -42,7 +42,7 @@ enum UnusedDeclarationRuleExamples {
                 }
 
                 _ = ResponseModel(items: [Item()]).items
-                """
+                """,
             ),
             Example(
                 """
@@ -51,12 +51,12 @@ enum UnusedDeclarationRuleExamples {
                     }
                 }
                 _ = ResponseModel()
-                """
+                """,
             ),
             Example(
                 """
                 public func foo() {}
-                """
+                """,
             ),
             Example(
                 """
@@ -68,7 +68,7 @@ enum UnusedDeclarationRuleExamples {
 
                 struct MyStruct: Foo {}
                 MyStruct().bar()
-                """
+                """,
             ),
             Example(
                 """
@@ -76,7 +76,7 @@ enum UnusedDeclarationRuleExamples {
                 class MyTests: XCTestCase {
                     func testExample() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -85,7 +85,7 @@ enum UnusedDeclarationRuleExamples {
                 class MyTests: BestTestCase {
                     func testExample() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -96,7 +96,7 @@ enum UnusedDeclarationRuleExamples {
                         }
                     }
                     S().f()
-                """
+                """,
             ),
             Example(
                 """
@@ -156,7 +156,7 @@ enum UnusedDeclarationRuleExamples {
                 acceptComponentBuilder {
                   "hello"
                 }
-                """
+                """,
             ),
         ] + platformSpecificNonTriggeringExamples
 
@@ -165,7 +165,7 @@ enum UnusedDeclarationRuleExamples {
             Example(
                 """
                 let ↓kConstant = 0
-                """
+                """,
             ),
             Example(
                 """
@@ -177,7 +177,7 @@ enum UnusedDeclarationRuleExamples {
                         case items = "ResponseItems"
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -185,12 +185,12 @@ enum UnusedDeclarationRuleExamples {
                     func ↓foo() {
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 public func ↓foo() {}
-                """, configuration: ["include_public_and_open": true]
+                """, configuration: ["include_public_and_open": true],
             ),
             Example(
                 """
@@ -205,7 +205,7 @@ enum UnusedDeclarationRuleExamples {
 
                 struct MyStruct: Foo {}
                 _ = MyStruct()
-                """
+                """,
             ),
             Example(
                 """
@@ -213,7 +213,7 @@ enum UnusedDeclarationRuleExamples {
                 class ↓MyTests: NSObject {
                     func ↓testExample() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -242,19 +242,19 @@ enum UnusedDeclarationRuleExamples {
                 }
 
                 _ = ComponentBuilder()
-                """
+                """,
             ),
             Example(
                 """
                 protocol ↓Foo {}
                 extension Foo {}
-                """
+                """,
             ),
             Example(
                 """
                 class ↓C<T> {}
                 extension C<Int> {}
-                """
+                """,
             ),
         ]
         + ["actor", "enum", "class", "struct"].map {
@@ -264,128 +264,128 @@ enum UnusedDeclarationRuleExamples {
                 \($0) ↓FooImpl {}
                 extension FooImpl {}
                 extension FooImpl: Foo {}
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             )
         } + platformSpecificTriggeringExamples
 
     #if os(macOS)
-        private static let platformSpecificNonTriggeringExamples = [
-            Example(
-                """
-                import Cocoa
+    private static let platformSpecificNonTriggeringExamples = [
+        Example(
+            """
+            import Cocoa
 
-                @NSApplicationMain
-                final class AppDelegate: NSObject, NSApplicationDelegate {
-                    func applicationWillFinishLaunching(_ notification: Notification) {}
-                    func applicationWillBecomeActive(_ notification: Notification) {}
+            @NSApplicationMain
+            final class AppDelegate: NSObject, NSApplicationDelegate {
+                func applicationWillFinishLaunching(_ notification: Notification) {}
+                func applicationWillBecomeActive(_ notification: Notification) {}
+            }
+            """,
+        ),
+        Example(
+            """
+            import Foundation
+
+            public final class Foo: NSObject {
+                @IBAction private func foo() {}
+            }
+            """,
+        ),
+        Example(
+            """
+            import Foundation
+
+            public final class Foo: NSObject {
+                @objc func foo() {}
+            }
+            """,
+        ),
+        Example(
+            """
+            import Foundation
+
+            public final class Foo: NSObject {
+                @IBInspectable private var innerPaddingWidth: Int {
+                    set { self.backgroundView.innerPaddingWidth = newValue }
+                    get { return self.backgroundView.innerPaddingWidth }
                 }
-                """
-            ),
-            Example(
-                """
-                import Foundation
+            }
+            """,
+        ),
+        Example(
+            """
+            import Foundation
 
-                public final class Foo: NSObject {
-                    @IBAction private func foo() {}
+            public final class Foo: NSObject {
+                @IBOutlet private var bar: NSObject! {
+                    set { fatalError() }
+                    get { fatalError() }
                 }
-                """
-            ),
-            Example(
-                """
-                import Foundation
 
-                public final class Foo: NSObject {
-                    @objc func foo() {}
+                @IBOutlet private var baz: NSObject! {
+                    willSet { print("willSet") }
                 }
-                """
-            ),
-            Example(
-                """
-                import Foundation
 
-                public final class Foo: NSObject {
-                    @IBInspectable private var innerPaddingWidth: Int {
-                        set { self.backgroundView.innerPaddingWidth = newValue }
-                        get { return self.backgroundView.innerPaddingWidth }
-                    }
+                @IBOutlet private var buzz: NSObject! {
+                    didSet { print("didSet") }
                 }
-                """
-            ),
-            Example(
-                """
-                import Foundation
+            }
+            """,
+        ),
+    ]
 
-                public final class Foo: NSObject {
-                    @IBOutlet private var bar: NSObject! {
-                        set { fatalError() }
-                        get { fatalError() }
-                    }
+    private static let platformSpecificTriggeringExamples = [
+        Example(
+            """
+            import Cocoa
 
-                    @IBOutlet private var baz: NSObject! {
-                        willSet { print("willSet") }
-                    }
+            @NSApplicationMain
+            final class AppDelegate: NSObject, NSApplicationDelegate {
+                func ↓appWillFinishLaunching(_ notification: Notification) {}
+                func applicationWillBecomeActive(_ notification: Notification) {}
+            }
+            """,
+        ),
+        Example(
+            """
+            import Cocoa
 
-                    @IBOutlet private var buzz: NSObject! {
-                        didSet { print("didSet") }
-                    }
-                }
-                """
-            ),
-        ]
+            final class ↓AppDelegate: NSObject, NSApplicationDelegate {
+                func applicationWillFinishLaunching(_ notification: Notification) {}
+                func applicationWillBecomeActive(_ notification: Notification) {}
+            }
+            """,
+        ),
+        Example(
+            """
+            import Foundation
 
-        private static let platformSpecificTriggeringExamples = [
-            Example(
-                """
-                import Cocoa
+            public final class Foo: NSObject {
+                @IBOutlet var ↓bar: NSObject!
+            }
+            """,
+        ),
+        Example(
+            """
+            import Foundation
 
-                @NSApplicationMain
-                final class AppDelegate: NSObject, NSApplicationDelegate {
-                    func ↓appWillFinishLaunching(_ notification: Notification) {}
-                    func applicationWillBecomeActive(_ notification: Notification) {}
-                }
-                """
-            ),
-            Example(
-                """
-                import Cocoa
+            public final class Foo: NSObject {
+                @IBInspectable var ↓bar: String!
+            }
+            """,
+        ),
+        Example(
+            """
+            import Foundation
 
-                final class ↓AppDelegate: NSObject, NSApplicationDelegate {
-                    func applicationWillFinishLaunching(_ notification: Notification) {}
-                    func applicationWillBecomeActive(_ notification: Notification) {}
-                }
-                """
-            ),
-            Example(
-                """
-                import Foundation
-
-                public final class Foo: NSObject {
-                    @IBOutlet var ↓bar: NSObject!
-                }
-                """
-            ),
-            Example(
-                """
-                import Foundation
-
-                public final class Foo: NSObject {
-                    @IBInspectable var ↓bar: String!
-                }
-                """
-            ),
-            Example(
-                """
-                import Foundation
-
-                final class Foo: NSObject {}
-                final class ↓Bar {
-                    var ↓foo = Foo()
-                }
-                """
-            ),
-        ]
+            final class Foo: NSObject {}
+            final class ↓Bar {
+                var ↓foo = Foo()
+            }
+            """,
+        ),
+    ]
     #else
-        private static let platformSpecificNonTriggeringExamples = [Example]()
-        private static let platformSpecificTriggeringExamples = [Example]()
+    private static let platformSpecificNonTriggeringExamples = [Example]()
+    private static let platformSpecificTriggeringExamples = [Example]()
     #endif
 }

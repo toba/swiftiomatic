@@ -34,7 +34,7 @@ struct PatternMatchingKeywordsRule: Rule {
             Example("case (↓var x,  ↓var y)"),
             Example("case .foo(↓var x, ↓var y)"),
             Example("case (.yamlParsing(↓var x), .yamlParsing(↓var y))"),
-        ].map(wrapInSwitch)
+        ].map(wrapInSwitch),
     )
 
     private static func wrapInSwitch(_ example: Example) -> Example {
@@ -43,7 +43,7 @@ struct PatternMatchingKeywordsRule: Rule {
             switch foo {
                 \(example.code): break
             }
-            """
+            """,
         )
     }
 }
@@ -67,7 +67,7 @@ private extension PatternMatchingKeywordsRule {
 }
 
 private final class TupleVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxVisitor<
-    Configuration
+    Configuration,
 > {
     override func visitPost(_ node: LabeledExprListSyntax) {
         let list = node.flatteningEnumPatterns().map(\.expression.categorized)
@@ -77,7 +77,9 @@ private final class TupleVisitor<Configuration: RuleConfiguration>: ViolationsSy
         let specifiers = list.compactMap {
             if case let .binding(specifier) = $0 { specifier } else { nil }
         }
-        if specifiers.count > 1, specifiers.allSatisfy({ $0.tokenKind == specifiers.first?.tokenKind }) {
+        if specifiers.count > 1,
+           specifiers.allSatisfy({ $0.tokenKind == specifiers.first?.tokenKind })
+        {
             violations.append(contentsOf: specifiers.map(\.positionAfterSkippingLeadingTrivia))
         }
     }
@@ -104,8 +106,8 @@ private enum ArgumentType {
 
     var isReference: Bool {
         switch self {
-        case .reference: true
-        default: false
+            case .reference: true
+            default: false
         }
     }
 }

@@ -13,7 +13,7 @@ struct ObservationPitfallsRule: Rule {
         ],
         triggeringExamples: [
             Example("↓withObservationTracking { observe() }"),
-        ]
+        ],
     )
 }
 
@@ -36,8 +36,8 @@ private extension ObservationPitfallsRule {
                         "withObservationTracking with recursive onChange — consider Observations AsyncSequence",
                         severity: .warning,
                         confidence: .medium,
-                        suggestion: "Replace with `for await value in Observations { ... }`"
-                    )
+                        suggestion: "Replace with `for await value in Observations { ... }`",
+                    ),
                 )
             }
         }
@@ -60,8 +60,8 @@ private extension ObservationPitfallsRule {
                             reason: "Observations closure missing [weak self] — may cause retain cycle",
                             severity: .error,
                             confidence: .medium,
-                            suggestion: "Add [weak self] to the Observations closure"
-                        )
+                            suggestion: "Add [weak self] to the Observations closure",
+                        ),
                     )
                 }
             }

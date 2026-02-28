@@ -1,327 +1,337 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite struct SortDeclarationsTests {
-    @Test func sortEnumBody() {
-        let input = """
-        // swiftformat:sort
-        enum FeatureFlags {
-            case upsellB
-            case fooFeature(
-                fooConfiguration: Foo,
-                barConfiguration: Bar
-            )
-            case barFeature // Trailing comment -- bar feature
-            /// Leading comment -- upsell A
-            case upsellA(
-                fooConfiguration: Foo,
-                barConfiguration: Bar
-            )
-        }
+  @Test func sortEnumBody() {
+    let input = """
+      // swiftformat:sort
+      enum FeatureFlags {
+          case upsellB
+          case fooFeature(
+              fooConfiguration: Foo,
+              barConfiguration: Bar
+          )
+          case barFeature // Trailing comment -- bar feature
+          /// Leading comment -- upsell A
+          case upsellA(
+              fooConfiguration: Foo,
+              barConfiguration: Bar
+          )
+      }
 
-        enum NextType {
-            case foo
-            case bar
-        }
-        """
+      enum NextType {
+          case foo
+          case bar
+      }
+      """
 
-        let output = """
-        // swiftformat:sort
-        enum FeatureFlags {
-            case barFeature // Trailing comment -- bar feature
-            case fooFeature(
-                fooConfiguration: Foo,
-                barConfiguration: Bar
-            )
-            /// Leading comment -- upsell A
-            case upsellA(
-                fooConfiguration: Foo,
-                barConfiguration: Bar
-            )
-            case upsellB
-        }
+    let output = """
+      // swiftformat:sort
+      enum FeatureFlags {
+          case barFeature // Trailing comment -- bar feature
+          case fooFeature(
+              fooConfiguration: Foo,
+              barConfiguration: Bar
+          )
+          /// Leading comment -- upsell A
+          case upsellA(
+              fooConfiguration: Foo,
+              barConfiguration: Bar
+          )
+          case upsellB
+      }
 
-        enum NextType {
-            case foo
-            case bar
-        }
-        """
+      enum NextType {
+          case foo
+          case bar
+      }
+      """
 
-        testFormatting(for: input, output, rule: .sortDeclarations)
-    }
+    testFormatting(for: input, output, rule: .sortDeclarations)
+  }
 
-    @Test func sortEnumBodyWithOnlyOneCase() {
-        let input = """
-        // swiftformat:sort
-        enum FeatureFlags {
-            case upsellB
-        }
-        """
+  @Test func sortEnumBodyWithOnlyOneCase() {
+    let input = """
+      // swiftformat:sort
+      enum FeatureFlags {
+          case upsellB
+      }
+      """
 
-        testFormatting(for: input, rule: .sortDeclarations)
-    }
+    testFormatting(for: input, rule: .sortDeclarations)
+  }
 
-    @Test func sortEnumBodyWithoutCase() {
-        let input = """
-        // swiftformat:sort
-        enum FeatureFlags {}
-        """
+  @Test func sortEnumBodyWithoutCase() {
+    let input = """
+      // swiftformat:sort
+      enum FeatureFlags {}
+      """
 
-        testFormatting(for: input, rule: .sortDeclarations)
-    }
+    testFormatting(for: input, rule: .sortDeclarations)
+  }
 
-    @Test func noSortUnannotatedType() {
-        let input = """
-        enum FeatureFlags {
-            case upsellB
-            case fooFeature
-            case barFeature
-            case upsellA
-        }
-        """
+  @Test func noSortUnannotatedType() {
+    let input = """
+      enum FeatureFlags {
+          case upsellB
+          case fooFeature
+          case barFeature
+          case upsellA
+      }
+      """
 
-        testFormatting(for: input, rule: .sortDeclarations)
-    }
+    testFormatting(for: input, rule: .sortDeclarations)
+  }
 
-    @Test func preservesSortedBody() {
-        let input = """
-        // swiftformat:sort
-        enum FeatureFlags {
-            case barFeature
-            case fooFeature
-            case upsellA
-            case upsellB
-        }
-        """
+  @Test func preservesSortedBody() {
+    let input = """
+      // swiftformat:sort
+      enum FeatureFlags {
+          case barFeature
+          case fooFeature
+          case upsellA
+          case upsellB
+      }
+      """
 
-        testFormatting(for: input, rule: .sortDeclarations)
-    }
+    testFormatting(for: input, rule: .sortDeclarations)
+  }
 
-    @Test func sortsTypeBody() {
-        let input = """
-        // swiftformat:sort
-        enum FeatureFlags {
-            case upsellB
-            case fooFeature
-            case barFeature
-            case upsellA
-        }
-        """
+  @Test func sortsTypeBody() {
+    let input = """
+      // swiftformat:sort
+      enum FeatureFlags {
+          case upsellB
+          case fooFeature
+          case barFeature
+          case upsellA
+      }
+      """
 
-        let output = """
-        // swiftformat:sort
-        enum FeatureFlags {
-            case barFeature
-            case fooFeature
-            case upsellA
-            case upsellB
-        }
-        """
+    let output = """
+      // swiftformat:sort
+      enum FeatureFlags {
+          case barFeature
+          case fooFeature
+          case upsellA
+          case upsellB
+      }
+      """
 
-        testFormatting(for: input, output, rule: .sortDeclarations, exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope])
-    }
+    testFormatting(
+      for: input, output, rule: .sortDeclarations,
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope])
+  }
 
-    @Test func sortClassWithMixedDeclarationTypes() {
-        let input = """
-        // swiftformat:sort
-        class Foo {
-            let quuxProperty = Quux()
-            let barProperty = Bar()
+  @Test func sortClassWithMixedDeclarationTypes() {
+    let input = """
+      // swiftformat:sort
+      class Foo {
+          let quuxProperty = Quux()
+          let barProperty = Bar()
 
-            var fooComputedProperty: Foo {
-                Foo()
-            }
+          var fooComputedProperty: Foo {
+              Foo()
+          }
 
-            func baazFunction() -> Baaz {
-                Baaz()
-            }
-        }
-        """
+          func baazFunction() -> Baaz {
+              Baaz()
+          }
+      }
+      """
 
-        let output = """
-        // swiftformat:sort
-        class Foo {
-            func baazFunction() -> Baaz {
-                Baaz()
-            }
-            let barProperty = Bar()
+    let output = """
+      // swiftformat:sort
+      class Foo {
+          func baazFunction() -> Baaz {
+              Baaz()
+          }
+          let barProperty = Bar()
 
-            var fooComputedProperty: Foo {
-                Foo()
-            }
+          var fooComputedProperty: Foo {
+              Foo()
+          }
 
-            let quuxProperty = Quux()
-        }
-        """
+          let quuxProperty = Quux()
+      }
+      """
 
-        testFormatting(for: input, [output],
-                       rules: [.sortDeclarations, .consecutiveBlankLines],
-                       exclude: [.blankLinesBetweenScopes, .propertyTypes])
-    }
+    testFormatting(
+      for: input, [output],
+      rules: [.sortDeclarations, .consecutiveBlankLines],
+      exclude: [.blankLinesBetweenScopes, .propertyTypes])
+  }
 
-    @Test func sortBetweenDirectiveCommentsInType() {
-        let input = """
-        enum FeatureFlags {
-            // swiftformat:sort:begin
-            case upsellB
-            case fooFeature
-            case barFeature
-            case upsellA
-            // swiftformat:sort:end
+  @Test func sortBetweenDirectiveCommentsInType() {
+    let input = """
+      enum FeatureFlags {
+          // swiftformat:sort:begin
+          case upsellB
+          case fooFeature
+          case barFeature
+          case upsellA
+          // swiftformat:sort:end
 
-            var anUnsortedProperty: Foo {
-                Foo()
-            }
-        }
-        """
+          var anUnsortedProperty: Foo {
+              Foo()
+          }
+      }
+      """
 
-        let output = """
-        enum FeatureFlags {
-            // swiftformat:sort:begin
-            case barFeature
-            case fooFeature
-            case upsellA
-            case upsellB
-            // swiftformat:sort:end
+    let output = """
+      enum FeatureFlags {
+          // swiftformat:sort:begin
+          case barFeature
+          case fooFeature
+          case upsellA
+          case upsellB
+          // swiftformat:sort:end
 
-            var anUnsortedProperty: Foo {
-                Foo()
-            }
-        }
-        """
+          var anUnsortedProperty: Foo {
+              Foo()
+          }
+      }
+      """
 
-        testFormatting(for: input, output, rule: .sortDeclarations)
-    }
+    testFormatting(for: input, output, rule: .sortDeclarations)
+  }
 
-    @Test func sortTopLevelDeclarations() {
-        let input = """
-        let anUnsortedGlobal = 0
+  @Test func sortTopLevelDeclarations() {
+    let input = """
+      let anUnsortedGlobal = 0
 
-        // swiftformat:sort:begin
-        let sortThisGlobal = 1
-        public let thisGlobalIsSorted = 2
-        private let anotherSortedGlobal = 5
-        let sortAllOfThem = 8
-        // swiftformat:sort:end
+      // swiftformat:sort:begin
+      let sortThisGlobal = 1
+      public let thisGlobalIsSorted = 2
+      private let anotherSortedGlobal = 5
+      let sortAllOfThem = 8
+      // swiftformat:sort:end
 
-        let anotherUnsortedGlobal = 9
-        """
+      let anotherUnsortedGlobal = 9
+      """
 
-        let output = """
-        let anUnsortedGlobal = 0
+    let output = """
+      let anUnsortedGlobal = 0
 
-        // swiftformat:sort:begin
-        private let anotherSortedGlobal = 5
-        let sortAllOfThem = 8
-        let sortThisGlobal = 1
-        public let thisGlobalIsSorted = 2
-        // swiftformat:sort:end
+      // swiftformat:sort:begin
+      private let anotherSortedGlobal = 5
+      let sortAllOfThem = 8
+      let sortThisGlobal = 1
+      public let thisGlobalIsSorted = 2
+      // swiftformat:sort:end
 
-        let anotherUnsortedGlobal = 9
-        """
+      let anotherUnsortedGlobal = 9
+      """
 
-        testFormatting(for: input, output, rule: .sortDeclarations)
-    }
+    testFormatting(for: input, output, rule: .sortDeclarations)
+  }
 
-    @Test func sortDeclarationsSortsByNamePattern() {
-        let input = """
-        enum Namespace {}
+  @Test func sortDeclarationsSortsByNamePattern() {
+    let input = """
+      enum Namespace {}
 
-        extension Namespace {
-            static let foo = "foo"
-            public static let bar = "bar"
-            static let baaz = "baaz"
-        }
-        """
+      extension Namespace {
+          static let foo = "foo"
+          public static let bar = "bar"
+          static let baaz = "baaz"
+      }
+      """
 
-        let output = """
-        enum Namespace {}
+    let output = """
+      enum Namespace {}
 
-        extension Namespace {
-            static let baaz = "baaz"
-            public static let bar = "bar"
-            static let foo = "foo"
-        }
-        """
+      extension Namespace {
+          static let baaz = "baaz"
+          public static let bar = "bar"
+          static let foo = "foo"
+      }
+      """
 
-        let options = FormatOptions(alphabeticallySortedDeclarationPatterns: ["Namespace"])
-        testFormatting(for: input, [output], rules: [.sortDeclarations, .blankLinesBetweenScopes], options: options, exclude: [.redundantPublic])
-    }
+    let options = FormatOptions(alphabeticallySortedDeclarationPatterns: ["Namespace"])
+    testFormatting(
+      for: input, [output], rules: [.sortDeclarations, .blankLinesBetweenScopes], options: options,
+      exclude: [.redundantPublic])
+  }
 
-    @Test func sortDeclarationsWontSortByNamePatternInComment() {
-        let input = """
-        enum Namespace {}
+  @Test func sortDeclarationsWontSortByNamePatternInComment() {
+    let input = """
+      enum Namespace {}
 
-        /// Constants
-        /// enum Constants
-        extension Namespace {
-            static let foo = "foo"
-            public static let bar = "bar"
-            static let baaz = "baaz"
-        }
-        """
+      /// Constants
+      /// enum Constants
+      extension Namespace {
+          static let foo = "foo"
+          public static let bar = "bar"
+          static let baaz = "baaz"
+      }
+      """
 
-        let options = FormatOptions(alphabeticallySortedDeclarationPatterns: ["Constants"])
-        testFormatting(for: input, rules: [.sortDeclarations, .blankLinesBetweenScopes], options: options, exclude: [.redundantPublic])
-    }
+    let options = FormatOptions(alphabeticallySortedDeclarationPatterns: ["Constants"])
+    testFormatting(
+      for: input, rules: [.sortDeclarations, .blankLinesBetweenScopes], options: options,
+      exclude: [.redundantPublic])
+  }
 
-    @Test func sortDeclarationsUsesLocalizedCompare() {
-        let input = """
-        // swiftformat:sort
-        enum FeatureFlags {
-            case upsella
-            case upsellA
-            case upsellb
-            case upsellB
-        }
-        """
+  @Test func sortDeclarationsUsesLocalizedCompare() {
+    let input = """
+      // swiftformat:sort
+      enum FeatureFlags {
+          case upsella
+          case upsellA
+          case upsellb
+          case upsellB
+      }
+      """
 
-        testFormatting(for: input, rule: .sortDeclarations)
-    }
+    testFormatting(for: input, rule: .sortDeclarations)
+  }
 
-    @Test func sortEnumNamespaceSmallerThanOrganizeDeclarationsEnumThreshold() {
-        let input = """
-        // swiftformat:sort
-        public enum Constants {
-            public static let foo = "foo"
-            public static let bar = "bar"
-            public static let baaz = "baaz"
-        }
-        """
+  @Test func sortEnumNamespaceSmallerThanOrganizeDeclarationsEnumThreshold() {
+    let input = """
+      // swiftformat:sort
+      public enum Constants {
+          public static let foo = "foo"
+          public static let bar = "bar"
+          public static let baaz = "baaz"
+      }
+      """
 
-        let output = """
-        // swiftformat:sort
-        public enum Constants {
-            public static let baaz = "baaz"
-            public static let bar = "bar"
-            public static let foo = "foo"
-        }
-        """
+    let output = """
+      // swiftformat:sort
+      public enum Constants {
+          public static let baaz = "baaz"
+          public static let bar = "bar"
+          public static let foo = "foo"
+      }
+      """
 
-        let options = FormatOptions(organizeEnumThreshold: 20)
-        testFormatting(for: input, [output], rules: [.sortDeclarations, .organizeDeclarations], options: options)
-    }
+    let options = FormatOptions(organizeEnumThreshold: 20)
+    testFormatting(
+      for: input, [output], rules: [.sortDeclarations, .organizeDeclarations], options: options)
+  }
 
-    @Test func sortStructSmallerThanOrganizeDeclarationsEnumThreshold() {
-        let input = """
-        // swiftformat:sort
-        public struct Foo {
-            public let foo = "foo"
-            public let bar = "bar"
-            public let baaz = "baaz"
-        }
-        """
+  @Test func sortStructSmallerThanOrganizeDeclarationsEnumThreshold() {
+    let input = """
+      // swiftformat:sort
+      public struct Foo {
+          public let foo = "foo"
+          public let bar = "bar"
+          public let baaz = "baaz"
+      }
+      """
 
-        let output = """
-        // swiftformat:sort
-        public struct Foo {
-            public let baaz = "baaz"
-            public let bar = "bar"
-            public let foo = "foo"
-        }
-        """
+    let output = """
+      // swiftformat:sort
+      public struct Foo {
+          public let baaz = "baaz"
+          public let bar = "bar"
+          public let foo = "foo"
+      }
+      """
 
-        let options = FormatOptions(organizeStructThreshold: 20)
-        testFormatting(for: input, [output], rules: [.sortDeclarations, .organizeDeclarations], options: options)
-    }
+    let options = FormatOptions(organizeStructThreshold: 20)
+    testFormatting(
+      for: input, [output], rules: [.sortDeclarations, .organizeDeclarations], options: options)
+  }
 }

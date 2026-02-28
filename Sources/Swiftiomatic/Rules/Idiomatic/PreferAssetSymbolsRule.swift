@@ -42,7 +42,7 @@ struct PreferAssetSymbolsRule: Rule {
             // SwiftUI with bundle parameters
             Example("↓Image(\"someImage\", bundle: Bundle.main)"),
             Example("↓Image(\"someImage\", bundle: .main)"),
-        ]
+        ],
     )
 }
 
@@ -66,7 +66,7 @@ private extension PreferAssetSymbolsRule {
         }
 
         private func isImageInit(
-            node: FunctionCallExprSyntax, className: String, argumentLabel: String?
+            node: FunctionCallExprSyntax, className: String, argumentLabel: String?,
         ) -> Bool {
             // Check if this is the specified class or class.init call using syntax tree matching
             guard isImageCall(node.calledExpression, className: className) else {

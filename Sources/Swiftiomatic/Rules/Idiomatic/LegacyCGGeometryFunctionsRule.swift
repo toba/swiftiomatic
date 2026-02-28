@@ -74,7 +74,7 @@ struct LegacyCGGeometryFunctionsRule: Rule {
             Example("↓CGRectIntersectsRect(  rect1,rect2 )"): Example("rect1.intersects(rect2)"),
             Example("↓CGRectIntersectsRect(rect1, rect2 )\n↓CGRectGetWidth(rect  )"):
                 Example("rect1.intersects(rect2)\nrect.width"),
-        ]
+        ],
     )
 
     private static let legacyFunctions: [String: LegacyFunctionRewriteStrategy] = [
@@ -116,7 +116,7 @@ private extension LegacyCGGeometryFunctionsRule {
         init(configuration: ConfigurationType, file: SwiftLintFile) {
             super.init(
                 configuration: configuration, file: file,
-                legacyFunctions: LegacyCGGeometryFunctionsRule.legacyFunctions
+                legacyFunctions: LegacyCGGeometryFunctionsRule.legacyFunctions,
             )
         }
     }
@@ -125,7 +125,7 @@ private extension LegacyCGGeometryFunctionsRule {
         init(configuration: ConfigurationType, file: SwiftLintFile) {
             super.init(
                 configuration: configuration, file: file,
-                legacyFunctions: LegacyCGGeometryFunctionsRule.legacyFunctions
+                legacyFunctions: LegacyCGGeometryFunctionsRule.legacyFunctions,
             )
         }
     }

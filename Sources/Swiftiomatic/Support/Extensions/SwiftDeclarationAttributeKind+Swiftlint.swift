@@ -27,7 +27,8 @@ extension SwiftDeclarationAttributeKind {
 
         init?(rawAttribute: String) {
             let allModifierGroups: Set<SwiftDeclarationAttributeKind.ModifierGroup> = [
-                .acl, .setterACL, .mutators, .override, .owned, .atPrefixed, .dynamic, .final, .typeMethods,
+                .acl, .setterACL, .mutators, .override, .owned, .atPrefixed, .dynamic, .final,
+                .typeMethods,
                 .required, .convenience, .lazy, .isolation,
             ]
             let modifierGroup = allModifierGroups.first {
@@ -43,58 +44,58 @@ extension SwiftDeclarationAttributeKind {
 
         var swiftDeclarationAttributeKinds: Set<SwiftDeclarationAttributeKind> {
             switch self {
-            case .acl:
-                return [
-                    .private,
-                    .fileprivate,
-                    .internal,
-                    .public,
-                    .open,
-                ]
-            case .setterACL:
-                return [
-                    .setterPrivate,
-                    .setterFilePrivate,
-                    .setterInternal,
-                    .setterPublic,
-                    .setterOpen,
-                ]
-            case .mutators:
-                return [
-                    .mutating,
-                    .nonmutating,
-                ]
-            case .override:
-                return [.override]
-            case .owned:
-                return [.weak]
-            case .final:
-                return [.final]
-            case .typeMethods:
-                return []
-            case .required:
-                return [.required]
-            case .convenience:
-                return [.convenience]
-            case .lazy:
-                return [.lazy]
-            case .dynamic:
-                return [.dynamic]
-            case .isolation:
-                return [.nonisolated]
-            case .atPrefixed:
-                return [
-                    .objc,
-                    .nonobjc,
-                    .objcMembers,
-                    .ibaction,
-                    .ibsegueaction,
-                    .iboutlet,
-                    .ibdesignable,
-                    .ibinspectable,
-                    .nsManaged,
-                    .nsCopying,
-                ]
+                case .acl:
+                    return [
+                        .private,
+                        .fileprivate,
+                        .internal,
+                        .public,
+                        .open,
+                    ]
+                case .setterACL:
+                    return [
+                        .setterPrivate,
+                        .setterFilePrivate,
+                        .setterInternal,
+                        .setterPublic,
+                        .setterOpen,
+                    ]
+                case .mutators:
+                    return [
+                        .mutating,
+                        .nonmutating,
+                    ]
+                case .override:
+                    return [.override]
+                case .owned:
+                    return [.weak]
+                case .final:
+                    return [.final]
+                case .typeMethods:
+                    return []
+                case .required:
+                    return [.required]
+                case .convenience:
+                    return [.convenience]
+                case .lazy:
+                    return [.lazy]
+                case .dynamic:
+                    return [.dynamic]
+                case .isolation:
+                    return [.nonisolated]
+                case .atPrefixed:
+                    return [
+                        .objc,
+                        .nonobjc,
+                        .objcMembers,
+                        .ibaction,
+                        .ibsegueaction,
+                        .iboutlet,
+                        .ibdesignable,
+                        .ibinspectable,
+                        .nsManaged,
+                        .nsCopying,
+                    ]
             }
         }
 

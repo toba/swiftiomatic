@@ -15,7 +15,7 @@ struct IdentifierNameRule: Rule {
         kind: .style,
         nonTriggeringExamples: IdentifierNameRuleExamples.nonTriggeringExamples,
         triggeringExamples: IdentifierNameRuleExamples.triggeringExamples,
-        deprecatedAliases: ["variable_name"]
+        deprecatedAliases: ["variable_name"],
     )
 }
 
@@ -31,7 +31,8 @@ private extension IdentifierNameRule {
 
         override func visitPost(_ node: AccessorParametersSyntax) {
             collectViolations(
-                from: .variable(name: node.name.text, isStatic: false, isPrivate: false), on: node.name
+                from: .variable(name: node.name.text, isStatic: false, isPrivate: false),
+                on: node.name,
             )
         }
 
@@ -41,17 +42,21 @@ private extension IdentifierNameRule {
             }
             let name = node.secondName ?? node.firstName
             collectViolations(
-                from: .variable(name: name.text.leadingDollarStripped, isStatic: false, isPrivate: false),
-                on: name
+                from: .variable(
+                    name: name.text.leadingDollarStripped,
+                    isStatic: false,
+                    isPrivate: false,
+                ),
+                on: name,
             )
         }
 
         override func visitPost(_ node: ClosureShorthandParameterSyntax) {
             collectViolations(
                 from: .variable(
-                    name: node.name.text.leadingDollarStripped, isStatic: false, isPrivate: false
+                    name: node.name.text.leadingDollarStripped, isStatic: false, isPrivate: false,
                 ),
-                on: node.name
+                on: node.name,
             )
         }
 
@@ -62,7 +67,7 @@ private extension IdentifierNameRule {
         override func visitPost(_ node: EnumCaseParameterSyntax) {
             if let name = node.secondName ?? node.firstName {
                 collectViolations(
-                    from: .variable(name: name.text, isStatic: false, isPrivate: false), on: name
+                    from: .variable(name: name.text, isStatic: false, isPrivate: false), on: name,
                 )
             }
         }
@@ -75,7 +80,7 @@ private extension IdentifierNameRule {
             let type = NamedDeclType.function(
                 name: name,
                 resolvedName: node.resolvedName,
-                isPrivate: node.modifiers.containsPrivateOrFileprivate()
+                isPrivate: node.modifiers.containsPrivateOrFileprivate(),
             )
             collectViolations(from: type, on: node.name)
         }
@@ -87,7 +92,7 @@ private extension IdentifierNameRule {
             let name = (node.secondName ?? node.firstName)
             collectViolations(
                 from: .variable(name: name.text, isStatic: false, isPrivate: false),
-                on: name
+                on: name,
             )
         }
 
@@ -97,7 +102,7 @@ private extension IdentifierNameRule {
             }
             collectViolations(
                 from: .variable(name: node.name.text, isStatic: false, isPrivate: false),
-                on: node.name
+                on: node.name,
             )
         }
 
@@ -109,7 +114,7 @@ private extension IdentifierNameRule {
             let type = NamedDeclType.variable(
                 name: node.identifier.text,
                 isStatic: varDecl?.modifiers.contains(keyword: .static) ?? false,
-                isPrivate: varDecl?.modifiers.containsPrivateOrFileprivate() ?? false
+                isPrivate: varDecl?.modifiers.containsPrivateOrFileprivate() ?? false,
             )
             collectViolations(from: type, on: node.identifier)
         }
@@ -120,13 +125,15 @@ private extension IdentifierNameRule {
                     ReasonedRuleViolation(
                         position: token.positionAfterSkippingLeadingTrivia,
                         reason: violation.reason,
-                        severity: violation.severity
-                    )
+                        severity: violation.severity,
+                    ),
                 )
             }
         }
 
-        private func violates(_ type: NamedDeclType) -> (reason: String, severity: ViolationSeverity)? {
+        private func violates(_ type: NamedDeclType)
+            -> (reason: String, severity: ViolationSeverity)?
+        {
             guard !nameConfiguration.shouldExclude(name: type.name), type.name != "_",
                   let firstCharacter = type.name.first
             else {
@@ -196,33 +203,33 @@ private enum NamedDeclType: CustomStringConvertible {
 
     var description: String {
         switch self {
-        case let .function(_, resolvedName, _): "Function name '\(resolvedName)'"
-        case let .enumElement(name): "Enum element name '\(name)'"
-        case let .variable(name, _, _): "Variable name '\(name)'"
+            case let .function(_, resolvedName, _): "Function name '\(resolvedName)'"
+            case let .enumElement(name): "Enum element name '\(name)'"
+            case let .variable(name, _, _): "Variable name '\(name)'"
         }
     }
 
     var isStatic: Bool {
         switch self {
-        case .function, .enumElement: false
-        case let .variable(_, isStatic, _): isStatic
+            case .function, .enumElement: false
+            case let .variable(_, isStatic, _): isStatic
         }
     }
 
     var isPrivate: Bool {
         switch self {
-        case let .function(_, _, isPrivate): isPrivate
-        case .enumElement: false
-        case let .variable(_, _, isPrivate): isPrivate
+            case let .function(_, _, isPrivate): isPrivate
+            case .enumElement: false
+            case let .variable(_, _, isPrivate): isPrivate
         }
     }
 
     var name: String {
         let name =
             switch self {
-            case let .function(name, _, _): name
-            case let .enumElement(name): name
-            case let .variable(name, _, _): name
+                case let .function(name, _, _): name
+                case let .enumElement(name): name
+                case let .variable(name, _, _): name
             }
         return
             name

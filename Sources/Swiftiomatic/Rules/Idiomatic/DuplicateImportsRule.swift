@@ -19,7 +19,7 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
         kind: .idiomatic,
         nonTriggeringExamples: DuplicateImportsRuleExamples.nonTriggeringExamples,
         triggeringExamples: DuplicateImportsRuleExamples.triggeringExamples,
-        corrections: DuplicateImportsRuleExamples.corrections
+        corrections: DuplicateImportsRuleExamples.corrections,
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -27,7 +27,7 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, position: position)
+                location: Location(file: file, position: position),
             )
         }
     }
@@ -60,8 +60,8 @@ private final class ImportPathVisitor: SyntaxVisitor {
             .init(
                 position: node.positionAfterSkippingLeadingTrivia,
                 path: node.path.map(\.name.text),
-                hasAttributes: node.attributes.contains { $0.is(AttributeSyntax.self) }
-            )
+                hasAttributes: node.attributes.contains { $0.is(AttributeSyntax.self) },
+            ),
         )
     }
 }
@@ -178,7 +178,7 @@ private let explicitSystemModules = Set(
         "SystemConfiguration.CaptiveNetwork",
         "SystemConfiguration.DHCPClientPreferences",
         "SystemConfiguration.SCDynamicStoreCopyDHCPInfo",
-    ].map { $0.split(separator: ".").map(String.init) }
+    ].map { $0.split(separator: ".").map(String.init) },
 )
 
 private extension SwiftLintFile {
@@ -205,7 +205,7 @@ private extension SwiftLintFile {
 
             defer {
                 seen.insert(
-                    ImportPathUsage(ifConfigRanges: rangesForPosition, path: path)
+                    ImportPathUsage(ifConfigRanges: rangesForPosition, path: path),
                 )
             }
 
@@ -261,7 +261,10 @@ private extension DuplicateImportsRule {
                 node
                     .enumerated()
                     .filter {
-                        !$1.isContainedIn(regions: disabledRegions, locationConverter: locationConverter)
+                        !$1.isContainedIn(
+                            regions: disabledRegions,
+                            locationConverter: locationConverter,
+                        )
                     }
                     .map { ($0, $1.item.positionAfterSkippingLeadingTrivia) }
                     .filter { importPositionsToRemove.contains($1) }

@@ -23,11 +23,11 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
         Example("@preconcurrency public func globalActorClosure(_ block: @MainActor () -> Void)"),
         Example("@preconcurrency public init(_ block: @Sendable () -> Void)"),
         Example(
-            "@preconcurrency public subscript(index: Int) -> String where String: Sendable { get }"
+            "@preconcurrency public subscript(index: Int) -> String where String: Sendable { get }",
         ),
         Example("@preconcurrency public func sendableReturningClosure() -> @Sendable () -> Void"),
         Example(
-            "@preconcurrency public func globalActorReturningClosure() -> @MainActor () -> Void"
+            "@preconcurrency public func globalActorReturningClosure() -> @MainActor () -> Void",
         ),
         Example("@preconcurrency public func sendingParameter(_ value: sending MyClass)"),
         Example(
@@ -35,7 +35,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
             @preconcurrency public func tupleParameterClosures(
                 _ handlers: (@Sendable () -> Void, @MainActor () -> Void)
             )
-            """
+            """,
         ),
         Example(
             """
@@ -43,14 +43,14 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 @Sendable () -> Void,
                 @MainActor () -> Void
             )
-            """
+            """,
         ),
         Example(
             """
             @preconcurrency public func closureWithSendingArgument(
                 _ handler: (_ value: sending MyClass) -> Void
             )
-            """
+            """,
         ),
 
         // Non-concurrency related cases
@@ -78,7 +78,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
             class C {
                 @MainActor public ↓init() {}
             }
-            """
+            """,
         ),
         Example("@MainActor public ↓init<T>()"),
 
@@ -88,10 +88,10 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
             struct S {
                 @MainActor public ↓subscript(index: Int) -> String { get }
             }
-            """
+            """,
         ),
         Example(
-            "public ↓subscript<T>(index: T) -> Int where T: ExpressibleByIntegerLiteral & Sendable { get }"
+            "public ↓subscript<T>(index: T) -> Int where T: ExpressibleByIntegerLiteral & Sendable { get }",
         ),
 
         // Function parameters with concurrency attributes
@@ -105,14 +105,14 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
             public ↓func tupleParameter(
                 _ handlers: (@Sendable () -> Void, @MainActor () -> Void)
             )
-            """
+            """,
         ),
         Example(
             """
             public ↓func tupleWithSending(
                 _ handlers: ((_ value: sending MyClass) -> Void, @MainActor () -> Void)
             )
-            """
+            """,
         ),
 
         // Generic where clauses with Sendable
@@ -125,24 +125,26 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
         // Return types with concurrency attributes
         Example("public ↓func returnsSendableClosure() -> @Sendable () -> Void"),
         Example("public ↓func returnsActorClosure() -> @MainActor () -> Void"),
-        Example("public ↓func returnsClosureTuple() -> (@Sendable () -> Void, @MainActor () -> Void)"),
+        Example(
+            "public ↓func returnsClosureTuple() -> (@Sendable () -> Void, @MainActor () -> Void)",
+        ),
 
         // Custom global actors with configuration
         Example(
             "@MyActor public ↓struct S {}",
-            configuration: ["global_actors": ["MyActor"]]
+            configuration: ["global_actors": ["MyActor"]],
         ),
         Example(
             "public ↓func globalActorClosure(_ block: @MyActor () -> Void)",
-            configuration: ["global_actors": ["MyActor"]]
+            configuration: ["global_actors": ["MyActor"]],
         ),
         Example(
             "@MyActor public ↓func customGlobalActor()",
-            configuration: ["global_actors": ["MyActor"]]
+            configuration: ["global_actors": ["MyActor"]],
         ),
         Example(
             "@MyActor public ↓init()",
-            configuration: ["global_actors": ["MyActor"]]
+            configuration: ["global_actors": ["MyActor"]],
         ),
     ]
 
@@ -152,14 +154,14 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
             """
             @MainActor
             public enum E { case a }
-            """
+            """,
         ):
             Example(
                 """
                 @preconcurrency
                 @MainActor
                 public enum E { case a }
-                """
+                """,
             ),
 
         Example("@MainActor public struct S {}"):
@@ -167,7 +169,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 @MainActor public struct S {}
-                """
+                """,
             ),
 
         Example("@MainActor public class C {}"):
@@ -175,7 +177,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 @MainActor public class C {}
-                """
+                """,
             ),
 
         Example("@MainActor public protocol P {}"):
@@ -183,7 +185,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 @MainActor public protocol P {}
-                """
+                """,
             ),
 
         Example("@MainActor public func globalActor() {}"):
@@ -191,7 +193,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 @MainActor public func globalActor() {}
-                """
+                """,
             ),
 
         // Initializers with global actors
@@ -200,7 +202,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
             class C {
                 @MainActor public init() {}
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -208,7 +210,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                     @preconcurrency
                     @MainActor public init() {}
                 }
-                """
+                """,
             ),
 
         // Subscripts with global actors
@@ -217,7 +219,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
             struct S {
                 @MainActor public subscript(index: Int) -> String { get }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -225,7 +227,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                     @preconcurrency
                     @MainActor public subscript(index: Int) -> String { get }
                 }
-                """
+                """,
             ),
 
         // Functions with Sendable parameters
@@ -234,7 +236,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 public func sendableClosure(_ block: @Sendable () -> Void) {}
-                """
+                """,
             ),
 
         Example("public func globalActorClosure(_ block: @MainActor () -> Void) {}"):
@@ -242,17 +244,17 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 public func globalActorClosure(_ block: @MainActor () -> Void) {}
-                """
+                """,
             ),
 
         Example(
-            "public func tupleParameter(_ handlers: (@Sendable () -> Void, @MainActor () -> Void)) {}"
+            "public func tupleParameter(_ handlers: (@Sendable () -> Void, @MainActor () -> Void)) {}",
         ):
             Example(
                 """
                 @preconcurrency
                 public func tupleParameter(_ handlers: (@Sendable () -> Void, @MainActor () -> Void)) {}
-                """
+                """,
             ),
 
         Example(
@@ -260,7 +262,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
             public func tupleWithSending(
                 _ handlers: ((_ value: sending MyClass) -> Void, @MainActor () -> Void)
             ) {}
-            """
+            """,
         ):
             Example(
                 """
@@ -268,7 +270,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 public func tupleWithSending(
                     _ handlers: ((_ value: sending MyClass) -> Void, @MainActor () -> Void)
                 ) {}
-                """
+                """,
             ),
 
         // Initializers with Sendable parameters
@@ -277,7 +279,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 public init(_ block: @Sendable () -> Void) {}
-                """
+                """,
             ),
 
         // Generic where clauses with Sendable
@@ -286,7 +288,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 public func generic<T>() where T: Sendable {}
-                """
+                """,
             ),
 
         Example("public struct S<T> where T: Sendable {}"):
@@ -294,7 +296,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 public struct S<T> where T: Sendable {}
-                """
+                """,
             ),
 
         Example("public subscript<T>(index: T) -> Int where T: Sendable { get }"):
@@ -302,7 +304,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 public subscript<T>(index: T) -> Int where T: Sendable { get }
-                """
+                """,
             ),
 
         Example("public func returnsSendableClosure() -> @Sendable () -> Void {}"):
@@ -310,7 +312,7 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 public func returnsSendableClosure() -> @Sendable () -> Void {}
-                """
+                """,
             ),
 
         Example("public func returnsActorClosure() -> @MainActor () -> Void {}"):
@@ -318,40 +320,40 @@ enum IncompatibleConcurrencyAnnotationRuleExamples {
                 """
                 @preconcurrency
                 public func returnsActorClosure() -> @MainActor () -> Void {}
-                """
+                """,
             ),
 
         Example(
-            "public func returnsClosureTuple() -> (@Sendable () -> Void, @MainActor () -> Void) {}"
+            "public func returnsClosureTuple() -> (@Sendable () -> Void, @MainActor () -> Void) {}",
         ):
             Example(
                 """
                 @preconcurrency
                 public func returnsClosureTuple() -> (@Sendable () -> Void, @MainActor () -> Void) {}
-                """
+                """,
             ),
 
         // Custom global actors with configuration
         Example(
             "@MyActor public struct S {}",
-            configuration: ["global_actors": ["MyActor"]]
+            configuration: ["global_actors": ["MyActor"]],
         ):
             Example(
                 """
                 @preconcurrency
                 @MyActor public struct S {}
-                """
+                """,
             ),
 
         Example(
             "public func globalActorClosure(_ block: @MyActor () -> Void) {}",
-            configuration: ["global_actors": ["MyActor"]]
+            configuration: ["global_actors": ["MyActor"]],
         ):
             Example(
                 """
                 @preconcurrency
                 public func globalActorClosure(_ block: @MyActor () -> Void) {}
-                """
+                """,
             ),
     ]
 }

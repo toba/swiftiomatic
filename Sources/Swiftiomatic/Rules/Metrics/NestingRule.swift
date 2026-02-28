@@ -10,7 +10,7 @@ struct NestingRule: Rule {
         "Types should be nested at most 1 level deep, and functions should be nested at most 2 levels deep.",
         kind: .metrics,
         nonTriggeringExamples: NestingRuleExamples.nonTriggeringExamples,
-        triggeringExamples: NestingRuleExamples.triggeringExamples
+        triggeringExamples: NestingRuleExamples.triggeringExamples,
     )
 }
 
@@ -150,7 +150,9 @@ private extension NestingRule {
         }
 
         override func visit(_ node: CodeBlockItemSyntax) -> SyntaxVisitorContinueKind {
-            if !configuration.checkNestingInClosuresAndStatements, node.parent?.inStatement ?? false {
+            if !configuration.checkNestingInClosuresAndStatements,
+               node.parent?.inStatement ?? false
+            {
                 return .skipChildren
             }
             return super.visit(node)
@@ -170,7 +172,8 @@ private extension NestingRule {
                 return
             }
 
-            guard let severity = configuration.severity(with: targetLevel, for: level) else { return }
+            guard let severity = configuration.severity(with: targetLevel, for: level)
+            else { return }
 
             let targetName = forFunction ? "Functions" : "Types"
             let threshold = configuration.threshold(with: targetLevel, for: severity)
@@ -179,8 +182,8 @@ private extension NestingRule {
                 ReasonedRuleViolation(
                     position: triggeringToken.positionAfterSkippingLeadingTrivia,
                     reason: "\(targetName) should be nested at most \(threshold) level\(pluralSuffix) deep",
-                    severity: severity
-                )
+                    severity: severity,
+                ),
             )
         }
     }

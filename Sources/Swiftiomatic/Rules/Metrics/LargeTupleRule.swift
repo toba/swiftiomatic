@@ -23,7 +23,7 @@ struct LargeTupleRule: Rule {
             Example("func foo(bar: (Int, String, Float) -> Void)"),
             Example("func foo(bar: (Int, String, Float) throws -> Void)"),
             Example(
-                "var completionHandler: ((_ data: Data?, _ resp: URLResponse?, _ e: NSError?) -> Void)!"
+                "var completionHandler: ((_ data: Data?, _ resp: URLResponse?, _ e: NSError?) -> Void)!",
             ),
             Example("func getDictionaryAndInt() -> (Dictionary<Int, String>, Int)?"),
             Example("func getGenericTypeAndInt() -> (Type<Int, String, Float>, Int)?"),
@@ -41,15 +41,15 @@ struct LargeTupleRule: Rule {
             Example("func getGenericTypeAndInt() async -> (Type<Int, String, Float>, Int)?"),
             Example(
                 "func foo() -> Regex<(Substring, foo: Substring, bar: Substring)>.Match? { nil }",
-                configuration: ["ignore_regex": true]
+                configuration: ["ignore_regex": true],
             ),
             Example(
                 "let regex: Regex<(Substring, Substring, Substring, Substring)>? = nil",
-                configuration: ["ignore_regex": true]
+                configuration: ["ignore_regex": true],
             ),
             Example(
                 "var regex: Regex<(Substring, Substring, Substring, Substring)?>.Match? { nil }",
-                configuration: ["ignore_regex": true]
+                configuration: ["ignore_regex": true],
             ),
         ],
         triggeringExamples: [
@@ -64,7 +64,9 @@ struct LargeTupleRule: Rule {
             Example("func foo() throws -> ↓(Int, Int, Int)"),
             Example("func foo() throws -> ↓(Int, Int, Int) {}"),
             Example("func foo() throws -> ↓(Int, ↓(String, String, String), Int) {}"),
-            Example("func getDictionaryAndInt() -> (Dictionary<Int, ↓(String, String, String)>, Int)?"),
+            Example(
+                "func getDictionaryAndInt() -> (Dictionary<Int, ↓(String, String, String)>, Int)?",
+            ),
             Example("func foo(bar: ↓(Int, Int, Int)) async"),
             Example("func foo() async -> ↓(Int, Int, Int)"),
             Example("func foo() async -> ↓(Int, Int, Int) {}"),
@@ -73,13 +75,13 @@ struct LargeTupleRule: Rule {
             Example("func foo() async throws -> ↓(Int, Int, Int)"),
             Example(
                 "func foo() async throws -> ↓(Int, Int, Int) {}",
-                configuration: ["ignore_regex": false]
+                configuration: ["ignore_regex": false],
             ),
             Example("func foo() async throws -> ↓(Int, ↓(String, String, String), Int) {}"),
             Example(
-                "func getDictionaryAndInt() async -> (Dictionary<Int, ↓(String, String, String)>, Int)?"
+                "func getDictionaryAndInt() async -> (Dictionary<Int, ↓(String, String, String)>, Int)?",
             ),
-        ]
+        ],
     )
 }
 
@@ -105,8 +107,8 @@ private extension LargeTupleRule {
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason:
                         "Tuples should have at most \(configuration.severityConfiguration.warning) members",
-                        severity: parameter.severity
-                    )
+                        severity: parameter.severity,
+                    ),
                 )
                 return
             }
@@ -125,7 +127,8 @@ private extension TupleTypeSyntax {
 
         guard let genericArgument = current?.parent?.as(GenericArgumentSyntax.self),
               let genericArgumentList = genericArgument.parent?.as(GenericArgumentListSyntax.self),
-              let genericArgumentClause = genericArgumentList.parent?.as(GenericArgumentClauseSyntax.self),
+              let genericArgumentClause = genericArgumentList.parent?
+              .as(GenericArgumentClauseSyntax.self),
               let identifierType = genericArgumentClause.parent?.as(IdentifierTypeSyntax.self),
               identifierType.name.text == "Regex"
         else {

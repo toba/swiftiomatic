@@ -1,11 +1,3 @@
-//
-//  MarkTypes.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 9/27/20.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -13,8 +5,14 @@ extension FormatRule {
         help: "Add a MARK comment before top-level types and extensions.",
         runOnceOnly: true,
         disabledByDefault: true,
-        options: ["mark-types", "type-mark", "mark-extensions", "extension-mark", "grouped-extension"],
-        sharedOptions: ["line-after-marks", "linebreaks"]
+        options: [
+            "mark-types",
+            "type-mark",
+            "mark-extensions",
+            "extension-mark",
+            "grouped-extension",
+        ],
+        sharedOptions: ["line-after-marks", "linebreaks"],
     ) { formatter in
         var declarations = formatter.parseDeclarations()
 
@@ -34,61 +32,65 @@ extension FormatRule {
             let commentTemplate: String
             let isGroupedExtension: Bool
             switch declaration.keyword {
-            case "extension":
-                // TODO: this should be stored in declaration at parse time
-                markMode = formatter.options.markExtensions
+                case "extension":
+                    // TODO: this should be stored in declaration at parse time
+                    markMode = formatter.options.markExtensions
 
-                // We provide separate mark comment customization points for
-                // extensions that are "grouped" with (e.g. following) their extending type,
-                // vs extensions that are completely separate.
-                //
-                //  struct Foo { }
-                //  extension Foo { } // This extension is "grouped" with its extending type
-                //  extension String { } // This extension is standalone (not grouped with any type)
-                //
-                let isGroupedWithExtendingType: Bool
-                if let indexOfExtendingType = declarations[..<index].lastIndex(where: {
-                    $0.name == typeName && $0.definesType
-                }) {
-                    let declarationsBetweenTypeAndExtension = declarations[indexOfExtendingType + 1 ..< index]
-                    isGroupedWithExtendingType = declarationsBetweenTypeAndExtension.allSatisfy {
-                        // Only treat the type and its extension as grouped if there aren't any other
-                        // types or type-like declarations between them
-                        if ["class", "actor", "struct", "enum", "protocol", "typealias"].contains($0.keyword) {
-                            return false
-                        }
-                        // Extensions extending other types also break the grouping
-                        if $0.keyword == "extension", $0.name != declaration.name {
-                            return false
-                        }
-                        return true
+                    // We provide separate mark comment customization points for
+                    // extensions that are "grouped" with (e.g. following) their extending type,
+                    // vs extensions that are completely separate.
+                    //
+                    //  struct Foo { }
+                    //  extension Foo { } // This extension is "grouped" with its extending type
+                    //  extension String { } // This extension is standalone (not grouped with any type)
+                    //
+                    let isGroupedWithExtendingType: Bool
+                    if let indexOfExtendingType = declarations[..<index].lastIndex(where: {
+                        $0.name == typeName && $0.definesType
+                    }) {
+                        let declarationsBetweenTypeAndExtension =
+                            declarations[indexOfExtendingType + 1 ..< index]
+                        isGroupedWithExtendingType = declarationsBetweenTypeAndExtension
+                            .allSatisfy {
+                                // Only treat the type and its extension as grouped if there aren't any other
+                                // types or type-like declarations between them
+                                if ["class", "actor", "struct", "enum", "protocol", "typealias"]
+                                    .contains($0.keyword)
+                                {
+                                    return false
+                                }
+                                // Extensions extending other types also break the grouping
+                                if $0.keyword == "extension", $0.name != declaration.name {
+                                    return false
+                                }
+                                return true
+                            }
+                    } else {
+                        isGroupedWithExtendingType = false
                     }
-                } else {
-                    isGroupedWithExtendingType = false
-                }
 
-                if isGroupedWithExtendingType {
-                    commentTemplate = formatter.options.groupedExtensionMarkComment
-                    isGroupedExtension = true
-                } else {
-                    commentTemplate = formatter.options.extensionMarkComment
+                    if isGroupedWithExtendingType {
+                        commentTemplate = formatter.options.groupedExtensionMarkComment
+                        isGroupedExtension = true
+                    } else {
+                        commentTemplate = formatter.options.extensionMarkComment
+                        isGroupedExtension = false
+                    }
+                default:
+                    markMode = formatter.options.markTypes
+                    commentTemplate = formatter.options.typeMarkComment
                     isGroupedExtension = false
-                }
-            default:
-                markMode = formatter.options.markTypes
-                commentTemplate = formatter.options.typeMarkComment
-                isGroupedExtension = false
             }
 
             switch markMode {
-            case .always:
-                break
-            case .never:
-                continue
-            case .ifNotEmpty:
-                guard !typeDeclaration.body.isEmpty else {
+                case .always:
+                    break
+                case .never:
                     continue
-                }
+                case .ifNotEmpty:
+                    guard !typeDeclaration.body.isEmpty else {
+                        continue
+                    }
             }
 
             // If this declaration is extension, check if it has any conformances
@@ -170,7 +172,8 @@ extension FormatRule {
             }
 
             var alreadyHasExpectedComment = false
-            let potentialCommentRange = markInsertIndex ..< typeDeclaration.leadingCommentRange.upperBound
+            let potentialCommentRange = markInsertIndex ..< typeDeclaration.leadingCommentRange
+                .upperBound
 
             let commentsToRemove = formatter.singleLineComments(
                 in: potentialCommentRange,
@@ -188,7 +191,7 @@ extension FormatRule {
                     }
 
                     return false
-                }
+                },
             )
 
             for commentToRemove in commentsToRemove.reversed() {

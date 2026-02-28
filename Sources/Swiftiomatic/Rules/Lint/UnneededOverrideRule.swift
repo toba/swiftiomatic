@@ -11,7 +11,7 @@ struct UnneededOverrideRule: Rule {
         kind: .lint,
         nonTriggeringExamples: UnneededOverrideRuleExamples.nonTriggeringExamples,
         triggeringExamples: UnneededOverrideRuleExamples.triggeringExamples,
-        corrections: UnneededOverrideRuleExamples.corrections
+        corrections: UnneededOverrideRuleExamples.corrections,
     )
 }
 
@@ -127,10 +127,16 @@ private extension OverridableDecl {
 
         // Assume any change in arguments passed means behavior was changed.
         let expectedArguments = declParameters.map {
-            ($0.firstName.text == "_" ? "" : $0.firstName.text, $0.secondName?.text ?? $0.firstName.text)
+            (
+                $0.firstName.text == "_" ? "" : $0.firstName.text,
+                $0.secondName?.text ?? $0.firstName.text,
+            )
         }
         let actualArguments = call.arguments.map {
-            ($0.label?.text ?? "", $0.expression.as(DeclReferenceExprSyntax.self)?.baseName.text ?? "")
+            (
+                $0.label?.text ?? "",
+                $0.expression.as(DeclReferenceExprSyntax.self)?.baseName.text ?? "",
+            )
         }
 
         guard expectedArguments.count == actualArguments.count else {

@@ -12,7 +12,7 @@ struct FunctionNameWhitespaceRule: Rule {
         nonTriggeringExamples: FunctionNameWhitespaceRuleExamples.nonTriggeringExamples,
         triggeringExamples: FunctionNameWhitespaceRuleExamples.triggeringExamples,
         corrections: FunctionNameWhitespaceRuleExamples.corrections,
-        deprecatedAliases: ["operator_whitespace"]
+        deprecatedAliases: ["operator_whitespace"],
     )
 }
 
@@ -28,13 +28,13 @@ private extension FunctionNameWhitespaceRule {
             validateFuncKeywordSpacing(for: node)
             correctSingleCommentTrivia(
                 after: node.name,
-                reason: configuration.genericSpacing.beforeGenericViolationReason
+                reason: configuration.genericSpacing.beforeGenericViolationReason,
             )
             validateFunctionNameTrailingTrivia(node: node)
             if let genericParameterClause = node.genericParameterClause {
                 correctSingleCommentTrivia(
                     after: genericParameterClause,
-                    reason: configuration.genericSpacing.afterGenericViolationReason
+                    reason: configuration.genericSpacing.afterGenericViolationReason,
                 )
                 validateGenericTrailingTrivia(node: genericParameterClause)
             }
@@ -47,11 +47,13 @@ private extension FunctionNameWhitespaceRule {
                     nameTrailingTrivia.isNotSingleSpaceWithoutComments ? " " : nil
                 } else {
                     switch configuration.genericSpacing {
-                    case .noSpace where nameTrailingTrivia.isNotEmptyWithoutComments: ""
-                    case .leadingSpace where nameTrailingTrivia.isNotSingleSpaceWithoutComments: " "
-                    case .trailingSpace where nameTrailingTrivia.isNotEmptyWithoutComments: ""
-                    case .leadingTrailingSpace where nameTrailingTrivia.isNotSingleSpaceWithoutComments: " "
-                    default: nil
+                        case .noSpace where nameTrailingTrivia.isNotEmptyWithoutComments: ""
+                        case .leadingSpace
+                        where nameTrailingTrivia.isNotSingleSpaceWithoutComments: " "
+                        case .trailingSpace where nameTrailingTrivia.isNotEmptyWithoutComments: ""
+                        case .leadingTrailingSpace
+                        where nameTrailingTrivia.isNotSingleSpaceWithoutComments: " "
+                        default: nil
                     }
                 }
 
@@ -65,9 +67,9 @@ private extension FunctionNameWhitespaceRule {
                     correction: .init(
                         start: node.name.endPositionBeforeTrailingTrivia,
                         end: node.name.endPosition,
-                        replacement: replacement
-                    )
-                )
+                        replacement: replacement,
+                    ),
+                ),
             )
         }
 
@@ -82,9 +84,9 @@ private extension FunctionNameWhitespaceRule {
                     correction: .init(
                         start: node.funcKeyword.endPositionBeforeTrailingTrivia,
                         end: node.name.positionAfterSkippingLeadingTrivia,
-                        replacement: " "
-                    )
-                )
+                        replacement: " ",
+                    ),
+                ),
             )
         }
 
@@ -92,11 +94,13 @@ private extension FunctionNameWhitespaceRule {
             let genericTrailingTrivia = node.rightAngle.trailingTrivia
             let replacement: String? =
                 switch configuration.genericSpacing {
-                case .noSpace where genericTrailingTrivia.isNotEmptyWithoutComments: ""
-                case .leadingSpace where genericTrailingTrivia.isNotEmptyWithoutComments: ""
-                case .trailingSpace where genericTrailingTrivia.isNotSingleSpaceWithoutComments: " "
-                case .leadingTrailingSpace where genericTrailingTrivia.isNotSingleSpaceWithoutComments: " "
-                default: nil
+                    case .noSpace where genericTrailingTrivia.isNotEmptyWithoutComments: ""
+                    case .leadingSpace where genericTrailingTrivia.isNotEmptyWithoutComments: ""
+                    case .trailingSpace
+                    where genericTrailingTrivia.isNotSingleSpaceWithoutComments: " "
+                    case .leadingTrailingSpace
+                    where genericTrailingTrivia.isNotSingleSpaceWithoutComments: " "
+                    default: nil
                 }
             guard let replacement else { return }
             violations.append(
@@ -106,9 +110,9 @@ private extension FunctionNameWhitespaceRule {
                     correction: .init(
                         start: node.endPositionBeforeTrailingTrivia,
                         end: node.endPosition,
-                        replacement: replacement
-                    )
-                )
+                        replacement: replacement,
+                    ),
+                ),
             )
         }
 
@@ -126,9 +130,9 @@ private extension FunctionNameWhitespaceRule {
                     correction: .init(
                         start: node.endPositionBeforeTrailingTrivia,
                         end: node.endPosition,
-                        replacement: " \(comment) "
-                    )
-                )
+                        replacement: " \(comment) ",
+                    ),
+                ),
             )
         }
     }
@@ -137,8 +141,8 @@ private extension FunctionNameWhitespaceRule {
 private extension FunctionDeclSyntax {
     var isOperatorDeclaration: Bool {
         switch name.tokenKind {
-        case .binaryOperator: true
-        default: false
+            case .binaryOperator: true
+            default: false
         }
     }
 }

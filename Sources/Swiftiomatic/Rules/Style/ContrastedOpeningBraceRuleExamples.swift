@@ -8,7 +8,7 @@ enum ContrastedOpeningBraceRuleExamples {
             func abc()
             {
             }
-            """
+            """,
         ),
         Example(
             """
@@ -16,7 +16,7 @@ enum ContrastedOpeningBraceRuleExamples {
             {
                 $0
             }
-            """
+            """,
         ),
         Example(
             """
@@ -24,35 +24,35 @@ enum ContrastedOpeningBraceRuleExamples {
                 {
                 }
             )
-            """
+            """,
         ),
         Example(
             """
             if let a = b
             {
             }
-            """
+            """,
         ),
         Example(
             """
             while a == b
             {
             }
-            """
+            """,
         ),
         Example(
             """
             guard let a = b else
             {
             }
-            """
+            """,
         ),
         Example(
             """
             struct Rule
             {
             }
-            """
+            """,
         ),
         Example(
             """
@@ -63,7 +63,7 @@ enum ContrastedOpeningBraceRuleExamples {
                     let foo: Int
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -74,7 +74,7 @@ enum ContrastedOpeningBraceRuleExamples {
                     print(centre)
                 }()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -85,7 +85,7 @@ enum ContrastedOpeningBraceRuleExamples {
                     print(centre)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -93,7 +93,7 @@ enum ContrastedOpeningBraceRuleExamples {
             {
                 {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -105,7 +105,7 @@ enum ContrastedOpeningBraceRuleExamples {
                 return ""
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -115,7 +115,7 @@ enum ContrastedOpeningBraceRuleExamples {
                     { "Do something here" }
                 )
             )
-            """
+            """,
         ),
         Example(##"let pattern = #/(\{(?<key>\w+)\})/#"##),
         Example(
@@ -124,7 +124,7 @@ enum ContrastedOpeningBraceRuleExamples {
             {}
             else
             {}
-            """
+            """,
         ),
         Example(
             """
@@ -132,7 +132,7 @@ enum ContrastedOpeningBraceRuleExamples {
                 {
                     return
                 }
-            """
+            """,
         ),
         Example(
             """
@@ -146,7 +146,7 @@ enum ContrastedOpeningBraceRuleExamples {
             {
               return
             }
-            """
+            """,
         ),
         Example(
             """
@@ -154,7 +154,7 @@ enum ContrastedOpeningBraceRuleExamples {
             { a in
                 a
             }
-            """
+            """,
         ),
     ]
 
@@ -163,23 +163,23 @@ enum ContrastedOpeningBraceRuleExamples {
             """
             func abc()↓{
             }
-            """
+            """,
         ),
         Example(
             """
             func abc() { }
-            """
+            """,
         ),
         Example(
             """
             func abc(a: A,
                      b: B) {}
-            """
+            """,
         ),
         Example(
             """
             [].map { $0 }
-            """
+            """,
         ),
         Example(
             """
@@ -196,7 +196,7 @@ enum ContrastedOpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -206,7 +206,7 @@ enum ContrastedOpeningBraceRuleExamples {
                 return ""
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -222,14 +222,14 @@ enum ContrastedOpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ),
         Example(
             """
             precedencegroup Group ↓{
               assignment: true
             }
-            """
+            """,
         ),
         Example(
             """
@@ -245,7 +245,7 @@ enum ContrastedOpeningBraceRuleExamples {
                    print("Brackets")
                }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -253,13 +253,13 @@ enum ContrastedOpeningBraceRuleExamples {
                 "test".isEmpty ↓{
                 // code here
             }
-            """
+            """,
         ),
         Example(
             """
             if c  ↓{}
             else /* comment */  ↓{}
-            """
+            """,
         ),
         Example(
             """
@@ -267,7 +267,7 @@ enum ContrastedOpeningBraceRuleExamples {
               ↓{
                 // code here
             }
-            """
+            """,
         ),
         Example(
             """
@@ -279,7 +279,7 @@ enum ContrastedOpeningBraceRuleExamples {
              ↓{
               return
             }
-            """
+            """,
         ),
         Example(
             """
@@ -288,7 +288,7 @@ enum ContrastedOpeningBraceRuleExamples {
                 return a.map
                         ↓{ $0 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -297,7 +297,7 @@ enum ContrastedOpeningBraceRuleExamples {
             } b: ↓{
                 $1
             }
-            """
+            """,
         ),
     ]
 
@@ -305,12 +305,12 @@ enum ContrastedOpeningBraceRuleExamples {
         Example(
             """
             struct Rule{}
-            """
+            """,
         ): Example(
             """
             struct Rule
             {}
-            """
+            """,
         ),
         Example(
             """
@@ -319,7 +319,7 @@ enum ContrastedOpeningBraceRuleExamples {
                     let foo: Int
                 }
             }
-            """
+            """,
         ): Example(
             """
             struct Parent
@@ -329,55 +329,55 @@ enum ContrastedOpeningBraceRuleExamples {
                     let foo: Int
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             [].map(){ $0 }
-            """
+            """,
         ): Example(
             """
             [].map()
             { $0 }
-            """
+            """,
         ),
         Example(
             """
             if a == b{ }
-            """
+            """,
         ): Example(
             """
             if a == b
             { }
-            """
+            """,
         ),
         Example(
             """
             @MyProperty actor MyActor<T>  {
 
             }
-            """
+            """,
         ): Example(
             """
             @MyProperty actor MyActor<T>
             {
 
             }
-            """
+            """,
         ),
         Example(
             """
             actor MyActor<T> where T: U  {
 
             }
-            """
+            """,
         ): Example(
             """
             actor MyActor<T> where T: U
             {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -386,7 +386,7 @@ enum ContrastedOpeningBraceRuleExamples {
             } catch              {
 
             }
-            """
+            """,
         ): Example(
             """
             do
@@ -396,7 +396,7 @@ enum ContrastedOpeningBraceRuleExamples {
             {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -405,7 +405,7 @@ enum ContrastedOpeningBraceRuleExamples {
             } catch MyError.unknown  {
 
             }
-            """
+            """,
         ): Example(
             """
             do
@@ -415,35 +415,35 @@ enum ContrastedOpeningBraceRuleExamples {
             {
 
             }
-            """
+            """,
         ),
         Example(
             """
             defer  {
 
             }
-            """
+            """,
         ): Example(
             """
             defer
             {
 
             }
-            """
+            """,
         ),
         Example(
             """
             for a in b where a == c {
 
             }
-            """
+            """,
         ): Example(
             """
             for a in b where a == c
             {
 
             }
-            """
+            """,
         ),
         Example(
             """
@@ -452,7 +452,7 @@ enum ContrastedOpeningBraceRuleExamples {
                 || !node.type.is(SimpleTypeIdentifierSyntax.self) { // Complex or collection type
                 return .visitChildren
             }
-            """
+            """,
         ): Example(
             """
             if varDecl.parent?.is(CodeBlockItemSyntax.self) == true // Local variable declaration
@@ -461,7 +461,7 @@ enum ContrastedOpeningBraceRuleExamples {
             { // Complex or collection type
                 return .visitChildren
             }
-            """
+            """,
         ),
         Example(
             """
@@ -473,7 +473,7 @@ enum ContrastedOpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ): Example(
             """
             @MyProperty class Rule
@@ -486,35 +486,35 @@ enum ContrastedOpeningBraceRuleExamples {
                 }
               }
             }
-            """
+            """,
         ),
         Example(
             """
             precedencegroup Group{
               assignment: true
             }
-            """
+            """,
         ): Example(
             """
             precedencegroup Group
             {
               assignment: true
             }
-            """
+            """,
         ),
         Example(
             """
             if c /* comment */    {
                 return
             }
-            """
+            """,
         ): Example(
             """
             if c /* comment */
             {
                 return
             }
-            """
+            """,
         ),
         Example(
             """
@@ -525,7 +525,7 @@ enum ContrastedOpeningBraceRuleExamples {
                     do2()
                 }
             }
-            """
+            """,
         ): Example(
             """
             func foo()
@@ -538,7 +538,7 @@ enum ContrastedOpeningBraceRuleExamples {
                     do2()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -548,7 +548,7 @@ enum ContrastedOpeningBraceRuleExamples {
               {
                 // code here
             }
-            """
+            """,
         ): Example(
             """
             if
@@ -557,7 +557,7 @@ enum ContrastedOpeningBraceRuleExamples {
               {
                 // code here
             }
-            """
+            """,
         ),
         Example(
             """
@@ -566,7 +566,7 @@ enum ContrastedOpeningBraceRuleExamples {
             {
                 let a = 1
             }
-            """
+            """,
         ): Example(
             """
             private func f()
@@ -574,34 +574,34 @@ enum ContrastedOpeningBraceRuleExamples {
             {
                 let a = 1
             }
-            """
+            """,
         ),
         Example(
             """
             while true /* endless loop */ {
                 // nothing
             }
-            """
+            """,
         ): Example(
             """
             while true /* endless loop */
             {
                 // nothing
             }
-            """
+            """,
         ),
         Example(
             """
             a.b { $0 }
              .c { $1 }
-            """
+            """,
         ): Example(
             """
             a.b
             { $0 }
              .c
              { $1 }
-            """
+            """,
         ),
         Example(
             """
@@ -610,7 +610,7 @@ enum ContrastedOpeningBraceRuleExamples {
             } b: {
                 $1
             }
-            """
+            """,
         ): Example(
             """
             a
@@ -620,7 +620,7 @@ enum ContrastedOpeningBraceRuleExamples {
             {
                 $1
             }
-            """
+            """,
         ),
     ]
 }

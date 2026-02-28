@@ -1,5 +1,5 @@
-import SwiftOperators
 import SwiftSyntax
+import SwiftOperators
 
 struct XCTSpecificMatcherRule: Rule {
     var configuration = XCTSpecificMatcherConfiguration()
@@ -20,7 +20,7 @@ struct XCTSpecificMatcherRule: Rule {
         """,
         kind: .idiomatic,
         nonTriggeringExamples: XCTSpecificMatcherRuleExamples.nonTriggeringExamples,
-        triggeringExamples: XCTSpecificMatcherRuleExamples.triggeringExamples
+        triggeringExamples: XCTSpecificMatcherRuleExamples.triggeringExamples,
     )
 }
 
@@ -41,8 +41,8 @@ private extension XCTSpecificMatcherRule {
                 violations.append(
                     ReasonedRuleViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
-                        reason: "Prefer the specific matcher '\(suggestion)' instead"
-                    )
+                        reason: "Prefer the specific matcher '\(suggestion)' instead",
+                    ),
                 )
             } else if configuration.matchers.contains(.oneArgumentAsserts),
                       let suggestion = OneArgXCTAssert.violations(in: node)
@@ -50,8 +50,8 @@ private extension XCTSpecificMatcherRule {
                 violations.append(
                     ReasonedRuleViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
-                        reason: "Prefer the specific matcher '\(suggestion)' instead"
-                    )
+                        reason: "Prefer the specific matcher '\(suggestion)' instead",
+                    ),
                 )
             }
         }
@@ -73,18 +73,18 @@ private enum OneArgXCTAssert: String {
     // swiftlint:disable:next cyclomatic_complexity
     private func suggestion(for comparisonOperator: Comparison) -> String {
         switch (self, comparisonOperator) {
-        case (.assert, .equal): "XCTAssertEqual"
-        case (.true, .equal): "XCTAssertEqual"
-        case (.assert, .unequal): "XCTAssertNotEqual"
-        case (.true, .unequal): "XCTAssertNotEqual"
-        case (.false, .equal): "XCTAssertNotEqual"
-        case (.false, .unequal): "XCTAssertEqual"
-        case (.assert, .identical): "XCTAssertIdentical"
-        case (.true, .identical): "XCTAssertIdentical"
-        case (.assert, .notIdentical): "XCTAssertNotIdentical"
-        case (.true, .notIdentical): "XCTAssertNotIdentical"
-        case (.false, .identical): "XCTAssertNotIdentical"
-        case (.false, .notIdentical): "XCTAssertIdentical"
+            case (.assert, .equal): "XCTAssertEqual"
+            case (.true, .equal): "XCTAssertEqual"
+            case (.assert, .unequal): "XCTAssertNotEqual"
+            case (.true, .unequal): "XCTAssertNotEqual"
+            case (.false, .equal): "XCTAssertNotEqual"
+            case (.false, .unequal): "XCTAssertEqual"
+            case (.assert, .identical): "XCTAssertIdentical"
+            case (.true, .identical): "XCTAssertIdentical"
+            case (.assert, .notIdentical): "XCTAssertNotIdentical"
+            case (.true, .notIdentical): "XCTAssertNotIdentical"
+            case (.false, .identical): "XCTAssertNotIdentical"
+            case (.false, .notIdentical): "XCTAssertIdentical"
         }
     }
 
@@ -126,13 +126,13 @@ private enum TwoArgsXCTAssert: String {
 
     private func suggestion(for protectedArgument: String, hasOptional: Bool) -> String? {
         switch (self, protectedArgument, hasOptional) {
-        case (.equal, "true", false): return "XCTAssertTrue"
-        case (.equal, "false", false): return "XCTAssertFalse"
-        case (.equal, "nil", _): return "XCTAssertNil"
-        case (.notEqual, "true", false): return "XCTAssertFalse"
-        case (.notEqual, "false", false): return "XCTAssertTrue"
-        case (.notEqual, "nil", _): return "XCTAssertNotNil"
-        default: return nil
+            case (.equal, "true", false): return "XCTAssertTrue"
+            case (.equal, "false", false): return "XCTAssertFalse"
+            case (.equal, "nil", _): return "XCTAssertNil"
+            case (.notEqual, "true", false): return "XCTAssertFalse"
+            case (.notEqual, "false", false): return "XCTAssertTrue"
+            case (.notEqual, "nil", _): return "XCTAssertNotNil"
+            default: return nil
         }
     }
 

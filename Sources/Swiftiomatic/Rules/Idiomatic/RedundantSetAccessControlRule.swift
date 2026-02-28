@@ -19,21 +19,21 @@ struct RedundantSetAccessControlRule: Rule {
                 private final class A {
                   private(set) var value: Int
                 }
-                """
+                """,
             ),
             Example(
                 """
                 fileprivate class A {
                   public fileprivate(set) var value: Int
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
                 extension Color {
                     public internal(set) static var someColor = Color.anotherColor
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -46,30 +46,30 @@ struct RedundantSetAccessControlRule: Rule {
                 open class Foo {
                   ↓open(set) open var bar: Int
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class A {
                   ↓internal(set) var value: Int
                 }
-                """
+                """,
             ),
             Example(
                 """
                 internal class A {
                   ↓internal(set) var value: Int
                 }
-                """
+                """,
             ),
             Example(
                 """
                 fileprivate class A {
                   ↓fileprivate(set) var value: Int
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

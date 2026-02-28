@@ -1,27 +1,28 @@
-// Created by Andy Bartholomew on 5/30/25.
-// Copyright © 2025 Airbnb Inc. All rights reserved.
-
 import Foundation
 
 extension FormatRule {
     static let noForceTryInTests = FormatRule(
-        help: "Write tests that use `throws` instead of using `try!`."
+        help: "Write tests that use `throws` instead of using `try!`.",
     ) { formatter in
         guard let testFramework = formatter.detectTestingFramework() else {
             return
         }
 
         formatter.forEach(.keyword("func")) { funcKeywordIndex, _ in
-            guard let functionDecl = formatter.parseFunctionDeclaration(keywordIndex: funcKeywordIndex),
-                  formatter.isTestCase(at: funcKeywordIndex, in: functionDecl, for: testFramework),
-                  let bodyRange = functionDecl.bodyRange
+            guard let functionDecl = formatter
+                .parseFunctionDeclaration(keywordIndex: funcKeywordIndex),
+                formatter.isTestCase(at: funcKeywordIndex, in: functionDecl, for: testFramework),
+                let bodyRange = functionDecl.bodyRange
             else { return }
 
             // Find all `try!` and remove the `!`
             var foundAnyTryExclamationMarks = false
             for index in bodyRange.reversed() {
                 guard formatter.tokens[index] == .keyword("try") else { continue }
-                guard let nextTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: index)
+                guard let nextTokenIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak,
+                    after: index,
+                )
                 else { return }
                 let nextToken = formatter.tokens[nextTokenIndex]
                 if nextToken != .operator("!", .postfix) { continue }

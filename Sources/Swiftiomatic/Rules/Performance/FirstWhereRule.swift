@@ -15,10 +15,10 @@ struct FirstWhereRule: Rule {
             Example("(myList.filter { $0 == 1 }.suffix(2)).first"),
             Example(#"collection.filter("stringCol = '3'").first"#),
             Example(
-                #"realm?.objects(User.self).filter(NSPredicate(format: "email ==[c] %@", email)).first"#
+                #"realm?.objects(User.self).filter(NSPredicate(format: "email ==[c] %@", email)).first"#,
             ),
             Example(
-                #"if let pause = timeTracker.pauses.filter("beginDate < %@", beginDate).first { print(pause) }"#
+                #"if let pause = timeTracker.pauses.filter("beginDate < %@", beginDate).first { print(pause) }"#,
             ),
         ],
         triggeringExamples: [
@@ -31,7 +31,7 @@ struct FirstWhereRule: Rule {
             Example("(↓myList.filter { $0 == 1 }).first"),
             Example(#"↓myListOfDict.filter { dict in dict["1"] }.first"#),
             Example(#"↓myListOfDict.filter { $0["someString"] }.first"#),
-        ]
+        ],
     )
 }
 
@@ -49,7 +49,8 @@ private extension FirstWhereRule {
             guard
                 node.declName.baseName.text == "first",
                 let functionCall = node.base?.asFunctionCall,
-                let calledExpression = functionCall.calledExpression.as(MemberAccessExprSyntax.self),
+                let calledExpression = functionCall.calledExpression
+                .as(MemberAccessExprSyntax.self),
                 calledExpression.declName.baseName.text == "filter",
                 !functionCall.arguments.contains(where: \.expression.shouldSkip)
             else {

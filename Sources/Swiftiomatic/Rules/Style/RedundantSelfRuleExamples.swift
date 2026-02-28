@@ -7,7 +7,7 @@ enum RedundantSelfRuleExamples {
                 init() { self.x = 1 }
                 func foo() { self.x = 1 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -22,7 +22,7 @@ enum RedundantSelfRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -40,7 +40,7 @@ enum RedundantSelfRuleExamples {
                     f { [weak self] in if let self { x = 1 } }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -72,7 +72,7 @@ enum RedundantSelfRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -95,7 +95,7 @@ enum RedundantSelfRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -110,7 +110,7 @@ enum RedundantSelfRuleExamples {
                 }
                 func f(_: () -> Void) {}
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -121,7 +121,7 @@ enum RedundantSelfRuleExamples {
                     self.y = x + 1
                 }
             }
-            """, configuration: ["keep_in_initializers": true]
+            """, configuration: ["keep_in_initializers": true],
         ),
         Example(
             """
@@ -131,7 +131,7 @@ enum RedundantSelfRuleExamples {
                     return self.uppercased()
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -143,7 +143,7 @@ enum RedundantSelfRuleExamples {
                 init() { ↓self.x = 1 }
                 func foo() { ↓self.x = 1 }
             }
-            """, configuration: ["only_in_closures": false]
+            """, configuration: ["only_in_closures": false],
         ),
         Example(
             """
@@ -157,7 +157,7 @@ enum RedundantSelfRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -170,7 +170,7 @@ enum RedundantSelfRuleExamples {
                     }()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -185,7 +185,7 @@ enum RedundantSelfRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -198,7 +198,7 @@ enum RedundantSelfRuleExamples {
                     f { [s = self] in s.x = 1 }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -229,7 +229,7 @@ enum RedundantSelfRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -239,7 +239,7 @@ enum RedundantSelfRuleExamples {
                     f { let g = ↓self.g() }
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -250,7 +250,7 @@ enum RedundantSelfRuleExamples {
                     func g() { E.f { ↓self.g() } }
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -275,7 +275,7 @@ enum RedundantSelfRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -294,14 +294,14 @@ enum RedundantSelfRuleExamples {
                     return 2
                 }()
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
             extension String {
                 func foo() -> String { ↓self.uppercased() }
             }
-            """, configuration: ["only_in_closures": false]
+            """, configuration: ["only_in_closures": false],
         ),
     ]
 
@@ -318,7 +318,7 @@ enum RedundantSelfRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ): Example(
             """
             struct S {
@@ -331,7 +331,7 @@ enum RedundantSelfRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -342,7 +342,7 @@ enum RedundantSelfRuleExamples {
                     ↓self.y = 1
                 }
             }
-            """, configuration: ["only_in_closures": false]
+            """, configuration: ["only_in_closures": false],
         ): Example(
             """
             struct S {
@@ -352,7 +352,7 @@ enum RedundantSelfRuleExamples {
                     y = 1
                 }
             }
-            """
+            """,
         ),
     ]
 }

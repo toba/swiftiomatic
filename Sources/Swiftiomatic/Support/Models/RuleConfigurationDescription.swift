@@ -35,7 +35,7 @@ struct RuleConfigurationDescription: Equatable, Sendable {
                     Cannot create a configuration description with a mixture of `noOption`
                     and other options or multiple `noOptions`s. If any, descriptions must only
                     contain one single no-documentation marker.
-                    """
+                    """,
                 )
             }
             self.options = []
@@ -71,7 +71,7 @@ struct RuleConfigurationDescription: Equatable, Sendable {
                 Rule configuration '\(configuration)' does not have any parameters.
                 A custom description must be provided. If really no documentation is
                 required, define the description as `{ RuleConfigurationOption.noOptions }`.
-                """
+                """,
             )
         }
         return Self(options: options, exclusiveOptions: exclusiveOptions)
@@ -80,12 +80,12 @@ struct RuleConfigurationDescription: Equatable, Sendable {
     func allowedKeys() -> [String] {
         options.flatMap { option -> [String] in
             switch option.value {
-            case let .nested(nestedConfiguration) where option.key.isEmpty:
-                nestedConfiguration.allowedKeys()
-            case .empty:
-                []
-            default:
-                [option.key]
+                case let .nested(nestedConfiguration) where option.key.isEmpty:
+                    nestedConfiguration.allowedKeys()
+                case .empty:
+                    []
+                default:
+                    [option.key]
             }
         }
     }
@@ -196,14 +196,14 @@ extension OptionType: Documentable {
 
     func markdown() -> String {
         switch self {
-        case .empty, .flag, .symbol, .integer, .float, .severity:
-            return yaml()
-        case let .string(value):
-            return "&quot;" + value + "&quot;"
-        case let .list(options):
-            return "[" + options.map { $0.markdown() }.joined(separator: ", ") + "]"
-        case let .nested(value):
-            return value.markdown()
+            case .empty, .flag, .symbol, .integer, .float, .severity:
+                return yaml()
+            case let .string(value):
+                return "&quot;" + value + "&quot;"
+            case let .list(options):
+                return "[" + options.map { $0.markdown() }.joined(separator: ", ") + "]"
+            case let .nested(value):
+                return value.markdown()
         }
     }
 
@@ -216,24 +216,24 @@ extension OptionType: Documentable {
 
     func yaml() -> String {
         switch self {
-        case .empty:
-            queuedFatalError("Empty options shall not be serialized.")
-        case let .flag(value):
-            return String(describing: value)
-        case let .string(value):
-            return "\"" + value + "\""
-        case let .symbol(value):
-            return value
-        case let .integer(value):
-            return String(describing: value)
-        case let .float(value):
-            return String(describing: value)
-        case let .severity(value):
-            return value.rawValue
-        case let .list(options):
-            return "[" + options.map { $0.oneLiner() }.joined(separator: ", ") + "]"
-        case let .nested(value):
-            return value.yaml()
+            case .empty:
+                queuedFatalError("Empty options shall not be serialized.")
+            case let .flag(value):
+                return String(describing: value)
+            case let .string(value):
+                return "\"" + value + "\""
+            case let .symbol(value):
+                return value
+            case let .integer(value):
+                return String(describing: value)
+            case let .float(value):
+                return String(describing: value)
+            case let .severity(value):
+                return value.rawValue
+            case let .list(options):
+                return "[" + options.map { $0.oneLiner() }.joined(separator: ", ") + "]"
+            case let .nested(value):
+                return value.yaml()
         }
     }
 }
@@ -303,7 +303,7 @@ extension OptionType {
     ///
     /// - Returns: A configuration option with a value being another configuration description.
     static func nest(
-        @RuleConfigurationDescriptionBuilder _ description: () -> RuleConfigurationDescription
+        @RuleConfigurationDescriptionBuilder _ description: () -> RuleConfigurationDescription,
     ) -> Self {
         .nested(description())
     }
@@ -485,7 +485,7 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
         wrappedValue value: T,
         key: String,
         deprecationNotice: DeprecationNotice? = nil,
-        postprocessor: @escaping @Sendable (inout T) -> Void = { _ in }
+        postprocessor: @escaping @Sendable (inout T) -> Void = { _ in },
     ) {
         // swiftlint:disable:previous no_empty_block
         self.init(
@@ -493,7 +493,7 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
             key: key,
             inline: false,
             deprecationNotice: deprecationNotice,
-            postprocessor: postprocessor
+            postprocessor: postprocessor,
         )
 
         // Modify the set value immediately.
@@ -536,7 +536,7 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
         key: String,
         inline: Bool,
         deprecationNotice: DeprecationNotice? = nil,
-        postprocessor: @escaping @Sendable (inout T) -> Void = { _ in }
+        postprocessor: @escaping @Sendable (inout T) -> Void = { _ in },
     ) {
         // swiftlint:disable:previous no_empty_block
         self.wrappedValue = wrappedValue
@@ -714,7 +714,7 @@ extension SeverityConfiguration {
             queuedFatalError(
                 """
                 Severity configurations must have exactly one option that is a violation severity.
-                """
+                """,
             )
         }
         return RuleConfigurationDescription(options: [key => option])

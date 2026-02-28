@@ -25,7 +25,7 @@ enum SwiftUIContainerHelpers {
     /// Check for NavigationStack nested inside another NavigationStack.
     static func checkNestedNavigationStack(
         callee: String,
-        containerStack: [String]
+        containerStack: [String],
     ) -> LayoutIssue? {
         guard callee == "NavigationStack", containerStack.contains("NavigationStack") else {
             return nil
@@ -33,39 +33,39 @@ enum SwiftUIContainerHelpers {
         return LayoutIssue(
             reason: "Nested NavigationStack — causes double navigation bars and broken navigation",
             suggestion: "Remove the inner NavigationStack; only the root view should own one",
-            isHighSeverity: true
+            isHighSeverity: true,
         )
     }
 
     /// Check for List inside ScrollView (List already scrolls).
     static func checkListInsideScrollView(
         callee: String,
-        containerStack: [String]
+        containerStack: [String],
     ) -> LayoutIssue? {
         guard callee == "List", containerStack.contains("ScrollView") else { return nil }
         return LayoutIssue(
             reason: "List inside ScrollView — List has built-in scrolling, nesting causes conflicts",
             suggestion: "Remove the outer ScrollView or replace List with ForEach",
-            isHighSeverity: true
+            isHighSeverity: true,
         )
     }
 
     /// Check for GeometryReader inside ScrollView (undefined proposed size).
     static func checkGeometryReaderInsideScrollView(
         callee: String,
-        containerStack: [String]
+        containerStack: [String],
     ) -> LayoutIssue? {
         guard callee == "GeometryReader", containerStack.contains("ScrollView") else { return nil }
         return LayoutIssue(
             reason: "GeometryReader inside ScrollView — proposed size is undefined in the scroll axis",
             suggestion: "Move GeometryReader outside the ScrollView or use a fixed frame",
-            isHighSeverity: true
+            isHighSeverity: true,
         )
     }
 
     /// Check for multiple unbounded containers competing for space inside a stack.
     static func checkMultipleUnboundedContainers(
-        containerStack: [String]
+        containerStack: [String],
     ) -> LayoutIssue? {
         guard let current = containerStack.last, unboundedContainers.contains(current) else {
             return nil
@@ -82,14 +82,14 @@ enum SwiftUIContainerHelpers {
         }
         guard !hasInterveningStack else { return nil }
 
-        let unboundedCount = childrenAfterStack.filter { unboundedContainers.contains($0) }.count
+        let unboundedCount = childrenAfterStack.count(where: { unboundedContainers.contains($0) })
         guard unboundedCount >= 2 else { return nil }
 
         let stackName = containerStack[stackIndex]
         return LayoutIssue(
             reason: "Multiple unbounded containers (\(unboundedCount)) inside \(stackName) — they compete for space",
             suggestion: "Give explicit frames to each container or restructure the layout",
-            isHighSeverity: false
+            isHighSeverity: false,
         )
     }
 }

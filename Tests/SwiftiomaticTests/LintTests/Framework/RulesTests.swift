@@ -1,29 +1,33 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite struct RulesTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func leadingWhitespace() {
-        verifyRule(LeadingWhitespaceRule.description, skipDisableCommandTests: true,
-                   testMultiByteOffsets: false, testShebang: false)
-    }
+  @Test func leadingWhitespace() {
+    verifyRule(
+      LeadingWhitespaceRule.description, skipDisableCommandTests: true,
+      testMultiByteOffsets: false, testShebang: false)
+  }
 
-    @Test func mark() {
-        verifyRule(MarkRule.description, skipCommentTests: true)
-    }
+  @Test func mark() {
+    verifyRule(MarkRule.description, skipCommentTests: true)
+  }
 
-    @Test func requiredEnumCase() {
-        let configuration = ["NetworkResponsable": ["notConnected": "error"]]
-        verifyRule(RequiredEnumCaseRule.description, ruleConfiguration: configuration)
-    }
+  @Test func requiredEnumCase() {
+    let configuration = ["NetworkResponsable": ["notConnected": "error"]]
+    verifyRule(RequiredEnumCaseRule.description, ruleConfiguration: configuration)
+  }
 
-    @Test func trailingNewline() {
-        verifyRule(TrailingNewlineRule.description, commentDoesntViolate: false,
-                   stringDoesntViolate: false)
-    }
+  @Test func trailingNewline() {
+    verifyRule(
+      TrailingNewlineRule.description, commentDoesntViolate: false,
+      stringDoesntViolate: false)
+  }
 
-    @Test func orphanedDocComment() {
-        verifyRule(OrphanedDocCommentRule.description, commentDoesntViolate: false, skipCommentTests: true)
-    }
+  @Test func orphanedDocComment() {
+    verifyRule(
+      OrphanedDocCommentRule.description, commentDoesntViolate: false, skipCommentTests: true)
+  }
 }

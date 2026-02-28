@@ -1,16 +1,8 @@
-//
-//  RedundantPublic.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 5/30/2025.
-//  Copyright © 2025 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let redundantPublic = FormatRule(
-        help: "Remove redundant public access control from declarations in internal or private types."
+        help: "Remove redundant public access control from declarations in internal or private types.",
     ) { formatter in
         let declarations = formatter.parseDeclarations()
 
@@ -55,20 +47,20 @@ extension FormatRule {
             }
 
             switch parentType.keyword {
-            case "extension":
-                // Inside an extension where the extended type is internal, any `public` modifier has no effect.
-                // We can only handle this case if the extension and type are defined in the same file.
-                if let extendedTypeName = parentType.name,
-                   internalTypes.contains(extendedTypeName)
-                {
-                    declaration.removeVisibility(.public)
-                }
+                case "extension":
+                    // Inside an extension where the extended type is internal, any `public` modifier has no effect.
+                    // We can only handle this case if the extension and type are defined in the same file.
+                    if let extendedTypeName = parentType.name,
+                       internalTypes.contains(extendedTypeName)
+                    {
+                        declaration.removeVisibility(.public)
+                    }
 
-            // Inside an internal or private type, any `public` modifier has no effect
-            default:
-                if (parentType.visibility() ?? .internal) <= .internal {
-                    declaration.removeVisibility(.public)
-                }
+                // Inside an internal or private type, any `public` modifier has no effect
+                default:
+                    if (parentType.visibility() ?? .internal) <= .internal {
+                        declaration.removeVisibility(.public)
+                    }
             }
         }
     } examples: {

@@ -14,14 +14,14 @@ struct FatalErrorMessageRule: Rule {
                 func foo() {
                   fatalError("Foo")
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func foo() {
                   fatalError(x)
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -30,16 +30,16 @@ struct FatalErrorMessageRule: Rule {
                 func foo() {
                   ↓fatalError("")
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func foo() {
                   ↓fatalError()
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -71,6 +71,7 @@ private extension LabeledExprListSyntax {
         if isEmpty {
             return true
         }
-        return count == 1 && first?.expression.as(StringLiteralExprSyntax.self)?.isEmptyString == true
+        return count == 1 && first?.expression.as(StringLiteralExprSyntax.self)?
+            .isEmptyString == true
     }
 }

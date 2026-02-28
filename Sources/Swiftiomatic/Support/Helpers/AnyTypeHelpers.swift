@@ -7,21 +7,21 @@ enum AnyTypeMatch {
 
     var message: String {
         switch self {
-        case .any:
-            "Type 'Any' erases type safety"
-        case .anyObject:
-            "Type 'AnyObject' — consider a specific class type or protocol"
-        case .anyHashable:
-            "Type 'AnyHashable' — check if all elements share a common concrete type"
+            case .any:
+                "Type 'Any' erases type safety"
+            case .anyObject:
+                "Type 'AnyObject' — consider a specific class type or protocol"
+            case .anyHashable:
+                "Type 'AnyHashable' — check if all elements share a common concrete type"
         }
     }
 
     var suggestion: String? {
         switch self {
-        case .any:
-            "Use a specific type, protocol, or generic parameter"
-        case .anyObject, .anyHashable:
-            nil
+            case .any:
+                "Use a specific type, protocol, or generic parameter"
+            case .anyObject, .anyHashable:
+                nil
         }
     }
 }

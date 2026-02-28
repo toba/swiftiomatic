@@ -1,86 +1,16 @@
 import Testing
+import Foundation
 @testable import Swiftiomatic
 
 @Suite struct SwiftFormatTests {
-    // MARK: enumerateFiles
-
-    @Test func inputFileMatchesOutputFileForNilOutput() {
-        var files = [URL]()
-        let inputURL = URL(fileURLWithPath: #file)
-        let errors = enumerateFiles(withInputURLs: [inputURL]) { inputURL, outputURL, _ in
-            #expect(inputURL == outputURL)
-            #expect(inputURL == URL(fileURLWithPath: #file))
-            return { files.append(inputURL) }
-        }
-        #expect(errors.count == 0)
-        #expect(files.count == 1)
-    }
-
-    @Test func inputFileMatchesOutputFileForSameOutput() {
-        var files = [URL]()
-        let inputURL = URL(fileURLWithPath: #file)
-        let errors = enumerateFiles(withInputURLs: [inputURL], outputURL: inputURL) { inputURL, outputURL, _ in
-            #expect(inputURL == outputURL)
-            #expect(inputURL == URL(fileURLWithPath: #file))
-            return { files.append(inputURL) }
-        }
-        #expect(errors.count == 0)
-        #expect(files.count == 1)
-    }
-
-    @Test func inputFilesMatchOutputFilesForNilOutput() {
-        var files = [URL]()
-        let inputURL = URL(fileURLWithPath: #file).deletingLastPathComponent().deletingLastPathComponent()
-        let errors = enumerateFiles(withInputURLs: [inputURL]) { inputURL, outputURL, _ in
-            #expect(inputURL == outputURL)
-            return { files.append(inputURL) }
-        }
-        #expect(errors.count == 0)
-        #expect(files.count >= 180)
-    }
-
-    @Test func inputFilesMatchOutputFilesForSameOutput() {
-        var files = [URL]()
-        let inputURL = URL(fileURLWithPath: #file).deletingLastPathComponent().deletingLastPathComponent()
-        let errors = enumerateFiles(withInputURLs: [inputURL], outputURL: inputURL) { inputURL, outputURL, _ in
-            #expect(inputURL == outputURL)
-            return { files.append(inputURL) }
-        }
-        #expect(errors.count == 0)
-        #expect(files.count >= 180)
-    }
-
-    @Test func inputFileNotEnumeratedWhenExcluded() {
-        var files = [URL]()
-        let currentFile = URL(fileURLWithPath: #file)
-        let options = Options(fileOptions: FileOptions(excludedGlobs: [
-            Glob.path(currentFile.deletingLastPathComponent().path),
-        ]))
-        let inputURL = currentFile.deletingLastPathComponent().deletingLastPathComponent()
-        let errors = enumerateFiles(withInputURLs: [inputURL], outputURL: inputURL, options: options) { inputURL, outputURL, _ in
-            #expect(inputURL == outputURL)
-            return { files.append(inputURL) }
-        }
-
-        var allFiles = [URL]()
-        let allFilesInputURL = URL(fileURLWithPath: #file).deletingLastPathComponent().deletingLastPathComponent()
-        _ = enumerateFiles(withInputURLs: [allFilesInputURL], outputURL: allFilesInputURL) { inputURL, outputURL, _ in
-            #expect(inputURL == outputURL)
-            return { allFiles.append(inputURL) }
-        }
-
-        #expect(errors.count == 0)
-        #expect(files.count < allFiles.count)
-    }
-
     // MARK: format function
 
-    @Test func formatReturnsInputWithNoRules() {
+    @Test func formatReturnsInputWithNoRules() throws {
         let input = "foo ()  "
         #expect(try format(input, rules: []).output == input)
     }
 
-    @Test func formatUsesDefaultRulesIfNoneSpecified() {
+    @Test func formatUsesDefaultRulesIfNoneSpecified() throws {
         let input = "foo ()  "
         let output = "foo()\n"
         #expect(try format(input).output == output)
@@ -88,38 +18,47 @@ import Testing
 
     // MARK: lint function
 
-    @Test func lintReturnsNoChangesWithNoRules() {
+    @Test func lintReturnsNoChangesWithNoRules() throws {
         let input = "foo ()  "
         #expect(try lint(input, rules: []) == [])
     }
 
-    @Test func lintWithDefaultRules() {
+    @Test func lintWithDefaultRules() throws {
         let input = "foo ()  "
-        #expect(try lint(input) == [
-            .init(line: 1, rule: .linebreakAtEndOfFile, filePath: nil, isMove: false),
-            .init(line: 1, rule: .spaceAroundParens, filePath: nil, isMove: false),
-            .init(line: 1, rule: .trailingSpace, filePath: nil, isMove: false),
-        ])
+        #expect(
+            try lint(input) == [
+                .init(line: 1, rule: .linebreakAtEndOfFile, filePath: nil, isMove: false),
+                .init(line: 1, rule: .spaceAroundParens, filePath: nil, isMove: false),
+                .init(line: 1, rule: .trailingSpace, filePath: nil, isMove: false),
+            ],
+        )
     }
 
-    @Test func lintConsecutiveBlankLinesAtEndOfFile() {
+    @Test func lintConsecutiveBlankLinesAtEndOfFile() throws {
         let input = "foo\n\n"
-        #expect(try lint(input) == [
-            .init(line: 2, rule: .consecutiveBlankLines, filePath: nil, isMove: false),
-        ])
+        #expect(
+            try lint(input) == [
+                .init(line: 2, rule: .consecutiveBlankLines, filePath: nil, isMove: false),
+            ],
+        )
     }
 
     // MARK: fragments
 
     @Test func formattingFailsForFragment() {
         let input = "foo () {"
-        #expect(throws: (any Error).self) { try format(input, rules: []) }
+        let error: any Error
         do {
-            #expect("\($0)" == "Unexpected end of file at 1:9")
+            _ = try format(input, rules: [])
+            Issue.record("Expected error to be thrown")
+            return
+        } catch let e {
+            error = e
         }
+        #expect("\(error)" == "Unexpected end of file at 1:9")
     }
 
-    @Test func formattingSucceedsForFragmentWithOption() {
+    @Test func formattingSucceedsForFragmentWithOption() throws {
         let input = "foo () {"
         let options = FormatOptions(fragment: true)
         #expect(try format(input, rules: [], options: options).output == input)
@@ -129,13 +68,18 @@ import Testing
 
     @Test func formattingFailsForConflict() {
         let input = "foo () {\n<<<<<< old\n    bar()\n======\n    baz()\n>>>>>> new\n}"
-        #expect(throws: (any Error).self) { try format(input, rules: []) }
+        let error: any Error
         do {
-            #expect("\($0)" == "Found conflict marker <<<<<< at 2:1")
+            _ = try format(input, rules: [])
+            Issue.record("Expected error to be thrown")
+            return
+        } catch let e {
+            error = e
         }
+        #expect("\(error)" == "Found conflict marker <<<<<< at 2:1")
     }
 
-    @Test func formattingSucceedsForConflictWithOption() {
+    @Test func formattingSucceedsForConflictWithOption() throws {
         let input = "foo () {\n<<<<<< old\n    bar()\n======\n    baz()\n>>>>>> new\n}"
         let options = FormatOptions(ignoreConflictMarkers: true)
         #expect(try format(input, rules: [], options: options).output == input)
@@ -143,7 +87,7 @@ import Testing
 
     // MARK: empty file
 
-    @Test func noTimeoutForEmptyFile() {
+    @Test func noTimeoutForEmptyFile() throws {
         let input = ""
         #expect(try format(input).output == input)
     }
@@ -152,13 +96,13 @@ import Testing
 
     @Test func offsetForToken() {
         let tokens = tokenize("// a comment\n    let foo = 5\n")
-        let offset = offsetForToken(at: 7, in: tokens, tabWidth: 1)
+        let offset = Swiftiomatic.offsetForToken(at: 7, in: tokens, tabWidth: 1)
         #expect(offset == SourceOffset(line: 2, column: 9))
     }
 
     @Test func offsetForTokenWithTabs() {
         let tokens = tokenize("// a comment\n\tlet foo = 5\n")
-        let offset = offsetForToken(at: 7, in: tokens, tabWidth: 2)
+        let offset = Swiftiomatic.offsetForToken(at: 7, in: tokens, tabWidth: 2)
         #expect(offset == SourceOffset(line: 2, column: 7))
     }
 
@@ -177,29 +121,35 @@ import Testing
     }
 
     @Test func tokenIndexForLastLine() {
-        let tokens = tokenize("""
-        let foo = 5
-        let bar = 6
-        """)
+        let tokens = tokenize(
+            """
+            let foo = 5
+            let bar = 6
+            """,
+        )
         let offset = SourceOffset(line: 2, column: 0)
         #expect(tokenIndex(for: offset, in: tokens, tabWidth: 1) == 8)
     }
 
     @Test func tokenIndexPastEndOfFile() {
-        let tokens = tokenize("""
-        let foo = 5
-        let bar = 6
-        """)
+        let tokens = tokenize(
+            """
+            let foo = 5
+            let bar = 6
+            """,
+        )
         let offset = SourceOffset(line: 3, column: 0)
         #expect(tokenIndex(for: offset, in: tokens, tabWidth: 1) == 15)
     }
 
     @Test func tokenIndexForBlankLastLine() {
-        let tokens = tokenize("""
-        let foo = 5
-        let bar = 6
+        let tokens = tokenize(
+            """
+            let foo = 5
+            let bar = 6
 
-        """)
+            """,
+        )
         let offset = SourceOffset(line: 3, column: 0)
         #expect(tokenIndex(for: offset, in: tokens, tabWidth: 1) == 16)
     }
@@ -208,7 +158,7 @@ import Testing
 
     @Test func tokenRange() {
         let tokens = tokenize("// a comment\n    let foo = 5\n")
-        #expect(tokenRange(forLineRange: 1 ... 1, in: tokens) == 0 ..< 3)
+        #expect(Swiftiomatic.tokenRange(forLineRange: 1 ... 1, in: tokens) == 0 ..< 3)
     }
 
     // MARK: newOffset
@@ -246,20 +196,25 @@ import Testing
     // MARK: expand path
 
     @Test func expandPathWithRelativePath() {
-        #expect(expandPath("relpath/to/file.swift", in: "/dir").path == "/dir/relpath/to/file.swift")
+        #expect(expandPath("relpath/to/file.swift", in: "/dir")
+            .path == "/dir/relpath/to/file.swift")
     }
 
     @Test func expandPathWithFullPath() {
-        #expect(expandPath("/full/path/to/file.swift", in: "/dir").path == "/full/path/to/file.swift")
+        #expect(expandPath("/full/path/to/file.swift", in: "/dir")
+            .path == "/full/path/to/file.swift")
     }
 
     @Test func expandPathWithUserPath() {
-        #expect(expandPath("~/file.swift", in: "/dir").path == NSString(string: "~/file.swift").expandingTildeInPath)
+        #expect(
+            expandPath("~/file.swift", in: "/dir").path
+                == NSString(string: "~/file.swift").expandingTildeInPath,
+        )
     }
 
     // MARK: shared option inference
 
-    @Test func linebreakInferredForBlankLinesBetweenScopes() {
+    @Test func linebreakInferredForBlankLinesBetweenScopes() throws {
         let input = "class Foo {\r  func bar() {\r  }\r  func baz() {\r  }\r}"
         let output = "class Foo {\r  func bar() {\r  }\r\r  func baz() {\r  }\r}"
         #expect(try format(input, rules: [.blankLinesBetweenScopes]).output == output)

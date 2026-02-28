@@ -17,7 +17,7 @@ struct UnavailableFunctionRule: Rule {
                     preconditionFailure("init(coder:) has not been implemented")
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -31,7 +31,7 @@ struct UnavailableFunctionRule: Rule {
                    }
                    fatalError()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -40,7 +40,7 @@ struct UnavailableFunctionRule: Rule {
                     // Crash the app to re-start the onboarding flow.
                     fatalError("Onboarding re-start crash.")
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -51,7 +51,7 @@ struct UnavailableFunctionRule: Rule {
                     fatalError("init(coder:) has not been implemented")
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -61,7 +61,7 @@ struct UnavailableFunctionRule: Rule {
                     fatalError(reason)
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -70,7 +70,7 @@ struct UnavailableFunctionRule: Rule {
                     preconditionFailure("init(coder:) has not been implemented")
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -79,9 +79,9 @@ struct UnavailableFunctionRule: Rule {
                     // Crash the app to re-start the onboarding flow.
                     fatalError("Onboarding re-start crash.")
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

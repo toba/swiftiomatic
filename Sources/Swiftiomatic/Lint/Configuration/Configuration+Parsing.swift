@@ -47,7 +47,7 @@ extension Configuration {
         ruleList: RuleList = RuleRegistry.shared.list,
         enableAllRules: Bool = false,
         onlyRule: [String] = [],
-        cachePath: String? = nil
+        cachePath: String? = nil,
     ) throws {
         func defaultStringArray(_ object: Any?) -> [String] {
             [String].array(of: object) ?? []
@@ -55,7 +55,7 @@ extension Configuration {
 
         // Use either the new 'opt_in_rules' or fallback to the deprecated 'enabled_rules'
         let optInRules = defaultStringArray(
-            dict[Key.optInRules.rawValue] ?? dict[Key.enabledRules.rawValue]
+            dict[Key.optInRules.rawValue] ?? dict[Key.enabledRules.rawValue],
         )
         let disabledRules = defaultStringArray(dict[Key.disabledRules.rawValue])
 
@@ -65,7 +65,7 @@ extension Configuration {
         Self.warnAboutInvalidKeys(configurationDictionary: dict, ruleList: ruleList)
         Self.warnAboutDeprecations(
             configurationDictionary: dict, disabledRules: disabledRules,
-            optInRules: optInRules, onlyRules: onlyRules, ruleList: ruleList
+            optInRules: optInRules, onlyRules: onlyRules, ruleList: ruleList,
         )
         Self.warnAboutMisplacedAnalyzerRules(optInRules: optInRules, ruleList: ruleList)
 
@@ -73,10 +73,11 @@ extension Configuration {
         do {
             allRulesWrapped = try ruleList.allRulesWrapped(configurationDict: dict)
         } catch let RuleListError.duplicatedConfigurations(ruleType) {
-            let aliases = ruleType.description.deprecatedAliases.map { "'\($0)'" }.joined(separator: ", ")
+            let aliases = ruleType.description.deprecatedAliases.map { "'\($0)'" }
+                .joined(separator: ", ")
             let identifier = ruleType.identifier
             throw Issue.genericWarning(
-                "Multiple configurations found for '\(identifier)'. Check for any aliases: \(aliases)."
+                "Multiple configurations found for '\(identifier)'. Check for any aliases: \(aliases).",
             )
         }
 
@@ -86,7 +87,7 @@ extension Configuration {
             onlyRules: onlyRules,
             optInRules: optInRules,
             disabledRules: disabledRules,
-            analyzerRules: analyzerRules
+            analyzerRules: analyzerRules,
         )
 
         if onlyRule.isEmpty {
@@ -95,7 +96,8 @@ extension Configuration {
                 configurationDictionary: dict,
                 ruleList: ruleList,
                 rulesMode: rulesMode,
-                customRuleIdentifiers: Set(allRulesWrapped.customRules?.customRuleIdentifiers ?? [])
+                customRuleIdentifiers: Set(allRulesWrapped.customRules?
+                    .customRuleIdentifiers ?? []),
             )
         }
 
@@ -117,7 +119,7 @@ extension Configuration {
             lenient: dict[Key.lenient.rawValue] as? Bool ?? false,
             baseline: dict[Key.baseline.rawValue] as? String,
             writeBaseline: dict[Key.writeBaseline.rawValue] as? String,
-            checkForUpdates: dict[Key.checkForUpdates.rawValue] as? Bool ?? false
+            checkForUpdates: dict[Key.checkForUpdates.rawValue] as? Bool ?? false,
         )
     }
 
@@ -144,11 +146,12 @@ extension Configuration {
         disabledRules: [String] = [],
         optInRules: [String] = [],
         onlyRules: [String] = [],
-        ruleList: RuleList
+        ruleList: RuleList,
     ) {
         // Deprecation warning for "enabled_rules"
         if dict[Key.enabledRules.rawValue] != nil {
-            Issue.renamedIdentifier(old: Key.enabledRules.rawValue, new: Key.optInRules.rawValue).print()
+            Issue.renamedIdentifier(old: Key.enabledRules.rawValue, new: Key.optInRules.rawValue)
+                .print()
         }
 
         // Deprecation warning for rules
@@ -168,7 +171,7 @@ extension Configuration {
     }
 
     private static func warnAboutInvalidKeys(
-        configurationDictionary dict: [String: Any], ruleList: RuleList
+        configurationDictionary dict: [String: Any], ruleList: RuleList,
     ) {
         // Log an error when supplying invalid keys in the configuration dictionary
         let invalidKeys = Set(dict.keys).subtracting(validKeys(ruleList: ruleList))
@@ -182,7 +185,7 @@ extension Configuration {
         configurationDictionary dict: [String: Any],
         ruleList: RuleList,
         rulesMode: RulesMode,
-        customRuleIdentifiers: Set<String>
+        customRuleIdentifiers: Set<String>,
     ) {
         for key in dict.keys where !validGlobalKeys.contains(key) {
             guard let identifier = ruleList.identifier(for: key),
@@ -192,23 +195,23 @@ extension Configuration {
             }
 
             switch rulesMode {
-            case .allCommandLine, .onlyCommandLine:
-                return
-            case let .onlyConfiguration(onlyRules):
-                let issue = validateConfiguredRuleIsEnabled(
-                    onlyRules: onlyRules,
-                    ruleType: ruleType,
-                    customRuleIdentifiers: customRuleIdentifiers
-                )
-                issue?.print()
-            case let .defaultConfiguration(disabled: disabledRules, optIn: optInRules):
-                let issue = validateConfiguredRuleIsEnabled(
-                    parentConfiguration: parentConfiguration,
-                    disabledRules: disabledRules,
-                    optInRules: optInRules,
-                    ruleType: ruleType
-                )
-                issue?.print()
+                case .allCommandLine, .onlyCommandLine:
+                    return
+                case let .onlyConfiguration(onlyRules):
+                    let issue = validateConfiguredRuleIsEnabled(
+                        onlyRules: onlyRules,
+                        ruleType: ruleType,
+                        customRuleIdentifiers: customRuleIdentifiers,
+                    )
+                    issue?.print()
+                case let .defaultConfiguration(disabled: disabledRules, optIn: optInRules):
+                    let issue = validateConfiguredRuleIsEnabled(
+                        parentConfiguration: parentConfiguration,
+                        disabledRules: disabledRules,
+                        optInRules: optInRules,
+                        ruleType: ruleType,
+                    )
+                    issue?.print()
             }
         }
     }
@@ -217,7 +220,7 @@ extension Configuration {
         parentConfiguration: Configuration?,
         disabledRules: Set<String>,
         optInRules: Set<String>,
-        ruleType: any Rule.Type
+        ruleType: any Rule.Type,
     ) -> Issue? {
         var enabledInParentRules: Set<String> = []
         var disabledInParentRules: Set<String> = []
@@ -226,7 +229,7 @@ extension Configuration {
         if case let .onlyConfiguration(onlyRules) = parentConfiguration?.rulesMode {
             enabledInParentRules = onlyRules
         } else if case let .defaultConfiguration(
-            parentDisabledRules, parentOptInRules
+            parentDisabledRules, parentOptInRules,
         ) = parentConfiguration?.rulesMode {
             enabledInParentRules = parentOptInRules
             disabledInParentRules = parentDisabledRules
@@ -244,14 +247,14 @@ extension Configuration {
             disabledRules: disabledRules,
             optInRules: optInRules,
             allEnabledRules: allEnabledRules,
-            ruleType: ruleType
+            ruleType: ruleType,
         )
     }
 
     static func validateConfiguredRuleIsEnabled(
         onlyRules: Set<String>,
         ruleType: any Rule.Type,
-        customRuleIdentifiers: Set<String> = []
+        customRuleIdentifiers: Set<String> = [],
     ) -> Issue? {
         if onlyRules.isDisjoint(with: ruleType.description.allIdentifiers) {
             if ruleType is CustomRules.Type, !customRuleIdentifiers.isDisjoint(with: onlyRules) {
@@ -270,7 +273,7 @@ extension Configuration {
         disabledRules: Set<String>,
         optInRules: Set<String>,
         allEnabledRules: Set<String>,
-        ruleType: any Rule.Type
+        ruleType: any Rule.Type,
     ) -> Issue? {
         if case .allCommandLine = parentConfiguration?.rulesMode {
             if disabledRules.contains(ruleType.identifier) {
@@ -293,8 +296,9 @@ extension Configuration {
                 if enabledInParentRules.union(optInRules).isDisjoint(with: allIdentifiers) {
                     return Issue.ruleNotEnabledInOptInRules(ruleID: ruleType.identifier)
                 }
-            } else if case let .onlyConfiguration(enabledInParentRules) = parentConfiguration?.rulesMode,
-                      enabledInParentRules.isDisjoint(with: allIdentifiers)
+            } else if case let .onlyConfiguration(enabledInParentRules) = parentConfiguration?
+                .rulesMode,
+                enabledInParentRules.isDisjoint(with: allIdentifiers)
             {
                 return Issue.ruleNotEnabledInParentOnlyRules(ruleID: ruleType.identifier)
             }
@@ -314,7 +318,7 @@ extension Configuration {
                     """
                     '\($0)' should be listed in the 'analyzer_rules' configuration section \
                     for more clarity as it is only run by 'swiftlint analyze'.
-                    """
+                    """,
                 ).print()
             }
     }

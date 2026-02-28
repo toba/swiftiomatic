@@ -1,5 +1,5 @@
-import SwiftBasicFormat
 import SwiftSyntax
+import SwiftBasicFormat
 
 struct SuperfluousElseRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -20,7 +20,7 @@ struct SuperfluousElseRule: Rule {
                 } else {
                     return 3
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -35,7 +35,7 @@ struct SuperfluousElseRule: Rule {
                 } else {
                     return 3
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -46,7 +46,7 @@ struct SuperfluousElseRule: Rule {
                 } else {
                     return 3
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -61,7 +61,7 @@ struct SuperfluousElseRule: Rule {
                 } else {
                     return 3
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
@@ -77,7 +77,7 @@ struct SuperfluousElseRule: Rule {
                         break
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -86,7 +86,7 @@ struct SuperfluousElseRule: Rule {
                 } else {
                     deprecatedFunction()
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -98,7 +98,7 @@ struct SuperfluousElseRule: Rule {
                 } ↓else {
                     return 2
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -109,7 +109,7 @@ struct SuperfluousElseRule: Rule {
                 } ↓else if i > 18 {
                     return 3
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -130,7 +130,7 @@ struct SuperfluousElseRule: Rule {
                 } ↓else {
                     return 3
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -145,7 +145,7 @@ struct SuperfluousElseRule: Rule {
                         throw error
                     }
                 }
-                """
+                """,
             ),
         ],
         corrections: [
@@ -161,7 +161,7 @@ struct SuperfluousElseRule: Rule {
                         // yet another comment
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 func f() -> Int {
@@ -173,7 +173,7 @@ struct SuperfluousElseRule: Rule {
                     return 2
                     // yet another comment
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -187,7 +187,7 @@ struct SuperfluousElseRule: Rule {
                         return 3
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 func f() -> Int {
@@ -200,7 +200,7 @@ struct SuperfluousElseRule: Rule {
                     }
                     return 3
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -214,7 +214,7 @@ struct SuperfluousElseRule: Rule {
                         return 2
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 func f() -> Int {
@@ -228,7 +228,7 @@ struct SuperfluousElseRule: Rule {
                         return 2
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -239,7 +239,7 @@ struct SuperfluousElseRule: Rule {
                         return 2
                     }
                 }()
-                """
+                """,
             ): Example(
                 """
                 {
@@ -248,7 +248,7 @@ struct SuperfluousElseRule: Rule {
                     }
                     return 2
                 }()
-                """
+                """,
             ),
             Example(
                 """
@@ -267,7 +267,7 @@ struct SuperfluousElseRule: Rule {
 
                     }
                 }
-                """
+                """,
             ): Example(
                 """
                 for i in list {
@@ -286,9 +286,9 @@ struct SuperfluousElseRule: Rule {
                         throw error
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -323,14 +323,17 @@ private extension SuperfluousElseRule {
             numberOfCorrections +=
                 Visitor(configuration: configuration, file: file)
                 .walk(file: file) { $0.violations.map(\.position) }
-                .filter {
-                    !$0.isContainedIn(regions: disabledRegions, locationConverter: locationConverter)
-                }
-                .count
+                .count(where: {
+                    !$0.isContainedIn(
+                        regions: disabledRegions,
+                        locationConverter: locationConverter,
+                    )
+                })
         }
 
         override func visitAny(_ node: Syntax) -> Syntax? {
-            numberOfCorrections == 0 ? node : nil // Avoid skipping all `if` expressions in a code block.
+            numberOfCorrections == 0 ? node :
+                nil // Avoid skipping all `if` expressions in a code block.
         }
 
         override func visit(_ list: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
@@ -338,9 +341,13 @@ private extension SuperfluousElseRule {
             var ifExprRewritten = false
             for item in list {
                 guard
-                    let ifExpr = item.item.as(ExpressionStmtSyntax.self)?.expression.as(IfExprSyntax.self),
+                    let ifExpr = item.item.as(ExpressionStmtSyntax.self)?.expression
+                    .as(IfExprSyntax.self),
                     let elseKeyword = ifExpr.superfluousElse,
-                    !elseKeyword.isContainedIn(regions: disabledRegions, locationConverter: locationConverter)
+                    !elseKeyword.isContainedIn(
+                        regions: disabledRegions,
+                        locationConverter: locationConverter,
+                    )
                 else {
                     newStatements.append(item)
                     continue
@@ -349,8 +356,8 @@ private extension SuperfluousElseRule {
                 let (newIfStm, removedItems) = modify(ifExpr: ifExpr)
                 newStatements.append(
                     CodeBlockItemSyntax(
-                        item: CodeBlockItemSyntax.Item(ExpressionStmtSyntax(expression: newIfStm))
-                    )
+                        item: CodeBlockItemSyntax.Item(ExpressionStmtSyntax(expression: newIfStm)),
+                    ),
                 )
                 newStatements.append(contentsOf: removedItems)
             }
@@ -358,7 +365,7 @@ private extension SuperfluousElseRule {
         }
 
         private func modify(ifExpr: IfExprSyntax) -> (
-            newIfExpr: IfExprSyntax, removedItems: [CodeBlockItemSyntax]
+            newIfExpr: IfExprSyntax, removedItems: [CodeBlockItemSyntax],
         ) {
             let ifExprWithoutElse = removeElse(from: ifExpr)
             if case let .codeBlock(block) = ifExpr.elseBody {
@@ -366,7 +373,7 @@ private extension SuperfluousElseRule {
                 let unindentedBlock = indenter.rewrite(block).cast(CodeBlockSyntax.self)
                 let items = unindentedBlock.statements.with(
                     \.trailingTrivia,
-                    unindentedBlock.rightBrace.leadingTrivia.withTrailingEmptyLineRemoved
+                    unindentedBlock.rightBrace.leadingTrivia.withTrailingEmptyLineRemoved,
                 )
                 return (ifExprWithoutElse, Array(items))
             }
@@ -375,11 +382,12 @@ private extension SuperfluousElseRule {
                     \.leadingTrivia,
                     Trivia(
                         pieces: [.newlines(1)]
-                            + (ifExpr.leadingTrivia.indentation(isOnNewline: true) ?? Trivia())
-                    )
+                            + (ifExpr.leadingTrivia.indentation(isOnNewline: true) ?? Trivia()),
+                    ),
                 )
                 let item = CodeBlockItemSyntax(
-                    item: CodeBlockItemSyntax.Item(ExpressionStmtSyntax(expression: unindentedIfExpr))
+                    item: CodeBlockItemSyntax
+                        .Item(ExpressionStmtSyntax(expression: unindentedIfExpr)),
                 )
                 return (ifExprWithoutElse, [item])
             }
@@ -390,7 +398,10 @@ private extension SuperfluousElseRule {
             ifExpr
                 .with(
                     \.body,
-                    ifExpr.body.with(\.rightBrace, ifExpr.body.rightBrace.with(\.trailingTrivia, Trivia()))
+                    ifExpr.body.with(
+                        \.rightBrace,
+                        ifExpr.body.rightBrace.with(\.trailingTrivia, Trivia()),
+                    ),
                 )
                 .with(\.elseKeyword, nil)
                 .with(\.elseBody, nil)

@@ -32,8 +32,10 @@ struct PreferZeroOverExplicitInitRule: Rule {
             Example("↓CGRect(x: 0, y: 0, width: 0, height: 0)"): Example("CGRect.zero"),
             Example("↓CGSize(width: 0, height: 0.000)"): Example("CGSize.zero"),
             Example("↓CGVector(dx: 0, dy: 0)"): Example("CGVector.zero"),
-            Example("↓UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)"): Example("UIEdgeInsets.zero"),
-        ]
+            Example("↓UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)"): Example(
+                "UIEdgeInsets.zero",
+            ),
+        ],
     )
 }
 

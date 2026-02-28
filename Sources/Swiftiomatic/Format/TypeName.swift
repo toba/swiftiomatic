@@ -1,11 +1,3 @@
-//
-//  TypeName.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 8/22/25.
-//  Copyright © 2025 Nick Lockwood. All rights reserved.
-//
-
 // MARK: - TypeName
 
 /// A Swift type parsed by the `formatter.parseType(at:)` parsing helper
@@ -52,7 +44,7 @@ extension TypeName {
         // (There are no single-element tuples).
         guard
             let openParen = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound - 1
+                of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound - 1,
             ),
             formatter.tokens[openParen] == .startOfScope("("),
             let closingParen = formatter.endOfScope(at: openParen),
@@ -61,7 +53,7 @@ extension TypeName {
 
         // The tuple could be optional, but otherwise the closing paren should be the last token.
         if let tokenAfterClosingParen = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: closingParen
+            of: .nonSpaceOrCommentOrLinebreak, after: closingParen,
         ) {
             guard
                 tokenAfterClosingParen > range.upperBound
@@ -78,7 +70,7 @@ extension TypeName {
     var isArray: Bool {
         guard
             let openBrace = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound - 1
+                of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound - 1,
             ),
             formatter.tokens[openBrace] == .startOfScope("["),
             let closingBrace = formatter.endOfScope(at: openBrace),
@@ -95,7 +87,7 @@ extension TypeName {
     var isDictionary: Bool {
         guard
             let openBrace = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound - 1
+                of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound - 1,
             ),
             formatter.tokens[openBrace] == .startOfScope("["),
             let closingBrace = formatter.endOfScope(at: openBrace),
@@ -110,10 +102,13 @@ extension TypeName {
     func isGenericType(named typeName: String) -> Bool {
         guard
             let firstToken = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound - 1
+                of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound - 1,
             ),
             formatter.tokens[firstToken] == .identifier(typeName),
-            let openAngleBrace = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: firstToken),
+            let openAngleBrace = formatter.index(
+                of: .nonSpaceOrCommentOrLinebreak,
+                after: firstToken,
+            ),
             formatter.tokens[openAngleBrace] == .startOfScope("<"),
             let closingAngleBrace = formatter.endOfScope(at: openAngleBrace),
             openAngleBrace + 1 != closingAngleBrace
@@ -136,7 +131,8 @@ extension TypeName {
         if let unwrapIndex = trailingUnwrapOperatorIndex,
            formatter.tokens[range.lowerBound] == .startOfScope("("),
            formatter.tokens[range.upperBound] == .endOfScope(")"),
-           formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: range.upperBound) == unwrapIndex
+           formatter
+           .index(of: .nonSpaceOrCommentOrLinebreak, after: range.upperBound) == unwrapIndex
         {
             return false
         }
@@ -152,10 +148,10 @@ extension TypeName {
         guard formatter.tokens[range.lowerBound] == .startOfScope("("),
               formatter.tokens[range.upperBound] == .endOfScope(")"),
               let tokenAfterFirst = formatter.index(
-                  of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound
+                  of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound,
               ),
               let tokenBeforeLast = formatter.index(
-                  of: .nonSpaceOrCommentOrLinebreak, before: range.upperBound
+                  of: .nonSpaceOrCommentOrLinebreak, before: range.upperBound,
               ),
               tokenAfterFirst <= tokenBeforeLast
         else { return self }
@@ -170,8 +166,11 @@ extension TypeName {
     }
 
     private var trailingUnwrapOperatorIndex: Int? {
-        if let index = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: range.upperBound + 1),
-           formatter.tokens[index].isUnwrapOperator
+        if let index = formatter.index(
+            of: .nonSpaceOrCommentOrLinebreak,
+            before: range.upperBound + 1,
+        ),
+            formatter.tokens[index].isUnwrapOperator
         {
             return index
         } else {

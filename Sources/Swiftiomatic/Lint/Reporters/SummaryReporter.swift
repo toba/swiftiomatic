@@ -1,5 +1,4 @@
 import Foundation
-import SwiftyTextTable
 
 /// Reports a summary table of all violations
 struct SummaryReporter: Reporter {
@@ -11,30 +10,39 @@ struct SummaryReporter: Reporter {
     static let description = "Reports a summary table of all violations."
 
     static func generateReport(_ violations: [StyleViolation]) -> String {
-        TextTable(violations: violations).renderWithExtraSeparator()
+        SummaryTable(violations: violations).render()
     }
 }
 
-// MARK: - SwiftyTextTable
+// MARK: - Table Rendering
 
-private extension TextTable {
+private struct SummaryTable {
+    private struct Column {
+        let header: String
+        var width: Int
+    }
+
+    private var columns: [Column]
+    private var rows: [[String]]
+
     // swiftlint:disable:next function_body_length
     init(violations: [StyleViolation]) {
         let numberOfWarningsHeader = "warnings"
         let numberOfErrorsHeader = "errors"
         let numberOfViolationsHeader = "total violations"
         let numberOfFilesHeader = "number of files"
-        let columns = [
-            TextTableColumn(header: "rule identifier"),
-            TextTableColumn(header: "opt-in"),
-            TextTableColumn(header: "correctable"),
-            TextTableColumn(header: "custom"),
-            TextTableColumn(header: numberOfWarningsHeader),
-            TextTableColumn(header: numberOfErrorsHeader),
-            TextTableColumn(header: numberOfViolationsHeader),
-            TextTableColumn(header: numberOfFilesHeader),
+        let headers = [
+            "rule identifier",
+            "opt-in",
+            "correctable",
+            "custom",
+            numberOfWarningsHeader,
+            numberOfErrorsHeader,
+            numberOfViolationsHeader,
+            numberOfFilesHeader,
         ]
-        self.init(columns: columns)
+        columns = headers.map { Column(header: $0, width: $0.count) }
+        rows = []
 
         let ruleIdentifiersToViolationsMap = violations.group { $0.ruleIdentifier }
         let sortedRuleIdentifiers = ruleIdentifiersToViolationsMap.sorted { lhs, rhs in
@@ -54,22 +62,22 @@ private extension TextTable {
 
         for ruleIdentifier in sortedRuleIdentifiers {
             guard
-                let ruleIdentifier = ruleIdentifiersToViolationsMap[ruleIdentifier]?.first?.ruleIdentifier
+                let ruleIdentifier = ruleIdentifiersToViolationsMap[ruleIdentifier]?.first?
+                .ruleIdentifier
             else {
                 continue
             }
 
             let rule = RuleRegistry.shared.rule(forID: ruleIdentifier)
-            let violations = ruleIdentifiersToViolationsMap[ruleIdentifier]
-            let numberOfWarnings = violations?.filter { $0.severity == .warning }.count ?? 0
-            let numberOfErrors = violations?.filter { $0.severity == .error }.count ?? 0
+            let ruleViolations = ruleIdentifiersToViolationsMap[ruleIdentifier] ?? []
+            let numberOfWarnings = ruleViolations.count(where: { $0.severity == .warning })
+            let numberOfErrors = ruleViolations.count(where: { $0.severity == .error })
             let numberOfViolations = numberOfWarnings + numberOfErrors
             totalNumberOfWarnings += numberOfWarnings
             totalNumberOfErrors += numberOfErrors
-            let ruleViolations = ruleIdentifiersToViolationsMap[ruleIdentifier] ?? []
             let numberOfFiles = Set(ruleViolations.map(\.location.file)).count
 
-            addRow(values: [
+            addRow([
                 ruleIdentifier,
                 rule is any OptInRule.Type ? "yes" : "no",
                 rule is any CorrectableRule.Type ? "yes" : "no",
@@ -83,7 +91,7 @@ private extension TextTable {
 
         let totalNumberOfViolations = totalNumberOfWarnings + totalNumberOfErrors
         let totalNumberOfFiles = Set(violations.map(\.location.file)).count
-        addRow(values: [
+        addRow([
             "Total",
             "",
             "",
@@ -95,14 +103,33 @@ private extension TextTable {
         ])
     }
 
-    func renderWithExtraSeparator() -> String {
-        var output = render()
-        var lines = output.components(separatedBy: "\n")
-        if lines.count > 5, let lastLine = lines.last {
-            lines.insert(lastLine, at: lines.count - 2)
-            output = lines.joined(separator: "\n")
+    private mutating func addRow(_ values: [String]) {
+        for (index, value) in values.enumerated() where index < columns.count {
+            columns[index].width = max(columns[index].width, value.count)
         }
-        return output
+        rows.append(values)
+    }
+
+    func render() -> String {
+        let separator = "+-" + columns.map { String(repeating: "-", count: $0.width) }
+            .joined(separator: "-+-") + "-+"
+        let headerLine = "| " + columns.map { $0.header.padding(toLength: $0.width, withPad: " ", startingAt: 0) }
+            .joined(separator: " | ") + " |"
+
+        var lines = [separator, headerLine, separator]
+        for (index, row) in rows.enumerated() {
+            let cells = columns.enumerated().map { colIndex, col in
+                let value = colIndex < row.count ? row[colIndex] : ""
+                return value.padding(toLength: col.width, withPad: " ", startingAt: 0)
+            }
+            // Insert extra separator before the last row (Total)
+            if index == rows.count - 1 {
+                lines.append(separator)
+            }
+            lines.append("| " + cells.joined(separator: " | ") + " |")
+        }
+        lines.append(separator)
+        return lines.joined(separator: "\n")
     }
 }
 

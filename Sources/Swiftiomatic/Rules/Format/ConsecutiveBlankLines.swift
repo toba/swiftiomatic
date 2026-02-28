@@ -1,20 +1,13 @@
-//
-//  ConsecutiveBlankLines.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 8/30/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Collapse all consecutive blank lines into a single blank line
     static let consecutiveBlankLines = FormatRule(
-        help: "Replace consecutive blank lines with a single blank line."
+        help: "Replace consecutive blank lines with a single blank line.",
     ) { formatter in
         formatter.forEach(.linebreak) { i, _ in
-            guard let prevIndex = formatter.index(of: .nonSpace, before: i, if: { $0.isLinebreak }) else {
+            guard let prevIndex = formatter.index(of: .nonSpace, before: i, if: { $0.isLinebreak })
+            else {
                 return
             }
             if let scope = formatter.currentScope(at: i), scope.isMultilineStringDelimiter {

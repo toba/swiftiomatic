@@ -20,7 +20,7 @@ struct RequiredDeinitRule: Rule {
                 class Apple {
                     deinit { }
                 }
-                """
+                """,
             ),
             Example("enum Banana { }"),
             Example("protocol Cherry { }"),
@@ -33,7 +33,7 @@ struct RequiredDeinitRule: Rule {
                         deinit { print("Deinit Inner") }
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -44,14 +44,14 @@ struct RequiredDeinitRule: Rule {
                 ↓class Cherry {
                     // deinit { }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 ↓class Damson {
                     func deinitialize() { }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -62,7 +62,7 @@ struct RequiredDeinitRule: Rule {
                         func hello() -> String { return "inner" }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -73,9 +73,9 @@ struct RequiredDeinitRule: Rule {
                         deinit { }
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

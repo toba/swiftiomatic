@@ -1,18 +1,10 @@
-//
-//  WrapPropertyBodies.swift
-//  SwiftFormat
-//
-//  Created by Manuel Lopez on 12/15/24.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Wrap single-line property bodies onto multiple lines.
     static let wrapPropertyBodies = FormatRule(
         help: "Wrap single-line property bodies onto multiple lines.",
-        sharedOptions: ["linebreaks", "indent"]
+        sharedOptions: ["linebreaks", "indent"],
     ) { formatter in
         formatter.forEach(.keyword("var")) { varIndex, _ in
             guard let property = formatter.parsePropertyDeclaration(atIntroducerIndex: varIndex),

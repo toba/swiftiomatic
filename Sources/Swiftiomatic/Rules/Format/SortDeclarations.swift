@@ -1,11 +1,3 @@
-//
-//  SortDeclarations.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 11/22/21.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -19,13 +11,13 @@ extension FormatRule {
         sharedOptions: [
             "linebreaks", "organize-types", "struct-threshold", "class-threshold", "enum-threshold",
             "extension-threshold",
-        ]
+        ],
     ) { formatter in
         formatter.forEachToken(
             where: {
                 $0.isCommentBody && $0.string.contains("swiftformat:sort")
                     || $0.isDeclarationTypeKeyword(including: Array(Token.swiftTypeKeywords))
-            }
+            },
         ) { index, token in
             let rangeToSort: ClosedRange<Int>
             let numberOfLeadingLinebreaks: Int
@@ -35,11 +27,13 @@ extension FormatRule {
             let shouldBePartiallySorted = token.string.contains("swiftformat:sort:begin")
 
             let identifier = formatter.next(.identifier, after: index)
-            let shouldBeSortedByNamePattern = formatter.options.alphabeticallySortedDeclarationPatterns
+            let shouldBeSortedByNamePattern = formatter.options
+                .alphabeticallySortedDeclarationPatterns
                 .contains {
                     identifier?.string.contains($0) ?? false
                 }
-            let shouldBeSortedByMarkComment = token.isCommentBody && !token.string.contains(":sort:")
+            let shouldBeSortedByMarkComment = token.isCommentBody && !token.string
+                .contains(":sort:")
             // For `:sort` directives and types with matching name pattern, we sort the declarations
             // between the open and close brace of the following type
             let shouldBeFullySorted = shouldBeSortedByNamePattern || shouldBeSortedByMarkComment
@@ -52,7 +46,7 @@ extension FormatRule {
                     let sortRangeStart = formatter.index(of: .nonSpaceOrComment, after: index),
                     let firstRangeToken = formatter.index(of: .nonLinebreak, after: sortRangeStart),
                     let lastRangeToken = formatter.index(
-                        of: .nonSpaceOrCommentOrLinebreak, before: endCommentIndex - 2
+                        of: .nonSpaceOrCommentOrLinebreak, before: endCommentIndex - 2,
                     )
                 else { return }
 
@@ -61,9 +55,16 @@ extension FormatRule {
             } else if shouldBeFullySorted {
                 guard let typeOpenBrace = formatter.index(of: .startOfScope("{"), after: index),
                       let typeCloseBrace = formatter.endOfScope(at: typeOpenBrace),
-                      let firstTypeBodyToken = formatter.index(of: .nonLinebreak, after: typeOpenBrace),
-                      let lastTypeBodyToken = formatter.index(of: .nonLinebreak, before: typeCloseBrace),
-                      let declarationKeywordIndex = formatter.indexOfLastSignificantKeyword(at: typeOpenBrace),
+                      let firstTypeBodyToken = formatter.index(
+                          of: .nonLinebreak,
+                          after: typeOpenBrace,
+                      ),
+                      let lastTypeBodyToken = formatter.index(
+                          of: .nonLinebreak,
+                          before: typeCloseBrace,
+                      ),
+                      let declarationKeywordIndex = formatter
+                      .indexOfLastSignificantKeyword(at: typeOpenBrace),
                       lastTypeBodyToken > typeOpenBrace
                 else { return }
 
@@ -72,7 +73,7 @@ extension FormatRule {
                 // defer to the sorting implementation in `organizeDeclarations`.
                 if formatter.options.enabledRules.contains(FormatRule.organizeDeclarations.name),
                    formatter.options.organizeTypes.contains(
-                       formatter.tokens[declarationKeywordIndex].string
+                       formatter.tokens[declarationKeywordIndex].string,
                    ),
                    formatter.typeLengthExceedsOrganizationThreshold(at: declarationKeywordIndex)
                 {
@@ -120,7 +121,7 @@ extension FormatRule {
                 {
                     let declarationNeedingLinebreak = declarations[i + 1]
                     declarationNeedingLinebreak.formatter.insertLinebreak(
-                        at: declarationNeedingLinebreak.range.lowerBound
+                        at: declarationNeedingLinebreak.range.lowerBound,
                     )
                 }
             }
@@ -157,7 +158,7 @@ extension FormatRule {
             if Array(formatter.tokens[rangeToSort]) != sortedFormatter.tokens {
                 formatter.replaceTokens(
                     in: rangeToSort,
-                    with: sortedFormatter.tokens
+                    with: sortedFormatter.tokens,
                 )
             }
         }

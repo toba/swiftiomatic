@@ -27,14 +27,14 @@ struct RedundantVoidReturnRule: Rule {
                         print(key)
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 doSomething { arg -> Void in
                     print(arg)
                 }
-                """, configuration: ["include_closures": false]
+                """, configuration: ["include_closures": false],
             ),
         ],
         triggeringExamples: [
@@ -44,7 +44,7 @@ struct RedundantVoidReturnRule: Rule {
                 protocol Foo {
                   func foo()↓ -> Void
                 }
-                """
+                """,
             ),
             Example("func foo()↓ -> () {}"),
             Example("func foo()↓ -> ( ) {}"),
@@ -53,31 +53,35 @@ struct RedundantVoidReturnRule: Rule {
                 protocol Foo {
                   func foo()↓ -> ()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 doSomething { arg↓ -> () in
                     print(arg)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 doSomething { arg↓ -> Void in
                     print(arg)
                 }
-                """
+                """,
             ),
         ],
         corrections: [
             Example("func foo()↓ -> Void {}"): Example("func foo() {}"),
-            Example("protocol Foo {\n func foo()↓ -> Void\n}"): Example("protocol Foo {\n func foo()\n}"),
+            Example("protocol Foo {\n func foo()↓ -> Void\n}"): Example(
+                "protocol Foo {\n func foo()\n}",
+            ),
             Example("func foo()↓ -> () {}"): Example("func foo() {}"),
-            Example("protocol Foo {\n func foo()↓ -> ()\n}"): Example("protocol Foo {\n func foo()\n}"),
+            Example("protocol Foo {\n func foo()↓ -> ()\n}"): Example(
+                "protocol Foo {\n func foo()\n}",
+            ),
             Example("protocol Foo {\n    #if true\n    func foo()↓ -> Void\n    #endif\n}"):
                 Example("protocol Foo {\n    #if true\n    func foo()\n    #endif\n}"),
-        ]
+        ],
     )
 }
 
@@ -94,7 +98,9 @@ extension RedundantVoidReturnRule: SwiftSyntaxCorrectableRule {
 private extension RedundantVoidReturnRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: ReturnClauseSyntax) {
-            if !configuration.includeClosures, node.parent?.is(ClosureSignatureSyntax.self) == true {
+            if !configuration.includeClosures,
+               node.parent?.is(ClosureSignatureSyntax.self) == true
+            {
                 return
             }
 
@@ -159,7 +165,7 @@ private extension SyntaxProtocol {
 
         return with(
             \.trailingTrivia,
-            Trivia(pieces: trailingTrivia.dropFirst())
+            Trivia(pieces: trailingTrivia.dropFirst()),
         )
     }
 }

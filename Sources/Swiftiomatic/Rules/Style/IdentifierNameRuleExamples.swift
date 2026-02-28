@@ -24,16 +24,19 @@ enum IdentifierNameRuleExamples {
             class Foo {
                static let Bar = 0
             }
-            """
+            """,
         ),
         Example(
             """
             class Foo {
                static var Bar = 0
             }
-            """
+            """,
         ),
-        Example("func √ (arg: Double) -> Double { arg }", configuration: ["additional_operators": "√"]),
+        Example(
+            "func √ (arg: Double) -> Double { arg }",
+            configuration: ["additional_operators": "√"],
+        ),
         Example("struct Foo<let count: Int> {}"),
         Example("struct Foo<let maxSize: Int, Element> {}"),
         Example("class Foo<let capacity: Int> {}"),
@@ -54,12 +57,12 @@ enum IdentifierNameRuleExamples {
         Example(
             "func ↓IsOperator(name: String) -> Bool",
             configuration: ["validates_start_with_lowercase": "warning"],
-            excludeFromDocumentation: true
+            excludeFromDocumentation: true,
         ),
         Example(
             "enum Foo { case ↓MyEnum }",
             configuration: ["validates_start_with_lowercase": "error"],
-            excludeFromDocumentation: true
+            excludeFromDocumentation: true,
         ),
         Example("if let ↓_x {}"),
         Example("guard var ↓x = x else {}"),
@@ -75,7 +78,7 @@ enum IdentifierNameRuleExamples {
                 _: Double,
                 last _: Double
             ) {}
-            """
+            """,
         ),
         Example("let (↓a, abc) = (1, 1)"),
         Example("if let ↓i {}"),
@@ -91,7 +94,7 @@ enum IdentifierNameRuleExamples {
                 case case2(↓a: Int)
                 case case3(_ ↓a: Int)
             }
-            """
+            """,
         ),
         Example(
             """
@@ -101,7 +104,7 @@ enum IdentifierNameRuleExamples {
                     set(↓y) { x = y }
                 }
             }
-            """
+            """,
         ),
         Example("func ↓√ (arg: Double) -> Double { arg }"),
         Example("class Foo<let ↓max_count: Int> {}"),

@@ -17,13 +17,13 @@ struct ClosureSpacingRule: Rule {
             Example(
                 """
                 var tapped: (UITapGestureRecognizer) -> Void = { _ in /* no-op */ }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
                 let test1 = func1(arg: { /* do nothing */ })
                 let test2 = func1 { /* do nothing */ }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -35,7 +35,7 @@ struct ClosureSpacingRule: Rule {
             Example(
                 """
                 var tapped: (UITapGestureRecognizer) -> Void = ↓{ _ in /* no-op */  }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         corrections: [
@@ -47,7 +47,7 @@ struct ClosureSpacingRule: Rule {
                 Example("filter { sorted { $0 < $1 } }"),
             Example("(↓{each in return result.contains(where: ↓{e in return 0})}).count"):
                 Example("({ each in return result.contains(where: { e in return 0 }) }).count"),
-        ]
+        ],
     )
 }
 
@@ -125,7 +125,7 @@ private extension ClosureExprSyntax {
             leftBraceRightSpace: !leftBrace.hasSingleSpaceToItsRight,
             rightBraceLeftSpace: !rightBrace.hasSingleSpaceToItsLeft,
             rightBraceRightSpace: !rightBrace.hasSingleSpaceToItsRight
-                && !rightBrace.hasAllowedNoSpaceRightToken && !rightBrace.hasTrailingLineComment
+                && !rightBrace.hasAllowedNoSpaceRightToken && !rightBrace.hasTrailingLineComment,
         )
     }
 

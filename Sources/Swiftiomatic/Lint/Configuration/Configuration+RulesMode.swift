@@ -39,14 +39,18 @@ extension Configuration {
             onlyRules: [String],
             optInRules: [String],
             disabledRules: [String],
-            analyzerRules: [String]
+            analyzerRules: [String],
         ) throws {
             func warnAboutDuplicates(in identifiers: [String]) {
                 if Set(identifiers).count != identifiers.count {
-                    let duplicateRules = identifiers.reduce(into: [String: Int]()) { $0[$1, default: 0] += 1 }
+                    let duplicateRules = identifiers.reduce(into: [String: Int]()) { $0[
+                        $1,
+                        default: 0,
+                    ] += 1 }
                         .filter { $0.1 > 1 }
                     for duplicateRule in duplicateRules {
-                        Issue.listedMultipleTime(ruleID: duplicateRule.0, times: duplicateRule.1).print()
+                        Issue.listedMultipleTime(ruleID: duplicateRule.0, times: duplicateRule.1)
+                            .print()
                     }
                 }
             }
@@ -60,7 +64,7 @@ extension Configuration {
                     throw Issue.genericWarning(
                         "'\(Configuration.Key.disabledRules.rawValue)' or "
                             + "'\(Configuration.Key.optInRules.rawValue)' cannot be used in combination "
-                            + "with '\(Configuration.Key.onlyRules.rawValue)'"
+                            + "with '\(Configuration.Key.onlyRules.rawValue)'",
                     )
                 }
 
@@ -71,9 +75,11 @@ extension Configuration {
 
                 let effectiveOptInRules: [String]
                 if optInRules.contains(RuleIdentifier.all.stringRepresentation) {
-                    let allOptInRules = RuleRegistry.shared.list.list.compactMap { ruleID, ruleType in
-                        ruleType is any OptInRule.Type && !(ruleType is any AnalyzerRule.Type) ? ruleID : nil
-                    }
+                    let allOptInRules = RuleRegistry.shared.list.list
+                        .compactMap { ruleID, ruleType in
+                            ruleType is any OptInRule
+                                .Type && !(ruleType is any AnalyzerRule.Type) ? ruleID : nil
+                        }
                     effectiveOptInRules = Array(Set(allOptInRules + optInRules))
                 } else {
                     effectiveOptInRules = optInRules
@@ -81,9 +87,10 @@ extension Configuration {
 
                 let effectiveAnalyzerRules: [String]
                 if analyzerRules.contains(RuleIdentifier.all.stringRepresentation) {
-                    let allAnalyzerRules = RuleRegistry.shared.list.list.compactMap { ruleID, ruleType in
-                        ruleType is any AnalyzerRule.Type ? ruleID : nil
-                    }
+                    let allAnalyzerRules = RuleRegistry.shared.list.list
+                        .compactMap { ruleID, ruleType in
+                            ruleType is any AnalyzerRule.Type ? ruleID : nil
+                        }
                     effectiveAnalyzerRules = allAnalyzerRules
                 } else {
                     effectiveAnalyzerRules = analyzerRules
@@ -91,27 +98,28 @@ extension Configuration {
 
                 warnAboutDuplicates(in: effectiveOptInRules + effectiveAnalyzerRules)
                 self = .defaultConfiguration(
-                    disabled: Set(disabledRules), optIn: Set(effectiveOptInRules + effectiveAnalyzerRules)
+                    disabled: Set(disabledRules),
+                    optIn: Set(effectiveOptInRules + effectiveAnalyzerRules),
                 )
             }
         }
 
         func applied(aliasResolver: (String) -> String) -> Self {
             switch self {
-            case let .defaultConfiguration(disabled, optIn):
-                return .defaultConfiguration(
-                    disabled: Set(disabled.map(aliasResolver)),
-                    optIn: Set(optIn.map(aliasResolver))
-                )
+                case let .defaultConfiguration(disabled, optIn):
+                    return .defaultConfiguration(
+                        disabled: Set(disabled.map(aliasResolver)),
+                        optIn: Set(optIn.map(aliasResolver)),
+                    )
 
-            case let .onlyConfiguration(onlyRules):
-                return .onlyConfiguration(Set(onlyRules.map(aliasResolver)))
+                case let .onlyConfiguration(onlyRules):
+                    return .onlyConfiguration(Set(onlyRules.map(aliasResolver)))
 
-            case let .onlyCommandLine(onlyRules):
-                return .onlyCommandLine(Set(onlyRules.map(aliasResolver)))
+                case let .onlyCommandLine(onlyRules):
+                    return .onlyCommandLine(Set(onlyRules.map(aliasResolver)))
 
-            case .allCommandLine:
-                return .allCommandLine
+                case .allCommandLine:
+                    return .allCommandLine
             }
         }
 
@@ -119,17 +127,17 @@ extension Configuration {
             // In the only mode, if the custom rules rule is enabled, all custom rules are also enabled implicitly
             // This method makes the implicitly explicit
             switch self {
-            case let .onlyConfiguration(onlyRules)
+                case let .onlyConfiguration(onlyRules)
                 where onlyRules.contains {
                     $0 == CustomRules.identifier
                 }:
-                let customRulesRule = allRulesWrapped.customRules
-                return .onlyConfiguration(
-                    onlyRules.union(Set(customRulesRule?.customRuleIdentifiers ?? []))
-                )
+                    let customRulesRule = allRulesWrapped.customRules
+                    return .onlyConfiguration(
+                        onlyRules.union(Set(customRulesRule?.customRuleIdentifiers ?? [])),
+                    )
 
-            default:
-                return self
+                default:
+                    return self
             }
         }
     }

@@ -1,5 +1,5 @@
-import Foundation
 import Yams
+import Foundation
 
 // MARK: - YamlParser
 
@@ -15,12 +15,12 @@ enum YamlParser {
     /// - throws: Throws if the `yaml` string provided could not be parsed.
     static func parse(
         _ yaml: String,
-        env: [String: String] = ProcessInfo.processInfo.environment
+        env: [String: String] = ProcessInfo.processInfo.environment,
     ) throws -> [String: Any] {
         do {
             return try Yams.load(
                 yaml: yaml, .default,
-                .swiftlintConstructor(env: env)
+                .swiftlintConstructor(env: env),
             ) as? [String: Any] ?? [:]
         } catch {
             throw Issue.yamlParsing("\(error)")
@@ -38,9 +38,9 @@ private extension Constructor {
         map[.str] = { $0.string.expandingEnvVars(env: env) }
         map[.bool] = {
             switch $0.string.expandingEnvVars(env: env).lowercased() {
-            case "true": true
-            case "false": false
-            default: nil
+                case "true": true
+                case "false": false
+                default: nil
             }
         }
         map[.int] = { Int($0.string.expandingEnvVars(env: env)) }

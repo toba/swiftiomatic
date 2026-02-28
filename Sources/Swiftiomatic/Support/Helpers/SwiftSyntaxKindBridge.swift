@@ -1,6 +1,6 @@
-import SourceKittenFramework
-import SwiftIDEUtils
 import SwiftSyntax
+import SwiftIDEUtils
+import SourceKittenFramework
 
 /// Bridge to convert SwiftSyntax classifications to SourceKitten syntax kinds.
 /// This enables SwiftSyntax-based custom rules to work with kind filtering
@@ -12,34 +12,34 @@ enum SwiftSyntaxKindBridge {
     {
         // swiftlint:disable:previous cyclomatic_complexity
         switch classification {
-        case .attribute:
-            return .attributeID
-        case .blockComment, .lineComment:
-            return .comment
-        case .docBlockComment, .docLineComment:
-            return .docComment
-        case .dollarIdentifier, .identifier:
-            return .identifier
-        case .editorPlaceholder:
-            return .placeholder
-        case .floatLiteral, .integerLiteral:
-            return .number
-        case .ifConfigDirective:
-            return .poundDirectiveKeyword
-        case .keyword:
-            return .keyword
-        case .none, .regexLiteral:
-            return nil
-        case .operator:
-            return .operator
-        case .stringLiteral:
-            return .string
-        case .type:
-            return .typeidentifier
-        case .argumentLabel:
-            return .argument
-        @unknown default:
-            return nil
+            case .attribute:
+                return .attributeID
+            case .blockComment, .lineComment:
+                return .comment
+            case .docBlockComment, .docLineComment:
+                return .docComment
+            case .dollarIdentifier, .identifier:
+                return .identifier
+            case .editorPlaceholder:
+                return .placeholder
+            case .floatLiteral, .integerLiteral:
+                return .number
+            case .ifConfigDirective:
+                return .poundDirectiveKeyword
+            case .keyword:
+                return .keyword
+            case .none, .regexLiteral:
+                return nil
+            case .operator:
+                return .operator
+            case .stringLiteral:
+                return .string
+            case .type:
+                return .typeidentifier
+            case .argumentLabel:
+                return .argument
+            @unknown default:
+                return nil
         }
     }
 
@@ -54,7 +54,7 @@ enum SwiftSyntaxKindBridge {
             let token = SyntaxToken(
                 type: syntaxKind.rawValue,
                 offset: byteRange.location,
-                length: byteRange.length
+                length: byteRange.length,
             )
 
             return SwiftLintSyntaxToken(value: token)

@@ -1,17 +1,9 @@
-//
-//  SpaceInsideBraces.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 8/22/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Ensure that there is space immediately inside braces
     static let spaceInsideBraces = FormatRule(
-        help: "Add space inside curly braces."
+        help: "Add space inside curly braces.",
     ) { formatter in
         formatter.forEach(.startOfScope("{")) { i, _ in
             if let nextToken = formatter.token(at: i + 1) {

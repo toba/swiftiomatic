@@ -15,23 +15,37 @@ enum Signposts {
         let log: OSLog
         let description: String?
         switch span {
-        case .timeline:
-            log = timelineLog
-            description = nil
-        case let .file(file):
-            log = fileLog
-            description = file
+            case .timeline:
+                log = timelineLog
+                description = nil
+            case let .file(file):
+                log = fileLog
+                description = file
         }
         let signpostID = OSSignpostID(log: log)
         if let description {
-            os_signpost(.begin, log: log, name: name, signpostID: signpostID, "%{public}s", description)
+            os_signpost(
+                .begin,
+                log: log,
+                name: name,
+                signpostID: signpostID,
+                "%{public}s",
+                description,
+            )
         } else {
             os_signpost(.begin, log: log, name: name, signpostID: signpostID)
         }
 
         let result = try body()
         if let description {
-            os_signpost(.end, log: log, name: name, signpostID: signpostID, "%{public}s", description)
+            os_signpost(
+                .end,
+                log: log,
+                name: name,
+                signpostID: signpostID,
+                "%{public}s",
+                description,
+            )
         } else {
             os_signpost(.end, log: log, name: name, signpostID: signpostID)
         }
@@ -44,23 +58,37 @@ enum Signposts {
         let log: OSLog
         let description: String?
         switch span {
-        case .timeline:
-            log = timelineLog
-            description = nil
-        case let .file(file):
-            log = fileLog
-            description = file
+            case .timeline:
+                log = timelineLog
+                description = nil
+            case let .file(file):
+                log = fileLog
+                description = file
         }
         let signpostID = OSSignpostID(log: log)
         if let description {
-            os_signpost(.begin, log: log, name: name, signpostID: signpostID, "%{public}s", description)
+            os_signpost(
+                .begin,
+                log: log,
+                name: name,
+                signpostID: signpostID,
+                "%{public}s",
+                description,
+            )
         } else {
             os_signpost(.begin, log: log, name: name, signpostID: signpostID)
         }
 
         let result = try await body()
         if let description {
-            os_signpost(.end, log: log, name: name, signpostID: signpostID, "%{public}s", description)
+            os_signpost(
+                .end,
+                log: log,
+                name: name,
+                signpostID: signpostID,
+                "%{public}s",
+                description,
+            )
         } else {
             os_signpost(.end, log: log, name: name, signpostID: signpostID)
         }

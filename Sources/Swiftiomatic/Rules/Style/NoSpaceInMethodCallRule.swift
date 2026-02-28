@@ -23,7 +23,7 @@ struct NoSpaceInMethodCallRule: Rule {
                 } label: {
                     Text("Button")
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -42,7 +42,7 @@ struct NoSpaceInMethodCallRule: Rule {
             Example("object.foo↓ (value: 1)"): Example("object.foo(value: 1)"),
             Example("object.foo↓ () {}"): Example("object.foo() {}"),
             Example("object.foo↓     ()"): Example("object.foo()"),
-        ]
+        ],
     )
 }
 

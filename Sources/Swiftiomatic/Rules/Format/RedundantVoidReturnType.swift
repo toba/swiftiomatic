@@ -1,18 +1,10 @@
-//
-//  RedundantVoidReturnType.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 1/3/17.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Remove redundant void return values for function and closure declarations
     static let redundantVoidReturnType = FormatRule(
         help: "Remove explicit `Void` return type.",
-        options: ["closure-void"]
+        options: ["closure-void"],
     ) { formatter in
         formatter.forEach(.operator("->", .infix)) { i, _ in
             guard let startIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
@@ -30,7 +22,8 @@ extension FormatRule {
                 return
             }
 
-            guard let nextToken = formatter.next(.nonSpaceOrCommentOrLinebreak, after: endIndex) else {
+            guard let nextToken = formatter.next(.nonSpaceOrCommentOrLinebreak, after: endIndex)
+            else {
                 return
             }
 
@@ -49,8 +42,12 @@ extension FormatRule {
 
             guard let prevIndex = formatter.index(of: .endOfScope(")"), before: i),
                   let parenIndex = formatter.index(of: .startOfScope("("), before: prevIndex),
-                  let startToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: parenIndex),
-                  startToken.isIdentifier || [.startOfScope("{"), .endOfScope("]")].contains(startToken)
+                  let startToken = formatter.last(
+                      .nonSpaceOrCommentOrLinebreak,
+                      before: parenIndex,
+                  ),
+                  startToken.isIdentifier || [.startOfScope("{"), .endOfScope("]")]
+                  .contains(startToken)
             else {
                 return
             }
@@ -62,7 +59,7 @@ extension FormatRule {
                 startRemoveIndex = i
             }
             formatter.removeTokens(
-                in: startRemoveIndex ..< formatter.index(of: .nonSpace, after: endIndex)!
+                in: startRemoveIndex ..< formatter.index(of: .nonSpace, after: endIndex)!,
             )
         }
     } examples: {

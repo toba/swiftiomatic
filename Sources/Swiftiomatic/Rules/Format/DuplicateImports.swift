@@ -1,17 +1,9 @@
-//
-//  DuplicateImports.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 2/7/18.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Remove duplicate import statements
     static let duplicateImports = FormatRule(
-        help: "Remove duplicate import statements."
+        help: "Remove duplicate import statements.",
     ) { formatter in
         for var importRanges in formatter.parseImports().reversed() {
             for i in importRanges.indices.reversed() {

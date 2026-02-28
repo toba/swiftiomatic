@@ -1,20 +1,19 @@
-import Dispatch
+import Synchronization
 
 /// A storage mechanism for aggregating the results of `CollectingRule`s.
-class RuleStorage: CustomStringConvertible, @unchecked Sendable {
-    private var storage: [ObjectIdentifier: [SwiftLintFile: Any]]
-    private let access = DispatchQueue(
-        label: "io.realm.swiftlint.ruleStorageAccess", attributes: .concurrent
-    )
+final class RuleStorage: CustomStringConvertible, Sendable {
+    private struct Box: @unchecked Sendable {
+        var data: [ObjectIdentifier: [SwiftLintFile: Any]] = [:]
+    }
+
+    private let storage = Mutex(Box())
 
     var description: String {
-        storage.description
+        storage.withLock { $0.data.description }
     }
 
     /// Creates a `RuleStorage` with no initial stored data.
-    init() {
-        storage = [:]
-    }
+    init() {}
 
     /// Collects file info for a given rule into the storage.s
     ///
@@ -23,8 +22,8 @@ class RuleStorage: CustomStringConvertible, @unchecked Sendable {
     /// - parameter rule: The SwiftLint rule that generated this info.
     func collect<R: CollectingRule>(info: R.FileInfo, for file: SwiftLintFile, in _: R) {
         let key = ObjectIdentifier(R.self)
-        access.sync(flags: .barrier) {
-            storage[key, default: [:]][file] = info
+        storage.withLock { box in
+            box.data[key, default: [:]][file] = info
         }
     }
 
@@ -34,8 +33,8 @@ class RuleStorage: CustomStringConvertible, @unchecked Sendable {
     ///
     /// - returns: All file information for a given rule that was collected via `collect(...)`.
     func collectedInfo<R: CollectingRule>(for _: R) -> [SwiftLintFile: R.FileInfo]? {
-        access.sync {
-            storage[ObjectIdentifier(R.self)] as? [SwiftLintFile: R.FileInfo]
+        storage.withLock { box in
+            box.data[ObjectIdentifier(R.self)] as? [SwiftLintFile: R.FileInfo]
         }
     }
 }

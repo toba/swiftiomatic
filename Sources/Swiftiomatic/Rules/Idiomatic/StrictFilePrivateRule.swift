@@ -17,33 +17,33 @@ struct StrictFilePrivateRule: Rule {
                     extension String {
                         var i: Int { 1 }
                     }
-                """
+                """,
             ),
             Example(
                 """
                     private enum E {
                         func f() {}
                     }
-                """
+                """,
             ),
             Example(
                 """
                     public struct S {
                         internal let i: Int
                     }
-                """
+                """,
             ),
             Example(
                 """
                     open class C {
                         private func f() {}
                     }
-                """
+                """,
             ),
             Example(
                 """
                     internal actor A {}
-                """
+                """,
             ),
             Example(
                 """
@@ -57,7 +57,7 @@ struct StrictFilePrivateRule: Rule {
                         var j: Int { get }
                         var l: Int { get }
                     }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
@@ -67,7 +67,7 @@ struct StrictFilePrivateRule: Rule {
                     protocol P<T> {
                         func f()
                     }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ]
             + ["actor", "class", "enum", "extension", "struct"].map { type in
@@ -83,7 +83,7 @@ struct StrictFilePrivateRule: Rule {
                             var i: Int { get }
                             var l: Int { get set }
                         }
-                    """, excludeFromDocumentation: true
+                    """, excludeFromDocumentation: true,
                 )
             },
         triggeringExamples: [
@@ -92,28 +92,28 @@ struct StrictFilePrivateRule: Rule {
                     ↓fileprivate class C {
                         ↓fileprivate func f() {}
                     }
-                """
+                """,
             ),
             Example(
                 """
                     ↓fileprivate extension String {
                         ↓fileprivate var isSomething: Bool { self == "something" }
                     }
-                """
+                """,
             ),
             Example(
                 """
                     ↓fileprivate actor A {
                         ↓fileprivate let i = 1
                     }
-                """
+                """,
             ),
             Example(
                 """
                     ↓fileprivate struct C {
                         ↓fileprivate(set) var myInt = 4
                     }
-                """
+                """,
             ),
             Example(
                 """
@@ -122,12 +122,12 @@ struct StrictFilePrivateRule: Rule {
                             ↓fileprivate struct Inner {}
                         }
                     }
-                """
+                """,
             ),
             Example(
                 """
                     ↓fileprivate func f() {}
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ]
             + ["actor", "class", "enum", "extension", "struct"].map { type in
@@ -150,9 +150,9 @@ struct StrictFilePrivateRule: Rule {
                             func g()
                             var j: Int { get }
                         }
-                    """, excludeFromDocumentation: true
+                    """, excludeFromDocumentation: true,
                 )
-            }
+            },
     )
 }
 
@@ -176,7 +176,8 @@ private extension StrictFilePrivateRule {
             .walk(tree: file.syntaxTree, handler: \.protocols)
 
         override func visitPost(_ node: DeclModifierSyntax) {
-            guard node.name.tokenKind == .keyword(.fileprivate), let grandparent = node.parent?.parent
+            guard node.name.tokenKind == .keyword(.fileprivate),
+                  let grandparent = node.parent?.parent
             else {
                 return
             }
@@ -209,7 +210,8 @@ private extension StrictFilePrivateRule {
                         return []
                     }
                     .first {
-                        protocolMethodNames.contains(isSpecificForSetter ? .setter($0) : .getter($0))
+                        protocolMethodNames
+                            .contains(isSpecificForSetter ? .setter($0) : .getter($0))
                     }
                 if firstImplementingProtocol != nil {
                     return
@@ -246,7 +248,7 @@ private extension StrictFilePrivateRule {
 }
 
 private final class ProtocolCollector<Configuration: RuleConfiguration>: ViolationsSyntaxVisitor<
-    Configuration
+    Configuration,
 > {
     private(set) var protocols = [String: [ProtocolRequirementType]]()
     private var currentProtocolName = ""

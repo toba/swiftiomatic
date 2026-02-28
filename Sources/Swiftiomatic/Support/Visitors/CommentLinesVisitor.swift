@@ -36,7 +36,8 @@ final class CommentLinesVisitor: SyntaxVisitor {
 
         // Mark lines with actual code tokens (not comments).
         if token.tokenKind != .endOfFile {
-            let tokenLine = locationConverter.location(for: token.positionAfterSkippingLeadingTrivia).line
+            let tokenLine = locationConverter
+                .location(for: token.positionAfterSkippingLeadingTrivia).line
             linesWithCode.insert(tokenLine)
         }
 
@@ -51,14 +52,15 @@ final class CommentLinesVisitor: SyntaxVisitor {
             currentPosition -= piece.sourceLength
 
             switch piece {
-            case .lineComment, .blockComment, .docLineComment, .docBlockComment:
-                // Collect all lines that this comment spans.
-                let commentStartLine = locationConverter.location(for: currentPosition).line
-                let commentEndLine = locationConverter.location(for: currentPosition + piece.sourceLength)
-                    .line
-                linesWithComments.formUnion(commentStartLine ... commentEndLine)
-            default:
-                break
+                case .lineComment, .blockComment, .docLineComment, .docBlockComment:
+                    // Collect all lines that this comment spans.
+                    let commentStartLine = locationConverter.location(for: currentPosition).line
+                    let commentEndLine = locationConverter
+                        .location(for: currentPosition + piece.sourceLength)
+                        .line
+                    linesWithComments.formUnion(commentStartLine ... commentEndLine)
+                default:
+                    break
             }
         }
     }

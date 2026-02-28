@@ -15,7 +15,7 @@ struct ProhibitedInterfaceBuilderRule: Rule {
         triggeringExamples: [
             wrapExample("@IBOutlet ↓var label: UILabel!"),
             wrapExample("@IBAction ↓func buttonTapped(_ sender: UIButton) {}"),
-        ]
+        ],
     )
 }
 
@@ -51,6 +51,6 @@ private func wrapExample(_ text: String, file: StaticString = #filePath, line: U
         class ViewController: UIViewController {
             \(text)
         }
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }

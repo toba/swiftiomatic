@@ -13,8 +13,10 @@ extension SeverityLevelsConfiguration: SeverityLevelsBasedRuleConfiguration {
 }
 
 /// Violation visitor customized to collect violations of code blocks that exceed a specified number of lines.
-class BodyLengthVisitor<LevelConfig: SeverityLevelsBasedRuleConfiguration>: ViolationsSyntaxVisitor<
-    LevelConfig
+class BodyLengthVisitor<
+    LevelConfig: SeverityLevelsBasedRuleConfiguration,
+>: ViolationsSyntaxVisitor<
+    LevelConfig,
 > {
     @inlinable
     override init(configuration: LevelConfig, file: SwiftLintFile) {
@@ -32,7 +34,7 @@ class BodyLengthVisitor<LevelConfig: SeverityLevelsBasedRuleConfiguration>: Viol
         leftBrace: TokenSyntax,
         rightBrace: TokenSyntax,
         violationNode: some SyntaxProtocol,
-        objectName: String
+        objectName: String,
     ) {
         let leftBracePosition = leftBrace.positionAfterSkippingLeadingTrivia
         let leftBraceLine = locationConverter.location(for: leftBracePosition).line
@@ -40,7 +42,7 @@ class BodyLengthVisitor<LevelConfig: SeverityLevelsBasedRuleConfiguration>: Viol
         let rightBraceLine = locationConverter.location(for: rightBracePosition).line
         let lineCount = file.bodyLineCountIgnoringCommentsAndWhitespace(
             leftBraceLine: leftBraceLine,
-            rightBraceLine: rightBraceLine
+            rightBraceLine: rightBraceLine,
         )
         let severity: ViolationSeverity
         let upperBound: Int
@@ -58,11 +60,13 @@ class BodyLengthVisitor<LevelConfig: SeverityLevelsBasedRuleConfiguration>: Viol
             .init(
                 position: violationNode.positionAfterSkippingLeadingTrivia,
                 reason: """
-                \(objectName) body should span \(upperBound) lines or less excluding comments and whitespace: \
+                \(objectName) body should span \(
+                    upperBound
+                ) lines or less excluding comments and whitespace: \
                 currently spans \(lineCount) lines
                 """,
-                severity: severity
-            )
+                severity: severity,
+            ),
         )
     }
 }

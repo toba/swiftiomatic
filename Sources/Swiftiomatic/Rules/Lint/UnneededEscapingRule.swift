@@ -1,5 +1,5 @@
-import SwiftLexicalLookup
 import SwiftSyntax
+import SwiftLexicalLookup
 
 struct UnneededEscapingRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -11,7 +11,7 @@ struct UnneededEscapingRule: Rule {
         kind: .lint,
         nonTriggeringExamples: UnneededEscapingRuleExamples.nonTriggeringExamples,
         triggeringExamples: UnneededEscapingRuleExamples.triggeringExamples,
-        corrections: UnneededEscapingRuleExamples.corrections
+        corrections: UnneededEscapingRuleExamples.corrections,
     )
 }
 
@@ -52,7 +52,7 @@ private extension UnneededEscapingRule {
         }
 
         private func checkFunction(
-            parameters: FunctionParameterClauseSyntax, body: CodeBlockItemListSyntax?
+            parameters: FunctionParameterClauseSyntax, body: CodeBlockItemListSyntax?,
         ) {
             guard let body else {
                 return
@@ -63,7 +63,7 @@ private extension UnneededEscapingRule {
                         paramName: (param.secondName ?? param.firstName).text,
                         with: escapingAttr,
                         isAutoclosure: param.type.attribute(named: "autoclosure") != nil,
-                        in: body
+                        in: body,
                     )
                 }
             }
@@ -73,7 +73,7 @@ private extension UnneededEscapingRule {
             paramName: String,
             with attr: AttributeSyntax,
             isAutoclosure: Bool,
-            in body: CodeBlockItemListSyntax
+            in body: CodeBlockItemListSyntax,
         ) {
             if EscapeChecker(paramName: paramName, isAutoclosure: isAutoclosure)
                 .walk(tree: body, handler: \.doesEscape)
@@ -93,9 +93,9 @@ private extension UnneededEscapingRule {
                     correction: .init(
                         start: attr.positionAfterSkippingLeadingTrivia,
                         end: correctionEndPosition,
-                        replacement: ""
-                    )
-                )
+                        replacement: "",
+                    ),
+                ),
             )
         }
     }
@@ -235,8 +235,8 @@ private extension ExprSyntax {
             return results.isNotEmpty
                 && results.allSatisfy {
                     switch $0 {
-                    case .fromScope: true
-                    default: false
+                        case .fromScope: true
+                        default: false
                     }
                 }
         }

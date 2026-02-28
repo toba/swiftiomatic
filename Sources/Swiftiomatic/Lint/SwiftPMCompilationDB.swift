@@ -1,5 +1,5 @@
-import Foundation
 import Yams
+import Foundation
 
 private struct SwiftPMCommand: Codable {
     let tool: String
@@ -37,7 +37,7 @@ struct SwiftPMCompilationDB: Codable {
             let pathToReplace = Array(
                 nodes.nodes.keys.filter { node in
                     node.hasSuffix(suffix)
-                }
+                },
             )[0].dropLast(suffix.count - 1)
             let stringFileContents = String(data: yaml, encoding: .utf8)!
                 .replacingOccurrences(of: pathToReplace, with: "")
@@ -68,11 +68,12 @@ struct SwiftPMCompilationDB: Codable {
                 }
 
                 let args =
-                    ["-module-name", module] + sources + arguments.filteringCompilerArguments + ["-I"]
+                    ["-module-name", module] + sources + arguments
+                        .filteringCompilerArguments + ["-I"]
                         + importPaths
 
                 return (swiftSource, args)
-            }
+            },
         )
     }
 }

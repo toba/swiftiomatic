@@ -32,7 +32,7 @@ protocol CollectingRule: AnyCollectingRule {
     func validate(
         file: SwiftLintFile,
         collectedInfo: [SwiftLintFile: FileInfo],
-        compilerArguments: [String]
+        compilerArguments: [String],
     ) -> [StyleViolation]
 
     /// Executes the rule on a file after collecting file info for all files and returns any violations to the rule's
@@ -48,10 +48,14 @@ protocol CollectingRule: AnyCollectingRule {
 // MARK: - == Implementations
 
 extension CollectingRule {
-    func collectInfo(for file: SwiftLintFile, into storage: RuleStorage, compilerArguments: [String]) {
+    func collectInfo(
+        for file: SwiftLintFile,
+        into storage: RuleStorage,
+        compilerArguments: [String],
+    ) {
         storage.collect(
             info: collectInfo(for: file, compilerArguments: compilerArguments),
-            for: file, in: self
+            for: file, in: self,
         )
     }
 
@@ -71,7 +75,7 @@ extension CollectingRule {
     func validate(
         file: SwiftLintFile,
         collectedInfo: [SwiftLintFile: FileInfo],
-        compilerArguments _: [String]
+        compilerArguments _: [String],
     ) -> [StyleViolation] {
         validate(file: file, collectedInfo: collectedInfo)
     }
@@ -82,7 +86,7 @@ extension CollectingRule {
 
     func validate(file _: SwiftLintFile, compilerArguments _: [String]) -> [StyleViolation] {
         queuedFatalError(
-            "Must call `validate(file:collectedInfo:compilerArguments:)` for CollectingRule"
+            "Must call `validate(file:collectedInfo:compilerArguments:)` for CollectingRule",
         )
     }
 }
@@ -90,13 +94,13 @@ extension CollectingRule {
 extension CollectingRule where Self: AnalyzerRule {
     func collectInfo(for _: SwiftLintFile) -> FileInfo {
         queuedFatalError(
-            "Must call `collect(infoFor:compilerArguments:)` for AnalyzerRule & CollectingRule"
+            "Must call `collect(infoFor:compilerArguments:)` for AnalyzerRule & CollectingRule",
         )
     }
 
     func validate(file _: SwiftLintFile) -> [StyleViolation] {
         queuedFatalError(
-            "Must call `validate(file:collectedInfo:compilerArguments:)` for AnalyzerRule & CollectingRule"
+            "Must call `validate(file:collectedInfo:compilerArguments:)` for AnalyzerRule & CollectingRule",
         )
     }
 
@@ -104,13 +108,13 @@ extension CollectingRule where Self: AnalyzerRule {
         -> [StyleViolation]
     {
         queuedFatalError(
-            "Must call `validate(file:collectedInfo:compilerArguments:)` for AnalyzerRule & CollectingRule"
+            "Must call `validate(file:collectedInfo:compilerArguments:)` for AnalyzerRule & CollectingRule",
         )
     }
 }
 
 /// :nodoc:
-extension Array where Element == any Rule {
+extension [any Rule] {
     static func == (lhs: Array, rhs: Array) -> Bool {
         guard lhs.count == rhs.count else {
             return false

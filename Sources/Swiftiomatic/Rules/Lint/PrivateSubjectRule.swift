@@ -9,7 +9,7 @@ struct PrivateSubjectRule: Rule {
         description: "Combine Subject should be private",
         kind: .lint,
         nonTriggeringExamples: PrivateSubjectRuleExamples.nonTriggeringExamples,
-        triggeringExamples: PrivateSubjectRuleExamples.triggeringExamples
+        triggeringExamples: PrivateSubjectRuleExamples.triggeringExamples,
     )
 }
 
@@ -59,7 +59,7 @@ private extension PrivateSubjectRule {
                 // * `let subject = CurrentValueSubject<String, Never>("toto")`
                 if let functionCall = binding.initializer?.value.as(FunctionCallExprSyntax.self),
                    let specializeExpr = functionCall.calledExpression.as(
-                       GenericSpecializationExprSyntax.self
+                       GenericSpecializationExprSyntax.self,
                    ),
                    let identifierExpr = specializeExpr.expression.as(DeclReferenceExprSyntax.self),
                    subjectTypes.contains(identifierExpr.baseName.text)

@@ -20,7 +20,7 @@ struct Analyzer: Sendable {
         categories: Set<Category> = [],
         minConfidence: Confidence = .low,
         minSeverity: Severity = .low,
-        typeResolver: (any TypeResolver)? = nil
+        typeResolver: (any TypeResolver)? = nil,
     ) {
         self.categories = categories
         self.minConfidence = minConfidence
@@ -40,7 +40,7 @@ struct Analyzer: Sendable {
         var findings = await runChecks(on: parsed)
 
         // Run cross-file checks (dead symbols, structural duplication)
-        findings.append(contentsOf: await runCrossFileChecks(on: parsed))
+        await findings.append(contentsOf: runCrossFileChecks(on: parsed))
 
         // Filter by confidence and severity
         findings = findings.filter { finding in
@@ -78,7 +78,7 @@ struct Analyzer: Sendable {
     }
 
     private func runChecks(
-        on parsed: [(file: String, tree: SourceFileSyntax)]
+        on parsed: [(file: String, tree: SourceFileSyntax)],
     ) async -> [Finding] {
         var findings: [Finding] = []
 
@@ -103,7 +103,7 @@ struct Analyzer: Sendable {
 
     /// Run cross-file checks that need data from all files.
     private func runCrossFileChecks(
-        on parsed: [(file: String, tree: SourceFileSyntax)]
+        on parsed: [(file: String, tree: SourceFileSyntax)],
     ) async -> [Finding] {
         let activeCategories = categories.isEmpty ? Set(Category.allCases) : categories
         var findings: [Finding] = []
@@ -125,7 +125,7 @@ struct Analyzer: Sendable {
                 let collector = DeclarationCollector(
                     filePath: file,
                     symbolTable: symbolTable,
-                    fileIndex: fileIndexes[file]
+                    fileIndex: fileIndexes[file],
                 )
                 collector.walk(tree)
             }
@@ -133,7 +133,7 @@ struct Analyzer: Sendable {
                 let checker = DeadSymbolsCheck(
                     filePath: file,
                     symbolTable: symbolTable,
-                    fileIndex: fileIndexes[file]
+                    fileIndex: fileIndexes[file],
                 )
                 checker.walk(tree)
             }
@@ -154,8 +154,8 @@ struct Analyzer: Sendable {
                 let dupeCheck = StructuralDuplicationCheck(filePath: "")
                 findings.append(
                     contentsOf: dupeCheck.generateDuplicationFindings(
-                        allCollected: allFingerprints
-                    )
+                        allCollected: allFingerprints,
+                    ),
                 )
             }
         }

@@ -19,13 +19,15 @@ struct ContainsOverFirstNotNilRule: Rule {
                 [
                     Example("↓myList.\(method) { $0 % 2 == 0 } \(comparison) nil"),
                     Example("↓myList.\(method)(where: { $0 % 2 == 0 }) \(comparison) nil"),
-                    Example("↓myList.map { $0 + 1 }.\(method)(where: { $0 % 2 == 0 }) \(comparison) nil"),
+                    Example(
+                        "↓myList.map { $0 + 1 }.\(method)(where: { $0 % 2 == 0 }) \(comparison) nil",
+                    ),
                     Example("↓myList.\(method)(where: someFunction) \(comparison) nil"),
                     Example("↓myList.map { $0 + 1 }.\(method) { $0 % 2 == 0 } \(comparison) nil"),
                     Example("(↓myList.\(method) { $0 % 2 == 0 }) \(comparison) nil"),
                 ]
             }
-        }
+        },
     )
 }
 
@@ -58,7 +60,7 @@ private extension ContainsOverFirstNotNilRule {
 
             let violation = ReasonedRuleViolation(
                 position: first.positionAfterSkippingLeadingTrivia,
-                reason: "Prefer `contains` over `\(calledExpression.declName.baseName.text)(where:) != nil`"
+                reason: "Prefer `contains` over `\(calledExpression.declName.baseName.text)(where:) != nil`",
             )
             violations.append(violation)
         }

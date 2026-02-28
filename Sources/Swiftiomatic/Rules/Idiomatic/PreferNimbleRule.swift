@@ -19,7 +19,7 @@ struct PreferNimbleRule: Rule {
             Example("↓XCTAssertNil(foo)"),
             Example("↓XCTAssert(foo)"),
             Example("↓XCTAssertGreaterThan(foo, 10)"),
-        ]
+        ],
     )
 }
 

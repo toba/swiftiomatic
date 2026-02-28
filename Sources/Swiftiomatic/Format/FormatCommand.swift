@@ -1,10 +1,10 @@
-import ArgumentParser
 import Foundation
+import ArgumentParser
 
 struct FormatCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "format",
-        abstract: "Format Swift source files"
+        abstract: "Format Swift source files",
     )
 
     @Argument(help: "Paths to format (files or directories)")
@@ -101,15 +101,15 @@ struct FormatCommand: ParsableCommand {
 
         let sorted = allDiagnostics.sorted()
         switch format {
-        case .text:
-            if sorted.isEmpty {
-                print("No formatting issues found.")
-            } else {
-                print(DiagnosticFormatter.formatXcode(sorted))
-                print("\nTotal: \(sorted.count) issues")
-            }
-        case .json:
-            try print(DiagnosticFormatter.formatJSON(sorted))
+            case .text:
+                if sorted.isEmpty {
+                    print("No formatting issues found.")
+                } else {
+                    print(DiagnosticFormatter.formatXcode(sorted))
+                    print("\nTotal: \(sorted.count) issues")
+                }
+            case .json:
+                try print(DiagnosticFormatter.formatJSON(sorted))
         }
 
         if !sorted.isEmpty {

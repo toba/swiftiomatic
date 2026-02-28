@@ -9,7 +9,7 @@ extension SwiftLintFile {
     ///
     /// - returns: The number of effective lines of the body ignoring lines only containing comments and/or whitespace.
     func bodyLineCountIgnoringCommentsAndWhitespace(
-        leftBraceLine: Int, rightBraceLine: Int
+        leftBraceLine: Int, rightBraceLine: Int,
     ) -> Int {
         // Ignore left/right brace lines
         let startLine = min(leftBraceLine + 1, rightBraceLine - 1)
@@ -35,7 +35,7 @@ extension SwiftLintFile {
         //   }
         let totalNumberOfLines = 1 + endLine - startLine
         let numberOfCommentAndWhitespaceOnlyLines = Set(startLine ... endLine).subtracting(
-            linesWithTokens
+            linesWithTokens,
         ).count
         return totalNumberOfLines - numberOfCommentAndWhitespaceOnlyLines
     }
@@ -50,11 +50,12 @@ extension SwiftLintFile {
                         let sourceRange = token.sourceRange(
                             converter: locationConverter,
                             afterLeadingTrivia: true,
-                            afterTrailingTrivia: true
+                            afterTrailingTrivia: true,
                         )
                         linesWithTokens.formUnion(sourceRange.start.line ... sourceRange.end.line)
                     } else {
-                        let line = locationConverter.location(for: token.positionAfterSkippingLeadingTrivia).line
+                        let line = locationConverter
+                            .location(for: token.positionAfterSkippingLeadingTrivia).line
                         linesWithTokens.insert(line)
                     }
                 }

@@ -30,14 +30,14 @@ extension Array where Element: Equatable {
 extension Array where Element: StringProtocol {
     func formattedList(lastSeparator: String) -> String {
         switch count {
-        case 0:
-            return ""
-        case 1:
-            return String(self[0])
-        case 2:
-            return "\(self[0]) \(lastSeparator) \(self[1])"
-        default:
-            return "\(dropLast().joined(separator: ", ")) \(lastSeparator) \(last!)"
+            case 0:
+                return ""
+            case 1:
+                return String(self[0])
+            case 2:
+                return "\(self[0]) \(lastSeparator) \(self[1])"
+            default:
+                return "\(dropLast().joined(separator: ", ")) \(lastSeparator) \(last!)"
         }
     }
 }
@@ -95,8 +95,8 @@ extension String {
                         Swift.min(
                             dist[i - 1][j] + 1,
                             dist[i][j - 1] + 1,
-                            dist[i - 1][j - 1] + 1
-                        )
+                            dist[i - 1][j - 1] + 1,
+                        ),
                     )
                 }
                 if i > 1, j > 1, lhs[i - 1] == rhs[j - 2], lhs[i - 2] == rhs[j - 1] {

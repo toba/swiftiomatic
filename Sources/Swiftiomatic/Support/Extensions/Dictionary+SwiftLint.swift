@@ -34,7 +34,7 @@ struct SourceKittenDictionary {
         statementKind = stringKind.flatMap(StatementKind.init)
 
         accessibility = (value["key.accessibility"] as? String).flatMap(
-            AccessControlLevel.init(identifier:)
+            AccessControlLevel.init(identifier:),
         )
     }
 
@@ -176,7 +176,10 @@ struct SourceKittenDictionary {
 
 extension SourceKittenDictionary {
     /// Block executed for every encountered entity during traversal of a dictionary.
-    typealias TraverseBlock<T> = (_ parent: SourceKittenDictionary, _ entity: SourceKittenDictionary)
+    typealias TraverseBlock<T> = (
+        _ parent: SourceKittenDictionary,
+        _ entity: SourceKittenDictionary,
+    )
         -> T?
 
     /// Traversing all substructures of the dictionary hierarchically, calling `traverseBlock` on each node.
@@ -193,7 +196,7 @@ extension SourceKittenDictionary {
 
     private func traverseDepthFirst<T>(
         collectingValuesInto array: inout [T],
-        traverseBlock: (SourceKittenDictionary) -> [T]?
+        traverseBlock: (SourceKittenDictionary) -> [T]?,
     ) {
         for subDict in substructure {
             subDict.traverseDepthFirst(collectingValuesInto: &array, traverseBlock: traverseBlock)
@@ -217,10 +220,13 @@ extension SourceKittenDictionary {
     }
 
     private func traverseEntitiesDepthFirst<T>(
-        collectingValuesInto array: inout [T], traverseBlock: TraverseBlock<T>
+        collectingValuesInto array: inout [T], traverseBlock: TraverseBlock<T>,
     ) {
         for subDict in entities {
-            subDict.traverseEntitiesDepthFirst(collectingValuesInto: &array, traverseBlock: traverseBlock)
+            subDict.traverseEntitiesDepthFirst(
+                collectingValuesInto: &array,
+                traverseBlock: traverseBlock,
+            )
 
             if let collectedValue = traverseBlock(self, subDict) {
                 array.append(collectedValue)
@@ -237,7 +243,7 @@ extension Dictionary where Key == Example {
         Dictionary(
             uniqueKeysWithValues: map { key, value in
                 (key.removingViolationMarkers(), value)
-            }
+            },
         )
     }
 }

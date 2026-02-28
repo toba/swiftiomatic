@@ -14,14 +14,14 @@ enum UnusedClosureParameterRuleExamples {
                     rlmMigration(migration.rlmMigration, schemaVersion)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             genericsFunc { (a: Type, b) in
                 a + b
             }
-            """
+            """,
         ),
         Example(
             """
@@ -29,56 +29,56 @@ enum UnusedClosureParameterRuleExamples {
                 lbl.backgroundColor = .red
                 return lbl
             }(UILabel())
-            """
+            """,
         ),
         Example(
             """
             hoge(arg: num) { num in
                 return num
             }
-            """
+            """,
         ),
         Example(
             """
             ({ (manager: FileManager) in
               print(manager)
             })(FileManager.default)
-            """
+            """,
         ),
         Example(
             """
             withPostSideEffect { input in
                 if true { print("\\(input)") }
             }
-            """
+            """,
         ),
         Example(
             """
             viewModel?.profileImage.didSet(weak: self) { (self, profileImage) in
                 self.profileImageView.image = profileImage
             }
-            """
+            """,
         ),
         Example(
             """
             let failure: Failure = { task, error in
                 observer.sendFailed(error, task)
             }
-            """
+            """,
         ),
         Example(
             """
             List($names) { $name in
                 Text(name)
             }
-            """
+            """,
         ),
         Example(
             """
             List($names) { $name in
                 TextField($name)
             }
-            """
+            """,
         ),
         Example(#"_ = ["a"].filter { `class` in `class`.hasPrefix("a") }"#),
         Example("let closure: (Int) -> Void = { `foo` in _ = foo }"),
@@ -97,7 +97,7 @@ enum UnusedClosureParameterRuleExamples {
             """
             hoge(arg: num) { ↓num in
             }
-            """
+            """,
         ),
         Example("fooFunc { ↓아 in }"),
         Example("func foo () {\n bar { ↓number in return 3 }"),
@@ -106,27 +106,27 @@ enum UnusedClosureParameterRuleExamples {
             viewModel?.profileImage.didSet(weak: self) { (↓self, profileImage) in
                 profileImageView.image = profileImage
             }
-            """
+            """,
         ),
         Example(
             """
             let failure: Failure = { ↓task, error in
                 observer.sendFailed(error)
             }
-            """
+            """,
         ),
         Example(
             """
             List($names) { ↓$name in
                 Text("Foo")
             }
-            """
+            """,
         ),
         Example(
             """
             let class1 = "a"
             _ = ["a"].filter { ↓`class` in `class1`.hasPrefix("a") }
-            """
+            """,
         ),
     ]
 
@@ -158,7 +158,7 @@ enum UnusedClosureParameterRuleExamples {
                 return 3
               }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -167,7 +167,7 @@ enum UnusedClosureParameterRuleExamples {
                     return 3
                   }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -180,7 +180,7 @@ enum UnusedClosureParameterRuleExamples {
                 }
             #endif
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -193,21 +193,21 @@ enum UnusedClosureParameterRuleExamples {
                     }
                 #endif
                 }
-                """
+                """,
             ),
         Example(
             """
             let failure: Failure = { ↓task, error in
                 observer.sendFailed(error)
             }
-            """
+            """,
         ):
             Example(
                 """
                 let failure: Failure = { _, error in
                     observer.sendFailed(error)
                 }
-                """
+                """,
             ),
     ]
 }

@@ -24,14 +24,14 @@ struct ClosureParameterPositionRule: Rule {
                         rlmMigration(migration.rlmMigration, schemaVersion)
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let mediaView: UIView = { [weak self] index in
                    return UIView()
                 }(index)
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -41,7 +41,7 @@ struct ClosureParameterPositionRule: Rule {
                     ↓number in
                     number + 1
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -49,7 +49,7 @@ struct ClosureParameterPositionRule: Rule {
                     ↓number -> Int in
                     number + 1
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -57,7 +57,7 @@ struct ClosureParameterPositionRule: Rule {
                     (↓number: Int) -> Int in
                     number + 1
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -65,7 +65,7 @@ struct ClosureParameterPositionRule: Rule {
                     [weak ↓self] ↓number in
                     number + 1
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -73,7 +73,7 @@ struct ClosureParameterPositionRule: Rule {
                     ↓number in
                     number + 1
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -81,7 +81,7 @@ struct ClosureParameterPositionRule: Rule {
                     ↓number in
                     number + 1
                 })
-                """
+                """,
             ),
             Example(
                 """
@@ -89,7 +89,7 @@ struct ClosureParameterPositionRule: Rule {
                     ↓number in
                     number + 1
                 })
-                """
+                """,
             ),
             Example(
                 """
@@ -97,7 +97,7 @@ struct ClosureParameterPositionRule: Rule {
                     ↓sum, ↓number in
                     number + sum
                 })
-                """
+                """,
             ),
             Example(
                 """
@@ -105,7 +105,7 @@ struct ClosureParameterPositionRule: Rule {
                     ↓thing in
                     doStuff()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -113,9 +113,9 @@ struct ClosureParameterPositionRule: Rule {
                     [weak ↓self] in
                     self?.bar()
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -161,7 +161,8 @@ private extension ClosureSignatureSyntax {
     var positionsToCheck: [AbsolutePosition] {
         var positions: [AbsolutePosition] = []
         if let captureItems = capture?.items {
-            positions.append(contentsOf: captureItems.map(\.name.positionAfterSkippingLeadingTrivia))
+            positions
+                .append(contentsOf: captureItems.map(\.name.positionAfterSkippingLeadingTrivia))
         }
 
         if let input = parameterClause?.as(ClosureShorthandParameterListSyntax.self) {

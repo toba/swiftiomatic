@@ -1,11 +1,3 @@
-//
-//  EnumNamespaces.swift
-//  SwiftFormat
-//
-//  Created by Facundo Menzella on 9/20/20.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -15,7 +7,7 @@ extension FormatRule {
         Convert types used for hosting only static members into enums (an empty enum is
         the canonical way to create a namespace in Swift as it can't be instantiated).
         """,
-        options: ["enum-namespaces"]
+        options: ["enum-namespaces"],
     ) { formatter in
         formatter.forEachToken(where: { [.keyword("class"), .keyword("struct")].contains($0) }) {
             i, token in

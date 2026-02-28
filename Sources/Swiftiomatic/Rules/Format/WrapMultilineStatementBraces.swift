@@ -1,18 +1,10 @@
-//
-//  WrapMultilineStatementBraces.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 7/16/20.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let wrapMultilineStatementBraces = FormatRule(
         help: "Wrap the opening brace of multiline statements.",
         orderAfter: [.braces, .indent, .wrapArguments],
-        sharedOptions: ["linebreaks"]
+        sharedOptions: ["linebreaks"],
     ) { formatter in
         formatter.forEach(.startOfScope("{")) { i, _ in
             guard formatter.last(.nonSpaceOrComment, before: i)?.isLinebreak == false,

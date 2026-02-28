@@ -12,49 +12,49 @@ struct ReduceIntoRule: Rule {
             Example(
                 """
                 let foo = values.reduce(into: "abc") { $0 += "\\($1)" }
-                """
+                """,
             ),
             Example(
                 """
                 values.reduce(into: Array<Int>()) { result, value in
                     result.append(value)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let rows = violations.enumerated().reduce(into: "") { rows, indexAndViolation in
                     rows.append(generateSingleRow(for: indexAndViolation.1, at: indexAndViolation.0 + 1))
                 }
-                """
+                """,
             ),
             Example(
                 """
                 zip(group, group.dropFirst()).reduce(into: []) { result, pair in
                     result.append(pair.0 + pair.1)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let foo = values.reduce(into: [String: Int]()) { result, value in
                     result["\\(value)"] = value
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let foo = values.reduce(into: Dictionary<String, Int>.init()) { result, value in
                     result["\\(value)"] = value
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let foo = values.reduce(into: [Int](repeating: 0, count: 10)) { result, value in
                     result.append(value)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -62,21 +62,21 @@ struct ReduceIntoRule: Rule {
                     result.handleValue(value)
                     return result
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
             Example(
                 """
                 let bar = values.↓reduce("abc") { $0 + "\\($1)" }
-                """
+                """,
             ),
             Example(
                 """
                 values.↓reduce(Array<Int>()) { result, value in
                     result += [value]
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -85,21 +85,21 @@ struct ReduceIntoRule: Rule {
                     result.insert(value)
                     return result
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let rows = violations.enumerated().↓reduce("") { rows, indexAndViolation in
                     return rows + generateSingleRow(for: indexAndViolation.1, at: indexAndViolation.0 + 1)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 zip(group, group.dropFirst()).↓reduce([]) { result, pair in
                     result + [pair.0 + pair.1]
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -108,7 +108,7 @@ struct ReduceIntoRule: Rule {
                     result["\\(value)"] = value
                     return result
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -117,14 +117,14 @@ struct ReduceIntoRule: Rule {
                     result["\\(value)"] = value
                     return result
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let bar = values.↓reduce([Int](repeating: 0, count: 10)) { result, value in
                     return result + [value]
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -135,9 +135,9 @@ struct ReduceIntoRule: Rule {
                         }
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -154,7 +154,8 @@ private extension ReduceIntoRule {
         override func visitPost(_ node: FunctionCallExprSyntax) {
             guard let name = node.nameToken,
                   name.text == "reduce",
-                  node.arguments.count == 2 || (node.arguments.count == 1 && node.trailingClosure != nil),
+                  node.arguments
+                  .count == 2 || (node.arguments.count == 1 && node.trailingClosure != nil),
                   let firstArgument = node.arguments.first,
                   // would otherwise equal "into"
                   firstArgument.label == nil,

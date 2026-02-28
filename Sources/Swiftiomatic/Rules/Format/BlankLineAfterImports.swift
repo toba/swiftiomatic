@@ -1,18 +1,10 @@
-//
-//  BlankLineAfterImports.swift
-//  SwiftFormat
-//
-//  Created by Tsungyu Yu on 5/1/22.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Insert blank line after import statements
     static let blankLineAfterImports = FormatRule(
         help: "Insert blank line after import statements.",
-        sharedOptions: ["linebreaks"]
+        sharedOptions: ["linebreaks"],
     ) { formatter in
         formatter.forEach(.keyword("import")) { currentImportIndex, _ in
             guard let endOfLine = formatter.index(of: .linebreak, after: currentImportIndex),
@@ -29,11 +21,11 @@ extension FormatRule {
                 keyword = formatter.tokens[nextIndex]
             }
             switch formatter.tokens[nextIndex] {
-            case .linebreak, .keyword("import"), .keyword("#else"), .keyword("#elseif"),
-                 .endOfScope("#endif"):
-                break
-            default:
-                formatter.insertLinebreak(at: endOfLine)
+                case .linebreak, .keyword("import"), .keyword("#else"), .keyword("#elseif"),
+                     .endOfScope("#endif"):
+                    break
+                default:
+                    formatter.insertLinebreak(at: endOfLine)
             }
         }
     } examples: {

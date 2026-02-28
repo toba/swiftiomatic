@@ -20,7 +20,7 @@ struct ProtocolPropertyAccessorsOrderRule: Rule {
         corrections: [
             Example("protocol Foo {\n var bar: String { ↓set get }\n }"):
                 Example("protocol Foo {\n var bar: String { get set }\n }"),
-        ]
+        ],
     )
 }
 

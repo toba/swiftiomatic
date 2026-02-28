@@ -24,14 +24,14 @@ struct UnownedVariableCaptureRule: Rule {
                         self.value = value
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
             Example("foo { [↓unowned self] in _ }"),
             Example("foo { [↓unowned bar] in _ }"),
             Example("foo { [bar, ↓unowned self] in _ }"),
-        ]
+        ],
     )
 }
 

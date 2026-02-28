@@ -119,7 +119,7 @@ enum FileTypesOrderRuleExamples {
             extension Foo {}
             extension Bar {
             }
-            """
+            """,
         ),
         Example(
             """
@@ -141,7 +141,7 @@ enum FileTypesOrderRuleExamples {
                     LibraryItem(ContentView())
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -154,7 +154,7 @@ enum FileTypesOrderRuleExamples {
             protocol TestViewControllerDelegate {
                 func didPressTrackedButton()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -166,7 +166,7 @@ enum FileTypesOrderRuleExamples {
             }
 
             class TestViewController: UIViewController {}
-            """
+            """,
         ),
         Example(
             """
@@ -181,7 +181,7 @@ enum FileTypesOrderRuleExamples {
             protocol TestViewControllerDelegate {
                 func didPressTrackedButton()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -205,7 +205,7 @@ enum FileTypesOrderRuleExamples {
                     return 1
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -220,7 +220,7 @@ enum FileTypesOrderRuleExamples {
                     Text("Hello, World!")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -237,7 +237,7 @@ enum FileTypesOrderRuleExamples {
                     Text("Hello, World!")
                 }
             }
-            """
+            """,
         ),
     ]
 }

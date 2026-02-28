@@ -22,7 +22,7 @@ private extension Rule {
     func superfluousDisableCommandViolations(
         regions: [Region],
         superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
-        allViolations: [StyleViolation]
+        allViolations: [StyleViolation],
     ) -> [StyleViolation] {
         guard regions.isNotEmpty, let superfluousDisableCommandRule else {
             return []
@@ -36,7 +36,9 @@ private extension Rule {
 
         var superfluousDisableCommandViolations = [StyleViolation]()
         for region in regions {
-            if regionsDisablingSuperfluousDisableRule.contains(where: { $0.contains(region.start) }) {
+            if regionsDisablingSuperfluousDisableRule
+                .contains(where: { $0.contains(region.start) })
+            {
                 continue
             }
             guard let disabledRuleIdentifier = region.disabledRuleIdentifiers.first else {
@@ -54,15 +56,15 @@ private extension Rule {
             }
             if !disableCommandValid {
                 let reason = superfluousDisableCommandRule.reason(
-                    forRuleIdentifier: disabledRuleIdentifier.stringRepresentation
+                    forRuleIdentifier: disabledRuleIdentifier.stringRepresentation,
                 )
                 superfluousDisableCommandViolations.append(
                     StyleViolation(
                         ruleDescription: type(of: superfluousDisableCommandRule).description,
                         severity: superfluousDisableCommandRule.configuration.severity,
                         location: region.start,
-                        reason: reason
-                    )
+                        reason: reason,
+                    ),
                 )
             }
         }
@@ -105,7 +107,7 @@ private extension Rule {
         benchmark: Bool,
         storage: RuleStorage,
         superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
-        compilerArguments: [String]
+        compilerArguments: [String],
     ) -> LintResult {
         let ruleID = Self.identifier
 
@@ -121,7 +123,7 @@ private extension Rule {
                 benchmark: benchmark,
                 storage: storage,
                 superfluousDisableCommandRule: superfluousDisableCommandRule,
-                compilerArguments: compilerArguments
+                compilerArguments: compilerArguments,
             )
         }
     }
@@ -133,7 +135,7 @@ private extension Rule {
         benchmark: Bool,
         storage: RuleStorage,
         superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
-        compilerArguments: [String]
+        compilerArguments: [String],
     ) -> LintResult {
         let ruleID = Self.identifier
 
@@ -148,14 +150,15 @@ private extension Rule {
             ruleTime = nil
         }
 
-        let (disabledViolationsAndRegions, enabledViolationsAndRegions) = violations.map { violation in
-            (violation, regions.first { $0.contains(violation.location) })
-        }.partitioned { violation, region in
-            if let region {
-                return isEnabled(in: region, for: violation.ruleIdentifier)
+        let (disabledViolationsAndRegions, enabledViolationsAndRegions) = violations
+            .map { violation in
+                (violation, regions.first { $0.contains(violation.location) })
+            }.partitioned { violation, region in
+                if let region {
+                    return isEnabled(in: region, for: violation.ruleIdentifier)
+                }
+                return true
             }
-            return true
-        }
 
         let customRulesIDs: [String] = {
             guard let customRules = self as? CustomRules else {
@@ -165,7 +168,9 @@ private extension Rule {
         }()
         let ruleIDs =
             Self.description.allIdentifiers + customRulesIDs
-                + (superfluousDisableCommandRule.map { type(of: $0) }?.description.allIdentifiers ?? []) + [
+                +
+                (superfluousDisableCommandRule.map { type(of: $0) }?.description
+                    .allIdentifiers ?? []) + [
                     RuleIdentifier.all.stringRepresentation,
                 ]
         let ruleIdentifiers = Set(ruleIDs.map { RuleIdentifier($0) })
@@ -174,11 +179,13 @@ private extension Rule {
             regions: regions.count > 1
                 ? file.regions(restrictingRuleIdentifiers: ruleIdentifiers) : regions,
             superfluousDisableCommandRule: superfluousDisableCommandRule,
-            allViolations: violations
+            allViolations: violations,
         )
 
         let enabledViolations: [StyleViolation]
-        if file.contents.hasPrefix("#!") { // if a violation happens on the same line as a shebang, ignore it
+        if file.contents
+            .hasPrefix("#!")
+        { // if a violation happens on the same line as a shebang, ignore it
             enabledViolations = enabledViolationsAndRegions.compactMap { violation, _ in
                 if violation.location.line == 1 { return nil }
                 return violation
@@ -195,7 +202,7 @@ private extension Rule {
         return LintResult(
             violations: enabledViolations + superfluousDisableCommandViolations,
             ruleTime: ruleTime,
-            deprecatedToValidIDPairs: deprecatedToValidIDPairs
+            deprecatedToValidIDPairs: deprecatedToValidIDPairs,
         )
     }
 }
@@ -219,13 +226,15 @@ private extension [Region] {
             {
                 if let lastRegionEnd, let start = startMap[ruleIdentifier] {
                     let newRegion = Region(
-                        start: start, end: lastRegionEnd, disabledRuleIdentifiers: [ruleIdentifier]
+                        start: start, end: lastRegionEnd, disabledRuleIdentifiers: [ruleIdentifier],
                     )
                     convertedRegions.append(newRegion)
                     startMap[ruleIdentifier] = nil
                 }
             }
-            for ruleIdentifier in region.disabledRuleIdentifiers where startMap[ruleIdentifier] == nil {
+            for ruleIdentifier in region.disabledRuleIdentifiers
+                where startMap[ruleIdentifier] == nil
+            {
                 startMap[ruleIdentifier] = region.start
             }
             if region.disabledRuleIdentifiers.isEmpty {
@@ -237,7 +246,11 @@ private extension [Region] {
         let end = Location(file: first?.start.file, line: .max, character: .max)
         for ruleIdentifier in startMap.keys.sorted() {
             if let start = startMap[ruleIdentifier] {
-                let newRegion = Region(start: start, end: end, disabledRuleIdentifiers: [ruleIdentifier])
+                let newRegion = Region(
+                    start: start,
+                    end: end,
+                    disabledRuleIdentifiers: [ruleIdentifier],
+                )
                 convertedRegions.append(newRegion)
                 startMap[ruleIdentifier] = nil
             }
@@ -277,7 +290,7 @@ struct Linter: @unchecked Sendable {
         file: SwiftLintFile,
         configuration: Configuration = Configuration.default,
         cache: LinterCache? = nil,
-        compilerArguments: [String] = []
+        compilerArguments: [String] = [],
     ) {
         self.file = file
         self.cache = cache
@@ -352,7 +365,7 @@ struct CollectedLinter: @unchecked Sendable {
 
     private func getStyleViolations(
         using storage: RuleStorage,
-        benchmark: Bool = false
+        benchmark: Bool = false,
     ) -> ([StyleViolation], [(id: String, time: Double)]) {
         guard !rules.isEmpty else {
             // Nothing to validate if there are no active rules!
@@ -373,15 +386,16 @@ struct CollectedLinter: @unchecked Sendable {
                 file: file, regions: regions, benchmark: benchmark,
                 storage: storage,
                 superfluousDisableCommandRule: superfluousDisableCommandRule,
-                compilerArguments: compilerArguments
+                compilerArguments: compilerArguments,
             )
         }
         let undefinedSuperfluousCommandViolations = undefinedSuperfluousCommandViolations(
             regions: regions, configuration: configuration,
-            superfluousDisableCommandRule: superfluousDisableCommandRule
+            superfluousDisableCommandRule: superfluousDisableCommandRule,
         )
 
-        let violations = validationResults.flatMap(\.violations) + undefinedSuperfluousCommandViolations
+        let violations = validationResults
+            .flatMap(\.violations) + undefinedSuperfluousCommandViolations
         let ruleTimes = validationResults.compactMap(\.ruleTime)
         var deprecatedToValidIdentifier = [String: String]()
         for (key, value) in validationResults.flatMap(\.deprecatedToValidIDPairs) {
@@ -403,7 +417,7 @@ struct CollectedLinter: @unchecked Sendable {
     }
 
     private func cachedStyleViolations(benchmark: Bool = false) -> (
-        [StyleViolation], [(id: String, time: Double)]
+        [StyleViolation], [(id: String, time: Double)],
     )? {
         let start = Date()
         guard let cache, let file = file.path,
@@ -438,7 +452,7 @@ struct CollectedLinter: @unchecked Sendable {
 
         if file.parserDiagnostics.isNotEmpty {
             queuedPrintError(
-                "warning: Skipping correcting file because it produced Swift parser errors: \(file.path ?? "<nopath>")"
+                "warning: Skipping correcting file because it produced Swift parser errors: \(file.path ?? "<nopath>")",
             )
             queuedPrintError(toJSON(["diagnostics": file.parserDiagnostics]))
             return [:]
@@ -452,7 +466,11 @@ struct CollectedLinter: @unchecked Sendable {
                 guard rule.shouldRun(onFile: file) else {
                     return nil
                 }
-                return rule.correct(file: file, using: storage, compilerArguments: compilerArguments)
+                return rule.correct(
+                    file: file,
+                    using: storage,
+                    compilerArguments: compilerArguments,
+                )
             }
             if let corrected = ruleCorrections, corrected != 0 {
                 corrections[type(of: rule).description.identifier] = corrected
@@ -472,7 +490,7 @@ struct CollectedLinter: @unchecked Sendable {
         let formattedContents = try? file.file.format(
             trimmingTrailingWhitespace: true,
             useTabs: useTabs,
-            indentWidth: indentWidth
+            indentWidth: indentWidth,
         )
         if let formattedContents {
             file.write(formattedContents)
@@ -482,7 +500,7 @@ struct CollectedLinter: @unchecked Sendable {
     private func undefinedSuperfluousCommandViolations(
         regions: [Region],
         configuration: Configuration,
-        superfluousDisableCommandRule: SuperfluousDisableCommandRule?
+        superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
     ) -> [StyleViolation] {
         guard regions.isNotEmpty, let superfluousDisableCommandRule else {
             return []
@@ -506,7 +524,8 @@ struct CollectedLinter: @unchecked Sendable {
                     ruleDescription: type(of: superfluousDisableCommandRule).description,
                     severity: superfluousDisableCommandRule.configuration.severity,
                     location: region.start,
-                    reason: superfluousDisableCommandRule.reason(forNonExistentRule: id.stringRepresentation)
+                    reason: superfluousDisableCommandRule
+                        .reason(forNonExistentRule: id.stringRepresentation),
                 )
             }
         }

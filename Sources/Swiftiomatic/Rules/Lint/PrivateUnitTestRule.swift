@@ -17,7 +17,7 @@ struct PrivateUnitTestRule: Rule {
                     internal func test2() {}
                     public func test3() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -26,7 +26,7 @@ struct PrivateUnitTestRule: Rule {
                     internal func test2() {}
                     public func test3() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -35,7 +35,7 @@ struct PrivateUnitTestRule: Rule {
                     internal func test2() {}
                     public func test3() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -44,7 +44,7 @@ struct PrivateUnitTestRule: Rule {
                     internal func test2() {}
                     public func test3() {}
                 }
-                """
+                """,
             ),
             // Non-test classes
             Example(
@@ -54,7 +54,7 @@ struct PrivateUnitTestRule: Rule {
                     internal func test2() {}
                     public func test3() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -63,7 +63,7 @@ struct PrivateUnitTestRule: Rule {
                     internal func test2() {}
                     public func test3() {}
                 }
-                """
+                """,
             ),
             // Non-test methods
             Example(
@@ -74,7 +74,7 @@ struct PrivateUnitTestRule: Rule {
                     private func atest() {}
                     private static func test3() {}
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -86,7 +86,7 @@ struct PrivateUnitTestRule: Rule {
                     public func test3() {}
                     private func test4() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -96,7 +96,7 @@ struct PrivateUnitTestRule: Rule {
                     public func test3() {}
                     private ↓func test4() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -106,7 +106,7 @@ struct PrivateUnitTestRule: Rule {
                     public func test3() {}
                     private ↓func test4() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -116,7 +116,7 @@ struct PrivateUnitTestRule: Rule {
                     public func test3() {}
                     private ↓func test4() {}
                 }
-                """
+                """,
             ),
         ],
         corrections: [
@@ -124,12 +124,12 @@ struct PrivateUnitTestRule: Rule {
                 """
 
                 ↓private class Test: XCTestCase {}
-                """
+                """,
             ): Example(
                 """
 
                 class Test: XCTestCase {}
-                """
+                """,
             ),
             Example(
                 """
@@ -140,7 +140,7 @@ struct PrivateUnitTestRule: Rule {
                     @objc private func test3() {}
                     internal func test4() {}
                 }
-                """
+                """,
             ): Example(
                 """
                 class Test: XCTestCase {
@@ -150,9 +150,9 @@ struct PrivateUnitTestRule: Rule {
                     @objc private func test3() {}
                     internal func test4() {}
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -197,7 +197,7 @@ private extension PrivateUnitTestRule {
             }
             numberOfCorrections += 1
             let (modifiers, declKeyword) = withoutPrivate(
-                modifiers: node.modifiers, declKeyword: node.classKeyword
+                modifiers: node.modifiers, declKeyword: node.classKeyword,
             )
             return super.visit(node.with(\.modifiers, modifiers).with(\.classKeyword, declKeyword))
         }
@@ -208,14 +208,14 @@ private extension PrivateUnitTestRule {
             }
             numberOfCorrections += 1
             let (modifiers, declKeyword) = withoutPrivate(
-                modifiers: node.modifiers, declKeyword: node.funcKeyword
+                modifiers: node.modifiers, declKeyword: node.funcKeyword,
             )
             return super.visit(node.with(\.modifiers, modifiers).with(\.funcKeyword, declKeyword))
         }
 
         private func withoutPrivate(
             modifiers: DeclModifierListSyntax,
-            declKeyword: TokenSyntax
+            declKeyword: TokenSyntax,
         ) -> (DeclModifierListSyntax, TokenSyntax) {
             var filteredModifiers = [DeclModifierSyntax]()
             var leadingTrivia = Trivia()
@@ -224,12 +224,15 @@ private extension PrivateUnitTestRule {
                 if modifier.name.tokenKind == .keyword(.private) {
                     leadingTrivia = accumulatedLeadingTrivia
                 } else {
-                    filteredModifiers.append(modifier.with(\.leadingTrivia, accumulatedLeadingTrivia))
+                    filteredModifiers.append(modifier.with(
+                        \.leadingTrivia,
+                        accumulatedLeadingTrivia,
+                    ))
                     leadingTrivia = Trivia()
                 }
             }
             let declKeyword = declKeyword.with(
-                \.leadingTrivia, leadingTrivia + (declKeyword.leadingTrivia)
+                \.leadingTrivia, leadingTrivia + (declKeyword.leadingTrivia),
             )
             return (DeclModifierListSyntax(filteredModifiers), declKeyword)
         }
@@ -256,7 +259,7 @@ private extension FunctionDeclSyntax {
 }
 
 private func resultInPrivateProperty(
-    modifiers: DeclModifierListSyntax, attributes: AttributeListSyntax
+    modifiers: DeclModifierListSyntax, attributes: AttributeListSyntax,
 ) -> Bool {
     modifiers.contains(keyword: .private) && !attributes.contains(attributeNamed: "objc")
 }

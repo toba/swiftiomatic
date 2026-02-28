@@ -38,14 +38,14 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOptionType {
         excluded: [String] = [],
         allowedSymbols: [String] = [],
         unallowedSymbolsSeverity: Severity = .error,
-        validatesStartWithLowercase: StartWithLowercaseConfiguration = .error
+        validatesStartWithLowercase: StartWithLowercaseConfiguration = .error,
     ) {
         minLength = SeverityLevels(warning: minLengthWarning, error: minLengthError)
         maxLength = SeverityLevels(warning: maxLengthWarning, error: maxLengthError)
         excludedRegularExpressions = Set(
             excluded.compactMap {
                 try? RegularExpression(pattern: "^\($0)$")
-            }
+            },
         )
         self.allowedSymbols = Set(allowedSymbols)
         self.unallowedSymbolsSeverity = unallowedSymbolsSeverity
@@ -67,7 +67,7 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOptionType {
             excludedRegularExpressions = Set(
                 excluded.compactMap {
                     try? RegularExpression(pattern: "^\($0)$")
-                }
+                },
             )
         }
         if let allowedSymbols = [String].array(of: configurationDict[$allowedSymbols.key]) {
@@ -107,8 +107,6 @@ extension NameConfiguration {
 
 extension NameConfiguration {
     func shouldExclude(name: String) -> Bool {
-        excludedRegularExpressions.contains {
-            !$0.regex.matches(in: name, options: [], range: NSRange(name.startIndex..., in: name)).isEmpty
-        }
+        excludedRegularExpressions.contains { $0.hasMatch(in: name) }
     }
 }

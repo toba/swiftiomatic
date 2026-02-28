@@ -32,9 +32,9 @@ struct DiscouragedDirectInitRule: Rule {
             Example("let foo = ↓UIDevice.init()"),
             Example("let foo = ↓Bundle.init()"),
             Example(
-                "let foo = bar(bundle: ↓Bundle.init(), device: ↓UIDevice.init(), error: ↓NSError.init())"
+                "let foo = bar(bundle: ↓Bundle.init(), device: ↓UIDevice.init(), error: ↓NSError.init())",
             ),
-        ]
+        ],
     )
 }
 

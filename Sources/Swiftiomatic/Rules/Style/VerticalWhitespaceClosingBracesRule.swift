@@ -12,10 +12,10 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule, OptInRule {
         nonTriggeringExamples: VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples
             .values.sorted() + VerticalWhitespaceClosingBracesRuleExamples.nonTriggeringExamples,
         triggeringExamples: Array(
-            VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples.keys.sorted()
+            VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples.keys.sorted(),
         ),
         corrections: VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples
-            .removingViolationMarkers()
+            .removingViolationMarkers(),
     )
 
     private let pattern = "((?:\\n[ \\t]*)+)(\\n[ \\t]*[)}\\]])"
@@ -28,10 +28,10 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule, OptInRule {
 
         return file.violatingRanges(for: pattern).map { violationRange in
             let substring = file.contents.substring(
-                from: violationRange.location, length: violationRange.length
+                from: violationRange.location, length: violationRange.length,
             )
             let matchResult = patternRegex.firstMatch(
-                in: substring, options: [], range: substring.fullNSRange
+                in: substring, options: [], range: substring.fullNSRange,
             )!
             let violatingSubrange = matchResult.range(at: 1)
             let characterOffset = violationRange.location + violatingSubrange.location + 1
@@ -39,7 +39,7 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule, OptInRule {
             return StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severityConfiguration.severity,
-                location: Location(file: file, characterOffset: characterOffset)
+                location: Location(file: file, characterOffset: characterOffset),
             )
         }
     }
@@ -47,7 +47,7 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule, OptInRule {
     func correct(file: SwiftLintFile) -> Int {
         let pattern = configuration.onlyEnforceBeforeTrivialLines ? trivialLinePattern : pattern
         let violatingRanges = file.ruleEnabled(
-            violatingRanges: file.violatingRanges(for: pattern), for: self
+            violatingRanges: file.violatingRanges(for: pattern), for: self,
         )
         guard violatingRanges.isNotEmpty else {
             return 0
@@ -59,7 +59,7 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule, OptInRule {
                 in: fileContents,
                 options: [],
                 range: violationRange,
-                withTemplate: "$2"
+                withTemplate: "$2",
             )
         }
         file.write(fileContents)
@@ -76,7 +76,7 @@ private extension SwiftLintFile {
 extension VerticalWhitespaceClosingBracesRule {
     private static let _postMessage: Void = {
         Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
         ).print()
     }()
 

@@ -18,14 +18,14 @@ struct PreferTypeCheckingRule: Rule {
                 if foo is Bar {
                     doSomeThing()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 if let bar = foo as? Bar {
                     foo.run()
                 }
-                """
+                """,
             ),
             Example("bar as Foo != nil"),
             Example("nil != bar as Foo"),
@@ -40,7 +40,7 @@ struct PreferTypeCheckingRule: Rule {
                 if foo ↓as? Bar != nil {
                     doSomeThing()
                 }
-                """
+                """,
             ),
             Example("nil != bar ↓as? Foo"),
             Example("nil != 2*x ↓as? X"),
@@ -54,15 +54,15 @@ struct PreferTypeCheckingRule: Rule {
                 if foo ↓as? Bar != nil {
                     doSomeThing()
                 }
-                """
+                """,
             ): Example(
                 """
                 if foo is Bar {
                     doSomeThing()
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -111,7 +111,8 @@ private extension InfixOperatorExprSyntax {
         if let asExpr = leftOperand.as(AsExprSyntax.self) ?? rightOperand.as(AsExprSyntax.self),
            asExpr.questionOrExclamationMark?.tokenKind == .postfixQuestionMark,
            !asExpr.type.is(OptionalTypeSyntax.self),
-           `operator`.as(BinaryOperatorExprSyntax.self)?.operator.tokenKind == .binaryOperator("!="),
+           `operator`.as(BinaryOperatorExprSyntax.self)?.operator
+           .tokenKind == .binaryOperator("!="),
            rightOperand.is(NilLiteralExprSyntax.self) || leftOperand.is(NilLiteralExprSyntax.self)
         {
             asExpr

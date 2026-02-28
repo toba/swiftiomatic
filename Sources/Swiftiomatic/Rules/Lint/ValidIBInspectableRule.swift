@@ -16,49 +16,49 @@ struct ValidIBInspectableRule: Rule {
                 class Foo {
                   @IBInspectable private var x: Int
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   @IBInspectable private var x: String?
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   @IBInspectable private var x: String!
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   @IBInspectable private var count: Int = 0
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   private var notInspectable = 0
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   private let notInspectable: Int
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   private let notInspectable: UInt8
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -73,7 +73,7 @@ struct ValidIBInspectableRule: Rule {
                         }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -84,7 +84,7 @@ struct ValidIBInspectableRule: Rule {
                         }
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -93,51 +93,51 @@ struct ValidIBInspectableRule: Rule {
                 class Foo {
                   @IBInspectable private ↓let count: Int
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var insets: UIEdgeInsets
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var count = 0
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var count: Int?
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var count: Int!
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var count: Optional<Int>
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var x: Optional<String>
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 
     fileprivate static let supportedTypes: Set<String> = {

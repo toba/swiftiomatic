@@ -29,7 +29,13 @@ final class DeadSymbolsCheck: BaseCheck {
         let loc = node.startLocation(converter: .init(fileName: filePath, tree: node.root))
         let name = node.baseName.text
         let usr = findUSR(for: name, line: loc.line, column: loc.column)
-        symbolTable.markReferenced(name, usr: usr, from: filePath, line: loc.line, column: loc.column)
+        symbolTable.markReferenced(
+            name,
+            usr: usr,
+            from: filePath,
+            line: loc.line,
+            column: loc.column,
+        )
         return .visitChildren
     }
 
@@ -37,7 +43,13 @@ final class DeadSymbolsCheck: BaseCheck {
         let loc = node.startLocation(converter: .init(fileName: filePath, tree: node.root))
         let name = node.declName.baseName.text
         let usr = findUSR(for: name, line: loc.line, column: loc.column)
-        symbolTable.markReferenced(name, usr: usr, from: filePath, line: loc.line, column: loc.column)
+        symbolTable.markReferenced(
+            name,
+            usr: usr,
+            from: filePath,
+            line: loc.line,
+            column: loc.column,
+        )
         return .visitChildren
     }
 
@@ -63,8 +75,8 @@ final class DeadSymbolsCheck: BaseCheck {
                     column: symbol.column,
                     message: "Dead private \(symbol.kind): '\(symbol.name)' — no references found",
                     suggestion: "Remove if unused, or change visibility if needed elsewhere",
-                    confidence: .high
-                )
+                    confidence: .high,
+                ),
             )
         }
 
@@ -95,7 +107,7 @@ final class DeclarationCollector: SyntaxVisitor {
             file: filePath,
             line: loc.line,
             column: loc.column,
-            usr: findUSR(for: node.name.text, line: loc.line, column: loc.column)
+            usr: findUSR(for: node.name.text, line: loc.line, column: loc.column),
         )
         return .visitChildren
     }
@@ -113,7 +125,7 @@ final class DeclarationCollector: SyntaxVisitor {
                 file: filePath,
                 line: loc.line,
                 column: loc.column,
-                usr: findUSR(for: name, line: loc.line, column: loc.column)
+                usr: findUSR(for: name, line: loc.line, column: loc.column),
             )
         }
         return .visitChildren
@@ -125,7 +137,7 @@ final class DeclarationCollector: SyntaxVisitor {
         symbolTable.addDeclaration(
             name: node.name.text, kind: "class", file: filePath,
             line: loc.line, column: loc.column,
-            usr: findUSR(for: node.name.text, line: loc.line, column: loc.column)
+            usr: findUSR(for: node.name.text, line: loc.line, column: loc.column),
         )
         return .visitChildren
     }
@@ -136,7 +148,7 @@ final class DeclarationCollector: SyntaxVisitor {
         symbolTable.addDeclaration(
             name: node.name.text, kind: "struct", file: filePath,
             line: loc.line, column: loc.column,
-            usr: findUSR(for: node.name.text, line: loc.line, column: loc.column)
+            usr: findUSR(for: node.name.text, line: loc.line, column: loc.column),
         )
         return .visitChildren
     }
@@ -147,7 +159,7 @@ final class DeclarationCollector: SyntaxVisitor {
         symbolTable.addDeclaration(
             name: node.name.text, kind: "enum", file: filePath,
             line: loc.line, column: loc.column,
-            usr: findUSR(for: node.name.text, line: loc.line, column: loc.column)
+            usr: findUSR(for: node.name.text, line: loc.line, column: loc.column),
         )
         return .visitChildren
     }
@@ -212,21 +224,27 @@ final class SymbolTable: Sendable {
     init() {}
 
     func addDeclaration(
-        name: String, kind: String, file: String, line: Int, column: Int, usr: String? = nil
+        name: String, kind: String, file: String, line: Int, column: Int, usr: String? = nil,
     ) {
         state.withLock { symbols in
             var list = symbols[name, default: []]
             list.append(
                 SymbolEntry(
                     name: name, kind: kind, file: file,
-                    line: line, column: column, usr: usr
-                )
+                    line: line, column: column, usr: usr,
+                ),
             )
             symbols[name] = list
         }
     }
 
-    func markReferenced(_ name: String, usr: String? = nil, from file: String, line: Int, column: Int) {
+    func markReferenced(
+        _ name: String,
+        usr: String? = nil,
+        from file: String,
+        line: Int,
+        column: Int,
+    ) {
         state.withLock { symbols in
             guard var list = symbols[name] else { return }
             for i in list.indices {

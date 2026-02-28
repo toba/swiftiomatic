@@ -9,7 +9,7 @@ extension URL {
         withUnsafeFileSystemRepresentation { ptr in
             guard let ptr else {
                 Issue.genericError(
-                    "File with URL '\(self)' cannot be represented as a file system path; skipping it"
+                    "File with URL '\(self)' cannot be represented as a file system path; skipping it",
                 ).print()
                 return nil
             }

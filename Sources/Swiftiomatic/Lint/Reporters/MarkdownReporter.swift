@@ -35,10 +35,10 @@ struct MarkdownReporter: Reporter {
 
     private static func severity(for severity: ViolationSeverity) -> String {
         switch severity {
-        case .error:
-            return ":stop\\_sign:"
-        case .warning:
-            return ":warning:"
+            case .error:
+                return ":stop\\_sign:"
+            case .warning:
+                return ":warning:"
         }
     }
 }

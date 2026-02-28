@@ -12,14 +12,14 @@ struct MultilineArgumentsBracketsRule: Rule {
             Example(
                 """
                 foo(param1: "Param1", param2: "Param2", param3: "Param3")
-                """
+                """,
             ),
             Example(
                 """
                 foo(
                     param1: "Param1", param2: "Param2", param3: "Param3"
                 )
-                """
+                """,
             ),
             Example(
                 """
@@ -28,14 +28,14 @@ struct MultilineArgumentsBracketsRule: Rule {
                     param2: "Param2",
                     param3: "Param3"
                 )
-                """
+                """,
             ),
             Example(
                 """
                 foo { param1, param2 in
                     print("hello world")
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -45,21 +45,21 @@ struct MultilineArgumentsBracketsRule: Rule {
                         y: 7
                     )
                 )
-                """
+                """,
             ),
             Example(
                 """
                 AlertViewModel.AlertAction(title: "some title", style: .default) {
                     AlertManager.shared.presentNextDebugAlert()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 views.append(ViewModel(title: "MacBook", subtitle: "M1", action: { [weak self] in
                     print("action tapped")
                 }))
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
@@ -69,35 +69,35 @@ struct MultilineArgumentsBracketsRule: Rule {
                         ErrorLoggerOutput()
                     ])
                 }
-                """
+                """,
             ),
             Example(
                 """
                 let errors = try self.download([
                     (description: description, priority: priority),
                 ])
-                """
+                """,
             ),
             Example(
                 """
                 return SignalProducer({ observer, _ in
                     observer.sendCompleted()
                 }).onMainQueue()
-                """
+                """,
             ),
             Example(
                 """
                 SomeType(a: [
                     1, 2, 3
                 ], b: [1, 2])
-                """
+                """,
             ),
             Example(
                 """
                 SomeType(
                   a: 1
                 ) { print("completion") }
-                """
+                """,
             ),
             Example(
                 """
@@ -106,14 +106,14 @@ struct MultilineArgumentsBracketsRule: Rule {
                 ) {
                   print("completion")
                 }
-                """
+                """,
             ),
             Example(
                 """
                 SomeType(
                   a: .init() { print("completion") }
                 )
-                """
+                """,
             ),
             Example(
                 """
@@ -122,14 +122,14 @@ struct MultilineArgumentsBracketsRule: Rule {
                     print("completion")
                   }
                 )
-                """
+                """,
             ),
             Example(
                 """
                 SomeType(
                   a: 1
                 ) {} onError: {}
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -138,7 +138,7 @@ struct MultilineArgumentsBracketsRule: Rule {
                 foo(↓param1: "Param1", param2: "Param2",
                          param3: "Param3"
                 )
-                """
+                """,
             ),
             Example(
                 """
@@ -146,14 +146,14 @@ struct MultilineArgumentsBracketsRule: Rule {
                     param1: "Param1",
                     param2: "Param2",
                     param3: "Param3"↓)
-                """
+                """,
             ),
             Example(
                 """
                 foo(↓param1: "Param1",
                     param2: "Param2",
                     param3: "Param3"↓)
-                """
+                """,
             ),
             Example(
                 """
@@ -162,7 +162,7 @@ struct MultilineArgumentsBracketsRule: Rule {
                     y: 7
                 )
                 )
-                """
+                """,
             ),
             Example(
                 """
@@ -171,7 +171,7 @@ struct MultilineArgumentsBracketsRule: Rule {
                         x: 5,
                         y: 7
                 )↓)
-                """
+                """,
             ),
             Example(
                 """
@@ -179,13 +179,13 @@ struct MultilineArgumentsBracketsRule: Rule {
                         1, 2, 3
                     ],
                     b: "two"↓)
-                """
+                """,
             ),
             Example(
                 """
                 SomeOtherType(
                   a: 1↓) {}
-                """
+                """,
             ),
             Example(
                 """
@@ -193,7 +193,7 @@ struct MultilineArgumentsBracketsRule: Rule {
                   a: 1↓) {
                   print("completion")
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -201,9 +201,9 @@ struct MultilineArgumentsBracketsRule: Rule {
                     title: "MacBook", subtitle: "M1", action: { [weak self] in
                     print("action tapped")
                 }↓))
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
-        ]
+        ],
     )
 }
 

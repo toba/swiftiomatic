@@ -18,7 +18,7 @@ struct OptionalDataStringConversionRule: Rule {
         ],
         triggeringExamples: [
             Example("String(decoding: data, as: UTF8.self)"),
-        ]
+        ],
     )
 }
 

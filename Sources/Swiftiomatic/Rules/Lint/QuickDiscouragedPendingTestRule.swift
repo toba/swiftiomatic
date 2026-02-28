@@ -9,7 +9,7 @@ struct QuickDiscouragedPendingTestRule: Rule {
         description: "This test won't run as long as it's marked pending",
         kind: .lint,
         nonTriggeringExamples: QuickDiscouragedPendingTestRuleExamples.nonTriggeringExamples,
-        triggeringExamples: QuickDiscouragedPendingTestRuleExamples.triggeringExamples
+        triggeringExamples: QuickDiscouragedPendingTestRuleExamples.triggeringExamples,
     )
 }
 

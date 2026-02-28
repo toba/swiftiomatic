@@ -19,9 +19,9 @@ struct PerformanceAntiPatternsRule: Rule {
                 for item in ↓items {
                     items.remove(at: 0)
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -50,8 +50,8 @@ private extension PerformanceAntiPatternsRule {
                             reason: "Date() used for timing — can go backwards due to NTP adjustments",
                             severity: .warning,
                             confidence: .medium,
-                            suggestion: "Use ContinuousClock.now for monotonic timing"
-                        )
+                            suggestion: "Use ContinuousClock.now for monotonic timing",
+                        ),
                     )
                 }
             }
@@ -63,7 +63,7 @@ private extension PerformanceAntiPatternsRule {
 
             let mutationFinder = MutationDuringIterationFinder(
                 collectionName: collectionName,
-                viewMode: .sourceAccurate
+                viewMode: .sourceAccurate,
             )
             mutationFinder.walk(node.body)
 
@@ -75,8 +75,8 @@ private extension PerformanceAntiPatternsRule {
                         "Collection '\(collectionName)' is mutated during iteration — may crash or skip elements",
                         severity: .error,
                         confidence: .high,
-                        suggestion: "Use removeAll(where:), filter, or collect indices first"
-                    )
+                        suggestion: "Use removeAll(where:), filter, or collect indices first",
+                    ),
                 )
             }
         }
@@ -91,11 +91,12 @@ private extension PerformanceAntiPatternsRule {
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason: elementCount == 0
                         ? "Empty array literal may heap-allocate when passed to generic Collection/Sequence parameter"
-                        : "Single-element array literal may heap-allocate when passed to generic Collection/Sequence parameter",
+                        :
+                        "Single-element array literal may heap-allocate when passed to generic Collection/Sequence parameter",
                     severity: .warning,
                     confidence: .low,
-                    suggestion: "Consider \(label) for zero-allocation alternative"
-                )
+                    suggestion: "Consider \(label) for zero-allocation alternative",
+                ),
             )
         }
     }

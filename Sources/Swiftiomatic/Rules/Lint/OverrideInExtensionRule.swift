@@ -18,7 +18,7 @@ struct OverrideInExtensionRule: OptInRule, SwiftSyntaxRule {
                 extension Foo {
                     override var description: String { return "" }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -28,7 +28,7 @@ struct OverrideInExtensionRule: OptInRule, SwiftSyntaxRule {
                 extension Foo.Bar {
                     override var description: String { return "" }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -37,24 +37,24 @@ struct OverrideInExtensionRule: OptInRule, SwiftSyntaxRule {
                 extension Person {
                     override func celebrateBirthday() {}
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
             Example("extension Person {\n  override ↓var age: Int { return 42 }\n}"),
             Example("extension Person {\n  override ↓func celebrateBirthday() {}\n}"),
-        ]
+        ],
     )
 
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         let allowedExtensions = ClassNameCollectingVisitor(
             configuration: configuration,
-            file: file
+            file: file,
         ).walk(tree: file.syntaxTree, handler: \.classNames)
         return Visitor(
             configuration: configuration,
             file: file,
-            allowedExtensions: allowedExtensions
+            allowedExtensions: allowedExtensions,
         )
     }
 }
@@ -66,7 +66,7 @@ private extension OverrideInExtensionRule {
         init(
             configuration: ConfigurationType,
             file: SwiftLintFile,
-            allowedExtensions: Set<String>
+            allowedExtensions: Set<String>,
         ) {
             self.allowedExtensions = allowedExtensions
             super.init(configuration: configuration, file: file)

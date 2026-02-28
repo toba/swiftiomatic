@@ -1,16 +1,8 @@
-//
-//  PreferKeyPath.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 7/29/20.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let preferKeyPath = FormatRule(
-        help: "Convert trivial `map { $0.foo }` closures to keyPath-based syntax."
+        help: "Convert trivial `map { $0.foo }` closures to keyPath-based syntax.",
     ) { formatter in
         formatter.forEach(.startOfScope("{")) { i, _ in
             guard formatter.options.swiftVersion >= "5.2",
@@ -34,12 +26,13 @@ extension FormatRule {
                 prevToken = formatter.last(.nonSpaceOrLinebreak, before: prevIndex) ?? prevToken
             }
             guard case let .identifier(name) = prevToken,
-                  ["map", "flatMap", "compactMap", "allSatisfy", "filter", "contains"].contains(name),
+                  ["map", "flatMap", "compactMap", "allSatisfy", "filter", "contains"]
+                  .contains(name),
                   let nextIndex = formatter.index(
                       of: .nonSpaceOrLinebreak, after: i,
                       if: {
                           $0 == .identifier("$0")
-                      }
+                      },
                   ),
                   let endIndex = formatter.endOfScope(at: i),
                   let lastIndex = formatter.index(of: .nonSpaceOrLinebreak, before: endIndex)
@@ -65,13 +58,15 @@ extension FormatRule {
                 replacementTokens = tokenize("\\.self")
             } else {
                 let tokens = formatter.tokens[nextIndex + 1 ... lastIndex]
-                guard tokens.allSatisfy({ $0.isSpace || $0.isIdentifier || $0.isOperator(".") }) else {
+                guard tokens.allSatisfy({ $0.isSpace || $0.isIdentifier || $0.isOperator(".") })
+                else {
                     return
                 }
                 replacementTokens = [.operator("\\", .prefix)] + tokens
             }
             if let label {
-                replacementTokens = [.identifier(label), .delimiter(":"), .space(" ")] + replacementTokens
+                replacementTokens = [.identifier(label), .delimiter(":"), .space(" ")] +
+                    replacementTokens
             }
             if !parenthesized {
                 replacementTokens = [.startOfScope("(")] + replacementTokens + [.endOfScope(")")]

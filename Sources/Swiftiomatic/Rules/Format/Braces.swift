@@ -1,11 +1,3 @@
-//
-//  Braces.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 10/27/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -13,7 +5,7 @@ extension FormatRule {
     static let braces = FormatRule(
         help: "Wrap braces in accordance with selected style (K&R or Allman).",
         options: ["allman"],
-        sharedOptions: ["linebreaks", "max-width", "indent", "tab-width", "asset-literals"]
+        sharedOptions: ["linebreaks", "max-width", "indent", "tab-width", "asset-literals"],
     ) { formatter in
         formatter.forEach(.startOfScope("{")) { i, _ in
             guard let closingBraceIndex = formatter.endOfScope(at: i),
@@ -37,22 +29,22 @@ extension FormatRule {
             if formatter.options.allmanBraces {
                 // Implement Allman-style braces, where opening brace appears on the next line
                 switch formatter.last(.nonSpace, before: i) ?? .space("") {
-                case .identifier, .keyword, .endOfScope, .number,
-                     .operator("?", .postfix), .operator("!", .postfix):
-                    formatter.insertLinebreak(at: i)
-                    if let breakIndex = formatter.index(of: .linebreak, after: i + 1),
-                       let nextIndex = formatter.index(
-                           of: .nonSpace, after: breakIndex, if: { $0.isLinebreak }
-                       )
-                    {
-                        formatter.removeTokens(in: breakIndex ..< nextIndex)
-                    }
-                    formatter.insertSpace(formatter.currentIndentForLine(at: i), at: i + 1)
-                    if formatter.tokens[i - 1].isSpace {
-                        formatter.removeToken(at: i - 1)
-                    }
-                default:
-                    break
+                    case .identifier, .keyword, .endOfScope, .number,
+                         .operator("?", .postfix), .operator("!", .postfix):
+                        formatter.insertLinebreak(at: i)
+                        if let breakIndex = formatter.index(of: .linebreak, after: i + 1),
+                           let nextIndex = formatter.index(
+                               of: .nonSpace, after: breakIndex, if: { $0.isLinebreak },
+                           )
+                        {
+                            formatter.removeTokens(in: breakIndex ..< nextIndex)
+                        }
+                        formatter.insertSpace(formatter.currentIndentForLine(at: i), at: i + 1)
+                        if formatter.tokens[i - 1].isSpace {
+                            formatter.removeToken(at: i - 1)
+                        }
+                    default:
+                        break
                 }
             } else {
                 // Implement K&R-style braces, where opening brace appears on the same line

@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
     SourceKitFreeRule
@@ -24,7 +24,7 @@ struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
                 protocol G {
                     associatedtype Model: Codable, Equatable
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -40,31 +40,37 @@ struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
                 protocol G {
                     associatedtype Model: Codable↓ & Equatable
                 }
-                """
+                """,
             ),
         ],
         corrections: [
-            Example("struct A: Codable↓ & Equatable {}"): Example("struct A: Codable, Equatable {}"),
-            Example("struct A: Codable↓  & Equatable {}"): Example("struct A: Codable, Equatable {}"),
+            Example("struct A: Codable↓ & Equatable {}"): Example(
+                "struct A: Codable, Equatable {}",
+            ),
+            Example("struct A: Codable↓  & Equatable {}"): Example(
+                "struct A: Codable, Equatable {}",
+            ),
             Example("struct A: Codable↓&Equatable {}"): Example("struct A: Codable, Equatable {}"),
             Example("struct A: Codable↓& Equatable {}"): Example("struct A: Codable, Equatable {}"),
             Example("enum B: Codable↓ & Equatable {}"): Example("enum B: Codable, Equatable {}"),
             Example("class C: Codable↓ & Equatable {}"): Example("class C: Codable, Equatable {}"),
-            Example("protocol D: Codable↓ & Equatable {}"): Example("protocol D: Codable, Equatable {}"),
+            Example("protocol D: Codable↓ & Equatable {}"): Example(
+                "protocol D: Codable, Equatable {}",
+            ),
             Example(
                 """
                 protocol G {
                     associatedtype Model: Codable↓ & Equatable
                 }
-                """
+                """,
             ): Example(
                 """
                 protocol G {
                     associatedtype Model: Codable, Equatable
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 
     // MARK: - Rule
@@ -74,7 +80,7 @@ struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: $0.location)
+                location: Location(file: file, characterOffset: $0.location),
             )
         }
     }
@@ -115,8 +121,8 @@ private final class CommaInheritanceRuleVisitor: SyntaxVisitor {
                 violationRanges.append(
                     ByteRange(
                         location: ByteCount(position),
-                        length: ByteCount(ampersand.endPosition.utf8Offset - position.utf8Offset)
-                    )
+                        length: ByteCount(ampersand.endPosition.utf8Offset - position.utf8Offset),
+                    ),
                 )
             }
         }

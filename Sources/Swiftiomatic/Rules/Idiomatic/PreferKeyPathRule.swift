@@ -65,13 +65,13 @@ struct PreferKeyPathRule: Rule {
                 """
                 // begin
                 f.map { $0.a } // end
-                """
+                """,
             ):
                 Example(
                     """
                     // begin
                     f.map(\\.a) // end
-                    """
+                    """,
                 ),
             Example("f.map({ $0.a })"):
                 Example("f.map(\\.a)"),
@@ -95,11 +95,12 @@ struct PreferKeyPathRule: Rule {
                 Example("f.drop(while: \\.a)"),
             Example("f.compactMap ↓{ $0.a.b.c.d }"):
                 Example("f.compactMap(\\.a.b.c.d)"),
-            Example("f { $0 }", configuration: extendedModeAndIgnoreIdentity): // no change with option enabled
+            Example("f { $0 }",
+                    configuration: extendedModeAndIgnoreIdentity): // no change with option enabled
                 Example("f { $0 }", configuration: extendedModeAndIgnoreIdentity),
             Example("f.map { $0 }", configuration: ignoreIdentity): // no change with option enabled
                 Example("f.map { $0 }", configuration: ignoreIdentity),
-        ]
+        ],
     )
 }
 
@@ -118,7 +119,9 @@ extension PreferKeyPathRule: OptInRule {}
 private extension PreferKeyPathRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: ClosureExprSyntax) {
-            if node.isInvalid(restrictToStandardFunctions: configuration.restrictToStandardFunctions) {
+            if node
+                .isInvalid(restrictToStandardFunctions: configuration.restrictToStandardFunctions)
+            {
                 return
             }
             if let onlyStmt = node.onlyExprStmt,
@@ -139,27 +142,32 @@ private extension PreferKeyPathRule {
         override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
             guard node.additionalTrailingClosures.isEmpty,
                   let closure = node.trailingClosure,
-                  !closure.isInvalid(restrictToStandardFunctions: configuration.restrictToStandardFunctions),
+                  !closure
+                  .isInvalid(restrictToStandardFunctions: configuration
+                      .restrictToStandardFunctions),
                   let expr = closure.onlyExprStmt,
                   expr.accesses(identifier: closure.onlyParameter) == true,
                   let replacement = expr.asKeyPath(
-                      ignoreIdentityClosures: configuration.ignoreIdentityClosures
+                      ignoreIdentityClosures: configuration.ignoreIdentityClosures,
                   ),
                   let calleeName = node.calleeName
             else {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            var node = node.with(\.calledExpression, node.calledExpression.with(\.trailingTrivia, []))
+            var node = node.with(
+                \.calledExpression,
+                node.calledExpression.with(\.trailingTrivia, []),
+            )
             if node.leftParen == nil {
                 node = node.with(\.leftParen, .leftParenToken())
             }
             let newArg = LabeledExprSyntax(
                 label: argumentLabelByStandardFunction[calleeName, default: nil],
-                expression: replacement
+                expression: replacement,
             )
             node = node.with(
-                \.arguments, [newArg]
+                \.arguments, [newArg],
             )
             if node.rightParen == nil {
                 node = node.with(\.rightParen, .rightParenToken())
@@ -172,13 +180,15 @@ private extension PreferKeyPathRule {
         }
 
         override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
-            if node.isInvalid(restrictToStandardFunctions: configuration.restrictToStandardFunctions) {
+            if node
+                .isInvalid(restrictToStandardFunctions: configuration.restrictToStandardFunctions)
+            {
                 return super.visit(node)
             }
             if let expr = node.onlyExprStmt,
                expr.accesses(identifier: node.onlyParameter) == true,
                let replacement = expr.asKeyPath(
-                   ignoreIdentityClosures: configuration.ignoreIdentityClosures
+                   ignoreIdentityClosures: configuration.ignoreIdentityClosures,
                )
             {
                 numberOfCorrections += 1
@@ -208,12 +218,12 @@ private extension ExprSyntax {
 private extension ClosureExprSyntax {
     var onlyParameter: String? {
         switch signature?.parameterClause {
-        case let .simpleInput(params):
-            return params.onlyElement?.name.text
-        case let .parameterClause(params):
-            let param = params.parameters.onlyElement
-            return param?.secondName?.text ?? param?.firstName.text
-        case nil: return nil
+            case let .simpleInput(params):
+                return params.onlyElement?.name.text
+            case let .parameterClause(params):
+                let param = params.parameters.onlyElement
+                return param?.secondName?.text ?? param?.firstName.text
+            case nil: return nil
         }
     }
 
@@ -232,7 +242,9 @@ private extension ClosureExprSyntax {
         else {
             return true
         }
-        if let call = parent.as(LabeledExprSyntax.self)?.parent?.parent?.as(FunctionCallExprSyntax.self) {
+        if let call = parent.as(LabeledExprSyntax.self)?.parent?.parent?
+            .as(FunctionCallExprSyntax.self)
+        {
             // Closure is function argument.
             return restrictToStandardFunctions && !call.isStandardFunction
         }
@@ -287,7 +299,9 @@ private extension ExprSyntax {
                 as ExprSyntax
         }
 
-        if !ignoreIdentityClosures, SwiftVersion.current >= .six, `is`(DeclReferenceExprSyntax.self) {
+        if !ignoreIdentityClosures, SwiftVersion.current >= .six,
+           `is`(DeclReferenceExprSyntax.self)
+        {
             return "\\.self"
         }
         return nil

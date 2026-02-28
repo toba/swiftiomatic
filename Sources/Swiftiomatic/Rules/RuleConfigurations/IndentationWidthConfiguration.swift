@@ -10,7 +10,7 @@ struct IndentationWidthConfiguration: SeverityBasedRuleConfiguration {
                 Issue.invalidConfiguration(ruleID: Parent.identifier).print()
                 $0 = Self.defaultIndentationWidth
             }
-        }
+        },
     )
     private(set) var indentationWidth = 4
     @ConfigurationElement(key: "include_comments")

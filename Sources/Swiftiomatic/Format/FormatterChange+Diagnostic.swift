@@ -12,7 +12,7 @@ extension Formatter.Change {
             column: 1,
             message: help,
             suggestion: nil,
-            canAutoFix: true
+            canAutoFix: true,
         )
     }
 }

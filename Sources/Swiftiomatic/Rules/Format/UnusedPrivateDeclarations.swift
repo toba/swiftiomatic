@@ -1,11 +1,3 @@
-//
-//  UnusedPrivateDeclarations.swift
-//  SwiftFormat
-//
-//  Created by Manny Lopez on 7/17/24.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -13,7 +5,7 @@ extension FormatRule {
     static let unusedPrivateDeclarations = FormatRule(
         help: "Remove unused private and fileprivate declarations.",
         disabledByDefault: true,
-        options: ["preserve-decls"]
+        options: ["preserve-decls"],
     ) { formatter in
         guard !formatter.options.fragment else { return }
 
@@ -43,10 +35,10 @@ extension FormatRule {
             else { return }
 
             switch declaration.visibility() {
-            case .fileprivate, .private:
-                privateDeclarations.append(declaration)
-            case .none, .open, .public, .package, .internal:
-                break
+                case .fileprivate, .private:
+                    privateDeclarations.append(declaration)
+                case .none, .open, .public, .package, .internal:
+                    break
             }
         }
 
@@ -62,7 +54,8 @@ extension FormatRule {
         // appears a single time in the source file
         for declaration in privateDeclarations {
             // Strip backticks from name for a normalized base name for cases like `default`
-            guard let name = declaration.name?.trimmingCharacters(in: CharacterSet(charactersIn: "`"))
+            guard let name = declaration.name?
+                .trimmingCharacters(in: CharacterSet(charactersIn: "`"))
             else { continue }
             // Check for regular usage, common property wrapper prefixes, and protected names
             let variants = [name, "_\(name)", "$\(name)", "`\(name)`"]

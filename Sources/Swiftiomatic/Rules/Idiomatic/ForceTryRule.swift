@@ -15,7 +15,7 @@ struct ForceTryRule: Rule {
                 do {
                   try a()
                 } catch {}
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -23,9 +23,9 @@ struct ForceTryRule: Rule {
                 """
                 func a() throws {}
                 ↓try! a()
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

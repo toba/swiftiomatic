@@ -23,7 +23,7 @@ struct LastWhereRule: Rule {
             Example("↓myList.filter(someFunction).last"),
             Example("↓myList.filter({ $0 % 2 == 0 })\n.last"),
             Example("(↓myList.filter { $0 == 1 }).last"),
-        ]
+        ],
     )
 }
 
@@ -41,7 +41,8 @@ private extension LastWhereRule {
             guard
                 node.declName.baseName.text == "last",
                 let functionCall = node.base?.asFunctionCall,
-                let calledExpression = functionCall.calledExpression.as(MemberAccessExprSyntax.self),
+                let calledExpression = functionCall.calledExpression
+                .as(MemberAccessExprSyntax.self),
                 calledExpression.declName.baseName.text == "filter",
                 !functionCall.arguments.contains(where: \.expression.shouldSkip)
             else {

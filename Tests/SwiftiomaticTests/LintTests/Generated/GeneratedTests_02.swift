@@ -1,204 +1,205 @@
 // GENERATED FILE. DO NOT EDIT!
 
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite struct ContainsOverFilterCountRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(ContainsOverFilterCountRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(ContainsOverFilterCountRule.description)
+  }
 }
 
 @Suite struct ContainsOverFilterIsEmptyRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(ContainsOverFilterIsEmptyRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(ContainsOverFilterIsEmptyRule.description)
+  }
 }
 
 @Suite struct ContainsOverFirstNotNilRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(ContainsOverFirstNotNilRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(ContainsOverFirstNotNilRule.description)
+  }
 }
 
 @Suite struct ContainsOverRangeNilComparisonRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(ContainsOverRangeNilComparisonRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(ContainsOverRangeNilComparisonRule.description)
+  }
 }
 
 @Suite struct ContrastedOpeningBraceRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(ContrastedOpeningBraceRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(ContrastedOpeningBraceRule.description)
+  }
 }
 
 @Suite struct ControlStatementRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(ControlStatementRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(ControlStatementRule.description)
+  }
 }
 
 @Suite struct ConvenienceTypeRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(ConvenienceTypeRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(ConvenienceTypeRule.description)
+  }
 }
 
 @Suite struct CyclomaticComplexityRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(CyclomaticComplexityRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(CyclomaticComplexityRule.description)
+  }
 }
 
 @Suite struct DeploymentTargetRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DeploymentTargetRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DeploymentTargetRule.description)
+  }
 }
 
 @Suite struct DirectReturnRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DirectReturnRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DirectReturnRule.description)
+  }
 }
 
 @Suite struct DiscardedNotificationCenterObserverRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DiscardedNotificationCenterObserverRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DiscardedNotificationCenterObserverRule.description)
+  }
 }
 
 @Suite struct DiscouragedAssertRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DiscouragedAssertRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DiscouragedAssertRule.description)
+  }
 }
 
 @Suite struct DiscouragedDirectInitRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DiscouragedDirectInitRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DiscouragedDirectInitRule.description)
+  }
 }
 
 @Suite struct DiscouragedNoneNameRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DiscouragedNoneNameRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DiscouragedNoneNameRule.description)
+  }
 }
 
 @Suite struct DiscouragedObjectLiteralRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DiscouragedObjectLiteralRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DiscouragedObjectLiteralRule.description)
+  }
 }
 
 @Suite struct DiscouragedOptionalBooleanRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DiscouragedOptionalBooleanRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DiscouragedOptionalBooleanRule.description)
+  }
 }
 
 @Suite struct DiscouragedOptionalCollectionRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DiscouragedOptionalCollectionRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DiscouragedOptionalCollectionRule.description)
+  }
 }
 
 @Suite struct DuplicateConditionsRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DuplicateConditionsRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DuplicateConditionsRule.description)
+  }
 }
 
 @Suite struct DuplicateEnumCasesRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DuplicateEnumCasesRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DuplicateEnumCasesRule.description)
+  }
 }
 
 @Suite struct DuplicateImportsRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DuplicateImportsRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DuplicateImportsRule.description)
+  }
 }
 
 @Suite struct DuplicatedKeyInDictionaryLiteralRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DuplicatedKeyInDictionaryLiteralRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DuplicatedKeyInDictionaryLiteralRule.description)
+  }
 }
 
 @Suite struct DynamicInlineRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(DynamicInlineRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(DynamicInlineRule.description)
+  }
 }
 
 @Suite struct EmptyCollectionLiteralRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(EmptyCollectionLiteralRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(EmptyCollectionLiteralRule.description)
+  }
 }
 
 @Suite struct EmptyCountRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(EmptyCountRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(EmptyCountRule.description)
+  }
 }
 
 @Suite struct EmptyEnumArgumentsRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
+  init() { RuleRegistry.registerAllRulesOnce() }
 
-    @Test func withDefaultConfiguration() {
-        verifyRule(EmptyEnumArgumentsRule.description)
-    }
+  @Test func withDefaultConfiguration() {
+    verifyRule(EmptyEnumArgumentsRule.description)
+  }
 }

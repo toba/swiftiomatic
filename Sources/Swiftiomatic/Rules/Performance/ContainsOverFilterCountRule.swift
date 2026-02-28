@@ -25,7 +25,7 @@ struct ContainsOverFilterCountRule: Rule {
                 Example("let result = ↓myList.filter { $0 % 2 == 0 }.count \(operation) 0"),
                 Example("let result = ↓myList.filter(where: someFunction).count \(operation) 0"),
             ]
-        }
+        },
     )
 }
 
@@ -49,7 +49,8 @@ private extension ContainsOverFilterCountRule {
                 let first = node.first?.as(MemberAccessExprSyntax.self),
                 first.declName.baseName.text == "count",
                 let firstBase = first.base?.asFunctionCall,
-                let firstBaseCalledExpression = firstBase.calledExpression.as(MemberAccessExprSyntax.self),
+                let firstBaseCalledExpression = firstBase.calledExpression
+                .as(MemberAccessExprSyntax.self),
                 firstBaseCalledExpression.declName.baseName.text == "filter"
             else {
                 return
@@ -62,6 +63,7 @@ private extension ContainsOverFilterCountRule {
 
 private extension TokenKind {
     var isZeroComparison: Bool {
-        self == .binaryOperator("==") || self == .binaryOperator("!=") || self == .binaryOperator(">")
+        self == .binaryOperator("==") || self == .binaryOperator("!=") || self ==
+            .binaryOperator(">")
     }
 }

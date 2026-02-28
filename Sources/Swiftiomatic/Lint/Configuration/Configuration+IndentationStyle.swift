@@ -14,9 +14,9 @@ extension Configuration {
         /// - parameter object: The configuration value.
         init?(_ object: Any?) {
             switch object {
-            case let value as Int: self = .spaces(count: value)
-            case let value as String where value == "tabs": self = .tabs
-            default: return nil
+                case let value as Int: self = .spaces(count: value)
+                case let value as String where value == "tabs": self = .tabs
+                default: return nil
             }
         }
     }

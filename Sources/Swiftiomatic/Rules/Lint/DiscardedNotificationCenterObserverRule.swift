@@ -11,44 +11,44 @@ struct DiscardedNotificationCenterObserverRule: Rule {
         kind: .lint,
         nonTriggeringExamples: [
             Example(
-                "let foo = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }"
+                "let foo = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }",
             ),
             Example(
                 """
                 let foo = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
-                """
+                """,
             ),
             Example(
                 """
                 func foo() -> Any {
                     return nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func foo() -> Any {
                     nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
                 }
-                """
+                """,
             ),
             Example(
                 """
                 var obs: [Any?] = []
                 obs.append(nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }))
-                """
+                """,
             ),
             Example(
                 """
                 var obs: [String: Any?] = []
                 obs["foo"] = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
-                """
+                """,
             ),
             Example(
                 """
                 var obs: [Any?] = []
                 obs.append(nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }))
-                """
+                """,
             ),
             Example(
                 """
@@ -56,7 +56,7 @@ struct DiscardedNotificationCenterObserverRule: Rule {
                    obs.append(notify)
                 }
                 foo(nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }))
-                """
+                """,
             ),
             Example(
                 """
@@ -64,33 +64,35 @@ struct DiscardedNotificationCenterObserverRule: Rule {
                    nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }),
                    nc.addObserver(forName: .CKAccountChanged, object: nil, queue: nil, using: { })
                 ]
-                """
+                """,
             ),
             Example(
                 """
                 names.map { self.notificationCenter.addObserver(forName: $0, object: object, queue: queue, using: block) }
-                """
+                """,
             ),
             Example(
                 """
                 f { return nc.addObserver(forName: $0, object: object, queue: queue, using: block) }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
-            Example("↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }"),
             Example(
-                "_ = ↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }"
+                "↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }",
             ),
             Example(
-                "↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })"
+                "_ = ↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }",
+            ),
+            Example(
+                "↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })",
             ),
             Example(
                 """
                 @discardableResult func foo() -> Any {
                    return ↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -103,7 +105,7 @@ struct DiscardedNotificationCenterObserverRule: Rule {
                         }
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -111,7 +113,7 @@ struct DiscardedNotificationCenterObserverRule: Rule {
                     ↓nc.addObserver(forName: $0, object: object, queue: queue) {}
                     return 2
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -120,9 +122,9 @@ struct DiscardedNotificationCenterObserverRule: Rule {
                         ↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -208,24 +210,26 @@ private extension DiscardedNotificationCenterObserverRule {
                 return
             }
             if let funcBlock = parent.as(CodeBlockItemSyntax.self)?.parent?.as(
-                CodeBlockItemListSyntax.self
+                CodeBlockItemListSyntax.self,
             ) {
                 switch scopes.peek() {
-                case let .closure(block) where funcBlock.count == 1 && block == funcBlock: return
-                case let .getter(block) where funcBlock.count == 1 && block == funcBlock: return
-                case let .function(functionDecl)
+                    case let .closure(block)
+                    where funcBlock.count == 1 && block == funcBlock: return
+                    case let .getter(block) where funcBlock.count == 1 && block == funcBlock: return
+                    case let .function(functionDecl)
                     where funcBlock.count == 1 && functionDecl.body?.statements == funcBlock
                     && functionDecl.signature.returnClause != nil
                     && !functionDecl.hasDiscardableResultAttribute:
-                    return
-                default: break
+                        return
+                    default: break
                 }
             } else if parent.is(ReturnStmtSyntax.self) {
                 switch scopes.peek() {
-                case .closure, .getter: return
-                case let .function(decl: functionDecl) where !functionDecl.hasDiscardableResultAttribute:
-                    return
-                default: break
+                    case .closure, .getter: return
+                    case let .function(decl: functionDecl)
+                    where !functionDecl.hasDiscardableResultAttribute:
+                        return
+                    default: break
                 }
             } else if parent.is(LabeledExprSyntax.self) {
                 return // result is passed as an argument to a function

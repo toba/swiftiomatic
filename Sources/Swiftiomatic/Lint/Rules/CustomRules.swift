@@ -32,7 +32,8 @@ struct CustomRulesConfiguration: RuleConfiguration, CacheDescriptionProvider {
 
         // Parse default execution mode if present
         if let defaultModeString = configurationDict["default_execution_mode"] as? String {
-            guard let mode = RegexConfiguration<Parent>.ExecutionMode(rawValue: defaultModeString) else {
+            guard let mode = RegexConfiguration<Parent>.ExecutionMode(rawValue: defaultModeString)
+            else {
                 throw Issue.invalidConfiguration(ruleID: Parent.identifier)
             }
             defaultExecutionMode = mode
@@ -77,7 +78,7 @@ struct CustomRules: Rule, CacheDescriptionProvider, ConditionallySourceKitFree {
         the severity level, and what message to display. Rules default to SwiftSyntax mode for improved \
         performance. Use `execution_mode: sourcekit` or `default_execution_mode: sourcekit` for SourceKit mode.
         """,
-        kind: .style
+        kind: .style,
     )
 
     var configuration = CustomRulesConfiguration()
@@ -110,7 +111,7 @@ struct CustomRules: Rule, CacheDescriptionProvider, ConditionallySourceKitFree {
             let start = Date()
             defer {
                 CustomRuleTimer.shared.register(
-                    time: -start.timeIntervalSinceNow, forRuleID: configuration.identifier
+                    time: -start.timeIntervalSinceNow, forRuleID: configuration.identifier,
                 )
             }
 
@@ -118,13 +119,13 @@ struct CustomRules: Rule, CacheDescriptionProvider, ConditionallySourceKitFree {
             let captureGroup = configuration.captureGroup
             let excludingKinds = configuration.excludedMatchKinds
             return file.match(
-                pattern: pattern, excludingSyntaxKinds: excludingKinds, captureGroup: captureGroup
+                pattern: pattern, excludingSyntaxKinds: excludingKinds, captureGroup: captureGroup,
             ).map {
                 StyleViolation(
                     ruleDescription: configuration.description,
                     severity: configuration.severity,
                     location: Location(file: file, characterOffset: $0.location),
-                    reason: configuration.message
+                    reason: configuration.message,
                 )
             }
         }
@@ -132,12 +133,12 @@ struct CustomRules: Rule, CacheDescriptionProvider, ConditionallySourceKitFree {
 
     func canBeDisabled(violation: StyleViolation, by ruleID: RuleIdentifier) -> Bool {
         switch ruleID {
-        case let .single(identifier: id):
-            id == Self.identifier
-                ? customRuleIdentifiers.contains(violation.ruleIdentifier)
-                : customRuleIdentifiers.contains(id) && violation.ruleIdentifier == id
-        default:
-            (self as any Rule).canBeDisabled(violation: violation, by: ruleID)
+            case let .single(identifier: id):
+                id == Self.identifier
+                    ? customRuleIdentifiers.contains(violation.ruleIdentifier)
+                    : customRuleIdentifiers.contains(id) && violation.ruleIdentifier == id
+            default:
+                (self as any Rule).canBeDisabled(violation: violation, by: ruleID)
         }
     }
 
@@ -157,7 +158,7 @@ struct CustomRules: Rule, CacheDescriptionProvider, ConditionallySourceKitFree {
 extension CustomRules {
     private static let _postMessage: Void = {
         Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
         ).print()
     }()
 

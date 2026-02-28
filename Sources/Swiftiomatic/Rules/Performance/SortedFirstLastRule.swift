@@ -15,7 +15,9 @@ struct SortedFirstLastRule: Rule {
             Example("let max = myList.max()"),
             Example("let max = myList.max(by: { $0 < $1 })"),
             Example("let message = messages.sorted(byKeyPath: #keyPath(Message.timestamp)).last"),
-            Example(#"let message = messages.sorted(byKeyPath: "timestamp", ascending: false).first"#),
+            Example(
+                #"let message = messages.sorted(byKeyPath: "timestamp", ascending: false).first"#,
+            ),
             Example("myList.sorted().firstIndex(of: key)"),
             Example("myList.sorted().lastIndex(of: key)"),
             Example("myList.sorted().firstIndex(where: someFunction)"),
@@ -41,7 +43,7 @@ struct SortedFirstLastRule: Rule {
             Example("↓myList.sorted(by: someFunction).last"),
             Example("↓myList.map { $0 + 1 }.sorted { $0.description < $1.description }.last"),
             Example("↓myList.map { $0 + 1 }.sorted { $0.first < $1.first }.last"),
-        ]
+        ],
     )
 }
 
@@ -60,7 +62,8 @@ private extension SortedFirstLastRule {
                 node.declName.baseName.text == "first" || node.declName.baseName.text == "last",
                 node.parent?.is(FunctionCallExprSyntax.self) != true,
                 let firstBase = node.base?.asFunctionCall,
-                let firstBaseCalledExpression = firstBase.calledExpression.as(MemberAccessExprSyntax.self),
+                let firstBaseCalledExpression = firstBase.calledExpression
+                .as(MemberAccessExprSyntax.self),
                 firstBaseCalledExpression.declName.baseName.text == "sorted",
                 case let argumentLabels = firstBase.arguments.map({ $0.label?.text }),
                 argumentLabels.isEmpty || argumentLabels == ["by"]

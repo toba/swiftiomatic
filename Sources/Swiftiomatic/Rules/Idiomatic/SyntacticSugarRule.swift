@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct SyntacticSugarRule: CorrectableRule, SourceKitFreeRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -12,7 +12,7 @@ struct SyntacticSugarRule: CorrectableRule, SourceKitFreeRule {
         kind: .idiomatic,
         nonTriggeringExamples: SyntacticSugarRuleExamples.nonTriggering,
         triggeringExamples: SyntacticSugarRuleExamples.triggering,
-        corrections: SyntacticSugarRuleExamples.corrections
+        corrections: SyntacticSugarRuleExamples.corrections,
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -24,7 +24,7 @@ struct SyntacticSugarRule: CorrectableRule, SourceKitFreeRule {
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: file, byteOffset: ByteCount(violation.position)),
-                reason: violation.type.violationReason
+                reason: violation.type.violationReason,
             )
         }
     }
@@ -64,21 +64,21 @@ private enum SugaredType: String {
 
     var sugaredExample: String {
         switch self {
-        case .optional:
-            return "Int?"
-        case .array:
-            return "[Int]"
-        case .dictionary:
-            return "[String: Int]"
+            case .optional:
+                return "Int?"
+            case .array:
+                return "[Int]"
+            case .dictionary:
+                return "[String: Int]"
         }
     }
 
     var desugaredExample: String {
         switch self {
-        case .optional, .array:
-            return "\(rawValue)<Int>"
-        case .dictionary:
-            return "\(rawValue)<String, Int>"
+            case .optional, .array:
+                return "\(rawValue)<Int>"
+            case .dictionary:
+                return "\(rawValue)<String, Int>"
         }
     }
 
@@ -167,8 +167,9 @@ private final class SyntacticSugarRuleVisitor: SyntaxVisitor {
         // Skip checks for 'self' or \T Dictionary<Key, Value>.self
         if let parent = node.parent?.as(MemberAccessExprSyntax.self),
            let lastToken = Array(parent.tokens(viewMode: .sourceAccurate)).last?.tokenKind,
-           [.keyword(.self), .identifier("Type"), .identifier("none"), .identifier("Index")].contains(
-               lastToken
+           [.keyword(.self), .identifier("Type"), .identifier("none"), .identifier("Index")]
+           .contains(
+               lastToken,
            )
         {
             return
@@ -239,14 +240,17 @@ private final class SyntacticSugarRuleVisitor: SyntaxVisitor {
 
         let correctionType: SyntacticSugarRuleViolation.CorrectionType
         switch type {
-        case .optional:
-            correctionType = .optional
-        case .array:
-            correctionType = .array
-        case .dictionary:
-            guard let comma = firstGenericType.trailingComma else { return nil }
-            let lastArgumentEnd = firstGenericType.argument.endPositionBeforeTrailingTrivia
-            correctionType = .dictionary(commaStart: lastArgumentEnd, commaEnd: comma.endPosition)
+            case .optional:
+                correctionType = .optional
+            case .array:
+                correctionType = .array
+            case .dictionary:
+                guard let comma = firstGenericType.trailingComma else { return nil }
+                let lastArgumentEnd = firstGenericType.argument.endPositionBeforeTrailingTrivia
+                correctionType = .dictionary(
+                    commaStart: lastArgumentEnd,
+                    commaEnd: comma.endPosition,
+                )
         }
 
         let firstInnerViolation = violation(in: firstGenericType.argument.as(TypeSyntax.self))
@@ -264,9 +268,9 @@ private final class SyntacticSugarRuleVisitor: SyntaxVisitor {
                 leftStart: generic.leftAngle.position,
                 leftEnd: generic.leftAngle.endPosition,
                 rightStart: lastGenericType.endPositionBeforeTrailingTrivia,
-                rightEnd: generic.rightAngle.endPositionBeforeTrailingTrivia
+                rightEnd: generic.rightAngle.endPositionBeforeTrailingTrivia,
             ),
-            children: [firstInnerViolation, secondInnerViolation].compactMap(\.self)
+            children: [firstInnerViolation, secondInnerViolation].compactMap(\.self),
         )
     }
 }
@@ -292,53 +296,59 @@ private struct CorrectingContext<R: Rule> {
 
         guard
             let violationNSRange = stringView.NSRange(
-                start: correction.leftStart, end: correction.rightEnd
+                start: correction.leftStart, end: correction.rightEnd,
             ),
             file.ruleEnabled(violatingRange: violationNSRange, for: rule) != nil
         else { return }
 
         guard
-            let rightRange = stringView.NSRange(start: correction.rightStart, end: correction.rightEnd),
+            let rightRange = stringView.NSRange(
+                start: correction.rightStart,
+                end: correction.rightEnd,
+            ),
             let leftRange = stringView.NSRange(start: correction.typeStart, end: correction.leftEnd)
         else {
             return
         }
 
         switch correction.correction {
-        case .array:
-            replaceCharacters(in: rightRange, with: "]")
-            correctViolations(violation.children)
-            replaceCharacters(in: leftRange, with: "[")
+            case .array:
+                replaceCharacters(in: rightRange, with: "]")
+                correctViolations(violation.children)
+                replaceCharacters(in: leftRange, with: "[")
 
-        case let .dictionary(commaStart, commaEnd):
-            replaceCharacters(in: rightRange, with: "]")
-            guard let commaRange = stringView.NSRange(start: commaStart, end: commaEnd) else { return }
+            case let .dictionary(commaStart, commaEnd):
+                replaceCharacters(in: rightRange, with: "]")
+                guard let commaRange = stringView.NSRange(start: commaStart, end: commaEnd)
+                else { return }
 
-            let violationsAfterComma = violation.children.filter { $0.position > commaStart }
-            correctViolations(violationsAfterComma)
+                let violationsAfterComma = violation.children.filter { $0.position > commaStart }
+                correctViolations(violationsAfterComma)
 
-            replaceCharacters(in: commaRange, with: ": ")
+                replaceCharacters(in: commaRange, with: ": ")
 
-            let violationsBeforeComma = violation.children.filter { $0.position < commaStart }
-            correctViolations(violationsBeforeComma)
-            replaceCharacters(in: leftRange, with: "[")
+                let violationsBeforeComma = violation.children.filter { $0.position < commaStart }
+                correctViolations(violationsBeforeComma)
+                replaceCharacters(in: leftRange, with: "[")
 
-        case .optional where typeIsOpaqueOrExistential(correction: correction):
-            replaceCharacters(in: rightRange, with: ")?")
-            correctViolations(violation.children)
-            replaceCharacters(in: leftRange, with: "(")
+            case .optional where typeIsOpaqueOrExistential(correction: correction):
+                replaceCharacters(in: rightRange, with: ")?")
+                correctViolations(violation.children)
+                replaceCharacters(in: leftRange, with: "(")
 
-        case .optional:
-            replaceCharacters(in: rightRange, with: "?")
-            correctViolations(violation.children)
-            replaceCharacters(in: leftRange, with: "")
+            case .optional:
+                replaceCharacters(in: rightRange, with: "?")
+                correctViolations(violation.children)
+                replaceCharacters(in: leftRange, with: "")
         }
         numberOfCorrections += 1
     }
 
-    private func typeIsOpaqueOrExistential(correction: SyntacticSugarRuleViolation.Correction) -> Bool {
+    private func typeIsOpaqueOrExistential(correction: SyntacticSugarRuleViolation
+        .Correction) -> Bool
+    {
         if let innerTypeRange = file.stringView.NSRange(
-            start: correction.leftEnd, end: correction.rightStart
+            start: correction.leftEnd, end: correction.rightStart,
         ) {
             let innerTypeString = file.stringView.substring(with: innerTypeRange)
             return innerTypeString.contains("any ") || innerTypeString.contains("some ")

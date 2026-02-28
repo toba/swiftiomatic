@@ -5,7 +5,7 @@ enum MultilineArgumentsRuleExamples {
             """
             foo(
             )
-            """
+            """,
         ),
         Example("foo { }"),
         Example(
@@ -13,7 +13,7 @@ enum MultilineArgumentsRuleExamples {
             foo {
 
             }
-            """
+            """,
         ),
         Example("foo(0)"),
         Example("foo(0, 1)"),
@@ -29,21 +29,21 @@ enum MultilineArgumentsRuleExamples {
             foo(param1: 1, param2: true, param3: [3]) {
                 bar()
             }
-            """
+            """,
         ),
         Example(
             """
             foo(param1: 1,
                 param2: true,
                 param3: [3])
-            """
+            """,
         ),
         Example(
             """
             foo(
                 param1: 1, param2: true, param3: [3]
             )
-            """
+            """,
         ),
         Example(
             """
@@ -52,7 +52,7 @@ enum MultilineArgumentsRuleExamples {
                 param2: true,
                 param3: [3]
             )
-            """
+            """,
         ),
         Example(
             #"""
@@ -64,7 +64,7 @@ enum MultilineArgumentsRuleExamples {
             } label: {
                EmptyView()
             }
-            """#
+            """#,
         ),
         Example(
             """
@@ -76,7 +76,7 @@ enum MultilineArgumentsRuleExamples {
                 // sample
                 print("b")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -85,7 +85,7 @@ enum MultilineArgumentsRuleExamples {
             } completion: { _ in
                 print("b")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -93,7 +93,7 @@ enum MultilineArgumentsRuleExamples {
                 foo: 1,
                 bar: false,
             )
-            """
+            """,
         ),
     ]
 
@@ -102,19 +102,19 @@ enum MultilineArgumentsRuleExamples {
             """
             foo(0,
                 param1: 1, ↓param2: true, ↓param3: [3])
-            """
+            """,
         ),
         Example(
             """
             foo(0, ↓param1: 1,
                 param2: true, ↓param3: [3])
-            """
+            """,
         ),
         Example(
             """
             foo(0, ↓param1: 1, ↓param2: true,
                 param3: [3])
-            """
+            """,
         ),
         Example(
             """
@@ -122,7 +122,7 @@ enum MultilineArgumentsRuleExamples {
                 0, ↓param1: 1,
                 param2: true, ↓param3: [3]
             )
-            """
+            """,
         ),
     ]
 }

@@ -33,7 +33,7 @@ struct YodaConditionRule: Rule {
             Example("if ↓nil == foo {}"),
             Example("while ↓1 > i + 5 {}"),
             Example("if ↓200 <= i && i <= 299 || ↓600 <= i {}"),
-        ]
+        ],
     )
 }
 

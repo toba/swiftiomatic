@@ -18,7 +18,7 @@ struct NonOverridableClassDeclarationRule: Rule {
                     final class var b: Bool { true }
                     final class func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -26,7 +26,7 @@ struct NonOverridableClassDeclarationRule: Rule {
                     final class var b: Bool { true }
                     final class func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -34,7 +34,7 @@ struct NonOverridableClassDeclarationRule: Rule {
                     class var b: Bool { true }
                     class func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -42,7 +42,7 @@ struct NonOverridableClassDeclarationRule: Rule {
                     static var b: Bool { true }
                     static func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -50,7 +50,7 @@ struct NonOverridableClassDeclarationRule: Rule {
                     static var b: Bool { true }
                     static func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -60,7 +60,7 @@ struct NonOverridableClassDeclarationRule: Rule {
                         class func f() {}
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -70,7 +70,7 @@ struct NonOverridableClassDeclarationRule: Rule {
                     ↓class var b: Bool { true }
                     ↓class func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -80,7 +80,7 @@ struct NonOverridableClassDeclarationRule: Rule {
                         ↓class func f() {}
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -88,7 +88,7 @@ struct NonOverridableClassDeclarationRule: Rule {
                     private ↓class var b: Bool { true }
                     private ↓class func f() {}
                 }
-                """
+                """,
             ),
         ],
         corrections: [
@@ -97,28 +97,28 @@ struct NonOverridableClassDeclarationRule: Rule {
                 final class C {
                     class func f() {}
                 }
-                """
+                """,
             ): Example(
                 """
                 final class C {
                     final class func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
                 final class C {
                     class var b: Bool { true }
                 }
-                """, configuration: ["final_class_modifier": "static"]
+                """, configuration: ["final_class_modifier": "static"],
             ): Example(
                 """
                 final class C {
                     static var b: Bool { true }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -173,9 +173,9 @@ private extension NonOverridableClassDeclarationRule {
                     correction: .init(
                         start: classKeyword.positionAfterSkippingLeadingTrivia,
                         end: classKeyword.endPositionBeforeTrailingTrivia,
-                        replacement: configuration.finalClassModifier.rawValue
-                    )
-                )
+                        replacement: configuration.finalClassModifier.rawValue,
+                    ),
+                ),
             )
         }
     }

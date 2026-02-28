@@ -29,13 +29,13 @@ class BaseCheck: SyntaxVisitor, Check, @unchecked Sendable {
         severity: Severity,
         message: String,
         suggestion: String? = nil,
-        confidence: Confidence
+        confidence: Confidence,
     ) {
         let location = node.startLocation(
             converter: .init(
                 fileName: filePath,
-                tree: node.root
-            )
+                tree: node.root,
+            ),
         )
         findings.append(
             Finding(
@@ -46,8 +46,8 @@ class BaseCheck: SyntaxVisitor, Check, @unchecked Sendable {
                 column: location.column,
                 message: message,
                 suggestion: suggestion,
-                confidence: confidence
-            )
+                confidence: confidence,
+            ),
         )
     }
 }

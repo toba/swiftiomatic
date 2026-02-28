@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct LineLengthRule: Rule {
     var configuration = LineLengthConfiguration()
@@ -16,10 +16,11 @@ struct LineLengthRule: Rule {
                 String(
                     repeating:
                     "#colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)",
-                    count: 120
-                ) + ""
+                    count: 120,
+                ) + "",
             ),
-            Example(String(repeating: "#imageLiteral(resourceName: \"image.jpg\")", count: 120) + ""),
+            Example(String(repeating: "#imageLiteral(resourceName: \"image.jpg\")", count: 120) +
+                ""),
         ],
         triggeringExamples: [
             Example(String(repeating: "/", count: 121) + ""),
@@ -27,11 +28,12 @@ struct LineLengthRule: Rule {
                 String(
                     repeating:
                     "#colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)",
-                    count: 121
-                ) + ""
+                    count: 121,
+                ) + "",
             ),
-            Example(String(repeating: "#imageLiteral(resourceName: \"image.jpg\")", count: 121) + ""),
-        ].skipWrappingInCommentTests().skipWrappingInStringTests()
+            Example(String(repeating: "#imageLiteral(resourceName: \"image.jpg\")", count: 121) +
+                ""),
+        ].skipWrappingInCommentTests().skipWrappingInStringTests(),
     )
 }
 
@@ -59,13 +61,15 @@ private extension LineLengthRule {
 
             // Populate multilineStringLines if ignores_multiline_strings is true
             if configuration.ignoresMultilineStrings {
-                let stringVisitor = MultilineStringLiteralVisitor(locationConverter: locationConverter)
+                let stringVisitor =
+                    MultilineStringLiteralVisitor(locationConverter: locationConverter)
                 multilineStringLines = stringVisitor.walk(tree: node, handler: \.linesSpanned)
             }
 
             // Populate interpolatedStringLines if ignores_interpolated_strings is true
             if configuration.ignoresInterpolatedStrings {
-                let interpVisitor = InterpolatedStringLineVisitor(locationConverter: locationConverter)
+                let interpVisitor =
+                    InterpolatedStringLineVisitor(locationConverter: locationConverter)
                 interpolatedStringLines = interpVisitor.walk(tree: node, handler: \.lines)
             }
 
@@ -97,16 +101,22 @@ private extension LineLengthRule {
                 }
 
                 // Apply ignore configurations
-                if configuration.ignoresFunctionDeclarations, functionDeclarationLines.contains(line.index) {
+                if configuration.ignoresFunctionDeclarations,
+                   functionDeclarationLines.contains(line.index)
+                {
                     continue
                 }
                 if configuration.ignoresComments, commentOnlyLines.contains(line.index) {
                     continue
                 }
-                if configuration.ignoresInterpolatedStrings, interpolatedStringLines.contains(line.index) {
+                if configuration.ignoresInterpolatedStrings,
+                   interpolatedStringLines.contains(line.index)
+                {
                     continue
                 }
-                if configuration.ignoresMultilineStrings, multilineStringLines.contains(line.index) {
+                if configuration.ignoresMultilineStrings,
+                   multilineStringLines.contains(line.index)
+                {
                     continue
                 }
                 if configuration.ignoresRegexLiterals, regexLiteralLines.contains(line.index) {
@@ -124,10 +134,10 @@ private extension LineLengthRule {
                     strippedString = strippedString.strippingURLs
                 }
                 strippedString = stripLiterals(
-                    fromSourceString: strippedString, withDelimiter: "#colorLiteral"
+                    fromSourceString: strippedString, withDelimiter: "#colorLiteral",
                 )
                 strippedString = stripLiterals(
-                    fromSourceString: strippedString, withDelimiter: "#imageLiteral"
+                    fromSourceString: strippedString, withDelimiter: "#imageLiteral",
                 )
 
                 let length = strippedString.count // Character count for reporting
@@ -140,10 +150,11 @@ private extension LineLengthRule {
                     // Position the violation at the start of the line, consistent with original behavior
                     violations.append(
                         ReasonedRuleViolation(
-                            position: locationConverter.position(ofLine: line.index, column: 1), // Start of the line
+                            position: locationConverter
+                                .position(ofLine: line.index, column: 1), // Start of the line
                             reason: reason,
-                            severity: param.severity
-                        )
+                            severity: param.severity,
+                        ),
                     )
                     break // Only report one violation (the most severe one reached) per line
                 }
@@ -153,17 +164,20 @@ private extension LineLengthRule {
         /// Strip color and image literals from the source string
         private func stripLiterals(
             fromSourceString sourceString: String,
-            withDelimiter delimiter: String
+            withDelimiter delimiter: String,
         ) -> String {
             var modifiedString = sourceString
             while modifiedString.contains("\(delimiter)(") {
                 if let rangeStart = modifiedString.range(of: "\(delimiter)("),
                    let rangeEnd = modifiedString.range(
                        of: ")", options: .literal,
-                       range: rangeStart.lowerBound ..< modifiedString.endIndex
+                       range: rangeStart.lowerBound ..< modifiedString.endIndex,
                    )
                 {
-                    modifiedString.replaceSubrange(rangeStart.lowerBound ..< rangeEnd.upperBound, with: "#")
+                    modifiedString.replaceSubrange(
+                        rangeStart.lowerBound ..< rangeEnd.upperBound,
+                        with: "#",
+                    )
                 } else {
                     break
                 }
@@ -189,7 +203,7 @@ private final class FunctionLineVisitor: SyntaxVisitor {
         collectLines(
             from: node.positionAfterSkippingLeadingTrivia,
             to: node.genericWhereClause?.endPositionBeforeTrailingTrivia
-                ?? node.signature.endPositionBeforeTrailingTrivia
+                ?? node.signature.endPositionBeforeTrailingTrivia,
         )
     }
 
@@ -197,7 +211,7 @@ private final class FunctionLineVisitor: SyntaxVisitor {
         collectLines(
             from: node.positionAfterSkippingLeadingTrivia,
             to: node.genericWhereClause?.endPositionBeforeTrailingTrivia
-                ?? node.signature.endPositionBeforeTrailingTrivia
+                ?? node.signature.endPositionBeforeTrailingTrivia,
         )
     }
 
@@ -205,11 +219,14 @@ private final class FunctionLineVisitor: SyntaxVisitor {
         collectLines(
             from: node.positionAfterSkippingLeadingTrivia,
             to: node.genericWhereClause?.endPositionBeforeTrailingTrivia
-                ?? node.returnClause.endPositionBeforeTrailingTrivia
+                ?? node.returnClause.endPositionBeforeTrailingTrivia,
         )
     }
 
-    private func collectLines(from startPosition: AbsolutePosition, to endPosition: AbsolutePosition) {
+    private func collectLines(
+        from startPosition: AbsolutePosition,
+        to endPosition: AbsolutePosition,
+    ) {
         let startLocation = locationConverter.location(for: startPosition)
         let endLocation = locationConverter.location(for: endPosition)
         for line in startLocation.line ... endLocation.line {
@@ -262,23 +279,23 @@ private extension String {
         let range = fullNSRange
         // Workaround for Linux until NSDataDetector is available
         #if os(Linux) || os(Windows)
-            // Regex pattern from http://daringfireball.net/2010/07/improved_regex_for_matching_urls
-            let pattern =
-                "(?i)\\b((?:[a-z][\\w-]+:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)"
-                    + "(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*"
-                    + "\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"
-            let urlRegex = regex(pattern)
-            return urlRegex.stringByReplacingMatches(
-                in: self, options: [], range: range, withTemplate: ""
-            )
+        // Regex pattern from http://daringfireball.net/2010/07/improved_regex_for_matching_urls
+        let pattern =
+            "(?i)\\b((?:[a-z][\\w-]+:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)"
+                + "(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*"
+                + "\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"
+        let urlRegex = regex(pattern)
+        return urlRegex.stringByReplacingMatches(
+            in: self, options: [], range: range, withTemplate: "",
+        )
         #else
-            let types = NSTextCheckingResult.CheckingType.link.rawValue
-            guard let urlDetector = try? NSDataDetector(types: types) else {
-                return self
-            }
-            return urlDetector.stringByReplacingMatches(
-                in: self, options: [], range: range, withTemplate: ""
-            )
+        let types = NSTextCheckingResult.CheckingType.link.rawValue
+        guard let urlDetector = try? NSDataDetector(types: types) else {
+            return self
+        }
+        return urlDetector.stringByReplacingMatches(
+            in: self, options: [], range: range, withTemplate: "",
+        )
         #endif
     }
 }

@@ -16,7 +16,7 @@ struct UnavailableConditionRule: Rule {
                 if #unavailable(iOS 13) {
                   loadMainWindow()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -25,7 +25,7 @@ struct UnavailableConditionRule: Rule {
                 } else {
                   legacyDoSomething()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -34,7 +34,7 @@ struct UnavailableConditionRule: Rule {
                 } else if #available(macOS 10.15, *) {
                    print("do some stuff")
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -45,7 +45,7 @@ struct UnavailableConditionRule: Rule {
                 } else if i < 2, #available(macOS 11.0, *) {
                   print("something else")
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -56,7 +56,7 @@ struct UnavailableConditionRule: Rule {
                 } else {
                   oldIos13TrackingLogic(isEnabled: ASIdentifierManager.shared().isAdvertisingTrackingEnabled)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -65,14 +65,14 @@ struct UnavailableConditionRule: Rule {
                 } else {
                   oldIos13TrackingLogic(isEnabled: ASIdentifierManager.shared().isAdvertisingTrackingEnabled)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 if ↓#available(iOS 13, *) {} else {
                   loadMainWindow()
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -81,9 +81,9 @@ struct UnavailableConditionRule: Rule {
                 } else if i < 2 {
                   loadMainWindow()
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -115,8 +115,8 @@ private extension UnavailableConditionRule {
             violations.append(
                 ReasonedRuleViolation(
                     position: availability.positionAfterSkippingLeadingTrivia,
-                    reason: reason(for: availability)
-                )
+                    reason: reason(for: availability),
+                ),
             )
         }
 
@@ -127,7 +127,9 @@ private extension UnavailableConditionRule {
         }
 
         private func otherAvailabilityCheckInvolved(ifStmt: IfExprSyntax) -> Bool {
-            if let elseBody = ifStmt.elseBody, let nestedIfStatement = elseBody.as(IfExprSyntax.self) {
+            if let elseBody = ifStmt.elseBody,
+               let nestedIfStatement = elseBody.as(IfExprSyntax.self)
+            {
                 if nestedIfStatement.conditions.map(\.condition).compactMap(asAvailabilityCondition)
                     .isNotEmpty
                 {
@@ -140,12 +142,12 @@ private extension UnavailableConditionRule {
 
         private func reason(for condition: AvailabilityConditionSyntax) -> String {
             switch condition.availabilityKeyword.tokenKind {
-            case .poundAvailable:
-                return "Use #unavailable instead of #available with an empty body"
-            case .poundUnavailable:
-                return "Use #available instead of #unavailable with an empty body"
-            default:
-                queuedFatalError("Unknown availability check type.")
+                case .poundAvailable:
+                    return "Use #unavailable instead of #available with an empty body"
+                case .poundUnavailable:
+                    return "Use #available instead of #unavailable with an empty body"
+                default:
+                    queuedFatalError("Unknown availability check type.")
             }
         }
     }

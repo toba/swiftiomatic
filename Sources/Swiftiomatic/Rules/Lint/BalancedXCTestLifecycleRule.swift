@@ -25,7 +25,7 @@ struct BalancedXCTestLifecycleRule: Rule {
                     override func setUp() {}
                     override func tearDown() {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
@@ -33,7 +33,7 @@ struct BalancedXCTestLifecycleRule: Rule {
                     override func setUpWithError() throws {}
                     override func tearDown() {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
@@ -41,7 +41,7 @@ struct BalancedXCTestLifecycleRule: Rule {
                     override func setUp() {}
                     override func tearDownWithError() throws {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
@@ -53,7 +53,7 @@ struct BalancedXCTestLifecycleRule: Rule {
                     override func setUpWithError() throws {}
                     override func tearDownWithError() throws {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
@@ -63,14 +63,14 @@ struct BalancedXCTestLifecycleRule: Rule {
                 class BarTests {
                     override func setUpWithError() throws {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
                 final class FooTests: XCTestCase {
                     override func setUpAlLExamples() {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
@@ -78,7 +78,7 @@ struct BalancedXCTestLifecycleRule: Rule {
                     class func setUp() {}
                     class func tearDown() {}
                 }
-                """#
+                """#,
             ),
         ],
         triggeringExamples: [
@@ -87,14 +87,14 @@ struct BalancedXCTestLifecycleRule: Rule {
                 final class ↓FooTests: XCTestCase {
                     override func setUp() {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
                 final class ↓FooTests: XCTestCase {
                     override func setUpWithError() throws {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
@@ -105,28 +105,28 @@ struct BalancedXCTestLifecycleRule: Rule {
                 final class ↓BarTests: XCTestCase {
                     override func setUpWithError() throws {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
                 final class ↓FooTests: XCTestCase {
                     class func tearDown() {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
                 final class ↓FooTests: XCTestCase {
                     override func tearDown() {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
                 final class ↓FooTests: XCTestCase {
                     override func tearDownWithError() throws {}
                 }
-                """#
+                """#,
             ),
             Example(
                 #"""
@@ -137,9 +137,9 @@ struct BalancedXCTestLifecycleRule: Rule {
                 final class ↓BarTests: XCTestCase {
                     override func tearDownWithError() throws {}
                 }
-                """#
+                """#,
             ),
-        ]
+        ],
     )
 }
 
@@ -176,7 +176,7 @@ private extension BalancedXCTestLifecycleRule {
 }
 
 private final class SetupTearDownVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxVisitor<
-    Configuration
+    Configuration,
 > {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
         .all
@@ -199,9 +199,9 @@ private enum XCTMethod {
 
     init?(_ name: String?) {
         switch name {
-        case "setUp", "setUpWithError": self = .setUp
-        case "tearDown", "tearDownWithError": self = .tearDown
-        default: return nil
+            case "setUp", "setUpWithError": self = .setUp
+            case "tearDown", "tearDownWithError": self = .tearDown
+            default: return nil
         }
     }
 }

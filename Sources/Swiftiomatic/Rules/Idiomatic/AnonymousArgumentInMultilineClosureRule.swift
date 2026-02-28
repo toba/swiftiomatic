@@ -33,14 +33,14 @@ struct AnonymousArgumentInMultilineClosureRule: Rule {
                 closure { arg in
                     print(arg)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 closure { arg in
                     nestedClosure { $0 + arg }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -49,9 +49,9 @@ struct AnonymousArgumentInMultilineClosureRule: Rule {
                 closure {
                     print(↓$0)
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -67,10 +67,10 @@ private extension AnonymousArgumentInMultilineClosureRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
             let startLocation = locationConverter.location(
-                for: node.leftBrace.positionAfterSkippingLeadingTrivia
+                for: node.leftBrace.positionAfterSkippingLeadingTrivia,
             )
             let endLocation = locationConverter.location(
-                for: node.rightBrace.endPositionBeforeTrailingTrivia
+                for: node.rightBrace.endPositionBeforeTrailingTrivia,
             )
             return startLocation.line == endLocation.line ? .skipChildren : .visitChildren
         }

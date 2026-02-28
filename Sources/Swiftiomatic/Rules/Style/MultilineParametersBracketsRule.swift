@@ -13,14 +13,14 @@ struct MultilineParametersBracketsRule: OptInRule {
             Example(
                 """
                 func foo(param1: String, param2: String, param3: String)
-                """
+                """,
             ),
             Example(
                 """
                 func foo(
                     param1: String, param2: String, param3: String
                 )
-                """
+                """,
             ),
             Example(
                 """
@@ -29,14 +29,14 @@ struct MultilineParametersBracketsRule: OptInRule {
                     param2: String,
                     param3: String
                 )
-                """
+                """,
             ),
             Example(
                 """
                 class SomeType {
                     func foo(param1: String, param2: String, param3: String)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -45,7 +45,7 @@ struct MultilineParametersBracketsRule: OptInRule {
                         param1: String, param2: String, param3: String
                     )
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -56,19 +56,19 @@ struct MultilineParametersBracketsRule: OptInRule {
                         param3: String
                     )
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func foo<T>(param1: T, param2: String, param3: String) -> T { /* some code */ }
-                """
+                """,
             ),
             Example(
                 """
                     func foo(a: [Int] = [
                         1
                     ])
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -77,7 +77,7 @@ struct MultilineParametersBracketsRule: OptInRule {
                 func foo(↓param1: String, param2: String,
                          param3: String
                 )
-                """
+                """,
             ),
             Example(
                 """
@@ -85,7 +85,7 @@ struct MultilineParametersBracketsRule: OptInRule {
                     param1: String,
                     param2: String,
                     param3: String↓)
-                """
+                """,
             ),
             Example(
                 """
@@ -94,7 +94,7 @@ struct MultilineParametersBracketsRule: OptInRule {
                              param3: String
                     )
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -104,16 +104,16 @@ struct MultilineParametersBracketsRule: OptInRule {
                         param2: String,
                         param3: String↓)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 func foo<T>(↓param1: T, param2: String,
                          param3: String
                 ) -> T
-                """
+                """,
             ),
-        ]
+        ],
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -138,7 +138,8 @@ struct MultilineParametersBracketsRule: OptInRule {
                 return []
             }
 
-            let parameters = substructure.substructure.filter { $0.declarationKind == .varParameter }
+            let parameters = substructure.substructure
+                .filter { $0.declarationKind == .varParameter }
             let parameterBodies = parameters.compactMap { $0.content(in: file) }
             let parametersNewlineCount = parameterBodies.map { body in
                 body.countOccurrences(of: "\n")
@@ -147,11 +148,17 @@ struct MultilineParametersBracketsRule: OptInRule {
             let isMultiline = declarationNewlineCount > parametersNewlineCount
 
             if isMultiline, parameters.isNotEmpty {
-                if let openingBracketViolation = openingBracketViolation(parameters: parameters, file: file) {
+                if let openingBracketViolation = openingBracketViolation(
+                    parameters: parameters,
+                    file: file,
+                ) {
                     violations.append(openingBracketViolation)
                 }
 
-                if let closingBracketViolation = closingBracketViolation(parameters: parameters, file: file) {
+                if let closingBracketViolation = closingBracketViolation(
+                    parameters: parameters,
+                    file: file,
+                ) {
                     violations.append(closingBracketViolation)
                 }
             }
@@ -167,7 +174,7 @@ struct MultilineParametersBracketsRule: OptInRule {
 
     private func openingBracketViolation(
         parameters: [SourceKittenDictionary],
-        file: SwiftLintFile
+        file: SwiftLintFile,
     ) -> StyleViolation? {
         guard
             let firstParamByteRange = parameters.first?.byteRange,
@@ -180,7 +187,11 @@ struct MultilineParametersBracketsRule: OptInRule {
         let invalidRegex = regex("\\([ \\t]*\\z")
 
         guard
-            let invalidMatch = invalidRegex.firstMatch(in: prefix, options: [], range: prefix.fullNSRange)
+            let invalidMatch = invalidRegex.firstMatch(
+                in: prefix,
+                options: [],
+                range: prefix.fullNSRange,
+            )
         else {
             return nil
         }
@@ -188,13 +199,13 @@ struct MultilineParametersBracketsRule: OptInRule {
         return StyleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
-            location: Location(file: file, characterOffset: invalidMatch.range.location + 1)
+            location: Location(file: file, characterOffset: invalidMatch.range.location + 1),
         )
     }
 
     private func closingBracketViolation(
         parameters: [SourceKittenDictionary],
-        file: SwiftLintFile
+        file: SwiftLintFile,
     ) -> StyleViolation? {
         guard
             let lastParamByteRange = parameters.last?.byteRange,
@@ -207,7 +218,11 @@ struct MultilineParametersBracketsRule: OptInRule {
         let invalidRegex = regex("\\A[ \\t]*\\)")
 
         guard
-            let invalidMatch = invalidRegex.firstMatch(in: suffix, options: [], range: suffix.fullNSRange)
+            let invalidMatch = invalidRegex.firstMatch(
+                in: suffix,
+                options: [],
+                range: suffix.fullNSRange,
+            )
         else {
             return nil
         }
@@ -216,7 +231,7 @@ struct MultilineParametersBracketsRule: OptInRule {
         return StyleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
-            location: Location(file: file, characterOffset: characterOffset)
+            location: Location(file: file, characterOffset: characterOffset),
         )
     }
 }
@@ -224,7 +239,7 @@ struct MultilineParametersBracketsRule: OptInRule {
 extension MultilineParametersBracketsRule {
     private static let _postMessage: Void = {
         Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
         ).print()
     }()
 

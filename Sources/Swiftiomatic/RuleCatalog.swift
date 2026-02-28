@@ -35,8 +35,8 @@ enum RuleCatalog {
                     isDeprecated: false,
                     canAutoFix: false,
                     isCrossFile: crossFile,
-                    requiresSourceKit: needsSourceKit
-                )
+                    requiresSourceKit: needsSourceKit,
+                ),
             )
         }
 
@@ -60,8 +60,8 @@ enum RuleCatalog {
                         && desc.deprecatedAliases.contains(identifier),
                     canAutoFix: isCorrectableType,
                     isCrossFile: false,
-                    requiresSourceKit: isAnalyzer
-                )
+                    requiresSourceKit: isAnalyzer,
+                ),
             )
         }
 
@@ -79,8 +79,8 @@ enum RuleCatalog {
                     isDeprecated: rule.isDeprecated,
                     canAutoFix: true,
                     isCrossFile: false,
-                    requiresSourceKit: false
-                )
+                    requiresSourceKit: false,
+                ),
             )
         }
 

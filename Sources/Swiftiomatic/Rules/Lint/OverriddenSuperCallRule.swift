@@ -16,7 +16,7 @@ struct OverriddenSuperCallRule: Rule {
                         super.viewWillAppear(animated)
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -27,7 +27,7 @@ struct OverriddenSuperCallRule: Rule {
                         self.method2()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -35,7 +35,7 @@ struct OverriddenSuperCallRule: Rule {
                     override func loadView() {
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -43,7 +43,7 @@ struct OverriddenSuperCallRule: Rule {
                     func viewWillAppear(_ animated: Bool) {
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -54,7 +54,7 @@ struct OverriddenSuperCallRule: Rule {
                         }
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -66,7 +66,7 @@ struct OverriddenSuperCallRule: Rule {
                         self.method()
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -77,7 +77,7 @@ struct OverriddenSuperCallRule: Rule {
                         super.viewWillAppear(animated)
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -85,9 +85,9 @@ struct OverriddenSuperCallRule: Rule {
                     override func didReceiveMemoryWarning() {↓
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -120,15 +120,15 @@ private extension OverriddenSuperCallRule {
                 violations.append(
                     ReasonedRuleViolation(
                         position: body.leftBrace.endPositionBeforeTrailingTrivia,
-                        reason: "Method '\(name)' should call to super function"
-                    )
+                        reason: "Method '\(name)' should call to super function",
+                    ),
                 )
             } else if superCallsCount > 1 {
                 violations.append(
                     ReasonedRuleViolation(
                         position: body.leftBrace.endPositionBeforeTrailingTrivia,
-                        reason: "Method '\(name)' should call to super only once"
-                    )
+                        reason: "Method '\(name)' should call to super only once",
+                    ),
                 )
             }
         }

@@ -1,18 +1,10 @@
-//
-//  PreferSwiftTesting.swift
-//  SwiftFormatTests
-//
-//  Created by Cal Stephens on 1/25/25.
-//  Copyright © 2025 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let preferSwiftTesting = FormatRule(
         help: "Prefer the Swift Testing library over XCTest.",
         disabledByDefault: true,
-        options: ["xctest-symbols", "default-test-suite-attributes"]
+        options: ["xctest-symbols", "default-test-suite-attributes"],
     ) { formatter in
         // Swift Testing was introduced in Xcode 16.0 with Swift 6.0
         guard formatter.options.swiftVersion >= "6.0" else { return }
@@ -26,7 +18,9 @@ extension FormatRule {
         let xcTestSuites =
             declarations
                 .compactMap(\.asTypeDeclaration)
-                .filter { $0.conformances.contains(where: { $0.conformance.string == "XCTestCase" }) }
+                .filter {
+                    $0.conformances.contains(where: { $0.conformance.string == "XCTestCase" })
+                }
 
         guard !xcTestSuites.isEmpty,
               !xcTestSuites.contains(where: { $0.hasUnsupportedXCTestFunctionality() })
@@ -139,10 +133,13 @@ extension TypeDeclaration {
             if methodName == "tearDown",
                overriddenMethod.keyword == "func",
                let startOfArguments = formatter.index(
-                   of: .startOfScope("("), after: overriddenMethod.keywordIndex
+                   of: .startOfScope("("), after: overriddenMethod.keywordIndex,
                ),
                let endOfArguments = formatter.endOfScope(at: startOfArguments),
-               let effect = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: endOfArguments),
+               let effect = formatter.index(
+                   of: .nonSpaceOrCommentOrLinebreak,
+                   after: endOfArguments,
+               ),
                ["async", "throws"].contains(tokens[effect].string)
             {
                 return true
@@ -165,20 +162,27 @@ extension TypeDeclaration {
         // like `@MainActor`, `@Suite(.serialized)`, etc.
         let attributesToAdd = formatter.options.defaultTestSuiteAttributes.joined(separator: " ")
         if !attributesToAdd.isEmpty {
-            let startOfModifiers = formatter.startOfModifiers(at: keywordIndex, includingAttributes: true)
+            let startOfModifiers = formatter.startOfModifiers(
+                at: keywordIndex,
+                includingAttributes: true,
+            )
             let attributesWithNewline = attributesToAdd + "\n"
             formatter.insert(tokenize(attributesWithNewline), at: startOfModifiers)
         }
 
-        let instanceMethods = body.filter { $0.keyword == "func" && !$0.modifiers.contains("static") }
+        let instanceMethods = body
+            .filter { $0.keyword == "func" && !$0.modifiers.contains("static") }
 
         for instanceMethod in instanceMethods {
             guard let methodName = instanceMethod.name,
                   let startOfParameters = formatter.index(
-                      of: .startOfScope("("), after: instanceMethod.keywordIndex
+                      of: .startOfScope("("), after: instanceMethod.keywordIndex,
                   ),
                   let endOfParameters = formatter.endOfScope(at: startOfParameters),
-                  let startOfFunctionBody = formatter.index(of: .startOfScope("{"), after: endOfParameters),
+                  let startOfFunctionBody = formatter.index(
+                      of: .startOfScope("{"),
+                      after: endOfParameters,
+                  ),
                   let endOfFunctionBody = formatter.endOfScope(at: startOfFunctionBody)
             else { continue }
 
@@ -186,7 +190,7 @@ extension TypeDeclaration {
             if methodName == "setUp" || methodName == "setUpWithError" {
                 formatter.convertXCTestOverride(
                     at: instanceMethod.keywordIndex,
-                    toLifecycleMethod: "init"
+                    toLifecycleMethod: "init",
                 )
             }
 
@@ -194,13 +198,14 @@ extension TypeDeclaration {
             if methodName == "tearDown" {
                 formatter.convertXCTestOverride(
                     at: instanceMethod.keywordIndex,
-                    toLifecycleMethod: "deinit"
+                    toLifecycleMethod: "deinit",
                 )
             }
 
             // Convert any test case method to a @Test method
             if methodName.hasPrefix("test") {
-                let arguments = formatter.parseFunctionDeclarationArguments(startOfScope: startOfParameters)
+                let arguments = formatter
+                    .parseFunctionDeclarationArguments(startOfScope: startOfParameters)
                 guard arguments.isEmpty else { continue }
 
                 // In Swift Testing, idiomatic test case names don't start with "test".
@@ -212,18 +217,21 @@ extension TypeDeclaration {
                 if !tokens[endOfParameters ..< startOfFunctionBody].contains(.keyword("throws")),
                    tokens[startOfFunctionBody ... endOfFunctionBody].contains(.keyword("try")),
                    let indexBeforeStartOfFunctionBody = formatter.index(
-                       of: .nonSpaceOrComment, before: startOfFunctionBody
+                       of: .nonSpaceOrComment, before: startOfFunctionBody,
                    )
                 {
                     formatter.insert(
-                        [.space(" "), .keyword("throws")], at: indexBeforeStartOfFunctionBody + 1
+                        [.space(" "), .keyword("throws")], at: indexBeforeStartOfFunctionBody + 1,
                     )
                 }
 
                 // Add the @Test macro
                 formatter.insert(
                     tokenize("@Test "),
-                    at: formatter.startOfModifiers(at: instanceMethod.keywordIndex, includingAttributes: true)
+                    at: formatter.startOfModifiers(
+                        at: instanceMethod.keywordIndex,
+                        includingAttributes: true,
+                    ),
                 )
             }
         }
@@ -240,7 +248,8 @@ extension Formatter {
         let xcTestCaseInstanceMethods = Set([
             "expectation", "wait", "measure", "measureMetrics", "addTeardownBlock",
             "runsForEachTargetApplicationUIConfiguration", "continueAfterFailure",
-            "executionTimeAllowance", "startMeasuring", "stopMeasuring", "defaultPerformanceMetrics",
+            "executionTimeAllowance", "startMeasuring", "stopMeasuring",
+            "defaultPerformanceMetrics",
             "defaultMetrics", "defaultMeasureOptions", "fulfillment", "addUIInterruptionMonitor",
             "keyValueObservingExpectation", "removeUIInterruptionMonitor",
         ])
@@ -255,22 +264,25 @@ extension Formatter {
 
             // We know how to handle XCTestCase, XCTest, and any XCTAssert variant implemented in `swiftTestingExpectationForXCTestHelper`.
             if tokens[index].string.hasPrefix("XC") {
-                let previousToken = lastToken(before: index, where: { !$0.isSpaceOrCommentOrLinebreak })
+                let previousToken = lastToken(
+                    before: index,
+                    where: { !$0.isSpaceOrCommentOrLinebreak },
+                )
                 switch identifier {
-                case "XCTestCase":
-                    if previousToken != .delimiter(":") {
-                        return true
-                    }
+                    case "XCTestCase":
+                        if previousToken != .delimiter(":") {
+                            return true
+                        }
 
-                case "XCTest":
-                    if previousToken != .keyword("import") {
-                        return true
-                    }
+                    case "XCTest":
+                        if previousToken != .keyword("import") {
+                            return true
+                        }
 
-                default:
-                    if swiftTestingExpectationForXCTestHelper(at: index) == nil {
-                        return true
-                    }
+                    default:
+                        if swiftTestingExpectationForXCTestHelper(at: index) == nil {
+                            return true
+                        }
                 }
             }
         }
@@ -287,9 +299,10 @@ extension Formatter {
     /// Converts the XCTest helper function (e.g. `XCTAssert(...)`) at the given index
     /// to a Swift Testng expectation (e.g. `#expect(...)`).
     func convertXCTestHelperToSwiftTestingExpectation(at identifierIndex: Int) {
-        guard let swiftTestingExpectation = swiftTestingExpectationForXCTestHelper(at: identifierIndex),
-              let startOfFunctionCall = index(of: .startOfScope("("), after: identifierIndex),
-              let endOfFunctionCall = endOfScope(at: startOfFunctionCall)
+        guard let swiftTestingExpectation =
+            swiftTestingExpectationForXCTestHelper(at: identifierIndex),
+            let startOfFunctionCall = index(of: .startOfScope("("), after: identifierIndex),
+            let endOfFunctionCall = endOfScope(at: startOfFunctionCall)
         else { return }
 
         replaceTokens(in: identifierIndex ... endOfFunctionCall, with: swiftTestingExpectation)
@@ -305,159 +318,167 @@ extension Formatter {
         else { return nil }
 
         switch tokens[identifierIndex].string {
-        case "XCTAssert":
-            return convertXCTAssertToTestingExpectation(at: identifierIndex) { value in
-                value
-            }
-
-        case "XCTAssertTrue":
-            return convertXCTAssertToTestingExpectation(at: identifierIndex) { value in
-                value
-            }
-
-        case "XCTAssertFalse":
-            return convertXCTAssertToTestingExpectation(at: identifierIndex) { value in
-                // Unlike other operators which are whitespace insensitive, the ! token has to come immediately before the first
-                // non-space/non-comment token in the rhs value, and after any effect like `try await`.
-                // ! also has stronger associativity than other operators, (for example, `!foo == bar` would be incorrect),
-                // so we have to wrap the value in parens if it includes any infix operators.
-                var tokens = tokenize(value.wrappedInParensIfContainsOperatorOrTry())
-                if let firstTokenIndex = tokens.firstIndex(where: { !$0.isSpaceOrCommentOrLinebreak }) {
-                    tokens.insert(.operator("!", .prefix), at: firstTokenIndex)
+            case "XCTAssert":
+                return convertXCTAssertToTestingExpectation(at: identifierIndex) { value in
+                    value
                 }
 
-                return tokens.string
-            }
+            case "XCTAssertTrue":
+                return convertXCTAssertToTestingExpectation(at: identifierIndex) { value in
+                    value
+                }
 
-        case "XCTAssertNil":
-            return convertXCTAssertToTestingExpectation(at: identifierIndex) { value in
-                "\(value.wrappedInParensIfContainsOperatorOrTry()) == nil"
-            }
+            case "XCTAssertFalse":
+                return convertXCTAssertToTestingExpectation(at: identifierIndex) { value in
+                    // Unlike other operators which are whitespace insensitive, the ! token has to come immediately before the first
+                    // non-space/non-comment token in the rhs value, and after any effect like `try await`.
+                    // ! also has stronger associativity than other operators, (for example, `!foo == bar` would be incorrect),
+                    // so we have to wrap the value in parens if it includes any infix operators.
+                    var tokens = tokenize(value.wrappedInParensIfContainsOperatorOrTry())
+                    if let firstTokenIndex = tokens
+                        .firstIndex(where: { !$0.isSpaceOrCommentOrLinebreak })
+                    {
+                        tokens.insert(.operator("!", .prefix), at: firstTokenIndex)
+                    }
 
-        case "XCTAssertNotNil":
-            return convertXCTAssertToTestingExpectation(at: identifierIndex) { value in
-                "\(value.wrappedInParensIfContainsOperatorOrTry()) != nil"
-            }
+                    return tokens.string
+                }
 
-        case "XCTAssertEqual":
-            return convertXCTComparisonToTestingExpectation(
-                at: identifierIndex,
-                operator: "=="
-            )
+            case "XCTAssertNil":
+                return convertXCTAssertToTestingExpectation(at: identifierIndex) { value in
+                    "\(value.wrappedInParensIfContainsOperatorOrTry()) == nil"
+                }
 
-        case "XCTAssertNotEqual":
-            return convertXCTComparisonToTestingExpectation(
-                at: identifierIndex,
-                operator: "!="
-            )
+            case "XCTAssertNotNil":
+                return convertXCTAssertToTestingExpectation(at: identifierIndex) { value in
+                    "\(value.wrappedInParensIfContainsOperatorOrTry()) != nil"
+                }
 
-        case "XCTAssertIdentical":
-            return convertXCTComparisonToTestingExpectation(
-                at: identifierIndex,
-                operator: "==="
-            )
-
-        case "XCTAssertNotIdentical":
-            return convertXCTComparisonToTestingExpectation(
-                at: identifierIndex,
-                operator: "!=="
-            )
-
-        case "XCTAssertGreaterThan":
-            return convertXCTComparisonToTestingExpectation(
-                at: identifierIndex,
-                operator: ">"
-            )
-
-        case "XCTAssertGreaterThanOrEqual":
-            return convertXCTComparisonToTestingExpectation(
-                at: identifierIndex,
-                operator: ">="
-            )
-
-        case "XCTAssertLessThan":
-            return convertXCTComparisonToTestingExpectation(
-                at: identifierIndex,
-                operator: "<"
-            )
-
-        case "XCTAssertLessThanOrEqual":
-            return convertXCTComparisonToTestingExpectation(
-                at: identifierIndex,
-                operator: "<="
-            )
-
-        case "XCTFail":
-            let functionParams = parseFunctionCallArguments(
-                startOfScope: startOfFunctionCall, preserveWhitespace: true
-            )
-            switch functionParams.count {
-            case 0:
-                return tokenize("Issue.record()")
-            case 1:
-                return tokenize("Issue.record(\(functionParams[0].value.asSwiftTestingComment()))")
-            default:
-                return nil
-            }
-
-        case "XCTUnwrap":
-            let functionParams = parseFunctionCallArguments(
-                startOfScope: startOfFunctionCall, preserveWhitespace: true
-            )
-            switch functionParams.count {
-            case 1:
-                return tokenize("#require(\(functionParams[0].value))")
-            case 2:
-                return tokenize(
-                    "#require(\(functionParams[0].value),\(functionParams[1].value.asSwiftTestingComment()))"
+            case "XCTAssertEqual":
+                return convertXCTComparisonToTestingExpectation(
+                    at: identifierIndex,
+                    operator: "==",
                 )
-            default:
-                return nil
-            }
 
-        case "XCTAssertNoThrow":
-            let functionParams = parseFunctionCallArguments(
-                startOfScope: startOfFunctionCall, preserveWhitespace: true
-            )
-            switch functionParams.count {
-            case 1:
-                return tokenize("#expect(throws: Never.self) { \(functionParams[0].value) }")
-            case 2:
-                return tokenize(
-                    "#expect(throws: Never.self,\(functionParams[1].value.asSwiftTestingComment())) { \(functionParams[0].value) }"
+            case "XCTAssertNotEqual":
+                return convertXCTComparisonToTestingExpectation(
+                    at: identifierIndex,
+                    operator: "!=",
                 )
-            default:
-                return nil
-            }
 
-        case "XCTAssertThrowsError":
-            let functionParams = parseFunctionCallArguments(
-                startOfScope: startOfFunctionCall, preserveWhitespace: true
-            )
-
-            // Trailing closure variant is unsupported for now
-            if let endOfFunctionCall = endOfScope(at: startOfFunctionCall),
-               let startOfTrailingClosure = index(
-                   of: .nonSpaceOrCommentOrLinebreak, after: endOfFunctionCall
-               ),
-               tokens[startOfTrailingClosure] == .startOfScope("{")
-            {
-                return nil
-            }
-
-            switch functionParams.count {
-            case 1:
-                return tokenize("#expect(throws: Error.self) { \(functionParams[0].value) }")
-            case 2:
-                return tokenize(
-                    "#expect(throws: Error.self,\(functionParams[1].value.asSwiftTestingComment())) { \(functionParams[0].value) }"
+            case "XCTAssertIdentical":
+                return convertXCTComparisonToTestingExpectation(
+                    at: identifierIndex,
+                    operator: "===",
                 )
+
+            case "XCTAssertNotIdentical":
+                return convertXCTComparisonToTestingExpectation(
+                    at: identifierIndex,
+                    operator: "!==",
+                )
+
+            case "XCTAssertGreaterThan":
+                return convertXCTComparisonToTestingExpectation(
+                    at: identifierIndex,
+                    operator: ">",
+                )
+
+            case "XCTAssertGreaterThanOrEqual":
+                return convertXCTComparisonToTestingExpectation(
+                    at: identifierIndex,
+                    operator: ">=",
+                )
+
+            case "XCTAssertLessThan":
+                return convertXCTComparisonToTestingExpectation(
+                    at: identifierIndex,
+                    operator: "<",
+                )
+
+            case "XCTAssertLessThanOrEqual":
+                return convertXCTComparisonToTestingExpectation(
+                    at: identifierIndex,
+                    operator: "<=",
+                )
+
+            case "XCTFail":
+                let functionParams = parseFunctionCallArguments(
+                    startOfScope: startOfFunctionCall, preserveWhitespace: true,
+                )
+                switch functionParams.count {
+                    case 0:
+                        return tokenize("Issue.record()")
+                    case 1:
+                        return tokenize(
+                            "Issue.record(\(functionParams[0].value.asSwiftTestingComment()))",
+                        )
+                    default:
+                        return nil
+                }
+
+            case "XCTUnwrap":
+                let functionParams = parseFunctionCallArguments(
+                    startOfScope: startOfFunctionCall, preserveWhitespace: true,
+                )
+                switch functionParams.count {
+                    case 1:
+                        return tokenize("#require(\(functionParams[0].value))")
+                    case 2:
+                        return tokenize(
+                            "#require(\(functionParams[0].value),\(functionParams[1].value.asSwiftTestingComment()))",
+                        )
+                    default:
+                        return nil
+                }
+
+            case "XCTAssertNoThrow":
+                let functionParams = parseFunctionCallArguments(
+                    startOfScope: startOfFunctionCall, preserveWhitespace: true,
+                )
+                switch functionParams.count {
+                    case 1:
+                        return tokenize(
+                            "#expect(throws: Never.self) { \(functionParams[0].value) }",
+                        )
+                    case 2:
+                        return tokenize(
+                            "#expect(throws: Never.self,\(functionParams[1].value.asSwiftTestingComment())) { \(functionParams[0].value) }",
+                        )
+                    default:
+                        return nil
+                }
+
+            case "XCTAssertThrowsError":
+                let functionParams = parseFunctionCallArguments(
+                    startOfScope: startOfFunctionCall, preserveWhitespace: true,
+                )
+
+                // Trailing closure variant is unsupported for now
+                if let endOfFunctionCall = endOfScope(at: startOfFunctionCall),
+                   let startOfTrailingClosure = index(
+                       of: .nonSpaceOrCommentOrLinebreak, after: endOfFunctionCall,
+                   ),
+                   tokens[startOfTrailingClosure] == .startOfScope("{")
+                {
+                    return nil
+                }
+
+                switch functionParams.count {
+                    case 1:
+                        return tokenize(
+                            "#expect(throws: Error.self) { \(functionParams[0].value) }",
+                        )
+                    case 2:
+                        return tokenize(
+                            "#expect(throws: Error.self,\(functionParams[1].value.asSwiftTestingComment())) { \(functionParams[0].value) }",
+                        )
+                    default:
+                        return nil
+                }
+
             default:
                 return nil
-            }
-
-        default:
-            return nil
         }
     }
 
@@ -465,13 +486,13 @@ extension Formatter {
     /// to a Swift Testing expectation. Supports an optional message.
     func convertXCTAssertToTestingExpectation(
         at identifierIndex: Int,
-        makeAssertion: (_ value: String) -> String
+        makeAssertion: (_ value: String) -> String,
     ) -> [Token]? {
         guard let startOfFunctionCall = index(of: .nonSpaceOrComment, after: identifierIndex) else {
             return nil
         }
         let functionParams = parseFunctionCallArguments(
-            startOfScope: startOfFunctionCall, preserveWhitespace: true
+            startOfScope: startOfFunctionCall, preserveWhitespace: true,
         )
 
         // All of the function params should be unlabeled
@@ -480,14 +501,14 @@ extension Formatter {
         let value: String
         let message: String?
         switch functionParams.count {
-        case 1:
-            value = functionParams[0].value
-            message = nil
-        case 2:
-            value = functionParams[0].value
-            message = functionParams[1].value.asSwiftTestingComment()
-        default:
-            return nil
+            case 1:
+                value = functionParams[0].value
+                message = nil
+            case 2:
+                value = functionParams[0].value
+                message = functionParams[1].value.asSwiftTestingComment()
+            default:
+                return nil
         }
 
         if let message {
@@ -501,13 +522,13 @@ extension Formatter {
     /// to a Swift Testing expectation. Supports an optional message.
     func convertXCTComparisonToTestingExpectation(
         at identifierIndex: Int,
-        operator operatorToken: String
+        operator operatorToken: String,
     ) -> [Token]? {
         guard let startOfFunctionCall = index(of: .nonSpaceOrComment, after: identifierIndex) else {
             return nil
         }
         let functionParams = parseFunctionCallArguments(
-            startOfScope: startOfFunctionCall, preserveWhitespace: true
+            startOfScope: startOfFunctionCall, preserveWhitespace: true,
         )
 
         // All of the function params should be unlabeled
@@ -517,16 +538,16 @@ extension Formatter {
         let rhs: String
         let message: String?
         switch functionParams.count {
-        case 2:
-            lhs = functionParams[0].value.wrappedInParensIfContainsOperatorOrTry()
-            rhs = functionParams[1].value.wrappedInParensIfContainsOperatorOrTry()
-            message = nil
-        case 3:
-            lhs = functionParams[0].value.wrappedInParensIfContainsOperatorOrTry()
-            rhs = functionParams[1].value.wrappedInParensIfContainsOperatorOrTry()
-            message = functionParams[2].value.asSwiftTestingComment()
-        default:
-            return nil
+            case 2:
+                lhs = functionParams[0].value.wrappedInParensIfContainsOperatorOrTry()
+                rhs = functionParams[1].value.wrappedInParensIfContainsOperatorOrTry()
+                message = nil
+            case 3:
+                lhs = functionParams[0].value.wrappedInParensIfContainsOperatorOrTry()
+                rhs = functionParams[1].value.wrappedInParensIfContainsOperatorOrTry()
+                message = functionParams[2].value.asSwiftTestingComment()
+            default:
+                return nil
         }
 
         if let message {
@@ -537,7 +558,9 @@ extension Formatter {
     }
 
     /// Converts the XCTest override method `setUp` or `tearDown` to the given lifecycle method
-    func convertXCTestOverride(at keywordIndex: Int, toLifecycleMethod lifecycleMethodName: String) {
+    func convertXCTestOverride(at keywordIndex: Int,
+                               toLifecycleMethod lifecycleMethodName: String)
+    {
         guard let nameIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: keywordIndex),
               let startOfArgumentsIndex = index(of: .startOfScope("("), after: nameIndex),
               let endOfArgumentsIndex = endOfScope(at: startOfArgumentsIndex),
@@ -547,7 +570,7 @@ extension Formatter {
 
         // Remove `super.setUp()` / `super.tearDown()` if present
         if let superCall = index(
-            of: .identifier("super"), in: startOfFunctionBody + 1 ..< endOfFunctionBody
+            of: .identifier("super"), in: startOfFunctionBody + 1 ..< endOfFunctionBody,
         ),
             let dotIndex = index(of: .nonSpaceOrLinebreak, after: superCall),
             tokens[dotIndex] == .operator(".", .infix),
@@ -563,7 +586,10 @@ extension Formatter {
         // Replace `func setUp` with `init`, or `func tearDown` with `deinit`.
         // For `deinit`, we also have to remove the parens from the `tearDown()` method.
         if lifecycleMethodName == "deinit" {
-            replaceTokens(in: keywordIndex ... endOfArgumentsIndex, with: [.keyword(lifecycleMethodName)])
+            replaceTokens(
+                in: keywordIndex ... endOfArgumentsIndex,
+                with: [.keyword(lifecycleMethodName)],
+            )
         } else {
             replaceTokens(in: keywordIndex ... nameIndex, with: [.keyword(lifecycleMethodName)])
         }
@@ -605,7 +631,7 @@ extension String {
 
         guard let firstTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: -1),
               let lastTokenIndex = formatter.lastIndex(
-                  of: .nonSpaceOrCommentOrLinebreak, in: formatter.tokens.indices
+                  of: .nonSpaceOrCommentOrLinebreak, in: formatter.tokens.indices,
               )
         else { return formatter.tokens.string }
 

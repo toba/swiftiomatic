@@ -1,5 +1,5 @@
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct FileLengthRule: Rule {
     var configuration = FileLengthConfiguration()
@@ -16,7 +16,7 @@ struct FileLengthRule: Rule {
             Example(repeatElement("print(\"swiftlint\")\n", count: 401).joined()),
             Example((repeatElement("print(\"swiftlint\")\n", count: 400) + ["//\n"]).joined()),
             Example(repeatElement("print(\"swiftlint\")\n\n", count: 201).joined()),
-        ].skipWrappingInCommentTests()
+        ].skipWrappingInCommentTests(),
     )
 }
 
@@ -49,7 +49,9 @@ private extension FileLengthRule {
 
             let reason =
                 "File should contain \(upperBound) lines or less"
-                    + (configuration.ignoreCommentOnlyLines ? " excluding comments and whitespaces" : "")
+                    +
+                    (configuration
+                        .ignoreCommentOnlyLines ? " excluding comments and whitespaces" : "")
                     + ": currently contains \(lineCount)"
 
             // Position violation at the start of the last line to avoid boundary issues
@@ -60,7 +62,7 @@ private extension FileLengthRule {
             let violation = ReasonedRuleViolation(
                 position: violationPosition,
                 reason: reason,
-                severity: severity
+                severity: severity,
             )
             violations.append(violation)
         }

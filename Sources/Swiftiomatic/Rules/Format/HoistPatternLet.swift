@@ -1,18 +1,10 @@
-//
-//  HoistPatternLet.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 3/6/17.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Move `let` and `var` inside patterns to the beginning
     static let hoistPatternLet = FormatRule(
         help: "Reposition `let` or `var` bindings within pattern.",
-        options: ["pattern-let"]
+        options: ["pattern-let"],
     ) { formatter in
         formatter.forEach(.startOfScope("(")) { i, _ in
             let hoist = formatter.options.hoistPatternLet
@@ -22,38 +14,38 @@ extension FormatRule {
                       before: i,
                       where: {
                           switch $0 {
-                          case .operator(".", _), .keyword("let"), .keyword("var"),
-                               .endOfScope("*/"):
-                              return false
-                          case .endOfScope, .delimiter, .operator, .keyword:
-                              return true
-                          default:
-                              return false
+                              case .operator(".", _), .keyword("let"), .keyword("var"),
+                                   .endOfScope("*/"):
+                                  return false
+                              case .endOfScope, .delimiter, .operator, .keyword:
+                                  return true
+                              default:
+                                  return false
                           }
-                      }
+                      },
                   )
             else {
                 return
             }
             switch formatter.tokens[prevIndex] {
-            case .endOfScope("case"), .keyword("case"), .keyword("catch"):
-                break
-            case .delimiter(","):
-                loop: for token in formatter.tokens[0 ..< prevIndex].reversed() {
-                    switch token {
-                    case .endOfScope("case"), .keyword("catch"):
-                        break loop
-                    case .keyword("var"), .keyword("let"):
-                        break
-                    case .keyword:
-                        // Tuple assignment
-                        return
-                    default:
-                        break
+                case .endOfScope("case"), .keyword("case"), .keyword("catch"):
+                    break
+                case .delimiter(","):
+                    loop: for token in formatter.tokens[0 ..< prevIndex].reversed() {
+                        switch token {
+                            case .endOfScope("case"), .keyword("catch"):
+                                break loop
+                            case .keyword("var"), .keyword("let"):
+                                break
+                            case .keyword:
+                                // Tuple assignment
+                                return
+                            default:
+                                break
+                        }
                     }
-                }
-            default:
-                return
+                default:
+                    return
             }
             let startIndex =
                 formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: prevIndex)
@@ -72,25 +64,26 @@ extension FormatRule {
                 while index < endIndex {
                     let token = formatter.tokens[index]
                     switch token {
-                    case .delimiter(","), .startOfScope("("), .delimiter(":"):
-                        wasParenOrCommaOrLabel = true
-                    case .identifier("_"), .identifier("true"), .identifier("false"), .identifier("nil"):
-                        wasParenOrCommaOrLabel = false
-                    case let .identifier(name) where wasParenOrCommaOrLabel:
-                        wasParenOrCommaOrLabel = false
-                        let next = formatter.next(.nonSpaceOrComment, after: index)
-                        if next != .operator(".", .infix), next != .delimiter(":") {
-                            indices.append(index)
-                        }
-                    case _ where token.isSpaceOrCommentOrLinebreak:
-                        break
-                    case .startOfScope("["):
-                        guard let next = formatter.endOfScope(at: index) else {
-                            return formatter.fatalError("Expected ]", at: index)
-                        }
-                        index = next
-                    default:
-                        wasParenOrCommaOrLabel = false
+                        case .delimiter(","), .startOfScope("("), .delimiter(":"):
+                            wasParenOrCommaOrLabel = true
+                        case .identifier("_"), .identifier("true"), .identifier("false"),
+                             .identifier("nil"):
+                            wasParenOrCommaOrLabel = false
+                        case let .identifier(name) where wasParenOrCommaOrLabel:
+                            wasParenOrCommaOrLabel = false
+                            let next = formatter.next(.nonSpaceOrComment, after: index)
+                            if next != .operator(".", .infix), next != .delimiter(":") {
+                                indices.append(index)
+                            }
+                        case _ where token.isSpaceOrCommentOrLinebreak:
+                            break
+                        case .startOfScope("["):
+                            guard let next = formatter.endOfScope(at: index) else {
+                                return formatter.fatalError("Expected ]", at: index)
+                            }
+                            index = next
+                        default:
+                            wasParenOrCommaOrLabel = false
                     }
                     index += 1
                 }
@@ -100,14 +93,18 @@ extension FormatRule {
                 }
                 // Remove keyword
                 let range =
-                    ((formatter.index(of: .nonSpace, before: startIndex) ?? (prevIndex - 1)) + 1) ... startIndex
+                    (
+                        (formatter.index(of: .nonSpace, before: startIndex) ?? (prevIndex - 1)) + 1,
+                    ) ...
+                    startIndex
                 formatter.removeTokens(in: range)
             } else if hoist {
                 // Find let/var keyword indices
                 var keyword = "let"
                 guard
                     let indices: [Int] = {
-                        guard let indices = formatter.indicesOf(keyword, in: i + 1 ..< endIndex) else {
+                        guard let indices = formatter.indicesOf(keyword, in: i + 1 ..< endIndex)
+                        else {
                             keyword = "var"
                             return formatter.indicesOf(keyword, in: i + 1 ..< endIndex)
                         }
@@ -125,7 +122,9 @@ extension FormatRule {
                 }
                 // Insert keyword before parens
                 formatter.insert(.keyword(keyword), at: startIndex)
-                if let nextToken = formatter.token(at: startIndex + 1), !nextToken.isSpaceOrLinebreak {
+                if let nextToken = formatter.token(at: startIndex + 1),
+                   !nextToken.isSpaceOrLinebreak
+                {
                     formatter.insert(.space(" "), at: startIndex + 1)
                 }
                 if let prevToken = formatter.token(at: startIndex - 1),
@@ -163,29 +162,32 @@ extension Formatter {
         var count = 0
         for index in range {
             switch tokens[index] {
-            case .keyword(keyword):
-                indices.append(index)
-                keywordFound = true
-            case .identifier("_"):
-                break
-            case .identifier where last(.nonSpaceOrComment, before: index) != .operator(".", .prefix):
-                identifierFound = true
-                if keywordFound {
-                    count += 1
-                }
-            case .delimiter(","):
-                guard keywordFound || !identifierFound else {
+                case .keyword(keyword):
+                    indices.append(index)
+                    keywordFound = true
+                case .identifier("_"):
+                    break
+                case .identifier where last(.nonSpaceOrComment, before: index) != .operator(
+                ".",
+                .prefix,
+            ):
+                    identifierFound = true
+                    if keywordFound {
+                        count += 1
+                    }
+                case .delimiter(","):
+                    guard keywordFound || !identifierFound else {
+                        return nil
+                    }
+                    keywordFound = false
+                    identifierFound = false
+                case .startOfScope("{"):
                     return nil
-                }
-                keywordFound = false
-                identifierFound = false
-            case .startOfScope("{"):
-                return nil
-            case .startOfScope("<"):
-                // See: https://github.com/nicklockwood/SwiftFormat/issues/768
-                return nil
-            default:
-                break
+                case .startOfScope("<"):
+                    // See: https://github.com/nicklockwood/SwiftFormat/issues/768
+                    return nil
+                default:
+                    break
             }
         }
         return (keywordFound || !identifierFound) && count > 0 ? indices : nil

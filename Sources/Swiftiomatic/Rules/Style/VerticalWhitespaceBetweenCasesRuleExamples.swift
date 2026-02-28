@@ -20,7 +20,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             @unknown default:
                 print("x is out of this world")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -34,7 +34,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             default:
                 print("x is invalid")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -44,7 +44,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             default: print("x is invalid")
             @unknown default: print("x is out of this world")
             }
-            """
+            """,
         ),
         // Testing handling of trailing spaces
         Example(
@@ -56,7 +56,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             default:    \("")
                 print("not one")    \("")
             }    \("")
-            """
+            """,
         ),
         // Test with compiler directives (#if/#endif)
         Example(
@@ -70,7 +70,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
 
             case .c: print("c")
             }
-            """
+            """,
         ),
         // Test #if in the middle of cases
         Example(
@@ -87,7 +87,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .c:
                 print("c")
             }
-            """
+            """,
         ),
         // Comments between cases - empty line still required
         Example(
@@ -100,7 +100,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .b:
                 print("b")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -112,7 +112,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .b:
                 print("b")
             }
-            """
+            """,
         ),
         // Comment as part of case body (not a separator)
         Example(
@@ -125,7 +125,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .b:
                 print("b")
             }
-            """
+            """,
         ),
         // separation: never - no blank lines
         Example(
@@ -138,7 +138,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .c:
                 print("c")
             }
-            """, configuration: noSeparation
+            """, configuration: noSeparation,
         ),
         // separation: never - no blank lines with comments
         Example(
@@ -150,7 +150,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .b:
                 print("b")
             }
-            """, configuration: noSeparation
+            """, configuration: noSeparation,
         ),
         // separation: always (default) - one blank line with comments
         Example(
@@ -163,7 +163,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .b:
                 print("b")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -175,7 +175,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .delta:
                 print("delta")
             }
-            """
+            """,
         ),
     ]
 
@@ -190,7 +190,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             ↓@unknown default:
                 print("x is out of this world")
             }
-            """
+            """,
         ): Example(
             """
             switch x {
@@ -203,7 +203,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             @unknown default:
                 print("x is out of this world")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -213,7 +213,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             ↓default:
                 print("x is invalid")
             }
-            """
+            """,
         ): Example(
             """
             switch x {
@@ -223,7 +223,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             default:
                 print("x is invalid")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -233,7 +233,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             ↓case .invalid:
                 print("x is invalid")
             }
-            """
+            """,
         ): Example(
             """
             switch x {
@@ -243,7 +243,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .invalid:
                 print("x is invalid")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -255,7 +255,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
                 print("multiple ...")
                 print("... lines")
             }
-            """
+            """,
         ): Example(
             """
             switch x {
@@ -267,7 +267,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
                 print("multiple ...")
                 print("... lines")
             }
-            """
+            """,
         ),
         // Violations should still be caught outside of #if blocks
         Example(
@@ -288,7 +288,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             ↓case .e:
                 print("e")
             }
-            """
+            """,
         ): Example(
             """
             switch x {
@@ -309,7 +309,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .e:
                 print("e")
             }
-            """
+            """,
         ),
         // Violation after #endif
         Example(
@@ -325,7 +325,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             ↓case .c:
                 print("c")
             }
-            """
+            """,
         ): Example(
             """
             switch x {
@@ -340,7 +340,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .c:
                 print("c")
             }
-            """
+            """,
         ),
         // Block comment without blank line
         Example(
@@ -352,7 +352,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             ↓case .b:
                 print("b")
             }
-            """
+            """,
         ): Example(
             """
             switch x {
@@ -363,7 +363,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .b:
                 print("b")
             }
-            """
+            """,
         ),
         // Doc comment without blank line
         Example(
@@ -375,7 +375,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             ↓case .b:
                 print("b")
             }
-            """
+            """,
         ): Example(
             """
             switch x {
@@ -386,7 +386,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .b:
                 print("b")
             }
-            """
+            """,
         ),
         // Comment inside case body - blank line needed before next case
         Example(
@@ -398,7 +398,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             ↓case .b:
                 print("b")
             }
-            """
+            """,
         ): Example(
             """
             switch x {
@@ -409,7 +409,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .b:
                 print("b")
             }
-            """
+            """,
         ),
         // Line comment without blank line (checking correct indentation)
         Example(
@@ -421,7 +421,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
                 ↓case .b:
                     print("b")
                 }
-            """
+            """,
         ): Example(
             """
                 switch x {
@@ -432,7 +432,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
                 case .b:
                     print("b")
                 }
-            """
+            """,
         ),
         // Multiple comments without blank line (checking correct indentation)
         Example(
@@ -445,7 +445,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
                 ↓case .b:
                     print("b")
                 }
-            """
+            """,
         ): Example(
             """
                 switch x {
@@ -457,7 +457,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
                 case .b:
                     print("b")
                 }
-            """
+            """,
         ),
         Example(
             """
@@ -472,7 +472,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
                 3
             #endif
             }
-            """
+            """,
         ): Example(
             """
             switch (i) {
@@ -488,7 +488,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
                 3
             #endif
             }
-            """
+            """,
         ),
         // separation: never - remove blank lines
         Example(
@@ -500,7 +500,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             ↓case .second:
                 print("second")
             }
-            """, configuration: noSeparation
+            """, configuration: noSeparation,
         ): Example(
             """
             switch x {
@@ -509,7 +509,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .second:
                 print("second")
             }
-            """, configuration: noSeparation
+            """, configuration: noSeparation,
         ),
         // separation: never - two blank lines should be reduced to zero
         Example(
@@ -535,7 +535,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             ↓↓case .d:
                 print("d")
             }
-            """, configuration: noSeparation
+            """, configuration: noSeparation,
         ): Example(
             """
             switch x {
@@ -553,7 +553,7 @@ enum VerticalWhitespaceBetweenCasesRuleExamples {
             case .d:
                 print("d")
             }
-            """, configuration: noSeparation
+            """, configuration: noSeparation,
         ),
     ]
 }

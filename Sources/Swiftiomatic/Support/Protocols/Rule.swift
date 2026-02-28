@@ -30,7 +30,8 @@ protocol Rule: Sendable {
     /// - parameter exclusiveOptions: A set of options that should be excluded from the description.
     ///
     /// - returns: A description of the rule's configuration.
-    func createConfigurationDescription(exclusiveOptions: Set<String>) -> RuleConfigurationDescription
+    func createConfigurationDescription(exclusiveOptions: Set<String>)
+        -> RuleConfigurationDescription
 
     /// Executes the rule on a file and returns any violations to the rule's expectations.
     ///
@@ -61,7 +62,11 @@ protocol Rule: Sendable {
     /// - parameter file:              The file for which to collect info.
     /// - parameter storage:           The storage object where collected info should be saved.
     /// - parameter compilerArguments: The compiler arguments needed to compile this file.
-    func collectInfo(for file: SwiftLintFile, into storage: RuleStorage, compilerArguments: [String])
+    func collectInfo(
+        for file: SwiftLintFile,
+        into storage: RuleStorage,
+        compilerArguments: [String],
+    )
 
     /// Executes the rule on a file after collecting file info for all files and returns any violations to the rule's
     /// expectations.
@@ -143,17 +148,17 @@ extension Rule {
         -> RuleConfigurationDescription
     {
         RuleConfigurationDescription.from(
-            configuration: configuration, exclusiveOptions: exclusiveOptions
+            configuration: configuration, exclusiveOptions: exclusiveOptions,
         )
     }
 
     func canBeDisabled(violation: StyleViolation, by ruleID: RuleIdentifier) -> Bool {
         switch ruleID {
-        case .all:
-            true
-        case let .single(identifier: id):
-            Self.description.allIdentifiers.contains(id)
-                && Self.description.allIdentifiers.contains(violation.ruleIdentifier)
+            case .all:
+                true
+            case let .single(identifier: id):
+                Self.description.allIdentifiers.contains(id)
+                    && Self.description.allIdentifiers.contains(violation.ruleIdentifier)
         }
     }
 
@@ -203,7 +208,8 @@ protocol CorrectableRule: Rule {
     /// - parameter compilerArguments: The compiler arguments needed to compile this file.
     ///
     /// - returns: All corrections that were applied.
-    func correct(file: SwiftLintFile, using storage: RuleStorage, compilerArguments: [String]) -> Int
+    func correct(file: SwiftLintFile, using storage: RuleStorage, compilerArguments: [String])
+        -> Int
 }
 
 extension CorrectableRule {
@@ -237,7 +243,10 @@ protocol SubstitutionCorrectableRule: CorrectableRule {
 
 extension SubstitutionCorrectableRule {
     func correct(file: SwiftLintFile) -> Int {
-        let violatingRanges = file.ruleEnabled(violatingRanges: violationRanges(in: file), for: self)
+        let violatingRanges = file.ruleEnabled(
+            violatingRanges: violationRanges(in: file),
+            for: self,
+        )
         guard violatingRanges.isNotEmpty else {
             return 0
         }
@@ -246,7 +255,10 @@ extension SubstitutionCorrectableRule {
         for range in violatingRanges.sorted(by: { $0.location > $1.location }) {
             let contentsNSString = contents.bridge()
             if let (rangeToRemove, substitution) = substitution(for: range, in: file) {
-                contents = contentsNSString.replacingCharacters(in: rangeToRemove, with: substitution)
+                contents = contentsNSString.replacingCharacters(
+                    in: rangeToRemove,
+                    with: substitution,
+                )
                 numberOfCorrections += 1
             }
         }

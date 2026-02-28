@@ -26,7 +26,7 @@ struct NoMagicNumbersRule: Rule {
                     let y = 3
                     let vector = [x, y, -1]
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -34,7 +34,7 @@ struct NoMagicNumbersRule: Rule {
                     var foo: Double = 132
                     static let bar: Double = 0.98
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -44,7 +44,7 @@ struct NoMagicNumbersRule: Rule {
                         return
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -52,7 +52,7 @@ struct NoMagicNumbersRule: Rule {
                     case positive = 2
                     case negative = -2
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -60,7 +60,7 @@ struct NoMagicNumbersRule: Rule {
                     let array: [Int] = []
                     let bar = array[42]
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -70,7 +70,7 @@ struct NoMagicNumbersRule: Rule {
                         let bar = array[42]
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -78,7 +78,7 @@ struct NoMagicNumbersRule: Rule {
                 extension MyTest {
                     let a = Int(3)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -86,7 +86,7 @@ struct NoMagicNumbersRule: Rule {
                     let a = Int(3)
                 }
                 class MyTest: XCTestCase {}
-                """
+                """,
             ),
             Example("let foo = 1 << 2"),
             Example("let foo = 1 >> 2"),
@@ -109,7 +109,7 @@ struct NoMagicNumbersRule: Rule {
                         let _ = 2 + 2
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -117,7 +117,7 @@ struct NoMagicNumbersRule: Rule {
                     private var a: Int { 2 }
                     @Test func f() { let _ = 2 + a }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -125,7 +125,7 @@ struct NoMagicNumbersRule: Rule {
                     private var a: Int { 2 }
                     @Test func f() { let _ = 2 + a }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -134,58 +134,62 @@ struct NoMagicNumbersRule: Rule {
                 #elseif compiler(<3.0)
                 let a = 2
                 #endif
-                """
+                """,
             ),
             Example(
                 """
                 let myColor: UIColor = UIColor(red: 0.6, green: 1.0, blue: 0.2, alpha: 0.52)
-                """
+                """,
             ),
             Example(
                 """
                 let colorLiteral = #colorLiteral(red: 0.7019607843, green: 0.7019607843, blue: 0.7019607843, alpha: 1)
-                """
+                """,
             ),
             Example(
                 """
                 let yourColor: UIColor = UIColor(hue: 0.9, saturation: 0.6, brightness: 0.333334, alpha: 1.0)
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
                 let systemColor = UIColor(displayP3Red: 0.3, green: 0.8, blue: 0.5, alpha: 0.75)
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
                 func createColor() -> UIColor {
                     return UIColor(white: 0.5, alpha: 0.8)
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
                 let memberColor = UIColor.init(red: 0.5, green: 0.3, blue: 0.9, alpha: 1.0)
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
                 """
                 func createMemberColor() -> UIColor {
                     return UIColor.init(hue: 0.2, saturation: 0.8, brightness: 0.7, alpha: 0.5)
                 }
-                """, excludeFromDocumentation: true
+                """, excludeFromDocumentation: true,
             ),
             Example(
-                "let a = b + 2", configuration: ["allowed_numbers": [2]], excludeFromDocumentation: true
+                "let a = b + 2", configuration: ["allowed_numbers": [2]],
+                excludeFromDocumentation: true,
             ),
             Example(
-                "let a = b + 2", configuration: ["allowed_numbers": [2.0]], excludeFromDocumentation: true
+                "let a = b + 2", configuration: ["allowed_numbers": [2.0]],
+                excludeFromDocumentation: true,
             ),
             Example(
-                "let a = b + 1", configuration: ["allowed_numbers": [2.0]], excludeFromDocumentation: true
+                "let a = b + 1", configuration: ["allowed_numbers": [2.0]],
+                excludeFromDocumentation: true,
             ),
             Example(
-                "let a = b + 2.5", configuration: ["allowed_numbers": [2.5]], excludeFromDocumentation: true
+                "let a = b + 2.5", configuration: ["allowed_numbers": [2.5]],
+                excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -206,14 +210,14 @@ struct NoMagicNumbersRule: Rule {
                         extension NSObject {
                             let a = Int(↓3)
                         }
-                """
+                """,
             ),
             Example(
                 """
                 if (fileSize > ↓1000000) {
                     return
                 }
-                """
+                """,
             ),
             Example("let imageHeight = (width - ↓24)"),
             Example("return (↓5, ↓10, ↓15)"),
@@ -222,7 +226,7 @@ struct NoMagicNumbersRule: Rule {
                 #ExampleMacro {
                     ContentView(value: ↓5)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -233,12 +237,13 @@ struct NoMagicNumbersRule: Rule {
                 #else
                 f(↓4.0)
                 #endif
-                """
+                """,
             ),
             Example(
-                "let a = b + ↓3", configuration: ["allowed_numbers": [2.0]], excludeFromDocumentation: true
+                "let a = b + ↓3", configuration: ["allowed_numbers": [2.0]],
+                excludeFromDocumentation: true,
             ),
-        ]
+        ],
     )
 }
 
@@ -349,7 +354,7 @@ private extension NoMagicNumbersRule {
                 return
             }
             let violationsToRemove = Set(
-                possibleViolationsForClass.map { ReasonedRuleViolation(position: $0) }
+                possibleViolationsForClass.map { ReasonedRuleViolation(position: $0) },
             )
             violations.removeAll { violationsToRemove.contains($0) }
             possibleViolations.removeValue(forKey: className)
@@ -393,7 +398,8 @@ private extension TokenSyntax {
 private extension Syntax {
     var asAcceptedInfixOperator: InfixOperatorExprSyntax? {
         if let infixOp = `as`(InfixOperatorExprSyntax.self),
-           let operatorSymbol = infixOp.operator.as(BinaryOperatorExprSyntax.self)?.operator.tokenKind,
+           let operatorSymbol = infixOp.operator.as(BinaryOperatorExprSyntax.self)?.operator
+           .tokenKind,
            [.binaryOperator("..."), .binaryOperator("..<")].contains(operatorSymbol)
         {
             return infixOp
@@ -429,7 +435,8 @@ private extension ExprSyntaxProtocol {
 
     func isOperandOfFreestandingShiftOperation() -> Bool {
         if let operation = parent?.as(InfixOperatorExprSyntax.self),
-           let operatorSymbol = operation.operator.as(BinaryOperatorExprSyntax.self)?.operator.tokenKind,
+           let operatorSymbol = operation.operator.as(BinaryOperatorExprSyntax.self)?.operator
+           .tokenKind,
            [.binaryOperator("<<"), .binaryOperator(">>")].contains(operatorSymbol)
         {
             return operation.parent?.isProtocol((any ExprSyntaxProtocol).self) != true
@@ -449,7 +456,7 @@ private extension ExprSyntaxProtocol {
         ]
         if uiColorInitializerLabels.contains(label),
            let call = param.parent?.as(LabeledExprListSyntax.self)?.parent?.as(
-               FunctionCallExprSyntax.self
+               FunctionCallExprSyntax.self,
            )
         {
             if let calledExpr = call.calledExpression.as(DeclReferenceExprSyntax.self),
@@ -467,7 +474,7 @@ private extension ExprSyntaxProtocol {
         }
         if ["red", "green", "blue", "alpha"].contains(label),
            let call = param.parent?.as(LabeledExprListSyntax.self)?.parent?.as(
-               MacroExpansionExprSyntax.self
+               MacroExpansionExprSyntax.self,
            ),
            call.macroName.text == "colorLiteral"
         {

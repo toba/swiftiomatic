@@ -1,11 +1,3 @@
-//
-//  WrapArguments.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 11/23/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -14,18 +6,19 @@ extension FormatRule {
         help: "Align wrapped function arguments or collection elements.",
         orderAfter: [.wrap],
         options: [
-            "wrap-arguments", "wrap-parameters", "wrap-collections", "closing-paren", "call-site-paren",
+            "wrap-arguments", "wrap-parameters", "wrap-collections", "closing-paren",
+            "call-site-paren",
             "wrap-return-type", "wrap-conditions", "wrap-type-aliases", "wrap-effects",
             "wrap-string-interpolation", "allow-partial-wrapping",
         ],
         sharedOptions: [
             "indent", "trim-whitespace", "linebreaks",
             "tab-width", "max-width", "smart-tabs", "asset-literals", "wrap-ternary",
-        ]
+        ],
     ) { formatter in
         formatter.wrapCollectionsAndArguments(
             completePartialWrapping: true,
-            wrapSingleArguments: true
+            wrapSingleArguments: true,
         )
     } examples: {
         """

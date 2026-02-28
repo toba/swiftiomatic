@@ -24,9 +24,11 @@ struct ToggleBoolRule: Rule {
         ],
         corrections: [
             Example("↓isHidden = !isHidden"): Example("isHidden.toggle()"),
-            Example("↓view.clipsToBounds = !view.clipsToBounds"): Example("view.clipsToBounds.toggle()"),
+            Example("↓view.clipsToBounds = !view.clipsToBounds"): Example(
+                "view.clipsToBounds.toggle()",
+            ),
             Example("func foo() { ↓abc = !abc }"): Example("func foo() { abc.toggle() }"),
-        ]
+        ],
     )
 }
 
@@ -63,7 +65,7 @@ private extension ToggleBoolRule {
                 node
                     .with(
                         \.[index],
-                        "\(firstExpr.trimmed).toggle()"
+                        "\(firstExpr.trimmed).toggle()",
                     )
                     .dropLast(2)
             let newNode = ExprListSyntax(elements)

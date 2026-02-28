@@ -9,11 +9,11 @@ struct IdentifierNameConfiguration: RuleConfiguration {
         minLengthError: 2,
         maxLengthWarning: 40,
         maxLengthError: 60,
-        excluded: ["id"]
+        excluded: ["id"],
     )
 
     @ConfigurationElement(
-        key: "additional_operators", postprocessor: { $0.formUnion(Self.defaultOperators) }
+        key: "additional_operators", postprocessor: { $0.formUnion(Self.defaultOperators) },
     )
     private(set) var additionalOperators = Set<String>()
     typealias Parent = IdentifierNameRule

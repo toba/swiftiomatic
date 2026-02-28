@@ -1,11 +1,3 @@
-//
-//  URLMacro.swift
-//  SwiftFormat
-//
-//  Created by Manuel Lopez on 6/17/25.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -14,36 +6,43 @@ extension FormatRule {
         help:
         "Replace force-unwrapped `URL(string:)` initializers with the configured `#URL(_:)` macro.",
         disabledByDefault: true,
-        options: ["url-macro"]
+        options: ["url-macro"],
     ) { formatter in
         // Only apply this rule if a URL macro is configured
         guard case let .macro(macroName, module: module) = formatter.options.urlMacro else {
             return
         }
         // First collect all indices to process
-        var indicesToProcess: [(Int, Int, Int, Int)] = [] // (i, firstArgIndex, stringStartIndex, unwrapIndex)
+        var indicesToProcess: [(Int, Int, Int, Int)] =
+            [] // (i, firstArgIndex, stringStartIndex, unwrapIndex)
 
         formatter.forEach(.identifier("URL")) { i, _ in
             // Look for `URL(string: "...")!` pattern
             guard let openParenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
                   formatter.tokens[openParenIndex] == .startOfScope("("),
                   let firstArgIndex = formatter.index(
-                      of: .nonSpaceOrCommentOrLinebreak, after: openParenIndex
+                      of: .nonSpaceOrCommentOrLinebreak, after: openParenIndex,
                   ),
                   formatter.tokens[firstArgIndex] == .identifier("string"),
-                  let colonIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: firstArgIndex),
+                  let colonIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak,
+                      after: firstArgIndex,
+                  ),
                   formatter.tokens[colonIndex] == .delimiter(":"),
                   let stringStartIndex = formatter.index(
-                      of: .nonSpaceOrCommentOrLinebreak, after: colonIndex
+                      of: .nonSpaceOrCommentOrLinebreak, after: colonIndex,
                   ),
                   formatter.tokens[stringStartIndex] == .startOfScope("\""),
-                  let stringEndIndex = formatter.index(of: .endOfScope("\""), after: stringStartIndex),
+                  let stringEndIndex = formatter.index(
+                      of: .endOfScope("\""),
+                      after: stringStartIndex,
+                  ),
                   let closeParenIndex = formatter.index(
-                      of: .nonSpaceOrCommentOrLinebreak, after: stringEndIndex
+                      of: .nonSpaceOrCommentOrLinebreak, after: stringEndIndex,
                   ),
                   formatter.tokens[closeParenIndex] == .endOfScope(")"),
                   let unwrapIndex = formatter.index(
-                      of: .nonSpaceOrCommentOrLinebreak, after: closeParenIndex
+                      of: .nonSpaceOrCommentOrLinebreak, after: closeParenIndex,
                   ),
                   formatter.tokens[unwrapIndex] == .operator("!", .postfix)
             else { return }
@@ -54,15 +53,15 @@ extension FormatRule {
             for tokenIndex in (stringStartIndex + 1) ..< stringEndIndex {
                 let token = formatter.tokens[tokenIndex]
                 switch token {
-                case .stringBody:
-                    // String body is fine - this is the literal content
-                    continue
-                case .startOfScope("\\("), .endOfScope(")"):
-                    // String interpolation detected
-                    hasNonLiteralContent = true
-                default:
-                    // Any other tokens between string delimiters suggest complex content
-                    hasNonLiteralContent = true
+                    case .stringBody:
+                        // String body is fine - this is the literal content
+                        continue
+                    case .startOfScope("\\("), .endOfScope(")"):
+                        // String interpolation detected
+                        hasNonLiteralContent = true
+                    default:
+                        // Any other tokens between string delimiters suggest complex content
+                        hasNonLiteralContent = true
                 }
             }
 

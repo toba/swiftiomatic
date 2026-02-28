@@ -21,7 +21,7 @@ final class PerformanceAntiPatternsCheck: BaseCheck {
                     severity: .low,
                     message: "Date() used for timing — can go backwards due to NTP adjustments",
                     suggestion: "Use ContinuousClock.now for monotonic timing",
-                    confidence: .medium
+                    confidence: .medium,
                 )
             }
         }
@@ -39,7 +39,7 @@ final class PerformanceAntiPatternsCheck: BaseCheck {
 
         let mutationFinder = MutationDuringIterationFinder(
             collectionName: collectionName,
-            viewMode: .sourceAccurate
+            viewMode: .sourceAccurate,
         )
         mutationFinder.walk(node.body)
 
@@ -51,7 +51,7 @@ final class PerformanceAntiPatternsCheck: BaseCheck {
                 message:
                 "Collection '\(collectionName)' is mutated during iteration — may crash or skip elements",
                 suggestion: "Use removeAll(where:), filter, or collect indices first",
-                confidence: .high
+                confidence: .high,
             )
         }
 
@@ -73,9 +73,10 @@ final class PerformanceAntiPatternsCheck: BaseCheck {
                 severity: .low,
                 message: elementCount == 0
                     ? "Empty array literal may heap-allocate when passed to generic Collection/Sequence parameter"
-                    : "Single-element array literal may heap-allocate when passed to generic Collection/Sequence parameter",
+                    :
+                    "Single-element array literal may heap-allocate when passed to generic Collection/Sequence parameter",
                 suggestion: "Consider \(label) for zero-allocation alternative",
-                confidence: .low
+                confidence: .low,
             )
         }
 

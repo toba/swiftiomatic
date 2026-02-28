@@ -13,19 +13,25 @@ struct FinalTestCaseRule: Rule {
             Example("open class Test: XCTestCase {}"),
             Example("public final class Test: QuickSpec {}"),
             Example("class Test: MyTestCase {}"),
-            Example("struct Test: MyTestCase {}", configuration: ["test_parent_classes": "MyTestCase"]),
+            Example(
+                "struct Test: MyTestCase {}",
+                configuration: ["test_parent_classes": "MyTestCase"],
+            ),
         ],
         triggeringExamples: [
             Example("class ↓Test: XCTestCase {}"),
             Example("public class ↓Test: QuickSpec {}"),
-            Example("class ↓Test: MyTestCase {}", configuration: ["test_parent_classes": "MyTestCase"]),
+            Example(
+                "class ↓Test: MyTestCase {}",
+                configuration: ["test_parent_classes": "MyTestCase"],
+            ),
         ],
         corrections: [
             Example("class ↓Test: XCTestCase {}"):
                 Example("final class Test: XCTestCase {}"),
             Example("internal class ↓Test: XCTestCase {}"):
                 Example("internal final class Test: XCTestCase {}"),
-        ]
+        ],
     )
 }
 
@@ -60,12 +66,18 @@ private extension FinalTestCaseRule {
                     if node.modifiers.isEmpty {
                         node
                             .with(
-                                \.modifiers, [finalModifier.with(\.leadingTrivia, node.classKeyword.leadingTrivia)]
+                                \.modifiers, [finalModifier.with(
+                                    \.leadingTrivia,
+                                    node.classKeyword.leadingTrivia,
+                                )],
                             )
                             .with(\.classKeyword.leadingTrivia, .space)
                     } else {
                         node
-                            .with(\.modifiers, node.modifiers + [finalModifier.with(\.trailingTrivia, .space)])
+                            .with(
+                                \.modifiers,
+                                node.modifiers + [finalModifier.with(\.trailingTrivia, .space)],
+                            )
                     }
             }
             return super.visit(newNode)

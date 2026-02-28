@@ -85,14 +85,14 @@ struct RequiredEnumCaseRule: Rule {
                 enum MyNetworkResponse: String, NetworkResponsable {
                     case success, error, notConnected
                 }
-                """, configuration: exampleConfiguration
+                """, configuration: exampleConfiguration,
             ),
             Example(
                 """
                 enum MyNetworkResponse: String, NetworkResponsable {
                     case success, error, notConnected(error: Error)
                 }
-                """, configuration: exampleConfiguration
+                """, configuration: exampleConfiguration,
             ),
             Example(
                 """
@@ -101,7 +101,7 @@ struct RequiredEnumCaseRule: Rule {
                     case error
                     case notConnected
                 }
-                """, configuration: exampleConfiguration
+                """, configuration: exampleConfiguration,
             ),
             Example(
                 """
@@ -110,7 +110,7 @@ struct RequiredEnumCaseRule: Rule {
                     case error
                     case notConnected(error: Error)
                 }
-                """, configuration: exampleConfiguration
+                """, configuration: exampleConfiguration,
             ),
         ],
         triggeringExamples: [
@@ -119,14 +119,14 @@ struct RequiredEnumCaseRule: Rule {
                 ↓enum MyNetworkResponse: String, NetworkResponsable {
                     case success, error
                 }
-                """, configuration: exampleConfiguration
+                """, configuration: exampleConfiguration,
             ),
             Example(
                 """
                 ↓enum MyNetworkResponse: String, NetworkResponsable {
                     case success, error
                 }
-                """, configuration: exampleConfiguration
+                """, configuration: exampleConfiguration,
             ),
             Example(
                 """
@@ -134,7 +134,7 @@ struct RequiredEnumCaseRule: Rule {
                     case success
                     case error
                 }
-                """, configuration: exampleConfiguration
+                """, configuration: exampleConfiguration,
             ),
             Example(
                 """
@@ -142,9 +142,9 @@ struct RequiredEnumCaseRule: Rule {
                     case success
                     case error
                 }
-                """, configuration: exampleConfiguration
+                """, configuration: exampleConfiguration,
             ),
-        ]
+        ],
     )
 }
 
@@ -166,7 +166,8 @@ private extension RequiredEnumCaseRule {
             let enumCases = node.enumCasesNames
             let violations = configuration.protocols
                 .flatMap { type, requiredCases -> [ReasonedRuleViolation] in
-                    guard node.inheritanceClause.containsInheritedType(inheritedTypes: [type]) else {
+                    guard node.inheritanceClause.containsInheritedType(inheritedTypes: [type])
+                    else {
                         return []
                     }
 
@@ -178,7 +179,7 @@ private extension RequiredEnumCaseRule {
                         return ReasonedRuleViolation(
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason: "Enums conforming to \"\(type)\" must have a \"\(requiredCase.name)\" case",
-                            severity: requiredCase.severity
+                            severity: requiredCase.severity,
                         )
                     }
                 }

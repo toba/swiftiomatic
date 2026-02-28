@@ -21,7 +21,7 @@ struct UnusedControlFlowLabelRule: Rule {
                 case 2: print("2")
                 default: break label
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -30,7 +30,7 @@ struct UnusedControlFlowLabelRule: Rule {
                         break loop
                     }
                 } while true
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -45,7 +45,7 @@ struct UnusedControlFlowLabelRule: Rule {
                 case 2: print("2")
                 default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -54,13 +54,15 @@ struct UnusedControlFlowLabelRule: Rule {
                         break
                     }
                 } while true
-                """
+                """,
             ),
         ],
         corrections: [
             Example("↓loop: while true { break }"): Example("while true { break }"),
             Example("↓loop: while true { break loop1 }"): Example("while true { break loop1 }"),
-            Example("↓loop: while true { break outerLoop }"): Example("while true { break outerLoop }"),
+            Example("↓loop: while true { break outerLoop }"): Example(
+                "while true { break outerLoop }",
+            ),
             Example("↓loop: for x in array { break }"): Example("for x in array { break }"),
             Example(
                 """
@@ -69,7 +71,7 @@ struct UnusedControlFlowLabelRule: Rule {
                 case 2: print("2")
                 default: break
                 }
-                """
+                """,
             ): Example(
                 """
                 switch number {
@@ -77,7 +79,7 @@ struct UnusedControlFlowLabelRule: Rule {
                 case 2: print("2")
                 default: break
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -86,7 +88,7 @@ struct UnusedControlFlowLabelRule: Rule {
                         break
                     }
                 } while true
-                """
+                """,
             ): Example(
                 """
                 repeat {
@@ -94,9 +96,9 @@ struct UnusedControlFlowLabelRule: Rule {
                         break
                     }
                 } while true
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -142,7 +144,7 @@ private extension LabeledStmtSyntax {
     }
 }
 
-private class BreakAndContinueLabelCollector: SyntaxVisitor {
+private final class BreakAndContinueLabelCollector: SyntaxVisitor {
     private(set) var labels: Set<String> = []
 
     override func visitPost(_ node: BreakStmtSyntax) {

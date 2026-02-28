@@ -21,7 +21,8 @@ struct ImplicitlyUnwrappedOptionalRule: Rule {
                     @IBOutlet
                     weak var bar: SomeObject!
                 }
-                """, configuration: ["mode": "all_except_iboutlets"], excludeFromDocumentation: true
+                """, configuration: ["mode": "all_except_iboutlets"],
+                excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
@@ -40,9 +41,9 @@ struct ImplicitlyUnwrappedOptionalRule: Rule {
                 class MyClass {
                     weak var bar: ↓SomeObject!
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -62,13 +63,13 @@ private extension ImplicitlyUnwrappedOptionalRule {
 
         override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
             switch configuration.mode {
-            case .all:
-                return .visitChildren
-            case .allExceptIBOutlets:
-                return node.isIBOutlet ? .skipChildren : .visitChildren
-            case .weakExceptIBOutlets:
-                return (node.isIBOutlet || node.weakOrUnownedModifier == nil)
-                    ? .skipChildren : .visitChildren
+                case .all:
+                    return .visitChildren
+                case .allExceptIBOutlets:
+                    return node.isIBOutlet ? .skipChildren : .visitChildren
+                case .weakExceptIBOutlets:
+                    return (node.isIBOutlet || node.weakOrUnownedModifier == nil)
+                        ? .skipChildren : .visitChildren
             }
         }
     }

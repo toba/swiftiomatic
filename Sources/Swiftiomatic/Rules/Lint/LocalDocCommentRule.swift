@@ -1,5 +1,5 @@
-import SwiftIDEUtils
 import SwiftSyntax
+import SwiftIDEUtils
 
 struct LocalDocCommentRule: SwiftSyntaxRule, OptInRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -16,26 +16,26 @@ struct LocalDocCommentRule: SwiftSyntaxRule, OptInRule {
                   // Local scope documentation should use normal comments.
                   print("foo")
                 }
-                """
+                """,
             ),
             Example(
                 """
                 /// My great property
                 var myGreatProperty: String!
-                """
+                """,
             ),
             Example(
                 """
                 /// Look here for more info: https://github.com.
                 var myGreatProperty: String!
-                """
+                """,
             ),
             Example(
                 """
                 /// Look here for more info:
                 /// https://github.com.
                 var myGreatProperty: String!
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -45,16 +45,16 @@ struct LocalDocCommentRule: SwiftSyntaxRule, OptInRule {
                   ↓/// Docstring inside a function declaration
                   print("foo")
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(
             configuration: configuration,
             file: file,
-            classifications: file.syntaxClassifications.filter { $0.kind != .none }
+            classifications: file.syntaxClassifications.filter { $0.kind != .none },
         )
     }
 }
@@ -66,7 +66,7 @@ private extension LocalDocCommentRule {
         init(
             configuration: ConfigurationType,
             file: SwiftLintFile,
-            classifications: [SyntaxClassifiedRange]
+            classifications: [SyntaxClassifiedRange],
         ) {
             docCommentRanges =
                 classifications
@@ -82,7 +82,8 @@ private extension LocalDocCommentRule {
 
             let violatingRange = docCommentRanges.first { $0.overlaps(body.range) }
             if let violatingRange {
-                violations.append(AbsolutePosition(utf8Offset: violatingRange.lowerBound.utf8Offset))
+                violations
+                    .append(AbsolutePosition(utf8Offset: violatingRange.lowerBound.utf8Offset))
             }
         }
     }

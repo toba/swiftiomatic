@@ -20,7 +20,7 @@ struct DiscouragedAssertRule: Rule {
             Example(#"↓assert(false, "foobar")"#),
             Example(#"↓assert(false, "foobar", file: "toto", line: 42)"#),
             Example(#"↓assert(   false    , "foobar")"#),
-        ]
+        ],
     )
 }
 

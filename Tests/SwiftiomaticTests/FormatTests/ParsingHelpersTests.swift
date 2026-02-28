@@ -74,9 +74,13 @@ import Testing
     }
 
     @Test func ifConditionClosureTreatedAsClosure() {
-        let formatter = Formatter(tokenize("""
-        if let foo = { () -> Int? in 5 }() {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo = { () -> Int? in 5 }() {}
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 8))
         #expect(!(formatter.isStartOfClosure(at: 26)))
     }
@@ -124,27 +128,39 @@ import Testing
     }
 
     @Test func closureRecognizedInsideGuardCondition() {
-        let formatter = Formatter(tokenize("""
-        guard let bar = { nil }() else {
-            return nil
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                guard let bar = { nil }() else {
+                    return nil
+                }
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 8))
         #expect(!(formatter.isStartOfClosure(at: 18)))
     }
 
     @Test func closureInIfCondition() {
-        let formatter = Formatter(tokenize("""
-        if let btn = btns.first { !$0.isHidden } {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let btn = btns.first { !$0.isHidden } {}
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 12))
         #expect(!(formatter.isStartOfClosure(at: 21)))
     }
 
     @Test func closureInIfCondition2() {
-        let formatter = Formatter(tokenize("""
-        if let foo, let btn = btns.first { !$0.isHidden } {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo, let btn = btns.first { !$0.isHidden } {}
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 17))
         #expect(!(formatter.isStartOfClosure(at: 26)))
     }
@@ -227,14 +243,18 @@ import Testing
     }
 
     @Test func closureInCaseWhereClause() {
-        let formatter = Formatter(tokenize("""
-        switch foo {
-            case .bar
-            where testValues.map(String.init).compactMap { $0 }
-            .contains(baz):
-                continue
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                switch foo {
+                    case .bar
+                    where testValues.map(String.init).compactMap { $0 }
+                    .contains(baz):
+                        continue
+                }
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 26))
     }
 
@@ -444,20 +464,24 @@ import Testing
 
     @Test func multipleNestedTrailingClosures() {
         let repeatCount = 2
-        let formatter = Formatter(tokenize("""
-        override func foo() {
-        bar {
-        var baz = 5
-        \(String(repeating: """
-        fizz {
-        buzz {
-        fizzbuzz()
-        }
-        }
+        let formatter = Formatter(
+            tokenize(
+                """
+                override func foo() {
+                bar {
+                var baz = 5
+                \(String(repeating: """
+                fizz {
+                buzz {
+                fizzbuzz()
+                }
+                }
 
-        """, count: repeatCount))}
-        }
-        """))
+                """, count: repeatCount))}
+                }
+                """,
+            ),
+        )
         #expect(!(formatter.isStartOfClosure(at: 8)))
         #expect(formatter.isStartOfClosure(at: 12))
         for i in stride(from: 0, to: repeatCount * 16, by: 16) {
@@ -467,48 +491,68 @@ import Testing
     }
 
     @Test func wrappedClosureAfterAnIfStatement() {
-        let formatter = Formatter(tokenize("""
-        if foo {}
-        bar
-            .baz {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if foo {}
+                bar
+                    .baz {}
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 13))
     }
 
     @Test func wrappedClosureAfterSwitch() {
-        let formatter = Formatter(tokenize("""
-        switch foo {
-        default:
-            break
-        }
-        bar
-            .map {
-                // baz
-            }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                switch foo {
+                default:
+                    break
+                }
+                bar
+                    .map {
+                        // baz
+                    }
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 20))
     }
 
     @Test func closureInsideIfCondition() {
-        let formatter = Formatter(tokenize("""
-        if let foo = bar(), { x == y }() {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo = bar(), { x == y }() {}
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 13))
         #expect(!(formatter.isStartOfClosure(at: 25)))
     }
 
     @Test func closureInsideIfCondition2() {
-        let formatter = Formatter(tokenize("""
-        if foo == bar.map { $0.baz }.sorted() {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if foo == bar.map { $0.baz }.sorted() {}
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 10))
         #expect(!(formatter.isStartOfClosure(at: 22)))
     }
 
     @Test func closureInsideIfCondition3() {
-        let formatter = Formatter(tokenize("""
-        if baz, let foo = bar(), { x == y }() {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if baz, let foo = bar(), { x == y }() {}
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 16))
         #expect(!(formatter.isStartOfClosure(at: 28)))
     }
@@ -519,113 +563,165 @@ import Testing
     }
 
     @Test func allmanClosureAfterFunction() {
-        let formatter = Formatter(tokenize("""
-        func foo() {}
-        Foo
-            .baz
-            {
-                baz()
-            }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                func foo() {}
+                Foo
+                    .baz
+                    {
+                        baz()
+                    }
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 16))
     }
 
     @Test func genericInitializerTrailingClosure() {
-        let formatter = Formatter(tokenize("""
-        Foo<Bar>(0) { [weak self]() -> Void in }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                Foo<Bar>(0) { [weak self]() -> Void in }
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 8))
     }
 
     @Test func parameterBodyAfterStringIsNotClosure() {
-        let formatter = Formatter(tokenize("""
-        var foo: String = "bar" {
-            didSet { print("didSet") }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var foo: String = "bar" {
+                    didSet { print("didSet") }
+                }
+                """,
+            ),
+        )
         #expect(!(formatter.isStartOfClosure(at: 13)))
     }
 
     @Test func parameterBodyAfterMultilineStringIsNotClosure() {
-        let formatter = Formatter(tokenize("""
-        var foo: String = \"\""
-        bar
-        \"\"" {
-            didSet { print("didSet") }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var foo: String = \"\""
+                bar
+                \"\"" {
+                    didSet { print("didSet") }
+                }
+                """,
+            ),
+        )
         #expect(!(formatter.isStartOfClosure(at: 15)))
     }
 
     @Test func parameterBodyAfterNumberIsNotClosure() {
-        let formatter = Formatter(tokenize("""
-        var foo: Int = 10 {
-            didSet { print("didSet") }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var foo: Int = 10 {
+                    didSet { print("didSet") }
+                }
+                """,
+            ),
+        )
         #expect(!(formatter.isStartOfClosure(at: 11)))
     }
 
     @Test func parameterBodyAfterClosureIsNotClosure() {
-        let formatter = Formatter(tokenize("""
-        var foo: () -> String = { "bar" } {
-            didSet { print("didSet") }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var foo: () -> String = { "bar" } {
+                    didSet { print("didSet") }
+                }
+                """,
+            ),
+        )
         #expect(!(formatter.isStartOfClosure(at: 22)))
     }
 
     @Test func parameterBodyAfterExecutedClosureIsNotClosure() {
-        let formatter = Formatter(tokenize("""
-        var foo: String = { "bar" }() {
-            didSet { print("didSet") }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var foo: String = { "bar" }() {
+                    didSet { print("didSet") }
+                }
+                """,
+            ),
+        )
         #expect(!(formatter.isStartOfClosure(at: 19)))
     }
 
     @Test func mainActorClosure() {
-        let formatter = Formatter(tokenize("""
-        let foo = { @MainActor in () }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = { @MainActor in () }
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 6))
     }
 
     @Test func throwingClosure() {
-        let formatter = Formatter(tokenize("""
-        let foo = { bar throws in bar }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = { bar throws in bar }
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 6))
     }
 
     @Test func typedThrowingClosure() {
-        let formatter = Formatter(tokenize("""
-        let foo = { bar throws(Foo) in bar }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = { bar throws(Foo) in bar }
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 6))
     }
 
     @Test func nestedTypedThrowingClosures() {
-        let formatter = Formatter(tokenize("""
-        try! str.withCString(encodedAs: UTF8.self) { _ throws(Foo) in
-            try! str.withCString(encodedAs: UTF8.self) { _ throws(Foo) in }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                try! str.withCString(encodedAs: UTF8.self) { _ throws(Foo) in
+                    try! str.withCString(encodedAs: UTF8.self) { _ throws(Foo) in }
+                }
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 15))
         #expect(formatter.isStartOfClosure(at: 42))
     }
 
     @Test func trailingClosureOnOptionalMethod() {
-        let formatter = Formatter(tokenize("""
-        foo.bar? { print("") }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                foo.bar? { print("") }
+                """,
+            ),
+        )
         #expect(formatter.isStartOfClosure(at: 5))
     }
 
     @Test func braceAfterTypedThrows() {
-        let formatter = Formatter(tokenize("""
-        do throws(Foo) {} catch {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                do throws(Foo) {} catch {}
+                """,
+            ),
+        )
         #expect(!(formatter.isStartOfClosure(at: 7)))
         #expect(!(formatter.isStartOfClosure(at: 12)))
     }
@@ -633,17 +729,25 @@ import Testing
     // MARK: isConditionalStatement
 
     @Test func ifConditionContainingClosure() {
-        let formatter = Formatter(tokenize("""
-        if let btn = btns.first { !$0.isHidden } {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let btn = btns.first { !$0.isHidden } {}
+                """,
+            ),
+        )
         #expect(formatter.isConditionalStatement(at: 12))
         #expect(formatter.isConditionalStatement(at: 21))
     }
 
     @Test func ifConditionContainingClosure2() {
-        let formatter = Formatter(tokenize("""
-        if let foo, let btn = btns.first { !$0.isHidden } {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo, let btn = btns.first { !$0.isHidden } {}
+                """,
+            ),
+        )
         #expect(formatter.isConditionalStatement(at: 17))
         #expect(formatter.isConditionalStatement(at: 26))
     }
@@ -656,140 +760,192 @@ import Testing
     }
 
     @Test func didSetWillSet() {
-        let formatter = Formatter(tokenize("""
-        var foo: Int {
-            didSet {}
-            willSet {}
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var foo: Int {
+                    didSet {}
+                    willSet {}
+                }
+                """,
+            ),
+        )
         #expect(formatter.isAccessorKeyword(at: 10))
         #expect(formatter.isAccessorKeyword(at: 16))
     }
 
     @Test func getSet() {
-        let formatter = Formatter(tokenize("""
-        var foo: Int {
-            get { return _foo }
-            set { _foo = newValue }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var foo: Int {
+                    get { return _foo }
+                    set { _foo = newValue }
+                }
+                """,
+            ),
+        )
         #expect(formatter.isAccessorKeyword(at: 10))
         #expect(formatter.isAccessorKeyword(at: 21))
     }
 
     @Test func setGet() {
-        let formatter = Formatter(tokenize("""
-        var foo: Int {
-            set { _foo = newValue }
-            get { return _foo }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var foo: Int {
+                    set { _foo = newValue }
+                    get { return _foo }
+                }
+                """,
+            ),
+        )
         #expect(formatter.isAccessorKeyword(at: 10))
         #expect(formatter.isAccessorKeyword(at: 23))
     }
 
     @Test func genericSubscriptSetGet() {
-        let formatter = Formatter(tokenize("""
-        subscript<T>(index: Int) -> T {
-            set { _foo[index] = newValue }
-            get { return _foo[index] }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                subscript<T>(index: Int) -> T {
+                    set { _foo[index] = newValue }
+                    get { return _foo[index] }
+                }
+                """,
+            ),
+        )
         #expect(formatter.isAccessorKeyword(at: 18))
         #expect(formatter.isAccessorKeyword(at: 34))
     }
 
     @Test func initAccessor() {
-        let formatter = Formatter(tokenize("""
-        var foo: Int {
-            init {}
-            get {}
-            set {}
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var foo: Int {
+                    init {}
+                    get {}
+                    set {}
+                }
+                """,
+            ),
+        )
         #expect(formatter.isAccessorKeyword(at: 10))
         #expect(formatter.isAccessorKeyword(at: 16))
     }
 
     @Test func notGetter() {
-        let formatter = Formatter(tokenize("""
-        func foo() {
-            set { print("") }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                func foo() {
+                    set { print("") }
+                }
+                """,
+            ),
+        )
         #expect(!(formatter.isAccessorKeyword(at: 9)))
     }
 
     @Test func functionInGetterPosition() {
-        let formatter = Formatter(tokenize("""
-        var foo: Int {
-            `get`()
-            return 5
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var foo: Int {
+                    `get`()
+                    return 5
+                }
+                """,
+            ),
+        )
         #expect(formatter.isAccessorKeyword(at: 10, checkKeyword: false))
     }
 
     @Test func notSetterInit() {
-        let formatter = Formatter(tokenize("""
-        class Foo {
-            init() { print("") }
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                class Foo {
+                    init() { print("") }
+                }
+                """,
+            ),
+        )
         #expect(!(formatter.isAccessorKeyword(at: 7)))
     }
 
     // MARK: isEnumCase
 
     @Test func isEnumCase() {
-        let formatter = Formatter(tokenize("""
-        enum Foo {
-            case foo, bar
-            case baz
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                enum Foo {
+                    case foo, bar
+                    case baz
+                }
+                """,
+            ),
+        )
         #expect(formatter.isEnumCase(at: 7))
         #expect(formatter.isEnumCase(at: 15))
     }
 
     @Test func isEnumCaseWithValue() {
-        let formatter = Formatter(tokenize("""
-        enum Foo {
-            case foo, bar(Int)
-            case baz
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                enum Foo {
+                    case foo, bar(Int)
+                    case baz
+                }
+                """,
+            ),
+        )
         #expect(formatter.isEnumCase(at: 7))
         #expect(formatter.isEnumCase(at: 18))
     }
 
     @Test func isNotEnumCase() {
-        let formatter = Formatter(tokenize("""
-        if case let .foo(bar) = baz {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if case let .foo(bar) = baz {}
+                """,
+            ),
+        )
         #expect(!(formatter.isEnumCase(at: 2)))
     }
 
     @Test func typoIsNotEnumCase() {
-        let formatter = Formatter(tokenize("""
-        if let case .foo(bar) = baz {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let case .foo(bar) = baz {}
+                """,
+            ),
+        )
         #expect(!(formatter.isEnumCase(at: 4)))
     }
 
     @Test func mixedCaseTypes() {
-        let formatter = Formatter(tokenize("""
-        enum Foo {
-            case foo
-            case bar(value: [Int])
-        }
+        let formatter = Formatter(
+            tokenize(
+                """
+                enum Foo {
+                    case foo
+                    case bar(value: [Int])
+                }
 
-        func baz() {
-            if case .foo = foo,
-               case .bar(let value) = bar,
-               value.isEmpty {}
-        }
-        """))
+                func baz() {
+                    if case .foo = foo,
+                       case .bar(let value) = bar,
+                       value.isEmpty {}
+                }
+                """,
+            ),
+        )
         #expect(formatter.isEnumCase(at: 7))
         #expect(formatter.isEnumCase(at: 12))
         #expect(!(formatter.isEnumCase(at: 38)))
@@ -801,23 +957,26 @@ import Testing
     @Test func modifierOrder() {
         let options = FormatOptions(modifierOrder: ["convenience", "override"])
         let formatter = Formatter([], options: options)
-        #expect(formatter.preferredModifierOrder == [
-            "private", "fileprivate", "internal", "package", "public", "open",
-            "private(set)", "fileprivate(set)", "internal(set)", "package(set)", "public(set)", "open(set)",
-            "final",
-            "dynamic",
-            "optional", "required",
-            "convenience",
-            "override",
-            "indirect",
-            "isolated", "nonisolated", "nonisolated(unsafe)",
-            "lazy",
-            "weak", "unowned", "unowned(safe)", "unowned(unsafe)",
-            "static", "class",
-            "borrowing", "consuming", "mutating", "nonmutating",
-            "prefix", "infix", "postfix",
-            "async",
-        ])
+        #expect(
+            formatter.preferredModifierOrder == [
+                "private", "fileprivate", "internal", "package", "public", "open",
+                "private(set)", "fileprivate(set)", "internal(set)", "package(set)", "public(set)",
+                "open(set)",
+                "final",
+                "dynamic",
+                "optional", "required",
+                "convenience",
+                "override",
+                "indirect",
+                "isolated", "nonisolated", "nonisolated(unsafe)",
+                "lazy",
+                "weak", "unowned", "unowned(safe)", "unowned(unsafe)",
+                "static", "class",
+                "borrowing", "consuming", "mutating", "nonmutating",
+                "prefix", "infix", "postfix",
+                "async",
+            ],
+        )
     }
 
     @Test func modifierOrder2() {
@@ -826,75 +985,106 @@ import Testing
             "lazy", "final", "required", "convenience", "typeMethods", "owned",
         ])
         let formatter = Formatter([], options: options)
-        #expect(formatter.preferredModifierOrder == [
-            "override",
-            "private", "fileprivate", "internal", "package", "public", "open",
-            "private(set)", "fileprivate(set)", "internal(set)", "package(set)", "public(set)", "open(set)",
-            "dynamic",
-            "indirect",
-            "isolated", "nonisolated", "nonisolated(unsafe)",
-            "static", "class",
-            "borrowing", "consuming", "mutating", "nonmutating",
-            "lazy",
-            "final",
-            "optional", "required",
-            "convenience",
-            "weak", "unowned", "unowned(safe)", "unowned(unsafe)",
-            "prefix", "infix", "postfix",
-            "async",
-        ])
+        #expect(
+            formatter.preferredModifierOrder == [
+                "override",
+                "private", "fileprivate", "internal", "package", "public", "open",
+                "private(set)", "fileprivate(set)", "internal(set)", "package(set)", "public(set)",
+                "open(set)",
+                "dynamic",
+                "indirect",
+                "isolated", "nonisolated", "nonisolated(unsafe)",
+                "static", "class",
+                "borrowing", "consuming", "mutating", "nonmutating",
+                "lazy",
+                "final",
+                "optional", "required",
+                "convenience",
+                "weak", "unowned", "unowned(safe)", "unowned(unsafe)",
+                "prefix", "infix", "postfix",
+                "async",
+            ],
+        )
     }
 
     // MARK: startOfModifiers
 
     @Test func startOfModifiers() {
-        let formatter = Formatter(tokenize("""
-        class Foo { @objc public required init() {} }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                class Foo { @objc public required init() {} }
+                """,
+            ),
+        )
         #expect(formatter.startOfModifiers(at: 12, includingAttributes: false) == 8)
     }
 
     @Test func startOfModifiersIncludingNonisolated() {
-        let formatter = Formatter(tokenize("""
-        actor Foo { nonisolated public func foo() {} }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                actor Foo { nonisolated public func foo() {} }
+                """,
+            ),
+        )
         #expect(formatter.startOfModifiers(at: 10, includingAttributes: true) == 6)
     }
 
     @Test func startOfModifiersIncludingAttributes() {
-        let formatter = Formatter(tokenize("""
-        class Foo { @objc public required init() {} }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                class Foo { @objc public required init() {} }
+                """,
+            ),
+        )
         #expect(formatter.startOfModifiers(at: 12, includingAttributes: true) == 6)
     }
 
     @Test func startOfPropertyModifiers() {
-        let formatter = Formatter(tokenize("""
-        @objc public class override var foo: Int?
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                @objc public class override var foo: Int?
+                """,
+            ),
+        )
         #expect(formatter.startOfModifiers(at: 6, includingAttributes: true) == 0)
     }
 
     @Test func startOfPropertyModifiers2() {
-        let formatter = Formatter(tokenize("""
-        @objc(SFFoo) public var foo: Int?
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                @objc(SFFoo) public var foo: Int?
+                """,
+            ),
+        )
         #expect(formatter.startOfModifiers(at: 7, includingAttributes: false) == 5)
     }
 
     @Test func startOfPropertyModifiers3() {
-        let formatter = Formatter(tokenize("""
-        @OuterType.Wrapper var foo: Int?
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                @OuterType.Wrapper var foo: Int?
+                """,
+            ),
+        )
         #expect(formatter.startOfModifiers(at: 4, includingAttributes: true) == 0)
     }
 
     // MARK: processDeclaredVariables
 
     @Test func processCommaDelimitedDeclaredVariables() {
-        let formatter = Formatter(tokenize("""
-        let foo = bar(), x = y, baz = quux {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = bar(), x = y, baz = quux {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -903,9 +1093,13 @@ import Testing
     }
 
     @Test func processDeclaredVariablesInIfCondition() {
-        let formatter = Formatter(tokenize("""
-        if let foo = bar(), x == y, let baz = quux {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo = bar(), x == y, let baz = quux {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -914,9 +1108,13 @@ import Testing
     }
 
     @Test func processDeclaredVariablesInIfWithParenthetical() {
-        let formatter = Formatter(tokenize("""
-        if let foo = bar(), (x == y), let baz = quux {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo = bar(), (x == y), let baz = quux {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -925,9 +1123,13 @@ import Testing
     }
 
     @Test func processDeclaredVariablesInIfWithClosure() {
-        let formatter = Formatter(tokenize("""
-        if let foo = bar(), { x == y }(), let baz = quux {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo = bar(), { x == y }(), let baz = quux {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -936,9 +1138,13 @@ import Testing
     }
 
     @Test func processDeclaredVariablesInIfWithNamedClosureArgument() {
-        let formatter = Formatter(tokenize("""
-        if let foo = bar, foo.bar(baz: { $0 }), let baz = quux {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo = bar, foo.bar(baz: { $0 }), let baz = quux {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -947,9 +1153,13 @@ import Testing
     }
 
     @Test func processDeclaredVariablesInIfAfterCase() {
-        let formatter = Formatter(tokenize("""
-        if case let .foo(bar, .baz(quux: 5)) = foo, let baz2 = quux2 {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if case let .foo(bar, .baz(quux: 5)) = foo, let baz2 = quux2 {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -958,9 +1168,13 @@ import Testing
     }
 
     @Test func processDeclaredVariablesInIfWithArrayLiteral() {
-        let formatter = Formatter(tokenize("""
-        if let foo = bar(), [x] == y, let baz = quux {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo = bar(), [x] == y, let baz = quux {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -969,9 +1183,13 @@ import Testing
     }
 
     @Test func processDeclaredVariablesInIfLetAs() {
-        let formatter = Formatter(tokenize("""
-        if let foo = foo as? String, let bar = baz {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo = foo as? String, let bar = baz {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -980,9 +1198,13 @@ import Testing
     }
 
     @Test func processDeclaredVariablesInIfLetWithPostfixOperator() {
-        let formatter = Formatter(tokenize("""
-        if let foo = baz?.foo, let bar = baz?.bar {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo = baz?.foo, let bar = baz?.bar {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -991,9 +1213,13 @@ import Testing
     }
 
     @Test func processCaseDeclaredVariablesInIfLetCommaCase() {
-        let formatter = Formatter(tokenize("""
-        if let foo = bar(), case .bar(var baz) = quux {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let foo = bar(), case .bar(var baz) = quux {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1002,9 +1228,13 @@ import Testing
     }
 
     @Test func processCaseDeclaredVariablesInIfCaseLet() {
-        let formatter = Formatter(tokenize("""
-        if case let .foo(a: bar, b: baz) = quux {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if case let .foo(a: bar, b: baz) = quux {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1013,9 +1243,13 @@ import Testing
     }
 
     @Test func processTupleDeclaredVariablesInIfLetSyntax() {
-        let formatter = Formatter(tokenize("""
-        if let (bar, a: baz) = quux, let x = y {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let (bar, a: baz) = quux, let x = y {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1024,9 +1258,13 @@ import Testing
     }
 
     @Test func processTupleDeclaredVariablesInIfLetSyntax2() {
-        let formatter = Formatter(tokenize("""
-        if let ((a: bar, baz), (x, y)) = quux {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let ((a: bar, baz), (x, y)) = quux {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1035,11 +1273,15 @@ import Testing
     }
 
     @Test func processAwaitVariableInForLoop() {
-        let formatter = Formatter(tokenize("""
-        for await foo in DoubleGenerator() {
-            print(foo)
-        }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                for await foo in DoubleGenerator() {
+                    print(foo)
+                }
+                """,
+            ),
+        )
         var index = 0
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1048,9 +1290,13 @@ import Testing
     }
 
     @Test func processParametersInInit() {
-        let formatter = Formatter(tokenize("""
-        init(actor: Int, bar: String) {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                init(actor: Int, bar: String) {}
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1059,10 +1305,14 @@ import Testing
     }
 
     @Test func processGuardCaseLetVariables() {
-        let formatter = Formatter(tokenize("""
-        guard case let Foo.bar(foo) = baz
-        else { return }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                guard case let Foo.bar(foo) = baz
+                else { return }
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1071,10 +1321,14 @@ import Testing
     }
 
     @Test func processLetDictionaryLiteralVariables() {
-        let formatter = Formatter(tokenize("""
-        let foo = [bar: 1, baz: 2]
-        print(foo)
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = [bar: 1, baz: 2]
+                print(foo)
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1083,10 +1337,14 @@ import Testing
     }
 
     @Test func processLetStringLiteralFollowedByPrint() {
-        let formatter = Formatter(tokenize("""
-        let bar = "bar"
-        print(bar)
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let bar = "bar"
+                print(bar)
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1095,10 +1353,14 @@ import Testing
     }
 
     @Test func processLetNumericLiteralFollowedByPrint() {
-        let formatter = Formatter(tokenize("""
-        let bar = 5
-        print(bar)
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let bar = 5
+                print(bar)
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1107,10 +1369,14 @@ import Testing
     }
 
     @Test func processLetBooleanLiteralFollowedByPrint() {
-        let formatter = Formatter(tokenize("""
-        let bar = true
-        print(bar)
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let bar = true
+                print(bar)
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1119,10 +1385,14 @@ import Testing
     }
 
     @Test func processLetNilLiteralFollowedByPrint() {
-        let formatter = Formatter(tokenize("""
-        let bar: Bar? = nil
-        print(bar)
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let bar: Bar? = nil
+                print(bar)
+                """,
+            ),
+        )
         var index = 2
         var names = Set<String>()
         formatter.processDeclaredVariables(at: &index, names: &names)
@@ -1193,39 +1463,50 @@ import Testing
         let originalTokens = tokenize(input)
         let declarations = Formatter(originalTokens).parseDeclarations()
 
-        #expect(declarations[0].tokens.string == """
+        #expect(
+            declarations[0].tokens.string == """
             import CoreGraphics
 
-            """)
+            """,
+        )
 
-        #expect(declarations[1].tokens.string == """
+        #expect(
+            declarations[1].tokens.string == """
             import Foundation
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[2].tokens.string == """
+        #expect(
+            declarations[2].tokens.string == """
             let global = 10
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[3].tokens.string == """
+        #expect(
+            declarations[3].tokens.string == """
             @objc
             @available(iOS 13.0, *)
             @propertyWrapper("parameter")
             weak var multilineGlobal = ["string"]
                 .map(\\.count)
 
-            """)
+            """,
+        )
 
-        #expect(declarations[4].tokens.string == """
+        #expect(
+            declarations[4].tokens.string == """
             let anotherGlobal = "hello"
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[5].tokens.string == """
+        #expect(
+            declarations[5].tokens.string == """
             /// Doc comment
             /// (multiple lines)
             func globalFunction() {
@@ -1233,28 +1514,36 @@ import Testing
             }
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[6].tokens.string == """
+        #expect(
+            declarations[6].tokens.string == """
             protocol SomeProtocol {
                 var getter: String { get async throws }
                 func protocolMethod() -> Bool
             }
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[6].body?[0].tokens.string == """
+        #expect(
+            declarations[6].body?[0].tokens.string == """
                 var getter: String { get async throws }
 
-            """)
+            """,
+        )
 
-        #expect(declarations[6].body?[1].tokens.string == """
+        #expect(
+            declarations[6].body?[1].tokens.string == """
                 func protocolMethod() -> Bool
 
-            """)
+            """,
+        )
 
-        #expect(declarations[7].tokens.string == """
+        #expect(
+            declarations[7].tokens.string == """
             class SomeClass {
 
                 enum NestedEnum {
@@ -1283,9 +1572,11 @@ import Testing
             }
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[7].body?[0].tokens.string == """
+        #expect(
+            declarations[7].body?[0].tokens.string == """
                 enum NestedEnum {
                     /// Doc comment
                     case bar
@@ -1293,20 +1584,26 @@ import Testing
                 }
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[7].body?[0].body?[0].tokens.string == """
+        #expect(
+            declarations[7].body?[0].body?[0].tokens.string == """
                     /// Doc comment
                     case bar
 
-            """)
+            """,
+        )
 
-        #expect(declarations[7].body?[0].body?[1].tokens.string == """
+        #expect(
+            declarations[7].body?[0].body?[1].tokens.string == """
                     func test() {}
 
-            """)
+            """,
+        )
 
-        #expect(declarations[7].body?[1].tokens.string == """
+        #expect(
+            declarations[7].body?[1].tokens.string == """
                 /*
                  * Block comment
                  */
@@ -1315,16 +1612,20 @@ import Testing
                 var instanceVar = "test" // trailing comment
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[7].body?[2].tokens.string == """
+        #expect(
+            declarations[7].body?[2].tokens.string == """
                 @_silgen_name(\"__MARKER_functionWithNoBody\")
                 func functionWithNoBody(_ x: String) -> Int?
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[7].body?[3].tokens.string == """
+        #expect(
+            declarations[7].body?[3].tokens.string == """
                 @objc
                 private var computed: String {
                     get {
@@ -1333,22 +1634,29 @@ import Testing
                 }
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[8].tokens.string == """
+        #expect(
+            declarations[8].tokens.string == """
             struct EmptyType {}
 
 
-            """)
+            """,
+        )
 
-        #expect(declarations[9].tokens.string == """
+        #expect(
+            declarations[9].tokens.string == """
             struct Test{let foo: String}
 
-            """)
+            """,
+        )
 
-        #expect(declarations[9].body?[0].tokens.string == """
+        #expect(
+            declarations[9].body?[0].tokens.string == """
             let foo: String
-            """)
+            """,
+        )
     }
 
     @Test func parseClassFuncDeclarationCorrectly() {
@@ -1408,26 +1716,34 @@ import Testing
         let originalTokens = tokenize(input)
         let declarations = Formatter(originalTokens).parseDeclarations()
 
-        #expect(declarations[0].body?[0].tokens.string == """
+        #expect(
+            declarations[0].body?[0].tokens.string == """
                 var bar = "bar"
 
-            """)
+            """,
+        )
 
-        #expect(declarations[0].body?[0].tokens.string == """
+        #expect(
+            declarations[0].body?[0].tokens.string == """
                 var bar = "bar"
 
-            """)
+            """,
+        )
 
-        #expect(declarations[0].body?[1].tokens.string == """
+        #expect(
+            declarations[0].body?[1].tokens.string == """
                 /// Leading comment
                 public var baz = "baz" // Trailing comment
 
-            """)
+            """,
+        )
 
-        #expect(declarations[0].body?[2].tokens.string == """
+        #expect(
+            declarations[0].body?[2].tokens.string == """
                 var quux = "quux"
 
-            """)
+            """,
+        )
     }
 
     @Test func parseDeclarationsWithSituationalKeywords() {
@@ -1441,24 +1757,32 @@ import Testing
         let originalTokens = tokenize(input)
         let declarations = Formatter(originalTokens).parseDeclarations()
 
-        #expect(declarations[0].tokens.string == """
+        #expect(
+            declarations[0].tokens.string == """
             let `static` = NavigationBarType.static(nil, .none)
 
-            """)
+            """,
+        )
 
-        #expect(declarations[1].tokens.string == """
+        #expect(
+            declarations[1].tokens.string == """
             let foo = bar
 
-            """)
+            """,
+        )
 
-        #expect(declarations[2].tokens.string == """
+        #expect(
+            declarations[2].tokens.string == """
             let `static` = NavigationBarType.static
 
-            """)
+            """,
+        )
 
-        #expect(declarations[3].tokens.string == """
+        #expect(
+            declarations[3].tokens.string == """
             let bar = foo
-            """)
+            """,
+        )
     }
 
     @Test func parseSimpleCompilationBlockCorrectly() {
@@ -1473,7 +1797,7 @@ import Testing
         let originalTokens = tokenize(input)
         let declarations = Formatter(originalTokens).parseDeclarations()
 
-        #expect(declarations[0].keyword, "#if" != nil)
+        #expect(declarations[0].keyword == "#if")
         #expect(declarations[0].body?[0].keyword == "struct")
         #expect(declarations[0].body?[0].body?[0].keyword == "let")
     }
@@ -1492,7 +1816,7 @@ import Testing
         let originalTokens = tokenize(input)
         let declarations = Formatter(originalTokens).parseDeclarations()
 
-        #expect(declarations[0].keyword, "#if" != nil)
+        #expect(declarations[0].keyword == "#if")
         #expect(declarations[0].body?[0].keyword == "#if")
         #expect(declarations[0].body?[0].body?[0].keyword == "struct")
         #expect(declarations[0].body?[0].body?[0].body?[0].keyword == "let")
@@ -1643,18 +1967,22 @@ import Testing
         let declarations = formatter.parseDeclarations()
         #expect(declarations.count == 2)
 
-        #expect(declarations[0].tokens.map(\.string).joined() == """
+        #expect(
+            declarations[0].tokens.map(\.string).joined() == """
             struct Foo {
                 // This type is empty
             }
 
-            """)
+            """,
+        )
 
-        #expect(declarations[1].tokens.map(\.string).joined() == """
+        #expect(
+            declarations[1].tokens.map(\.string).joined() == """
             extension Foo {
                 // This extension is empty
             }
-            """)
+            """,
+        )
     }
 
     @Test func parseConditionalCompilationWithArgument() {
@@ -1688,18 +2016,20 @@ import Testing
         let declarations = formatter.parseDeclarations()
         #expect(declarations.count == 2)
 
-        #expect(declarations[0].tokens.string == """
-        private lazy var x: [Any] =
-          if let b {
-            [b]
-          } else if false {
-            []
-          } else {
-            [1, 2]
-          }
+        #expect(
+            declarations[0].tokens.string == """
+            private lazy var x: [Any] =
+              if let b {
+                [b]
+              } else if false {
+                []
+              } else {
+                [1, 2]
+              }
 
 
-        """)
+            """,
+        )
 
         #expect(declarations[1].tokens.string == "private lazy var y = f()")
     }
@@ -1743,36 +2073,40 @@ import Testing
         #expect(declarations[0].body?.count == 1)
         #expect(declarations[1].body?.count == 2)
 
-        #expect(declarations[0].body?[0].tokens.string == """
-            /// Invalid type, should still get handled properly
-            private var foo: FooBar++ {
-                guard
-                    let foo = foo.bar,
-                    let bar = foo.bar
-                else {
-                    return nil
+        #expect(
+            declarations[0].body?[0].tokens.string == """
+                /// Invalid type, should still get handled properly
+                private var foo: FooBar++ {
+                    guard
+                        let foo = foo.bar,
+                        let bar = foo.bar
+                    else {
+                        return nil
+                    }
+
+                    return bar
                 }
 
-                return bar
-            }
+            """,
+        )
 
-        """)
+        #expect(
+            declarations[1].body?[0].tokens.string == """
+                /// Invalid type, should still get handled properly
+                func foo() -> FooBar++ {
+                    guard
+                        let foo = foo.bar,
+                        let bar = foo.bar
+                    else {
+                        return nil
+                    }
 
-        #expect(declarations[1].body?[0].tokens.string == """
-            /// Invalid type, should still get handled properly
-            func foo() -> FooBar++ {
-                guard
-                    let foo = foo.bar,
-                    let bar = foo.bar
-                else {
-                    return nil
+                    return bar
                 }
 
-                return bar
-            }
 
-
-        """)
+            """,
+        )
     }
 
     // MARK: declarationScope
@@ -1919,21 +2253,25 @@ import Testing
     @Test func letNotTreatedAsConditional() {
         let formatter = Formatter(tokenize("let foo = bar, bar = baz"))
         for i in formatter.tokens.indices {
-            #expect(formatter.startOfConditionalStatement(at: i == nil))
+            #expect(formatter.startOfConditionalStatement(at: i) == nil)
         }
     }
 
     @Test func enumCaseNotTreatedAsConditional() {
         let formatter = Formatter(tokenize("enum Foo { case bar }"))
         for i in formatter.tokens.indices {
-            #expect(formatter.startOfConditionalStatement(at: i == nil))
+            #expect(formatter.startOfConditionalStatement(at: i) == nil)
         }
     }
 
     @Test func startOfConditionalStatementConditionContainingUnParenthesizedClosure() {
-        let formatter = Formatter(tokenize("""
-        if let btn = btns.first { !$0.isHidden } {}
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                if let btn = btns.first { !$0.isHidden } {}
+                """,
+            ),
+        )
         #expect(formatter.startOfConditionalStatement(at: 12) == 0)
         #expect(formatter.startOfConditionalStatement(at: 21) == 0)
     }
@@ -1941,293 +2279,454 @@ import Testing
     // MARK: isStartOfStatement
 
     @Test func asyncAfterFuncNotTreatedAsStartOfStatement() {
-        let formatter = Formatter(tokenize("""
-        func foo()
-            async
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                func foo()
+                    async
+                """,
+            ),
+        )
         #expect(!(formatter.isStartOfStatement(at: 7)))
     }
 
     @Test func asyncLetTreatedAsStartOfStatement() {
-        let formatter = Formatter(tokenize("""
-        async let foo = bar()
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                async let foo = bar()
+                """,
+            ),
+        )
         #expect(formatter.isStartOfStatement(at: 0))
     }
 
     @Test func asyncIdentifierTreatedAsStartOfStatement() {
-        let formatter = Formatter(tokenize("""
-        func async() {}
-        async()
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                func async() {}
+                async()
+                """,
+            ),
+        )
         #expect(formatter.isStartOfStatement(at: 9))
     }
 
     @Test func asyncIdentifierNotTreatedAsStartOfStatement() {
-        let formatter = Formatter(tokenize("""
-        func async() {}
-        let foo =
-            async()
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                func async() {}
+                let foo =
+                    async()
+                """,
+            ),
+        )
         #expect(!(formatter.isStartOfStatement(at: 16)))
     }
 
     @Test func numericFunctionArgumentNotTreatedAsStartOfStatement() {
-        let formatter = Formatter(tokenize("""
-        let foo = bar(
-            200
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = bar(
+                    200
+                )
+                """,
+            ),
         )
-        """))
         #expect(!(formatter.isStartOfStatement(at: 10, treatingCollectionKeysAsStart: false)))
     }
 
     @Test func stringLiteralFunctionArgumentNotTreatedAsStartOfStatement() {
-        let formatter = Formatter(tokenize("""
-        let foo = bar(
-            "baz"
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = bar(
+                    "baz"
+                )
+                """,
+            ),
         )
-        """))
         #expect(!(formatter.isStartOfStatement(at: 10, treatingCollectionKeysAsStart: false)))
     }
 
     // MARK: - parseTypes
 
     @Test func parseSimpleType() {
-        let formatter = Formatter(tokenize("""
-        let foo: Foo = .init()
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: Foo = .init()
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "Foo")
     }
 
     @Test func parseOptionalType() {
-        let formatter = Formatter(tokenize("""
-        let foo: Foo??? = .init()
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: Foo??? = .init()
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "Foo???")
     }
 
     @Test func parseIOUType() {
-        let formatter = Formatter(tokenize("""
-        let foo: Foo!! = .init()
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: Foo!! = .init()
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "Foo!!")
     }
 
     @Test func doesntParseTernaryOperatorAsType() {
-        let formatter = Formatter(tokenize("""
-        Foo.bar ? .foo : .bar
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                Foo.bar ? .foo : .bar
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 0)?.string == "Foo.bar")
     }
 
     @Test func doesntParseMacroInvocationAsType() {
-        let formatter = Formatter(tokenize("""
-        let foo = #colorLiteral(1, 2, 3)
-        """))
-        #expect(formatter.parseType(at: 6 == nil))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = #colorLiteral(1, 2, 3)
+                """,
+            ),
+        )
+        #expect(formatter.parseType(at: 6) == nil)
     }
 
     @Test func doesntParseSelectorAsType() {
-        let formatter = Formatter(tokenize("""
-        let foo = #selector(Foo.bar)
-        """))
-        #expect(formatter.parseType(at: 6 == nil))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = #selector(Foo.bar)
+                """,
+            ),
+        )
+        #expect(formatter.parseType(at: 6) == nil)
     }
 
     @Test func doesntParseArrayAsType() {
-        let formatter = Formatter(tokenize("""
-        let foo = [foo, bar].member()
-        """))
-        #expect(formatter.parseType(at: 6 == nil))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = [foo, bar].member()
+                """,
+            ),
+        )
+        #expect(formatter.parseType(at: 6) == nil)
     }
 
     @Test func doesntParseDictionaryAsType() {
-        let formatter = Formatter(tokenize("""
-        let foo = [foo: bar, baaz: quux].member()
-        """))
-        #expect(formatter.parseType(at: 6 == nil))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = [foo: bar, baaz: quux].member()
+                """,
+            ),
+        )
+        #expect(formatter.parseType(at: 6) == nil)
     }
 
     @Test func parsesArrayAsType() {
-        let formatter = Formatter(tokenize("""
-        let foo = [Foo]()
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = [Foo]()
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 6)?.string == "[Foo]")
     }
 
     @Test func parsesDictionaryAsType() {
-        let formatter = Formatter(tokenize("""
-        let foo = [Foo: Bar]()
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = [Foo: Bar]()
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 6)?.string == "[Foo: Bar]")
     }
 
     @Test func parseGenericType() {
-        let formatter = Formatter(tokenize("""
-        let foo: Foo<Bar, Baaz> = .init()
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: Foo<Bar, Baaz> = .init()
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "Foo<Bar, Baaz>")
     }
 
     @Test func parseOptionalGenericType() {
-        let formatter = Formatter(tokenize("""
-        let foo: Foo<Bar, Baaz>? = .init()
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: Foo<Bar, Baaz>? = .init()
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "Foo<Bar, Baaz>?")
     }
 
     @Test func parseDictionaryType() {
-        let formatter = Formatter(tokenize("""
-        let foo: [Foo: Bar] = [:]
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: [Foo: Bar] = [:]
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "[Foo: Bar]")
     }
 
     @Test func parseOptionalDictionaryType() {
-        let formatter = Formatter(tokenize("""
-        let foo: [Foo: Bar]? = [:]
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: [Foo: Bar]? = [:]
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "[Foo: Bar]?")
     }
 
     @Test func parseTupleType() {
-        let formatter = Formatter(tokenize("""
-        let foo: (Foo, Bar) = (Foo(), Bar())
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: (Foo, Bar) = (Foo(), Bar())
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "(Foo, Bar)")
     }
 
     @Test func parseClosureType() {
-        let formatter = Formatter(tokenize("""
-        let foo: (Foo, Bar) -> (Foo, Bar) = { foo, bar in (foo, bar) }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: (Foo, Bar) -> (Foo, Bar) = { foo, bar in (foo, bar) }
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "(Foo, Bar) -> (Foo, Bar)")
     }
 
     @Test func parseThrowingClosureType() {
-        let formatter = Formatter(tokenize("""
-        let foo: (Foo, Bar) throws -> Void
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: (Foo, Bar) throws -> Void
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "(Foo, Bar) throws -> Void")
     }
 
     @Test func parseTypedThrowingClosureType() {
-        let formatter = Formatter(tokenize("""
-        let foo: (Foo, Bar) throws(MyFeatureError) -> Void
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: (Foo, Bar) throws(MyFeatureError) -> Void
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "(Foo, Bar) throws(MyFeatureError) -> Void")
     }
 
     @Test func parseAsyncClosureType() {
-        let formatter = Formatter(tokenize("""
-        let foo: (Foo, Bar) async -> Void
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: (Foo, Bar) async -> Void
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "(Foo, Bar) async -> Void")
     }
 
     @Test func parseAsyncThrowsClosureType() {
-        let formatter = Formatter(tokenize("""
-        let foo: (Foo, Bar) async throws -> Void
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: (Foo, Bar) async throws -> Void
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "(Foo, Bar) async throws -> Void")
     }
 
     @Test func parseTypedAsyncThrowsClosureType() {
-        let formatter = Formatter(tokenize("""
-        let foo: (Foo, Bar) async throws(MyCustomError) -> Void
-        """))
-        #expect(formatter.parseType(at: 5)?.string == "(Foo, Bar) async throws(MyCustomError) -> Void")
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: (Foo, Bar) async throws(MyCustomError) -> Void
+                """,
+            ),
+        )
+        #expect(formatter.parseType(at: 5)?
+            .string == "(Foo, Bar) async throws(MyCustomError) -> Void")
     }
 
     @Test func parseClosureTypeWithOwnership() {
-        let formatter = Formatter(tokenize("""
-        let foo: (consuming Foo, borrowing Bar) -> (Foo, Bar) = { foo, bar in (foo, bar) }
-        """))
-        #expect(formatter.parseType(at: 5)?.string == "(consuming Foo, borrowing Bar) -> (Foo, Bar)")
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: (consuming Foo, borrowing Bar) -> (Foo, Bar) = { foo, bar in (foo, bar) }
+                """,
+            ),
+        )
+        #expect(formatter.parseType(at: 5)?
+            .string == "(consuming Foo, borrowing Bar) -> (Foo, Bar)")
     }
 
     @Test func parseOptionalReturningClosureType() {
-        let formatter = Formatter(tokenize("""
-        let foo: (Foo, Bar) -> (Foo, Bar)? = { foo, bar in (foo, bar) }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: (Foo, Bar) -> (Foo, Bar)? = { foo, bar in (foo, bar) }
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "(Foo, Bar) -> (Foo, Bar)?")
     }
 
     @Test func parseOptionalClosureType() {
-        let formatter = Formatter(tokenize("""
-        let foo: ((Foo, Bar) -> (Foo, Bar)?)? = { foo, bar in (foo, bar) }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: ((Foo, Bar) -> (Foo, Bar)?)? = { foo, bar in (foo, bar) }
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "((Foo, Bar) -> (Foo, Bar)?)?")
     }
 
     @Test func parseOptionalClosureTypeWithOwnership() {
-        let formatter = Formatter(tokenize("""
-        let foo: ((consuming Foo, borrowing Bar) -> (Foo, Bar)?)? = { foo, bar in (foo, bar) }
-        """))
-        #expect(formatter.parseType(at: 5)?.string == "((consuming Foo, borrowing Bar) -> (Foo, Bar)?)?")
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: ((consuming Foo, borrowing Bar) -> (Foo, Bar)?)? = { foo, bar in (foo, bar) }
+                """,
+            ),
+        )
+        #expect(
+            formatter.parseType(at: 5)?
+                .string == "((consuming Foo, borrowing Bar) -> (Foo, Bar)?)?",
+        )
     }
 
     @Test func parseExistentialAny() {
-        let formatter = Formatter(tokenize("""
-        let foo: any Foo
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: any Foo
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "any Foo")
     }
 
     @Test func parseCompoundType() {
-        let formatter = Formatter(tokenize("""
-        let foo: Foo.Bar.Baaz
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: Foo.Bar.Baaz
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "Foo.Bar.Baaz")
     }
 
     @Test func doesntParseLeadingDotAsType() {
-        let formatter = Formatter(tokenize("""
-        let foo: Foo = .Bar.baaz
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: Foo = .Bar.baaz
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 9)?.string == nil)
     }
 
     @Test func parseCompoundGenericType() {
-        let formatter = Formatter(tokenize("""
-        let foo: Foo<Bar>.Bar.Baaz<Quux.V2>
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: Foo<Bar>.Bar.Baaz<Quux.V2>
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "Foo<Bar>.Bar.Baaz<Quux.V2>")
     }
 
     @Test func parseExistentialTypeWithSubtype() {
-        let formatter = Formatter(tokenize("""
-        let foo: (any Foo).Bar.Baaz
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo: (any Foo).Bar.Baaz
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "(any Foo).Bar.Baaz")
     }
 
     @Test func parseOpaqueReturnType() {
-        let formatter = Formatter(tokenize("""
-        var body: some View { EmptyView() }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                var body: some View { EmptyView() }
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 5)?.string == "some View")
     }
 
     @Test func parameterPackTypes() {
-        let formatter = Formatter(tokenize("""
-        func foo<each T>() -> repeat each T {
-          return repeat each T.self
-        }
+        let formatter = Formatter(
+            tokenize(
+                """
+                func foo<each T>() -> repeat each T {
+                  return repeat each T.self
+                }
 
-        func eachFirst<each T: Collection>(_ item: repeat each T) -> (repeat (each T).Element?) {
-            return (repeat (each item).first)
-        }
-        """))
+                func eachFirst<each T: Collection>(_ item: repeat each T) -> (repeat (each T).Element?) {
+                    return (repeat (each item).first)
+                }
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 4)?.string == "each T")
         #expect(formatter.parseType(at: 13)?.string == "repeat each T")
         #expect(formatter.parseType(at: 62)?.string == "repeat (each T).Element?")
     }
 
     @Test func parseInvalidType() {
-        let formatter = Formatter(tokenize("""
-        let foo = { foo, bar in (foo, bar) }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                let foo = { foo, bar in (foo, bar) }
+                """,
+            ),
+        )
         #expect(formatter.parseType(at: 4)?.string == nil)
         #expect(formatter.parseType(at: 5)?.string == nil)
         #expect(formatter.parseType(at: 6)?.string == nil)
@@ -2235,13 +2734,17 @@ import Testing
     }
 
     @Test func multilineType() {
-        let formatter = Formatter(tokenize("""
-        extension Foo.Bar
-            .Baaz.Quux
-            .InnerType1
-            .InnerType2
-        { }
-        """))
+        let formatter = Formatter(
+            tokenize(
+                """
+                extension Foo.Bar
+                    .Baaz.Quux
+                    .InnerType1
+                    .InnerType2
+                { }
+                """,
+            ),
+        )
 
         #expect(formatter.parseType(at: 2)?.string == "Foo.Bar.Baaz.Quux.InnerType1.InnerType2")
     }
@@ -2342,74 +2845,112 @@ import Testing
         #expect(!isSingleExpression(#"if foo { "foo" } else { "bar" }"#))
         #expect(!isSingleExpression(#"foo.bar, baaz.quux"#))
 
-        #expect(isSingleExpression(
-            #"if foo { "foo" } else { "bar" }"#,
-            allowConditionalExpressions: true
-        ))
+        #expect(
+            isSingleExpression(
+                #"if foo { "foo" } else { "bar" }"#,
+                allowConditionalExpressions: true,
+            ),
+        )
 
-        #expect(isSingleExpression("""
-        if foo {
-          "foo"
-        } else {
-          "bar"
-        }
-        """, allowConditionalExpressions: true))
+        #expect(
+            isSingleExpression(
+                """
+                if foo {
+                  "foo"
+                } else {
+                  "bar"
+                }
+                """, allowConditionalExpressions: true,
+            ),
+        )
 
-        #expect(isSingleExpression("""
-        switch foo {
-        case true:
-            "foo"
-        case false:
-            "bar"
-        }
-        """, allowConditionalExpressions: true))
+        #expect(
+            isSingleExpression(
+                """
+                switch foo {
+                case true:
+                    "foo"
+                case false:
+                    "bar"
+                }
+                """, allowConditionalExpressions: true,
+            ),
+        )
 
-        #expect(isSingleExpression("""
-        foo
-            .bar
-        """))
+        #expect(
+            isSingleExpression(
+                """
+                foo
+                    .bar
+                """,
+            ),
+        )
 
-        #expect(isSingleExpression("""
-        foo?
-            .bar?()
-            .baaz![0]
-        """))
+        #expect(
+            isSingleExpression(
+                """
+                foo?
+                    .bar?()
+                    .baaz![0]
+                """,
+            ),
+        )
 
-        #expect(isSingleExpression(#"""
-        """
-        multi-line string
-        """
-        """#))
+        #expect(
+            isSingleExpression(
+                #"""
+                """
+                multi-line string
+                """
+                """#,
+            ),
+        )
 
-        #expect(isSingleExpression(##"""
-        #"""
-        raw multi-line string
-        """#
-        """##))
+        #expect(
+            isSingleExpression(
+                ##"""
+                #"""
+                raw multi-line string
+                """#
+                """##,
+            ),
+        )
 
-        #expect(!(isSingleExpression(#"foo = bar"#)))
-        #expect(!(isSingleExpression(#"foo = "foo"#)))
-        #expect(!(isSingleExpression(#"10 20 30"#)))
-        #expect(!(isSingleExpression(#"foo bar"#)))
-        #expect(!(isSingleExpression(#"foo? bar"#)))
+        #expect(!isSingleExpression(#"foo = bar"#))
+        #expect(!isSingleExpression(#"foo = "foo"#))
+        #expect(!isSingleExpression(#"10 20 30"#))
+        #expect(!isSingleExpression(#"foo bar"#))
+        #expect(!isSingleExpression(#"foo? bar"#))
 
-        #expect(!(isSingleExpression("""
-        foo
-            () // if you have a linebreak before a method call, its parsed as a tuple
-        """)))
+        #expect(
+            !isSingleExpression(
+                """
+                foo
+                    () // if you have a linebreak before a method call, its parsed as a tuple
+                """,
+            ),
+        )
 
-        #expect(!(isSingleExpression("""
-        foo
-            [0] // if you have a linebreak before a subscript, its invalid
-        """)))
+        #expect(
+            !isSingleExpression(
+                """
+                foo
+                    [0] // if you have a linebreak before a subscript, its invalid
+                """,
+            ),
+        )
 
-        #expect(!(isSingleExpression("""
-        #if DEBUG
-        foo
-        #else
-        bar
-        #endif
-        """)))
+        #expect(
+            !isSingleExpression(
+                """
+                #if DEBUG
+                foo
+                #else
+                bar
+                #endif
+                """,
+            ),
+        )
     }
 
     @Test func parseMultipleSingleLineExpressions() {
@@ -2504,7 +3045,11 @@ import Testing
 
     func isSingleExpression(_ string: String, allowConditionalExpressions: Bool = false) -> Bool {
         let formatter = Formatter(tokenize(string))
-        guard let expressionRange = formatter.parseExpressionRange(startingAt: 0, allowConditionalExpressions: allowConditionalExpressions) else { return false }
+        guard
+            let expressionRange = formatter.parseExpressionRange(
+                startingAt: 0, allowConditionalExpressions: allowConditionalExpressions,
+            )
+        else { return false }
         return expressionRange.upperBound == formatter.tokens.indices.last!
     }
 
@@ -2517,7 +3062,9 @@ import Testing
             let expression = formatter.tokens[expressionRange].map(\.string).joined()
             expressions.append(expression)
 
-            if let nextExpressionIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound) {
+            if let nextExpressionIndex = formatter.index(
+                of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound,
+            ) {
                 parseIndex = nextExpressionIndex
             } else {
                 return expressions
@@ -2529,7 +3076,8 @@ import Testing
 
     func parseExpression(in input: String, at index: Int) -> String {
         let formatter = Formatter(tokenize(input))
-        guard let expressionRange = formatter.parseExpressionRange(startingAt: index) else { return "" }
+        guard let expressionRange = formatter.parseExpressionRange(startingAt: index)
+        else { return "" }
         return formatter.tokens[expressionRange].map(\.string).joined()
     }
 
@@ -2586,7 +3134,9 @@ import Testing
     func isSingleExpressionParsedFromEnd(_ input: String) -> Bool {
         let formatter = Formatter(tokenize(input))
         let lastTokenIndex = formatter.tokens.count - 1
-        guard let expressionRange = formatter.parseExpressionRange(endingAt: lastTokenIndex) else { return false }
+        guard let expressionRange = formatter.parseExpressionRange(endingAt: lastTokenIndex) else {
+            return false
+        }
         return formatter.tokens[expressionRange].string == input
     }
 
@@ -2598,8 +3148,10 @@ import Testing
 
         // Force unwrap in different contexts
         #expect(parseExpression(in: "foo(bar: foo!.bar)", containing: "!") == "foo!.bar")
-        #expect(parseExpression(in: "let foo = foo!.bar + baz", containing: "!") == "foo!.bar + baz")
-        #expect(parseExpression(in: "if foo, foo!.bar == quux", containing: "!") == "foo!.bar == quux")
+        #expect(parseExpression(in: "let foo = foo!.bar + baz", containing: "!") ==
+            "foo!.bar + baz")
+        #expect(parseExpression(in: "if foo, foo!.bar == quux", containing: "!") ==
+            "foo!.bar == quux")
         #expect(parseExpression(in: "[foo!.bar, baz]", containing: "!") == "foo!.bar")
         #expect(parseExpression(in: "(foo!.bar, baz)", containing: "!") == "foo!.bar")
         #expect(parseExpression(in: "return foo!.bar + baz", containing: "!") == "foo!.bar + baz")
@@ -2608,7 +3160,10 @@ import Testing
         #expect(parseExpression(in: "{ foo!.bar }", containing: "!") == "foo!.bar")
         #expect(parseExpression(in: "foo as! Foo", containing: "!") == "foo as! Foo")
         #expect(parseExpression(in: "foo! + \"suffix\"", containing: "!") == "foo! + \"suffix\"")
-        #expect(parseExpression(in: "foo(\"test\".data(using: .utf8)!)", containing: "!") == "\"test\".data(using: .utf8)!")
+        #expect(
+            parseExpression(in: "foo(\"test\".data(using: .utf8)!)", containing: "!")
+                == "\"test\".data(using: .utf8)!",
+        )
 
         // Multiple force unwraps
         #expect(parseExpression(in: "foo!.bar! + baz", containing: "!") == "foo!.bar! + baz")
@@ -2621,9 +3176,16 @@ import Testing
         #expect(parseExpression(in: "await foo!.bar()", containing: "!") == "await foo!.bar()")
 
         // Force unwrap with type operators
-        #expect(parseExpression(in: "foo!.bar as! String", containing: "!") == "foo!.bar as! String")
+        #expect(parseExpression(in: "foo!.bar as! String", containing: "!") ==
+            "foo!.bar as! String")
 
-        #expect(parseExpression(in: #"XCTAssertEqual(route.query as! [String: String], ["a": "b"])"#, containing: "!") == "route.query as! [String: String]")
+        #expect(
+            parseExpression(
+                in: #"XCTAssertEqual(route.query as! [String: String], ["a": "b"])"#,
+                containing: "!",
+            )
+                == "route.query as! [String: String]",
+        )
     }
 
     func parseExpression(in expression: String, containing: String) -> String? {
@@ -2645,34 +3207,50 @@ import Testing
         #expect(isStoredProperty("var foo: Int = 42"))
         #expect(isStoredProperty("@Environment(\\.myEnvironmentProperty) var foo", at: 7))
 
-        #expect(isStoredProperty("""
-        var foo: String {
-          didSet {
-            print(newValue)
-          }
-        }
-        """))
+        #expect(
+            isStoredProperty(
+                """
+                var foo: String {
+                  didSet {
+                    print(newValue)
+                  }
+                }
+                """,
+            ),
+        )
 
-        #expect(isStoredProperty("""
-        var foo: String {
-          willSet {
-            print(newValue)
-          }
-        }
-        """))
+        #expect(
+            isStoredProperty(
+                """
+                var foo: String {
+                  willSet {
+                    print(newValue)
+                  }
+                }
+                """,
+            ),
+        )
 
-        #expect(!(isStoredProperty("""
-        var foo: String {
-            "foo"
-        }
-        """)))
+        #expect(
+            !isStoredProperty(
+                """
+                var foo: String {
+                    "foo"
+                }
+                """,
+            ),
+        )
 
-        #expect(!(isStoredProperty("""
-        var foo: String {
-            get { "foo" }
-            set { print(newValue) }
-        }
-        """)))
+        #expect(
+            !isStoredProperty(
+                """
+                var foo: String {
+                    get { "foo" }
+                    set { print(newValue) }
+                }
+                """,
+            ),
+        )
     }
 
     func isStoredProperty(_ input: String, at index: Int = 0) -> Bool {
@@ -2730,8 +3308,10 @@ import Testing
         #expect(arguments[3].internalLabelIndex == 28)
         #expect(arguments[3].type.string == "Baaz")
 
-        #expect(formatter.parseFunctionDeclarationArguments(startOfScope: 40) == // bar()
-            [])
+        #expect(
+            formatter.parseFunctionDeclarationArguments(startOfScope: 40) // bar()
+                == [],
+        )
     }
 
     @Test func parseFunctionCallArgumentLabels() {
@@ -2742,20 +3322,30 @@ import Testing
         """
 
         let formatter = Formatter(tokenize(input))
-        #expect(formatter.parseFunctionCallArguments(startOfScope: 1).map(\.label) == // foo(...)
-            [nil, "bar", nil, "quux", "last"])
+        #expect(
+            formatter.parseFunctionCallArguments(startOfScope: 1).map(\.label) // foo(...)
+                == [nil, "bar", nil, "quux", "last"],
+        )
 
-        #expect(formatter.parseFunctionCallArguments(startOfScope: 3).map(\.label) == // Foo(...)
-            ["foo"])
+        #expect(
+            formatter.parseFunctionCallArguments(startOfScope: 3).map(\.label) // Foo(...)
+                == ["foo"],
+        )
 
-        #expect(formatter.parseFunctionCallArguments(startOfScope: 15).map(\.label) == // Bar(...)
-            [nil])
+        #expect(
+            formatter.parseFunctionCallArguments(startOfScope: 15).map(\.label) // Bar(...)
+                == [nil],
+        )
 
-        #expect(formatter.parseFunctionCallArguments(startOfScope: 27).map(\.label) == // Quux()
-            [])
+        #expect(
+            formatter.parseFunctionCallArguments(startOfScope: 27).map(\.label) // Quux()
+                == [],
+        )
 
-        #expect(formatter.parseFunctionCallArguments(startOfScope: 49).map(\.label) == // isOperator(...)
-            ["at"])
+        #expect(
+            formatter.parseFunctionCallArguments(startOfScope: 49).map(\.label) // isOperator(...)
+                == ["at"],
+        )
     }
 
     @Test func parseFunctionDeclarationWithEffects() throws {
@@ -2777,16 +3367,22 @@ import Testing
         #expect(function.genericParameterRange == nil)
         #expect(formatter.tokens[function.argumentsRange].string == "(bar: Bar, baaz: Baaz)")
         #expect(function.arguments.count == 2)
-        #expect(try formatter.tokens[#require(function.effectsRange)].string == "async throws(GenericError<Foo>)")
+        #expect(
+            try formatter.tokens[#require(function.effectsRange)].string
+                == "async throws(GenericError<Foo>)",
+        )
         #expect(function.effects == ["async", "throws(GenericError<Foo>)"])
         #expect(function.returnOperatorIndex == 34)
-        #expect(try formatter.tokens[#require(function.returnType?.range)].string == "Foo<Bar, Baaz>")
+        #expect(try formatter.tokens[#require(function.returnType?.range)]
+            .string == "Foo<Bar, Baaz>")
         #expect(function.whereClauseRange == nil)
-        #expect(try formatter.tokens[#require(function.bodyRange)].string == """
-        {
-                Foo(bar: bar, baaz: baaz)
-            }
-        """)
+        #expect(
+            try formatter.tokens[#require(function.bodyRange)].string == """
+            {
+                    Foo(bar: bar, baaz: baaz)
+                }
+            """,
+        )
     }
 
     @Test func parseFunctionDeclarationWithGeneric() throws {
@@ -2803,32 +3399,39 @@ import Testing
         let function = try #require(formatter.parseFunctionDeclaration(keywordIndex: 2))
         #expect(function.keywordIndex == 2)
         #expect(function.name == "genericFoo")
-        #expect(try formatter.tokens[#require(function.genericParameterRange)].string == "<Bar: Baaz>")
+        #expect(try formatter.tokens[#require(function.genericParameterRange)]
+            .string == "<Bar: Baaz>")
         #expect(formatter.tokens[function.argumentsRange].string == "(bar: Bar)")
         #expect(function.arguments.count == 1)
         #expect(try formatter.tokens[#require(function.effectsRange)].string == "rethrows")
         #expect(function.effects == ["rethrows"])
         #expect(function.returnOperatorIndex == nil)
         #expect(function.returnType?.range == nil)
-        #expect(try formatter.tokens[#require(function.whereClauseRange)].string == "where Baaz.Quux == Foo ")
-        #expect(try formatter.tokens[#require(function.bodyRange)].string == """
-        {
-            print(bar)
-        }
-        """)
+        #expect(
+            try formatter.tokens[#require(function.whereClauseRange)]
+                .string == "where Baaz.Quux == Foo ",
+        )
+        #expect(
+            try formatter.tokens[#require(function.bodyRange)].string == """
+            {
+                print(bar)
+            }
+            """,
+        )
 
         let secondFunction = try #require(formatter.parseFunctionDeclaration(keywordIndex: 41))
         #expect(secondFunction.keywordIndex == 41)
         #expect(secondFunction.name == "bar")
         #expect(secondFunction.genericParameterRange == nil)
         #expect(formatter.tokens[secondFunction.argumentsRange].string == "()")
-        #expect(secondFunction.arguments.count == 0)
+        #expect(secondFunction.arguments.isEmpty)
         #expect(secondFunction.effectsRange == nil)
         #expect(secondFunction.effects == [])
         #expect(secondFunction.returnOperatorIndex == nil)
         #expect(secondFunction.returnType?.range == nil)
         #expect(secondFunction.whereClauseRange == nil)
-        #expect(try formatter.tokens[#require(secondFunction.bodyRange)].string == #"{ print("bar") }"#)
+        #expect(try formatter.tokens[#require(secondFunction.bodyRange)]
+            .string == #"{ print("bar") }"#)
     }
 
     @Test func parseProtocolFunctionRequirements() throws {
@@ -2851,14 +3454,23 @@ import Testing
         #expect(try formatter.tokens[#require(function.effectsRange)].string == "async throws")
         #expect(function.effects == ["async", "throws"])
         #expect(function.returnOperatorIndex == 27)
-        #expect(try formatter.tokens[#require(function.returnType?.range)].string == "Module.Foo<Bar, Baaz>")
-        #expect(try formatter.tokens[#require(function.whereClauseRange)].string == "where Bar == Baaz.Quux")
+        #expect(
+            try formatter.tokens[#require(function.returnType?.range)]
+                .string == "Module.Foo<Bar, Baaz>",
+        )
+        #expect(
+            try formatter.tokens[#require(function.whereClauseRange)]
+                .string == "where Bar == Baaz.Quux",
+        )
         #expect(function.bodyRange == nil)
 
         let secondFunction = try #require(formatter.parseFunctionDeclaration(keywordIndex: 51))
         #expect(secondFunction.keywordIndex == 51)
         #expect(secondFunction.name == nil)
-        #expect(try formatter.tokens[#require(secondFunction.genericParameterRange)].string == "<Bar: Baaz>")
+        #expect(
+            try formatter.tokens[#require(secondFunction.genericParameterRange)]
+                .string == "<Bar: Baaz>",
+        )
         #expect(formatter.tokens[secondFunction.argumentsRange].string == "(_ bar: Bar)")
         #expect(secondFunction.arguments.count == 1)
         #expect(try formatter.tokens[#require(secondFunction.effectsRange)].string == "throws")
@@ -2881,7 +3493,7 @@ import Testing
         #expect(firstInit.keywordIndex == 0)
         #expect(firstInit.name == nil)
         #expect(formatter.tokens[firstInit.argumentsRange].string == "()")
-        #expect(firstInit.arguments.count == 0)
+        #expect(firstInit.arguments.isEmpty)
         #expect(firstInit.effects == [])
         #expect(firstInit.returnOperatorIndex == nil)
         #expect(firstInit.whereClauseRange == nil)
@@ -2891,105 +3503,11 @@ import Testing
         #expect(secondInit.keywordIndex == 7)
         #expect(secondInit.name == nil)
         #expect(formatter.tokens[secondInit.argumentsRange].string == "()")
-        #expect(secondInit.arguments.count == 0)
+        #expect(secondInit.arguments.isEmpty)
         #expect(secondInit.effects == [])
         #expect(secondInit.returnOperatorIndex == nil)
         #expect(secondInit.whereClauseRange == nil)
         #expect(try formatter.tokens[#require(secondInit.bodyRange)].string == "{ return nil }")
-    }
-
-    @Test func parseMarkdownFile() throws {
-        let input = #"""
-        # Sample README
-
-        This is a nice project with lots of cool APIs to know about, including:
-
-        ```swift
-        func foo(
-            bar: Bar
-            baaz: Baaz
-        ) -> Foo {}
-        ```
-
-        and:
-
-          ```swift no-format
-          class Foo {
-              public init() {}
-              public func bar() {}
-          }
-          ```
-
-        This sample code even has a multi-line string in it:
-
-        ```swift --indentstrings true
-        let codeBlock = """
-          ```swift
-          print("foo")
-          ```
-
-          ```diff
-          - print("foo")
-          + print("bar")
-          ```
-          """
-        ```
-
-        Try it out!
-        """#
-
-        let codeBlocks = try parseCodeBlocks(fromMarkdown: input, language: "swift")
-
-        #expect(codeBlocks[0].text == #"""
-            func foo(
-                bar: Bar
-                baaz: Baaz
-            ) -> Foo {}
-            """#)
-
-        #expect(codeBlocks[1].text == #"""
-              class Foo {
-                  public init() {}
-                  public func bar() {}
-              }
-            """#)
-
-        #expect(codeBlocks[1].options == "no-format")
-
-        #expect(codeBlocks[2].text == #"""
-            let codeBlock = """
-              ```swift
-              print("foo")
-              ```
-
-              ```diff
-              - print("foo")
-              + print("bar")
-              ```
-              """
-            """#)
-
-        #expect(codeBlocks[2].options == "--indentstrings true")
-    }
-
-    @Test func parseMarkdownWithUnbalancedDelimiters() {
-        let input = """
-        # Sample README
-
-        This is a nice project with lots of cool APIs to know about, including:
-
-        ```swift
-        func foo(
-            bar: Bar
-            baaz: Baaz
-        ) -> Foo {}
-
-        ```swift
-        foo(bar: bar, baaz: baaz)
-        ```
-        """
-
-        #expect(throws: (any Error).self) { try parseCodeBlocks(fromMarkdown: input, language: "swift") }
     }
 
     @Test func commaSeparatedElementsInScope() {
@@ -3002,12 +3520,16 @@ import Testing
         """
 
         let formatter = Formatter(tokenize(input))
-        let elements = formatter.commaSeparatedElementsInScope(startOfScope: 0).map { formatter.tokens[$0].string }
-        #expect(elements == [
-            "1",
-            "2",
-            "3",
-        ])
+        let elements = formatter.commaSeparatedElementsInScope(startOfScope: 0).map {
+            formatter.tokens[$0].string
+        }
+        #expect(
+            elements == [
+                "1",
+                "2",
+                "3",
+            ],
+        )
     }
 
     @Test func commaSeparatedElementsInScopeWithTrailingComma() {
@@ -3020,12 +3542,16 @@ import Testing
         """
 
         let formatter = Formatter(tokenize(input))
-        let elements = formatter.commaSeparatedElementsInScope(startOfScope: 1).map { formatter.tokens[$0].string }
-        #expect(elements == [
-            "foo: foo()",
-            "bar: bar(foo, bar)",
-            "baaz: baaz.quux",
-        ])
+        let elements = formatter.commaSeparatedElementsInScope(startOfScope: 1).map {
+            formatter.tokens[$0].string
+        }
+        #expect(
+            elements == [
+                "foo: foo()",
+                "bar: bar(foo, bar)",
+                "baaz: baaz.quux",
+            ],
+        )
     }
 
     @Test func parseCommentRange() throws {
@@ -3044,17 +3570,23 @@ import Testing
         """
 
         let formatter = Formatter(tokenize(input))
-        let classCommentRange = try #require(formatter.parseDocCommentRange(forDeclarationAt: 9)) // class
-        let structCommentRange = try #require(formatter.parseDocCommentRange(forDeclarationAt: 30)) // struct
+        let classCommentRange = try #require(formatter
+            .parseDocCommentRange(forDeclarationAt: 9)) // class
+        let structCommentRange = try #require(formatter
+            .parseDocCommentRange(forDeclarationAt: 30)) // struct
 
-        #expect(formatter.tokens[classCommentRange].string == """
-        // Class declaration
-        """)
+        #expect(
+            formatter.tokens[classCommentRange].string == """
+            // Class declaration
+            """,
+        )
 
-        #expect(formatter.tokens[structCommentRange].string == """
-        /// Foo bar
-        /// baaz quux
-        """)
+        #expect(
+            formatter.tokens[structCommentRange].string == """
+            /// Foo bar
+            /// baaz quux
+            """,
+        )
     }
 
     @Test func parseFunctionArgumentWithAttribute() throws {
@@ -3111,7 +3643,7 @@ import Testing
         let viewBuilderProp = properties.first { prop in
             formatter.tokens[prop.keywordIndex + 2].string == "content"
         }
-        #expect(viewBuilderProp, "@ViewBuilder property should be found" != nil)
+        #expect(viewBuilderProp != nil, "@ViewBuilder property should be found")
         #expect(viewBuilderProp?.keyword == "let")
     }
 

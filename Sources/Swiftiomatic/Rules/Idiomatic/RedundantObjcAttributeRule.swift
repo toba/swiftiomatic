@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 private let attributeNamesImplyingObjc: Set<String> = [
     "IBAction", "IBOutlet", "IBInspectable", "GKInspectable", "IBDesignable", "NSManaged",
@@ -16,7 +16,7 @@ struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule 
         kind: .idiomatic,
         nonTriggeringExamples: RedundantObjcAttributeRuleExamples.nonTriggeringExamples,
         triggeringExamples: RedundantObjcAttributeRuleExamples.triggeringExamples,
-        corrections: RedundantObjcAttributeRuleExamples.corrections
+        corrections: RedundantObjcAttributeRuleExamples.corrections,
     )
 
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
@@ -34,7 +34,8 @@ struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule 
         makeVisitor(file: file)
             .walk(tree: file.syntaxTree, handler: \.violations)
             .compactMap { violation in
-                let end = AbsolutePosition(utf8Offset: violation.position.utf8Offset + "@objc".count)
+                let end = AbsolutePosition(utf8Offset: violation.position.utf8Offset + "@objc"
+                    .count)
                 return file.stringView.NSRange(start: violation.position, end: end)
             }
     }
@@ -102,7 +103,7 @@ private extension AttributeListSyntax {
                 ? nil : objcAttribute
         }
         if let parentExtensionDecl = parent?.parent?.parent?.parent?.parent?.as(
-            ExtensionDeclSyntax.self
+            ExtensionDeclSyntax.self,
         ),
             parentExtensionDecl.attributes.objCAttribute != nil
         {
@@ -119,7 +120,7 @@ extension RedundantObjcAttributeRule {
         let nsContent = file.contents.bridge()
         while nsCharSet
             .characterIsMember(
-                nsContent.character(at: violationRange.upperBound + whitespaceAndNewlineOffset)
+                nsContent.character(at: violationRange.upperBound + whitespaceAndNewlineOffset),
             )
         {
             whitespaceAndNewlineOffset += 1
@@ -127,7 +128,7 @@ extension RedundantObjcAttributeRule {
 
         let withTrailingWhitespaceAndNewlineRange = NSRange(
             location: violationRange.location,
-            length: violationRange.length + whitespaceAndNewlineOffset
+            length: violationRange.length + whitespaceAndNewlineOffset,
         )
         return (withTrailingWhitespaceAndNewlineRange, "")
     }

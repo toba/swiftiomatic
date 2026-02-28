@@ -49,7 +49,7 @@ struct LegacyObjcTypeRule: Rule {
                     let data = NSData()
                     let number: NSNumber
                 }
-                """#, configuration: ["allowed_types": ["NSData", "NSNumber", "NSURLRequest"]]
+                """#, configuration: ["allowed_types": ["NSData", "NSNumber", "NSURLRequest"]],
             ),
         ],
         triggeringExamples: [
@@ -64,7 +64,7 @@ struct LegacyObjcTypeRule: Rule {
                 }
                 dictionary = [↓NSString: ↓NSString](uniqueKeysWithValues:
                   (1...10_000).lazy.map(keyValuePair))
-                """#
+                """#,
             ),
             Example(
                 """
@@ -73,9 +73,9 @@ struct LegacyObjcTypeRule: Rule {
                         return Foundation.Notification.Name("org.wordpress.reachability.changed")
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

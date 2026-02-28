@@ -1,33 +1,31 @@
-//
-//  RedundantInternal.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 7/28/23.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let redundantInternal = FormatRule(
-        help: "Remove redundant internal access control."
+        help: "Remove redundant internal access control.",
     ) { formatter in
         formatter.forEach(.keyword("internal")) { internalKeywordIndex, _ in
             // Don't remove import acl
-            if formatter.next(.nonSpaceOrComment, after: internalKeywordIndex) == .keyword("import") {
+            if formatter
+                .next(.nonSpaceOrComment, after: internalKeywordIndex) == .keyword("import")
+            {
                 return
             }
 
             // If we're inside an extension, then `internal` is only redundant if the extension itself is `internal`.
             if let startOfScope = formatter.startOfScope(at: internalKeywordIndex),
                let typeKeywordIndex = formatter.indexOfLastSignificantKeyword(
-                   at: startOfScope, excluding: ["where"]
+                   at: startOfScope, excluding: ["where"],
                ),
                formatter.tokens[typeKeywordIndex] == .keyword("extension"),
                // In the language grammar, the ACL level always directly precedes the
                // `extension` keyword if present.
-               let previousToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: typeKeywordIndex),
-               ["public", "package", "internal", "private", "fileprivate"].contains(previousToken.string),
+               let previousToken = formatter.last(
+                   .nonSpaceOrCommentOrLinebreak,
+                   before: typeKeywordIndex,
+               ),
+               ["public", "package", "internal", "private", "fileprivate"]
+               .contains(previousToken.string),
                previousToken.string != "internal"
             {
                 // The extension has an explicit ACL other than `internal`, so is not internal.

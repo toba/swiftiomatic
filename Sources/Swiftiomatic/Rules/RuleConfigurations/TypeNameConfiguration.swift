@@ -4,7 +4,7 @@ struct TypeNameConfiguration: RuleConfiguration {
         minLengthWarning: 3,
         minLengthError: 0,
         maxLengthWarning: 40,
-        maxLengthError: 1000
+        maxLengthError: 1000,
     )
     @ConfigurationElement(key: "validate_protocols")
     private(set) var validateProtocols = true

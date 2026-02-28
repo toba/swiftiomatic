@@ -21,22 +21,24 @@ struct FunctionParameterCountRule: Rule {
                 """
                 func f(a: [Int], b: Int, c: Int, d: Int, f: Int) -> [Int] {
                     let s = a.flatMap { $0 as? [String: Int] } ?? []}}
-                """
+                """,
             ),
             Example("override func f(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
         ],
         triggeringExamples: [
             Example("↓func f(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
             Example("↓func initialValue(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
-            Example("private ↓func f(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int = 2, g: Int) {}"),
+            Example(
+                "private ↓func f(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int = 2, g: Int) {}",
+            ),
             Example(
                 """
                 struct Foo {
                     init(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}
                     ↓func bar(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}}
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -54,7 +56,8 @@ private extension FunctionParameterCountRule {
             }
 
             let parameterList = node.signature.parameterClause.parameters
-            guard let minThreshold = configuration.severityConfiguration.params.map(\.value).min(by: <)
+            guard let minThreshold = configuration.severityConfiguration.params.map(\.value)
+                .min(by: <)
             else {
                 return
             }
@@ -66,7 +69,7 @@ private extension FunctionParameterCountRule {
 
             var parameterCount = allParameterCount
             if configuration.ignoresDefaultParameters {
-                parameterCount -= parameterList.filter { $0.defaultValue != nil }.count
+                parameterCount -= parameterList.count(where: { $0.defaultValue != nil })
             }
 
             for parameter in configuration.severityConfiguration.params
@@ -80,8 +83,8 @@ private extension FunctionParameterCountRule {
                     ReasonedRuleViolation(
                         position: node.funcKeyword.positionAfterSkippingLeadingTrivia,
                         reason: reason,
-                        severity: parameter.severity
-                    )
+                        severity: parameter.severity,
+                    ),
                 )
                 return
             }

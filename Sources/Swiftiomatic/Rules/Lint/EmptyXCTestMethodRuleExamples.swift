@@ -37,7 +37,7 @@ enum EmptyXCTestMethodRuleExamples {
                     _ = 4 + 4
                 }
             }
-            """
+            """,
         ),
 
         // Not an XCTestCase class
@@ -51,7 +51,7 @@ enum EmptyXCTestMethodRuleExamples {
 
                 func testFoo() {}
             }
-            """
+            """,
         ),
 
         // Methods with parameters
@@ -67,7 +67,7 @@ enum EmptyXCTestMethodRuleExamples {
 
                 func testBar(bar: (String) -> Int) {}
             }
-            """
+            """,
         ),
 
         // Asserts in one line
@@ -79,7 +79,7 @@ enum EmptyXCTestMethodRuleExamples {
 
                 func testBar() { XCTAssertFalse(foobar?.bar) }
             }
-            """
+            """,
         ),
 
         // Class/static variables
@@ -93,7 +93,7 @@ enum EmptyXCTestMethodRuleExamples {
 
                 func testFoo() { XCTAssert(true) }
             }
-            """
+            """,
         ),
 
         Example(
@@ -109,7 +109,7 @@ enum EmptyXCTestMethodRuleExamples {
             enum E {
                 override func foo(a: Int) {}
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
     ]
 
@@ -140,7 +140,7 @@ enum EmptyXCTestMethodRuleExamples {
                 func helperFunction() {
                 }
             }
-            """
+            """,
         ),
 
         Example(
@@ -154,7 +154,7 @@ enum EmptyXCTestMethodRuleExamples {
 
                 func helperFunction() {}
             }
-            """
+            """,
         ),
 
         // XCTestCase class with comments (and blank lines)
@@ -192,7 +192,7 @@ enum EmptyXCTestMethodRuleExamples {
                 func helperFunction() {
                 }
             }
-            """
+            """,
         ),
 
         // Two XCTestCase classes on the same file
@@ -206,7 +206,7 @@ enum EmptyXCTestMethodRuleExamples {
             class BarTests: XCTestCase {
                 ↓func testFoo() {}
             }
-            """
+            """,
         ),
     ]
 }

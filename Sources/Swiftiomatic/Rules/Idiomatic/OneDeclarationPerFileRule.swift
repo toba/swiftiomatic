@@ -12,20 +12,20 @@ struct OneDeclarationPerFileRule: Rule {
             Example(
                 """
                 actor Foo {}
-                """
+                """,
             ),
             Example(
                 """
                 class Foo {}
                 extension Foo {}
-                """
+                """,
             ),
             Example(
                 """
                 struct S {
                     struct N {}
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -33,21 +33,21 @@ struct OneDeclarationPerFileRule: Rule {
                 """
                 class Foo {}
                 ↓class Bar {}
-                """
+                """,
             ),
             Example(
                 """
                 protocol Foo {}
                 ↓enum Bar {}
-                """
+                """,
             ),
             Example(
                 """
                 struct Foo {}
                 ↓struct Bar {}
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

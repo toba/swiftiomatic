@@ -1,11 +1,3 @@
-//
-//  RedundantThrows.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 2025-09-16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -13,7 +5,7 @@ extension FormatRule {
         help:
         "Remove redundant `throws` keyword from function declarations that don't throw any errors.",
         orderAfter: [.noForceUnwrapInTests, .noForceTryInTests, .noGuardInTests, .throwingTests],
-        options: ["redundant-throws"]
+        options: ["redundant-throws"],
     ) { formatter in
         let testFramework = formatter.detectTestingFramework()
         if formatter.options.redundantThrows == .testsOnly, testFramework == nil {
@@ -21,7 +13,8 @@ extension FormatRule {
         }
 
         formatter.forEach(.keyword) { keywordIndex, keyword in
-            guard case let .keyword(keyword) = keyword, ["func", "init", "subscript"].contains(keyword),
+            guard case let .keyword(keyword) = keyword,
+                  ["func", "init", "subscript"].contains(keyword),
                   let functionDecl = formatter.parseFunctionDeclaration(keywordIndex: keywordIndex),
                   functionDecl.effects.contains(where: { $0.hasPrefix("throws") }),
                   let bodyRange = functionDecl.bodyRange
@@ -44,8 +37,11 @@ extension FormatRule {
             for index in bodyRange {
                 if formatter.tokens[index] == .keyword("try") {
                     // Check if this try is followed by ! or ? (which means it doesn't need throws)
-                    if let nextTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: index),
-                       formatter.tokens[nextTokenIndex].isUnwrapOperator
+                    if let nextTokenIndex = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak,
+                        after: index,
+                    ),
+                        formatter.tokens[nextTokenIndex].isUnwrapOperator
                     {
                         continue // Skip try! and try?
                     }

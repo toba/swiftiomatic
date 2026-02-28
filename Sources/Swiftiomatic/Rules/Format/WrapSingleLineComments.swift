@@ -1,18 +1,10 @@
-//
-//  WrapSingleLineComments.swift
-//  SwiftFormat
-//
-//  Created by Max Desiatov on 8/11/22.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     /// Wrap single-line comments that exceed given `FormatOptions.maxWidth` setting.
     static let wrapSingleLineComments = FormatRule(
         help: "Wrap single line `//` comments that exceed the specified `--max-width`.",
-        sharedOptions: ["max-width", "indent", "tab-width", "asset-literals", "linebreaks"]
+        sharedOptions: ["max-width", "indent", "tab-width", "asset-literals", "linebreaks"],
     ) { formatter in
         let delimiterLength = "//".count
         var maxWidth = formatter.options.maxWidth
@@ -61,7 +53,7 @@ extension FormatRule {
                     .commentBody(comment), formatter.linebreakToken(for: startIndex),
                 ] + prefix + [
                     .commentBody(commentPrefix + words.joined(separator: " ")),
-                ]
+                ],
             )
         }
     } examples: {

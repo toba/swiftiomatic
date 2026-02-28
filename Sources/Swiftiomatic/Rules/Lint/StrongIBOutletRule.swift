@@ -24,7 +24,7 @@ struct StrongIBOutletRule: Rule {
                 wrapExample("@IBOutlet var label: UILabel!"),
             wrapExample("@IBOutlet ↓weak var textField: UITextField?"):
                 wrapExample("@IBOutlet var textField: UITextField?"),
-        ]
+        ],
     )
 }
 
@@ -87,6 +87,6 @@ private func wrapExample(_ text: String, file: StaticString = #filePath, line: U
         class ViewController: UIViewController {
             \(text)
         }
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }

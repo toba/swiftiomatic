@@ -3,7 +3,7 @@ enum UnneededEscapingRuleExamples {
         Example(
             """
             func outer(completion: @escaping () -> Void) { inner(completion: completion) }
-            """
+            """,
         ),
         Example(
             """
@@ -13,24 +13,24 @@ enum UnneededEscapingRuleExamples {
                     completion(result)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             func outer(closure: @escaping @autoclosure () -> String) {
                 inner(closure: closure())
             }
-            """
+            """,
         ),
         Example(
             """
             func returning(_ work: @escaping () -> Void) -> () -> Void { return work }
-            """
+            """,
         ),
         Example(
             """
             func implicitlyReturning(g: @escaping () -> Void) -> () -> Void { g }
-            """
+            """,
         ),
         Example(
             """
@@ -43,14 +43,14 @@ enum UnneededEscapingRuleExamples {
                     self.closure = newValue
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             func closure(completion: @escaping () -> Void) {
                 DispatchQueue.main.async { completion() }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -58,7 +58,7 @@ enum UnneededEscapingRuleExamples {
                 let closure = { completion() }
                 closure()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -67,14 +67,14 @@ enum UnneededEscapingRuleExamples {
                 local = completion
                 return local
             }
-            """
+            """,
         ),
         Example(
             """
             func global(completion: @escaping () -> Void) {
                 Global.completion = completion
             }
-            """
+            """,
         ),
         Example(
             """
@@ -87,7 +87,7 @@ enum UnneededEscapingRuleExamples {
                 let c3 = c1
                 return c3
             }
-            """
+            """,
         ),
         Example(
             """
@@ -97,7 +97,7 @@ enum UnneededEscapingRuleExamples {
                 completions[0] = completion
                 arrayOfCompletions = completions
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -105,7 +105,7 @@ enum UnneededEscapingRuleExamples {
             func array(completion: @escaping () -> Void) {
                 arrayOfCompletions[0] = completion
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -113,7 +113,7 @@ enum UnneededEscapingRuleExamples {
             public func _setTestSuiteFailedCallback(_ callback: @escaping () -> Void) {
                 _testSuiteFailedCallback = callback
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -121,28 +121,28 @@ enum UnneededEscapingRuleExamples {
                 var cs = [() -> Void]()
                 cs[0] = c
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
             func f(c: @escaping () -> Void) {
                 var cs = [c]
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
             func f(c: @escaping () -> Void) {
                 var cs = [1: c]
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
             func f(c: @escaping () -> Void) {
                 f(true ? c : { })
             }
-            """
+            """,
         ),
     ]
 
@@ -152,7 +152,7 @@ enum UnneededEscapingRuleExamples {
             func f(c: ↓@escaping () -> Int) {
                 print(c())
             }
-            """
+            """,
         ),
         Example(
             """
@@ -161,28 +161,28 @@ enum UnneededEscapingRuleExamples {
                     action(i)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             func process(completion: ↓@escaping () -> Void) {
                 completion()
             }
-            """
+            """,
         ),
         Example(
             """
             func apply(_ transform: ↓@escaping (Int) -> Int) -> Int {
                 return transform(5)
             }
-            """
+            """,
         ),
         Example(
             """
             func optional(completion: (↓@escaping () -> Void)?) {
                 completion?()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -190,14 +190,14 @@ enum UnneededEscapingRuleExamples {
                 first()
                 second()
             }
-            """
+            """,
         ),
         Example(
             """
             subscript(transform: ↓@escaping (Int) -> String) -> String {
                 transform(42)
             }
-            """
+            """,
         ),
         Example(
             """
@@ -205,7 +205,7 @@ enum UnneededEscapingRuleExamples {
                 let local = completion
                 local()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -214,14 +214,14 @@ enum UnneededEscapingRuleExamples {
                 local = completion
                 local()
             }
-            """
+            """,
         ),
         Example(
             """
             func assignToLocal(completion: ↓@escaping () -> Void) {
                 _ = completion
             }
-            """
+            """,
         ),
     ]
 
@@ -233,7 +233,7 @@ enum UnneededEscapingRuleExamples {
                     action(i)
                 }
             }
-            """
+            """,
         ): Example(
             """
             func forEach(action: (Int) -> Void) {
@@ -241,34 +241,34 @@ enum UnneededEscapingRuleExamples {
                     action(i)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             func process(completion: ↓@escaping () -> Void) { completion() }
-            """
+            """,
         ): Example(
             """
             func process(completion: () -> Void) { completion() }
-            """
+            """,
         ),
         Example(
             """
             subscript(transform: ↓@escaping (Int) -> String) -> String { transform(42) }
-            """
+            """,
         ): Example(
             """
             subscript(transform: (Int) -> String) -> String { transform(42) }
-            """
+            """,
         ),
         Example(
             """
             func f(c: ↓@escaping() -> Void) { c() }
-            """
+            """,
         ): Example(
             """
             func f(c: () -> Void) { c() }
-            """
+            """,
         ),
     ]
 }

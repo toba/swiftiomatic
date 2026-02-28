@@ -12,7 +12,7 @@ struct JSONReporter: Reporter {
     static func generateReport(_ violations: [StyleViolation]) -> String {
         toJSON(
             violations.map(dictionary(for:)),
-            options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+            options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes],
         )
     }
 

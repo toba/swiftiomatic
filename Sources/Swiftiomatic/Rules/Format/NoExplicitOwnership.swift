@@ -1,21 +1,16 @@
-//
-//  NoExplicitOwnership.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 8/27/23.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let noExplicitOwnership = FormatRule(
         help: "Don't use explicit ownership modifiers (borrowing / consuming).",
-        disabledByDefault: true
+        disabledByDefault: true,
     ) { formatter in
         formatter.forEachToken { keywordIndex, token in
             guard [.identifier("borrowing"), .identifier("consuming")].contains(token),
-                  let nextTokenIndex = formatter.index(of: .nonSpaceOrLinebreak, after: keywordIndex)
+                  let nextTokenIndex = formatter.index(
+                      of: .nonSpaceOrLinebreak,
+                      after: keywordIndex,
+                  )
             else { return }
 
             // Use of `borrowing` and `consuming` as ownership modifiers

@@ -36,7 +36,7 @@ extension SwiftSyntaxRule where ConfigurationType: SeverityBasedRuleConfiguratio
             location: Location(file: file, position: violation.position),
             reason: violation.reason,
             confidence: violation.confidence,
-            suggestion: violation.suggestion
+            suggestion: violation.suggestion,
         )
     }
 }
@@ -51,8 +51,9 @@ extension SwiftSyntaxRule {
         let violations = makeVisitor(file: file)
             .walk(tree: syntaxTree, handler: \.violations)
         assert(
-            violations.allSatisfy { $0.correction == nil || self is any SwiftSyntaxCorrectableRule },
-            "\(Self.self) produced corrections without being correctable."
+            violations
+                .allSatisfy { $0.correction == nil || self is any SwiftSyntaxCorrectableRule },
+            "\(Self.self) produced corrections without being correctable.",
         )
         return
             violations
@@ -67,7 +68,7 @@ extension SwiftSyntaxRule {
                 """
                 A severity must be provided. Either define it in the violation or make the rule configuration \
                 conform to `SeverityBasedRuleConfiguration` to take the default.
-                """
+                """,
             )
         }
         return StyleViolation(
@@ -76,7 +77,7 @@ extension SwiftSyntaxRule {
             location: Location(file: file, position: violation.position),
             reason: violation.reason,
             confidence: violation.confidence,
-            suggestion: violation.suggestion
+            suggestion: violation.suggestion,
         )
     }
 
@@ -127,7 +128,7 @@ struct ReasonedRuleViolation: Comparable, Hashable {
         severity: ViolationSeverity? = nil,
         correction: ViolationCorrection? = nil,
         confidence: Confidence? = nil,
-        suggestion: String? = nil
+        suggestion: String? = nil,
     ) {
         self.position = position
         self.reason = reason
@@ -144,7 +145,7 @@ struct ReasonedRuleViolation: Comparable, Hashable {
 
 /// Extension for arrays of `ReasonedRuleViolation`s that provides the automatic conversion of
 /// `AbsolutePosition`s into `ReasonedRuleViolation`s (without a specific reason).
-extension Array where Element == ReasonedRuleViolation {
+extension [ReasonedRuleViolation] {
     /// Add a violation at the specified position using the default description and severity.
     ///
     /// - parameter position: The position for the violation to append.
@@ -157,7 +158,7 @@ extension Array where Element == ReasonedRuleViolation {
     /// - parameter position: The position for the violation to append.
     /// - parameter correction: An optional correction to be applied when running with `--fix`.
     mutating func append(
-        at position: AbsolutePosition, correction: ReasonedRuleViolation.ViolationCorrection? = nil
+        at position: AbsolutePosition, correction: ReasonedRuleViolation.ViolationCorrection? = nil,
     ) {
         append(ReasonedRuleViolation(position: position, correction: correction))
     }

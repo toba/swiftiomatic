@@ -19,7 +19,7 @@ struct EmptyStringRule: Rule {
             Example(#"myString↓=="""#),
             Example(##"myString↓ == #""#"##),
             Example(###"myString↓ == ##""##"###),
-        ]
+        ],
     )
 }
 

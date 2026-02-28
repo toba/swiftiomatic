@@ -18,7 +18,7 @@ struct LegacyHashingRule: Rule {
                     hasher.combine(bar)
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -29,13 +29,13 @@ struct LegacyHashingRule: Rule {
                     hasher.combine(bar)
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 var hashValue: Int { return 1 }
                 class Foo: Hashable { \n }
-                """
+                """,
             ),
             Example(
                 """
@@ -46,7 +46,7 @@ struct LegacyHashingRule: Rule {
                     return bar
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -58,7 +58,7 @@ struct LegacyHashingRule: Rule {
                     set { bar = newValue }
                   }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -71,7 +71,7 @@ struct LegacyHashingRule: Rule {
                         return bar
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -82,9 +82,9 @@ struct LegacyHashingRule: Rule {
                         return bar
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

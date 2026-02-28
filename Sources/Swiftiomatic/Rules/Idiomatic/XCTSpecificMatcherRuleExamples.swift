@@ -56,12 +56,12 @@ enum XCTSpecificMatcherRuleExamples {
         Example(
             "XCTAssertEqual(foo, true)",
             configuration: ["matchers": ["one-argument-asserts"]],
-            excludeFromDocumentation: true
+            excludeFromDocumentation: true,
         ),
         Example(
             "XCTAssert(foo == bar)",
             configuration: ["matchers": ["two-argument-asserts"]],
-            excludeFromDocumentation: true
+            excludeFromDocumentation: true,
         ),
 
         // Skip if one operand might be a type or a tuple

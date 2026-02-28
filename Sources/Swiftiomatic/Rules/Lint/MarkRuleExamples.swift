@@ -20,7 +20,7 @@ enum MarkRuleExamples {
                 let bar = 0
                   // MARK: good
             }
-            """
+            """,
         ),
         Example(
             """
@@ -30,7 +30,7 @@ enum MarkRuleExamples {
 
               ///  //marketingOptIn
             struct T {}
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         issue1749Example,
     ]
@@ -66,7 +66,7 @@ enum MarkRuleExamples {
                 let bar = 0
                   ↓//MARK: bad
             }
-            """
+            """,
         ),
         issue1029Example,
     ]
@@ -105,7 +105,7 @@ private let issue1029Example = Example(
     struct MarkTest {}
     ↓// MARK:- Bad mark
     extension MarkTest {}
-    """
+    """,
 )
 
 private let issue1029Correction = Example(
@@ -115,7 +115,7 @@ private let issue1029Correction = Example(
     struct MarkTest {}
     // MARK: - Bad mark
     extension MarkTest {}
-    """
+    """,
 )
 
 /// https://github.com/realm/SwiftLint/issues/1749
@@ -129,5 +129,5 @@ private let issue1749Example = Example(
     func test2() {
     }
     */
-    """
+    """,
 )

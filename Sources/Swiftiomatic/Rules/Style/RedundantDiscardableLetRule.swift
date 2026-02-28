@@ -24,7 +24,7 @@ struct RedundantDiscardableLetRule: Rule {
                     }
                     return Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true]
+                """, configuration: ["ignore_swiftui_view_bodies": true],
             ),
             Example(
                 """
@@ -33,7 +33,7 @@ struct RedundantDiscardableLetRule: Rule {
                     let _ = foo()
                     Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true]
+                """, configuration: ["ignore_swiftui_view_bodies": true],
             ),
             Example(
                 """
@@ -41,7 +41,7 @@ struct RedundantDiscardableLetRule: Rule {
                     let _ = foo()
                     Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true]
+                """, configuration: ["ignore_swiftui_view_bodies": true],
             ),
             Example(
                 """
@@ -54,7 +54,7 @@ struct RedundantDiscardableLetRule: Rule {
                     #endif
                     Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true]
+                """, configuration: ["ignore_swiftui_view_bodies": true],
             ),
         ],
         triggeringExamples: [
@@ -69,7 +69,7 @@ struct RedundantDiscardableLetRule: Rule {
                     }
                     Text("Hello, World!")
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -78,7 +78,7 @@ struct RedundantDiscardableLetRule: Rule {
                     ↓let _ = foo()
                     return Text("Hello, World!")
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -86,7 +86,7 @@ struct RedundantDiscardableLetRule: Rule {
                     ↓let _ = foo()
                     return Text("Hello, World!")
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -94,7 +94,7 @@ struct RedundantDiscardableLetRule: Rule {
                     ↓let _ = foo()
                     Text("Hello, World!")
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -102,7 +102,8 @@ struct RedundantDiscardableLetRule: Rule {
                     ↓let _ = foo()
                     Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true], excludeFromDocumentation: true
+                """, configuration: ["ignore_swiftui_view_bodies": true],
+                excludeFromDocumentation: true,
             ),
             Example(
                 """
@@ -113,7 +114,8 @@ struct RedundantDiscardableLetRule: Rule {
                     }
                     Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true], excludeFromDocumentation: true
+                """, configuration: ["ignore_swiftui_view_bodies": true],
+                excludeFromDocumentation: true,
             ),
         ],
         corrections: [
@@ -130,7 +132,7 @@ struct RedundantDiscardableLetRule: Rule {
                     #endif
                     Text("Hello, World!")
                 }
-                """
+                """,
             ): Example(
                 """
                 var body: some View {
@@ -142,7 +144,7 @@ struct RedundantDiscardableLetRule: Rule {
                     #endif
                     Text("Hello, World!")
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -150,14 +152,14 @@ struct RedundantDiscardableLetRule: Rule {
                     ↓let _ = foo()
                     return Text("Hello, World!")
                 }
-                """
+                """,
             ): Example(
                 """
                 #Preview {
                     _ = foo()
                     return Text("Hello, World!")
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -165,16 +167,16 @@ struct RedundantDiscardableLetRule: Rule {
                     let _ = foo()
                     return Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true]
+                """, configuration: ["ignore_swiftui_view_bodies": true],
             ): Example(
                 """
                 var body: some View {
                     let _ = foo()
                     return Text("Hello, World!")
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -204,7 +206,7 @@ extension RedundantDiscardableLetRule {
 
         override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
             codeBlockScopes.push(
-                node.isViewBuilderFunctionBody || codeBlockScopes.peek() == .view ? .view : .normal
+                node.isViewBuilderFunctionBody || codeBlockScopes.peek() == .view ? .view : .normal,
             )
             return .visitChildren
         }
@@ -245,9 +247,9 @@ extension RedundantDiscardableLetRule {
                         correction: .init(
                             start: node.bindingSpecifier.positionAfterSkippingLeadingTrivia,
                             end: binding.pattern.positionAfterSkippingLeadingTrivia,
-                            replacement: ""
-                        )
-                    )
+                            replacement: "",
+                        ),
+                    ),
                 )
             }
         }
@@ -288,7 +290,8 @@ private extension CodeBlockSyntax {
         else {
             return false
         }
-        return functionDecl.signature.returnClause?.type.as(SomeOrAnyTypeSyntax.self)?.isView ?? false
+        return functionDecl.signature.returnClause?.type.as(SomeOrAnyTypeSyntax.self)?
+            .isView ?? false
     }
 }
 

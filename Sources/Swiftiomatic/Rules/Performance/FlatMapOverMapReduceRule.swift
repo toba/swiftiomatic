@@ -14,7 +14,7 @@ struct FlatMapOverMapReduceRule: Rule {
         ],
         triggeringExamples: [
             Example("let foo = ↓bar.map { $0.array }.reduce([], +)"),
-        ]
+        ],
     )
 }
 
@@ -35,7 +35,8 @@ private extension FlatMapOverMapReduceRule {
                 node.arguments.count == 2,
                 let firstArgument = node.arguments.first?.expression.as(ArrayExprSyntax.self),
                 firstArgument.elements.isEmpty,
-                let secondArgument = node.arguments.last?.expression.as(DeclReferenceExprSyntax.self),
+                let secondArgument = node.arguments.last?.expression
+                .as(DeclReferenceExprSyntax.self),
                 secondArgument.baseName.text == "+"
             else {
                 return

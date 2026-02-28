@@ -1,11 +1,3 @@
-//
-//  SortedImports.swift
-//  SwiftFormat
-//
-//  Created by Pablo Carcelén on 11/22/17.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -14,7 +6,7 @@ extension FormatRule {
         help: "Sort import statements alphabetically.",
         deprecationMessage: "Use sortImports instead.",
         options: ["import-grouping"],
-        sharedOptions: ["linebreaks"]
+        sharedOptions: ["linebreaks"],
     ) { formatter in
         _ = formatter.options.importGrouping
         _ = formatter.options.linebreak

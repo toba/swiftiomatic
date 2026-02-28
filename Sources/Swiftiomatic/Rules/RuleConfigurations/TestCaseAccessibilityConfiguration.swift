@@ -5,7 +5,7 @@ struct TestCaseAccessibilityConfiguration: SeverityBasedRuleConfiguration {
     private(set) var allowedPrefixes: Set<String> = []
     @ConfigurationElement(
         key: "test_parent_classes",
-        postprocessor: { $0.formUnion(["QuickSpec", "XCTestCase"]) }
+        postprocessor: { $0.formUnion(["QuickSpec", "XCTestCase"]) },
     )
     private(set) var testParentClasses = Set<String>()
     typealias Parent = TestCaseAccessibilityRule

@@ -61,32 +61,32 @@ struct ArrayInitRule: Rule, @unchecked Sendable {
                 foo.↓map { elem in
                     elem
                 }
-                """
+                """,
             ),
             Example(
                 """
                 foo.↓map { elem in
                     return elem
                 }
-                """
+                """,
             ),
             Example(
                 """
                 foo.↓map { (elem: String) in
                     elem
                 }
-                """
+                """,
             ),
             Example(
                 """
                 foo.↓map { elem -> String in
                     elem
                 }
-                """
+                """,
             ),
             Example("foo.↓map { $0 /* a comment */ }"),
             Example("foo.↓map { /* a comment */ $0 }"),
-        ]
+        ],
     )
 }
 
@@ -144,7 +144,9 @@ private extension CodeBlockItemSyntax {
 
 private extension ClosureSignatureSyntax {
     func singleInputParamText() -> String? {
-        if let list = parameterClause?.as(ClosureShorthandParameterListSyntax.self), list.count == 1 {
+        if let list = parameterClause?.as(ClosureShorthandParameterListSyntax.self),
+           list.count == 1
+        {
             return list.onlyElement?.name.text
         }
         if let clause = parameterClause?.as(ClosureParameterClauseSyntax.self),

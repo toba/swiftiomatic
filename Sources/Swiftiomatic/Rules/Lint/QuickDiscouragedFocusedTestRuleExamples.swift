@@ -14,7 +14,7 @@ enum QuickDiscouragedFocusedTestRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
     ]
 
@@ -26,7 +26,7 @@ enum QuickDiscouragedFocusedTestRuleExamples {
                    ↓fdescribe("foo") { }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -35,7 +35,7 @@ enum QuickDiscouragedFocusedTestRuleExamples {
                    ↓fcontext("foo") { }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -44,7 +44,7 @@ enum QuickDiscouragedFocusedTestRuleExamples {
                    ↓fit("foo") { }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -55,7 +55,7 @@ enum QuickDiscouragedFocusedTestRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -66,7 +66,7 @@ enum QuickDiscouragedFocusedTestRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -79,7 +79,7 @@ enum QuickDiscouragedFocusedTestRuleExamples {
                    }
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -88,7 +88,7 @@ enum QuickDiscouragedFocusedTestRuleExamples {
                    ↓fitBehavesLike("foo")
                }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -97,7 +97,7 @@ enum QuickDiscouragedFocusedTestRuleExamples {
                    ↓fitBehavesLike("foo")
                }
             }
-            """
+            """,
         ),
     ]
 }

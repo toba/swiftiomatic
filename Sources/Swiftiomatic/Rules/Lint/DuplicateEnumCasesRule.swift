@@ -15,7 +15,7 @@ struct DuplicateEnumCasesRule: Rule {
                     case addImage(image: UIImage)
                     case addData(data: Data)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -25,7 +25,7 @@ struct DuplicateEnumCasesRule: Rule {
                 enum B {
                     case add(image: UIImage)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -38,7 +38,7 @@ struct DuplicateEnumCasesRule: Rule {
                     case value = "CONFIG_DEFAULT"
                 #endif
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -49,7 +49,7 @@ struct DuplicateEnumCasesRule: Rule {
                   case file(URL)
                 #endif
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -60,9 +60,9 @@ struct DuplicateEnumCasesRule: Rule {
                     case addURL(url: URL)
                     case ↓add(data: Data)
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

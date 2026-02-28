@@ -23,7 +23,7 @@ struct ContainsOverFilterIsEmptyRule: Rule {
             Example("let result = !↓myList.filter(where: { $0 % 2 == 0 }).isEmpty"),
             Example("let result = ↓myList.filter { $0 % 2 == 0 }.isEmpty"),
             Example("let result = ↓myList.filter(where: someFunction).isEmpty"),
-        ]
+        ],
     )
 }
 
@@ -41,7 +41,8 @@ private extension ContainsOverFilterIsEmptyRule {
             guard
                 node.declName.baseName.text == "isEmpty",
                 let firstBase = node.base?.asFunctionCall,
-                let firstBaseCalledExpression = firstBase.calledExpression.as(MemberAccessExprSyntax.self),
+                let firstBaseCalledExpression = firstBase.calledExpression
+                .as(MemberAccessExprSyntax.self),
                 firstBaseCalledExpression.declName.baseName.text == "filter"
             else {
                 return

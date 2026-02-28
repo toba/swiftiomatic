@@ -8,7 +8,7 @@ enum InclusiveLanguageRuleExamples {
             enum AllowList {
                 case foo, bar
             }
-            """
+            """,
         ),
         Example("func updateAllowList(add: String) {}"),
         Example(
@@ -17,7 +17,7 @@ enum InclusiveLanguageRuleExamples {
                 case visa
                 case mastercard
             }
-            """
+            """,
         ),
         Example("func chargeMasterCard(_ card: Card) {}"),
     ]
@@ -29,7 +29,7 @@ enum InclusiveLanguageRuleExamples {
             enum ↓BlackList {
                 case foo, bar
             }
-            """
+            """,
         ),
         Example("func ↓updateWhiteList(add: String) {}"),
         Example(
@@ -38,7 +38,7 @@ enum InclusiveLanguageRuleExamples {
                 case ↓whitelist
                 case ↓blacklist
             }
-            """
+            """,
         ),
         Example("init(↓master: String, ↓slave: String) {}"),
         Example(
@@ -46,7 +46,7 @@ enum InclusiveLanguageRuleExamples {
             final class FooBar {
                 func register<↓Master, ↓Slave>(one: Master, two: Slave) {}
             }
-            """
+            """,
         ),
     ]
 
@@ -61,7 +61,7 @@ enum InclusiveLanguageRuleExamples {
             """,
             configuration: [
                 "override_terms": ["abc123"],
-            ]
+            ],
         ),
         Example(
             """
@@ -70,7 +70,7 @@ enum InclusiveLanguageRuleExamples {
             configuration: [
                 "override_terms": ["abc123"],
                 "additional_terms": ["xyz789"],
-            ]
+            ],
         ),
     ]
 
@@ -83,7 +83,7 @@ enum InclusiveLanguageRuleExamples {
             """,
             configuration: [
                 "additional_terms": ["fizzbuzz"],
-            ]
+            ],
         ),
         Example(
             """
@@ -91,7 +91,7 @@ enum InclusiveLanguageRuleExamples {
             """,
             configuration: [
                 "additional_terms": ["swift"],
-            ]
+            ],
         ),
         Example(
             """
@@ -99,7 +99,7 @@ enum InclusiveLanguageRuleExamples {
             """,
             configuration: [
                 "additional_terms": ["FoObAr"],
-            ]
+            ],
         ),
     ]
 }

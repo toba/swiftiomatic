@@ -15,7 +15,7 @@ struct AgentReviewRule: Rule {
         triggeringExamples: [
             Example("↓Task { await work() }"),
             Example("enum ↓AppError: Error { case failed }"),
-        ]
+        ],
     )
 }
 
@@ -47,8 +47,8 @@ private extension AgentReviewRule {
                             reason: "Fire-and-forget Task — result not captured, cancellation not possible",
                             severity: .warning,
                             confidence: .low,
-                            suggestion: "Assign to a variable if cancellation matters: `let task = Task { ... }`"
-                        )
+                            suggestion: "Assign to a variable if cancellation matters: `let task = Task { ... }`",
+                        ),
                     )
                 }
             }
@@ -60,8 +60,8 @@ private extension AgentReviewRule {
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: ".absoluteString used — verify this isn't a file URL (use .path for file URLs)",
                         severity: .warning,
-                        confidence: .low
-                    )
+                        confidence: .low,
+                    ),
                 )
             }
         }
@@ -75,8 +75,8 @@ private extension AgentReviewRule {
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: ".absoluteString used — verify this isn't a file URL (use .path for file URLs)",
                         severity: .warning,
-                        confidence: .low
-                    )
+                        confidence: .low,
+                    ),
                 )
             }
         }
@@ -92,8 +92,8 @@ private extension AgentReviewRule {
                         "Error enum '\(node.name.text)' doesn't conform to LocalizedError — verify if user-facing",
                         severity: .warning,
                         confidence: .low,
-                        suggestion: "Add LocalizedError conformance with errorDescription"
-                    )
+                        suggestion: "Add LocalizedError conformance with errorDescription",
+                    ),
                 )
             }
         }
@@ -108,8 +108,8 @@ private extension AgentReviewRule {
                         reason:
                         "nonisolated(unsafe) on '\(bindingName)' — verify the value is actually Sendable in Swift 6.2",
                         severity: .warning,
-                        confidence: .low
-                    )
+                        confidence: .low,
+                    ),
                 )
             }
         }

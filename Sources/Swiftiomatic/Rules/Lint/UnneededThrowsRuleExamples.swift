@@ -5,28 +5,28 @@ enum UnneededThrowsRuleExamples {
             func foo() throws {
                 try bar()
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() throws {
                 throw Example.failure
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() throws(Example) {
                 throw Example.failure
             }
-            """
+            """,
         ),
         Example(
             """
             func foo(_ bar: () throws -> T) rethrows -> Int {
                 try items.map { try bar() }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -36,14 +36,14 @@ enum UnneededThrowsRuleExamples {
                 }
                 try? bar()
             }
-            """
+            """,
         ),
         Example(
             """
             protocol Foo {
                 func bar() throws
             }
-            """
+            """,
         ),
         Example(
             """
@@ -52,7 +52,7 @@ enum UnneededThrowsRuleExamples {
                     throw Example.failure
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -62,7 +62,7 @@ enum UnneededThrowsRuleExamples {
                     throw Example.failure
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -72,7 +72,7 @@ enum UnneededThrowsRuleExamples {
                     try baz()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -87,7 +87,7 @@ enum UnneededThrowsRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -97,7 +97,7 @@ enum UnneededThrowsRuleExamples {
                 default: try bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -106,7 +106,7 @@ enum UnneededThrowsRuleExamples {
                     try bar
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -117,19 +117,19 @@ enum UnneededThrowsRuleExamples {
                     throw Example.failure
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() throws -> Bar? {
                 Bar(try baz())
             }
-            """
+            """,
         ),
         Example(
             """
             typealias Foo = () throws -> Void
-            """
+            """,
         ),
         Example(
             """
@@ -137,34 +137,34 @@ enum UnneededThrowsRuleExamples {
                 case foo
                 case bar(() throws -> Void)
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() async throws {
                 for try await item in items {}
             }
-            """
+            """,
         ),
         Example(
             """
             let foo: () throws -> Void
-            """
+            """,
         ),
         Example(
             """
             let foo: @Sendable () throws -> Void
-            """
+            """,
         ),
         Example(
             """
             let foo: (() throws -> Void)?
-            """
+            """,
         ),
         Example(
             """
             func foo(_ bar: () throws -> Void = {}) {}
-            """
+            """,
         ),
         Example(
             """
@@ -175,7 +175,7 @@ enum UnneededThrowsRuleExamples {
                     try await bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -183,7 +183,7 @@ enum UnneededThrowsRuleExamples {
                 do { try bar() }
                 catch Example.failure {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -192,7 +192,7 @@ enum UnneededThrowsRuleExamples {
                 catch is SomeError { throw AnotherError }
                 catch is AnotherError {}
             }
-            """
+            """,
         ),
         Example("let s: S<() throws -> Void> = S()"),
         Example("let foo: (() throws -> Void, Int) = ({}, 1)"),
@@ -217,14 +217,14 @@ enum UnneededThrowsRuleExamples {
             func foo() ↓throws {
                 bar()
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() ↓throws(Example) {
                 bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -232,7 +232,7 @@ enum UnneededThrowsRuleExamples {
                 func bar() ↓throws {}
                 bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -242,7 +242,7 @@ enum UnneededThrowsRuleExamples {
                 }
                 bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -252,7 +252,7 @@ enum UnneededThrowsRuleExamples {
                 }
                 try? bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -261,7 +261,7 @@ enum UnneededThrowsRuleExamples {
                     baz()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -269,7 +269,7 @@ enum UnneededThrowsRuleExamples {
                 do { try bar() }
                 catch {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -277,7 +277,7 @@ enum UnneededThrowsRuleExamples {
                 do {}
                 catch {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -285,7 +285,7 @@ enum UnneededThrowsRuleExamples {
                 do {}
                 catch {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -295,7 +295,7 @@ enum UnneededThrowsRuleExamples {
                     try bar()
                 } catch {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -306,7 +306,7 @@ enum UnneededThrowsRuleExamples {
                     try baz()
                 } catch {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -319,7 +319,7 @@ enum UnneededThrowsRuleExamples {
                     } catch {}
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -334,7 +334,7 @@ enum UnneededThrowsRuleExamples {
                     } catch {}
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -344,14 +344,14 @@ enum UnneededThrowsRuleExamples {
                 default: break
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() ↓throws {
                 _ = try? bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -360,7 +360,7 @@ enum UnneededThrowsRuleExamples {
                     try bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -370,7 +370,7 @@ enum UnneededThrowsRuleExamples {
                     func baz() ↓throws {}
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -379,7 +379,7 @@ enum UnneededThrowsRuleExamples {
                     0
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -389,7 +389,7 @@ enum UnneededThrowsRuleExamples {
                 catch is SomeError {}
                 catch {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -398,7 +398,7 @@ enum UnneededThrowsRuleExamples {
                     try baz()
                 }
             }
-            """
+            """,
         ),
         Example("let x = { () ↓throws -> Void in baz() }"),
     ]
@@ -412,14 +412,14 @@ enum UnneededThrowsRuleExamples {
                 func bar() ↓throws {}
                 bar()
             }
-            """
+            """,
         ): Example(
             """
             func foo() {
                 func bar() {}
                 bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -428,7 +428,7 @@ enum UnneededThrowsRuleExamples {
                     0
                 }
             }
-            """
+            """,
         ): Example(
             """
             var foo: Int {
@@ -436,7 +436,7 @@ enum UnneededThrowsRuleExamples {
                     0
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -445,7 +445,7 @@ enum UnneededThrowsRuleExamples {
                     0
                 }
             }
-            """
+            """,
         ): Example(
             """
             var foo: Int {
@@ -453,25 +453,25 @@ enum UnneededThrowsRuleExamples {
                     0
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             let foo: () ↓throws -> Void = {}
-            """
+            """,
         ): Example(
             """
             let foo: () -> Void = {}
-            """
+            """,
         ),
         Example(
             """
             let foo: () ↓throws(Example) -> Void = {}
-            """
+            """,
         ): Example(
             """
             let foo: () -> Void = {}
-            """
+            """,
         ),
         Example(
             """
@@ -479,14 +479,14 @@ enum UnneededThrowsRuleExamples {
                 do {}
                 catch {}
             }
-            """
+            """,
         ): Example(
             """
             func foo() {
                 do {}
                 catch {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -494,21 +494,21 @@ enum UnneededThrowsRuleExamples {
                 do {}
                 catch {}
             }
-            """
+            """,
         ): Example(
             """
             func foo() {
                 do {}
                 catch {}
             }
-            """
+            """,
         ),
         Example("func f() ↓throws /* comment */ {}"): Example("func f() /* comment */ {}"),
         Example("func f() /* comment */ ↓throws /* comment */ {}"): Example(
-            "func f() /* comment */ /* comment */ {}"
+            "func f() /* comment */ /* comment */ {}",
         ),
         Example("let foo: @Sendable () ↓throws -> Void = {}"): Example(
-            "let foo: @Sendable () -> Void = {}"
+            "let foo: @Sendable () -> Void = {}",
         ),
     ]
 }

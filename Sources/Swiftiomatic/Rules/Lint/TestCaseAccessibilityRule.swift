@@ -10,7 +10,7 @@ struct TestCaseAccessibilityRule: Rule {
         kind: .lint,
         nonTriggeringExamples: TestCaseAccessibilityRuleExamples.nonTriggeringExamples,
         triggeringExamples: TestCaseAccessibilityRuleExamples.triggeringExamples,
-        corrections: TestCaseAccessibilityRuleExamples.corrections
+        corrections: TestCaseAccessibilityRuleExamples.corrections,
     )
 }
 
@@ -39,8 +39,12 @@ private extension TestCaseAccessibilityRule {
                     violations.append(
                         ReasonedRuleViolation(
                             position: position,
-                            correction: .init(start: position, end: position, replacement: "private ")
-                        )
+                            correction: .init(
+                                start: position,
+                                end: position,
+                                replacement: "private ",
+                            ),
+                        ),
                     )
                 }
         }

@@ -4,38 +4,38 @@ enum UnusedImportRuleExamples {
             """
             import Dispatch // This is used
             dispatchMain()
-            """
+            """,
         ),
         Example(
             """
             @testable import Dispatch
             dispatchMain()
-            """
+            """,
         ),
         Example(
             """
             import Foundation
             @objc
             class A {}
-            """
+            """,
         ),
         Example(
             """
             import UnknownModule
             func foo(error: Swift.Error) {}
-            """
+            """,
         ),
         Example(
             """
             @_exported import UnknownModule
-            """
+            """,
         ),
         Example(
             """
             import Foundation
             let 👨‍👩‍👧‍👦 = #selector(NSArray.contains(_:))
             👨‍👩‍👧‍👦 == 👨‍👩‍👧‍👦
-            """
+            """,
         ),
         Example(
             """
@@ -51,7 +51,7 @@ enum UnusedImportRuleExamples {
                         "allowed_transitive_imports": ["CoreFoundation"],
                     ] as [String: any Sendable],
                 ],
-            ]
+            ],
         ),
         Example(
             """
@@ -68,7 +68,7 @@ enum UnusedImportRuleExamples {
                         "allowed_transitive_imports": ["Foundation"],
                     ] as [String: any Sendable],
                 ],
-            ], excludeFromDocumentation: true
+            ], excludeFromDocumentation: true,
         ),
     ]
 
@@ -80,7 +80,7 @@ enum UnusedImportRuleExamples {
               static func dispatchMain() {}
             }
             A.dispatchMain()
-            """
+            """,
         ),
         Example(
             """
@@ -91,34 +91,34 @@ enum UnusedImportRuleExamples {
             A.dispatchMain()
             ↓import Dispatch
 
-            """
+            """,
         ),
         Example(
             """
             ↓import Foundation
             dispatchMain()
-            """
+            """,
         ),
         Example(
             """
             ↓import Foundation
             // @objc
             class A {}
-            """
+            """,
         ),
         Example(
             """
             ↓import Foundation
             import UnknownModule
             func foo(error: Swift.Error) {}
-            """
+            """,
         ),
         Example(
             """
             ↓import Swift
             ↓import SwiftShims
             func foo(error: Swift.Error) {}
-            """
+            """,
         ),
     ]
 
@@ -130,7 +130,7 @@ enum UnusedImportRuleExamples {
               static func dispatchMain() {}
             }
             A.dispatchMain()
-            """
+            """,
         ):
             Example(
                 """
@@ -138,7 +138,7 @@ enum UnusedImportRuleExamples {
                   static func dispatchMain() {}
                 }
                 A.dispatchMain()
-                """
+                """,
             ),
         Example(
             """
@@ -149,7 +149,7 @@ enum UnusedImportRuleExamples {
             A.dispatchMain()
             ↓import Dispatch
 
-            """
+            """,
         ):
             Example(
                 """
@@ -158,57 +158,57 @@ enum UnusedImportRuleExamples {
                 }
                 A.dispatchMain()
 
-                """
+                """,
             ),
         Example(
             """
             ↓import Foundation
             dispatchMain()
-            """
+            """,
         ):
             Example(
                 """
                 dispatchMain()
-                """
+                """,
             ),
         Example(
             """
             ↓@testable import Foundation
             import Dispatch
             dispatchMain()
-            """
+            """,
         ):
             Example(
                 """
                 import Dispatch
                 dispatchMain()
-                """
+                """,
             ),
         Example(
             """
             ↓@_implementationOnly import Foundation
             import Dispatch
             dispatchMain()
-            """
+            """,
         ):
             Example(
                 """
                 import Dispatch
                 dispatchMain()
-                """
+                """,
             ),
         Example(
             """
             ↓import Foundation
             // @objc
             class A {}
-            """
+            """,
         ):
             Example(
                 """
                 // @objc
                 class A {}
-                """
+                """,
             ),
         Example(
             """
@@ -216,14 +216,14 @@ enum UnusedImportRuleExamples {
             ↓import Dispatch
             @objc
             class A {}
-            """
+            """,
         ):
             Example(
                 """
                 @testable import Foundation
                 @objc
                 class A {}
-                """
+                """,
             ),
         Example(
             """
@@ -231,14 +231,14 @@ enum UnusedImportRuleExamples {
             ↓@testable import Dispatch
             @objc
             class A {}
-            """
+            """,
         ):
             Example(
                 """
                 @testable import Foundation
                 @objc
                 class A {}
-                """
+                """,
             ),
         Example(
             """
@@ -254,14 +254,14 @@ enum UnusedImportRuleExamples {
                         "allowed_transitive_imports": ["CoreFoundation", "Dispatch"],
                     ] as [String: any Sendable],
                 ],
-            ] as [String: any Sendable], testMultiByteOffsets: false
+            ] as [String: any Sendable], testMultiByteOffsets: false,
         ):
             Example(
                 """
                 import Foundation
                 typealias Foo = CFArray
                 dispatchMain()
-                """
+                """,
             ),
         Example(
             """
@@ -271,7 +271,7 @@ enum UnusedImportRuleExamples {
             """,
             configuration: [
                 "require_explicit_imports": true,
-            ], testMultiByteOffsets: false
+            ], testMultiByteOffsets: false,
         ):
             Example(
                 """
@@ -279,7 +279,7 @@ enum UnusedImportRuleExamples {
                 import Dispatch
                 typealias Foo = CFData
                 dispatchMain()
-                """
+                """,
             ),
         Example(
             """
@@ -296,7 +296,7 @@ enum UnusedImportRuleExamples {
                         "allowed_transitive_imports": ["CoreFoundation"],
                     ] as [String: any Sendable],
                 ],
-            ] as [String: any Sendable]
+            ] as [String: any Sendable],
         ):
             Example(
                 """
@@ -304,7 +304,7 @@ enum UnusedImportRuleExamples {
                 typealias Foo = CFData
                 @objc
                 class A {}
-                """
+                """,
             ),
         Example(
             """
@@ -315,7 +315,7 @@ enum UnusedImportRuleExamples {
             """,
             configuration: [
                 "require_explicit_imports": true,
-            ], testMultiByteOffsets: false
+            ], testMultiByteOffsets: false,
         ):
             Example(
                 """
@@ -324,7 +324,7 @@ enum UnusedImportRuleExamples {
                 typealias Bar = CFData
                 @objc
                 class A {}
-                """
+                """,
             ),
         Example(
             """
@@ -333,25 +333,25 @@ enum UnusedImportRuleExamples {
             """,
             configuration: [
                 "always_keep_imports": ["Foundation"],
-            ]
+            ],
         ):
             Example(
                 """
                 import Foundation
                 func bar() {}
-                """
+                """,
             ),
         Example(
             """
             ↓import Swift
             ↓import SwiftShims
             func foo(error: Swift.Error) {}
-            """
+            """,
         ):
             Example(
                 """
                 func foo(error: Swift.Error) {}
-                """
+                """,
             ),
     ]
 }

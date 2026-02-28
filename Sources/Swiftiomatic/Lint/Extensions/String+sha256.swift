@@ -1,5 +1,5 @@
-import CommonCrypto
 import Foundation
+import CommonCrypto
 
 extension Data {
     func sha256() -> Data {

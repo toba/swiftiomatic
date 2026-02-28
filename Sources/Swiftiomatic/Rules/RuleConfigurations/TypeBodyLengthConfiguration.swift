@@ -14,7 +14,7 @@ enum TypeBodyLengthCheckType: String, AcceptableByConfigurationElement, CaseIter
 struct TypeBodyLengthConfiguration: SeverityLevelsBasedRuleConfiguration {
     @ConfigurationElement(inline: true)
     private(set) var severityConfiguration = SeverityLevelsConfiguration<Parent>(
-        warning: 250, error: 350
+        warning: 250, error: 350,
     )
     @ConfigurationElement(key: "excluded_types")
     private(set) var excludedTypes = Set<TypeBodyLengthCheckType>([.extension, .protocol])

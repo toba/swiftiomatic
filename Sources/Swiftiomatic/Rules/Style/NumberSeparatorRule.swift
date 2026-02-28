@@ -15,7 +15,7 @@ struct NumberSeparatorRule: Rule {
         kind: .style,
         nonTriggeringExamples: NumberSeparatorRuleExamples.nonTriggeringExamples,
         triggeringExamples: NumberSeparatorRuleExamples.triggeringExamples,
-        corrections: NumberSeparatorRuleExamples.corrections
+        corrections: NumberSeparatorRuleExamples.corrections,
     )
 
     static let missingSeparatorsReason = """
@@ -45,7 +45,7 @@ private extension NumberSeparatorRule {
         override func visitPost(_ node: FloatLiteralExprSyntax) {
             if let violation = violation(token: node.literal) {
                 violations.append(
-                    ReasonedRuleViolation(position: violation.position, reason: violation.reason)
+                    ReasonedRuleViolation(position: violation.position, reason: violation.reason),
                 )
             }
         }
@@ -53,7 +53,7 @@ private extension NumberSeparatorRule {
         override func visitPost(_ node: IntegerLiteralExprSyntax) {
             if let violation = violation(token: node.literal) {
                 violations.append(
-                    ReasonedRuleViolation(position: violation.position, reason: violation.reason)
+                    ReasonedRuleViolation(position: violation.position, reason: violation.reason),
                 )
             }
         }
@@ -71,8 +71,8 @@ private extension NumberSeparatorRule {
                 \.literal,
                 node.literal.with(
                     \.tokenKind,
-                    .floatLiteral(violation.correction)
-                )
+                    .floatLiteral(violation.correction),
+                ),
             )
             numberOfCorrections += 1
             return super.visit(newNode)
@@ -83,7 +83,7 @@ private extension NumberSeparatorRule {
                 return super.visit(node)
             }
             let newNode = node.with(
-                \.literal, node.literal.with(\.tokenKind, .integerLiteral(violation.correction))
+                \.literal, node.literal.with(\.tokenKind, .integerLiteral(violation.correction)),
             )
             numberOfCorrections += 1
             return super.visit(newNode)
@@ -101,22 +101,22 @@ private enum NumberSeparatorViolation {
 
     var reason: String {
         switch self {
-        case .missingSeparator: return NumberSeparatorRule.missingSeparatorsReason
-        case .misplacedSeparator: return NumberSeparatorRule.misplacedSeparatorsReason
+            case .missingSeparator: return NumberSeparatorRule.missingSeparatorsReason
+            case .misplacedSeparator: return NumberSeparatorRule.misplacedSeparatorsReason
         }
     }
 
     var position: AbsolutePosition {
         switch self {
-        case let .missingSeparator(position, _): return position
-        case let .misplacedSeparator(position, _): return position
+            case let .missingSeparator(position, _): return position
+            case let .misplacedSeparator(position, _): return position
         }
     }
 
     var correction: String {
         switch self {
-        case let .missingSeparator(_, correction): return correction
-        case let .misplacedSeparator(_, correction): return correction
+            case let .missingSeparator(_, correction): return correction
+            case let .misplacedSeparator(_, correction): return correction
         }
     }
 }
@@ -164,11 +164,11 @@ extension NumberSeparatorValidator {
 
         if content.contains("_") {
             return .misplacedSeparator(
-                position: token.positionAfterSkippingLeadingTrivia, correction: corrected
+                position: token.positionAfterSkippingLeadingTrivia, correction: corrected,
             )
         }
         return .missingSeparator(
-            position: token.positionAfterSkippingLeadingTrivia, correction: corrected
+            position: token.positionAfterSkippingLeadingTrivia, correction: corrected,
         )
     }
 
@@ -181,7 +181,9 @@ extension NumberSeparatorValidator {
 
     private func isInValidRanges(number: String) -> Bool {
         let doubleValue = Double(number.replacingOccurrences(of: "_", with: ""))
-        if let doubleValue, configuration.excludeRanges.contains(where: { $0.contains(doubleValue) }) {
+        if let doubleValue,
+           configuration.excludeRanges.contains(where: { $0.contains(doubleValue) })
+        {
             return true
         }
 
@@ -204,7 +206,8 @@ extension NumberSeparatorValidator {
         var numerals = 0
         for char in reversedIfNeeded(clean, reversed: !isFraction) {
             defer { correctComponents.append(String(char)) }
-            guard char.unicodeScalars.allSatisfy(CharacterSet.decimalDigits.contains) else { continue }
+            guard char.unicodeScalars.allSatisfy(CharacterSet.decimalDigits.contains)
+            else { continue }
 
             if numerals.isMultiple(of: 3), numerals > 0, shouldAddSeparators {
                 correctComponents.append("_")

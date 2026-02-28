@@ -5,21 +5,21 @@ enum ReturnValueFromVoidFunctionRuleExamples {
             func foo() {
                 return
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() {
                 return /* a comment */
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() -> Int {
                 return 1
             }
-            """
+            """,
         ),
         Example(
             """
@@ -29,7 +29,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 }
                 bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -37,7 +37,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 return;
                 bar()
             }
-            """
+            """,
         ),
         Example("func test() {}"),
         Example(
@@ -47,7 +47,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                     return nil
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -56,7 +56,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                     return nil
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -69,7 +69,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                     }
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -78,7 +78,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                     return
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -86,14 +86,14 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 func other() {}
                 func otherVoid() -> Void {}
             }
-            """
+            """,
         ),
         Example(
             """
             func test() -> Int? {
                 return nil
             }
-            """
+            """,
         ),
         Example(
             """
@@ -105,7 +105,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 let foo = [1, 2, 3].filter { return true }
                 return
             }
-            """
+            """,
         ),
         Example(
             """
@@ -115,7 +115,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                     return
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -123,7 +123,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 var foo: Int {
                     return 0
                 }
-            """
+            """,
         ),
         Example("func f() -> () { g() }"),
         Example("func f() { g() }"),
@@ -135,7 +135,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                     return 1
                 }
             }
-            """
+            """,
         ),
         Example("init?() { return nil }"),
         Example(
@@ -143,7 +143,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
             func f() {
                 var i: Int { return 1 }
             }
-            """
+            """,
         ),
         Example(
             #"""
@@ -179,7 +179,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 }
               }
             }
-            """#, excludeFromDocumentation: true
+            """#, excludeFromDocumentation: true,
         ),
     ]
 
@@ -189,28 +189,28 @@ enum ReturnValueFromVoidFunctionRuleExamples {
             func foo() {
                 ↓return bar()
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() -> () {
                 ↓return self.bar()
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() -> Void {
                 ↓return bar()
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() -> Void {
                 ↓return /* comment */ bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -218,7 +218,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 ↓return
                 self.bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -227,7 +227,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 ↓return
                 variable += 1
             }
-            """
+            """,
         ),
         Example(
             """
@@ -236,7 +236,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                     ↓return print("")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -246,7 +246,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                     ↓return assertionfailure("")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -258,7 +258,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 }
                 func otherVoid() -> Void {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -272,7 +272,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 }
                 differentSideEffect()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -282,7 +282,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 }
                 differentSideEffect()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -292,7 +292,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
               }
               bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -305,7 +305,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
               }
               baz()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -317,14 +317,14 @@ enum ReturnValueFromVoidFunctionRuleExamples {
               }
               bar()
             }
-            """
+            """,
         ),
         Example(
             """
             func test() {
                 ↓return foo()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -333,7 +333,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 return bar()
               })
             }
-            """
+            """,
         ),
         Example(
             """
@@ -343,7 +343,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
               }
               bar()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -358,7 +358,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
               }
               ↓return foo()
             }
-            """
+            """,
         ),
     ]
 
@@ -369,7 +369,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 ↓return g()
                 // some comment
             }
-            """
+            """,
         ): Example(
             """
             func f() -> Void {
@@ -377,7 +377,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                 return
                 // some comment
             }
-            """
+            """,
         ),
         Example(
             """
@@ -387,7 +387,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                     ↓return g()
                 }
             }
-            """
+            """,
         ): Example(
             """
             func f(b: Bool) {
@@ -397,7 +397,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
                     return
                 }
             }
-            """
+            """,
         ),
     ]
 }

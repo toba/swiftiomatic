@@ -11,8 +11,8 @@ struct OpeningBraceConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(
         key: "allow_multiline_func",
         deprecationNotice: .suggestAlternative(
-            ruleID: Parent.identifier, name: "ignore_multiline_function_signatures"
-        )
+            ruleID: Parent.identifier, name: "ignore_multiline_function_signatures",
+        ),
     )
     private(set) var allowMultilineFunc = false
 

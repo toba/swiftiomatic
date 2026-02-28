@@ -16,7 +16,7 @@ struct ShorthandArgumentRule: Rule {
             Example(
                 """
                 f { $0 }
-                """
+                """,
             ),
             Example(
                 """
@@ -25,19 +25,19 @@ struct ShorthandArgumentRule: Rule {
                   + $1
                   + $2
                 }
-                """
+                """,
             ),
             Example(
                 """
                 f { $0.a + $0.b }
-                """
+                """,
             ),
             Example(
                 """
                 f {
                     $0
                   +  g { $0 }
-                """, configuration: ["allow_until_line_after_opening_brace": 1]
+                """, configuration: ["allow_until_line_after_opening_brace": 1],
             ),
         ],
         triggeringExamples: [
@@ -50,7 +50,7 @@ struct ShorthandArgumentRule: Rule {
 
                   + ↓$0
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -62,12 +62,12 @@ struct ShorthandArgumentRule: Rule {
                   + $0
                   + ↓$1
                 }
-                """, configuration: ["allow_until_line_after_opening_brace": 5]
+                """, configuration: ["allow_until_line_after_opening_brace": 5],
             ),
             Example(
                 """
                 f { ↓$0 + ↓$1 }
-                """, configuration: ["always_disallow_more_than_one": true]
+                """, configuration: ["always_disallow_more_than_one": true],
             ),
             Example(
                 """
@@ -79,10 +79,11 @@ struct ShorthandArgumentRule: Rule {
                 }
                 """,
                 configuration: [
-                    "always_disallow_member_access": true, "allow_until_line_after_opening_brace": 3,
-                ]
+                    "always_disallow_member_access": true,
+                    "allow_until_line_after_opening_brace": 3,
+                ],
             ),
-        ]
+        ],
     )
 }
 
@@ -97,7 +98,10 @@ extension ShorthandArgumentRule: OptInRule {}
 private extension ShorthandArgumentRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: ClosureExprSyntax) {
-            let arguments = ShorthandArgumentCollector().walk(tree: node.statements, handler: \.arguments)
+            let arguments = ShorthandArgumentCollector().walk(
+                tree: node.statements,
+                handler: \.arguments,
+            )
             if configuration.alwaysDisallowMoreThanOne {
                 if arguments.map(\.name).unique.count > 1 {
                     violations.append(
@@ -105,9 +109,9 @@ private extension ShorthandArgumentRule {
                             ReasonedRuleViolation(
                                 position: $0.position,
                                 reason: "Multiple different shorthand arguments should be avoided",
-                                severity: configuration.severity
+                                severity: configuration.severity,
                             )
-                        }
+                        },
                     )
                     // In this case, the rule triggers on all shorthand arguments, thus exit here.
                     return
@@ -121,14 +125,17 @@ private extension ShorthandArgumentRule {
                             ReasonedRuleViolation(
                                 position: $0.position,
                                 reason: "Accessing members of shorthand arguments should be avoided",
-                                severity: configuration.severity
+                                severity: configuration.severity,
                             )
-                        }
+                        },
                     )
                 }
             }
-            let startLine = node.startLocation(converter: locationConverter, afterLeadingTrivia: true)
-                .line
+            let startLine = node.startLocation(
+                converter: locationConverter,
+                afterLeadingTrivia: true,
+            )
+            .line
             violations.append(
                 contentsOf: arguments.compactMap { argument -> ReasonedRuleViolation? in
                     if complexArguments.contains(argument) {
@@ -144,10 +151,10 @@ private extension ShorthandArgumentRule {
                             References to shorthand arguments too far away from the closure's beginning should \
                             be avoided
                             """,
-                            severity: configuration.severity
+                            severity: configuration.severity,
                         )
                     }
-                }
+                },
             )
         }
     }
@@ -172,8 +179,8 @@ private final class ShorthandArgumentCollector: SyntaxVisitor {
                 ShorthandArgument(
                     name: name,
                     position: node.positionAfterSkippingLeadingTrivia,
-                    isComplex: node.keyPathInParent == \MemberAccessExprSyntax.base
-                )
+                    isComplex: node.keyPathInParent == \MemberAccessExprSyntax.base,
+                ),
             )
         }
     }

@@ -27,7 +27,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
         kind: .lint,
         nonTriggeringExamples: UnusedDeclarationRuleExamples.nonTriggeringExamples,
         triggeringExamples: UnusedDeclarationRuleExamples.triggeringExamples,
-        requiresFileOnDisk: true
+        requiresFileOnDisk: true,
     )
 
     func collectInfo(for file: SwiftLintFile, compilerArguments: [String]) -> Self.FileUSRs {
@@ -56,26 +56,27 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
                 index: index,
                 editorOpen: editorOpen,
                 compilerArguments: compilerArguments,
-                configuration: configuration
-            )
+                configuration: configuration,
+            ),
         )
     }
 
     func validate(
         file: SwiftLintFile,
         collectedInfo: [SwiftLintFile: Self.FileUSRs],
-        compilerArguments _: [String]
+        compilerArguments _: [String],
     ) -> [StyleViolation] {
-        let allReferencedUSRs = collectedInfo.values.reduce(into: Set()) { $0.formUnion($1.referenced) }
+        let allReferencedUSRs = collectedInfo.values
+            .reduce(into: Set()) { $0.formUnion($1.referenced) }
         return violationOffsets(
             declaredUSRs: collectedInfo[file]?.declared ?? [],
-            allReferencedUSRs: allReferencedUSRs
+            allReferencedUSRs: allReferencedUSRs,
         )
         .map {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severityConfiguration.severity,
-                location: Location(file: file, byteOffset: $0)
+                location: Location(file: file, byteOffset: $0),
             )
         }
     }
@@ -123,7 +124,7 @@ private extension SwiftLintFile {
                 }
 
                 return nil
-            }
+            },
         )
     }
 
@@ -131,15 +132,16 @@ private extension SwiftLintFile {
         index: SourceKittenDictionary,
         editorOpen: SourceKittenDictionary,
         compilerArguments: [String],
-        configuration: UnusedDeclarationConfiguration
+        configuration: UnusedDeclarationConfiguration,
     ) -> Set<UnusedDeclarationRule.DeclaredUSR> {
         Set(
             index.traverseEntitiesDepthFirst { _, indexEntity in
                 self.declaredUSR(
-                    indexEntity: indexEntity, editorOpen: editorOpen, compilerArguments: compilerArguments,
-                    configuration: configuration
+                    indexEntity: indexEntity, editorOpen: editorOpen,
+                    compilerArguments: compilerArguments,
+                    configuration: configuration,
                 )
-            }
+            },
         )
     }
 
@@ -147,7 +149,7 @@ private extension SwiftLintFile {
         indexEntity: SourceKittenDictionary,
         editorOpen: SourceKittenDictionary,
         compilerArguments: [String],
-        configuration: UnusedDeclarationConfiguration
+        configuration: UnusedDeclarationConfiguration,
     ) -> UnusedDeclarationRule.DeclaredUSR? {
         // Skip initializers, deinit, enum cases and subscripts since we can't reliably detect if they're used.
         let declarationKindsToSkip: Set<SwiftDeclarationKind> = [
@@ -184,7 +186,10 @@ private extension SwiftLintFile {
         }
 
         if !configuration.includePublicAndOpen,
-           [.public, .open].contains(editorOpen.propertyAtOffset(nameOffset, property: \.accessibility))
+           [.public, .open].contains(editorOpen.propertyAtOffset(
+               nameOffset,
+               property: \.accessibility,
+           ))
         {
             return nil
         }
@@ -192,7 +197,8 @@ private extension SwiftLintFile {
         // Skip CodingKeys as they are used for Codable generation
         if kind == .enum,
            indexEntity.name == "CodingKeys",
-           case let allRelatedUSRs = indexEntity.traverseEntitiesDepthFirst(traverseBlock: { $1.usr }),
+           case let allRelatedUSRs = indexEntity
+           .traverseEntitiesDepthFirst(traverseBlock: { $1.usr }),
            allRelatedUSRs.contains("s:s9CodingKeyP")
         {
             return nil
@@ -236,13 +242,13 @@ private extension SwiftLintFile {
         -> SourceKittenDictionary?
     {
         let request = Request.cursorInfoWithoutSymbolGraph(
-            file: path!, offset: byteOffset, arguments: compilerArguments
+            file: path!, offset: byteOffset, arguments: compilerArguments,
         )
         return (try? request.sendIfNotDisabled()).map(SourceKittenDictionary.init)
     }
 
     private func shouldIgnoreEntity(
-        _ indexEntity: SourceKittenDictionary, relatedUSRsToSkip: Set<String>
+        _ indexEntity: SourceKittenDictionary, relatedUSRsToSkip: Set<String>,
     ) -> Bool {
         let declarationAttributesToSkip: Set<SwiftDeclarationAttributeKind> = [
             .ibsegueaction,
@@ -255,7 +261,8 @@ private extension SwiftLintFile {
 
         if indexEntity.shouldSkipIndexEntityToWorkAroundSR11985()
             || indexEntity.shouldSkipRelated(relatedUSRsToSkip: relatedUSRsToSkip)
-            || indexEntity.enclosedSwiftAttributes.contains(where: declarationAttributesToSkip.contains)
+            || indexEntity.enclosedSwiftAttributes
+            .contains(where: declarationAttributesToSkip.contains)
             || indexEntity.isImplicit || indexEntity.value["key.is_test_candidate"] as? Bool == true
             || indexEntity.shouldSkipResultBuilder()
         {

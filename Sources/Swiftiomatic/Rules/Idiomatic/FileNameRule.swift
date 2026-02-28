@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct FileNameRule: OptInRule, SourceKitFreeRule {
     var configuration = FileNameConfiguration()
@@ -9,7 +9,7 @@ struct FileNameRule: OptInRule, SourceKitFreeRule {
         identifier: "file_name",
         name: "File Name",
         description: "File name should match a type or extension declared in the file (if any)",
-        kind: .idiomatic
+        kind: .idiomatic,
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -27,7 +27,7 @@ struct FileNameRule: OptInRule, SourceKitFreeRule {
 
         // Process prefix
         if let match = prefixRegex.firstMatch(
-            in: typeInFileName, options: [], range: typeInFileName.fullNSRange
+            in: typeInFileName, options: [], range: typeInFileName.fullNSRange,
         ),
             let range = typeInFileName.nsrangeToIndexRange(match.range)
         {
@@ -36,7 +36,7 @@ struct FileNameRule: OptInRule, SourceKitFreeRule {
 
         // Process suffix
         if let match = suffixRegex.firstMatch(
-            in: typeInFileName, options: [], range: typeInFileName.fullNSRange
+            in: typeInFileName, options: [], range: typeInFileName.fullNSRange,
         ),
             let range = typeInFileName.nsrangeToIndexRange(match.range)
         {
@@ -45,7 +45,7 @@ struct FileNameRule: OptInRule, SourceKitFreeRule {
 
         // Process nested type separator
         let allDeclaredTypeNames = TypeNameCollectingVisitor(
-            requireFullyQualifiedNames: configuration.requireFullyQualifiedNames
+            requireFullyQualifiedNames: configuration.requireFullyQualifiedNames,
         )
         .walk(tree: file.syntaxTree, handler: \.names)
         .map {
@@ -60,13 +60,13 @@ struct FileNameRule: OptInRule, SourceKitFreeRule {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: filePath, line: 1)
+                location: Location(file: filePath, line: 1),
             ),
         ]
     }
 }
 
-private class TypeNameCollectingVisitor: SyntaxVisitor {
+private final class TypeNameCollectingVisitor: SyntaxVisitor {
     /// All of a visited node's ancestor type names if that node is nested, starting with the furthest
     /// ancestor and ending with the direct parent
     private var ancestorNames = Stack<String>()

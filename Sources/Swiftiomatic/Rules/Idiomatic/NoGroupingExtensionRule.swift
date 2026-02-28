@@ -18,7 +18,7 @@ struct NoGroupingExtensionRule: Rule {
             Example("↓extension Tea: Error {}\nstruct Tea {}"),
             Example("class Ham { class Spam {}}\n↓extension Ham.Spam {}"),
             Example("extension External { struct Gotcha {}}\n↓extension External.Gotcha {}"),
-        ]
+        ],
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -111,7 +111,7 @@ private extension NoGroupingExtensionRule {
 
             let decl = ExtensionDeclaration(
                 name: node.extendedType.trimmedDescription,
-                position: node.extensionKeyword.positionAfterSkippingLeadingTrivia
+                position: node.extensionKeyword.positionAfterSkippingLeadingTrivia,
             )
             extensionDeclarations.insert(decl)
             return .visitChildren

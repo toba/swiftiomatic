@@ -22,25 +22,26 @@ final class CommandVisitor: SyntaxVisitor {
         var position = offset
         for piece in trivia {
             switch piece {
-            case let .lineComment(comment):
-                guard let lower = comment.range(of: "swiftlint:")?.lowerBound.samePosition(in: comment.utf8)
-                else {
+                case let .lineComment(comment):
+                    guard let lower = comment.range(of: "swiftlint:")?.lowerBound
+                        .samePosition(in: comment.utf8)
+                    else {
+                        break
+                    }
+                    let offset = comment.utf8.distance(from: comment.utf8.startIndex, to: lower)
+                    let location = locationConverter.location(for: position.advanced(by: offset))
+                    let line = locationConverter.sourceLines[location.line - 1]
+                    guard let character = line.characterPosition(of: location.column) else {
+                        break
+                    }
+                    let command = Command(
+                        commandString: String(comment[lower...]),
+                        line: location.line,
+                        range: character ..< (character + piece.sourceLength.utf8Length - offset),
+                    )
+                    commands.append(command)
+                default:
                     break
-                }
-                let offset = comment.utf8.distance(from: comment.utf8.startIndex, to: lower)
-                let location = locationConverter.location(for: position.advanced(by: offset))
-                let line = locationConverter.sourceLines[location.line - 1]
-                guard let character = line.characterPosition(of: location.column) else {
-                    break
-                }
-                let command = Command(
-                    commandString: String(comment[lower...]),
-                    line: location.line,
-                    range: character ..< (character + piece.sourceLength.utf8Length - offset)
-                )
-                commands.append(command)
-            default:
-                break
             }
             position += piece.sourceLength
         }

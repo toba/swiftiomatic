@@ -10,7 +10,7 @@ struct PreferSelfInStaticReferencesRule: Rule {
         kind: .style,
         nonTriggeringExamples: PreferSelfInStaticReferencesRuleExamples.nonTriggeringExamples,
         triggeringExamples: PreferSelfInStaticReferencesRuleExamples.triggeringExamples,
-        corrections: PreferSelfInStaticReferencesRuleExamples.corrections
+        corrections: PreferSelfInStaticReferencesRuleExamples.corrections,
     )
 }
 
@@ -30,9 +30,9 @@ extension PreferSelfInStaticReferencesRule {
 
         var parentName: String? {
             switch self {
-            case let .likeClass(name): return name
-            case let .likeStruct(name): return name
-            case .skipReferences: return nil
+                case let .likeClass(name): return name
+                case let .likeStruct(name): return name
+                case .skipReferences: return nil
             }
         }
     }
@@ -213,7 +213,8 @@ extension PreferSelfInStaticReferencesRule {
                 return .skipChildren
             }
             if let varDecl = node.parent?.parent?.parent?.as(VariableDeclSyntax.self) {
-                if varDecl.parent?.is(CodeBlockItemSyntax.self) == true // Local variable declaration
+                if varDecl.parent?
+                    .is(CodeBlockItemSyntax.self) == true // Local variable declaration
                     || varDecl.bindings.onlyElement?.accessorBlock != nil // Computed property
                     || !node.type.is(IdentifierTypeSyntax.self)
                 { // Complex or collection type
@@ -232,8 +233,8 @@ extension PreferSelfInStaticReferencesRule {
                     correction: .init(
                         start: node.positionAfterSkippingLeadingTrivia,
                         end: node.endPositionBeforeTrailingTrivia,
-                        replacement: "Self"
-                    )
+                        replacement: "Self",
+                    ),
                 )
             }
         }

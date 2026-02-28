@@ -1,12 +1,9 @@
-// Created by miguel_jimenez on 10/11/24.
-// Copyright © 2024 Airbnb Inc. All rights reserved.
-
 import Foundation
 
 extension FormatRule {
     /// Removes types conforming `EnvironmentKey` and replaces them with the @Entry macro
     static let environmentEntry = FormatRule(
-        help: "Updates SwiftUI `EnvironmentValues` definitions to use the @Entry macro."
+        help: "Updates SwiftUI `EnvironmentValues` definitions to use the @Entry macro.",
     ) { formatter in
         // The @Entry macro is only available in Xcode 16 therefore this rule requires the same Xcode version to work.
         guard formatter.options.swiftVersion >= "6.0" else { return }
@@ -18,7 +15,7 @@ extension FormatRule {
 
         // Find all `EnvironmentValues` properties
         let environmentValuesProperties = formatter.findAllEnvironmentValuesProperties(
-            declarations, referencing: environmentKeys
+            declarations, referencing: environmentKeys,
         )
 
         // Modify `EnvironmentValues` properties by removing its body and adding the @Entry macro
@@ -71,7 +68,8 @@ extension Formatter {
         for declaration in declarations {
             guard let typeDeclaration = declaration.asTypeDeclaration,
                   typeDeclaration.keyword == "struct" || typeDeclaration.keyword == "enum",
-                  typeDeclaration.conformances.contains(where: { $0.conformance.string == "EnvironmentKey" }),
+                  typeDeclaration.conformances
+                  .contains(where: { $0.conformance.string == "EnvironmentKey" }),
                   let keyName = typeDeclaration.name,
                   typeDeclaration.body.count == 1,
                   let defaultValueDeclaration = typeDeclaration.body.first(where: {
@@ -82,7 +80,7 @@ extension Formatter {
             environmentKeys[keyName] = EnvironmentKey(
                 key: keyName,
                 declaration: typeDeclaration,
-                defaultValueTokens: findEnvironmentKeyDefaultValue(defaultValueDeclaration)
+                defaultValueTokens: findEnvironmentKeyDefaultValue(defaultValueDeclaration),
             )
         }
 
@@ -112,7 +110,7 @@ extension Formatter {
 
     func findAllEnvironmentValuesProperties(
         _ declarations: [Declaration],
-        referencing environmentKeys: [String: EnvironmentKey]
+        referencing environmentKeys: [String: EnvironmentKey],
     ) -> [EnvironmentValueProperty] {
         declarations
             .filter {
@@ -121,28 +119,30 @@ extension Formatter {
                 environmentValuesDeclaration.body?.compactMap {
                     propertyDeclaration -> (EnvironmentValueProperty)? in
                     guard propertyDeclaration.keyword == "var",
-                          let key = propertyDeclaration.tokens.first(where: { environmentKeys[$0.string] != nil })?.string,
+                          let key = propertyDeclaration.tokens
+                          .first(where: { environmentKeys[$0.string] != nil })?.string,
                           let environmentKey = environmentKeys[key]
                     else { return nil }
 
                     // Ensure the property has a setter and a getter, this can avoid edge cases where
                     // a property references a `EnvironmentKey` and consumes it to perform some computation.
-                    guard let bodyRange = propertyDeclaration.parsePropertyDeclaration()?.body?.range,
-                          let indexOfSetter = index(of: .identifier("set"), in: Range(bodyRange)),
-                          isAccessorKeyword(at: indexOfSetter)
+                    guard let bodyRange = propertyDeclaration.parsePropertyDeclaration()?.body?
+                        .range,
+                        let indexOfSetter = index(of: .identifier("set"), in: Range(bodyRange)),
+                        isAccessorKeyword(at: indexOfSetter)
                     else { return nil }
 
                     return EnvironmentValueProperty(
                         key: key,
                         associatedEnvironmentKey: environmentKey,
-                        declaration: propertyDeclaration
+                        declaration: propertyDeclaration,
                     )
                 }
             }.flatMap(\.self)
     }
 
     func modifyEnvironmentValuesProperties(
-        _ environmentValuesPropertiesDeclarations: [EnvironmentValueProperty]
+        _ environmentValuesPropertiesDeclarations: [EnvironmentValueProperty],
     ) {
         for envProperty in environmentValuesPropertiesDeclarations {
             guard let propertyDeclaration = envProperty.declaration.parsePropertyDeclaration(),
@@ -151,7 +151,7 @@ extension Formatter {
 
             // Remove `EnvironmentValues.property` getter and setters
             if let nonSpaceTokenIndexBeforeBody = index(
-                of: .nonSpaceOrLinebreak, before: bodyScopeRange.lowerBound
+                of: .nonSpaceOrLinebreak, before: bodyScopeRange.lowerBound,
             ),
                 nonSpaceTokenIndexBeforeBody != bodyScopeRange.lowerBound
             {

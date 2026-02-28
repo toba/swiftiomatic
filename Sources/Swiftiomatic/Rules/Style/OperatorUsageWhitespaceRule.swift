@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRule {
     var configuration = OperatorUsageWhitespaceConfiguration()
@@ -12,7 +12,7 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
         kind: .style,
         nonTriggeringExamples: OperatorUsageWhitespaceRuleExamples.nonTriggeringExamples,
         triggeringExamples: OperatorUsageWhitespaceRuleExamples.triggeringExamples,
-        corrections: OperatorUsageWhitespaceRuleExamples.corrections
+        corrections: OperatorUsageWhitespaceRuleExamples.corrections,
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -20,14 +20,14 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severityConfiguration.severity,
-                location: Location(file: file, byteOffset: range.location)
+                location: Location(file: file, byteOffset: range.location),
             )
         }
     }
 
     private func violationRanges(file: SwiftLintFile) -> [(ByteRange, String)] {
         OperatorUsageWhitespaceVisitor(
-            allowedNoSpaceOperators: configuration.allowedNoSpaceOperators
+            allowedNoSpaceOperators: configuration.allowedNoSpaceOperators,
         )
         .walk(file: file, handler: \.violationRanges)
         .filter { byteRange, _ in
@@ -54,7 +54,10 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
         var numberOfCorrections = 0
         for (violatingRange, correction) in violatingRanges.reversed() {
             if let indexRange = correctedContents.nsrangeToIndexRange(violatingRange) {
-                correctedContents = correctedContents.replacingCharacters(in: indexRange, with: correction)
+                correctedContents = correctedContents.replacingCharacters(
+                    in: indexRange,
+                    with: correction,
+                )
                 numberOfCorrections += 1
             }
         }
@@ -73,7 +76,7 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
             let match = equalityOperatorRegex.firstMatch(
                 in: matchedString,
                 options: [],
-                range: matchedString.fullNSRange
+                range: matchedString.fullNSRange,
             ),
             match.range == matchedString.fullNSRange
         else {
@@ -81,7 +84,8 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
         }
 
         guard
-            let (lineNumber, _) = file.stringView.lineAndCharacter(forByteOffset: byteRange.upperBound),
+            let (lineNumber, _) = file.stringView
+            .lineAndCharacter(forByteOffset: byteRange.upperBound),
             case let lineIndex = lineNumber - 1, lineIndex >= 0
         else {
             return false
@@ -109,7 +113,7 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
             let index = line.index(
                 line.startIndex,
                 offsetBy: offset,
-                limitedBy: line.index(line.endIndex, offsetBy: -1)
+                limitedBy: line.index(line.endIndex, offsetBy: -1),
             )
             if index.map({ line[$0] }) == "=" {
                 return true
@@ -120,7 +124,7 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
     }
 }
 
-private class OperatorUsageWhitespaceVisitor: SyntaxVisitor {
+private final class OperatorUsageWhitespaceVisitor: SyntaxVisitor {
     private let allowedNoSpaceOperators: Set<String>
     private(set) var violationRanges: [(ByteRange, String)] = []
 
@@ -198,8 +202,10 @@ private class OperatorUsageWhitespaceVisitor: SyntaxVisitor {
                 && !operatorToken.trailingTrivia.containsNewlines()
 
         let tooMuchSpacing =
-            (tooMuchSpacingBefore || tooMuchSpacingAfter) && !operatorToken.leadingTrivia.containsComments
-                && !operatorToken.trailingTrivia.containsComments && !nextToken.leadingTrivia.containsComments
+            (tooMuchSpacingBefore || tooMuchSpacingAfter) && !operatorToken.leadingTrivia
+                .containsComments
+                && !operatorToken.trailingTrivia.containsComments && !nextToken.leadingTrivia
+                .containsComments
 
         guard noSpacing || tooMuchSpacing else {
             return nil
@@ -209,7 +215,7 @@ private class OperatorUsageWhitespaceVisitor: SyntaxVisitor {
         let endPosition = ByteCount(nextToken.positionAfterSkippingLeadingTrivia)
         let range = ByteRange(
             location: location,
-            length: endPosition - location
+            length: endPosition - location,
         )
 
         let correction =

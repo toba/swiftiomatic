@@ -4,7 +4,9 @@ enum CompilerArgumentsExtractor {
     static func allCompilerInvocations(compilerLogs: String) -> [[String]] {
         var compilerInvocations = [[String]]()
         compilerLogs.enumerateLines { line, _ in
-            if let swiftcIndex = line.range(of: "swiftc ")?.upperBound, line.contains(" -module-name ") {
+            if let swiftcIndex = line.range(of: "swiftc ")?.upperBound,
+               line.contains(" -module-name ")
+            {
                 let invocation = parseCLIArguments(String(line[swiftcIndex...]))
                     .expandingResponseFiles
                     .filteringCompilerArguments
@@ -54,7 +56,7 @@ private func partiallyFilter(arguments args: [String]) -> ([String], Bool) {
     return (args, true)
 }
 
-extension Array where Element == String {
+extension [String] {
     /// Return the full list of compiler arguments, replacing any response files with their contents.
     fileprivate var expandingResponseFiles: [String] {
         flatMap { arg -> [String] in

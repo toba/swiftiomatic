@@ -1,3 +1,4 @@
 //Badly formatted code
 func
-  foo (bar :Int){}
+  foo(bar: Int)
+{}

@@ -118,12 +118,12 @@ enum Issue: LocalizedError, Equatable {
     /// The issues description which is ready to be printed to the console.
     var errorDescription: String? {
         switch self {
-        case .genericError:
-            return "error: \(message)"
-        case .genericWarning:
-            return "warning: \(message)"
-        default:
-            return Self.genericWarning(message).errorDescription
+            case .genericError:
+                return "error: \(message)"
+            case .genericWarning:
+                return "warning: \(message)"
+            default:
+                return Self.genericWarning(message).errorDescription
         }
     }
 
@@ -138,74 +138,74 @@ enum Issue: LocalizedError, Equatable {
 
     private var message: String {
         switch self {
-        case let .invalidConfiguration(id, message):
-            let message = if let message { ": \(message)" } else { "." }
-            return "Invalid configuration for '\(id)' rule\(message) Falling back to default."
-        case let .invalidRegexPattern(id, pattern):
-            return "Invalid regular expression pattern '\(pattern)' used to configure '\(id)' rule."
-        case let .deprecatedConfigurationOption(id, key, alternative):
-            let baseMessage = "Configuration option '\(key)' in '\(id)' rule is deprecated."
-            if let alternative {
-                return baseMessage + " Use the option '\(alternative)' instead."
-            }
-            return baseMessage
-        case let .nothingApplied(ruleID: id):
-            return Self.invalidConfiguration(ruleID: id).message
-        case let .listedMultipleTime(id, times):
-            return "'\(id)' is listed \(times) times in the configuration."
-        case let .renamedIdentifier(old, new):
-            return
-                "'\(old)' has been renamed to '\(new)' and will be completely removed in a future release."
-        case let .invalidConfigurationKeys(id, keys):
-            return "Configuration for '\(id)' rule contains the invalid key(s) \(keys.formatted)."
-        case let .inconsistentConfiguration(id, message):
-            return "Inconsistent configuration for '\(id)' rule: \(message)"
-        case let .invalidRuleIDs(ruleIDs):
-            return "The key(s) \(ruleIDs.formatted) used as rule identifier(s) is/are invalid."
-        case let .ruleNotPresentInOnlyRules(id):
-            return "Found a configuration for '\(id)' rule, but it is not present in 'only_rules'."
-        case let .ruleDisabledInDisabledRules(id):
-            return "Found a configuration for '\(id)' rule, but it is disabled in 'disabled_rules'."
-        case let .ruleDisabledInParentConfiguration(id):
-            return "Found a configuration for '\(id)' rule, but it is disabled in a parent configuration."
-        case let .ruleNotEnabledInOptInRules(id):
-            return "Found a configuration for '\(id)' rule, but it is not enabled in 'opt_in_rules'."
-        case let .ruleNotEnabledInParentOnlyRules(id):
-            return
-                "Found a configuration for '\(id)' rule, but it is not present in the parent's 'only_rules'."
-        case let .genericWarning(message), let .genericError(message):
-            return message
-        case let .ruleDeprecated(id):
-            return """
-            The `\(id)` rule is now deprecated and will be \
-            completely removed in a future release.
-            """
-        case let .initialFileNotFound(path):
-            return "Could not read file at path '\(path)'."
-        case let .fileNotFound(path):
-            return "File at path '\(path)' not found."
-        case let .fileNotReadable(path, id):
-            return "Cannot open or read file at path '\(path ?? "...")' within '\(id)' rule."
-        case let .fileNotWritable(path):
-            return "Cannot write to file at path '\(path)'."
-        case let .indexingError(path, id):
-            return "Cannot index file at path '\(path ?? "...")' within '\(id)' rule."
-        case let .missingCompilerArguments(path, id):
-            return """
-            Attempted to lint file at path '\(path ?? "...")' within '\(id)' rule \
-            without any compiler arguments.
-            """
-        case let .missingCursorInfo(path, id):
-            return "Cannot get cursor info from file at path '\(path ?? "...")' within '\(id)' rule."
-        case let .yamlParsing(message):
-            return "Cannot parse YAML file: \(message)"
-        case let .baselineNotReadable(path):
-            return "Cannot open or read the baseline file at path '\(path)'."
+            case let .invalidConfiguration(id, message):
+                let message = if let message { ": \(message)" } else { "." }
+                return "Invalid configuration for '\(id)' rule\(message) Falling back to default."
+            case let .invalidRegexPattern(id, pattern):
+                return "Invalid regular expression pattern '\(pattern)' used to configure '\(id)' rule."
+            case let .deprecatedConfigurationOption(id, key, alternative):
+                let baseMessage = "Configuration option '\(key)' in '\(id)' rule is deprecated."
+                if let alternative {
+                    return baseMessage + " Use the option '\(alternative)' instead."
+                }
+                return baseMessage
+            case let .nothingApplied(ruleID: id):
+                return Self.invalidConfiguration(ruleID: id).message
+            case let .listedMultipleTime(id, times):
+                return "'\(id)' is listed \(times) times in the configuration."
+            case let .renamedIdentifier(old, new):
+                return
+                    "'\(old)' has been renamed to '\(new)' and will be completely removed in a future release."
+            case let .invalidConfigurationKeys(id, keys):
+                return "Configuration for '\(id)' rule contains the invalid key(s) \(keys.formatted)."
+            case let .inconsistentConfiguration(id, message):
+                return "Inconsistent configuration for '\(id)' rule: \(message)"
+            case let .invalidRuleIDs(ruleIDs):
+                return "The key(s) \(ruleIDs.formatted) used as rule identifier(s) is/are invalid."
+            case let .ruleNotPresentInOnlyRules(id):
+                return "Found a configuration for '\(id)' rule, but it is not present in 'only_rules'."
+            case let .ruleDisabledInDisabledRules(id):
+                return "Found a configuration for '\(id)' rule, but it is disabled in 'disabled_rules'."
+            case let .ruleDisabledInParentConfiguration(id):
+                return "Found a configuration for '\(id)' rule, but it is disabled in a parent configuration."
+            case let .ruleNotEnabledInOptInRules(id):
+                return "Found a configuration for '\(id)' rule, but it is not enabled in 'opt_in_rules'."
+            case let .ruleNotEnabledInParentOnlyRules(id):
+                return
+                    "Found a configuration for '\(id)' rule, but it is not present in the parent's 'only_rules'."
+            case let .genericWarning(message), let .genericError(message):
+                return message
+            case let .ruleDeprecated(id):
+                return """
+                The `\(id)` rule is now deprecated and will be \
+                completely removed in a future release.
+                """
+            case let .initialFileNotFound(path):
+                return "Could not read file at path '\(path)'."
+            case let .fileNotFound(path):
+                return "File at path '\(path)' not found."
+            case let .fileNotReadable(path, id):
+                return "Cannot open or read file at path '\(path ?? "...")' within '\(id)' rule."
+            case let .fileNotWritable(path):
+                return "Cannot write to file at path '\(path)'."
+            case let .indexingError(path, id):
+                return "Cannot index file at path '\(path ?? "...")' within '\(id)' rule."
+            case let .missingCompilerArguments(path, id):
+                return """
+                Attempted to lint file at path '\(path ?? "...")' within '\(id)' rule \
+                without any compiler arguments.
+                """
+            case let .missingCursorInfo(path, id):
+                return "Cannot get cursor info from file at path '\(path ?? "...")' within '\(id)' rule."
+            case let .yamlParsing(message):
+                return "Cannot parse YAML file: \(message)"
+            case let .baselineNotReadable(path):
+                return "Cannot open or read the baseline file at path '\(path)'."
         }
     }
 }
 
-private extension Set where Element == String {
+private extension Set<String> {
     var formatted: String {
         sorted()
             .map { "'\($0)'" }

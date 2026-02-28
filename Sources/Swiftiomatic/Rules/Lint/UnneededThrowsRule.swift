@@ -11,7 +11,7 @@ struct UnneededThrowsRule: Rule {
         kind: .lint,
         nonTriggeringExamples: UnneededThrowsRuleExamples.nonTriggeringExamples,
         triggeringExamples: UnneededThrowsRuleExamples.triggeringExamples,
-        corrections: UnneededThrowsRuleExamples.corrections
+        corrections: UnneededThrowsRuleExamples.corrections,
     )
 }
 
@@ -51,7 +51,7 @@ private extension UnneededThrowsRule {
             if let closedScope = scopes.closeScope() {
                 validate(
                     scope: closedScope,
-                    construct: "initializer"
+                    construct: "initializer",
                 )
             }
         }
@@ -65,7 +65,7 @@ private extension UnneededThrowsRule {
             if let closedScope = scopes.closeScope() {
                 validate(
                     scope: closedScope,
-                    construct: "accessor"
+                    construct: "accessor",
                 )
             }
         }
@@ -79,7 +79,7 @@ private extension UnneededThrowsRule {
             if let closedScope = scopes.closeScope() {
                 validate(
                     scope: closedScope,
-                    construct: "body of this function"
+                    construct: "body of this function",
                 )
             }
         }
@@ -96,7 +96,7 @@ private extension UnneededThrowsRule {
                 if let closedScope = scopes.closeScope() {
                     validate(
                         scope: closedScope,
-                        construct: "closure type"
+                        construct: "closure type",
                     )
                 }
             }
@@ -115,7 +115,7 @@ private extension UnneededThrowsRule {
             {
                 validate(
                     scope: closedScope,
-                    construct: "body of this closure"
+                    construct: "body of this closure",
                 )
             }
         }
@@ -178,9 +178,9 @@ private extension UnneededThrowsRule {
                         // Move start position back by 1 to include the space before the keyword.
                         start: throwsClause.positionAfterSkippingLeadingTrivia.advanced(by: -1),
                         end: throwsClause.endPositionBeforeTrailingTrivia,
-                        replacement: ""
-                    )
-                )
+                        replacement: "",
+                    ),
+                ),
             )
         }
     }
@@ -212,7 +212,7 @@ private extension FunctionCallExprSyntax {
 extension PatternBindingSyntax {
     private var hasNonReferenceInitializer: Bool {
         ![.declReferenceExpr, .memberAccessExpr, .functionCallExpr, nil].contains(
-            initializer?.value.kind
+            initializer?.value.kind,
         )
     }
 
@@ -233,21 +233,21 @@ extension PatternBindingSyntax {
 private extension TypeSyntax {
     var baseFunctionTypeSyntax: FunctionTypeSyntax? {
         switch Syntax(self).as(SyntaxEnum.self) {
-        case let .functionType(function):
-            function
-        case let .optionalType(optional):
-            optional.wrappedType.baseFunctionTypeSyntax
-        case let .attributedType(attributed):
-            attributed.baseType.baseFunctionTypeSyntax
-        case let .tupleType(tuple):
-            // It's hard to check for the necessity of throws keyword in multi-element tuples.
-            if tuple.elements.count == 1 {
-                tuple.elements.first?.type.baseFunctionTypeSyntax
-            } else {
+            case let .functionType(function):
+                function
+            case let .optionalType(optional):
+                optional.wrappedType.baseFunctionTypeSyntax
+            case let .attributedType(attributed):
+                attributed.baseType.baseFunctionTypeSyntax
+            case let .tupleType(tuple):
+                // It's hard to check for the necessity of throws keyword in multi-element tuples.
+                if tuple.elements.count == 1 {
+                    tuple.elements.first?.type.baseFunctionTypeSyntax
+                } else {
+                    nil
+                }
+            default:
                 nil
-            }
-        default:
-            nil
         }
     }
 }

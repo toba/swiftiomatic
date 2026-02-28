@@ -1,11 +1,3 @@
-//
-//  SpaceAroundParens.swift
-//  SwiftFormat
-//
-//  Created by Nick Lockwood on 8/22/16.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
@@ -18,28 +10,28 @@ extension FormatRule {
     /// * There is space between a closing paren and following opening brace
     /// * There is no space between a closing paren and following opening square bracket
     static let spaceAroundParens = FormatRule(
-        help: "Add or remove space around parentheses."
+        help: "Add or remove space around parentheses.",
     ) { formatter in
         formatter.forEach(.startOfScope("(")) { i, _ in
             let i = i - 1
             switch formatter.token(at: i) {
-            case _ where formatter.shouldInsertSpaceAfterToken(at: i) == true:
-                formatter.insertSpace(" ", at: i + 1)
-            case .space where formatter.shouldInsertSpaceAfterToken(at: i - 1) == false:
-                formatter.removeToken(at: i)
-            default:
-                break
+                case _ where formatter.shouldInsertSpaceAfterToken(at: i) == true:
+                    formatter.insertSpace(" ", at: i + 1)
+                case .space where formatter.shouldInsertSpaceAfterToken(at: i - 1) == false:
+                    formatter.removeToken(at: i)
+                default:
+                    break
             }
         }
         formatter.forEach(.endOfScope(")")) { i, _ in
             let i = i + 1
             switch formatter.token(at: i) {
-            case .identifier, .keyword, .startOfScope("{"):
-                formatter.insertSpace(" ", at: i)
-            case .space where formatter.token(at: i + 1) == .startOfScope("["):
-                formatter.removeToken(at: i)
-            default:
-                break
+                case .identifier, .keyword, .startOfScope("{"):
+                    formatter.insertSpace(" ", at: i)
+                case .space where formatter.token(at: i + 1) == .startOfScope("["):
+                    formatter.removeToken(at: i)
+                default:
+                    break
             }
         }
     } examples: {

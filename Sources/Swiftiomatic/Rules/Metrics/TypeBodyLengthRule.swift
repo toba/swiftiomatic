@@ -7,7 +7,7 @@ struct TypeBodyLengthRule: Rule {
     private static let testConfig = ["warning": 2] as [String: any Sendable]
     private static let testConfigWithAllTypes = testConfig.merging(
         ["excluded_types": [] as [String]],
-        uniquingKeysWith: { $1 }
+        uniquingKeysWith: { $1 },
     )
 
     static let description = RuleDescription(
@@ -27,7 +27,7 @@ struct TypeBodyLengthRule: Rule {
                 actor A {
                     let x = 0
                 }
-                """, configuration: testConfig
+                """, configuration: testConfig,
             ),
             Example(
                 """
@@ -38,7 +38,7 @@ struct TypeBodyLengthRule: Rule {
                     // be
                     // ignored
                 }
-                """, configuration: testConfig
+                """, configuration: testConfig,
             ),
             Example(
                 """
@@ -48,7 +48,7 @@ struct TypeBodyLengthRule: Rule {
 
 
                 }
-                """, configuration: testConfig
+                """, configuration: testConfig,
             ),
             Example(
                 """
@@ -57,7 +57,7 @@ struct TypeBodyLengthRule: Rule {
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfig
+                """, configuration: testConfig,
             ),
         ],
         triggeringExamples: [
@@ -68,7 +68,7 @@ struct TypeBodyLengthRule: Rule {
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfig
+                """, configuration: testConfig,
             ),
             Example(
                 """
@@ -77,7 +77,7 @@ struct TypeBodyLengthRule: Rule {
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfig
+                """, configuration: testConfig,
             ),
             Example(
                 """
@@ -86,7 +86,7 @@ struct TypeBodyLengthRule: Rule {
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfig
+                """, configuration: testConfig,
             ),
             Example(
                 """
@@ -95,7 +95,7 @@ struct TypeBodyLengthRule: Rule {
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfigWithAllTypes
+                """, configuration: testConfigWithAllTypes,
             ),
             Example(
                 """
@@ -104,7 +104,7 @@ struct TypeBodyLengthRule: Rule {
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfigWithAllTypes
+                """, configuration: testConfigWithAllTypes,
             ),
             Example(
                 """
@@ -113,9 +113,9 @@ struct TypeBodyLengthRule: Rule {
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfig
+                """, configuration: testConfig,
             ),
-        ]
+        ],
     )
 }
 
@@ -168,7 +168,7 @@ private extension TypeBodyLengthRule {
                 leftBrace: node.memberBlock.leftBrace,
                 rightBrace: node.memberBlock.rightBrace,
                 violationNode: node.introducer,
-                objectName: node.introducer.text.capitalized
+                objectName: node.introducer.text.capitalized,
             )
         }
     }

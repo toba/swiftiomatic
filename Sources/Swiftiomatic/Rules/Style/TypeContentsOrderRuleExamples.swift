@@ -128,7 +128,7 @@ enum TypeContentsOrderRuleExamples {
             class TestViewController: UIViewController {
             \(Self.defaultOrderParts.joined(separator: "\n\n")),
             }
-            """
+            """,
         ),
         Example(
             """
@@ -137,7 +137,7 @@ enum TypeContentsOrderRuleExamples {
                 var v5Body: some View { EmptyView() }
                 var body: some View { EmptyView() }
             }
-            """
+            """,
         ),
     ]
 
@@ -153,7 +153,7 @@ enum TypeContentsOrderRuleExamples {
                 // Type Aliases
                 typealias CompletionHandler = ((TestEnum) -> Void)
             }
-            """
+            """,
         ),
         Example(
             """
@@ -166,7 +166,7 @@ enum TypeContentsOrderRuleExamples {
                     // 10 lines
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -177,7 +177,7 @@ enum TypeContentsOrderRuleExamples {
                 // Stored Type Properties
                 static let cellIdentifier: String = "AmazingCell"
             }
-            """
+            """,
         ),
         Example(
             """
@@ -190,7 +190,7 @@ enum TypeContentsOrderRuleExamples {
                      return hasLayoutedView1 || hasLayoutedView2
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -210,7 +210,7 @@ enum TypeContentsOrderRuleExamples {
                 @IBOutlet private var view1: UIView!
                 @IBOutlet private var view2: UIView!
             }
-            """
+            """,
         ),
         Example(
             """
@@ -229,7 +229,7 @@ enum TypeContentsOrderRuleExamples {
                     // some code
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -249,7 +249,7 @@ enum TypeContentsOrderRuleExamples {
                     hasLayoutedView1 = true
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -263,7 +263,7 @@ enum TypeContentsOrderRuleExamples {
                     delegate?.didPressTrackedButton()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -282,7 +282,7 @@ enum TypeContentsOrderRuleExamples {
                 // MARK: Other Methods
                 func goToNextVc() { /* TODO */ }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -293,7 +293,7 @@ enum TypeContentsOrderRuleExamples {
                 typealias U = Int
             }
             """, configuration: ["order": [["type_alias"], ["associated_type"]]],
-            excludeFromDocumentation: true
+            excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -302,7 +302,8 @@ enum TypeContentsOrderRuleExamples {
                 ↓case a
                 func f() {}
             }
-            """, configuration: ["order": [["other_method"], ["case"]]], excludeFromDocumentation: true
+            """, configuration: ["order": [["other_method"], ["case"]]],
+            excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -314,7 +315,7 @@ enum TypeContentsOrderRuleExamples {
                     return 3
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -324,7 +325,7 @@ enum TypeContentsOrderRuleExamples {
                 static var I = 2
                 #endif
             }
-            """
+            """,
         ),
         Example(
             """
@@ -338,7 +339,7 @@ enum TypeContentsOrderRuleExamples {
                     static var i = 3
                 #endif
             }
-            """
+            """,
         ),
     ]
 }

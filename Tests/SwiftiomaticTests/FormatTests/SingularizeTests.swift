@@ -171,12 +171,12 @@ import Testing
     }
 
     @Test func dontSingularizeNonPlurals() {
-        #expect("uppercase".singularized( == nil))
-        #expect("uppercased".singularized( == nil))
-        #expect("rotate".singularized( == nil))
-        #expect("map".singularized( == nil))
-        #expect("filter".singularized( == nil))
-        #expect("capitalize".singularized( == nil))
-        #expect("tessellate".singularized( == nil))
+        #expect("uppercase".singularized() == nil)
+        #expect("uppercased".singularized() == nil)
+        #expect("rotate".singularized() == nil)
+        #expect("map".singularized() == nil)
+        #expect("filter".singularized() == nil)
+        #expect("capitalize".singularized() == nil)
+        #expect("tessellate".singularized() == nil)
     }
 }

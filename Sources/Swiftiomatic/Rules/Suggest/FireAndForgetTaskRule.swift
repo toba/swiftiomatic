@@ -19,9 +19,9 @@ struct FireAndForgetTaskRule: Rule {
                 deinit {
                     ↓Task { await cleanup() }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -84,7 +84,8 @@ private extension FireAndForgetTaskRule {
         }
 
         private func checkFireAndForgetTask(_ node: FunctionCallExprSyntax) {
-            if TaskDetectionHelpers.isReturned(node) || TaskDetectionHelpers.isAssigned(node) { return }
+            if TaskDetectionHelpers.isReturned(node) || TaskDetectionHelpers
+                .isAssigned(node) { return }
 
             if insideViewBody || insideInit {
                 let location = insideViewBody ? "body" : "init"
@@ -95,35 +96,35 @@ private extension FireAndForgetTaskRule {
                         "Task created in SwiftUI View \(location) — runs on every evaluation, not tied to view lifecycle",
                         severity: .warning,
                         confidence: .medium,
-                        suggestion: "Use .task { } modifier to tie the Task to the view's lifecycle"
-                    )
+                        suggestion: "Use .task { } modifier to tie the Task to the view's lifecycle",
+                    ),
                 )
                 return
             }
 
             let scope = TaskDetectionHelpers.enclosingScope(of: node)
             switch scope {
-            case .deinit, .viewDidDisappear:
-                violations.append(
-                    ReasonedRuleViolation(
-                        position: node.positionAfterSkippingLeadingTrivia,
-                        reason:
-                        "Fire-and-forget Task in \(scope.description) — work continues after teardown with no cancellation handle",
-                        severity: .error,
-                        confidence: .high,
-                        suggestion: "Assign to a stored property or use structured concurrency"
+                case .deinit, .viewDidDisappear:
+                    violations.append(
+                        ReasonedRuleViolation(
+                            position: node.positionAfterSkippingLeadingTrivia,
+                            reason:
+                            "Fire-and-forget Task in \(scope.description) — work continues after teardown with no cancellation handle",
+                            severity: .error,
+                            confidence: .high,
+                            suggestion: "Assign to a stored property or use structured concurrency",
+                        ),
                     )
-                )
-            case .general:
-                violations.append(
-                    ReasonedRuleViolation(
-                        position: node.positionAfterSkippingLeadingTrivia,
-                        reason: "Fire-and-forget Task — result not captured, cancellation not possible",
-                        severity: .warning,
-                        confidence: .medium,
-                        suggestion: "Assign to a variable if cancellation matters: `let task = Task { ... }`"
+                case .general:
+                    violations.append(
+                        ReasonedRuleViolation(
+                            position: node.positionAfterSkippingLeadingTrivia,
+                            reason: "Fire-and-forget Task — result not captured, cancellation not possible",
+                            severity: .warning,
+                            confidence: .medium,
+                            suggestion: "Assign to a variable if cancellation matters: `let task = Task { ... }`",
+                        ),
                     )
-                )
             }
         }
 
@@ -138,8 +139,8 @@ private extension FireAndForgetTaskRule {
                         ".onAppear contains Task { } — use .task modifier instead for automatic cancellation",
                         severity: .warning,
                         confidence: .high,
-                        suggestion: "Replace .onAppear { Task { ... } } with .task { ... }"
-                    )
+                        suggestion: "Replace .onAppear { Task { ... } } with .task { ... }",
+                    ),
                 )
                 return
             }
@@ -154,8 +155,8 @@ private extension FireAndForgetTaskRule {
                             ".onAppear contains Task { } — use .task modifier instead for automatic cancellation",
                             severity: .warning,
                             confidence: .high,
-                            suggestion: "Replace .onAppear { Task { ... } } with .task { ... }"
-                        )
+                            suggestion: "Replace .onAppear { Task { ... } } with .task { ... }",
+                        ),
                     )
                     return
                 }

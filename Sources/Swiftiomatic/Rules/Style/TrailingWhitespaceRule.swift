@@ -1,6 +1,6 @@
 import Foundation
-import SourceKittenFramework
 import SwiftSyntax
+import SourceKittenFramework
 
 struct TrailingWhitespaceRule: Rule {
     var configuration = TrailingWhitespaceConfiguration()
@@ -16,20 +16,20 @@ struct TrailingWhitespaceRule: Rule {
             Example("let stringWithSpace = \"hello \"\n"),
             Example(
                 "let multiline = \"\"\"\n    line with spaces    \n    \"\"\"   \n",
-                configuration: ["ignores_literals": true]
+                configuration: ["ignores_literals": true],
             ),
         ],
         triggeringExamples: [
             Example("let name: String↓ \n"), Example("/* */ let name: String↓ \n"),
             Example(
                 "let codeWithSpace = 123↓    \n", configuration: ["ignores_literals": true],
-                testWrappingInComment: false
+                testWrappingInComment: false,
             ),
         ],
         corrections: [
             Example("let name: String↓ \n"): Example("let name: String\n"),
             Example("/* */ let name: String↓ \n"): Example("/* */ let name: String\n"),
-        ]
+        ],
     )
 }
 
@@ -70,7 +70,9 @@ private extension TrailingWhitespaceRule {
                 }
 
                 // Apply `ignoresEmptyLines` configuration
-                if configuration.ignoresEmptyLines, line.trimmingCharacters(in: .whitespaces).isEmpty {
+                if configuration.ignoresEmptyLines,
+                   line.trimmingCharacters(in: .whitespaces).isEmpty
+                {
                     continue
                 }
 
@@ -105,8 +107,12 @@ private extension TrailingWhitespaceRule {
                 violations.append(
                     ReasonedRuleViolation(
                         position: violationPosition,
-                        correction: .init(start: violationPosition, end: correctionEnd, replacement: "")
-                    )
+                        correction: .init(
+                            start: violationPosition,
+                            end: correctionEnd,
+                            replacement: "",
+                        ),
+                    ),
                 )
             }
             return .skipChildren
@@ -125,13 +131,14 @@ private extension TrailingWhitespaceRule {
         /// Pre-computes string literal information in a single pass for better performance
         private func precomputeStringLiteralInformation(_ node: SourceFileSyntax) {
             // Collects line numbers that contain multiline string literals
-            let stringLiteralVisitor = MultilineStringLiteralVisitor(locationConverter: locationConverter)
+            let stringLiteralVisitor =
+                MultilineStringLiteralVisitor(locationConverter: locationConverter)
             stringLiteralLines = stringLiteralVisitor.walk(tree: node, handler: \.linesSpanned)
         }
 
         /// Collects ranges of line comments organized by line number
         private func collectLineCommentRanges(from node: SourceFileSyntax) -> [Int: [Range<
-            AbsolutePosition
+            AbsolutePosition,
         >]] {
             var lineCommentRanges: [Int: [Range<AbsolutePosition>]] = [:]
 
@@ -144,7 +151,8 @@ private extension TrailingWhitespaceRule {
 
                     if piece.isComment, !piece.isBlockComment {
                         let pieceStartLine = locationConverter.location(for: pieceStart).line
-                        lineCommentRanges[pieceStartLine, default: []].append(pieceStart ..< currentPos)
+                        lineCommentRanges[pieceStartLine, default: []]
+                            .append(pieceStart ..< currentPos)
                     }
                 }
 
@@ -156,7 +164,8 @@ private extension TrailingWhitespaceRule {
 
                     if piece.isComment, !piece.isBlockComment {
                         let pieceStartLine = locationConverter.location(for: pieceStart).line
-                        lineCommentRanges[pieceStartLine, default: []].append(pieceStart ..< currentPos)
+                        lineCommentRanges[pieceStartLine, default: []]
+                            .append(pieceStart ..< currentPos)
                     }
                 }
             }
@@ -166,7 +175,7 @@ private extension TrailingWhitespaceRule {
 
         /// Determines which lines end with comments based on line comment ranges
         private func determineLineEndingComments(
-            using lineCommentRanges: [Int: [Range<AbsolutePosition>]]
+            using lineCommentRanges: [Int: [Range<AbsolutePosition>]],
         ) {
             for lineNumber in 1 ... file.lines.count {
                 let line = file.lines[lineNumber - 1].content
@@ -177,13 +186,16 @@ private extension TrailingWhitespaceRule {
                 }
 
                 // Get the effective content (before trailing whitespace)
-                let effectiveContent = getEffectiveContent(from: line, removing: trailingWhitespaceInfo)
+                let effectiveContent = getEffectiveContent(
+                    from: line,
+                    removing: trailingWhitespaceInfo,
+                )
 
                 // Check if the effective content ends with a comment
                 if checkIfContentEndsWithComment(
                     effectiveContent,
                     lineNumber: lineNumber,
-                    lineCommentRanges: lineCommentRanges
+                    lineCommentRanges: lineCommentRanges,
                 ) {
                     linesEndingWithComment.insert(lineNumber)
                 }
@@ -193,7 +205,7 @@ private extension TrailingWhitespaceRule {
         /// Gets the content of a line before its trailing whitespace
         private func getEffectiveContent(
             from line: String,
-            removing trailingWhitespaceInfo: TrailingWhitespaceInfo
+            removing trailingWhitespaceInfo: TrailingWhitespaceInfo,
         ) -> String {
             if trailingWhitespaceInfo.characterCount > 0,
                line.count >= trailingWhitespaceInfo.characterCount
@@ -207,7 +219,7 @@ private extension TrailingWhitespaceRule {
         private func checkIfContentEndsWithComment(
             _ effectiveContent: String,
             lineNumber: Int,
-            lineCommentRanges: [Int: [Range<AbsolutePosition>]]
+            lineCommentRanges: [Int: [Range<AbsolutePosition>]],
         ) -> Bool {
             guard !effectiveContent.isEmpty,
                   let lastNonWhitespaceIdx = effectiveContent.lastIndex(where: { !$0.isWhitespace })
@@ -224,7 +236,9 @@ private extension TrailingWhitespaceRule {
             // Check if this position falls within any comment range on this line
             if let ranges = lineCommentRanges[lineNumber] {
                 for range in ranges {
-                    if range.lowerBound <= lastNonWhitespacePos, lastNonWhitespacePos < range.upperBound {
+                    if range.lowerBound <= lastNonWhitespacePos,
+                       lastNonWhitespacePos < range.upperBound
+                    {
                         return true
                     }
                 }
@@ -246,7 +260,7 @@ private extension TrailingWhitespaceRule {
                     if piece.isBlockComment {
                         markLinesFullyCoveredByBlockComment(
                             blockCommentStart: pieceStartPos,
-                            blockCommentEnd: currentPos
+                            blockCommentEnd: currentPos,
                         )
                     }
                 }
@@ -262,7 +276,7 @@ private extension TrailingWhitespaceRule {
                     if piece.isBlockComment {
                         markLinesFullyCoveredByBlockComment(
                             blockCommentStart: pieceStartPos,
-                            blockCommentEnd: currentPos
+                            blockCommentEnd: currentPos,
                         )
                     }
                 }
@@ -272,7 +286,7 @@ private extension TrailingWhitespaceRule {
         /// Marks lines that are fully covered by a block comment
         private func markLinesFullyCoveredByBlockComment(
             blockCommentStart: AbsolutePosition,
-            blockCommentEnd: AbsolutePosition
+            blockCommentEnd: AbsolutePosition,
         ) {
             let startLocation = locationConverter.location(for: blockCommentStart)
             let endLocation = locationConverter.location(for: blockCommentEnd)
@@ -307,7 +321,9 @@ private extension TrailingWhitespaceRule {
                     let lastNonWhitespacePos = lineStartPos.advanced(by: byteOffsetToLastNonWS)
 
                     // Check if both first and last non-whitespace positions are within the comment
-                    if firstNonWhitespacePos >= blockCommentStart, lastNonWhitespacePos < blockCommentEnd {
+                    if firstNonWhitespacePos >= blockCommentStart,
+                       lastNonWhitespacePos < blockCommentEnd
+                    {
                         linesFullyCoveredByBlockComments.insert(lineNum)
                     }
                 } else {
@@ -361,10 +377,10 @@ private extension String {
 private extension TriviaPiece {
     var isBlockComment: Bool {
         switch self {
-        case .blockComment, .docBlockComment:
-            return true
-        default:
-            return false
+            case .blockComment, .docBlockComment:
+                return true
+            default:
+                return false
         }
     }
 }

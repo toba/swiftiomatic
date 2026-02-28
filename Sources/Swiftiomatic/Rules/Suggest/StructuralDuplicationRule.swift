@@ -14,7 +14,7 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
         nonTriggeringExamples: [
             Example("func unique1() { print(1) }\nfunc unique2() { return 2 }"),
         ],
-        triggeringExamples: []
+        triggeringExamples: [],
     )
 
     func collectInfo(for file: SwiftLintFile) -> [FunctionFingerprint] {
@@ -55,8 +55,8 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
                         location: Location(file: filePath, line: member.line, character: 1),
                         reason: "Function '\(member.name)' is structurally identical to \(peers)",
                         confidence: confidence,
-                        suggestion: "Consider extracting shared logic into a common function"
-                    )
+                        suggestion: "Consider extracting shared logic into a common function",
+                    ),
                 )
             }
         }
@@ -93,8 +93,8 @@ private final class FingerprintCollector: SyntaxVisitor {
                 name: node.name.text,
                 file: filePath,
                 line: loc.line,
-                fingerprint: nodes.joined(separator: ",")
-            )
+                fingerprint: nodes.joined(separator: ","),
+            ),
         )
 
         return .visitChildren

@@ -17,70 +17,70 @@ struct DiscouragedNoneNameRule: Rule {
                 enum MyEnum {
                     case nOne
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum MyEnum {
                     case _none
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum MyEnum {
                     case none_
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum MyEnum {
                     case none(Any)
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum MyEnum {
                     case nonenone
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                     class var nonenone: MyClass { MyClass() }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                     static var nonenone = MyClass()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                     static let nonenone = MyClass()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 struct MyStruct {
                     static var nonenone = MyStruct()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 struct MyStruct {
                     static let nonenone = MyStruct()
                 }
-                """
+                """,
             ),
 
             // Should not trigger if not an enum case or static/class member
@@ -89,28 +89,28 @@ struct DiscouragedNoneNameRule: Rule {
                 struct MyStruct {
                     let none = MyStruct()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 struct MyStruct {
                     var none = MyStruct()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                     let none = MyClass()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                     var none = MyClass()
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -119,28 +119,28 @@ struct DiscouragedNoneNameRule: Rule {
                 enum MyEnum {
                     case ↓none
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum MyEnum {
                     case a, ↓none
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum MyEnum {
                     case ↓none, b
                 }
-                """
+                """,
             ),
             Example(
                 """
                 enum MyEnum {
                     case a, ↓none, b
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -148,7 +148,7 @@ struct DiscouragedNoneNameRule: Rule {
                     case a
                     case ↓none
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -156,7 +156,7 @@ struct DiscouragedNoneNameRule: Rule {
                     case ↓none
                     case b
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -165,79 +165,79 @@ struct DiscouragedNoneNameRule: Rule {
                     case ↓none
                     case b
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                     ↓static let none = MyClass()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                     ↓static let none: MyClass = MyClass()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                     ↓static var none: MyClass = MyClass()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class MyClass {
                     ↓class var none: MyClass { MyClass() }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 struct MyStruct {
                     ↓static var none = MyStruct()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 struct MyStruct {
                     ↓static var none: MyStruct = MyStruct()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 struct MyStruct {
                     ↓static var none = MyStruct()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 struct MyStruct {
                     ↓static var none: MyStruct = MyStruct()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 struct MyStruct {
                     ↓static var a = MyStruct(), none = MyStruct()
                 }
-                """
+                """,
             ),
             Example(
                 """
                 struct MyStruct {
                     ↓static var none = MyStruct(), a = MyStruct()
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -257,8 +257,8 @@ private extension DiscouragedNoneNameRule {
                 violations.append(
                     ReasonedRuleViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
-                        reason: reason(type: "`case`")
-                    )
+                        reason: reason(type: "`case`"),
+                    ),
                 )
             }
         }
@@ -288,8 +288,8 @@ private extension DiscouragedNoneNameRule {
                 violations.append(
                     ReasonedRuleViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
-                        reason: reason(type: type)
-                    )
+                        reason: reason(type: type),
+                    ),
                 )
                 return
             }

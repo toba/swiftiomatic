@@ -1,11 +1,11 @@
-import SwiftBasicFormat
 import SwiftSyntax
+import SwiftBasicFormat
 
 private func embedInSwitch(
     _ text: String,
     case: String = "case .bar",
     file: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
 ) -> Example {
     Example(
         """
@@ -13,7 +13,7 @@ private func embedInSwitch(
         \(`case`):
             \(text)
         }
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }
 
@@ -44,7 +44,7 @@ struct UnneededBreakInSwitchRule: Rule {
                         }
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -56,7 +56,7 @@ struct UnneededBreakInSwitchRule: Rule {
         corrections: [
             embedInSwitch("something()\n    ↓break"): embedInSwitch("something()"),
             embedInSwitch("something()\n    ↓break // line comment"): embedInSwitch(
-                "something()\n     // line comment"
+                "something()\n     // line comment",
             ),
             embedInSwitch(
                 """
@@ -65,17 +65,17 @@ struct UnneededBreakInSwitchRule: Rule {
                 /*
                 block comment
                 */
-                """
+                """,
             ): embedInSwitch(
                 """
                 something()
                 /*
                 block comment
                 */
-                """
+                """,
             ),
             embedInSwitch("something()\n    ↓break /// doc line comment"): embedInSwitch(
-                "something()\n     /// doc line comment"
+                "something()\n     /// doc line comment",
             ),
             embedInSwitch(
                 """
@@ -84,21 +84,21 @@ struct UnneededBreakInSwitchRule: Rule {
                 ///
                 /// doc block comment
                 ///
-                """
+                """,
             ): embedInSwitch(
                 """
                 something()
                 ///
                 /// doc block comment
                 ///
-                """
+                """,
             ),
             embedInSwitch("something()\n    ↓break", case: "default"): embedInSwitch(
-                "something()", case: "default"
+                "something()", case: "default",
             ),
             embedInSwitch("something()\n    ↓break", case: "case .foo, .foo2 where condition"):
                 embedInSwitch("something()", case: "case .foo, .foo2 where condition"),
-        ]
+        ],
     )
 }
 
@@ -157,10 +157,10 @@ private extension SwitchCaseSyntax {
 private extension TriviaPiece {
     var isComment: Bool {
         switch self {
-        case .lineComment, .blockComment, .docLineComment, .docBlockComment:
-            return true
-        default:
-            return false
+            case .lineComment, .blockComment, .docLineComment, .docBlockComment:
+                return true
+            default:
+                return false
         }
     }
 }

@@ -14,7 +14,7 @@ struct MultilineLiteralBracketsRule: Rule {
                 """
                 let trio = ["harry", "ronald", "hermione"]
                 let houseCup = ["gryffindor": 460, "hufflepuff": 370, "ravenclaw": 410, "slytherin": 450]
-                """
+                """,
             ),
             Example(
                 """
@@ -29,7 +29,7 @@ struct MultilineLiteralBracketsRule: Rule {
                     "ravenclaw": 410,
                     "slytherin": 450
                 ]
-                """
+                """,
             ),
             Example(
                 """
@@ -40,7 +40,7 @@ struct MultilineLiteralBracketsRule: Rule {
                     "gryffindor": 460, "hufflepuff": 370,
                     "ravenclaw": 410, "slytherin": 450
                 ]
-                """
+                """,
             ),
             Example(
                 """
@@ -52,7 +52,7 @@ struct MultilineLiteralBracketsRule: Rule {
                     5, 6,
                     7, 8, 9
                 ]
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -62,14 +62,14 @@ struct MultilineLiteralBracketsRule: Rule {
                             "ronald",
                             "hermione"
                 ]
-                """
+                """,
             ),
             Example(
                 """
                 let houseCup = [↓"gryffindor": 460, "hufflepuff": 370,
                                 "ravenclaw": 410, "slytherin": 450
                 ]
-                """
+                """,
             ),
             Example(
                 """
@@ -77,7 +77,7 @@ struct MultilineLiteralBracketsRule: Rule {
                                 "hufflepuff": 370,
                                 "ravenclaw": 410,
                                 "slytherin": 450↓]
-                """
+                """,
             ),
             Example(
                 """
@@ -85,14 +85,14 @@ struct MultilineLiteralBracketsRule: Rule {
                     "harry",
                     "ronald",
                     "hermione"↓]
-                """
+                """,
             ),
             Example(
                 """
                 let houseCup = [
                     "gryffindor": 460, "hufflepuff": 370,
                     "ravenclaw": 410, "slytherin": 450↓]
-                """
+                """,
             ),
             Example(
                 """
@@ -101,7 +101,7 @@ struct MultilineLiteralBracketsRule: Rule {
                         "gryffindor": 460, "hufflepuff": 370,
                         "ravenclaw": 410, "slytherin": 450↓]
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -112,7 +112,7 @@ struct MultilineLiteralBracketsRule: Rule {
                     4,
                     5, 6,
                     7, 8, 9↓]
-                """
+                """,
             ),
             Example(
                 """
@@ -120,7 +120,7 @@ struct MultilineLiteralBracketsRule: Rule {
                      4, 5, 6,
                      7, 8, 9
                 ]
-                """
+                """,
             ),
             Example(
                 """
@@ -131,9 +131,9 @@ struct MultilineLiteralBracketsRule: Rule {
                             $0.isValid
                         }.sum()↓]
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -153,22 +153,22 @@ private extension MultilineLiteralBracketsRule {
                 openingToken: node.leftSquare,
                 closingToken: node.rightSquare,
                 firstElement: node.elements.first?.expression,
-                lastElement: node.elements.last?.expression
+                lastElement: node.elements.last?.expression,
             )
         }
 
         override func visitPost(_ node: DictionaryExprSyntax) {
             switch node.content {
-            case .colon:
-                break
-            case let .elements(elements):
-                validate(
-                    node,
-                    openingToken: node.leftSquare,
-                    closingToken: node.rightSquare,
-                    firstElement: elements.first?.key,
-                    lastElement: elements.last?.value
-                )
+                case .colon:
+                    break
+                case let .elements(elements):
+                    validate(
+                        node,
+                        openingToken: node.leftSquare,
+                        closingToken: node.rightSquare,
+                        firstElement: elements.first?.key,
+                        lastElement: elements.last?.value,
+                    )
             }
         }
 
@@ -177,7 +177,7 @@ private extension MultilineLiteralBracketsRule {
             openingToken: TokenSyntax,
             closingToken: TokenSyntax,
             firstElement: (some ExprSyntaxProtocol)?,
-            lastElement: (some ExprSyntaxProtocol)?
+            lastElement: (some ExprSyntaxProtocol)?,
         ) {
             guard let firstElement, let lastElement,
                   isMultiline(node)
@@ -196,7 +196,8 @@ private extension MultilineLiteralBracketsRule {
         }
 
         private func isMultiline(_ node: some ExprSyntaxProtocol) -> Bool {
-            let startLocation = locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
+            let startLocation = locationConverter
+                .location(for: node.positionAfterSkippingLeadingTrivia)
             let endLocation = locationConverter.location(for: node.endPositionBeforeTrailingTrivia)
 
             return endLocation.line > startLocation.line
@@ -205,9 +206,10 @@ private extension MultilineLiteralBracketsRule {
         private func areOnTheSameLine(_ first: some SyntaxProtocol, _ second: some SyntaxProtocol)
             -> Bool
         {
-            let firstLocation = locationConverter.location(for: first.endPositionBeforeTrailingTrivia)
+            let firstLocation = locationConverter
+                .location(for: first.endPositionBeforeTrailingTrivia)
             let secondLocation = locationConverter.location(
-                for: second.positionAfterSkippingLeadingTrivia
+                for: second.positionAfterSkippingLeadingTrivia,
             )
 
             return firstLocation.line == secondLocation.line

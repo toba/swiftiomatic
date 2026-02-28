@@ -10,7 +10,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     Image(decorative: "my-image")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -19,7 +19,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     Image("my-image", label: Text("Alt text for my image"))
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -29,7 +29,7 @@ enum AccessibilityLabelForImageRuleExamples {
                         .accessibility(hidden: true)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -39,7 +39,7 @@ enum AccessibilityLabelForImageRuleExamples {
                         .accessibilityHidden(true)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -49,7 +49,7 @@ enum AccessibilityLabelForImageRuleExamples {
                         .accessibility(label: Text("Alt text for my image"))
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -59,7 +59,7 @@ enum AccessibilityLabelForImageRuleExamples {
                         .accessibilityLabel(Text("Alt text for my image"))
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -71,7 +71,7 @@ enum AccessibilityLabelForImageRuleExamples {
                         .accessibilityHidden(true)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -81,7 +81,7 @@ enum AccessibilityLabelForImageRuleExamples {
                         .accessibilityLabel(Text("Alt text for my image"))
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -90,7 +90,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     SwiftUI.Image(uiImage: "my-image").resizable().accessibilityHidden(true)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -105,7 +105,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -120,7 +120,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }.accessibilityElement()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -135,7 +135,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }.accessibilityHidden(true)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -150,7 +150,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     .padding(16)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -166,7 +166,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     .accessibilityLabel(Text("Label for my image and text"))
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -180,7 +180,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     .accessibilityLabel(Text("Label for my image"))
                 }
             }
-            """
+            """,
         ),
 
         // MARK: - SwiftSyntax Migration Regression Tests
@@ -201,7 +201,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -214,7 +214,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -229,7 +229,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     .accessibilityLabel("Add to Favorites")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -243,7 +243,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     .accessibilityLabel("Connected to WiFi")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -258,7 +258,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     .accessibilityLabel("System is operational")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -274,7 +274,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -289,7 +289,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     .accessibilityLabel(isEnabled ? "Hide content" : "Show content")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -304,7 +304,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     .accessibilityLabel("Task completed successfully")
                 }
             }
-            """
+            """,
         ),
     ]
 
@@ -318,7 +318,7 @@ enum AccessibilityLabelForImageRuleExamples {
                         .frame(width: 48, height: 48)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -327,7 +327,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     ↓Image(uiImage: myUiImage)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -336,7 +336,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     ↓SwiftUI.Image(uiImage: "my-image").resizable().accessibilityHidden(false)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -349,7 +349,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     ↓Image("other image")
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -361,7 +361,7 @@ enum AccessibilityLabelForImageRuleExamples {
                         .accessibility(label: Text("a pretty picture"))
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -375,7 +375,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -390,7 +390,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }.accessibilityElement(children: .contain)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -405,7 +405,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }.accessibilityHidden(false)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -420,7 +420,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     .padding(16)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -433,7 +433,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -442,7 +442,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     ↓Image(systemName: "circle.plus")
                 }
             }
-            """
+            """,
         ),
 
         // MARK: - SwiftSyntax Migration Detection Improvements
@@ -461,7 +461,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -475,7 +475,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -487,7 +487,7 @@ enum AccessibilityLabelForImageRuleExamples {
                         .frame(width: 16, height: 16)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -501,7 +501,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }.accessibilityElement(children: .combine)
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -515,7 +515,7 @@ enum AccessibilityLabelForImageRuleExamples {
                     }.accessibilityElement(children: .contain)
                 }
             }
-            """
+            """,
         ),
     ]
 }

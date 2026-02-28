@@ -17,7 +17,7 @@ struct HTMLReporter: Reporter {
     static func generateReport(_ violations: [StyleViolation]) -> String {
         generateReport(
             violations, swiftlintVersion: LintVersion.current.value,
-            dateString: formatter.string(from: Date())
+            dateString: formatter.string(from: Date()),
         )
     }
 
@@ -27,15 +27,15 @@ struct HTMLReporter: Reporter {
     static func generateReport(
         _ violations: [StyleViolation],
         swiftlintVersion: String,
-        dateString: String
+        dateString: String,
     ) -> String {
         let rows = violations.enumerated()
             .map { generateSingleRow(for: $1, at: $0 + 1) }
             .joined(separator: "\n")
 
         let fileCount = Set(violations.compactMap(\.location.file)).count
-        let warningCount = violations.filter { $0.severity == .warning }.count
-        let errorCount = violations.filter { $0.severity == .error }.count
+        let warningCount = violations.count(where: { $0.severity == .warning })
+        let errorCount = violations.count(where: { $0.severity == .error })
 
         return """
         <!doctype html>

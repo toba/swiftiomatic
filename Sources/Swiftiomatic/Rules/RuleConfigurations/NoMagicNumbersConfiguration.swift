@@ -3,12 +3,12 @@ struct NoMagicNumbersConfiguration: SeverityBasedRuleConfiguration {
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.warning)
     @ConfigurationElement(
         key: "test_parent_classes",
-        postprocessor: { $0.formUnion(["QuickSpec", "XCTestCase"]) }
+        postprocessor: { $0.formUnion(["QuickSpec", "XCTestCase"]) },
     )
     private(set) var testParentClasses = Set<String>()
     @ConfigurationElement(
         key: "allowed_numbers",
-        postprocessor: { $0.formUnion([0, 1, 100]) }
+        postprocessor: { $0.formUnion([0, 1, 100]) },
     )
     private(set) var allowedNumbers = Set<Double>()
     typealias Parent = NoMagicNumbersRule

@@ -37,7 +37,7 @@ struct TrailingNewlineRule: CorrectableRule, SourceKitFreeRule {
             Example("let a = 0"): Example("let a = 0\n"),
             Example("let b = 0\n\n"): Example("let b = 0\n"),
             Example("let c = 0\n\n\n\n"): Example("let c = 0\n"),
-        ]
+        ],
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
@@ -48,7 +48,7 @@ struct TrailingNewlineRule: CorrectableRule, SourceKitFreeRule {
             StyleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file.path, line: max(file.lines.count, 1))
+                location: Location(file: file.path, line: max(file.lines.count, 1)),
             ),
         ]
     }

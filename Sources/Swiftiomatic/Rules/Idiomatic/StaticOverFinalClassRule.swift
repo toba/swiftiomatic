@@ -18,33 +18,33 @@ struct StaticOverFinalClassRule: Rule {
                 class C {
                     static func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class C {
                     static var i: Int { 0 }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class C {
                     static subscript(_: Int) -> Int { 0 }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class C {
                     class func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
                 final class C {}
-                """
+                """,
             ),
             Example(
                 """
@@ -53,7 +53,7 @@ struct StaticOverFinalClassRule: Rule {
                       class func f() {}
                     }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -62,28 +62,28 @@ struct StaticOverFinalClassRule: Rule {
                 class C {
                     ↓final class func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class C {
                     ↓final class var i: Int { 0 }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 class C {
                     ↓final class subscript(_: Int) -> Int { 0 }
                 }
-                """
+                """,
             ),
             Example(
                 """
                 final class C {
                     ↓class func f() {}
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -92,9 +92,9 @@ struct StaticOverFinalClassRule: Rule {
                         ↓class func f() {}
                     }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -131,7 +131,10 @@ private extension StaticOverFinalClassRule {
 
         // MARK: -
 
-        private func validateNode(at position: AbsolutePosition, with modifiers: DeclModifierListSyntax) {
+        private func validateNode(
+            at position: AbsolutePosition,
+            with modifiers: DeclModifierListSyntax,
+        ) {
             let reason: String? =
                 if modifiers.contains(keyword: .final), modifiers.contains(keyword: .class) {
                     "Prefer `static` over `final class`"
@@ -145,8 +148,8 @@ private extension StaticOverFinalClassRule {
                     ReasonedRuleViolation(
                         position: position,
                         reason: reason,
-                        severity: configuration.severity
-                    )
+                        severity: configuration.severity,
+                    ),
                 )
             }
         }

@@ -14,7 +14,7 @@ struct IBInspectableInExtensionRule: Rule {
                 class Foo {
                   @IBInspectable private var x: Int
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -23,9 +23,9 @@ struct IBInspectableInExtensionRule: Rule {
                 extension Foo {
                   ↓@IBInspectable private var x: Int
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 

@@ -8,7 +8,7 @@ enum AsyncWithoutAwaitRuleExamples {
                 }
                 func foo() {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -17,7 +17,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     await test()
                 }
             },
-            """
+            """,
         ),
         Example(
             """
@@ -26,28 +26,28 @@ enum AsyncWithoutAwaitRuleExamples {
                     await test().value
                 }
             },
-            """
+            """,
         ),
         Example(
             """
             func test() async {
                 await scheduler.task { foo { bar() } }
             }
-            """
+            """,
         ),
         Example(
             """
             func test() async {
                 perform(await try foo().value)
             }
-            """
+            """,
         ),
         Example(
             """
             func test() async {
                 perform(try await foo())
             }
-            """
+            """,
         ),
         Example(
             """
@@ -57,21 +57,21 @@ enum AsyncWithoutAwaitRuleExamples {
                     qux()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             let x: () async -> Void = {
                 await test()
             }
-            """
+            """,
         ),
         Example(
             """
             let x: () async -> Void = {
                 await { await test() }()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -79,19 +79,19 @@ enum AsyncWithoutAwaitRuleExamples {
                 await foo()
             }
             let x = { bar() }
-            """
+            """,
         ),
         Example(
             """
             let x: (() async -> Void)? = {
                 await { await test() }()
             }
-            """
+            """,
         ),
         Example(
             """
             let x: () -> Void = { test() }
-            """
+            """,
         ),
         Example(
             """
@@ -105,14 +105,14 @@ enum AsyncWithoutAwaitRuleExamples {
                     try bar()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             init() async {
                 await foo()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -122,7 +122,7 @@ enum AsyncWithoutAwaitRuleExamples {
                 }
                 await { await foo() }()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -131,47 +131,47 @@ enum AsyncWithoutAwaitRuleExamples {
                     await foo()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             func foo() async -> Int
             func bar() async -> Int
-            """
+            """,
         ),
         Example(
             """
             var foo: Int { get async }
             var bar: Int { get async }
-            """
+            """,
         ),
         Example(
             """
             init(foo: bar) async
             init(baz: qux) async
             let baz = { qux() }
-            """
+            """,
         ),
         Example(
             """
             typealias Foo = () async -> Void
             typealias Bar = () async -> Void
             let baz = { qux() }
-            """
+            """,
         ),
         Example(
             """
             func test() async {
                 for await foo in bar {}
             }
-            """
+            """,
         ),
         Example(
             """
             func test() async {
                 while let foo = await bar() {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -179,7 +179,7 @@ enum AsyncWithoutAwaitRuleExamples {
                 async let foo = bar()
                 let baz = await foo
             }
-            """
+            """,
         ),
         Example(
             """
@@ -187,14 +187,14 @@ enum AsyncWithoutAwaitRuleExamples {
                 async let foo = bar()
                 await foo
             }
-            """
+            """,
         ),
         Example(
             """
             func test() async {
                 async let foo = bar()
             }
-            """
+            """,
         ),
         Example("func foo(bar: () async -> Void) { { } }"),
         Example("func foo(bar: () async -> Void = { await baz() }) { {} }"),
@@ -205,7 +205,7 @@ enum AsyncWithoutAwaitRuleExamples {
                 bar: () async -> Void,
                 baz: () -> Void = {}
             ) { { } }
-            """
+            """,
         ),
         Example("func foo(bar: () async -> Void = {}) {}"),
         Example("var foo: (() async -> Void)? = nil"),
@@ -220,7 +220,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     b = 2
                 }
             }
-            """, excludeFromDocumentation: true
+            """, excludeFromDocumentation: true,
         ),
         Example(
             """
@@ -228,7 +228,7 @@ enum AsyncWithoutAwaitRuleExamples {
             func concurrentFunction() async {
                 performWork()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -238,7 +238,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     // This is valid - @concurrent functions require async even without await
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -249,14 +249,14 @@ enum AsyncWithoutAwaitRuleExamples {
                 }
                 func setup() {}
             }
-            """
+            """,
         ),
         Example(
             """
             struct ConcurrentClosureExample {
                 let c: () async -> Int = { @concurrent in 1 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -266,7 +266,7 @@ enum AsyncWithoutAwaitRuleExamples {
             class Child: Parent {
                 override func test() async { print("Child") }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -280,7 +280,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     get async { return 2 }
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -290,7 +290,7 @@ enum AsyncWithoutAwaitRuleExamples {
             class Derived: Base {
                 override init() async { print("Derived") }
             }
-            """
+            """,
         ),
     ]
 
@@ -300,7 +300,7 @@ enum AsyncWithoutAwaitRuleExamples {
             func test() ↓async {
                 perform()
             }
-            """
+            """,
         ),
         Example(
             """
@@ -313,7 +313,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     qux()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -322,7 +322,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     await qux()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -330,7 +330,7 @@ enum AsyncWithoutAwaitRuleExamples {
               func foo() ↓async {}
               let bar = { await foo() }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -339,7 +339,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     func foo() ↓async {}
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -348,7 +348,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     foo()
                 }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -358,7 +358,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     let bar = { await foo() }
                 }
             }
-            """
+            """,
         ),
         Example("init() ↓async {}"),
         Example(
@@ -366,7 +366,7 @@ enum AsyncWithoutAwaitRuleExamples {
             init() ↓async {
                 func foo() ↓async {}
             }
-            """
+            """,
         ),
         Example(
             """
@@ -375,21 +375,21 @@ enum AsyncWithoutAwaitRuleExamples {
                     1.0
                 }
             }
-            """
+            """,
         ),
         Example(
             """
             func test() ↓async {
                 for foo in bar {}
             }
-            """
+            """,
         ),
         Example(
             """
             func test() ↓async {
                 while let foo = bar() {}
             }
-            """
+            """,
         ),
         Example("let x: () ↓async -> Void = { }"),
         Example("let x: () ↓async -> Void = { test() }"),
@@ -410,7 +410,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     qux()
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -423,7 +423,7 @@ enum AsyncWithoutAwaitRuleExamples {
                         qux()
                     }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -432,7 +432,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     await qux()
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -441,7 +441,7 @@ enum AsyncWithoutAwaitRuleExamples {
                         await qux()
                     }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -449,7 +449,7 @@ enum AsyncWithoutAwaitRuleExamples {
               func foo() ↓async {}
               let bar = { await foo() }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -457,7 +457,7 @@ enum AsyncWithoutAwaitRuleExamples {
                   func foo() {}
                   let bar = { await foo() }
                 }
-                """
+                """,
             ),
         Example(
             """
@@ -467,7 +467,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     let bar = { await foo() }
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -477,7 +477,7 @@ enum AsyncWithoutAwaitRuleExamples {
                         let bar = { await foo() }
                     }
                 }
-                """
+                """,
             ),
         Example("init() ↓async {}"): Example("init() {}"),
         Example(
@@ -487,7 +487,7 @@ enum AsyncWithoutAwaitRuleExamples {
                     foo()
                 }
             }
-            """
+            """,
         ):
             Example(
                 """
@@ -496,7 +496,7 @@ enum AsyncWithoutAwaitRuleExamples {
                         foo()
                     }
                 }
-                """
+                """,
             ),
     ]
 }

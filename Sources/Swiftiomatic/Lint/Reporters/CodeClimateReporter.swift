@@ -2,7 +2,7 @@ import Foundation
 import SourceKittenFramework
 
 #if canImport(CryptoSwift)
-    import CryptoSwift
+import CryptoSwift
 #endif
 
 /// Reports violations as a JSON array in Code Climate format.
@@ -42,7 +42,7 @@ struct CodeClimateReporter: Reporter {
         let fingerprintLocation = Location(
             file: violation.location.relativeFile,
             line: violation.location.line,
-            character: violation.location.character
+            character: violation.location.character,
         )
 
         return [

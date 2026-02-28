@@ -10,7 +10,7 @@ struct ImplicitReturnRule: Rule {
         kind: .style,
         nonTriggeringExamples: ImplicitReturnRuleExamples.nonTriggeringExamples,
         triggeringExamples: ImplicitReturnRuleExamples.triggeringExamples,
-        corrections: ImplicitReturnRuleExamples.corrections
+        corrections: ImplicitReturnRuleExamples.corrections,
     )
 }
 
@@ -86,8 +86,8 @@ private extension ImplicitReturnRule {
                     start: returnKeyword.positionAfterSkippingLeadingTrivia,
                     end: returnKeyword.endPositionBeforeTrailingTrivia
                         .advanced(by: returnStmt.expression == nil ? 0 : 1),
-                    replacement: ""
-                )
+                    replacement: "",
+                ),
             )
         }
     }

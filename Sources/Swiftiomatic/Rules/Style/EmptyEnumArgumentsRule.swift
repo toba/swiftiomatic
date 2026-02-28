@@ -4,14 +4,14 @@ private func wrapInSwitch(
     variable: String = "foo",
     _ str: String,
     file: StaticString = #filePath,
-    line: UInt = #line
+    line: UInt = #line,
 ) -> Example {
     Example(
         """
         switch \(variable) {
         \(str): break
         }
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }
 
@@ -26,7 +26,7 @@ private func wrapInFunc(_ str: String, file: StaticString = #filePath, line: UIn
                 break
             }
         }
-        """, file: file, line: line
+        """, file: file, line: line,
     )
 }
 
@@ -61,7 +61,7 @@ struct EmptyEnumArgumentsRule: Rule {
                 } else {
                     UIApplication.shared.open(self.appInstaller.url)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -69,7 +69,7 @@ struct EmptyEnumArgumentsRule: Rule {
                     guard case .settings(.notifications(_, nil)) = nav else { return false }
                     return true
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -91,7 +91,7 @@ struct EmptyEnumArgumentsRule: Rule {
                 } else {
                     UIApplication.shared.open(self.appInstaller.url)
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -99,14 +99,16 @@ struct EmptyEnumArgumentsRule: Rule {
                     guard case .settings(.notifications↓(_, _)) = nav else { return false }
                     return true
                 }
-                """
+                """,
             ),
         ],
         corrections: [
             wrapInSwitch("case .bar↓(_)"): wrapInSwitch("case .bar"),
             wrapInSwitch("case .bar↓()"): wrapInSwitch("case .bar"),
             wrapInSwitch("case .bar↓(_), .bar2↓(_)"): wrapInSwitch("case .bar, .bar2"),
-            wrapInSwitch("case .bar↓() where method() > 2"): wrapInSwitch("case .bar where method() > 2"),
+            wrapInSwitch("case .bar↓() where method() > 2"): wrapInSwitch(
+                "case .bar where method() > 2",
+            ),
             wrapInSwitch("case .bar(.baz↓())"): wrapInSwitch("case .bar(.baz)"),
             wrapInSwitch("case .bar(.baz↓(_))"): wrapInSwitch("case .bar(.baz)"),
             wrapInFunc("case .bar↓(_)"): wrapInFunc("case .bar"),
@@ -118,7 +120,7 @@ struct EmptyEnumArgumentsRule: Rule {
                     guard case .settings(.notifications↓(_, _)) = nav else { return false }
                     return true
                 }
-                """
+                """,
             ):
                 Example(
                     """
@@ -126,9 +128,9 @@ struct EmptyEnumArgumentsRule: Rule {
                         guard case .settings(.notifications) = nav else { return false }
                         return true
                     }
-                    """
+                    """,
                 ),
-        ]
+        ],
     )
 }
 
@@ -145,13 +147,17 @@ extension EmptyEnumArgumentsRule: SwiftSyntaxCorrectableRule {
 private extension EmptyEnumArgumentsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: SwitchCaseItemSyntax) {
-            if let violationPosition = node.pattern.emptyEnumArgumentsViolation(rewrite: false)?.position {
+            if let violationPosition = node.pattern.emptyEnumArgumentsViolation(rewrite: false)?
+                .position
+            {
                 violations.append(violationPosition)
             }
         }
 
         override func visitPost(_ node: MatchingPatternConditionSyntax) {
-            if let violationPosition = node.pattern.emptyEnumArgumentsViolation(rewrite: false)?.position {
+            if let violationPosition = node.pattern.emptyEnumArgumentsViolation(rewrite: false)?
+                .position
+            {
                 violations.append(violationPosition)
             }
         }
@@ -159,15 +165,19 @@ private extension EmptyEnumArgumentsRule {
 
     final class Rewriter: ViolationsSyntaxRewriter<ConfigurationType> {
         override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
-            guard let (_, newPattern) = node.pattern.emptyEnumArgumentsViolation(rewrite: true) else {
+            guard let (_, newPattern) = node.pattern.emptyEnumArgumentsViolation(rewrite: true)
+            else {
                 return super.visit(node)
             }
             numberOfCorrections += 1
             return super.visit(node.with(\.pattern, newPattern))
         }
 
-        override func visit(_ node: MatchingPatternConditionSyntax) -> MatchingPatternConditionSyntax {
-            guard let (_, newPattern) = node.pattern.emptyEnumArgumentsViolation(rewrite: true) else {
+        override func visit(_ node: MatchingPatternConditionSyntax)
+            -> MatchingPatternConditionSyntax
+        {
+            guard let (_, newPattern) = node.pattern.emptyEnumArgumentsViolation(rewrite: true)
+            else {
                 return super.visit(node)
             }
             numberOfCorrections += 1
@@ -178,7 +188,7 @@ private extension EmptyEnumArgumentsRule {
 
 private extension PatternSyntax {
     func emptyEnumArgumentsViolation(rewrite: Bool) -> (
-        position: AbsolutePosition, pattern: PatternSyntax
+        position: AbsolutePosition, pattern: PatternSyntax,
     )? {
         guard
             var pattern = `as`(ExpressionPatternSyntax.self),

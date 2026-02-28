@@ -13,7 +13,7 @@ struct MultilineCallArgumentsConfiguration: SeverityBasedRuleConfiguration {
         guard maxNumberOfSingleLineParameters >= 1 else {
             throw Issue.inconsistentConfiguration(
                 ruleID: Parent.identifier,
-                message: "Option '\($maxNumberOfSingleLineParameters.key)' should be >= 1."
+                message: "Option '\($maxNumberOfSingleLineParameters.key)' should be >= 1.",
             )
         }
 
@@ -23,7 +23,7 @@ struct MultilineCallArgumentsConfiguration: SeverityBasedRuleConfiguration {
                 message: """
                 Option '\($maxNumberOfSingleLineParameters.key)' has no effect when \
                 '\($allowsSingleLine.key)' is false.
-                """
+                """,
             )
         }
     }

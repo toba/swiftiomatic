@@ -29,7 +29,7 @@ struct NimbleOperatorRule: Rule {
                     expect(value).to(equal(expectedValue), description: "Failed")
                     return Bar(value: ())
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -50,13 +50,13 @@ struct NimbleOperatorRule: Rule {
         ],
         corrections: [
             Example("↓expect(seagull.squawk).toNot(equal(\"Hi\"))"): Example(
-                "expect(seagull.squawk) != \"Hi\""
+                "expect(seagull.squawk) != \"Hi\"",
             ),
             Example("↓expect(\"Hi!\").to(equal(\"Hi!\"))"): Example("expect(\"Hi!\") == \"Hi!\""),
             Example("↓expect(12).toNot(equal(10))"): Example("expect(12) != 10"),
             Example("↓expect(value1).to(equal(value2))"): Example("expect(value1) == value2"),
             Example("↓expect(   value1  ).to(equal(  value2.foo))"): Example(
-                "expect(   value1  ) == value2.foo"
+                "expect(   value1  ) == value2.foo",
             ),
             Example("↓expect(value1).to(equal(10))"): Example("expect(value1) == 10"),
             Example("↓expect(10).to(beGreaterThan(8))"): Example("expect(10) > 8"),
@@ -71,9 +71,9 @@ struct NimbleOperatorRule: Rule {
             Example("↓expect(value).to(beNil())"): Example("expect(value) == nil"),
             Example("↓expect(value).toNot(beNil())"): Example("expect(value) != nil"),
             Example("expect(10) > 2\n ↓expect(10).to(beGreaterThan(2))"): Example(
-                "expect(10) > 2\n expect(10) > 2"
+                "expect(10) > 2\n expect(10) > 2",
             ),
-        ]
+        ],
     )
 }
 
@@ -114,7 +114,7 @@ private extension NimbleOperatorRule {
                     expectation.baseExpr.with(\.trailingTrivia, .space),
                     operatorExpr.with(\.trailingTrivia, .space),
                     expectedValueExpr.with(\.trailingTrivia, node.trailingTrivia),
-                ].map(ExprSyntax.init)
+                ].map(ExprSyntax.init),
             )
             return super.visit(SequenceExprSyntax(elements: elements))
         }
@@ -130,15 +130,16 @@ private extension NimbleOperatorRule {
         "beLessThan": (to: "<", toNot: nil, .withArguments),
         "beLessThanOrEqualTo": (to: "<=", toNot: nil, .withArguments),
         "beTrue": (
-            to: "==", toNot: "!=", .nullary(analogueValue: BooleanLiteralExprSyntax(booleanLiteral: true))
+            to: "==", toNot: "!=",
+            .nullary(analogueValue: BooleanLiteralExprSyntax(booleanLiteral: true)),
         ),
         "beFalse": (
             to: "==", toNot: "!=",
-            .nullary(analogueValue: BooleanLiteralExprSyntax(booleanLiteral: false))
+            .nullary(analogueValue: BooleanLiteralExprSyntax(booleanLiteral: false)),
         ),
         "beNil": (
             to: "==", toNot: "!=",
-            .nullary(analogueValue: NilLiteralExprSyntax(nilKeyword: .keyword(.nil)))
+            .nullary(analogueValue: NilLiteralExprSyntax(nilKeyword: .keyword(.nil))),
         ),
     ]
 
@@ -168,7 +169,7 @@ private extension FunctionCallExprSyntax {
 
         let expected = predicateExpr.arguments.first?.expression
         return Expectation(
-            kind: kind, baseExpr: baseExpr, operatorExpr: operatorExpr, expected: expected
+            kind: kind, baseExpr: baseExpr, operatorExpr: operatorExpr, expected: expected,
         )
     }
 }
@@ -192,32 +193,32 @@ private struct Expectation {
 
         init?(rawValue: String) {
             switch rawValue {
-            case "to":
-                self = .positive
-            case "toNot", "notTo":
-                self = .negative
-            default:
-                return nil
+                case "to":
+                    self = .positive
+                case "toNot", "notTo":
+                    self = .negative
+                default:
+                    return nil
             }
         }
     }
 
     func expectedValueExpr(for predicate: PredicateDescription) -> ExprSyntax? {
         switch predicate.arity {
-        case .withArguments:
-            expected
-        case let .nullary(analogueValue):
-            ExprSyntax(analogueValue)
+            case .withArguments:
+                expected
+            case let .nullary(analogueValue):
+                ExprSyntax(analogueValue)
         }
     }
 
     func operatorExpr(for predicate: PredicateDescription) -> BinaryOperatorExprSyntax? {
         let operatorStr =
             switch kind {
-            case .negative:
-                predicate.toNot
-            case .positive:
-                predicate.to
+                case .negative:
+                    predicate.toNot
+                case .positive:
+                    predicate.to
             }
         return operatorStr.map(BinaryOperatorExprSyntax.init)
     }

@@ -9,11 +9,11 @@ extension Configuration {
 
     func merged(
         withChild childConfiguration: Configuration,
-        rootDirectory: String = ""
+        rootDirectory: String = "",
     ) -> Configuration {
         let mergedIncludedAndExcluded = mergedIncludedAndExcluded(
             with: childConfiguration,
-            rootDirectory: rootDirectory
+            rootDirectory: rootDirectory,
         )
 
         return Configuration(
@@ -30,13 +30,13 @@ extension Configuration {
             lenient: childConfiguration.lenient,
             baseline: childConfiguration.baseline,
             writeBaseline: childConfiguration.writeBaseline,
-            checkForUpdates: childConfiguration.checkForUpdates
+            checkForUpdates: childConfiguration.checkForUpdates,
         )
     }
 
     private func mergedIncludedAndExcluded(
         with childConfiguration: Configuration,
-        rootDirectory: String
+        rootDirectory: String,
     ) -> (includedPaths: [String], excludedPaths: [String]) {
         // Render paths relative to their respective root paths → makes them comparable
         let childConfigIncluded = childConfiguration.includedPaths.map {
@@ -64,12 +64,12 @@ extension Configuration {
         // Return paths relative to the provided root directory
         return (
             includedPaths: includedPaths.map { $0.path(relativeTo: rootDirectory) },
-            excludedPaths: excludedPaths.map { $0.path(relativeTo: rootDirectory) }
+            excludedPaths: excludedPaths.map { $0.path(relativeTo: rootDirectory) },
         )
     }
 
     private func mergedWarningTreshold(
-        with childConfiguration: Configuration
+        with childConfiguration: Configuration,
     ) -> Int? {
         if let parentWarningTreshold = warningThreshold {
             if let childWarningTreshold = childConfiguration.warningThreshold {
@@ -120,7 +120,7 @@ extension Configuration {
             // Ignore parent_config / child_config specifications of nested configs
             var childConfiguration = Configuration(
                 configurationFiles: [configurationSearchPath],
-                ignoreParentAndChildConfigs: true
+                ignoreParentAndChildConfigs: true,
             )
             childConfiguration.fileGraph = FileGraph(rootDirectory: directory)
             config = merged(withChild: childConfiguration, rootDirectory: rootDirectory)

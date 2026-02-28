@@ -15,7 +15,7 @@ struct StaticOperatorRule: Rule {
                   static func == (lhs: A, rhs: A) -> Bool {
                     return false
                   }
-                """
+                """,
             ),
             Example(
                 """
@@ -23,7 +23,7 @@ struct StaticOperatorRule: Rule {
                     static func == <T>(lhs: A<T>, rhs: A<T>) -> Bool {
                         return false
                     }
-                """
+                """,
             ),
             Example(
                 """
@@ -33,7 +33,7 @@ struct StaticOperatorRule: Rule {
                     return !zip(lhs, rhs).contains { !$0.0.isEqualTo($0.1) }
                   }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -49,7 +49,7 @@ struct StaticOperatorRule: Rule {
                     }
                   }
                 }
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -58,14 +58,14 @@ struct StaticOperatorRule: Rule {
                 ↓func == (lhs: A, rhs: A) -> Bool {
                   return false
                 }
-                """
+                """,
             ),
             Example(
                 """
                 ↓func == <T>(lhs: A<T>, rhs: A<T>) -> Bool {
                   return false
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -73,7 +73,7 @@ struct StaticOperatorRule: Rule {
                   if lhs.count != rhs.count { return false }
                   return !zip(lhs, rhs).contains { !$0.0.isEqualTo($0.1) }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -87,9 +87,9 @@ struct StaticOperatorRule: Rule {
                     return false
                   }
                 }
-                """
+                """,
             ),
-        ]
+        ],
     )
 }
 
@@ -122,10 +122,10 @@ private extension FunctionDeclSyntax {
 
     var isOperator: Bool {
         switch name.tokenKind {
-        case .binaryOperator:
-            return true
-        default:
-            return false
+            case .binaryOperator:
+                return true
+            default:
+                return false
         }
     }
 }

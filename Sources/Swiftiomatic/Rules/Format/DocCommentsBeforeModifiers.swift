@@ -1,20 +1,15 @@
-//
-//  DocCommentsBeforeModifiers.swift
-//  SwiftFormat
-//
-//  Created by Cal Stephens on 7/22/24.
-//  Copyright © 2024 Nick Lockwood. All rights reserved.
-//
-
 import Foundation
 
 extension FormatRule {
     static let docCommentsBeforeModifiers = FormatRule(
         help: "Place doc comments before any declaration modifiers or attributes.",
-        orderAfter: [.docComments]
+        orderAfter: [.docComments],
     ) { formatter in
         formatter.forEachToken(where: \.isDeclarationTypeKeyword) { keywordIndex, _ in
-            let startOfModifiers = formatter.startOfModifiers(at: keywordIndex, includingAttributes: true)
+            let startOfModifiers = formatter.startOfModifiers(
+                at: keywordIndex,
+                includingAttributes: true,
+            )
             guard startOfModifiers < keywordIndex else { return }
 
             var insertionPoint = startOfModifiers

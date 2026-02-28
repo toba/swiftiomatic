@@ -52,7 +52,7 @@ struct ClassDelegateProtocolRule: Rule {
             Example("↓protocol FooDelegate: Foo & Bar {}"),
             Example("↓protocol FooDelegate where Self: StringProtocol {}"),
             Example("↓protocol FooDelegate where Self: A & B {}"),
-        ]
+        ],
     )
 }
 
@@ -91,7 +91,9 @@ private extension ProtocolDeclSyntax {
     }
 
     func inheritsFromObjectOrDelegate() -> Bool {
-        if inheritanceClause?.inheritedTypes.contains(where: { $0.type.isObjectOrDelegate() }) == true {
+        if inheritanceClause?.inheritedTypes
+            .contains(where: { $0.type.isObjectOrDelegate() }) == true
+        {
             return true
         }
 
@@ -101,7 +103,8 @@ private extension ProtocolDeclSyntax {
 
         return requirementList.contains { requirement in
             guard
-                let conformanceRequirement = requirement.requirement.as(ConformanceRequirementSyntax.self),
+                let conformanceRequirement = requirement.requirement
+                .as(ConformanceRequirementSyntax.self),
                 let simpleLeftType = conformanceRequirement.leftType.as(IdentifierTypeSyntax.self),
                 simpleLeftType.typeName == "Self"
             else {

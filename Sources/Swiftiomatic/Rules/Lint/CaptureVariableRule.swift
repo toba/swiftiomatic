@@ -31,7 +31,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
                 }
 
                 closure()
-                """
+                """,
             ),
             Example(
                 """
@@ -52,7 +52,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
                     func test(_ completionHandler: @escaping (Int) -> Void) {
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -66,7 +66,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
                 closure()
                 j = 1
                 closure()
-                """
+                """,
             ),
             Example(
                 """
@@ -79,7 +79,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
                 closure()
                 j = 1
                 closure()
-                """
+                """,
             ),
         ],
         triggeringExamples: [
@@ -94,7 +94,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
                 closure()
                 j = 1
                 closure()
-                """
+                """,
             ),
             Example(
                 """
@@ -111,7 +111,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
                 closure()
                 c = C(1)
                 closure()
-                """
+                """,
             ),
             Example(
                 """
@@ -127,7 +127,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
                     func test(_ completionHandler: @escaping (Int) -> Void) {
                     }
                 }
-                """
+                """,
             ),
             Example(
                 """
@@ -148,7 +148,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
                 }
 
                 C.callTest()
-                """
+                """,
             ),
             Example(
                 """
@@ -164,10 +164,10 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
                     func test(_ completionHandler: @escaping (Int) -> Void) {
                     }
                 }
-                """
+                """,
             ),
         ],
-        requiresFileOnDisk: true
+        requiresFileOnDisk: true,
     )
 
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -179,7 +179,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
     func validate(
         file: SwiftLintFile,
         collectedInfo: [SwiftLintFile: Self.FileInfo],
-        compilerArguments: [String]
+        compilerArguments: [String],
     ) -> [StyleViolation] {
         file.captureListVariables(compilerArguments: compilerArguments)
             .filter { capturedVariable in
@@ -189,7 +189,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
                 StyleViolation(
                     ruleDescription: Self.description,
                     severity: configuration.severity,
-                    location: Location(file: file, byteOffset: $0.offset)
+                    location: Location(file: file, byteOffset: $0.offset),
                 )
             }
     }
@@ -205,7 +205,7 @@ private extension SwiftLintFile {
     }
 
     static func captureListVariableOffsets(parentEntity: SourceKittenDictionary) -> Set<
-        ByteCount
+        ByteCount,
     > {
         parentEntity.substructure
             .reversed()
@@ -232,10 +232,12 @@ private extension SwiftLintFile {
     }
 
     func captureListVariables(compilerArguments: [String]) -> Set<
-        CaptureVariableRule.Variable
+        CaptureVariableRule.Variable,
     > {
         let offsets = captureListVariableOffsets()
-        guard !offsets.isEmpty, let indexEntities = index(compilerArguments: compilerArguments) else {
+        guard !offsets.isEmpty,
+              let indexEntities = index(compilerArguments: compilerArguments)
+        else {
             return Set()
         }
 
@@ -251,7 +253,7 @@ private extension SwiftLintFile {
                 else { return nil }
                 return offsets.contains(offset)
                     ? CaptureVariableRule.Variable(usr: usr, offset: offset) : nil
-            }
+            },
         )
     }
 
@@ -260,7 +262,7 @@ private extension SwiftLintFile {
     }
 
     static func declaredVariableOffsets(parentStructure: SourceKittenDictionary) -> Set<
-        ByteCount
+        ByteCount,
     > {
         Set(
             parentStructure.traverseDepthFirst {
@@ -275,13 +277,15 @@ private extension SwiftLintFile {
                     let nameOffset = $0.nameOffset
                 else { return [] }
                 return [nameOffset]
-            }
+            },
         )
     }
 
     func declaredVariables(compilerArguments: [String]) -> Set<CaptureVariableRule.USR> {
         let offsets = declaredVariableOffsets()
-        guard !offsets.isEmpty, let indexEntities = index(compilerArguments: compilerArguments) else {
+        guard !offsets.isEmpty,
+              let indexEntities = index(compilerArguments: compilerArguments)
+        else {
             return Set()
         }
 
@@ -296,7 +300,7 @@ private extension SwiftLintFile {
                     offsets.contains(offset)
                 else { return nil }
                 return entity.usr
-            }
+            },
         )
     }
 
