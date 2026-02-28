@@ -9,7 +9,7 @@ import Synchronization
 
 private typealias FileCacheKey = UUID
 
-private let responseCache = Cache { file -> [String: any SourceKitRepresentable]? in
+private let responseCache = Cache { file -> [String: SourceKitValue]? in
     do {
         return try Request.editorOpen(file: file.file).sendIfNotDisabled()
     } catch let error as Request.Error {
@@ -46,7 +46,7 @@ private let commandsCache = Cache { file -> [Command] in
         .walk(file: file, handler: \.commands)
 }
 
-private let syntaxMapCache = Cache { file in
+private let syntaxMapCache = Cache { file -> SwiftLintSyntaxMap? in
     responseCache.get(file).map { SwiftLintSyntaxMap(value: SyntaxMap(sourceKitResponse: $0)) }
 }
 
@@ -168,7 +168,7 @@ extension SwiftLintFile {
         guard let syntaxMap = syntaxMapCache.get(self) else {
             if let handler = assertHandler {
                 handler()
-                return SwiftLintSyntaxMap(value: SyntaxMap(data: []))
+                return SwiftLintSyntaxMap(value: SyntaxMap(tokens: []))
             }
             queuedFatalError("Never call this for file that sourcekitd fails.")
         }

@@ -1,30 +1,7 @@
 import Foundation
-import Synchronization
-
-struct SourceKitDisabledError: Swift.Error, CustomStringConvertible {
-    let description = "SourceKit is disabled by configuration."
-}
 
 extension Request {
-    private static let _disableSourceKitOverride = Mutex(false)
-
-    static var disableSourceKitOverride: Bool {
-        get { _disableSourceKitOverride.withLock { $0 } }
-        set { _disableSourceKitOverride.withLock { $0 = newValue } }
-    }
-
-    static var disableSourceKit: Bool {
-        #if SWIFTLINT_DISABLE_SOURCEKIT
-        // Compile-time
-        true
-        #else
-        // Runtime
-        ProcessInfo.processInfo.environment["SWIFTLINT_DISABLE_SOURCEKIT"] != nil
-            || disableSourceKitOverride
-        #endif
-    }
-
-    func sendIfNotDisabled() throws -> [String: any SourceKitRepresentable] {
+    func sendIfNotDisabled() throws -> [String: SourceKitValue] {
         // Skip safety checks if explicitly allowed (e.g., for testing or specific operations)
         if !CurrentRule.allowSourceKitRequestWithoutRule {
             // Check if we have a rule context
@@ -69,9 +46,6 @@ extension Request {
             }
         }
 
-        guard !Self.disableSourceKit else {
-            throw SourceKitDisabledError()
-        }
         return try send()
     }
 

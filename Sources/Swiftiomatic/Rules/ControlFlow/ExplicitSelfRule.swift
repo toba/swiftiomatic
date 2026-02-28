@@ -44,7 +44,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
             return []
         }
 
-        let allCursorInfo: [[String: any SourceKitRepresentable]]
+        let allCursorInfo: [[String: SourceKitValue]]
         do {
             let byteOffsets = try binaryOffsets(file: file, compilerArguments: compilerArguments)
             allCursorInfo = try file.allCursorInfo(
@@ -57,7 +57,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
         }
 
         let cursorsMissingExplicitSelf = allCursorInfo.filter { cursorInfo in
-            guard let kindString = cursorInfo["key.kind"] as? String else { return false }
+            guard let kindString = cursorInfo["key.kind"]?.stringValue else { return false }
             return kindsToFind.contains(kindString)
         }
 
@@ -68,7 +68,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
         let contents = file.stringView
 
         return cursorsMissingExplicitSelf.compactMap { cursorInfo in
-            guard let byteOffset = (cursorInfo["swiftlint.offset"] as? Int64)
+            guard let byteOffset = cursorInfo["swiftlint.offset"]?.int64Value
                 .flatMap(ByteCount.init)
             else {
                 Issue.genericWarning("Cannot convert offsets in '\(Self.identifier)' rule.").print()
@@ -89,7 +89,7 @@ extension SwiftLintFile {
     fileprivate func allCursorInfo(
         compilerArguments: [String], atByteOffsets byteOffsets: [ByteCount],
     ) throws
-        -> [[String: any SourceKitRepresentable]]
+        -> [[String: SourceKitValue]]
     {
         try byteOffsets.compactMap { offset in
             if isExplicitAccess(at: offset) { return nil }
@@ -114,7 +114,7 @@ extension SwiftLintFile {
                 }
             }
 
-            cursorInfo["swiftlint.offset"] = Int64(offset.value) - prefixLength
+            cursorInfo["swiftlint.offset"] = .int64(Int64(offset.value) - prefixLength)
             return cursorInfo
         }
     }
@@ -125,11 +125,11 @@ extension SwiftLintFile {
 }
 
 private extension StringView {
-    func recursiveByteOffsets(_ dict: [String: Any]) -> [ByteCount] {
+    func recursiveByteOffsets(_ dict: [String: SourceKitValue]) -> [ByteCount] {
         let cur: [ByteCount]
-        if let line = dict["key.line"] as? Int64,
-           let column = dict["key.column"] as? Int64,
-           let kindString = dict["key.kind"] as? String,
+        if let line = dict["key.line"]?.int64Value,
+           let column = dict["key.column"]?.int64Value,
+           let kindString = dict["key.kind"]?.stringValue,
            kindsToFind.contains(kindString),
            let offset = byteOffset(forLine: line, bytePosition: column)
         {
@@ -137,8 +137,8 @@ private extension StringView {
         } else {
             cur = []
         }
-        if let entities = dict["key.entities"] as? [[String: Any]] {
-            return entities.flatMap(recursiveByteOffsets) + cur
+        if let entities = dict["key.entities"]?.arrayValue {
+            return entities.compactMap(\.dictionaryValue).flatMap(recursiveByteOffsets) + cur
         }
         return cur
     }

@@ -1,5 +1,3 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-
 /// Swift declaration kinds.
 enum SwiftDeclarationKind: String, CaseIterable {
     case `associatedtype` = "source.lang.swift.decl.associatedtype"

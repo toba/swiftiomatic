@@ -29,7 +29,74 @@ extension ConcurrencyModernizationRule: SwiftSyntaxRule {
 
 extension ConcurrencyModernizationRule: OptInRule {}
 
+extension ConcurrencyModernizationRule: AsyncEnrichableRule {
+    func enrichAsync(
+        file: SwiftLintFile,
+        typeResolver: any TypeResolver,
+    ) async -> [StyleViolation] {
+        guard let filePath = file.path else { return [] }
+
+        // Find DispatchQueue.*.async calls and verify via SourceKit
+        let collector = DispatchQueueCallCollector(viewMode: .sourceAccurate)
+        collector.walk(file.syntaxTree)
+
+        var violations: [StyleViolation] = []
+
+        for query in collector.queries {
+            guard let resolved = await typeResolver.resolveType(
+                inFile: filePath, offset: query.offset,
+            ) else { continue }
+
+            if resolved.moduleName == "Dispatch"
+                || resolved.typeName.hasPrefix("Dispatch.DispatchQueue")
+                || resolved.typeName == "DispatchQueue"
+            {
+                // Confirmed DispatchQueue — emit with high confidence
+                violations.append(
+                    StyleViolation(
+                        ruleDescription: Self.description,
+                        severity: configuration.severity,
+                        location: Location(file: filePath, line: query.line, character: query.column),
+                        reason: "DispatchQueue.async can be replaced with structured concurrency",
+                        confidence: .high,
+                        suggestion: "Use Task { @MainActor in ... } or async function",
+                    ),
+                )
+            }
+        }
+
+        return violations
+    }
+}
+
 private extension ConcurrencyModernizationRule {
+    struct DispatchQueueQuery {
+        let offset: Int
+        let line: Int
+        let column: Int
+    }
+
+    final class DispatchQueueCallCollector: SyntaxVisitor {
+        var queries: [DispatchQueueQuery] = []
+
+        override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+            let callee = node.calledExpression.trimmedDescription
+            if ConcurrencyDetectionHelpers.isDispatchQueueAsync(callee) {
+                let loc = node.startLocation(
+                    converter: .init(fileName: "", tree: node.root),
+                )
+                queries.append(
+                    DispatchQueueQuery(
+                        offset: node.calledExpression.positionAfterSkippingLeadingTrivia.utf8Offset,
+                        line: loc.line,
+                        column: loc.column,
+                    ),
+                )
+            }
+            return .visitChildren
+        }
+    }
+
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionDeclSyntax) {
             for param in node.signature.parameterClause.parameters {

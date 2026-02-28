@@ -206,7 +206,7 @@ private extension SwiftLintFile {
         // Skip `static var allTests` members since those are used for Linux test discovery.
         if kind == .varStatic, indexEntity.name == "allTests" {
             let allTestCandidates = indexEntity.traverseEntitiesDepthFirst { _, subEntity -> Bool in
-                subEntity.value["key.is_test_candidate"] as? Bool == true
+                subEntity.value["key.is_test_candidate"]?.boolValue == true
             }
 
             if allTestCandidates.contains(true) {
@@ -262,7 +262,7 @@ private extension SwiftLintFile {
             || indexEntity.shouldSkipRelated(relatedUSRsToSkip: relatedUSRsToSkip)
             || indexEntity.enclosedSwiftAttributes
             .contains(where: declarationAttributesToSkip.contains)
-            || indexEntity.isImplicit || indexEntity.value["key.is_test_candidate"] as? Bool == true
+            || indexEntity.isImplicit || indexEntity.value["key.is_test_candidate"]?.boolValue == true
             || indexEntity.shouldSkipResultBuilder()
         {
             return true
@@ -298,15 +298,15 @@ private extension SwiftLintFile {
 
 private extension SourceKitDictionary {
     var usr: String? {
-        value["key.usr"] as? String
+        value["key.usr"]?.stringValue
     }
 
     var annotatedDeclaration: String? {
-        value["key.annotated_decl"] as? String
+        value["key.annotated_decl"]?.stringValue
     }
 
     var isImplicit: Bool {
-        value["key.is_implicit"] as? Bool == true
+        value["key.is_implicit"]?.boolValue == true
     }
 
     func propertyAtOffset<T>(_ offset: ByteCount, property: KeyPath<Self, T?>) -> T? {
@@ -325,8 +325,8 @@ private extension SourceKitDictionary {
     }
 
     func shouldSkipRelated(relatedUSRsToSkip: Set<String>) -> Bool {
-        (value["key.related"] as? [[String: any SourceKitRepresentable]])?
-            .compactMap { SourceKitDictionary($0).usr }
+        value["key.related"]?.arrayValue?
+            .compactMap { $0.dictionaryValue.flatMap { SourceKitDictionary($0).usr } }
             .contains(where: relatedUSRsToSkip.contains) == true
     }
 

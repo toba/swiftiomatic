@@ -1,11 +1,11 @@
 ---
 # dz8-axs
 title: 'Organize rules: merge Check→Rule + rebalance folders'
-status: ready
+status: completed
 type: epic
 priority: normal
 created_at: 2026-02-28T16:42:39Z
-updated_at: 2026-02-28T17:04:58Z
+updated_at: 2026-02-28T17:53:21Z
 ---
 
 ## Problem

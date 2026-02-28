@@ -1,10 +1,11 @@
 ---
 # owt-7ha
 title: Remove DyldWarningWorkaround C target
-status: ready
+status: completed
 type: task
+priority: normal
 created_at: 2026-02-28T16:35:35Z
-updated_at: 2026-02-28T16:35:35Z
+updated_at: 2026-02-28T18:01:11Z
 ---
 
 ## Context
@@ -31,8 +32,12 @@ DyldWarningWorkaround is a vendored C target (from keith/objc_dupclass) that sil
 
 ## Tasks
 
-- [ ] Remove `DyldWarningWorkaround` target from Package.swift
-- [ ] Remove dependency on `DyldWarningWorkaround` from Swiftiomatic executable target
-- [ ] Delete `Sources/DyldWarningWorkaround/` directory
-- [ ] Build and verify no compilation errors
-- [ ] Run tests to confirm no regressions
+- [x] Remove `DyldWarningWorkaround` target from Package.swift
+- [x] Remove dependency on `DyldWarningWorkaround` from Swiftiomatic executable target
+- [x] Delete `Sources/DyldWarningWorkaround/` directory
+- [x] Build and verify no compilation errors — skipped per user
+- [x] Run tests to confirm no regressions — skipped per user
+
+## Summary of Changes
+
+Removed the DyldWarningWorkaround C target: deleted the target definition and dependency from Package.swift, and deleted the `Sources/DyldWarningWorkaround/` directory (DyldWarningWorkaround.c and include/objc_dupclass.h).

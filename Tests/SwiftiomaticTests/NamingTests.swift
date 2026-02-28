@@ -1,10 +1,8 @@
 import Testing
 import Foundation
-import SwiftParser
-import SwiftSyntax
 @testable import Swiftiomatic
 
-@Suite("NamingHeuristicsCheck")
+@Suite("NamingHeuristicsRule")
 struct NamingTests {
     let fixturePath: String = {
         let thisFile = #filePath
@@ -13,26 +11,24 @@ struct NamingTests {
     }()
 
     @Test func detectsBoolNotReadingAsAssertion() throws {
-        let source = try String(contentsOfFile: fixturePath, encoding: .utf8)
-        let tree = Parser.parse(source: source)
-        let check = NamingHeuristicsCheck(filePath: fixturePath)
-        check.walk(tree)
+        let file = SwiftLintFile(path: fixturePath)!
+        let rule = NamingHeuristicsRule()
+        let violations = rule.validate(file: file)
 
-        let boolFindings = check.findings.filter { $0.message.contains("assertion") }
+        let boolFindings = violations.filter { $0.reason.contains("assertion") }
         // Should flag 'enabled' but not 'isEnabled', 'hasError', 'canEdit'
-        #expect(boolFindings.contains { $0.message.contains("'enabled'") })
-        #expect(!boolFindings.contains { $0.message.contains("'isEnabled'") })
+        #expect(boolFindings.contains { $0.reason.contains("'enabled'") })
+        #expect(!boolFindings.contains { $0.reason.contains("'isEnabled'") })
     }
 
     @Test func detectsFactoryMethodWithoutMakePrefix() throws {
-        let source = try String(contentsOfFile: fixturePath, encoding: .utf8)
-        let tree = Parser.parse(source: source)
-        let check = NamingHeuristicsCheck(filePath: fixturePath)
-        check.walk(tree)
+        let file = SwiftLintFile(path: fixturePath)!
+        let rule = NamingHeuristicsRule()
+        let violations = rule.validate(file: file)
 
-        let factoryFindings = check.findings.filter { $0.message.contains("Factory") }
-        #expect(factoryFindings.contains { $0.message.contains("createWidget") })
-        #expect(factoryFindings.contains { $0.message.contains("newInstance") })
-        #expect(!factoryFindings.contains { $0.message.contains("makeWidget") })
+        let factoryFindings = violations.filter { $0.reason.contains("Factory") }
+        #expect(factoryFindings.contains { $0.reason.contains("createWidget") })
+        #expect(factoryFindings.contains { $0.reason.contains("newInstance") })
+        #expect(!factoryFindings.contains { $0.reason.contains("makeWidget") })
     }
 }

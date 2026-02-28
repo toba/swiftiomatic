@@ -1,101 +1,130 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-// Pruned to cases actually used by Swiftiomatic.
-
 import Dispatch
 import Foundation
 import SourceKitC
 
-protocol SourceKitRepresentable {
-    func isEqualTo(_ rhs: SourceKitRepresentable) -> Bool
-}
-extension Array: SourceKitRepresentable {}
-extension Dictionary: SourceKitRepresentable {}
-extension String: SourceKitRepresentable {}
-extension Int64: SourceKitRepresentable {}
-extension Bool: SourceKitRepresentable {}
-extension Data: SourceKitRepresentable {}
+// MARK: - SourceKitValue
 
-extension SourceKitRepresentable {
-    func isEqualTo(_ rhs: SourceKitRepresentable) -> Bool {
+/// Type-safe representation of values returned by SourceKit responses.
+/// Replaces the legacy `SourceKitRepresentable` protocol (effectively `Any`).
+enum SourceKitValue: Sendable, Equatable, CustomStringConvertible {
+    case string(String)
+    case int64(Int64)
+    case bool(Bool)
+    case data(Data)
+    case array([SourceKitValue])
+    case dictionary([String: SourceKitValue])
+
+    // MARK: Typed Accessors
+
+    var stringValue: String? {
+        if case let .string(v) = self { return v }
+        return nil
+    }
+
+    var int64Value: Int64? {
+        if case let .int64(v) = self { return v }
+        return nil
+    }
+
+    var boolValue: Bool? {
+        if case let .bool(v) = self { return v }
+        return nil
+    }
+
+    var dataValue: Data? {
+        if case let .data(v) = self { return v }
+        return nil
+    }
+
+    var arrayValue: [SourceKitValue]? {
+        if case let .array(v) = self { return v }
+        return nil
+    }
+
+    var dictionaryValue: [String: SourceKitValue]? {
+        if case let .dictionary(v) = self { return v }
+        return nil
+    }
+
+    subscript(key: String) -> SourceKitValue? {
+        dictionaryValue?[key]
+    }
+
+    var description: String {
         switch self {
-        case let lhs as [SourceKitRepresentable]:
-            for (idx, value) in lhs.enumerated() {
-                if let rhs = rhs as? [SourceKitRepresentable], rhs[idx].isEqualTo(value) {
-                    continue
-                }
-                return false
-            }
-            return true
-        case let lhs as [String: SourceKitRepresentable]:
-            for (key, value) in lhs {
-                if let rhs = rhs as? [String: SourceKitRepresentable],
-                   let rhsValue = rhs[key], rhsValue.isEqualTo(value) {
-                    continue
-                }
-                return false
-            }
-            return true
-        case let lhs as String:
-            return lhs == rhs as? String
-        case let lhs as Int64:
-            return lhs == rhs as? Int64
-        case let lhs as Bool:
-            return lhs == rhs as? Bool
-        default:
-            fatalError("Should never happen because we've checked all SourceKitRepresentable types")
+            case let .string(v): return v
+            case let .int64(v): return String(v)
+            case let .bool(v): return String(v)
+            case let .data(v): return "Data(\(v.count) bytes)"
+            case let .array(v): return "\(v)"
+            case let .dictionary(v): return "\(v)"
         }
     }
 }
 
+// MARK: - fromSourceKit
+
 // sm:disable:next cyclomatic_complexity
-private func fromSourceKit(_ sourcekitObject: sourcekitd_variant_t) -> SourceKitRepresentable? {
+private func fromSourceKit(_ sourcekitObject: sourcekitd_variant_t) -> SourceKitValue? {
     switch sourcekitd_variant_get_type(sourcekitObject) {
-    case SOURCEKITD_VARIANT_TYPE_ARRAY:
-        var array = [SourceKitRepresentable]()
-        _ = withUnsafeMutablePointer(to: &array) { arrayPtr in
-            sourcekitd_variant_array_apply_f(sourcekitObject, { index, value, context in
-                if let value = fromSourceKit(value), let context = context {
-                    let localArray = context.assumingMemoryBound(to: [SourceKitRepresentable].self)
-                    localArray.pointee.insert(value, at: Int(index))
-                }
-                return true
-            }, arrayPtr)
-        }
-        return array
-    case SOURCEKITD_VARIANT_TYPE_DICTIONARY:
-        var dict = [String: SourceKitRepresentable]()
-        _ = withUnsafeMutablePointer(to: &dict) { dictPtr in
-            sourcekitd_variant_dictionary_apply_f(sourcekitObject, { key, value, context in
-                if let key = String(sourceKitUID: key!), let value = fromSourceKit(value), let context = context {
-                    let localDict = context.assumingMemoryBound(to: [String: SourceKitRepresentable].self)
-                    localDict.pointee[key] = value
-                }
-                return true
-            }, dictPtr)
-        }
-        return dict
-    case SOURCEKITD_VARIANT_TYPE_STRING:
-        return String(cString: sourcekitd_variant_string_get_ptr(sourcekitObject)!)
-    case SOURCEKITD_VARIANT_TYPE_INT64:
-        return sourcekitd_variant_int64_get_value(sourcekitObject)
-    case SOURCEKITD_VARIANT_TYPE_BOOL:
-        return sourcekitd_variant_bool_get_value(sourcekitObject)
-    case SOURCEKITD_VARIANT_TYPE_UID:
-        return String(sourceKitUID: sourcekitd_variant_uid_get_value(sourcekitObject)!)
-    case SOURCEKITD_VARIANT_TYPE_NULL:
-        return nil
-    case SOURCEKITD_VARIANT_TYPE_DATA:
-        return sourcekitd_variant_data_get_ptr(sourcekitObject).map { ptr in
-            Data(bytes: ptr, count: sourcekitd_variant_data_get_size(sourcekitObject))
-        }
-    default:
-        fatalError("Should never happen because we've checked all SourceKitRepresentable types")
+        case SOURCEKITD_VARIANT_TYPE_ARRAY:
+            var array = [SourceKitValue]()
+            _ = withUnsafeMutablePointer(to: &array) { arrayPtr in
+                sourcekitd_variant_array_apply_f(
+                    sourcekitObject,
+                    { index, value, context in
+                        if let value = fromSourceKit(value), let context {
+                            let localArray = context.assumingMemoryBound(to: [SourceKitValue].self)
+                            localArray.pointee.insert(value, at: Int(index))
+                        }
+                        return true
+                    }, arrayPtr,
+                )
+            }
+            return .array(array)
+        case SOURCEKITD_VARIANT_TYPE_DICTIONARY:
+            var dict = [String: SourceKitValue]()
+            _ = withUnsafeMutablePointer(to: &dict) { dictPtr in
+                sourcekitd_variant_dictionary_apply_f(
+                    sourcekitObject,
+                    { key, value, context in
+                        if let key = String(sourceKitUID: key!), let value = fromSourceKit(value),
+                           let context
+                        {
+                            let localDict = context
+                                .assumingMemoryBound(to: [String: SourceKitValue].self)
+                            localDict.pointee[key] = value
+                        }
+                        return true
+                    }, dictPtr,
+                )
+            }
+            return .dictionary(dict)
+        case SOURCEKITD_VARIANT_TYPE_STRING:
+            return .string(String(cString: sourcekitd_variant_string_get_ptr(sourcekitObject)!))
+        case SOURCEKITD_VARIANT_TYPE_INT64:
+            return .int64(sourcekitd_variant_int64_get_value(sourcekitObject))
+        case SOURCEKITD_VARIANT_TYPE_BOOL:
+            return .bool(sourcekitd_variant_bool_get_value(sourcekitObject))
+        case SOURCEKITD_VARIANT_TYPE_UID:
+            return String(sourceKitUID: sourcekitd_variant_uid_get_value(sourcekitObject)!).map {
+                .string($0)
+            }
+        case SOURCEKITD_VARIANT_TYPE_NULL:
+            return nil
+        case SOURCEKITD_VARIANT_TYPE_DATA:
+            return sourcekitd_variant_data_get_ptr(sourcekitObject).map { ptr in
+                .data(Data(bytes: ptr, count: sourcekitd_variant_data_get_size(sourcekitObject)))
+            }
+        default:
+            fatalError("Unknown SourceKit variant type")
     }
 }
 
 private let initializeSourceKit: Void = {
     sourcekitd_initialize()
 }()
+
 private let initializeSourceKitFailable: Void = {
     initializeSourceKit
     sourcekitd_set_notification_handler { response in
@@ -108,10 +137,15 @@ private let initializeSourceKitFailable: Void = {
     }
 }()
 
-nonisolated(unsafe) private var sourceKitWaitingRestoredSemaphore = DispatchSemaphore(value: 0)
+private nonisolated(unsafe) var sourceKitWaitingRestoredSemaphore = DispatchSemaphore(value: 0)
 
-private extension String {
-    init?(sourceKitUID: sourcekitd_uid_t) {
+/// Serializes sourcekitd requests to avoid SIGSEGV crashes under parallel load.
+/// sourcekitd runs as a single XPC service process and is not resilient to
+/// unbounded concurrent requests (especially index/cursorinfo).
+private let sourceKitRequestGate = DispatchSemaphore(value: 1)
+
+extension String {
+    fileprivate init?(sourceKitUID: sourcekitd_uid_t) {
         let bytes = sourcekitd_uid_get_string_ptr(sourceKitUID)
         self = String(cString: bytes!)
     }
@@ -124,7 +158,9 @@ enum Request {
     /// A `cursorinfo` request for an offset in the given file, using the `arguments` given.
     case cursorInfo(file: String, offset: ByteCount, arguments: [String])
     /// A `cursorinfo` request for a USR in the given file, using the `arguments` given.
-    case cursorInfoUSR(file: String, usr: String, arguments: [String], cancelOnSubsequentRequest: Bool)
+    case cursorInfoUSR(
+        file: String, usr: String, arguments: [String], cancelOnSubsequentRequest: Bool,
+    )
     /// A custom request by passing in the `SourceKitObject` directly.
     case customRequest(request: SourceKitObject)
     /// A request generated by sourcekit using the yaml representation.
@@ -132,59 +168,61 @@ enum Request {
     /// Index
     case index(file: String, arguments: [String])
 
-    fileprivate var sourcekitObject: SourceKitObject {
+    private var sourcekitObject: SourceKitObject {
         switch self {
-        case let .editorOpen(file):
-            if let path = file.path {
+            case let .editorOpen(file):
+                if let path = file.path {
+                    return [
+                        "key.request": UID("source.request.editor.open"),
+                        "key.name": path,
+                        "key.sourcefile": path,
+                    ]
+                } else {
+                    return [
+                        "key.request": UID("source.request.editor.open"),
+                        "key.name": String(abs(file.contents.hash)),
+                        "key.sourcetext": file.contents,
+                    ]
+                }
+            case let .cursorInfo(file, offset, arguments):
                 return [
-                    "key.request": UID("source.request.editor.open"),
-                    "key.name": path,
-                    "key.sourcefile": path,
+                    "key.request": UID("source.request.cursorinfo"),
+                    "key.name": file,
+                    "key.sourcefile": file,
+                    "key.offset": Int64(offset.value),
+                    "key.compilerargs": arguments,
                 ]
-            } else {
+            case let .cursorInfoUSR(file, usr, arguments, cancelOnSubsequentRequest):
                 return [
-                    "key.request": UID("source.request.editor.open"),
-                    "key.name": String(abs(file.contents.hash)),
-                    "key.sourcetext": file.contents,
+                    "key.request": UID("source.request.cursorinfo"),
+                    "key.sourcefile": file,
+                    "key.usr": usr,
+                    "key.compilerargs": arguments,
+                    "key.cancel_on_subsequent_request": cancelOnSubsequentRequest ? 1 : 0,
                 ]
-            }
-        case let .cursorInfo(file, offset, arguments):
-            return [
-                "key.request": UID("source.request.cursorinfo"),
-                "key.name": file,
-                "key.sourcefile": file,
-                "key.offset": Int64(offset.value),
-                "key.compilerargs": arguments,
-            ]
-        case let .cursorInfoUSR(file, usr, arguments, cancelOnSubsequentRequest):
-            return [
-                "key.request": UID("source.request.cursorinfo"),
-                "key.sourcefile": file,
-                "key.usr": usr,
-                "key.compilerargs": arguments,
-                "key.cancel_on_subsequent_request": cancelOnSubsequentRequest ? 1 : 0,
-            ]
-        case let .customRequest(request):
-            return request
-        case let .yamlRequest(yaml):
-            return SourceKitObject(yaml: yaml)
-        case let .index(file, arguments):
-            return [
-                "key.request": UID("source.request.indexsource"),
-                "key.sourcefile": file,
-                "key.compilerargs": arguments,
-            ]
+            case let .customRequest(request):
+                return request
+            case let .yamlRequest(yaml):
+                return SourceKitObject(yaml: yaml)
+            case let .index(file, arguments):
+                return [
+                    "key.request": UID("source.request.indexsource"),
+                    "key.sourcefile": file,
+                    "key.compilerargs": arguments,
+                ]
         }
     }
 
-    internal static func cursorInfoRequest(filePath: String?, arguments: [String]) -> SourceKitObject? {
+    static func cursorInfoRequest(filePath: String?, arguments: [String]) -> SourceKitObject? {
         if let path = filePath {
             return Request.cursorInfo(file: path, offset: 0, arguments: arguments).sourcekitObject
         }
         return nil
     }
 
-    internal static func send(cursorInfoRequest: SourceKitObject, atOffset offset: ByteCount) -> [String: SourceKitRepresentable]? {
+    static func send(cursorInfoRequest: SourceKitObject, atOffset offset: ByteCount)
+        -> [String: SourceKitValue]?
+    {
         if offset == 0 {
             return nil
         }
@@ -192,15 +230,45 @@ enum Request {
         return try? Request.customRequest(request: cursorInfoRequest).send()
     }
 
-    func asyncSend() async throws -> [String: SourceKitRepresentable] {
+    func asyncSend() async throws(Request.Error) -> [String: SourceKitValue] {
         initializeSourceKitFailable
-        let response = try await sourcekitObject.sendAsync()
-        defer { sourcekitd_response_dispose(response) }
-        return fromSourceKit(sourcekitd_response_get_value(response)) as! [String: SourceKitRepresentable]
+        let obj = sourcekitObject
+        do {
+            return try await withCheckedThrowingContinuation { continuation in
+                DispatchQueue.global().async {
+                    sourceKitRequestGate.wait()
+                    let response = obj.sendSync()
+                    defer {
+                        sourcekitd_response_dispose(response!)
+                        sourceKitRequestGate.signal()
+                    }
+                    if sourcekitd_response_is_error(response!) {
+                        let error = Request.Error(response: response!)
+                        continuation.resume(throwing: error)
+                    } else {
+                        guard let value = fromSourceKit(sourcekitd_response_get_value(response!)),
+                              let dict = value.dictionaryValue
+                        else {
+                            continuation
+                                .resume(throwing: Request.Error
+                                    .failed("Response was not a dictionary"))
+                            return
+                        }
+                        continuation.resume(returning: dict)
+                    }
+                }
+            }
+        } catch let error as Request.Error {
+            throw error
+        } catch {
+            throw .unknown(error.localizedDescription)
+        }
     }
 
-    func send() throws -> [String: SourceKitRepresentable] {
+    func send() throws(Request.Error) -> [String: SourceKitValue] {
         initializeSourceKitFailable
+        sourceKitRequestGate.wait()
+        defer { sourceKitRequestGate.signal() }
         let response = sourcekitObject.sendSync()
         defer { sourcekitd_response_dispose(response!) }
         if sourcekitd_response_is_error(response!) {
@@ -210,11 +278,16 @@ enum Request {
             }
             throw error
         }
-        return fromSourceKit(sourcekitd_response_get_value(response!)) as! [String: SourceKitRepresentable]
+        guard let value = fromSourceKit(sourcekitd_response_get_value(response!)),
+              let dict = value.dictionaryValue
+        else {
+            throw Request.Error.failed("Response was not a dictionary")
+        }
+        return dict
     }
 
     /// A enum representation of SOURCEKITD_ERROR_*
-    enum Error: Swift.Error, CustomStringConvertible {
+    enum Error: Swift.Error, LocalizedError, CustomStringConvertible {
         case connectionInterrupted(String?)
         case invalid(String?)
         case failed(String?)
@@ -225,24 +298,30 @@ enum Request {
             getDescription() ?? "no description"
         }
 
+        var errorDescription: String? {
+            getDescription()
+        }
+
         private func getDescription() -> String? {
             switch self {
-            case let .connectionInterrupted(string): return string
-            case let .invalid(string): return string
-            case let .failed(string): return string
-            case let .cancelled(string): return string
-            case let .unknown(string): return string
+                case let .connectionInterrupted(string): return string
+                case let .invalid(string): return string
+                case let .failed(string): return string
+                case let .cancelled(string): return string
+                case let .unknown(string): return string
             }
         }
 
         fileprivate init(response: sourcekitd_response_t) {
-            let description = String(validatingUTF8: sourcekitd_response_error_get_description(response)!)
+            let description =
+                String(validatingUTF8: sourcekitd_response_error_get_description(response)!)
             switch sourcekitd_response_error_get_kind(response) {
-            case SOURCEKITD_ERROR_CONNECTION_INTERRUPTED: self = .connectionInterrupted(description)
-            case SOURCEKITD_ERROR_REQUEST_INVALID: self = .invalid(description)
-            case SOURCEKITD_ERROR_REQUEST_FAILED: self = .failed(description)
-            case SOURCEKITD_ERROR_REQUEST_CANCELLED: self = .cancelled(description)
-            default: self = .unknown(description)
+                case SOURCEKITD_ERROR_CONNECTION_INTERRUPTED: self =
+                .connectionInterrupted(description)
+                case SOURCEKITD_ERROR_REQUEST_INVALID: self = .invalid(description)
+                case SOURCEKITD_ERROR_REQUEST_FAILED: self = .failed(description)
+                case SOURCEKITD_ERROR_REQUEST_CANCELLED: self = .cancelled(description)
+                default: self = .unknown(description)
             }
         }
     }

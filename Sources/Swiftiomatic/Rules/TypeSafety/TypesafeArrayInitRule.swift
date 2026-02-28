@@ -100,10 +100,10 @@ struct TypesafeArrayInitRule: AnalyzerRule {
             }.map { StyleViolation(ruleDescription: Self.description, location: $0.location) }
     }
 
-    private func pointsToSystemMapType(pointee: [String: any SourceKitRepresentable]) -> Bool {
-        if let isSystem = pointee["key.is_system"], isSystem.isEqualTo(true),
-           let name = pointee["key.name"], name.isEqualTo("map(_:)"),
-           let typeName = pointee["key.typename"] as? String
+    private func pointsToSystemMapType(pointee: [String: SourceKitValue]) -> Bool {
+        if pointee["key.is_system"]?.boolValue == true,
+           pointee["key.name"]?.stringValue == "map(_:)",
+           let typeName = pointee["key.typename"]?.stringValue
         {
             return Self.mapTypePatterns.contains {
                 $0.numberOfMatches(in: typeName, range: typeName.fullNSRange) == 1

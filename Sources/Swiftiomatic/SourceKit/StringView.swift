@@ -1,10 +1,9 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-// Stripped SourceLocation-dependent method.
-
 import Foundation
 
-private extension RandomAccessCollection {
-    func indexAssumingSorted(comparing: (Element) throws -> ComparisonResult) rethrows -> Index? {
+extension RandomAccessCollection {
+    fileprivate func indexAssumingSorted(comparing: (Element) throws -> ComparisonResult) rethrows
+        -> Index?
+    {
         guard !isEmpty else { return nil }
 
         var lowerBound = startIndex
@@ -17,9 +16,9 @@ private extension RandomAccessCollection {
             let midElem = self[midIndex]
 
             switch try comparing(midElem) {
-            case .orderedDescending: lowerBound = index(midIndex, offsetBy: 1)
-            case .orderedAscending: upperBound = index(midIndex, offsetBy: -1)
-            case .orderedSame: return midIndex
+                case .orderedDescending: lowerBound = index(midIndex, offsetBy: 1)
+                case .orderedAscending: upperBound = index(midIndex, offsetBy: -1)
+                case .orderedSame: return midIndex
             }
         }
 
@@ -51,7 +50,7 @@ struct StringView {
     private init(_ string: String, _ nsString: NSString) {
         self.string = string
         self.nsString = nsString
-        self.range = Foundation.NSRange(location: 0, length: nsString.length)
+        range = Foundation.NSRange(location: 0, length: nsString.length)
 
         utf8View = string.utf8
         utf16View = string.utf16
@@ -62,15 +61,14 @@ struct StringView {
         let lineContents = string.components(separatedBy: newlinesCharacterSet)
         let endsWithNewLineCharacter: Bool
         if let lastChar = string.utf16.last,
-           let lastCharScalar = UnicodeScalar(lastChar) {
+           let lastCharScalar = UnicodeScalar(lastChar)
+        {
             endsWithNewLineCharacter = newlinesCharacterSet.contains(lastCharScalar)
         } else {
             endsWithNewLineCharacter = false
         }
-        let enumerator = endsWithNewLineCharacter
-            ? AnySequence(lineContents.dropLast().enumerated())
-            : AnySequence(lineContents.enumerated())
-        for (index, content) in enumerator {
+        let effectiveLines = endsWithNewLineCharacter ? lineContents.dropLast() : lineContents[...]
+        for (index, content) in effectiveLines.enumerated() {
             let index = index + 1
             let rangeStart = utf16CountSoFar
             let utf16Count = content.utf16.count
@@ -86,7 +84,10 @@ struct StringView {
                 index: index,
                 content: content,
                 range: Foundation.NSRange(location: rangeStart, length: utf16Count + newlineLength),
-                byteRange: ByteRange(location: byteRangeStart, length: byteCount + ByteCount(newlineLength))
+                byteRange: ByteRange(
+                    location: byteRangeStart,
+                    length: byteCount + ByteCount(newlineLength),
+                ),
             )
             lines.append(line)
 
@@ -125,7 +126,7 @@ struct StringView {
             return .orderedSame
         }
         guard let line = (index.map { lines[$0] } ?? lines.last) else {
-            fatalError()
+            fatalError("No line found for character location \(location)")
         }
         let diff = location - line.range.location
         if diff == 0 {
@@ -134,9 +135,14 @@ struct StringView {
             return line.byteRange.upperBound
         }
         let utf16View = line.content.utf16
-        let endUTF8index = utf16View.index(utf16View.startIndex, offsetBy: diff, limitedBy: utf16View.endIndex)!
+        let endUTF8index = utf16View.index(
+            utf16View.startIndex, offsetBy: diff, limitedBy: utf16View.endIndex,
+        )!
             .samePosition(in: line.content.utf8)!
-        let byteDiff = line.content.utf8.distance(from: line.content.utf8.startIndex, to: endUTF8index)
+        let byteDiff = line.content.utf8.distance(
+            from: line.content.utf8.startIndex,
+            to: endUTF8index,
+        )
         return ByteCount(line.byteRange.location.value + byteDiff)
     }
 
@@ -145,7 +151,8 @@ struct StringView {
         let endUTF16Index = utf16View.index(startUTF16Index, offsetBy: length)
 
         guard let startUTF8Index = startUTF16Index.samePosition(in: utf8View),
-              let endUTF8Index = endUTF16Index.samePosition(in: utf8View) else {
+              let endUTF8Index = endUTF16Index.samePosition(in: utf8View)
+        else {
             return nil
         }
 
@@ -168,7 +175,7 @@ struct StringView {
             return .orderedSame
         }
         guard let line = (index.map { lines[$0] } ?? lines.last) else {
-            fatalError()
+            fatalError("No line found for byte offset \(byteOffset)")
         }
         let diff = byteOffset - line.byteRange.location
         if diff == 0 {
@@ -177,36 +184,54 @@ struct StringView {
             return NSMaxRange(line.range)
         }
         let utf8View = line.content.utf8
-        let endUTF8Index = utf8View.index(utf8View.startIndex, offsetBy: diff.value, limitedBy: utf8View.endIndex) ?? utf8View.endIndex
-        let utf16Diff = line.content.utf16.distance(from: line.content.utf16.startIndex, to: endUTF8Index)
+        let endUTF8Index =
+            utf8View.index(utf8View.startIndex, offsetBy: diff.value, limitedBy: utf8View.endIndex)
+                ?? utf8View.endIndex
+        let utf16Diff = line.content.utf16.distance(
+            from: line.content.utf16.startIndex, to: endUTF8Index,
+        )
         return line.range.location + utf16Diff
     }
 
     func substringStartingLinesWithByteRange(_ byteRange: ByteRange) -> String? {
         byteRangeToNSRange(byteRange).map { range in
-            var lineStart = 0, lineEnd = 0
+            var lineStart = 0
+            var lineEnd = 0
             nsString.getLineStart(&lineStart, end: &lineEnd, contentsEnd: nil, for: range)
-            return nsString.substring(with: Foundation.NSRange(location: lineStart, length: NSMaxRange(range) - lineStart))
+            return nsString.substring(
+                with: Foundation.NSRange(
+                    location: lineStart,
+                    length: NSMaxRange(range) - lineStart,
+                ),
+            )
         }
     }
 
     func substringLinesWithByteRange(_ byteRange: ByteRange) -> String? {
         byteRangeToNSRange(byteRange).map { range in
-            var lineStart = 0, lineEnd = 0
+            var lineStart = 0
+            var lineEnd = 0
             nsString.getLineStart(&lineStart, end: &lineEnd, contentsEnd: nil, for: range)
-            return nsString.substring(with: Foundation.NSRange(location: lineStart, length: lineEnd - lineStart))
+            return nsString.substring(
+                with: Foundation.NSRange(location: lineStart, length: lineEnd - lineStart),
+            )
         }
     }
 
     func lineRangeWithByteRange(_ byteRange: ByteRange) -> (start: Int, end: Int)? {
         byteRangeToNSRange(byteRange).flatMap { range in
-            var numberOfLines = 0, index = 0, lineRangeStart = 0
+            var numberOfLines = 0
+            var index = 0
+            var lineRangeStart = 0
             while index < nsString.length {
                 numberOfLines += 1
                 if index <= range.location {
                     lineRangeStart = numberOfLines
                 }
-                index = NSMaxRange(nsString.lineRange(for: Foundation.NSRange(location: index, length: 1)))
+                index = NSMaxRange(nsString.lineRange(for: Foundation.NSRange(
+                    location: index,
+                    length: 1,
+                )))
                 if index > NSMaxRange(range) {
                     return (lineRangeStart, numberOfLines)
                 }
@@ -215,12 +240,17 @@ struct StringView {
         }
     }
 
-    func lineAndCharacter(forByteOffset offset: ByteCount, expandingTabsToWidth tabWidth: Int = 1) -> (line: Int, character: Int)? {
+    func lineAndCharacter(forByteOffset offset: ByteCount, expandingTabsToWidth tabWidth: Int = 1)
+        -> (line: Int, character: Int)?
+    {
         let characterOffset = location(fromByteOffset: offset)
         return lineAndCharacter(forCharacterOffset: characterOffset, expandingTabsToWidth: tabWidth)
     }
 
-    func lineAndCharacter(forCharacterOffset offset: Int, expandingTabsToWidth tabWidth: Int = 1) -> (line: Int, character: Int)? {
+    func lineAndCharacter(forCharacterOffset offset: Int,
+                          expandingTabsToWidth tabWidth: Int = 1) -> (
+        line: Int, character: Int,
+    )? {
         assert(tabWidth > 0)
 
         let index = lines.indexAssumingSorted { line in

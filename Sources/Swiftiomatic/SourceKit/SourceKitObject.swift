@@ -1,8 +1,6 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-
+import Darwin
 import Foundation
 import SourceKitC
-import Darwin
 
 /// Wrapper to make a non-Sendable value sendable in contexts where the caller guarantees safety.
 private struct UncheckedSendableValue<Value>: @unchecked Sendable {
@@ -18,18 +16,24 @@ protocol SourceKitObjectConvertible {
 
 extension Array: SourceKitObjectConvertible where Element: SourceKitObjectConvertible {
     var sourceKitObject: SourceKitObject? {
-        let children = map { $0.sourceKitObject }
+        let children = map(\.sourceKitObject)
         let objects = children.map { $0?.sourcekitdObject }
-        return sourcekitd_request_array_create(objects, objects.count).map { SourceKitObject($0, children: children) }
+        return sourcekitd_request_array_create(objects, objects.count).map {
+            SourceKitObject($0, children: children)
+        }
     }
 }
 
-extension Dictionary: SourceKitObjectConvertible where Key: UIDRepresentable, Value: SourceKitObjectConvertible {
+extension Dictionary: SourceKitObjectConvertible
+    where Key: UIDRepresentable, Value: SourceKitObjectConvertible
+{
     var sourceKitObject: SourceKitObject? {
-        let keys: [sourcekitd_uid_t?] = self.keys.map { $0.uid.sourcekitdUID }
-        let children = self.values.map { $0.sourceKitObject }
+        let keys: [sourcekitd_uid_t?] = keys.map(\.uid.sourcekitdUID)
+        let children = values.map(\.sourceKitObject)
         let values = children.map { $0?.sourcekitdObject }
-        return sourcekitd_request_dictionary_create(keys, values, count).map { SourceKitObject($0, children: children) }
+        return sourcekitd_request_dictionary_create(keys, values, count).map {
+            SourceKitObject($0, children: children)
+        }
     }
 }
 
@@ -65,8 +69,8 @@ final class SourceKitObject {
     private var children: [SourceKitObject?]
 
     init(yaml: String) {
-        self.sourcekitdObject = sourcekitd_request_create_from_yaml(yaml, nil)!
-        self.children = []
+        sourcekitdObject = sourcekitd_request_create_from_yaml(yaml, nil)!
+        children = []
     }
 
     fileprivate init(_ sourcekitdObject: sourcekitd_object_t, children: [SourceKitObject?] = []) {
@@ -82,14 +86,18 @@ final class SourceKitObject {
         precondition(value.sourceKitObject != nil)
         let sourceKitObject = value.sourceKitObject
         children.append(sourceKitObject)
-        sourcekitd_request_dictionary_set_value(sourcekitdObject, key.sourcekitdUID, sourceKitObject!.sourcekitdObject)
+        sourcekitd_request_dictionary_set_value(
+            sourcekitdObject, key.sourcekitdUID, sourceKitObject!.sourcekitdObject,
+        )
     }
 
     func updateValue(_ value: SourceKitObjectConvertible, forKey key: String) {
         updateValue(value, forKey: UID(key))
     }
 
-    func updateValue<T>(_ value: SourceKitObjectConvertible, forKey key: T) where T: RawRepresentable, T.RawValue == String {
+    func updateValue<T: RawRepresentable>(_ value: SourceKitObjectConvertible, forKey key: T)
+        where T.RawValue == String
+    {
         updateValue(value, forKey: UID(key.rawValue))
     }
 
@@ -98,7 +106,9 @@ final class SourceKitObject {
     }
 
     func sendAsync() async throws -> sourcekitd_response_t {
-        let handle = UncheckedSendableValue(UnsafeMutablePointer<sourcekitd_request_handle_t?>.allocate(capacity: 1))
+        let handle = UncheckedSendableValue(
+            UnsafeMutablePointer<sourcekitd_request_handle_t?>.allocate(capacity: 1),
+        )
 
         return try await withTaskCancellationHandler {
             try await withUnsafeThrowingContinuation { continuation in
@@ -140,17 +150,19 @@ extension SourceKitObject: CustomStringConvertible {
 
 extension SourceKitObject: ExpressibleByArrayLiteral {
     convenience init(arrayLiteral elements: SourceKitObject...) {
-        let objects: [sourcekitd_object_t?] = elements.map { $0.sourcekitdObject }
+        let objects: [sourcekitd_object_t?] = elements.map(\.sourcekitdObject)
         self.init(sourcekitd_request_array_create(objects, objects.count)!, children: elements)
     }
 }
 
 extension SourceKitObject: ExpressibleByDictionaryLiteral {
     convenience init(dictionaryLiteral elements: (UID, SourceKitObjectConvertible)...) {
-        let keys: [sourcekitd_uid_t?] = elements.map { $0.0.sourcekitdUID }
-        let children = elements.map { $0.1.sourceKitObject }
+        let keys: [sourcekitd_uid_t?] = elements.map(\.0.sourcekitdUID)
+        let children = elements.map(\.1.sourceKitObject)
         let values: [sourcekitd_object_t?] = children.map { $0?.sourcekitdObject }
-        self.init(sourcekitd_request_dictionary_create(keys, values, elements.count)!, children: children)
+        self.init(
+            sourcekitd_request_dictionary_create(keys, values, elements.count)!, children: children,
+        )
     }
 }
 

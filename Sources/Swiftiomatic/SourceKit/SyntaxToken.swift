@@ -1,7 +1,5 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-
 /// Represents a single Swift syntax token.
-struct SyntaxToken {
+struct SyntaxToken: Equatable {
     let type: String
     let offset: ByteCount
     let length: ByteCount
@@ -19,12 +17,6 @@ struct SyntaxToken {
     var range: ByteRange {
         ByteRange(location: offset, length: length)
     }
-}
-
-extension SyntaxToken: Equatable {}
-
-func == (lhs: SyntaxToken, rhs: SyntaxToken) -> Bool {
-    (lhs.type == rhs.type) && (lhs.offset == rhs.offset) && (lhs.length == rhs.length)
 }
 
 extension SyntaxToken: CustomStringConvertible {

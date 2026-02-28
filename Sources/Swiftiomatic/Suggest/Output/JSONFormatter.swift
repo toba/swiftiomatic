@@ -1,11 +1,10 @@
 import Foundation
 
-/// Formats findings as JSON for agent consumption.
+/// Formats diagnostics as JSON for agent consumption.
+///
+/// Delegates to DiagnosticFormatter, which encodes the unified Diagnostic type.
 enum JSONFormatter {
-    static func format(_ findings: [Finding]) throws -> String {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let data = try encoder.encode(findings)
-        return String(data: data, encoding: .utf8) ?? "[]"
+    static func format(_ diagnostics: [Diagnostic]) throws -> String {
+        try DiagnosticFormatter.formatJSON(diagnostics)
     }
 }

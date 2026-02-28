@@ -1,4 +1,5 @@
 import Foundation
+import Yams
 
 /// The configuration struct. User-defined in the `.swiftiomatic.yaml` file.
 struct Configuration {
@@ -52,6 +53,35 @@ struct Configuration {
     /// In particular, this means that the value is also `true` if the `--config` parameter
     /// was used to explicitly specify the default `.swiftiomatic.yaml` as the configuration file
     private(set) var basedOnCustomConfigurationFiles = false
+
+    // MARK: Unified Config (format / suggest / lint-override)
+
+    /// Lint rules explicitly enabled (for opt-in rules).
+    var enabledLintRules: [String] = []
+
+    /// Lint rules explicitly disabled.
+    var disabledLintRules: [String] = []
+
+    /// Per-rule configuration overrides (keyed by rule identifier).
+    nonisolated(unsafe) var lintRuleConfigs: [String: Any] = [:]
+
+    /// Format rules explicitly enabled.
+    var enabledFormatRules: [String] = []
+
+    /// Format rules explicitly disabled.
+    var disabledFormatRules: [String] = []
+
+    /// Format indent string.
+    var formatIndent: String = "    "
+
+    /// Format max line width.
+    var formatMaxWidth: Int = 120
+
+    /// Format Swift version string.
+    var formatSwiftVersion: String = "6.2"
+
+    /// Minimum confidence level for suggest checks.
+    var suggestMinConfidence: String = "low"
 
     // MARK: Public Computed
 
@@ -130,6 +160,15 @@ struct Configuration {
         baseline = configuration.baseline
         writeBaseline = configuration.writeBaseline
         checkForUpdates = configuration.checkForUpdates
+        enabledLintRules = configuration.enabledLintRules
+        disabledLintRules = configuration.disabledLintRules
+        lintRuleConfigs = configuration.lintRuleConfigs
+        enabledFormatRules = configuration.enabledFormatRules
+        disabledFormatRules = configuration.disabledFormatRules
+        formatIndent = configuration.formatIndent
+        formatMaxWidth = configuration.formatMaxWidth
+        formatSwiftVersion = configuration.formatSwiftVersion
+        suggestMinConfidence = configuration.suggestMinConfidence
     }
 
     /// Creates a `Configuration` by specifying its properties directly,
@@ -297,6 +336,101 @@ struct Configuration {
                 queuedFatalError("Could not read configuration")
             }
         }
+    }
+
+    // MARK: - Unified Config Loading
+
+    /// Find config file by walking up from the given directory.
+    static func findConfig(from directory: String) -> String? {
+        let fm = FileManager.default
+        var components = (directory as NSString).pathComponents
+        while !components.isEmpty {
+            let dir = NSString.path(withComponents: components)
+            let candidate = (dir as NSString).appendingPathComponent(defaultFileName)
+            if fm.fileExists(atPath: candidate) {
+                return candidate
+            }
+            components.removeLast()
+        }
+        return nil
+    }
+
+    /// Load a unified configuration from a `.swiftiomatic.yaml` file.
+    /// Parses format, suggest, and lint-override sections.
+    static func loadUnified(from path: String) throws -> Configuration {
+        let url = URL(fileURLWithPath: path)
+        let data = try Data(contentsOf: url)
+        guard
+            let yaml = try Yams
+                .load(yaml: String(data: data, encoding: .utf8) ?? "") as? [String: Any]
+        else {
+            return .default
+        }
+
+        var config = Configuration()
+
+        // Rules section (lint rule overrides)
+        if let rules = yaml["rules"] as? [String: Any] {
+            if let enabled = rules["enabled"] as? [String] {
+                config.enabledLintRules = enabled
+            }
+            if let disabled = rules["disabled"] as? [String] {
+                config.disabledLintRules = disabled
+            }
+            if let ruleConfig = rules["config"] as? [String: Any] {
+                config.lintRuleConfigs = ruleConfig
+            }
+        }
+
+        // Suggest section
+        if let suggest = yaml["suggest"] as? [String: Any] {
+            if let confidence = suggest["min_confidence"] as? String {
+                config.suggestMinConfidence = confidence
+            }
+        }
+
+        // Format section
+        if let format = yaml["format"] as? [String: Any] {
+            if let rules = format["rules"] as? [String: Any] {
+                if let enable = rules["enable"] as? [String] {
+                    config.enabledFormatRules = enable
+                }
+                if let disable = rules["disable"] as? [String] {
+                    config.disabledFormatRules = disable
+                }
+            }
+
+            if let options = format["options"] as? [String: Any] {
+                if let indent = options["indent"] as? String {
+                    config.formatIndent = indent
+                }
+                if let maxWidth = options["maxwidth"] as? Int {
+                    config.formatMaxWidth = maxWidth
+                }
+                if let version = options["swiftversion"] as? String {
+                    config.formatSwiftVersion = version
+                }
+            }
+        }
+
+        // Legacy: top-level "exclude" adds to disabled rules list
+        if let exclude = yaml["exclude"] as? [String] {
+            config.disabledLintRules += exclude
+        }
+
+        return config
+    }
+
+    /// Load unified configuration, searching from the given config path or by walking up from cwd.
+    static func loadUnified(configPath: String? = nil) -> Configuration {
+        if let path = configPath {
+            return (try? loadUnified(from: path)) ?? .default
+        }
+        let cwd = FileManager.default.currentDirectoryPath
+        if let found = findConfig(from: cwd) {
+            return (try? loadUnified(from: found)) ?? .default
+        }
+        return .default
     }
 
     // MARK: - Methods: Internal

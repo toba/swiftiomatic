@@ -20,7 +20,6 @@ let package = Package(
         .executableTarget(
             name: "Swiftiomatic",
             dependencies: [
-                "DyldWarningWorkaround",
                 "SourceKitC",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "SwiftIDEUtils", package: "swift-syntax"),
@@ -39,10 +38,6 @@ let package = Package(
                 .enableUpcomingFeature("DisableOutwardActorIsolation"),
                 .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
             ],
-        ),
-        .target(
-            name: "DyldWarningWorkaround",
-            path: "Sources/DyldWarningWorkaround",
         ),
         .target(
             name: "SourceKitC",

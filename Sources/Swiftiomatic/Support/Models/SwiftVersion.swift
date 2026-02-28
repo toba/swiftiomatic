@@ -87,34 +87,19 @@ extension SwiftVersion {
         if let envVersion = ProcessInfo.processInfo.environment["SWIFTLINT_SWIFT_VERSION"] {
             return SwiftVersion(rawValue: envVersion)
         }
-        if !Request.disableSourceKit {
-            // This request was added in Swift 5.1
-            let params: SourceKitObject = ["key.request": UID("source.request.compiler_version")]
-            // Allow this specific SourceKit request outside of rule execution context
-            let result = CurrentRule.$allowSourceKitRequestWithoutRule.withValue(true) {
-                try? Request.customRequest(request: params).sendIfNotDisabled()
-            }
-            if let result,
-               let major = result.versionMajor, let minor = result.versionMinor,
-               let patch = result.versionPatch
-            {
-                return SwiftVersion(rawValue: "\(major).\(minor).\(patch)")
-            }
+        // This request was added in Swift 5.1
+        let params: SourceKitObject = ["key.request": UID("source.request.compiler_version")]
+        // Allow this specific SourceKit request outside of rule execution context
+        let result = CurrentRule.$allowSourceKitRequestWithoutRule.withValue(true) {
+            try? Request.customRequest(request: params).sendIfNotDisabled()
+        }
+        if let result,
+           let major = result["key.version_major"]?.int64Value.map(Int.init),
+           let minor = result["key.version_minor"]?.int64Value.map(Int.init),
+           let patch = result["key.version_patch"]?.int64Value.map(Int.init)
+        {
+            return SwiftVersion(rawValue: "\(major).\(minor).\(patch)")
         }
         return .five
     }()
-}
-
-private extension Dictionary where Key == String {
-    var versionMajor: Int? {
-        (self["key.version_major"] as? Int64).flatMap { Int($0) }
-    }
-
-    var versionMinor: Int? {
-        (self["key.version_minor"] as? Int64).flatMap { Int($0) }
-    }
-
-    var versionPatch: Int? {
-        (self["key.version_patch"] as? Int64).flatMap { Int($0) }
-    }
 }

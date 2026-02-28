@@ -1,10 +1,8 @@
 import Testing
 import Foundation
-import SwiftParser
-import SwiftSyntax
 @testable import Swiftiomatic
 
-@Suite("TypedThrowsCheck")
+@Suite("TypedThrowsRule")
 struct TypedThrowsTests {
     let fixturePath: String = {
         let thisFile = #filePath
@@ -13,34 +11,31 @@ struct TypedThrowsTests {
     }()
 
     @Test func detectsUntypedThrowsWithSingleErrorType() throws {
-        let source = try String(contentsOfFile: fixturePath, encoding: .utf8)
-        let tree = Parser.parse(source: source)
-        let check = TypedThrowsCheck(filePath: fixturePath)
-        check.walk(tree)
+        let file = SwiftLintFile(path: fixturePath)!
+        let rule = TypedThrowsRule()
+        let violations = rule.validate(file: file)
 
         // Should find parse() and validate() — both throw only ParseError
-        let messages = check.findings.map(\.message)
-        #expect(messages.contains { $0.contains("parse") && $0.contains("ParseError") })
-        #expect(messages.contains { $0.contains("validate") && $0.contains("ParseError") })
+        let reasons = violations.map(\.reason)
+        #expect(reasons.contains { $0.contains("parse") && $0.contains("ParseError") })
+        #expect(reasons.contains { $0.contains("validate") && $0.contains("ParseError") })
     }
 
     @Test func ignoresAlreadyTypedThrows() throws {
-        let source = try String(contentsOfFile: fixturePath, encoding: .utf8)
-        let tree = Parser.parse(source: source)
-        let check = TypedThrowsCheck(filePath: fixturePath)
-        check.walk(tree)
+        let file = SwiftLintFile(path: fixturePath)!
+        let rule = TypedThrowsRule()
+        let violations = rule.validate(file: file)
 
-        let messages = check.findings.map(\.message)
-        #expect(!messages.contains { $0.contains("strictParse") })
+        let reasons = violations.map(\.reason)
+        #expect(!reasons.contains { $0.contains("strictParse") })
     }
 
     @Test func ignoresMultipleErrorTypes() throws {
-        let source = try String(contentsOfFile: fixturePath, encoding: .utf8)
-        let tree = Parser.parse(source: source)
-        let check = TypedThrowsCheck(filePath: fixturePath)
-        check.walk(tree)
+        let file = SwiftLintFile(path: fixturePath)!
+        let rule = TypedThrowsRule()
+        let violations = rule.validate(file: file)
 
-        let messages = check.findings.map(\.message)
-        #expect(!messages.contains { $0.contains("fetchAndParse") })
+        let reasons = violations.map(\.reason)
+        #expect(!reasons.contains { $0.contains("fetchAndParse") })
     }
 }

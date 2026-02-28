@@ -1,6 +1,3 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-// Stripped to macOS-only.
-
 import Foundation
 
 // MARK: - Shared Types & Functions
@@ -23,7 +20,8 @@ struct Loader: Sendable {
     let searchPaths: [String]
 
     func load(path: String) -> DynamicLinkLibrary {
-        let fullPaths: [String] = searchPaths.map { $0.appending(pathComponent: path) }.filter { $0.isFile }
+        let fullPaths: [String] = searchPaths.map { $0.appending(pathComponent: path) }
+            .filter(\.isFile)
 
         for fullPath in fullPaths + [path] {
             if let handle = dlopen(fullPath, RTLD_LAZY) {
@@ -39,38 +37,40 @@ private func env(_ name: String) -> String? {
     ProcessInfo.processInfo.environment[name]
 }
 
-private extension String {
-    func appending(pathComponent: String) -> String {
+extension String {
+    fileprivate func appending(pathComponent: String) -> String {
         URL(fileURLWithPath: self).appendingPathComponent(pathComponent).path
     }
 
-    func deleting(lastPathComponents numberOfPathComponents: Int) -> String {
-        (0..<numberOfPathComponents)
+    fileprivate func deleting(lastPathComponents numberOfPathComponents: Int) -> String {
+        (0 ..< numberOfPathComponents)
             .reduce(URL(fileURLWithPath: self)) { url, _ in url.deletingLastPathComponent() }
             .path
     }
 
-    func resolvingSymlinksInPath() -> String {
+    private func resolvingSymlinksInPath() -> String {
         URL(fileURLWithPath: self).resolvingSymlinksInPath().path
     }
 }
 
 // MARK: - Darwin
 
-let toolchainLoader = Loader(searchPaths: [
-    xcodeDefaultToolchainOverride,
-    toolchainDir,
-    xcrunFindPath,
-    applicationsDir?.xcodeDeveloperDir.toolchainDir,
-    applicationsDir?.xcodeBetaDeveloperDir.toolchainDir,
-    userApplicationsDir?.xcodeDeveloperDir.toolchainDir,
-    userApplicationsDir?.xcodeBetaDeveloperDir.toolchainDir,
-].compactMap { path in
-    if let fullPath = path?.usrLibDir, FileManager.default.fileExists(atPath: fullPath) {
-        return fullPath
-    }
-    return nil
-})
+let toolchainLoader = Loader(
+    searchPaths: [
+        xcodeDefaultToolchainOverride,
+        toolchainDir,
+        xcrunFindPath,
+        applicationsDir?.xcodeDeveloperDir.toolchainDir,
+        applicationsDir?.xcodeBetaDeveloperDir.toolchainDir,
+        userApplicationsDir?.xcodeDeveloperDir.toolchainDir,
+        userApplicationsDir?.xcodeBetaDeveloperDir.toolchainDir,
+    ].compactMap { path in
+        if let fullPath = path?.usrLibDir, FileManager.default.fileExists(atPath: fullPath) {
+            return fullPath
+        }
+        return nil
+    },
+)
 
 private let xcodeDefaultToolchainOverride = env("XCODE_DEFAULT_TOOLCHAIN_OVERRIDE")
 
@@ -90,8 +90,8 @@ private let xcrunFindPath: String? = {
     var start = output.startIndex
     var end = output.startIndex
     var contentsEnd = output.startIndex
-    output.getLineStart(&start, end: &end, contentsEnd: &contentsEnd, for: start..<start)
-    let xcrunFindSwiftPath = String(output[start..<contentsEnd])
+    output.getLineStart(&start, end: &end, contentsEnd: &contentsEnd, for: start ..< start)
+    let xcrunFindSwiftPath = String(output[start ..< contentsEnd])
     guard xcrunFindSwiftPath.hasSuffix("/usr/bin/swift") else {
         return nil
     }
@@ -110,20 +110,20 @@ private let applicationsDir = appDir(mask: .systemDomainMask)
 
 private let userApplicationsDir = appDir(mask: .userDomainMask)
 
-private extension String {
-    var toolchainDir: String {
+extension String {
+    fileprivate var toolchainDir: String {
         appending(pathComponent: "Toolchains/XcodeDefault.xctoolchain")
     }
 
-    var xcodeDeveloperDir: String {
+    fileprivate var xcodeDeveloperDir: String {
         appending(pathComponent: "Xcode.app/Contents/Developer")
     }
 
-    var xcodeBetaDeveloperDir: String {
+    fileprivate var xcodeBetaDeveloperDir: String {
         appending(pathComponent: "Xcode-beta.app/Contents/Developer")
     }
 
-    var usrLibDir: String {
+    fileprivate var usrLibDir: String {
         appending(pathComponent: "/usr/lib")
     }
 }

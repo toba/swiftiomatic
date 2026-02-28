@@ -5,6 +5,10 @@ import Synchronization
 ///
 /// Wraps cursorinfo, index, and expression-type requests.
 /// Caches compiler args and file indexes for the lifetime of the scan.
+///
+/// `@unchecked Sendable` is required because `Request.send()` uses `DispatchSemaphore`
+/// internally and touches global C state via the sourcekitd XPC service. All mutable state
+/// is protected by `Mutex`, and the C FFI calls are serialized by `sourceKitRequestGate`.
 final class SourceKitResolver: TypeResolver, @unchecked Sendable {
     private let compilerArgs: [String]
     private let indexCache = Mutex<[String: FileIndex]>([:])
@@ -36,9 +40,9 @@ final class SourceKitResolver: TypeResolver, @unchecked Sendable {
         )
         guard let response = try? request.send() else { return nil }
 
-        guard let typeName = response["key.typename"] as? String else { return nil }
-        let usr = response["key.usr"] as? String
-        let moduleName = response["key.modulename"] as? String
+        guard let typeName = response["key.typename"]?.stringValue else { return nil }
+        let usr = response["key.usr"]?.stringValue
+        let moduleName = response["key.modulename"]?.stringValue
 
         return ResolvedType(typeName: typeName, usr: usr, moduleName: moduleName)
     }
@@ -52,7 +56,7 @@ final class SourceKitResolver: TypeResolver, @unchecked Sendable {
         guard let response = try? request.send() else { return nil }
 
         var symbols: [IndexSymbol] = []
-        if let entities = response["key.entities"] as? [[String: Any]] {
+        if let entities = response["key.entities"]?.arrayValue {
             collectSymbols(from: entities, into: &symbols)
         }
 
@@ -73,13 +77,14 @@ final class SourceKitResolver: TypeResolver, @unchecked Sendable {
         ])
         guard let response = try? request.send() else { return [] }
 
-        guard let types = response["key.expression_type_list"] as? [[String: Any]]
+        guard let types = response["key.expression_type_list"]?.arrayValue
         else { return [] }
 
         return types.compactMap { entry in
-            guard let offset = entry["key.expression_offset"] as? Int64,
-                  let length = entry["key.expression_length"] as? Int64,
-                  let typeName = entry["key.expression_type"] as? String
+            guard let dict = entry.dictionaryValue,
+                  let offset = dict["key.expression_offset"]?.int64Value,
+                  let length = dict["key.expression_length"]?.int64Value,
+                  let typeName = dict["key.expression_type"]?.stringValue
             else { return nil }
             return ExpressionTypeInfo(
                 offset: Int(offset),
@@ -91,16 +96,19 @@ final class SourceKitResolver: TypeResolver, @unchecked Sendable {
 
     // MARK: - Helpers
 
-    private func collectSymbols(from entities: [[String: Any]], into symbols: inout [IndexSymbol]) {
+    private func collectSymbols(from entities: [SourceKitValue],
+                                into symbols: inout [IndexSymbol])
+    {
         for entity in entities {
-            guard let name = entity["key.name"] as? String,
-                  let usr = entity["key.usr"] as? String,
-                  let kindUID = entity["key.kind"] as? String
+            guard let dict = entity.dictionaryValue,
+                  let name = dict["key.name"]?.stringValue,
+                  let usr = dict["key.usr"]?.stringValue,
+                  let kindUID = dict["key.kind"]?.stringValue
             else { continue }
 
-            let line = (entity["key.line"] as? Int64).map(Int.init) ?? 0
-            let column = (entity["key.column"] as? Int64).map(Int.init) ?? 0
-            let offset = (entity["key.offset"] as? Int64).map(Int.init) ?? 0
+            let line = dict["key.line"]?.int64Value.map(Int.init) ?? 0
+            let column = dict["key.column"]?.int64Value.map(Int.init) ?? 0
+            let offset = dict["key.offset"]?.int64Value.map(Int.init) ?? 0
 
             let symbolKind: IndexSymbol.Kind = kindUID.contains(".ref.") ? .reference : .declaration
             symbols.append(
@@ -111,7 +119,7 @@ final class SourceKitResolver: TypeResolver, @unchecked Sendable {
             )
 
             // Recurse into child entities
-            if let children = entity["key.entities"] as? [[String: Any]] {
+            if let children = dict["key.entities"]?.arrayValue {
                 collectSymbols(from: children, into: &symbols)
             }
         }

@@ -1,11 +1,11 @@
 ---
 # 7iy-om5
 title: 'Unify configuration into single .swiftiomatic.yaml and sm: comment prefix'
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-02-28T16:50:59Z
-updated_at: 2026-02-28T16:52:06Z
+updated_at: 2026-02-28T18:02:49Z
 ---
 
 ## Goal
@@ -91,16 +91,36 @@ Same modifier semantics as current (`:this`, `:next`, `:previous`), same trailin
 
 ## Tasks
 
-- [ ] Update `Configuration.defaultFileName` from `.swiftlint.yml` to `.swiftiomatic.yaml`
-- [ ] Merge `Config.swift` (SwiftiomaticConfig) fields into `Configuration.swift`
-- [ ] Update `Configuration+Parsing.swift` to parse the unified YAML schema
-- [ ] Remove `Config.swift` / `SwiftiomaticConfig` struct
-- [ ] Update `CommandVisitor.swift` to recognize `sm:` prefix instead of `swiftlint:`
-- [ ] Update `SwiftLintFile+Cache.swift` fast-path check from `"swiftlint:"` to `"sm:"`
-- [ ] Update `Command.swift` parsing if it has hardcoded prefix logic
-- [ ] Update format engine to recognize `sm:disable`/`sm:enable` instead of `swiftformat:disable`/`swiftformat:enable`
-- [ ] Update `BlanketDisableCommandRule` and `SuperfluousDisableCommandRule` for new prefix
-- [ ] Update tests for new config file name and comment prefix
-- [ ] Update `swiftiomatic.swift` `loadConfig()` to use unified Configuration instead of separate SwiftiomaticConfig
-- [ ] Remove files that become dead code after unification
-- [ ] Clean up `Configuration+FileGraph.swift` — evaluate whether parent_config/child_config nesting is still needed (probably not for v1)
+- [x] Update `Configuration.defaultFileName` from `.swiftlint.yml` to `.swiftiomatic.yaml`
+- [x] Merge `Config.swift` (SwiftiomaticConfig) fields into `Configuration.swift`
+- [x] Update `Configuration+Parsing.swift` to parse the unified YAML schema
+- [x] Remove `Config.swift` / `SwiftiomaticConfig` struct
+- [x] Update `CommandVisitor.swift` to recognize `sm:` prefix instead of `swiftlint:`
+- [x] Update `SwiftLintFile+Cache.swift` fast-path check from `"swiftlint:"` to `"sm:"`
+- [x] Update `Command.swift` parsing if it has hardcoded prefix logic
+- [x] Update format engine to recognize `sm:disable`/`sm:enable` instead of `swiftformat:disable`/`swiftformat:enable`
+- [x] Update `BlanketDisableCommandRule` and `SuperfluousDisableCommandRule` for new prefix
+- [x] Update tests for new config file name and comment prefix
+- [x] Update `swiftiomatic.swift` `loadConfig()` to use unified Configuration instead of separate SwiftiomaticConfig
+- [x] Remove files that become dead code after unification
+- [x] Clean up `Configuration+FileGraph.swift` — evaluated: parent/child config nesting still used by lint engine nested directory discovery; deferring removal
+
+
+## Summary of Changes
+
+Unified configuration into single `.swiftiomatic.yaml` with `sm:` comment prefix:
+
+**Comment prefix (done in bqt-jfy):**
+- `swiftlint:` → `sm:` across all source files and tests
+- `swiftformat:` → `sm:` across format engine
+- Renamed `InvalidSwiftLintCommandRule` → `InvalidCommandRule`
+- Updated `Configuration.defaultFileName` to `.swiftiomatic.yaml`
+
+**Config struct unification (this session):**
+- Added format/suggest/lint-override fields directly to `Configuration` struct (with defaults so existing inits are unaffected)
+- Added `Configuration.loadUnified(configPath:)` and `Configuration.findConfig(from:)` static methods
+- Updated `Analyze` command (`swiftiomatic.swift`) to use `Configuration` instead of `SwiftiomaticConfig`
+- Updated `FormatCommand.swift` to use `Configuration` instead of `SwiftiomaticConfig`
+- Updated `Configuration+Merging` to carry unified fields through child merging
+- Deleted `Config.swift` (`SwiftiomaticConfig` struct) — zero source references remain
+- FileGraph parent/child nesting evaluated and retained (still used by lint engine nested directory config discovery)

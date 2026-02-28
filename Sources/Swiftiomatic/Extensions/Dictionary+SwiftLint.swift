@@ -3,7 +3,7 @@
 /// values.
 struct SourceKitDictionary {
     /// The underlying SourceKit dictionary.
-    let value: [String: any SourceKitRepresentable]
+    let value: [String: SourceKitValue]
     /// The cached substructure for this dictionary. Empty if there is no substructure.
     let substructure: [Self]
 
@@ -17,64 +17,63 @@ struct SourceKitDictionary {
     /// The accessibility level for this dictionary, if it is a declaration.
     let accessibility: AccessControlLevel?
 
-    /// Creates a SourceKit dictionary given a `Dictionary<String, SourceKitRepresentable>` input.
+    /// Creates a SourceKit dictionary given a `[String: SourceKitValue]` input.
     ///
-    /// - parameter value: The input dictionary/
-    init(_ value: [String: any SourceKitRepresentable]) {
+    /// - parameter value: The input dictionary.
+    init(_ value: [String: SourceKitValue]) {
         self.value = value
 
-        let substructure = value["key.substructure"] as? [any SourceKitRepresentable] ?? []
-        self.substructure = substructure.compactMap { $0 as? [String: any SourceKitRepresentable] }
-            .map(Self.init)
+        let substructure = value["key.substructure"]?.arrayValue ?? []
+        self.substructure = substructure.compactMap(\.dictionaryValue).map(Self.init)
 
-        let stringKind = value["key.kind"] as? String
+        let stringKind = value["key.kind"]?.stringValue
         expressionKind = stringKind.flatMap(SwiftExpressionKind.init)
         declarationKind = stringKind.flatMap(SwiftDeclarationKind.init)
         statementKind = stringKind.flatMap(StatementKind.init)
 
-        accessibility = (value["key.accessibility"] as? String).flatMap(
+        accessibility = value["key.accessibility"]?.stringValue.flatMap(
             AccessControlLevel.init(identifier:),
         )
     }
 
     /// Body length
     var bodyLength: ByteCount? {
-        (value["key.bodylength"] as? Int64).map(ByteCount.init)
+        value["key.bodylength"]?.int64Value.map(ByteCount.init)
     }
 
     /// Body offset.
     var bodyOffset: ByteCount? {
-        (value["key.bodyoffset"] as? Int64).map(ByteCount.init)
+        value["key.bodyoffset"]?.int64Value.map(ByteCount.init)
     }
 
     /// Kind.
     var kind: String? {
-        value["key.kind"] as? String
+        value["key.kind"]?.stringValue
     }
 
     /// Length.
     var length: ByteCount? {
-        (value["key.length"] as? Int64).map(ByteCount.init)
+        value["key.length"]?.int64Value.map(ByteCount.init)
     }
 
     /// Name.
     var name: String? {
-        value["key.name"] as? String
+        value["key.name"]?.stringValue
     }
 
     /// Name length.
     var nameLength: ByteCount? {
-        (value["key.namelength"] as? Int64).map(ByteCount.init)
+        value["key.namelength"]?.int64Value.map(ByteCount.init)
     }
 
     /// Name offset.
     var nameOffset: ByteCount? {
-        (value["key.nameoffset"] as? Int64).map(ByteCount.init)
+        value["key.nameoffset"]?.int64Value.map(ByteCount.init)
     }
 
     /// Offset.
     var offset: ByteCount? {
-        (value["key.offset"] as? Int64).map(ByteCount.init)
+        value["key.offset"]?.int64Value.map(ByteCount.init)
     }
 
     /// Returns byte range starting from `offset` with `length` bytes
@@ -85,32 +84,32 @@ struct SourceKitDictionary {
 
     /// Setter accessibility.
     var setterAccessibility: String? {
-        value["key.setter_accessibility"] as? String
+        value["key.setter_accessibility"]?.stringValue
     }
 
     /// Type name.
     var typeName: String? {
-        value["key.typename"] as? String
+        value["key.typename"]?.stringValue
     }
 
     /// The attribute for this dictionary, as returned by SourceKit.
     var attribute: String? {
-        value["key.attribute"] as? String
+        value["key.attribute"]?.stringValue
     }
 
     /// Module name in `@import` expressions.
     var moduleName: String? {
-        value["key.modulename"] as? String
+        value["key.modulename"]?.stringValue
     }
 
     /// The line number for this declaration.
     var line: Int64? {
-        value["key.line"] as? Int64
+        value["key.line"]?.int64Value
     }
 
     /// The column number for this declaration.
     var column: Int64? {
-        value["key.column"] as? Int64
+        value["key.column"]?.int64Value
     }
 
     /// The `SwiftDeclarationAttributeKind` values associated with this dictionary.
@@ -121,21 +120,18 @@ struct SourceKitDictionary {
 
     /// The fully preserved SourceKit dictionaries for all the attributes associated with this dictionary.
     var swiftAttributes: [Self] {
-        let array = value["key.attributes"] as? [any SourceKitRepresentable] ?? []
-        return array.compactMap { $0 as? [String: any SourceKitRepresentable] }
-            .map(Self.init)
+        let array = value["key.attributes"]?.arrayValue ?? []
+        return array.compactMap(\.dictionaryValue).map(Self.init)
     }
 
     var elements: [Self] {
-        let elements = value["key.elements"] as? [any SourceKitRepresentable] ?? []
-        return elements.compactMap { $0 as? [String: any SourceKitRepresentable] }
-            .map(Self.init)
+        let elements = value["key.elements"]?.arrayValue ?? []
+        return elements.compactMap(\.dictionaryValue).map(Self.init)
     }
 
     var entities: [Self] {
-        let entities = value["key.entities"] as? [any SourceKitRepresentable] ?? []
-        return entities.compactMap { $0 as? [String: any SourceKitRepresentable] }
-            .map(Self.init)
+        let entities = value["key.entities"]?.arrayValue ?? []
+        return entities.compactMap(\.dictionaryValue).map(Self.init)
     }
 
     var enclosedVarParameters: [Self] {
@@ -162,14 +158,13 @@ struct SourceKitDictionary {
     }
 
     var inheritedTypes: [String] {
-        let array = value["key.inheritedtypes"] as? [any SourceKitRepresentable] ?? []
-        return array.compactMap { ($0 as? [String: String]).flatMap { $0["key.name"] } }
+        let array = value["key.inheritedtypes"]?.arrayValue ?? []
+        return array.compactMap { $0.dictionaryValue?["key.name"]?.stringValue }
     }
 
     var secondarySymbols: [Self] {
-        let array = value["key.secondary_symbols"] as? [any SourceKitRepresentable] ?? []
-        return array.compactMap { $0 as? [String: any SourceKitRepresentable] }
-            .map(Self.init)
+        let array = value["key.secondary_symbols"]?.arrayValue ?? []
+        return array.compactMap(\.dictionaryValue).map(Self.init)
     }
 }
 

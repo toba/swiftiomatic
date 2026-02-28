@@ -1,5 +1,3 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-
 import Foundation
 
 /// Namespace for utilities to execute a child process.
@@ -24,7 +22,7 @@ enum Exec {
         _ command: String,
         _ arguments: String...,
         currentDirectory: String = FileManager.default.currentDirectoryPath,
-        stderr: Stderr = .inherit
+        stderr: Stderr = .inherit,
     ) -> Results {
         run(command, arguments, currentDirectory: currentDirectory, stderr: stderr)
     }
@@ -33,7 +31,7 @@ enum Exec {
         _ command: String,
         _ arguments: [String] = [],
         currentDirectory: String = FileManager.default.currentDirectoryPath,
-        stderr: Stderr = .inherit
+        stderr: Stderr = .inherit,
     ) -> Results {
         let process = Process()
         process.arguments = arguments
@@ -42,12 +40,12 @@ enum Exec {
         process.standardOutput = pipe
 
         switch stderr {
-        case .discard:
-            process.standardError = FileHandle(forWritingAtPath: "/dev/null")!
-        case .merge:
-            process.standardError = pipe
-        case .inherit:
-            break
+            case .discard:
+                process.standardError = FileHandle(forWritingAtPath: "/dev/null")!
+            case .merge:
+                process.standardError = pipe
+            case .inherit:
+                break
         }
 
         do {

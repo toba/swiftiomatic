@@ -19,7 +19,7 @@ private func readFilesFromScriptInputFiles() throws(SwiftLintError) -> [SwiftLin
                 throw SwiftLintError
                     .usageError(description: "Environment variable not set: \(variable)")
             }
-            if path.bridge().isSwiftFile() {
+            if path.bridge().isSwiftFile {
                 return SwiftLintFile(pathDeferringReading: path)
             }
             return nil
@@ -49,7 +49,7 @@ private func readFilesFromScriptInputFileLists() throws(SwiftLintError) -> [Swif
                         .usageError(description: "Could not read file list at: \(path)")
                 }
                 textContents.enumerateLines { line, _ in
-                    if line.isSwiftFile() {
+                    if line.isSwiftFile {
                         filesToLint.append(SwiftLintFile(pathDeferringReading: line))
                     }
                 }

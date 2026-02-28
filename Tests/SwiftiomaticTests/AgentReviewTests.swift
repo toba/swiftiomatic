@@ -1,10 +1,8 @@
 import Testing
 import Foundation
-import SwiftParser
-import SwiftSyntax
 @testable import Swiftiomatic
 
-@Suite("AgentReviewCheck")
+@Suite("AgentReview Rules")
 struct AgentReviewTests {
     let fixturePath: String = {
         let thisFile = #filePath
@@ -13,33 +11,30 @@ struct AgentReviewTests {
     }()
 
     @Test func detectsFireAndForgetTask() throws {
-        let source = try String(contentsOfFile: fixturePath, encoding: .utf8)
-        let tree = Parser.parse(source: source)
-        let check = FireAndForgetTaskCheck(filePath: fixturePath)
-        check.walk(tree)
+        let file = SwiftLintFile(path: fixturePath)!
+        let rule = FireAndForgetTaskRule()
+        let violations = rule.validate(file: file)
 
-        let fireAndForget = check.findings.filter { $0.message.contains("Fire-and-forget") }
+        let fireAndForget = violations.filter { $0.reason.contains("Fire-and-forget") }
         #expect(fireAndForget.count >= 1, "Should detect unassigned Task {}")
     }
 
     @Test func detectsErrorEnumWithoutLocalizedError() throws {
-        let source = try String(contentsOfFile: fixturePath, encoding: .utf8)
-        let tree = Parser.parse(source: source)
-        let check = AgentReviewCheck(filePath: fixturePath)
-        check.walk(tree)
+        let file = SwiftLintFile(path: fixturePath)!
+        let rule = AgentReviewRule()
+        let violations = rule.validate(file: file)
 
-        let errorFindings = check.findings.filter { $0.message.contains("LocalizedError") }
+        let errorFindings = violations.filter { $0.reason.contains("LocalizedError") }
         #expect(errorFindings.count == 1, "Should flag AppError but not GoodError")
-        #expect(errorFindings.first?.message.contains("AppError") == true)
+        #expect(errorFindings.first?.reason.contains("AppError") == true)
     }
 
     @Test func detectsNonisolatedUnsafe() throws {
-        let source = try String(contentsOfFile: fixturePath, encoding: .utf8)
-        let tree = Parser.parse(source: source)
-        let check = AgentReviewCheck(filePath: fixturePath)
-        check.walk(tree)
+        let file = SwiftLintFile(path: fixturePath)!
+        let rule = AgentReviewRule()
+        let violations = rule.validate(file: file)
 
-        let nonisolated = check.findings.filter { $0.message.contains("nonisolated(unsafe)") }
+        let nonisolated = violations.filter { $0.reason.contains("nonisolated(unsafe)") }
         #expect(nonisolated.count >= 1)
     }
 }

@@ -1,6 +1,3 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-// bridge() convenience wrappers for Foundation types.
-
 import Foundation
 
 extension Array {

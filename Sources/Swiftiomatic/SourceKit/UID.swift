@@ -1,12 +1,10 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-
 import SourceKitC
 
 /// Swift representation of sourcekitd_uid_t
 struct UID: Hashable {
     let sourcekitdUID: sourcekitd_uid_t
     init(_ uid: sourcekitd_uid_t) {
-        self.sourcekitdUID = uid
+        sourcekitdUID = uid
     }
 
     init(_ string: String) {

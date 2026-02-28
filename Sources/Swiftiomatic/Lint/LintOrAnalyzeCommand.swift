@@ -51,7 +51,6 @@ struct LintOrAnalyzeOptions {
     let onlyRule: [String]
     let autocorrect: Bool
     let format: Bool
-    let disableSourceKit: Bool
     let compilerLogPath: String?
     let compileCommands: String?
     let checkForUpdates: Bool
@@ -67,7 +66,6 @@ struct LintOrAnalyzeOptions {
 
 enum LintOrAnalyzeCommand {
     static func run(_ options: LintOrAnalyzeOptions) async throws {
-        Request.disableSourceKitOverride = options.mode == .lint && options.disableSourceKit
         if let workingDirectory = options.workingDirectory {
             if !FileManager.default.changeCurrentDirectoryPath(workingDirectory) {
                 throw SwiftLintError.usageError(

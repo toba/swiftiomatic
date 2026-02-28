@@ -15,7 +15,7 @@ extension Configuration {
             rootDirectory: rootDirectory,
         )
 
-        return Configuration(
+        var merged = Configuration(
             rulesWrapper: rulesWrapper.merged(with: childConfiguration.rulesWrapper),
             fileGraph: FileGraph(rootDirectory: rootDirectory),
             includedPaths: mergedIncludedAndExcluded.includedPaths,
@@ -30,6 +30,17 @@ extension Configuration {
             writeBaseline: childConfiguration.writeBaseline,
             checkForUpdates: childConfiguration.checkForUpdates,
         )
+        // Child config wins for unified fields
+        merged.enabledLintRules = childConfiguration.enabledLintRules
+        merged.disabledLintRules = childConfiguration.disabledLintRules
+        merged.lintRuleConfigs = childConfiguration.lintRuleConfigs
+        merged.enabledFormatRules = childConfiguration.enabledFormatRules
+        merged.disabledFormatRules = childConfiguration.disabledFormatRules
+        merged.formatIndent = childConfiguration.formatIndent
+        merged.formatMaxWidth = childConfiguration.formatMaxWidth
+        merged.formatSwiftVersion = childConfiguration.formatSwiftVersion
+        merged.suggestMinConfidence = childConfiguration.suggestMinConfidence
+        return merged
     }
 
     private func mergedIncludedAndExcluded(

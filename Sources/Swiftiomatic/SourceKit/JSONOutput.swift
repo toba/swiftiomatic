@@ -17,27 +17,17 @@ func toJSON(_ object: Any, options: JSONSerialization.WritingOptions? = nil) -> 
     return ""
 }
 
-func toNSDictionary(_ dictionary: [String: SourceKitRepresentable]) -> NSDictionary {
-    func toNSDictionaryValue(_ object: SourceKitRepresentable) -> Any {
-        switch object {
-        case let object as [SourceKitRepresentable]:
-            return object.map { toNSDictionaryValue($0) }
-        case let object as [[String: SourceKitRepresentable]]:
-            return object.map { toNSDictionary($0) }
-        case let object as [String: SourceKitRepresentable]:
-            return toNSDictionary(object)
-        case let object as String:
-            return object
-        case let object as Int64:
-            return NSNumber(value: object)
-        case let object as Bool:
-            return NSNumber(value: object)
-        case let object as Any:
-            return object
-        default:
-            fatalError("Should never happen because we've checked all SourceKitRepresentable types")
+func toNSDictionary(_ dictionary: [String: SourceKitValue]) -> NSDictionary {
+    func toNSValue(_ value: SourceKitValue) -> Any {
+        switch value {
+            case let .string(s): return s
+            case let .int64(n): return NSNumber(value: n)
+            case let .bool(b): return NSNumber(value: b)
+            case let .data(d): return d
+            case let .array(a): return a.map { toNSValue($0) }
+            case let .dictionary(d): return toNSDictionary(d)
         }
     }
 
-    return dictionary.mapValues(toNSDictionaryValue).bridge()
+    return dictionary.mapValues(toNSValue).bridge()
 }

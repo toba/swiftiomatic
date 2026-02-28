@@ -1,5 +1,3 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-
 protocol UIDRepresentable {
     var uid: UID { get }
 }

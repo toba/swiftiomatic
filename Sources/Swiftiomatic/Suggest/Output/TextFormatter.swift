@@ -1,26 +1,26 @@
-/// Formats findings as human-readable text matching the swift-review scan output.
+/// Formats diagnostics as human-readable text matching the swift-review scan output.
 enum TextFormatter {
-    static func format(_ findings: [Finding]) -> String {
-        guard !findings.isEmpty else {
+    static func format(_ diagnostics: [Diagnostic]) -> String {
+        guard !diagnostics.isEmpty else {
             return "No findings."
         }
 
         var output = ""
-        let grouped = Dictionary(grouping: findings) { $0.category }
+        let grouped = Dictionary(grouping: diagnostics) { $0.category }
 
         // Output in section order
         for category in Category.allCases {
-            guard let categoryFindings = grouped[category], !categoryFindings.isEmpty else {
+            guard let categoryDiags = grouped[category.rawValue], !categoryDiags.isEmpty else {
                 continue
             }
 
             output += "## \(category.sectionNumber). \(category.displayName)\n\n"
 
-            for finding in categoryFindings.sorted() {
-                let confidence = confidenceMarker(finding.confidence)
-                output += "\(confidence) \(finding.file):\(finding.line):\(finding.column): "
-                output += "[\(finding.severity)] \(finding.message)\n"
-                if let suggestion = finding.suggestion {
+            for diag in categoryDiags.sorted() {
+                let confidence = confidenceMarker(diag.confidence)
+                output += "\(confidence) \(diag.file):\(diag.line):\(diag.column): "
+                output += "[\(diag.severity.rawValue)] \(diag.message)\n"
+                if let suggestion = diag.suggestion {
                     output += "  → \(suggestion)\n"
                 }
             }
@@ -31,12 +31,12 @@ enum TextFormatter {
         // Summary
         output += "## Summary\n\n"
         for category in Category.allCases {
-            let count = grouped[category]?.count ?? 0
+            let count = grouped[category.rawValue]?.count ?? 0
             if count > 0 {
                 output += "  §\(category.sectionNumber) \(category.displayName): \(count)\n"
             }
         }
-        output += "  Total: \(findings.count)\n"
+        output += "  Total: \(diagnostics.count)\n"
 
         return output
     }

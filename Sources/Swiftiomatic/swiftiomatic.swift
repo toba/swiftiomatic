@@ -77,7 +77,7 @@ struct Analyze: AsyncParsableCommand {
     var suggestOnly = false
 
     mutating func run() async throws {
-        let cfg = loadConfig()
+        let cfg = Configuration.loadUnified(configPath: config)
 
         // Build suggest categories
         let categories: Set<Category> =
@@ -116,7 +116,7 @@ struct Analyze: AsyncParsableCommand {
         if suggestOnly {
             lintRules = []
         } else {
-            let mergedDisabled = Set(disableRule + cfg.disabledRules)
+            let mergedDisabled = Set(disableRule + cfg.disabledLintRules)
             let mergedEnabled: Set<String>? = enableRule.isEmpty && cfg.enabledLintRules.isEmpty
                 ? nil
                 : Set(enableRule + cfg.enabledLintRules)
@@ -135,7 +135,6 @@ struct Analyze: AsyncParsableCommand {
             typeResolver: resolver,
             lintRules: lintRules,
             compilerArguments: compilerArgs,
-            skipSuggest: lintOnly,
         )
 
         // Fix mode
@@ -168,15 +167,14 @@ struct Analyze: AsyncParsableCommand {
         } else {
             switch format {
                 case .text:
-                    // For text mode with suggest findings, use the rich TextFormatter
-                    if !lintOnly {
-                        let findings = await analyzer.suggestFindings(paths: paths)
-                        if !findings.isEmpty {
-                            print(TextFormatter.format(findings))
-                        }
+                    // Suggest-style diagnostics get the rich TextFormatter
+                    let suggestDiags = diagnostics.filter { $0.engine == .suggest }
+                    if !suggestDiags.isEmpty {
+                        print(TextFormatter.format(suggestDiags))
                     }
-                    // Lint diagnostics in Xcode-compatible format
-                    let lintDiags = diagnostics.filter { $0.engine == .lint || $0.engine == .format }
+                    // Lint/format diagnostics in Xcode-compatible format
+                    let lintDiags = diagnostics
+                        .filter { $0.engine == .lint || $0.engine == .format }
                     if !lintDiags.isEmpty {
                         print(DiagnosticFormatter.formatXcode(lintDiags))
                         print("\nLint: \(lintDiags.count) issues")
@@ -196,7 +194,7 @@ struct Analyze: AsyncParsableCommand {
 
     // MARK: - Fix Mode
 
-    private func runFix(analyzer: Analyzer, cfg: SwiftiomaticConfig) throws {
+    private func runFix(analyzer: Analyzer, cfg: Configuration) throws {
         let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
         guard !files.isEmpty else {
             print("No Swift files found")
@@ -250,7 +248,7 @@ struct Analyze: AsyncParsableCommand {
 
     // MARK: - Format-Lint Integration
 
-    private func runFormatLint(cfg: SwiftiomaticConfig) -> [Diagnostic] {
+    private func runFormatLint(cfg: Configuration) -> [Diagnostic] {
         let engine = buildFormatEngine(config: cfg)
         let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
         var diagnostics: [Diagnostic] = []
@@ -268,11 +266,11 @@ struct Analyze: AsyncParsableCommand {
         return diagnostics
     }
 
-    private func buildFormatEngine(config: SwiftiomaticConfig) -> FormatEngine {
+    private func buildFormatEngine(config: Configuration) -> FormatEngine {
         var options = FormatOptions.default
-        options.indent = config.indent
-        options.maxWidth = config.maxWidth
-        if let version = Version(rawValue: config.swiftVersion) {
+        options.indent = config.formatIndent
+        options.maxWidth = config.formatMaxWidth
+        if let version = Version(rawValue: config.formatSwiftVersion) {
             options.swiftVersion = version
         }
         return FormatEngine(
@@ -280,19 +278,6 @@ struct Analyze: AsyncParsableCommand {
             disable: config.disabledFormatRules,
             options: options,
         )
-    }
-
-    // MARK: - Config
-
-    private func loadConfig() -> SwiftiomaticConfig {
-        if let path = config {
-            return (try? SwiftiomaticConfig.load(from: path)) ?? .default
-        }
-        let cwd = FileManager.default.currentDirectoryPath
-        if let found = SwiftiomaticConfig.find(from: cwd) {
-            return (try? SwiftiomaticConfig.load(from: found)) ?? .default
-        }
-        return .default
     }
 }
 

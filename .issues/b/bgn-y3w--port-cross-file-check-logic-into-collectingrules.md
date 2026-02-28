@@ -1,10 +1,11 @@
 ---
 # bgn-y3w
 title: Port cross-file Check logic into CollectingRules
-status: ready
+status: completed
 type: task
+priority: normal
 created_at: 2026-02-28T17:05:56Z
-updated_at: 2026-02-28T17:05:56Z
+updated_at: 2026-02-28T17:25:11Z
 parent: dz8-axs
 ---
 

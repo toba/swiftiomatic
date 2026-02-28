@@ -1,5 +1,3 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-
 /// Represents the number of bytes in a string.
 struct ByteCount: ExpressibleByIntegerLiteral, Hashable, Sendable {
     var value: Int

@@ -1,5 +1,3 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-
 /// Swift statement kinds.
 enum StatementKind: String {
     case brace = "source.lang.swift.stmt.brace"

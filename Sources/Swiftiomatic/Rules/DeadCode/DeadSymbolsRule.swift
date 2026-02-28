@@ -29,7 +29,8 @@ struct DeadSymbolsRule: CollectingRule, OptInRule {
     )
 
     func collectInfo(for file: SwiftLintFile) -> SymbolContribution {
-        let collector = DeclarationReferenceCollector(viewMode: .sourceAccurate)
+        let filePath = file.path ?? ""
+        let collector = DeclarationReferenceCollector(filePath: filePath, viewMode: .sourceAccurate)
         collector.walk(file.syntaxTree)
         return SymbolContribution(
             declarations: collector.declarations, references: collector.references,
@@ -81,16 +82,24 @@ struct SymbolDeclaration {
 }
 
 private final class DeclarationReferenceCollector: SyntaxVisitor {
+    let filePath: String
     var declarations: [SymbolDeclaration] = []
     var references: [String] = []
-    private var currentFile = ""
+
+    init(filePath: String, viewMode: SyntaxTreeViewMode) {
+        self.filePath = filePath
+        super.init(viewMode: viewMode)
+    }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         if isPrivate(node.modifiers), !shouldExclude(node) {
+            let loc = node.startLocation(
+                converter: .init(fileName: filePath, tree: node.root),
+            )
             declarations.append(
                 SymbolDeclaration(
-                    name: node.name.text, kind: "func", file: currentFile,
-                    line: 0, column: 0,
+                    name: node.name.text, kind: "func", file: filePath,
+                    line: loc.line, column: loc.column,
                 ),
             )
         }
@@ -101,11 +110,14 @@ private final class DeclarationReferenceCollector: SyntaxVisitor {
         guard isPrivate(node.modifiers) else { return .visitChildren }
         for binding in node.bindings {
             guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self) else { continue }
+            let loc = binding.startLocation(
+                converter: .init(fileName: filePath, tree: node.root),
+            )
             declarations.append(
                 SymbolDeclaration(
                     name: pattern.identifier.text,
                     kind: node.bindingSpecifier.tokenKind == .keyword(.let) ? "let" : "var",
-                    file: currentFile, line: 0, column: 0,
+                    file: filePath, line: loc.line, column: loc.column,
                 ),
             )
         }
@@ -114,9 +126,13 @@ private final class DeclarationReferenceCollector: SyntaxVisitor {
 
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         if isPrivate(node.modifiers) {
+            let loc = node.startLocation(
+                converter: .init(fileName: filePath, tree: node.root),
+            )
             declarations.append(
                 SymbolDeclaration(
-                    name: node.name.text, kind: "class", file: currentFile, line: 0, column: 0,
+                    name: node.name.text, kind: "class", file: filePath,
+                    line: loc.line, column: loc.column,
                 ),
             )
         }
@@ -125,9 +141,13 @@ private final class DeclarationReferenceCollector: SyntaxVisitor {
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         if isPrivate(node.modifiers) {
+            let loc = node.startLocation(
+                converter: .init(fileName: filePath, tree: node.root),
+            )
             declarations.append(
                 SymbolDeclaration(
-                    name: node.name.text, kind: "struct", file: currentFile, line: 0, column: 0,
+                    name: node.name.text, kind: "struct", file: filePath,
+                    line: loc.line, column: loc.column,
                 ),
             )
         }
@@ -136,13 +156,13 @@ private final class DeclarationReferenceCollector: SyntaxVisitor {
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         if isPrivate(node.modifiers) {
+            let loc = node.startLocation(
+                converter: .init(fileName: filePath, tree: node.root),
+            )
             declarations.append(
                 SymbolDeclaration(
-                    name: node.name.text,
-                    kind: "enum",
-                    file: currentFile,
-                    line: 0,
-                    column: 0,
+                    name: node.name.text, kind: "enum", file: filePath,
+                    line: loc.line, column: loc.column,
                 ),
             )
         }

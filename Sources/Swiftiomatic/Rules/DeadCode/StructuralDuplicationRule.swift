@@ -72,6 +72,39 @@ struct FunctionFingerprint {
     let fingerprint: String
 }
 
+/// Recursively walks a syntax subtree and collects the type name of every
+/// non-token, non-trivia node to produce a structural fingerprint.
+enum FingerprintVisitor {
+    /// Container node types to skip — they add no structural signal.
+    private static let containerTypes: Set<String> = [
+        "CodeBlockSyntax",
+        "CodeBlockItemListSyntax",
+        "CodeBlockItemSyntax",
+    ]
+
+    /// Collect structural node type names from the given syntax subtree.
+    static func collectNodeTypes(from node: some SyntaxProtocol) -> [String] {
+        var result: [String] = []
+        collect(from: Syntax(node), into: &result)
+        return result
+    }
+
+    private static func collect(from node: Syntax, into result: inout [String]) {
+        // Skip tokens — we only care about structural (non-leaf) nodes.
+        if node.is(TokenSyntax.self) { return }
+
+        let typeName = "\(type(of: node.asProtocol(SyntaxProtocol.self)))"
+
+        if !containerTypes.contains(typeName) {
+            result.append(typeName)
+        }
+
+        for child in node.children(viewMode: .sourceAccurate) {
+            collect(from: child, into: &result)
+        }
+    }
+}
+
 private final class FingerprintCollector: SyntaxVisitor {
     let filePath: String
     var fingerprints: [FunctionFingerprint] = []

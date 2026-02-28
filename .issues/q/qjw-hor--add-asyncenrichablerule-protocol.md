@@ -1,10 +1,11 @@
 ---
 # qjw-hor
 title: Add AsyncEnrichableRule protocol
-status: ready
+status: completed
 type: task
+priority: normal
 created_at: 2026-02-28T17:05:21Z
-updated_at: 2026-02-28T17:05:21Z
+updated_at: 2026-02-28T17:21:38Z
 parent: dz8-axs
 ---
 

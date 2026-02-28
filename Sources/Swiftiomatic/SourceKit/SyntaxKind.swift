@@ -1,5 +1,3 @@
-// Vendored from SourceKitten (MIT) — see LICENSES/SourceKitten-MIT.txt
-
 /// Syntax kind values.
 enum SourceKitSyntaxKind: String, CaseIterable {
     case argument = "source.lang.swift.syntaxtype.argument"
@@ -24,7 +22,7 @@ enum SourceKitSyntaxKind: String, CaseIterable {
     case poundDirectiveKeyword = "source.lang.swift.syntaxtype.pounddirective.keyword"
     case `operator` = "source.lang.swift.syntaxtype.operator"
 
-    internal static func docComments() -> [SourceKitSyntaxKind] {
+    static func docComments() -> [SourceKitSyntaxKind] {
         [.commentURL, .docComment, .docCommentField]
     }
 }

@@ -1,11 +1,11 @@
 ---
 # 5w8-efc
 title: Enrich Tier 2 rules with async SourceKit resolution
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-28T17:05:21Z
-updated_at: 2026-02-28T17:06:02Z
+updated_at: 2026-02-28T17:25:11Z
 parent: dz8-axs
 blocked_by:
     - qjw-hor

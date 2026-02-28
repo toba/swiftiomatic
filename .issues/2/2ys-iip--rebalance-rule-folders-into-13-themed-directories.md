@@ -1,11 +1,11 @@
 ---
 # 2ys-iip
 title: Rebalance rule folders into ~13 themed directories
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-28T17:05:56Z
-updated_at: 2026-02-28T17:06:02Z
+updated_at: 2026-02-28T17:53:21Z
 parent: dz8-axs
 blocked_by:
     - x76-2r9

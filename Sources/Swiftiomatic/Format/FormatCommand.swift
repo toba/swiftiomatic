@@ -40,7 +40,7 @@ struct FormatCommand: ParsableCommand {
             return
         }
 
-        let cfg = try loadConfig()
+        let cfg = loadConfig()
         let engine = buildEngine(config: cfg)
         let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
 
@@ -134,25 +134,18 @@ struct FormatCommand: ParsableCommand {
         }
     }
 
-    private func loadConfig() throws -> SwiftiomaticConfig {
-        if let path = config {
-            return try SwiftiomaticConfig.load(from: path)
-        }
-        let cwd = FileManager.default.currentDirectoryPath
-        if let found = SwiftiomaticConfig.find(from: cwd) {
-            return try SwiftiomaticConfig.load(from: found)
-        }
-        return .default
+    private func loadConfig() -> Configuration {
+        Configuration.loadUnified(configPath: config)
     }
 
-    private func buildEngine(config: SwiftiomaticConfig) -> FormatEngine {
+    private func buildEngine(config: Configuration) -> FormatEngine {
         let allEnabled = config.enabledFormatRules + enable
         let allDisabled = config.disabledFormatRules + disable
 
         var options = FormatOptions.default
-        options.indent = config.indent
-        options.maxWidth = config.maxWidth
-        if let version = Version(rawValue: config.swiftVersion) {
+        options.indent = config.formatIndent
+        options.maxWidth = config.formatMaxWidth
+        if let version = Version(rawValue: config.formatSwiftVersion) {
             options.swiftVersion = version
         }
 
