@@ -1,10 +1,11 @@
 ---
 # kmp-lex
 title: Fix 15 disabled CustomRulesTests for SuperfluousDisableCommand interaction
-status: ready
+status: completed
 type: bug
+priority: normal
 created_at: 2026-02-28T15:27:52Z
-updated_at: 2026-02-28T15:27:52Z
+updated_at: 2026-02-28T17:06:07Z
 ---
 
 15 tests in `Tests/SwiftiomaticTests/LintTests/Framework/CustomRulesTests.swift` are disabled with:
@@ -44,3 +45,7 @@ SourceKit (sourcekitd) crashes with SIGSEGV under parallel test load. This is an
 - [ ] Investigate SuperfluousDisableCommandRule state management under parallel execution
 - [ ] Fix the interaction and re-enable all 15 tests
 - [ ] Consider whether the SourceKit SIGSEGV needs a workaround (env var, reduced parallelism)
+
+## Summary of Changes
+
+Resolved by removing CustomRules entirely (heb-2ie). The 15 disabled tests and the CustomRulesTests file no longer exist.

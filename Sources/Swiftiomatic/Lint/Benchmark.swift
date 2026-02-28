@@ -14,7 +14,6 @@ struct Benchmark {
     }
 
     mutating func record(id: String, time: Double) {
-        guard id != "custom_rules" else { return }
         entries.append(BenchmarkEntry(id: id, time: time))
     }
 

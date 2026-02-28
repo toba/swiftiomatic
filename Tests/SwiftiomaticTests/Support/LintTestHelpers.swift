@@ -694,10 +694,3 @@ func checkError<T: Error & Equatable>(
     }
 }
 
-// MARK: - CustomRules extension
-
-extension [any Rule] {
-    var customRules: CustomRules? {
-        first(where: { $0 is CustomRules }) as? CustomRules
-    }
-}

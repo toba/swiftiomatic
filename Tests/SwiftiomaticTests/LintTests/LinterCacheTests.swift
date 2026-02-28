@@ -233,43 +233,6 @@ private final class TestFileManager: @unchecked Sendable, LintableFileManager {
 
     // MARK: All-File Cache Invalidation
 
-    @Test func customRulesChangedOrAddedOrRemovedCausesAllFilesToBeReLinted() throws {
-        let initialConfig = try Configuration(
-            dict: [
-                "only_rules": ["custom_rules", "rule1"],
-                "custom_rules": ["rule1": ["regex": "([n,N]inja)"]],
-            ],
-            ruleList: RuleList(rules: CustomRules.self),
-        )
-        cacheAndValidateNoViolationsTwoFiles(configuration: initialConfig)
-
-        // Change
-        try validateNewConfigDoesNotHitCache(
-            dict: [
-                "only_rules": ["custom_rules", "rule1"],
-                "custom_rules": ["rule1": ["regex": "([n,N]injas)"]],
-            ],
-            initialConfig: initialConfig,
-        )
-
-        // Addition
-        try validateNewConfigDoesNotHitCache(
-            dict: [
-                "only_rules": ["custom_rules", "rule1"],
-                "custom_rules": [
-                    "rule1": ["regex": "([n,N]injas)"],
-                    "rule2": ["regex": "([k,K]ittens)"],
-                ],
-            ],
-            initialConfig: initialConfig,
-        )
-
-        // Removal
-        try validateNewConfigDoesNotHitCache(
-            dict: ["only_rules": ["custom_rules"]], initialConfig: initialConfig,
-        )
-    }
-
     @Test func disabledRulesChangedOrAddedOrRemovedCausesAllFilesToBeReLinted() throws {
         let initialConfig = try Configuration(dict: ["disabled_rules": ["nesting"]])
         cacheAndValidateNoViolationsTwoFiles(configuration: initialConfig)

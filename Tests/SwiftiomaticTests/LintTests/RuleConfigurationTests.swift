@@ -119,35 +119,6 @@ import Testing
         #expect(severityConfig.params == [RuleParameter(severity: .warning, value: 18)])
     }
 
-    @Test func regexConfigurationThrows() {
-        let config = 17
-        var regexConfig = RegexConfiguration<MockRule>(identifier: "")
-        checkError(Issue.invalidConfiguration(ruleID: MockRule.identifier)) {
-            try regexConfig.apply(configuration: config)
-        }
-    }
-
-    @Test func regexRuleDescription() {
-        var regexConfig = RegexConfiguration<MockRule>(identifier: "regex")
-        #expect(
-            regexConfig.description
-                == RuleDescription(
-                    identifier: "regex",
-                    name: "regex",
-                    description: "", kind: .style,
-                ),
-        )
-        regexConfig.name = "name"
-        #expect(
-            regexConfig.description
-                == RuleDescription(
-                    identifier: "regex",
-                    name: "name",
-                    description: "", kind: .style,
-                ),
-        )
-    }
-
     @Test func trailingWhitespaceConfigurationThrowsOnBadConfig() {
         let config = "unknown"
         var configuration = TrailingWhitespaceConfiguration(

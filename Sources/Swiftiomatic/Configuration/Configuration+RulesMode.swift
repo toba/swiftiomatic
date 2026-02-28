@@ -6,13 +6,7 @@ extension Configuration {
     /// - returns: The rule for the specified ID, if configured in this configuration.
     func configuredRule(forID ruleID: String) -> (any Rule)? {
         rules.first { rule in
-            if type(of: rule).identifier == ruleID {
-                if let customRules = rule as? CustomRules {
-                    return customRules.configuration.customRuleConfigurations.isNotEmpty
-                }
-                return true
-            }
-            return false
+            type(of: rule).identifier == ruleID
         }
     }
 
@@ -123,22 +117,5 @@ extension Configuration {
             }
         }
 
-        func activateCustomRuleIdentifiers(allRulesWrapped: [ConfigurationRuleWrapper]) -> Self {
-            // In the only mode, if the custom rules rule is enabled, all custom rules are also enabled implicitly
-            // This method makes the implicitly explicit
-            switch self {
-                case let .onlyConfiguration(onlyRules)
-                where onlyRules.contains {
-                    $0 == CustomRules.identifier
-                }:
-                    let customRulesRule = allRulesWrapped.customRules
-                    return .onlyConfiguration(
-                        onlyRules.union(Set(customRulesRule?.customRuleIdentifiers ?? [])),
-                    )
-
-                default:
-                    return self
-            }
-        }
     }
 }

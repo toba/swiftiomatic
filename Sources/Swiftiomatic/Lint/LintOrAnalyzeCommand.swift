@@ -113,7 +113,6 @@ enum LintOrAnalyzeCommand {
         ) { linter in
             let currentViolations: [StyleViolation]
             if options.benchmark {
-                CustomRuleTimer.shared.activate()
                 let start = Date()
                 let (violationsBeforeLeniency, currentRuleTimes) =
                     linter
@@ -173,9 +172,6 @@ enum LintOrAnalyzeCommand {
         if options.benchmark {
             builder.state.withLock { state in
                 state.fileBenchmark.save()
-                for (id, time) in CustomRuleTimer.shared.dump() {
-                    state.ruleBenchmark.record(id: id, time: time)
-                }
                 state.ruleBenchmark.save()
             }
             if !options.quiet, let memoryUsage = memoryUsage() {

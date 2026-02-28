@@ -159,15 +159,8 @@ private extension Rule {
                 return true
             }
 
-        let customRulesIDs: [String] = {
-            guard let customRules = self as? CustomRules else {
-                return []
-            }
-            return customRules.customRuleIdentifiers
-        }()
         let ruleIDs =
-            Self.description.allIdentifiers + customRulesIDs
-                +
+            Self.description.allIdentifiers +
                 (superfluousDisableCommandRule.map { type(of: $0) }?.description
                     .allIdentifiers ?? []) + [
                     RuleIdentifier.all.stringRepresentation,
@@ -497,13 +490,10 @@ struct CollectedLinter: @unchecked Sendable {
             return []
         }
 
-        let allCustomIdentifiers =
-            (configuration.rules.first { $0 is CustomRules } as? CustomRules)?
-                .configuration.customRuleConfigurations.map { RuleIdentifier($0.identifier) } ?? []
         let allRuleIdentifiers = RuleRegistry.shared.list.allValidIdentifiers().map {
             RuleIdentifier($0)
         }
-        let allValidIdentifiers = Set(allCustomIdentifiers + allRuleIdentifiers + [.all])
+        let allValidIdentifiers = Set(allRuleIdentifiers + [.all])
         let superfluousRuleIdentifier = RuleIdentifier(SuperfluousDisableCommandRule.identifier)
 
         return regions.flatMap { region in

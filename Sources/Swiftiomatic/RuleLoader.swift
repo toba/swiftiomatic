@@ -39,10 +39,8 @@ enum RuleLoader {
                 return nil
             }
 
-            // Skip CustomRules and SuperfluousDisableCommandRule — these depend on
-            // the deleted Lint orchestration layer
-            let typeName = String(describing: ruleType)
-            if typeName == "CustomRules" || typeName == "SuperfluousDisableCommandRule" {
+            // Skip SuperfluousDisableCommandRule — depends on the Lint orchestration layer
+            if ruleType is SuperfluousDisableCommandRule.Type {
                 return nil
             }
 
