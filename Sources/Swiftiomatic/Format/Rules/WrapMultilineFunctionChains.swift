@@ -22,9 +22,13 @@ extension FormatRule {
 
             var foundFunctionCall = false
             var dots: [Int] = []
-            let chainStartIndex = formatter.chainStartIndex(forOperatorAtIndex: operatorIndex, foundFunctionCall: &foundFunctionCall, dots: &dots)
+            let chainStartIndex = formatter.chainStartIndex(
+                forOperatorAtIndex: operatorIndex, foundFunctionCall: &foundFunctionCall, dots: &dots
+            )
             dots.append(operatorIndex)
-            let chainEndIndex = formatter.chainEndIndex(forOperatorAtIndex: operatorIndex, foundFunctionCall: &foundFunctionCall, dots: &dots)
+            let chainEndIndex = formatter.chainEndIndex(
+                forOperatorAtIndex: operatorIndex, foundFunctionCall: &foundFunctionCall, dots: &dots
+            )
 
             // Ensure we have at least one function call in the chain and two dots.
             guard foundFunctionCall, dots.count > 1 else {
@@ -85,7 +89,9 @@ extension FormatRule {
 }
 
 extension Formatter {
-    func chainStartIndex(forOperatorAtIndex operatorIndex: Int, foundFunctionCall: inout Bool, dots: inout [Int]) -> Int {
+    func chainStartIndex(
+        forOperatorAtIndex operatorIndex: Int, foundFunctionCall: inout Bool, dots: inout [Int]
+    ) -> Int {
         var chainStartIndex = operatorIndex
         var penultimateToken: Token?
         walk: while let prevIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: chainStartIndex),
@@ -136,7 +142,8 @@ extension Formatter {
                     break walk
                 }
 
-            case let .operator(op, opType) where (op == "." && opType == .infix) || (op == "?" && opType == .postfix):
+            case let .operator(op, opType)
+                where (op == "." && opType == .infix) || (op == "?" && opType == .postfix):
                 // Property access or infix chaining operator.
                 if op == "." {
                     dots.append(prevIndex)
@@ -157,7 +164,9 @@ extension Formatter {
         return chainStartIndex
     }
 
-    func chainEndIndex(forOperatorAtIndex operatorIndex: Int, foundFunctionCall: inout Bool, dots: inout [Int]) -> Int {
+    func chainEndIndex(
+        forOperatorAtIndex operatorIndex: Int, foundFunctionCall: inout Bool, dots: inout [Int]
+    ) -> Int {
         var chainEndIndex = operatorIndex
         var previousToken: Token?
         walk: while let nextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: chainEndIndex),
@@ -208,7 +217,8 @@ extension Formatter {
                     break walk
                 }
 
-            case let .operator(op, opType) where (op == "." && opType == .infix) || (op == "?" && opType == .postfix):
+            case let .operator(op, opType)
+                where (op == "." && opType == .infix) || (op == "?" && opType == .postfix):
                 if op == "." {
                     dots.append(nextIndex)
                 }

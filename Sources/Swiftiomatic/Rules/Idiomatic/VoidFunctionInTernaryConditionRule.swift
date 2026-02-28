@@ -10,106 +10,138 @@ struct VoidFunctionInTernaryConditionRule: Rule {
         kind: .idiomatic,
         minSwiftVersion: .fiveDotOne,
         nonTriggeringExamples: [
-            Example("""
-            if success {
-                askQuestion()
-            } else {
-                exit()
-            }
-            """),
-            Example("""
-            var price: Double {
-                return hasDiscount ? calculatePriceWithDiscount() : calculateRegularPrice()
-            }
-            """),
+            Example(
+                """
+                if success {
+                    askQuestion()
+                } else {
+                    exit()
+                }
+                """
+            ),
+            Example(
+                """
+                var price: Double {
+                    return hasDiscount ? calculatePriceWithDiscount() : calculateRegularPrice()
+                }
+                """
+            ),
             Example("foo(x == 2 ? a() : b())"),
-            Example("""
-            chevronView.image = collapsed ? .icon(.mediumChevronDown) : .icon(.mediumChevronUp)
-            """),
-            Example("""
-            array.map { elem in
-                elem.isEmpty() ? .emptyValue() : .number(elem)
-            }
-            """),
-            Example("""
-            func compute(data: [Int]) -> Int {
-                data.isEmpty ? 0 : expensiveComputation(data)
-            }
-            """),
-            Example("""
-            var value: Int {
-                mode == .fast ? fastComputation() : expensiveComputation()
-            }
-            """),
-            Example("""
-            var value: Int {
-                get {
+            Example(
+                """
+                chevronView.image = collapsed ? .icon(.mediumChevronDown) : .icon(.mediumChevronUp)
+                """
+            ),
+            Example(
+                """
+                array.map { elem in
+                    elem.isEmpty() ? .emptyValue() : .number(elem)
+                }
+                """
+            ),
+            Example(
+                """
+                func compute(data: [Int]) -> Int {
+                    data.isEmpty ? 0 : expensiveComputation(data)
+                }
+                """
+            ),
+            Example(
+                """
+                var value: Int {
                     mode == .fast ? fastComputation() : expensiveComputation()
                 }
-            }
-            """),
-            Example("""
-            subscript(index: Int) -> Int {
-                get {
-                    index == 0 ? defaultValue() : compute(index)
+                """
+            ),
+            Example(
+                """
+                var value: Int {
+                    get {
+                        mode == .fast ? fastComputation() : expensiveComputation()
+                    }
                 }
-            """),
-            Example("""
-            subscript(index: Int) -> Int {
-                index == 0 ? defaultValue() : compute(index)
-            """),
-            Example("""
-            var a = b ? c() : d()
-            a += b ? c() : d()
-            a -= b ? c() : d()
-            a *= b ? c() : d()
-            a &<<= b ? c() : d()
-            a &-= b ? c() : d()
-            """),
+                """
+            ),
+            Example(
+                """
+                subscript(index: Int) -> Int {
+                    get {
+                        index == 0 ? defaultValue() : compute(index)
+                    }
+                """
+            ),
+            Example(
+                """
+                subscript(index: Int) -> Int {
+                    index == 0 ? defaultValue() : compute(index)
+                """
+            ),
+            Example(
+                """
+                var a = b ? c() : d()
+                a += b ? c() : d()
+                a -= b ? c() : d()
+                a *= b ? c() : d()
+                a &<<= b ? c() : d()
+                a &-= b ? c() : d()
+                """
+            ),
         ],
         triggeringExamples: [
             Example("success ↓? askQuestion() : exit()"),
-            Example("""
-            perform { elem in
-                elem.isEmpty() ↓? .emptyValue() : .number(elem)
-                return 1
-            }
-            """),
-            Example("""
-            DispatchQueue.main.async {
-                self.sectionViewModels[section].collapsed.toggle()
-                self.sectionViewModels[section].collapsed
-                    ↓? self.tableView.deleteRows(at: [IndexPath(row: 0, section: section)], with: .automatic)
-                    : self.tableView.insertRows(at: [IndexPath(row: 0, section: section)], with: .automatic)
-                self.tableView.scrollToRow(at: IndexPath(row: NSNotFound, section: section), at: .top, animated: true)
-            }
-            """),
-            Example("""
-            subscript(index: Int) -> Int {
-                index == 0 ↓? something() : somethingElse(index)
-                return index
-            """),
-            Example("""
-            var value: Int {
-                mode == .fast ↓? something() : somethingElse()
-                return 0
-            }
-            """),
-            Example("""
-            var value: Int {
-                get {
+            Example(
+                """
+                perform { elem in
+                    elem.isEmpty() ↓? .emptyValue() : .number(elem)
+                    return 1
+                }
+                """
+            ),
+            Example(
+                """
+                DispatchQueue.main.async {
+                    self.sectionViewModels[section].collapsed.toggle()
+                    self.sectionViewModels[section].collapsed
+                        ↓? self.tableView.deleteRows(at: [IndexPath(row: 0, section: section)], with: .automatic)
+                        : self.tableView.insertRows(at: [IndexPath(row: 0, section: section)], with: .automatic)
+                    self.tableView.scrollToRow(at: IndexPath(row: NSNotFound, section: section), at: .top, animated: true)
+                }
+                """
+            ),
+            Example(
+                """
+                subscript(index: Int) -> Int {
+                    index == 0 ↓? something() : somethingElse(index)
+                    return index
+                """
+            ),
+            Example(
+                """
+                var value: Int {
                     mode == .fast ↓? something() : somethingElse()
                     return 0
                 }
-            }
-            """),
-            Example("""
-            subscript(index: Int) -> Int {
-                get {
-                    index == 0 ↓? something() : somethingElse(index)
-                    return index
+                """
+            ),
+            Example(
+                """
+                var value: Int {
+                    get {
+                        mode == .fast ↓? something() : somethingElse()
+                        return 0
+                    }
                 }
-            """),
+                """
+            ),
+            Example(
+                """
+                subscript(index: Int) -> Int {
+                    get {
+                        index == 0 ↓? something() : somethingElse(index)
+                        return index
+                    }
+                """
+            ),
         ]
     )
 }
@@ -130,7 +162,8 @@ private extension VoidFunctionInTernaryConditionRule {
                   let grandparent = parent.parent,
                   grandparent.is(SequenceExprSyntax.self),
                   let blockItem = grandparent.parent?.as(CodeBlockItemSyntax.self),
-                  !blockItem.isImplicitReturn else {
+                  !blockItem.isImplicitReturn
+            else {
                 return
             }
 
@@ -145,7 +178,8 @@ private extension VoidFunctionInTernaryConditionRule {
                   let grandparent = parent.parent,
                   grandparent.is(SequenceExprSyntax.self),
                   let blockItem = grandparent.parent?.as(CodeBlockItemSyntax.self),
-                  !blockItem.isImplicitReturn else {
+                  !blockItem.isImplicitReturn
+            else {
                 return
             }
 
@@ -187,27 +221,30 @@ private extension ExprListSyntax {
 
 private extension CodeBlockItemSyntax {
     var isImplicitReturn: Bool {
-        isClosureImplicitReturn || isFunctionImplicitReturn ||
-        isVariableImplicitReturn || isSubscriptImplicitReturn ||
-        isAccessorImplicitReturn
+        isClosureImplicitReturn || isFunctionImplicitReturn || isVariableImplicitReturn
+            || isSubscriptImplicitReturn || isAccessorImplicitReturn
     }
 
     var isClosureImplicitReturn: Bool {
         guard let parent = parent?.as(CodeBlockItemListSyntax.self),
-              let grandparent = parent.parent else {
+              let grandparent = parent.parent
+        else {
             return false
         }
 
-        return parent.children(viewMode: .sourceAccurate).count == 1 && grandparent.is(ClosureExprSyntax.self)
+        return parent.children(viewMode: .sourceAccurate).count == 1
+            && grandparent.is(ClosureExprSyntax.self)
     }
 
     var isFunctionImplicitReturn: Bool {
         guard let parent = parent?.as(CodeBlockItemListSyntax.self),
-              let functionDecl = parent.parent?.parent?.as(FunctionDeclSyntax.self) else {
+              let functionDecl = parent.parent?.parent?.as(FunctionDeclSyntax.self)
+        else {
             return false
         }
 
-        return parent.children(viewMode: .sourceAccurate).count == 1 && functionDecl.signature.allowsImplicitReturns
+        return parent.children(viewMode: .sourceAccurate).count == 1
+            && functionDecl.signature.allowsImplicitReturns
     }
 
     var isVariableImplicitReturn: Bool {
@@ -221,16 +258,19 @@ private extension CodeBlockItemSyntax {
 
     var isSubscriptImplicitReturn: Bool {
         guard let parent = parent?.as(CodeBlockItemListSyntax.self),
-              let subscriptDecl = parent.parent?.parent?.as(SubscriptDeclSyntax.self) else {
+              let subscriptDecl = parent.parent?.parent?.as(SubscriptDeclSyntax.self)
+        else {
             return false
         }
 
-        return parent.children(viewMode: .sourceAccurate).count == 1 && subscriptDecl.allowsImplicitReturns
+        return parent.children(viewMode: .sourceAccurate).count == 1
+            && subscriptDecl.allowsImplicitReturns
     }
 
     var isAccessorImplicitReturn: Bool {
         guard let parent = parent?.as(CodeBlockItemListSyntax.self),
-              parent.parent?.parent?.as(AccessorDeclSyntax.self) != nil else {
+              parent.parent?.parent?.as(AccessorDeclSyntax.self) != nil
+        else {
             return false
         }
 

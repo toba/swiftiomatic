@@ -71,7 +71,7 @@ struct RequiredEnumCaseRule: Rule {
     var configuration = RequiredEnumCaseConfiguration()
 
     private static let exampleConfiguration = [
-        "NetworkResponsable": ["success": "warning", "error": "warning", "notConnected": "warning"]
+        "NetworkResponsable": ["success": "warning", "error": "warning", "notConnected": "warning"],
     ]
 
     static let description = RuleDescription(
@@ -80,54 +80,70 @@ struct RequiredEnumCaseRule: Rule {
         description: "Enums conforming to a specified protocol must implement a specific case(s).",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
-            enum MyNetworkResponse: String, NetworkResponsable {
-                case success, error, notConnected
-            }
-            """, configuration: exampleConfiguration),
-            Example("""
-            enum MyNetworkResponse: String, NetworkResponsable {
-                case success, error, notConnected(error: Error)
-            }
-            """, configuration: exampleConfiguration),
-            Example("""
-            enum MyNetworkResponse: String, NetworkResponsable {
-                case success
-                case error
-                case notConnected
-            }
-            """, configuration: exampleConfiguration),
-            Example("""
-            enum MyNetworkResponse: String, NetworkResponsable {
-                case success
-                case error
-                case notConnected(error: Error)
-            }
-            """, configuration: exampleConfiguration),
+            Example(
+                """
+                enum MyNetworkResponse: String, NetworkResponsable {
+                    case success, error, notConnected
+                }
+                """, configuration: exampleConfiguration
+            ),
+            Example(
+                """
+                enum MyNetworkResponse: String, NetworkResponsable {
+                    case success, error, notConnected(error: Error)
+                }
+                """, configuration: exampleConfiguration
+            ),
+            Example(
+                """
+                enum MyNetworkResponse: String, NetworkResponsable {
+                    case success
+                    case error
+                    case notConnected
+                }
+                """, configuration: exampleConfiguration
+            ),
+            Example(
+                """
+                enum MyNetworkResponse: String, NetworkResponsable {
+                    case success
+                    case error
+                    case notConnected(error: Error)
+                }
+                """, configuration: exampleConfiguration
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            ↓enum MyNetworkResponse: String, NetworkResponsable {
-                case success, error
-            }
-            """, configuration: exampleConfiguration),
-            Example("""
-            ↓enum MyNetworkResponse: String, NetworkResponsable {
-                case success, error
-            }
-            """, configuration: exampleConfiguration),
-            Example("""
-            ↓enum MyNetworkResponse: String, NetworkResponsable {
-                case success
-                case error
-            }
-            """, configuration: exampleConfiguration),
-            Example("""
-            ↓enum MyNetworkResponse: String, NetworkResponsable {
-                case success
-                case error
-            }
-            """, configuration: exampleConfiguration),
+            Example(
+                """
+                ↓enum MyNetworkResponse: String, NetworkResponsable {
+                    case success, error
+                }
+                """, configuration: exampleConfiguration
+            ),
+            Example(
+                """
+                ↓enum MyNetworkResponse: String, NetworkResponsable {
+                    case success, error
+                }
+                """, configuration: exampleConfiguration
+            ),
+            Example(
+                """
+                ↓enum MyNetworkResponse: String, NetworkResponsable {
+                    case success
+                    case error
+                }
+                """, configuration: exampleConfiguration
+            ),
+            Example(
+                """
+                ↓enum MyNetworkResponse: String, NetworkResponsable {
+                    case success
+                    case error
+                }
+                """, configuration: exampleConfiguration
+            ),
         ]
     )
 }

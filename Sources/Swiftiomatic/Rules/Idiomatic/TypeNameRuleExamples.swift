@@ -1,4 +1,4 @@
-internal struct TypeNameRuleExamples {
+enum TypeNameRuleExamples {
     static let nonTriggeringExamples: [Example] = [
         Example("class MyType {}"),
         Example("private struct _MyType {}"),
@@ -7,25 +7,31 @@ internal struct TypeNameRuleExamples {
         Example("private class _MyView_Previews: PreviewProvider", excludeFromDocumentation: true),
         Example("typealias Foo = Void"),
         Example("private typealias Foo = Void"),
-        Example("""
-        protocol Foo {
-          associatedtype Bar
-        }
-        """),
-        Example("""
-        protocol Foo {
-          associatedtype Bar: Equatable
-        }
-        """),
+        Example(
+            """
+            protocol Foo {
+              associatedtype Bar
+            }
+            """
+        ),
+        Example(
+            """
+            protocol Foo {
+              associatedtype Bar: Equatable
+            }
+            """
+        ),
         Example("enum MyType {\ncase value\n}"),
         Example("protocol P {}", configuration: ["validate_protocols": false]),
-        Example("""
-        struct SomeStruct {
-          enum `Type` {
-            case x, y, z
-          }
-        }
-        """),
+        Example(
+            """
+            struct SomeStruct {
+              enum `Type` {
+                case x, y, z
+              }
+            }
+            """
+        ),
     ]
 
     static let triggeringExamples: [Example] = [
@@ -42,21 +48,27 @@ internal struct TypeNameRuleExamples {
         Example("private typealias ↓Foo_Bar = Void"),
         Example("private typealias ↓foo = Void"),
         Example("typealias ↓\(repeatElement("A", count: 41).joined()) = Void"),
-        Example("""
-        protocol Foo {
-          associatedtype ↓X
-        }
-        """),
-        Example("""
-        protocol Foo {
-          associatedtype ↓Foo_Bar: Equatable
-        }
-        """),
-        Example("""
-        protocol Foo {
-          associatedtype ↓\(repeatElement("A", count: 41).joined())
-        }
-        """),
+        Example(
+            """
+            protocol Foo {
+              associatedtype ↓X
+            }
+            """
+        ),
+        Example(
+            """
+            protocol Foo {
+              associatedtype ↓Foo_Bar: Equatable
+            }
+            """
+        ),
+        Example(
+            """
+            protocol Foo {
+              associatedtype ↓\(repeatElement("A", count: 41).joined())
+            }
+            """
+        ),
         Example("protocol ↓X {}"),
     ]
 }

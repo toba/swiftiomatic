@@ -53,7 +53,9 @@ private extension TextTable {
         var totalNumberOfErrors = 0
 
         for ruleIdentifier in sortedRuleIdentifiers {
-            guard let ruleIdentifier = ruleIdentifiersToViolationsMap[ruleIdentifier]?.first?.ruleIdentifier else {
+            guard
+                let ruleIdentifier = ruleIdentifiersToViolationsMap[ruleIdentifier]?.first?.ruleIdentifier
+            else {
                 continue
             }
 
@@ -114,13 +116,14 @@ private extension String {
     }
 }
 
-private extension Int {
+extension Int {
     private static let numberFormatter: NumberFormatter = {
         let numberFormatter = NumberFormatter()
         numberFormatter.numberStyle = .decimal
         return numberFormatter
     }()
-    var formattedString: String {
+
+    fileprivate var formattedString: String {
         // swiftlint:disable:next legacy_objc_type
         Int.numberFormatter.string(from: NSNumber(value: self)) ?? ""
     }

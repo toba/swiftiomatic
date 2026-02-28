@@ -1,4 +1,3 @@
-
 struct RedundantTypeAnnotationConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")
     var severityConfiguration = SeverityConfiguration<Parent>(.warning)

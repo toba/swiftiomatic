@@ -14,11 +14,16 @@ extension FormatRule {
         orderAfter: [.blankLineAfterSwitchCase]
     ) { formatter in
         formatter.forEach(.keyword("switch")) { switchIndex, _ in
-            guard let switchCases = formatter.switchStatementBranchesWithSpacingInfo(at: switchIndex) else { return }
+            guard let switchCases = formatter.switchStatementBranchesWithSpacingInfo(at: switchIndex)
+            else { return }
 
             // When counting the switch cases, exclude the last case (which should never have a trailing blank line).
-            let countWithTrailingBlankLine = switchCases.filter { $0.isFollowedByBlankLine && !$0.isLastCase }.count
-            let countWithoutTrailingBlankLine = switchCases.filter { !$0.isFollowedByBlankLine && !$0.isLastCase }.count
+            let countWithTrailingBlankLine = switchCases.filter {
+                $0.isFollowedByBlankLine && !$0.isLastCase
+            }.count
+            let countWithoutTrailingBlankLine = switchCases.filter {
+                !$0.isFollowedByBlankLine && !$0.isLastCase
+            }.count
 
             // We want the spacing to be consistent for all switch cases,
             // so use whichever formatting is used for the majority of cases.

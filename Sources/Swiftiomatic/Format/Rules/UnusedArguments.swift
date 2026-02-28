@@ -23,8 +23,10 @@ extension FormatRule {
             else { return }
 
             // In subscripts and operators, external function labels are unnecessary
-            let isOperator = (token.string == "subscript") ||
-                (token.string == "func" && formatter.next(.nonSpaceOrCommentOrLinebreak, after: i)?.isOperator == true)
+            let isOperator =
+                (token.string == "subscript")
+                    || (token.string == "func"
+                        && formatter.next(.nonSpaceOrCommentOrLinebreak, after: i)?.isOperator == true)
 
             guard let declaration = formatter.parseFunctionDeclaration(keywordIndex: i),
                   let bodyRange = declaration.bodyRange
@@ -33,7 +35,9 @@ extension FormatRule {
             var arguments = declaration.arguments.filter { $0.internalLabel != nil }
             var argNames = arguments.compactMap(\.internalLabel)
 
-            formatter.removeUsed(from: &argNames, with: &arguments, in: bodyRange.lowerBound + 1 ..< bodyRange.upperBound)
+            formatter.removeUsed(
+                from: &argNames, with: &arguments, in: bodyRange.lowerBound + 1 ..< bodyRange.upperBound
+            )
             for argument in arguments.reversed() {
                 // In subscripts and operators, external function labels are unnecessary
                 if isOperator {
@@ -99,10 +103,10 @@ extension FormatRule {
                     argCountStack.removeLast()
                 case .delimiter(","):
                     argCountStack[argCountStack.count - 1] = argNames.count
-                case .identifier("async") where
-                    formatter.last(.nonSpaceOrLinebreak, before: index)?.isIdentifier == true:
-                    fallthrough
-                case .operator("->", .infix), .keyword("throws"):
+                case .identifier("async")
+                    where
+                    formatter.last(.nonSpaceOrLinebreak, before: index)?.isIdentifier == true,
+                     .operator("->", .infix), .keyword("throws"):
                     // Everything after this was part of return value
                     let count = argCountStack.last ?? 0
                     argNames.removeSubrange(count ..< argNames.count)
@@ -111,9 +115,11 @@ extension FormatRule {
                     return
                 case .identifier:
                     guard argCountStack.count < 3,
-                          let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: index), [
+                          let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: index),
+                          [
                               .delimiter(","), .startOfScope("("), .startOfScope("{"), .endOfScope("]"),
-                          ].contains(prevToken), let scopeStart = formatter.index(of: .startOfScope, before: index),
+                          ].contains(prevToken),
+                          let scopeStart = formatter.index(of: .startOfScope, before: index),
                           ![.startOfScope("["), .startOfScope("<")].contains(formatter.tokens[scopeStart])
                     else {
                         break
@@ -137,7 +143,8 @@ extension FormatRule {
                 }
                 index -= 1
             }
-            guard !argNames.isEmpty, let bodyEndIndex = formatter.index(of: .endOfScope("}"), after: i) else {
+            guard !argNames.isEmpty, let bodyEndIndex = formatter.index(of: .endOfScope("}"), after: i)
+            else {
                 return
             }
             formatter.removeUsed(from: &argNames, with: &nameIndexPairs, in: i + 1 ..< bodyEndIndex)
@@ -188,9 +195,10 @@ extension FormatRule {
 }
 
 extension Formatter {
-    func removeUsed(from argNames: inout [String], with associatedData: inout [some Any],
-                    locals: Set<String> = [], in range: CountableRange<Int>)
-    {
+    func removeUsed(
+        from argNames: inout [String], with associatedData: inout [some Any],
+        locals: Set<String> = [], in range: CountableRange<Int>
+    ) {
         var isDeclaration = false
         var wasDeclaration = false
         var isConditional = false
@@ -240,13 +248,14 @@ extension Formatter {
                     break
                 }
                 if last(.nonSpaceOrCommentOrLinebreak, before: i)?.isOperator(".") == false,
-                   next(.nonSpaceOrCommentOrLinebreak, after: i) != .delimiter(":") || startOfScope(at: i).map({
+                   next(.nonSpaceOrCommentOrLinebreak, after: i) != .delimiter(":")
+                   || startOfScope(at: i).map({
                        scopeType(at: $0) == .dictionary
                    }) ?? false
                 {
                     if isDeclaration {
                         switch next(.nonSpaceOrCommentOrLinebreak, after: i) {
-                        case .delimiter(",")? where !isConditional, .endOfScope(")")?, .operator("=", .infix)?:
+                        case .delimiter(",") where !isConditional, .endOfScope(")"), .operator("=", .infix):
                             tempLocals.insert(name)
                             break outer
                         default:
@@ -265,24 +274,33 @@ extension Formatter {
                       let endIndex = conditinalBranches.last?.endOfBranch
                 else { fallthrough }
 
-                removeUsed(from: &argNames, with: &associatedData,
-                           locals: locals, in: i + 1 ..< endIndex)
+                removeUsed(
+                    from: &argNames, with: &associatedData,
+                    locals: locals, in: i + 1 ..< endIndex
+                )
             case .startOfScope("{"):
                 guard let endIndex = endOfScope(at: i) else {
-                    return fatalError("Expected }", at: i)
+                    fatalError("Expected }", at: i)
+                    return
                 }
                 if isStartOfClosure(at: i) {
-                    removeUsed(from: &argNames, with: &associatedData,
-                               locals: locals, in: i + 1 ..< endIndex)
+                    removeUsed(
+                        from: &argNames, with: &associatedData,
+                        locals: locals, in: i + 1 ..< endIndex
+                    )
                 } else if isGuard {
-                    removeUsed(from: &argNames, with: &associatedData,
-                               locals: locals, in: i + 1 ..< endIndex)
+                    removeUsed(
+                        from: &argNames, with: &associatedData,
+                        locals: locals, in: i + 1 ..< endIndex
+                    )
                     pushLocals()
                 } else {
                     let prevLocals = locals
                     pushLocals()
-                    removeUsed(from: &argNames, with: &associatedData,
-                               locals: locals, in: i + 1 ..< endIndex)
+                    removeUsed(
+                        from: &argNames, with: &associatedData,
+                        locals: locals, in: i + 1 ..< endIndex
+                    )
                     locals = prevLocals
                 }
 
@@ -291,23 +309,31 @@ extension Formatter {
             case .endOfScope("case"), .endOfScope("default"):
                 pushLocals()
                 guard let colonIndex = index(of: .startOfScope(":"), after: i) else {
-                    return fatalError("Expected :", at: i)
+                    fatalError("Expected :", at: i)
+                    return
                 }
                 guard let endIndex = endOfScope(at: colonIndex) else {
-                    return fatalError("Expected end of case statement",
-                                      at: colonIndex)
+                    fatalError(
+                        "Expected end of case statement",
+                        at: colonIndex
+                    )
+                    return
                 }
-                removeUsed(from: &argNames, with: &associatedData,
-                           locals: locals, in: i + 1 ..< endIndex)
+                removeUsed(
+                    from: &argNames, with: &associatedData,
+                    locals: locals, in: i + 1 ..< endIndex
+                )
                 i = endIndex - 1
             case .operator("=", .infix), .delimiter(":"), .startOfScope(":"),
                  .keyword("in"), .keyword("where"):
                 wasDeclaration = isDeclaration
                 isDeclaration = false
             case .delimiter(","):
-                if let scope = currentScope(at: i), [
-                    .startOfScope("("), .startOfScope("["), .startOfScope("<"),
-                ].contains(scope) {
+                if let scope = currentScope(at: i),
+                   [
+                       .startOfScope("("), .startOfScope("["), .startOfScope("<"),
+                   ].contains(scope)
+                {
                     break
                 }
                 if isConditional {

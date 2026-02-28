@@ -73,7 +73,7 @@ private extension TypeContentsOrderRule {
                 var potentialViolatingIndexes = [Int]()
 
                 let startIndex = lastMatchingIndex + 1
-                for index in startIndex..<sortedCategories.count {
+                for index in startIndex ..< sortedCategories.count {
                     let category = sortedCategories[index].category
                     if expectedTypesContents.contains(category) {
                         lastMatchingIndex = index
@@ -83,21 +83,27 @@ private extension TypeContentsOrderRule {
                 }
 
                 let violatingIndexes = potentialViolatingIndexes.filter { $0 < lastMatchingIndex }
-                violatingIndexes.forEach { index in
+                for index in violatingIndexes {
                     let category = sortedCategories[index].category
                     let content = category.rawValue
                     let expected = expectedTypesContents.map(\.rawValue).joined(separator: ",")
-                    let article = ["a", "e", "i", "o", "u"].contains(content.substring(from: 0, length: 1)) ? "An" : "A"
-                    violations.append(.init(
-                        position: sortedCategories[index].position,
-                        reason: "\(article) '\(content)' should not be placed amongst the type content(s) '\(expected)'"
-                    ))
+                    let article =
+                        ["a", "e", "i", "o", "u"].contains(content.substring(from: 0, length: 1)) ? "An" : "A"
+                    violations.append(
+                        .init(
+                            position: sortedCategories[index].position,
+                            reason:
+                            "\(article) '\(content)' should not be placed amongst the type content(s) '\(expected)'"
+                        )
+                    )
                 }
             }
         }
 
         // swiftlint:disable:next cyclomatic_complexity
-        private func categorize(member: MemberBlockItemSyntax) -> (position: AbsolutePosition, category: TypeContent)? {
+        private func categorize(member: MemberBlockItemSyntax) -> (
+            position: AbsolutePosition, category: TypeContent
+        )? {
             let decl = member.decl
             if let decl = decl.as(EnumCaseDeclSyntax.self) {
                 return (decl.caseKeyword.positionAfterSkippingLeadingTrivia, .case)
@@ -112,8 +118,9 @@ private extension TypeContentsOrderRule {
                 return (decl.introducer.positionAfterSkippingLeadingTrivia, .subtype)
             }
             if let decl = decl.as(VariableDeclSyntax.self) {
-                let position = decl.modifiers.first(where: \.isStaticOrClass)?.positionAfterSkippingLeadingTrivia
-                    ?? decl.bindingSpecifier.positionAfterSkippingLeadingTrivia
+                let position =
+                    decl.modifiers.first(where: \.isStaticOrClass)?.positionAfterSkippingLeadingTrivia
+                        ?? decl.bindingSpecifier.positionAfterSkippingLeadingTrivia
                 if decl.modifiers.containsStaticOrClass {
                     return (position, .typeProperty)
                 }
@@ -126,8 +133,9 @@ private extension TypeContentsOrderRule {
                 return (position, .instanceProperty)
             }
             if let decl = decl.as(FunctionDeclSyntax.self) {
-                let position = decl.modifiers.first(where: \.isStaticOrClass)?.positionAfterSkippingLeadingTrivia
-                    ?? decl.funcKeyword.positionAfterSkippingLeadingTrivia
+                let position =
+                    decl.modifiers.first(where: \.isStaticOrClass)?.positionAfterSkippingLeadingTrivia
+                        ?? decl.funcKeyword.positionAfterSkippingLeadingTrivia
                 if decl.modifiers.containsStaticOrClass {
                     return (position, .typeMethod)
                 }

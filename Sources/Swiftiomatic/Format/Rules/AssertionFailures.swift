@@ -18,11 +18,20 @@ extension FormatRule {
         formatter.forEachToken { i, token in
             switch token {
             case .identifier("assert"), .identifier("precondition"):
-                guard let scopeStart = formatter.index(of: .nonSpace, after: i, if: {
-                    $0 == .startOfScope("(")
-                }), let identifierIndex = formatter.index(of: .nonSpaceOrLinebreak, after: scopeStart, if: {
-                    $0 == .identifier("false")
-                }), var endIndex = formatter.index(of: .nonSpaceOrLinebreak, after: identifierIndex) else {
+                guard
+                    let scopeStart = formatter.index(
+                        of: .nonSpace, after: i,
+                        if: {
+                            $0 == .startOfScope("(")
+                        }
+                    ),
+                    let identifierIndex = formatter.index(
+                        of: .nonSpaceOrLinebreak, after: scopeStart,
+                        if: {
+                            $0 == .identifier("false")
+                        }
+                    ), var endIndex = formatter.index(of: .nonSpaceOrLinebreak, after: identifierIndex)
+                else {
                     return
                 }
 
@@ -32,9 +41,12 @@ extension FormatRule {
                 }
 
                 let replacements = ["assert": "assertionFailure", "precondition": "preconditionFailure"]
-                formatter.replaceTokens(in: i ..< endIndex, with: [
-                    .identifier(replacements[token.string]!), .startOfScope("("),
-                ])
+                formatter.replaceTokens(
+                    in: i ..< endIndex,
+                    with: [
+                        .identifier(replacements[token.string]!), .startOfScope("("),
+                    ]
+                )
             default:
                 break
             }

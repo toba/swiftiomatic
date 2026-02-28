@@ -1,19 +1,21 @@
 import Foundation
 
-internal extension Configuration {
+extension Configuration {
     class RulesWrapper {
         // MARK: - Properties
-        nonisolated(unsafe) private static var isOptInRuleCache: [String: Bool] = [:]
+
+        private nonisolated(unsafe) static var isOptInRuleCache: [String: Bool] = [:]
         private static let isOptInRuleCacheLock = NSLock()
 
         let allRulesWrapped: [ConfigurationRuleWrapper]
-        internal let mode: RulesMode
+        let mode: RulesMode
         private let aliasResolver: (String) -> String
 
         private var invalidRuleIdsWarnedAbout: Set<String> = []
         private var customRulesIdentifiers: Set<String> {
             Set(allRulesWrapped.customRules?.customRuleIdentifiers ?? [])
         }
+
         private var validRuleIdentifiers: Set<String> {
             let regularRuleIdentifiers = allRulesWrapped.map { type(of: $0.rule).identifier }
             return Set(regularRuleIdentifiers + customRulesIdentifiers)
@@ -40,22 +42,30 @@ internal extension Configuration {
                 customRulesFilter = { _ in true }
                 resultingRules = allRulesWrapped.map(\.rule)
 
-            case let .onlyConfiguration(onlyRulesRuleIdentifiers), let .onlyCommandLine(onlyRulesRuleIdentifiers):
+            case let .onlyConfiguration(onlyRulesRuleIdentifiers),
+                 let .onlyCommandLine(onlyRulesRuleIdentifiers):
                 customRulesFilter = { onlyRulesRuleIdentifiers.contains($0.identifier) }
-                let onlyRulesRuleIdentifiers = validate(ruleIds: onlyRulesRuleIdentifiers, valid: validRuleIdentifiers)
+                let onlyRulesRuleIdentifiers = validate(
+                    ruleIds: onlyRulesRuleIdentifiers, valid: validRuleIdentifiers
+                )
                 resultingRules = allRulesWrapped.filter { tuple in
                     onlyRulesRuleIdentifiers.contains(type(of: tuple.rule).identifier)
                 }.map(\.rule)
                 if !resultingRules.contains(where: { $0 is CustomRules }),
                    !customRulesIdentifiers.isDisjoint(with: onlyRulesRuleIdentifiers),
-                   let customRules = allRulesWrapped.customRules {
+                   let customRules = allRulesWrapped.customRules
+                {
                     resultingRules.append(customRules)
                 }
 
             case var .defaultConfiguration(disabledRuleIdentifiers, optInRuleIdentifiers):
                 customRulesFilter = { !disabledRuleIdentifiers.contains($0.identifier) }
-                disabledRuleIdentifiers = validate(ruleIds: disabledRuleIdentifiers, valid: validRuleIdentifiers)
-                optInRuleIdentifiers = validate(optInRuleIds: optInRuleIdentifiers, valid: validRuleIdentifiers)
+                disabledRuleIdentifiers = validate(
+                    ruleIds: disabledRuleIdentifiers, valid: validRuleIdentifiers
+                )
+                optInRuleIdentifiers = validate(
+                    optInRuleIds: optInRuleIdentifiers, valid: validRuleIdentifiers
+                )
                 resultingRules = allRulesWrapped.filter { tuple in
                     let id = type(of: tuple.rule).identifier
                     return !disabledRuleIdentifiers.contains(id)
@@ -88,9 +98,11 @@ internal extension Configuration {
 
             case let .onlyConfiguration(onlyRules), let .onlyCommandLine(onlyRules):
                 return validate(
-                    ruleIds: Set(allRulesWrapped
-                        .map { type(of: $0.rule).identifier }
-                        .filter { !onlyRules.contains($0) }),
+                    ruleIds: Set(
+                        allRulesWrapped
+                            .map { type(of: $0.rule).identifier }
+                            .filter { !onlyRules.contains($0) }
+                    ),
                     valid: validRuleIdentifiers,
                     silent: true
                 ).sorted(by: <)
@@ -101,6 +113,7 @@ internal extension Configuration {
         }()
 
         // MARK: - Initializers
+
         init(
             mode: RulesMode,
             allRulesWrapped: [ConfigurationRuleWrapper],
@@ -113,17 +126,21 @@ internal extension Configuration {
 
             // If this instance originates from a merging process, some custom rules may be treated as not activated
             // Otherwise, custom rules should be treated as implicitly activated
-            self.mode = originatesFromMergingProcess
-                ? mode
-                : mode.activateCustomRuleIdentifiers(allRulesWrapped: allRulesWrapped)
+            self.mode =
+                originatesFromMergingProcess
+                    ? mode
+                    : mode.activateCustomRuleIdentifiers(allRulesWrapped: allRulesWrapped)
         }
 
         // MARK: - Methods: Validation
+
         private func validate(optInRuleIds: Set<String>, valid: Set<String>) -> Set<String> {
             validate(ruleIds: optInRuleIds, valid: valid.union([RuleIdentifier.all.stringRepresentation]))
         }
 
-        private func validate(ruleIds: Set<String>, valid: Set<String>, silent: Bool = false) -> Set<String> {
+        private func validate(ruleIds: Set<String>, valid: Set<String>, silent: Bool = false) -> Set<
+            String
+        > {
             // Process invalid rule identifiers
             if !silent {
                 let invalidRuleIdentifiers = ruleIds.subtracting(valid)
@@ -146,6 +163,7 @@ internal extension Configuration {
         }
 
         // MARK: Merging
+
         func merged(with child: RulesWrapper) -> RulesWrapper {
             // Merge allRulesWrapped
             let newAllRulesWrapped = mergedAllRulesWrapped(with: child)
@@ -171,6 +189,7 @@ internal extension Configuration {
                 default:
                     newMode = .onlyConfiguration(childOnlyRules)
                 }
+
             case let .onlyCommandLine(onlyRules):
                 // Always use the only rule
                 newMode = .onlyCommandLine(onlyRules)
@@ -191,12 +210,16 @@ internal extension Configuration {
 
         private func mergedAllRulesWrapped(with child: RulesWrapper) -> [ConfigurationRuleWrapper] {
             let mainConfigSet = Set(allRulesWrapped.map(HashableConfigurationRuleWrapperWrapper.init))
-            let childConfigSet = Set(child.allRulesWrapped.map(HashableConfigurationRuleWrapperWrapper.init))
-            let childConfigRulesWithConfig = childConfigSet
-                .filter(\.configurationRuleWrapper.initializedWithNonEmptyConfiguration)
+            let childConfigSet = Set(
+                child.allRulesWrapped.map(HashableConfigurationRuleWrapperWrapper.init)
+            )
+            let childConfigRulesWithConfig =
+                childConfigSet
+                    .filter(\.configurationRuleWrapper.initializedWithNonEmptyConfiguration)
 
             let rulesUniqueToChildConfig = childConfigSet.subtracting(mainConfigSet)
-            return childConfigRulesWithConfig // Include, if rule is configured in child
+            return
+                childConfigRulesWithConfig // Include, if rule is configured in child
                 .union(rulesUniqueToChildConfig) // Include, if rule is in child config only
                 .union(mainConfigSet) // Use configurations from parent for remaining rules
                 .map(\.configurationRuleWrapper)
@@ -215,12 +238,13 @@ internal extension Configuration {
 
             // Create new custom rules rule, prioritizing child custom rules
             var configuration = CustomRulesConfiguration()
-            configuration.customRuleConfigurations = childCustomRulesRule.configuration.customRuleConfigurations
-                + parentCustomRulesRule.configuration.customRuleConfigurations.filter { parentConfig in
-                    !childCustomRulesRule.configuration.customRuleConfigurations.contains { childConfig in
-                        childConfig.identifier == parentConfig.identifier
+            configuration.customRuleConfigurations =
+                childCustomRulesRule.configuration.customRuleConfigurations
+                    + parentCustomRulesRule.configuration.customRuleConfigurations.filter { parentConfig in
+                        !childCustomRulesRule.configuration.customRuleConfigurations.contains { childConfig in
+                            childConfig.identifier == parentConfig.identifier
+                        }
                     }
-                }
             var newCustomRulesRule = CustomRules()
             newCustomRulesRule.configuration = configuration
 
@@ -268,9 +292,11 @@ internal extension Configuration {
 
                 // Allow parent only rules that weren't disabled via the child config
                 // & opt-ins from the child config
-                return .onlyConfiguration(Set(
-                    childOptIn.union(onlyRules).filter { !childDisabled.contains($0) }
-                ))
+                return .onlyConfiguration(
+                    Set(
+                        childOptIn.union(onlyRules).filter { !childDisabled.contains($0) }
+                    )
+                )
 
             case let .onlyCommandLine(onlyRules):
                 // Like .allEnabled, rules can be disabled in a child config
@@ -279,21 +305,24 @@ internal extension Configuration {
             case .allCommandLine:
                 // Opt-in to every rule that isn't disabled via child config
                 return .defaultConfiguration(
-                    disabled: childDisabled
+                    disabled:
+                    childDisabled
                         .filter {
                             !isOptInRule($0, allRulesWrapped: newAllRulesWrapped)
                         },
-                    optIn: Set(newAllRulesWrapped.map { type(of: $0.rule).identifier }
-                        .filter {
-                            !childDisabled.contains($0)
-                            && isOptInRule($0, allRulesWrapped: newAllRulesWrapped)
-                        }
+                    optIn: Set(
+                        newAllRulesWrapped.map { type(of: $0.rule).identifier }
+                            .filter {
+                                !childDisabled.contains($0)
+                                    && isOptInRule($0, allRulesWrapped: newAllRulesWrapped)
+                            }
                     )
                 )
             }
         }
 
         // MARK: Helpers
+
         private func isOptInRule(
             _ identifier: String, allRulesWrapped: [ConfigurationRuleWrapper]
         ) -> Bool {
@@ -304,8 +333,9 @@ internal extension Configuration {
                 return cachedIsOptInRule
             }
 
-            let isOptInRule = allRulesWrapped
-                .first { type(of: $0.rule).identifier == identifier }?.rule is any OptInRule
+            let isOptInRule =
+                allRulesWrapped
+                    .first { type(of: $0.rule).identifier == identifier }?.rule is any OptInRule
             Self.isOptInRuleCacheLock.withLock {
                 Self.isOptInRuleCache[identifier] = isOptInRule
             }

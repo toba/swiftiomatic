@@ -23,12 +23,15 @@ extension QuickDiscouragedPendingTestRule: OptInRule {}
 
 private extension QuickDiscouragedPendingTestRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_ node: FunctionCallExprSyntax) {
             if let identifierExpr = node.calledExpression.as(DeclReferenceExprSyntax.self),
                case let name = identifierExpr.baseName.text,
-               QuickPendingCallKind(rawValue: name) != nil {
+               QuickPendingCallKind(rawValue: name) != nil
+            {
                 violations.append(node.positionAfterSkippingLeadingTrivia)
             }
         }
@@ -55,9 +58,8 @@ private extension ClassDeclSyntax {
 
 private extension FunctionDeclSyntax {
     var isSpecFunction: Bool {
-        name.tokenKind == .identifier("spec") &&
-        signature.parameterClause.parameters.isEmpty &&
-            modifiers.contains(keyword: .override)
+        name.tokenKind == .identifier("spec") && signature.parameterClause.parameters.isEmpty
+            && modifiers.contains(keyword: .override)
     }
 }
 

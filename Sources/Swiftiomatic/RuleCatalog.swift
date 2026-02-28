@@ -21,14 +21,16 @@ enum RuleCatalog {
 
         // Suggest categories (deep analysis via Analyzer + TypeResolver)
         for category in Category.allCases {
-            entries.append(Entry(
-                id: category.rawValue,
-                name: category.displayName,
-                subsystem: .suggest,
-                kind: "suggest",
-                isEnabled: true,
-                isDeprecated: false
-            ))
+            entries.append(
+                Entry(
+                    id: category.rawValue,
+                    name: category.displayName,
+                    subsystem: .suggest,
+                    kind: "suggest",
+                    isEnabled: true,
+                    isDeprecated: false
+                )
+            )
         }
 
         // Lint rules (AST-based, via SwiftLint engine)
@@ -37,27 +39,32 @@ enum RuleCatalog {
         for (identifier, ruleType) in ruleList.list {
             let desc = ruleType.description
             let isOptIn = ruleType is any OptInRule.Type
-            entries.append(Entry(
-                id: identifier,
-                name: desc.name,
-                subsystem: .lint,
-                kind: desc.kind.rawValue,
-                isEnabled: !isOptIn,
-                isDeprecated: !desc.deprecatedAliases.isEmpty && desc.deprecatedAliases.contains(identifier)
-            ))
+            entries.append(
+                Entry(
+                    id: identifier,
+                    name: desc.name,
+                    subsystem: .lint,
+                    kind: desc.kind.rawValue,
+                    isEnabled: !isOptIn,
+                    isDeprecated: !desc.deprecatedAliases.isEmpty
+                        && desc.deprecatedAliases.contains(identifier)
+                )
+            )
         }
 
         // Format rules (token-based, via SwiftFormat engine)
         let defaultRuleNames = Set(FormatRules.default.map(\.name))
         for rule in FormatRules.all {
-            entries.append(Entry(
-                id: rule.name,
-                name: rule.name,
-                subsystem: .format,
-                kind: "format",
-                isEnabled: defaultRuleNames.contains(rule.name),
-                isDeprecated: rule.isDeprecated
-            ))
+            entries.append(
+                Entry(
+                    id: rule.name,
+                    name: rule.name,
+                    subsystem: .format,
+                    kind: "format",
+                    isEnabled: defaultRuleNames.contains(rule.name),
+                    isDeprecated: rule.isDeprecated
+                )
+            )
         }
 
         return entries.sorted { ($0.subsystem.rawValue, $0.id) < ($1.subsystem.rawValue, $1.id) }

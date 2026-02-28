@@ -7,7 +7,8 @@ struct NamingHeuristicsRule: Rule {
     static let description = RuleDescription(
         identifier: "naming_heuristics",
         name: "Naming Heuristics",
-        description: "Checks names against Swift API Design Guidelines: Bool assertions, protocol suffixes, factory prefixes",
+        description:
+        "Checks names against Swift API Design Guidelines: Bool assertions, protocol suffixes, factory prefixes",
         kind: .style,
         nonTriggeringExamples: [
             Example("var isEnabled: Bool = true"),
@@ -38,21 +39,21 @@ private extension NamingHeuristicsRule {
             let methods = node.memberBlock.members.compactMap { $0.decl.as(FunctionDeclSyntax.self) }
             let hasActionVerbs = methods.contains { method in
                 let n = method.name.text
-                return n.hasPrefix("provide") || n.hasPrefix("supply")
-                    || n.hasPrefix("create") || n.hasPrefix("generate")
-                    || n.hasPrefix("load") || n.hasPrefix("fetch")
-                    || n.hasPrefix("report") || n.hasPrefix("coordinate")
+                return NamingHelpers.actionVerbPrefixes.contains { n.hasPrefix($0) }
             }
 
             if hasActionVerbs {
-                violations.append(ReasonedRuleViolation(
-                    position: node.name.positionAfterSkippingLeadingTrivia,
-                    reason: "Protocol '\(name)' uses -able suffix but conformers perform the action — consider -ing suffix",
-                    severity: .warning,
-                    confidence: .low,
-                    suggestion: name.replacingSuffix("able", with: "ing")
-                        ?? name.replacingSuffix("ible", with: "ing")
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.name.positionAfterSkippingLeadingTrivia,
+                        reason:
+                        "Protocol '\(name)' uses -able suffix but conformers perform the action — consider -ing suffix",
+                        severity: .warning,
+                        confidence: .low,
+                        suggestion: name.replacingSuffix("able", with: "ing")
+                            ?? name.replacingSuffix("ible", with: "ing")
+                    )
+                )
             }
         }
 
@@ -62,7 +63,8 @@ private extension NamingHeuristicsRule {
                 let name = pattern.identifier.text
 
                 if let typeAnnotation = binding.typeAnnotation,
-                   typeAnnotation.type.trimmedDescription == "Bool" {
+                   typeAnnotation.type.trimmedDescription == "Bool"
+                {
                     checkBoolNaming(name: name, position: pattern.positionAfterSkippingLeadingTrivia)
                 }
             }
@@ -71,43 +73,31 @@ private extension NamingHeuristicsRule {
         override func visitPost(_ node: FunctionDeclSyntax) {
             let name = node.name.text
             guard node.modifiers.contains(where: { $0.name.text == "static" }) else { return }
+            guard let suggestion = NamingHelpers.factoryMethodSuggestion(for: name) else { return }
 
-            let hasCreatePrefix = name.hasPrefix("create") || name.hasPrefix("new") || name.hasPrefix("build")
-            guard hasCreatePrefix else { return }
-
-            let stripped: String
-            if name.hasPrefix("create") { stripped = String(name.dropFirst(6)) }
-            else if name.hasPrefix("new") { stripped = String(name.dropFirst(3)) }
-            else { stripped = String(name.dropFirst(5)) }
-
-            violations.append(ReasonedRuleViolation(
-                position: node.name.positionAfterSkippingLeadingTrivia,
-                reason: "Factory method '\(name)' should use 'make' prefix per Swift API Design Guidelines",
-                severity: .warning,
-                confidence: .medium,
-                suggestion: "make\(stripped)"
-            ))
+            violations.append(
+                ReasonedRuleViolation(
+                    position: node.name.positionAfterSkippingLeadingTrivia,
+                    reason:
+                    "Factory method '\(name)' should use 'make' prefix per Swift API Design Guidelines",
+                    severity: .warning,
+                    confidence: .medium,
+                    suggestion: suggestion
+                )
+            )
         }
 
         private func checkBoolNaming(name: String, position: AbsolutePosition) {
-            let assertionPrefixes = [
-                "is", "has", "can", "should", "will", "did", "was",
-                "needs", "allows", "requires", "supports", "includes",
-                "contains", "enables",
-            ]
-            let startsWithAssertion = assertionPrefixes.contains { prefix in
-                name.hasPrefix(prefix) && name.count > prefix.count
-                    && name[name.index(name.startIndex, offsetBy: prefix.count)].isUppercase
-            }
-
-            if !startsWithAssertion && !name.hasPrefix("_") {
-                violations.append(ReasonedRuleViolation(
-                    position: position,
-                    reason: "Bool property '\(name)' doesn't read as an assertion",
-                    severity: .warning,
-                    confidence: .low,
-                    suggestion: "Consider a name like 'is\(name.capitalized)' or 'has\(name.capitalized)'"
-                ))
+            if !NamingHelpers.isAssertionNamed(name), !name.hasPrefix("_") {
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: position,
+                        reason: "Bool property '\(name)' doesn't read as an assertion",
+                        severity: .warning,
+                        confidence: .low,
+                        suggestion: "Consider a name like 'is\(name.capitalized)' or 'has\(name.capitalized)'"
+                    )
+                )
             }
         }
     }

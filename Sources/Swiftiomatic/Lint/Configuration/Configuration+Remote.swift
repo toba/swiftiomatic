@@ -1,8 +1,9 @@
 import Foundation // swiftlint:disable:this file_name
 import SourceKittenFramework
 
-internal extension Configuration.FileGraph.FilePath {
+extension Configuration.FileGraph.FilePath {
     // MARK: - Properties: Remote Cache
+
     /// This should never be touched.
     private static let swiftlintPath = ".swiftlint"
 
@@ -23,6 +24,7 @@ internal extension Configuration.FileGraph.FilePath {
     nonisolated(unsafe) static var mockedNetworkResults: [String: String] = [:]
 
     // MARK: - Methods: Resolving
+
     mutating func resolve(
         remoteConfigTimeout: Double,
         remoteConfigTimeoutIfCached: Double
@@ -57,7 +59,9 @@ internal extension Configuration.FileGraph.FilePath {
         } else {
             // Handle wrong url format
             guard let url = URL(string: urlString) else {
-                throw Issue.genericWarning("Invalid configuration entry: \"\(urlString)\" isn't a valid url.")
+                throw Issue.genericWarning(
+                    "Invalid configuration entry: \"\(urlString)\" isn't a valid url."
+                )
             }
 
             // Load from url
@@ -65,7 +69,8 @@ internal extension Configuration.FileGraph.FilePath {
             var taskDone = false
 
             // `.ephemeral` disables caching (which we don't want to be managed by the system)
-            let task = URLSession(configuration: .ephemeral).dataTask(with: url) { data, response, error in
+            let task = URLSession(configuration: .ephemeral).dataTask(with: url) {
+                data, response, error in
                 taskResult = (data, response, error)
                 taskDone = true
             }
@@ -78,8 +83,11 @@ internal extension Configuration.FileGraph.FilePath {
             // Block main thread until timeout is reached / task is done
             while true {
                 if taskDone { break }
-                if Date().timeIntervalSince(startDate) > timeout { task.cancel(); break }
-                usleep(50_000) // Sleep for 50 ms
+                if Date().timeIntervalSince(startDate) > timeout {
+                    task.cancel()
+                    break
+                }
+                usleep(50000) // Sleep for 50 ms
             }
 
             // Handle wrong data
@@ -100,7 +108,11 @@ internal extension Configuration.FileGraph.FilePath {
         }
 
         // Handle file write failure
-        guard let filePath = cache(configString: configString, from: urlString, rootDirectory: rootDirectory) else {
+        guard
+            let filePath = cache(
+                configString: configString, from: urlString, rootDirectory: rootDirectory
+            )
+        else {
             return try handleFileWriteFailure(urlString: urlString, cachedFilePath: cachedFilePath)
         }
 
@@ -142,7 +154,9 @@ internal extension Configuration.FileGraph.FilePath {
         )
     }
 
-    private mutating func handleFileWriteFailure(urlString: String, cachedFilePath: String?) throws -> String {
+    private mutating func handleFileWriteFailure(urlString: String, cachedFilePath: String?) throws
+        -> String
+    {
         if let cachedFilePath {
             queuedPrintError(
                 "warning: Unable to cache remote config from \"\(urlString)\". Using cached version as a fallback."
@@ -156,6 +170,7 @@ internal extension Configuration.FileGraph.FilePath {
     }
 
     // MARK: Caching
+
     private func getCachedFilePath(urlString: String, rootDirectory: String) -> String? {
         let path = filePath(for: urlString, rootDirectory: rootDirectory)
         return FileManager.default.fileExists(atPath: path) ? path : nil
@@ -174,9 +189,9 @@ internal extension Configuration.FileGraph.FilePath {
         formatter.dateFormat = "dd/MM/yyyy 'at' HH:mm:ss"
         let configString =
             "#\n"
-            + "# Automatically downloaded from \(urlString) by SwiftLint on \(formatter.string(from: Date())).\n"
-            + "#\n"
-            + configString
+                + "# Automatically downloaded from \(urlString) by SwiftLint on \(formatter.string(from: Date())).\n"
+                + "#\n"
+                + configString
 
         // Create file
         let path = filePath(for: urlString, rootDirectory: rootDirectory)
@@ -194,7 +209,8 @@ internal extension Configuration.FileGraph.FilePath {
             adjustedUrlString = adjustedUrlString.replacingOccurrences(of: char, with: "_")
         }
         adjustedUrlString = adjustedUrlString.trimmingCharacters(in: CharacterSet(charactersIn: "."))
-        let path = Configuration.FileGraph.FilePath.versionedRemoteCachePath + "/\(adjustedUrlString).yml"
+        let path =
+            Configuration.FileGraph.FilePath.versionedRemoteCachePath + "/\(adjustedUrlString).yml"
         return path.bridge().absolutePathRepresentation(rootDirectory: rootDirectory)
     }
 
@@ -220,10 +236,13 @@ internal extension Configuration.FileGraph.FilePath {
         }
 
         // Delete all cache folders except for the current version's folder
-        let directoryWithoutVersionNum = directory.components(separatedBy: "/").dropLast().joined(separator: "/")
-        try (try FileManager.default.subpathsOfDirectory(atPath: directoryWithoutVersionNum)).forEach {
+        let directoryWithoutVersionNum = directory.components(separatedBy: "/").dropLast().joined(
+            separator: "/"
+        )
+        try (FileManager.default.subpathsOfDirectory(atPath: directoryWithoutVersionNum)).forEach {
             if !$0.contains("/"), $0 != Configuration.FileGraph.FilePath.remoteCacheVersionNumber {
-                try FileManager.default.removeItem(atPath:
+                try FileManager.default.removeItem(
+                    atPath:
                     $0.bridge().absolutePathRepresentation(rootDirectory: directoryWithoutVersionNum)
                 )
             }
@@ -234,15 +253,19 @@ internal extension Configuration.FileGraph.FilePath {
         let newGitignoreAppendix = "# SwiftLint Remote Config Cache\n\(requiredGitignoreAppendix)"
 
         if !FileManager.default.fileExists(atPath: Configuration.FileGraph.FilePath.gitignorePath) {
-            guard FileManager.default.createFile(
-                atPath: Configuration.FileGraph.FilePath.gitignorePath,
-                contents: Data(newGitignoreAppendix.utf8),
-                attributes: [:]
-            ) else {
+            guard
+                FileManager.default.createFile(
+                    atPath: Configuration.FileGraph.FilePath.gitignorePath,
+                    contents: Data(newGitignoreAppendix.utf8),
+                    attributes: [:]
+                )
+            else {
                 throw Issue.genericWarning("Issue maintaining remote config cache.")
             }
         } else {
-            var contents = try String(contentsOfFile: Configuration.FileGraph.FilePath.gitignorePath, encoding: .utf8)
+            var contents = try String(
+                contentsOfFile: Configuration.FileGraph.FilePath.gitignorePath, encoding: .utf8
+            )
             if !contents.contains(requiredGitignoreAppendix) {
                 contents += "\n\n\(newGitignoreAppendix)"
                 try contents.write(

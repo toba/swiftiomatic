@@ -10,12 +10,15 @@ struct TypesafeArrayInitRule: AnalyzerRule {
         description: ArrayInitRule.description.description,
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
+            Example(
+                """
                 enum MyError: Error {}
                 let myResult: Result<String, MyError> = .success("")
                 let result: Result<Any, MyError> = myResult.map { $0 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 struct IntArray {
                     let elements = [1, 2, 3]
                     func map<T>(_ transformer: (Int) throws -> T) rethrows -> [T] {
@@ -24,42 +27,55 @@ struct TypesafeArrayInitRule: AnalyzerRule {
                 }
                 let ints = IntArray()
                 let intsCopy = ints.map { $0 }
-                """),
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
+            Example(
+                """
                 func f<Seq: Sequence>(s: Seq) -> [Seq.Element] {
                     s.↓map({ $0 })
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 func f(array: [Int]) -> [Int] {
                     array.↓map { $0 }
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 let myInts = [1, 2, 3].↓map { return $0 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 struct Generator: Sequence, IteratorProtocol {
                     func next() -> Int? { nil }
                 }
                 let array = Generator().↓map { i in i }
-                """),
+                """
+            ),
         ],
         requiresFileOnDisk: true
     )
 
     private static let parentRule = ArrayInitRule()
     private static let mapTypePatterns = [
-        regex("""
+        regex(
+            """
             \\Q<Self, T where Self : \\E(?:Sequence|Collection)> \
             \\Q(Self) -> ((Self.Element) throws -> T) throws -> [T]\\E
-            """),
-        regex("""
+            """
+        ),
+        regex(
+            """
             \\Q<Self, T, E where Self : \\E(?:Sequence|Collection), \
             \\QE : Error> (Self) -> ((Self.Element) throws(E) -> T) throws(E) -> [T]\\E
-            """),
+            """
+        ),
     ]
 
     func validate(file: SwiftLintFile, compilerArguments: [String]) -> [StyleViolation] {
@@ -82,13 +98,14 @@ struct TypesafeArrayInitRule: AnalyzerRule {
                     return false
                 }
                 return pointsToSystemMapType(pointee: request)
-            }.map { StyleViolation(ruleDescription: Self.description, location: $0.location ) }
+            }.map { StyleViolation(ruleDescription: Self.description, location: $0.location) }
     }
 
     private func pointsToSystemMapType(pointee: [String: any SourceKitRepresentable]) -> Bool {
         if let isSystem = pointee["key.is_system"], isSystem.isEqualTo(true),
            let name = pointee["key.name"], name.isEqualTo("map(_:)"),
-           let typeName = pointee["key.typename"] as? String {
+           let typeName = pointee["key.typename"] as? String
+        {
             return Self.mapTypePatterns.contains {
                 $0.numberOfMatches(in: typeName, range: typeName.fullNSRange) == 1
             }

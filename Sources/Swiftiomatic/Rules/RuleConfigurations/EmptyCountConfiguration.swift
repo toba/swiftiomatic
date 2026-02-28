@@ -1,4 +1,3 @@
-
 struct EmptyCountConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.error)

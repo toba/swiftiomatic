@@ -59,26 +59,12 @@ struct IndexSymbol: Sendable, Equatable {
 
     /// Column number (1-based).
     let column: Int
-
-    init(name: String, usr: String, kind: Kind, offset: Int, line: Int, column: Int) {
-        self.name = name
-        self.usr = usr
-        self.kind = kind
-        self.offset = offset
-        self.line = line
-        self.column = column
-    }
 }
 
 /// Index data for a single file — declarations and references with USRs.
 struct FileIndex: Sendable {
     let file: String
     let symbols: [IndexSymbol]
-
-    init(file: String, symbols: [IndexSymbol]) {
-        self.file = file
-        self.symbols = symbols
-    }
 
     /// All declarations in this file.
     var declarations: [IndexSymbol] {
@@ -101,10 +87,4 @@ struct ExpressionTypeInfo: Sendable, Equatable {
 
     /// The resolved type name.
     let typeName: String
-
-    init(offset: Int, length: Int, typeName: String) {
-        self.offset = offset
-        self.length = length
-        self.typeName = typeName
-    }
 }

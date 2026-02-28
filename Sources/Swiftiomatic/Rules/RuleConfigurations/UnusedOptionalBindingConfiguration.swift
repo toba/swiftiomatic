@@ -1,4 +1,3 @@
-
 struct UnusedOptionalBindingConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.warning)

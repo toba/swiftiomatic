@@ -14,7 +14,7 @@ struct SonarQubeReporter: Reporter {
 
     // MARK: - Private
 
-    // refer to https://docs.sonarqube.org/display/SONAR/Generic+Issue+Data
+    /// refer to https://docs.sonarqube.org/display/SONAR/Generic+Issue+Data
     private static func dictionary(for violation: StyleViolation) -> [String: Any] {
         [
             "engineId": "SwiftLint",
@@ -23,7 +23,7 @@ struct SonarQubeReporter: Reporter {
                 "message": violation.reason,
                 "filePath": violation.location.relativeFile ?? "",
                 "textRange": [
-                    "startLine": violation.location.line ?? 1
+                    "startLine": violation.location.line ?? 1,
                 ] as Any,
             ] as Any,
             "type": "CODE_SMELL",

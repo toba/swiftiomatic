@@ -6,7 +6,8 @@ struct OptionalDataStringConversionRule: Rule {
     static let description = RuleDescription(
         identifier: "optional_data_string_conversion",
         name: "Optional Data -> String Conversion",
-        description: "Prefer failable `String(bytes:encoding:)` initializer when converting `Data` to `String`",
+        description:
+        "Prefer failable `String(bytes:encoding:)` initializer when converting `Data` to `String`",
         kind: .lint,
         nonTriggeringExamples: [
             Example("String(data: data, encoding: .utf8)"),
@@ -16,7 +17,7 @@ struct OptionalDataStringConversionRule: Rule {
             Example("String(decoding: data, encoding: UTF8.self)"),
         ],
         triggeringExamples: [
-            Example("String(decoding: data, as: UTF8.self)")
+            Example("String(decoding: data, as: UTF8.self)"),
         ]
     )
 }
@@ -35,7 +36,8 @@ private extension OptionalDataStringConversionRule {
                parent.arguments.map(\.label?.text) == ["decoding", "as"],
                let expr = parent.arguments.last?.expression.as(MemberAccessExprSyntax.self),
                expr.base?.description == "UTF8",
-               expr.declName.baseName.description == "self" {
+               expr.declName.baseName.description == "self"
+            {
                 violations.append(node.positionAfterSkippingLeadingTrivia)
             }
         }

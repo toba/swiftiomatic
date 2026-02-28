@@ -13,16 +13,20 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
             Example("let foo = { bar, _  in }"),
             Example("let foo = { bar in }"),
             Example("let foo = { bar -> Bool in return true }"),
-            Example("""
-            DispatchQueue.main.async { () -> Void in
-                doSomething()
-            }
-            """),
-            Example("""
-            registerFilter(name) { any, args throws -> Any? in
-                doSomething(any, args)
-            }
-            """, excludeFromDocumentation: true),
+            Example(
+                """
+                DispatchQueue.main.async { () -> Void in
+                    doSomething()
+                }
+                """
+            ),
+            Example(
+                """
+                registerFilter(name) { any, args throws -> Any? in
+                    doSomething(any, args)
+                }
+                """, excludeFromDocumentation: true
+            ),
         ],
         triggeringExamples: [
             Example("call(arg: { ↓(bar) in })"),
@@ -30,35 +34,41 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
             Example("let foo = { ↓(bar) -> Bool in return true }"),
             Example("foo.map { ($0, $0) }.forEach { ↓(x, y) in }"),
             Example("foo.bar { [weak self] ↓(x, y) in }"),
-            Example("""
-            [].first { ↓(temp) in
+            Example(
+                """
                 [].first { ↓(temp) in
                     [].first { ↓(temp) in
-                        _ = temp
+                        [].first { ↓(temp) in
+                            _ = temp
+                            return false
+                        }
                         return false
                     }
                     return false
                 }
-                return false
-            }
-            """),
-            Example("""
-            [].first { temp in
-                [].first { ↓(temp) in
+                """
+            ),
+            Example(
+                """
+                [].first { temp in
                     [].first { ↓(temp) in
-                        _ = temp
+                        [].first { ↓(temp) in
+                            _ = temp
+                            return false
+                        }
                         return false
                     }
                     return false
                 }
-                return false
-            }
-            """),
-            Example("""
-            registerFilter(name) { ↓(any, args) throws -> Any? in
-                doSomething(any, args)
-            }
-            """, excludeFromDocumentation: true),
+                """
+            ),
+            Example(
+                """
+                registerFilter(name) { ↓(any, args) throws -> Any? in
+                    doSomething(any, args)
+                }
+                """, excludeFromDocumentation: true
+            ),
         ],
         corrections: [
             Example("call(arg: { ↓(bar) in })"): Example("call(arg: { bar in })"),
@@ -67,7 +77,9 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
             Example("let foo = { ↓(bar) -> Bool in return true }"):
                 Example("let foo = { bar -> Bool in return true }"),
             Example("method { ↓(foo, bar) in }"): Example("method { foo, bar in }"),
-            Example("foo.map { ($0, $0) }.forEach { ↓(x, y) in }"): Example("foo.map { ($0, $0) }.forEach { x, y in }"),
+            Example("foo.map { ($0, $0) }.forEach { ↓(x, y) in }"): Example(
+                "foo.map { ($0, $0) }.forEach { x, y in }"
+            ),
             Example("foo.bar { [weak self] ↓(x, y) in }"): Example("foo.bar { [weak self] x, y in }"),
         ]
     )
@@ -77,6 +89,7 @@ extension UnneededParenthesesInClosureArgumentRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -89,7 +102,8 @@ private extension UnneededParenthesesInClosureArgumentRule {
         override func visitPost(_ node: ClosureSignatureSyntax) {
             guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),
                   clause.parameters.isNotEmpty,
-                  clause.parameters.allSatisfy({ $0.type == nil }) else {
+                  clause.parameters.allSatisfy({ $0.type == nil })
+            else {
                 return
             }
 
@@ -101,11 +115,13 @@ private extension UnneededParenthesesInClosureArgumentRule {
         override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
             guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),
                   clause.parameters.isNotEmpty,
-                  clause.parameters.allSatisfy({ $0.type == nil }) else {
+                  clause.parameters.allSatisfy({ $0.type == nil })
+            else {
                 return super.visit(node)
             }
 
-            let items = clause.parameters.enumerated().compactMap { idx, param -> ClosureShorthandParameterSyntax? in
+            let items = clause.parameters.enumerated().compactMap {
+                idx, param -> ClosureShorthandParameterSyntax? in
                 let name = param.firstName
                 let isLast = idx == clause.parameters.count - 1
                 return ClosureShorthandParameterSyntax(

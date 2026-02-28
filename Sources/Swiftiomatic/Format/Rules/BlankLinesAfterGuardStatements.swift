@@ -5,7 +5,8 @@ import Foundation
 
 extension FormatRule {
     static let blankLinesAfterGuardStatements = FormatRule(
-        help: "Remove blank lines between consecutive guard statements, and insert a blank after the last guard statement.",
+        help:
+        "Remove blank lines between consecutive guard statements, and insert a blank after the last guard statement.",
         disabledByDefault: true,
         options: ["line-between-guards"]
     ) { formatter in
@@ -25,7 +26,11 @@ extension FormatRule {
                 return
             }
 
-            guard let nextNonSpaceAndNonLinebreakIndex = formatter.index(of: .nonSpaceOrLinebreak, after: endOfGuardScope) else {
+            guard
+                let nextNonSpaceAndNonLinebreakIndex = formatter.index(
+                    of: .nonSpaceOrLinebreak, after: endOfGuardScope
+                )
+            else {
                 return
             }
 

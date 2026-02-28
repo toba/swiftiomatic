@@ -1,4 +1,3 @@
-
 struct NestingConfiguration: RuleConfiguration {
     typealias Severity = SeverityLevelsConfiguration<Parent>
 
@@ -31,6 +30,7 @@ struct NestingConfiguration: RuleConfiguration {
         case .warning: return config.warning
         }
     }
+
     typealias Parent = NestingRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $typeLevel.key.isEmpty {

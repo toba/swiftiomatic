@@ -21,7 +21,9 @@ extension NSObjectPreferIsEqualRule: SwiftSyntaxRule {
 
 private extension NSObjectPreferIsEqualRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { [ProtocolDeclSyntax.self] }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
         override func visitPost(_ node: FunctionDeclSyntax) {
             if node.isSelfEqualFunction, node.isInObjcClass {

@@ -9,12 +9,16 @@ class CompilerInvocations: @unchecked Sendable {
         ArrayCompilerInvocations(invocations: compilerInvocations)
     }
 
-    static func compilationDatabase(compileCommands: [FilePath: CompilerArguments]) -> CompilerInvocations {
+    static func compilationDatabase(compileCommands: [FilePath: CompilerArguments])
+        -> CompilerInvocations
+    {
         CompilationDatabaseInvocations(compileCommands: compileCommands)
     }
 
     /// Default implementation
-    func arguments(forFile _: String?) -> CompilerArguments { [] }
+    func arguments(forFile _: String?) -> CompilerArguments {
+        []
+    }
 
     // MARK: - Private
 
@@ -24,7 +28,7 @@ class CompilerInvocations: @unchecked Sendable {
         init(invocations: [CompilerArguments]) {
             // Store invocations by the path, so next when we'll be asked for arguments,
             // we'll be able to return them faster
-            self.invocationsByArgument = invocations.reduce(into: [:]) { result, arguments in
+            invocationsByArgument = invocations.reduce(into: [:]) { result, arguments in
                 arguments.forEach { result[$0, default: []].append(arguments) }
             }
         }
@@ -45,8 +49,8 @@ class CompilerInvocations: @unchecked Sendable {
 
         override func arguments(forFile path: String?) -> CompilerArguments {
             path.flatMap { path in
-                compileCommands[path] ??
-                compileCommands[path.path(relativeTo: FileManager.default.currentDirectoryPath)]
+                compileCommands[path]
+                    ?? compileCommands[path.path(relativeTo: FileManager.default.currentDirectoryPath)]
             } ?? []
         }
     }
@@ -65,30 +69,34 @@ struct LintableFilesVisitor: @unchecked Sendable {
     let block: (CollectedLinter) async -> Void
     let allowZeroLintableFiles: Bool
 
-    private init(options: LintOrAnalyzeOptions,
-                 cache: LinterCache?,
-                 allowZeroLintableFiles: Bool,
-                 block: @escaping (CollectedLinter) async -> Void) throws {
+    private init(
+        options: LintOrAnalyzeOptions,
+        cache: LinterCache?,
+        allowZeroLintableFiles: Bool,
+        block: @escaping (CollectedLinter) async -> Void
+    ) throws {
         self.options = options
         self.cache = cache
         if options.mode == .lint {
-            self.mode = .lint
-            self.parallel = true
+            mode = .lint
+            parallel = true
         } else {
-            self.mode = .analyze(allCompilerInvocations: try Self.loadCompilerInvocations(options))
+            mode = try .analyze(allCompilerInvocations: Self.loadCompilerInvocations(options))
             // SourceKit had some changes in 5.6 that makes it ~100x more expensive
             // to process files concurrently. By processing files serially, it's
             // only 2x slower than before.
-            self.parallel = SwiftVersion.current < .fiveDotSix
+            parallel = SwiftVersion.current < .fiveDotSix
         }
         self.allowZeroLintableFiles = allowZeroLintableFiles
         self.block = block
     }
 
-    static func create(_ options: LintOrAnalyzeOptions,
-                       cache: LinterCache?,
-                       allowZeroLintableFiles: Bool,
-                       block: @escaping (CollectedLinter) async -> Void) throws -> Self {
+    static func create(
+        _ options: LintOrAnalyzeOptions,
+        cache: LinterCache?,
+        allowZeroLintableFiles: Bool,
+        block: @escaping (CollectedLinter) async -> Void
+    ) throws -> Self {
         try Signposts.record(name: "LintableFilesVisitor.Create") {
             try Self(
                 options: options,
@@ -120,7 +128,8 @@ struct LintableFilesVisitor: @unchecked Sendable {
     }
 
     private static func loadCompilerInvocations(_ options: LintOrAnalyzeOptions)
-            throws(SwiftLintError) -> CompilerInvocations {
+        throws(SwiftLintError) -> CompilerInvocations
+    {
         if let path = options.compilerLogPath {
             guard let compilerInvocations = loadLogCompilerInvocations(path) else {
                 throw .usageError(description: "Could not read compiler log at path: '\(path)'")
@@ -130,10 +139,11 @@ struct LintableFilesVisitor: @unchecked Sendable {
         }
         if let path = options.compileCommands {
             do {
-                return .compilationDatabase(compileCommands: try loadCompileCommands(path))
+                return try .compilationDatabase(compileCommands: loadCompileCommands(path))
             } catch {
                 throw .usageError(
-                    description: "Could not read compilation database at path: '\(path)' \(error.localizedDescription)"
+                    description:
+                    "Could not read compilation database at path: '\(path)' \(error.localizedDescription)"
                 )
             }
         }
@@ -143,7 +153,8 @@ struct LintableFilesVisitor: @unchecked Sendable {
 
     private static func loadLogCompilerInvocations(_ path: String) -> [[String]]? {
         if let data = FileManager.default.contents(atPath: path),
-           let logContents = String(data: data, encoding: .utf8) {
+           let logContents = String(data: data, encoding: .utf8)
+        {
             if logContents.isEmpty {
                 return nil
             }
@@ -165,7 +176,8 @@ struct LintableFilesVisitor: @unchecked Sendable {
         }
 
         guard let object = try? JSONSerialization.jsonObject(with: fileContents),
-              let compileDB = object as? [[String: Any]] else {
+              let compileDB = object as? [[String: Any]]
+        else {
             throw CompileCommandsLoadError.malformedCommands(path)
         }
 
@@ -209,9 +221,11 @@ private enum CompileCommandsLoadError: LocalizedError {
         case let .malformedFile(path, index):
             return "Missing or invalid (must be a string) 'file' key in \(path) at index \(index)"
         case let .malformedArguments(path, index):
-            return "Missing or invalid (must be an array of strings) 'arguments' key in \(path) at index \(index)"
+            return
+                "Missing or invalid (must be an array of strings) 'arguments' key in \(path) at index \(index)"
         case let .missingFileInArguments(path, index, arguments):
-            return "Entry in \(path) at index \(index) has 'arguments' which do not contain the 'file': \(arguments)"
+            return
+                "Entry in \(path) at index \(index) has 'arguments' which do not contain the 'file': \(arguments)"
         }
     }
 }

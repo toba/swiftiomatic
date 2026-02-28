@@ -6,7 +6,8 @@ struct NoFallthroughOnlyRule: Rule {
     static let description = RuleDescription(
         identifier: "no_fallthrough_only",
         name: "No Fallthrough only",
-        description: "Fallthroughs can only be used if the `case` contains at least one other statement",
+        description:
+        "Fallthroughs can only be used if the `case` contains at least one other statement",
         kind: .idiomatic,
         nonTriggeringExamples: NoFallthroughOnlyRuleExamples.nonTriggeringExamples,
         triggeringExamples: NoFallthroughOnlyRuleExamples.triggeringExamples
@@ -26,11 +27,14 @@ private extension NoFallthroughOnlyRule {
 
             let localViolations = cases.enumerated()
                 .compactMap { index, element -> AbsolutePosition? in
-                    if let fallthroughStmt = element.statements.onlyElement?.item.as(FallThroughStmtSyntax.self) {
+                    if let fallthroughStmt = element.statements.onlyElement?.item.as(
+                        FallThroughStmtSyntax.self
+                    ) {
                         if case let nextCaseIndex = cases.index(after: index),
                            nextCaseIndex < cases.endIndex,
                            case let nextCase = cases[nextCaseIndex],
-                           nextCase.attribute != nil {
+                           nextCase.attribute != nil
+                        {
                             return nil
                         }
                         return fallthroughStmt.positionAfterSkippingLeadingTrivia

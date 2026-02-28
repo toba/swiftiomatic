@@ -7,9 +7,9 @@ struct AttributesRule: Rule {
         identifier: "attributes",
         name: "Attributes",
         description: """
-            Attributes should be on their own lines in functions and types, but on the same line as variables and \
-            imports
-            """,
+        Attributes should be on their own lines in functions and types, but on the same line as variables and \
+        imports
+        """,
         rationale: """
         Erica Sadun says:
 
@@ -61,9 +61,9 @@ private extension AttributesRule {
             switch hasViolation {
             case .argumentsAlwaysOnNewLineViolation:
                 let reason = """
-                    Attributes with arguments or inside always_on_line_above must be on a new line \
-                    instead of the same line
-                    """
+                Attributes with arguments or inside always_on_line_above must be on a new line \
+                instead of the same line
+                """
 
                 violations.append(
                     ReasonedRuleViolation(
@@ -80,9 +80,10 @@ private extension AttributesRule {
                 break
             }
 
-            let linesForAttributes = attributesAndPlacements
-                .filter { $1 == .dedicatedLine }
-                .map { $0.0.endLine(locationConverter: locationConverter) }
+            let linesForAttributes =
+                attributesAndPlacements
+                    .filter { $1 == .dedicatedLine }
+                    .map { $0.0.endLine(locationConverter: locationConverter) }
 
             if linesForAttributes.isEmpty {
                 return
@@ -92,7 +93,8 @@ private extension AttributesRule {
                 return
             }
 
-            let hasMultipleNewlines = node.children(viewMode: .sourceAccurate).enumerated().contains { index, element in
+            let hasMultipleNewlines = node.children(viewMode: .sourceAccurate).enumerated().contains {
+                index, element in
                 if index > 0, element.leadingTrivia.hasMultipleNewlines == true {
                     return true
                 }
@@ -119,13 +121,13 @@ private extension SyntaxProtocol {
 
 private extension Trivia {
     var hasMultipleNewlines: Bool {
-        reduce(0, { $0 + $1.numberOfNewlines }) > 1
+        reduce(0) { $0 + $1.numberOfNewlines } > 1
     }
 }
 
 private extension TriviaPiece {
     var numberOfNewlines: Int {
-        if case .newlines(let numberOfNewlines) = self {
+        if case let .newlines(numberOfNewlines) = self {
             return numberOfNewlines
         }
         return 0
@@ -155,7 +157,8 @@ private struct RuleHelper {
     ) -> (Violation) {
         var linesWithAttributes: Set<Int> = [keywordLine]
         for (attribute, placement) in attributesAndPlacements {
-            guard let attributeStartLine = attribute.startLine(locationConverter: locationConverter) else {
+            guard let attributeStartLine = attribute.startLine(locationConverter: locationConverter)
+            else {
                 continue
             }
 
@@ -165,8 +168,8 @@ private struct RuleHelper {
                     return .violation
                 }
             case .dedicatedLine:
-                let hasViolation = attributeStartLine == keywordLine ||
-                    linesWithAttributes.contains(attributeStartLine)
+                let hasViolation =
+                    attributeStartLine == keywordLine || linesWithAttributes.contains(attributeStartLine)
                 linesWithAttributes.insert(attributeStartLine)
                 if hasViolation {
                     if attributesWithArgumentsAlwaysOnNewLine, shouldBeOnSameLine {
@@ -181,8 +184,11 @@ private struct RuleHelper {
 }
 
 private extension AttributeListSyntax {
-    func attributesAndPlacements(configuration: AttributesConfiguration, shouldBeOnSameLine: Bool)
-        -> [(AttributeSyntax, AttributePlacement)] {
+    func attributesAndPlacements(
+        configuration: AttributesConfiguration, shouldBeOnSameLine: Bool
+    )
+        -> [(AttributeSyntax, AttributePlacement)]
+    {
         children(viewMode: .sourceAccurate)
             .compactMap { $0.as(AttributeSyntax.self) }
             .map { attribute in
@@ -197,7 +203,8 @@ private extension AttributeListSyntax {
                     return (attribute, .dedicatedLine)
                 }
 
-                return shouldBeOnSameLine ? (attribute, .sameLineAsDeclaration) : (attribute, .dedicatedLine)
+                return shouldBeOnSameLine
+                    ? (attribute, .sameLineAsDeclaration) : (attribute, .dedicatedLine)
             }
     }
 

@@ -9,8 +9,8 @@ struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
         identifier: "colon",
         name: "Colon Spacing",
         description: """
-            Colons should be next to the identifier when specifying a type and next to the key in dictionary literals
-            """,
+        Colons should be next to the identifier when specifying a type and next to the key in dictionary literals
+        """,
         kind: .style,
         nonTriggeringExamples: ColonRuleExamples.nonTriggeringExamples,
         triggeringExamples: ColonRuleExamples.triggeringExamples,
@@ -19,9 +19,11 @@ struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
         violationRanges(in: file).map { range in
-            StyleViolation(ruleDescription: Self.description,
-                           severity: configuration.severityConfiguration.severity,
-                           location: Location(file: file, characterOffset: range.location))
+            StyleViolation(
+                ruleDescription: Self.description,
+                severity: configuration.severityConfiguration.severity,
+                location: Location(file: file, characterOffset: range.location)
+            )
         }
     }
 
@@ -33,55 +35,58 @@ struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
         let dictionaryPositions = visitor.dictionaryPositions
         let caseStatementPositions = visitor.caseStatementPositions
 
-        return syntaxTree
-            .windowsOfThreeTokens()
-            .compactMap { previous, current, next -> ByteRange? in
-                if current.tokenKind != .colon ||
-                    !configuration.applyToDictionaries && dictionaryPositions.contains(current.position) ||
-                    positionsToSkip.contains(current.position) {
-                    return nil
-                }
-
-                // [:]
-                if previous.tokenKind == .leftSquare,
-                   next.tokenKind == .rightSquare,
-                   previous.trailingTrivia.isEmpty,
-                   current.leadingTrivia.isEmpty,
-                   current.trailingTrivia.isEmpty,
-                   next.leadingTrivia.isEmpty {
-                    return nil
-                }
-
-                if previous.trailingTrivia.isNotEmpty, !previous.trailingTrivia.containsBlockComments() {
-                    let start = ByteCount(previous.endPositionBeforeTrailingTrivia)
-                    let end = ByteCount(current.endPosition)
-                    return ByteRange(location: start, length: end - start)
-                }
-                if current.trailingTrivia != [.spaces(1)], !next.leadingTrivia.containsNewlines() {
-                    if case .spaces(1) = current.trailingTrivia.first {
+        return
+            syntaxTree
+                .windowsOfThreeTokens()
+                .compactMap { previous, current, next -> ByteRange? in
+                    if current.tokenKind != .colon
+                        || !configuration.applyToDictionaries && dictionaryPositions.contains(current.position)
+                        || positionsToSkip.contains(current.position)
+                    {
                         return nil
                     }
 
-                    let flexibleRightSpacing = configuration.flexibleRightSpacing ||
-                        caseStatementPositions.contains(current.position)
-                    if flexibleRightSpacing, current.trailingTrivia.isNotEmpty {
+                    // [:]
+                    if previous.tokenKind == .leftSquare,
+                       next.tokenKind == .rightSquare,
+                       previous.trailingTrivia.isEmpty,
+                       current.leadingTrivia.isEmpty,
+                       current.trailingTrivia.isEmpty,
+                       next.leadingTrivia.isEmpty
+                    {
                         return nil
                     }
 
-                    let length: ByteCount
-                    if case let .spaces(spaces) = current.trailingTrivia.first {
-                        length = ByteCount(spaces + 1)
-                    } else {
-                        length = 1
+                    if previous.trailingTrivia.isNotEmpty, !previous.trailingTrivia.containsBlockComments() {
+                        let start = ByteCount(previous.endPositionBeforeTrailingTrivia)
+                        let end = ByteCount(current.endPosition)
+                        return ByteRange(location: start, length: end - start)
                     }
+                    if current.trailingTrivia != [.spaces(1)], !next.leadingTrivia.containsNewlines() {
+                        if case .spaces(1) = current.trailingTrivia.first {
+                            return nil
+                        }
 
-                    return ByteRange(location: ByteCount(current.position), length: length)
+                        let flexibleRightSpacing =
+                            configuration.flexibleRightSpacing || caseStatementPositions.contains(current.position)
+                        if flexibleRightSpacing, current.trailingTrivia.isNotEmpty {
+                            return nil
+                        }
+
+                        let length: ByteCount
+                        if case let .spaces(spaces) = current.trailingTrivia.first {
+                            length = ByteCount(spaces + 1)
+                        } else {
+                            length = 1
+                        }
+
+                        return ByteRange(location: ByteCount(current.position), length: length)
+                    }
+                    return nil
                 }
-                return nil
-            }
-            .compactMap { byteRange in
-                file.stringView.byteRangeToNSRange(byteRange)
-            }
+                .compactMap { byteRange in
+                    file.stringView.byteRangeToNSRange(byteRange)
+                }
     }
 
     func substitution(for violationRange: NSRange, in _: SwiftLintFile) -> (NSRange, String)? {

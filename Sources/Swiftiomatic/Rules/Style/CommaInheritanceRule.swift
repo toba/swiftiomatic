@@ -3,7 +3,8 @@ import SourceKittenFramework
 import SwiftSyntax
 
 struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
-                             SourceKitFreeRule {
+    SourceKitFreeRule
+{
     var configuration = SeverityConfiguration<Self>(.warning)
 
     static let description = RuleDescription(
@@ -18,11 +19,13 @@ struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
             Example("protocol D: Codable, Equatable {}"),
             Example("typealias E = Equatable & Codable"),
             Example("func foo<T: Equatable & Codable>(_ param: T) {}"),
-            Example("""
-            protocol G {
-                associatedtype Model: Codable, Equatable
-            }
-            """),
+            Example(
+                """
+                protocol G {
+                    associatedtype Model: Codable, Equatable
+                }
+                """
+            ),
         ],
         triggeringExamples: [
             Example("struct A: Codable↓ & Equatable {}"),
@@ -32,11 +35,13 @@ struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
             Example("enum B: Codable↓ & Equatable {}"),
             Example("class C: Codable↓ & Equatable {}"),
             Example("protocol D: Codable↓ & Equatable {}"),
-            Example("""
-            protocol G {
-                associatedtype Model: Codable↓ & Equatable
-            }
-            """),
+            Example(
+                """
+                protocol G {
+                    associatedtype Model: Codable↓ & Equatable
+                }
+                """
+            ),
         ],
         corrections: [
             Example("struct A: Codable↓ & Equatable {}"): Example("struct A: Codable, Equatable {}"),
@@ -46,15 +51,19 @@ struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
             Example("enum B: Codable↓ & Equatable {}"): Example("enum B: Codable, Equatable {}"),
             Example("class C: Codable↓ & Equatable {}"): Example("class C: Codable, Equatable {}"),
             Example("protocol D: Codable↓ & Equatable {}"): Example("protocol D: Codable, Equatable {}"),
-            Example("""
-            protocol G {
-                associatedtype Model: Codable↓ & Equatable
-            }
-            """): Example("""
-            protocol G {
-                associatedtype Model: Codable, Equatable
-            }
-            """),
+            Example(
+                """
+                protocol G {
+                    associatedtype Model: Codable↓ & Equatable
+                }
+                """
+            ): Example(
+                """
+                protocol G {
+                    associatedtype Model: Codable, Equatable
+                }
+                """
+            ),
         ]
     )
 
@@ -62,9 +71,11 @@ struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
         violationRanges(in: file).map {
-            StyleViolation(ruleDescription: Self.description,
-                           severity: configuration.severity,
-                           location: Location(file: file, characterOffset: $0.location))
+            StyleViolation(
+                ruleDescription: Self.description,
+                severity: configuration.severity,
+                location: Location(file: file, characterOffset: $0.location)
+            )
         }
     }
 
@@ -101,10 +112,12 @@ private final class CommaInheritanceRuleVisitor: SyntaxVisitor {
                     position = ampersand.position
                 }
 
-                violationRanges.append(ByteRange(
-                    location: ByteCount(position),
-                    length: ByteCount(ampersand.endPosition.utf8Offset - position.utf8Offset)
-                ))
+                violationRanges.append(
+                    ByteRange(
+                        location: ByteCount(position),
+                        length: ByteCount(ampersand.endPosition.utf8Offset - position.utf8Offset)
+                    )
+                )
             }
         }
     }

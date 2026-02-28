@@ -19,7 +19,9 @@ extension FormatRule {
         formatter.forEach(.keyword("extension")) { extensionIndex, _ in
             guard // Angle brackets syntax in extensions is only supported in Swift 5.7+
                 formatter.options.swiftVersion >= "5.7",
-                let typeNameIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: extensionIndex),
+                let typeNameIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: extensionIndex
+                ),
                 let extendedType = formatter.token(at: typeNameIndex)?.string,
                 // If there's already an open angle bracket after the generic type name
                 // then the extension is already using the target syntax, so there's
@@ -80,17 +82,24 @@ extension FormatRule {
                 else { continue }
 
                 let typeName = String(userProvidedType[..<openAngleBracket])
-                let genericParameters = String(userProvidedType[userProvidedType.index(after: openAngleBracket) ..< closeAngleBracket])
-                    .components(separatedBy: ",")
-                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                let genericParameters = String(
+                    userProvidedType[userProvidedType.index(after: openAngleBracket) ..< closeAngleBracket]
+                )
+                .components(separatedBy: ",")
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-                knownGenericTypes.append((
-                    name: typeName,
-                    genericTypes: genericParameters
-                ))
+                knownGenericTypes.append(
+                    (
+                        name: typeName,
+                        genericTypes: genericParameters
+                    )
+                )
             }
 
-            guard let requiredGenericTypes = knownGenericTypes.first(where: { $0.name == extendedType })?.genericTypes else {
+            guard
+                let requiredGenericTypes = knownGenericTypes.first(where: { $0.name == extendedType })?
+                .genericTypes
+            else {
                 return
             }
 

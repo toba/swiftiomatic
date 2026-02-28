@@ -1,8 +1,7 @@
-
 struct NonOverridableClassDeclarationConfiguration: SeverityBasedRuleConfiguration {
     enum FinalClassModifier: String, AcceptableByConfigurationElement {
         case finalClass = "final class"
-        case `static` = "static"
+        case `static`
     }
 
     @ConfigurationElement(key: "severity")

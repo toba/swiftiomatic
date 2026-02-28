@@ -15,10 +15,17 @@ extension FormatRule {
     ) { formatter in
         formatter.forEach(.identifier("forEach")) { forEachIndex, _ in
             // Make sure this is a function call preceded by a `.`
-            guard let functionCallDotIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: forEachIndex),
-                  formatter.tokens[functionCallDotIndex] == .operator(".", .infix),
-                  let indexAfterForEach = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: forEachIndex),
-                  let indexBeforeFunctionCallDot = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: functionCallDotIndex)
+            guard
+                let functionCallDotIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, before: forEachIndex
+                ),
+                formatter.tokens[functionCallDotIndex] == .operator(".", .infix),
+                let indexAfterForEach = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: forEachIndex
+                ),
+                let indexBeforeFunctionCallDot = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, before: functionCallDotIndex
+                )
             else { return }
 
             // Parse either `{ ... }` or `({ ... })`
@@ -38,7 +45,9 @@ extension FormatRule {
 
             case .startOfScope("("):
                 guard let endOfFunctionCall = formatter.endOfScope(at: indexAfterForEach),
-                      let indexAfterOpenParen = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: indexAfterForEach),
+                      let indexAfterOpenParen = formatter.index(
+                          of: .nonSpaceOrCommentOrLinebreak, after: indexAfterForEach
+                      ),
                       formatter.tokens[indexAfterOpenParen] == .startOfScope("{"),
                       let endOfClosureScope = formatter.endOfScope(at: indexAfterOpenParen)
                 else { return }
@@ -53,14 +62,19 @@ extension FormatRule {
             }
 
             // Abort early for single-line loops
-            guard !formatter.options.preserveSingleLineForEach || formatter
+            guard
+                !formatter.options.preserveSingleLineForEach
+                || formatter
                 .tokens[closureOpenBraceIndex ..< closureCloseBraceIndex].contains(where: \.isLinebreak)
             else { return }
 
             // Ignore closures with capture lists for now since they're rare
             // in this context and add complexity
-            guard let firstIndexInClosureBody = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: closureOpenBraceIndex),
-                  formatter.tokens[firstIndexInClosureBody] != .startOfScope("[")
+            guard
+                let firstIndexInClosureBody = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: closureOpenBraceIndex
+                ),
+                formatter.tokens[firstIndexInClosureBody] != .startOfScope("[")
             else { return }
 
             // Parse the value that `forEach` is being called on
@@ -72,9 +86,15 @@ extension FormatRule {
 
             while let previousDotIndex = formatter.index(of: .nonSpaceOrLinebreak, before: currentIndex),
                   formatter.tokens[previousDotIndex] == .operator(".", .infix),
-                  let tokenBeforeDotIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: previousDotIndex)
+                  let tokenBeforeDotIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, before: previousDotIndex
+                  )
             {
-                guard let startOfChainComponent = formatter.startOfChainComponent(at: tokenBeforeDotIndex, forLoopSubjectIdentifier: &forLoopSubjectIdentifier) else {
+                guard
+                    let startOfChainComponent = formatter.startOfChainComponent(
+                        at: tokenBeforeDotIndex, forLoopSubjectIdentifier: &forLoopSubjectIdentifier
+                    )
+                else {
                     // If we parse a dot we expect to parse at least one additional component in the chain.
                     // Otherwise we'd have a malformed chain that starts with a dot, so abort.
                     return
@@ -88,11 +108,14 @@ extension FormatRule {
 
             // If there is a `try` before the `forEach` we cannot know if the subject is async/throwing or the body,
             // which makes it impossible to know if we should move it or *remove* it, so we must abort (same for await).
-            if let tokenIndexBeforeForLoop = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: currentIndex),
-               var prevToken = formatter.token(at: tokenIndexBeforeForLoop)
+            if let tokenIndexBeforeForLoop = formatter.index(
+                of: .nonSpaceOrCommentOrLinebreak, before: currentIndex
+            ),
+                var prevToken = formatter.token(at: tokenIndexBeforeForLoop)
             {
                 if prevToken.isUnwrapOperator {
-                    prevToken = formatter.last(.nonSpaceOrComment, before: tokenIndexBeforeForLoop) ?? .space("")
+                    prevToken =
+                        formatter.last(.nonSpaceOrComment, before: tokenIndexBeforeForLoop) ?? .space("")
                 }
                 if [.keyword("try"), .keyword("await")].contains(prevToken) {
                     return
@@ -146,16 +169,24 @@ extension FormatRule {
                 }
 
                 // The chosen name shouldn't already exist in the closure body
-                guard let chosenValueName = eligibleValueNames.first(where: { name in
-                    !formatter.tokens[closureOpenBraceIndex ... closureCloseBraceIndex].contains(where: { $0.string == name })
-                }) else { return }
+                guard
+                    let chosenValueName = eligibleValueNames.first(where: { name in
+                        !formatter.tokens[closureOpenBraceIndex ... closureCloseBraceIndex].contains(where: {
+                            $0.string == name
+                        })
+                    })
+                else { return }
 
                 forEachValueNames = [chosenValueName]
             }
 
             // Validate that the closure body is eligible to be converted to a for loop
             for closureBodyIndex in closureOpenBraceIndex ... closureCloseBraceIndex {
-                guard !formatter.indexIsWithinNestedClosure(closureBodyIndex, startOfScopeIndex: closureOpenBraceIndex) else { continue }
+                guard
+                    !formatter.indexIsWithinNestedClosure(
+                        closureBodyIndex, startOfScopeIndex: closureOpenBraceIndex
+                    )
+                else { continue }
 
                 // We can only handle anonymous closures that just use $0, since we don't have good names to
                 // use for other arguments like $1, $2, etc. If the closure has an anonymous argument
@@ -181,7 +212,11 @@ extension FormatRule {
 
             // Start updating the `forEach` call to a `for .. in .. {` loop
             for closureBodyIndex in closureOpenBraceIndex ... closureCloseBraceIndex {
-                guard !formatter.indexIsWithinNestedClosure(closureBodyIndex, startOfScopeIndex: closureOpenBraceIndex) else { continue }
+                guard
+                    !formatter.indexIsWithinNestedClosure(
+                        closureBodyIndex, startOfScopeIndex: closureOpenBraceIndex
+                    )
+                else { continue }
 
                 // The for loop won't have any `$0` identifiers anymore, so we have to
                 // update those to the value at the current loop index
@@ -284,7 +319,9 @@ extension Formatter {
                 "map", "flatMap", "compactMap", "filter", "reduce", "lazy",
             ])
 
-            if forLoopSubjectIdentifier == nil || chainElementsToIgnore.contains(forLoopSubjectIdentifier ?? "") {
+            if forLoopSubjectIdentifier == nil
+                || chainElementsToIgnore.contains(forLoopSubjectIdentifier ?? "")
+            {
                 // Since we have to pick a single identifier to represent the subject of the for loop,
                 // just use the last identifier in the chain
                 forLoopSubjectIdentifier = identifierName
@@ -295,14 +332,19 @@ extension Formatter {
         case .endOfScope(")"), .endOfScope("]"):
             let closingParenIndex = index
             guard let startOfScopeIndex = startOfScope(at: closingParenIndex),
-                  let previousNonSpaceNonCommentIndex = self.index(of: .nonSpaceOrComment, before: startOfScopeIndex)
+                  let previousNonSpaceNonCommentIndex = self.index(
+                      of: .nonSpaceOrComment, before: startOfScopeIndex
+                  )
             else { return nil }
 
             // When we find parens for a function call or braces for a subscript,
             // continue parsing at the previous non-space non-comment token.
             //  - If the previous token is a newline then this isn't a function call
             //    and we'd stop parsing. `foo   ()` is a function call but `foo\n()` isn't.
-            return startOfChainComponent(at: previousNonSpaceNonCommentIndex, forLoopSubjectIdentifier: &forLoopSubjectIdentifier) ?? startOfScopeIndex
+            return startOfChainComponent(
+                at: previousNonSpaceNonCommentIndex, forLoopSubjectIdentifier: &forLoopSubjectIdentifier
+            )
+                ?? startOfScopeIndex
 
         case .endOfScope("}"):
             // Stop parsing if we reach a trailing closure.

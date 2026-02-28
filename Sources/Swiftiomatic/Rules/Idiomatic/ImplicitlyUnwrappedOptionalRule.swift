@@ -15,12 +15,14 @@ struct ImplicitlyUnwrappedOptionalRule: Rule {
             Example("if !boolean {}"),
             Example("let int: Int? = 42"),
             Example("let int: Int? = nil"),
-            Example("""
-            class MyClass {
-                @IBOutlet
-                weak var bar: SomeObject!
-            }
-            """, configuration: ["mode": "all_except_iboutlets"], excludeFromDocumentation: true),
+            Example(
+                """
+                class MyClass {
+                    @IBOutlet
+                    weak var bar: SomeObject!
+                }
+                """, configuration: ["mode": "all_except_iboutlets"], excludeFromDocumentation: true
+            ),
         ],
         triggeringExamples: [
             Example("let label: ↓UILabel!"),
@@ -33,11 +35,13 @@ struct ImplicitlyUnwrappedOptionalRule: Rule {
             Example("var int: ↓Int! = 42"),
             Example("let collection: AnyCollection<↓Int!>"),
             Example("func foo(int: ↓Int!) {}"),
-            Example("""
-            class MyClass {
-                weak var bar: ↓SomeObject!
-            }
-            """),
+            Example(
+                """
+                class MyClass {
+                    weak var bar: ↓SomeObject!
+                }
+                """
+            ),
         ]
     )
 }
@@ -63,7 +67,8 @@ private extension ImplicitlyUnwrappedOptionalRule {
             case .allExceptIBOutlets:
                 return node.isIBOutlet ? .skipChildren : .visitChildren
             case .weakExceptIBOutlets:
-                return (node.isIBOutlet || node.weakOrUnownedModifier == nil) ? .skipChildren : .visitChildren
+                return (node.isIBOutlet || node.weakOrUnownedModifier == nil)
+                    ? .skipChildren : .visitChildren
             }
         }
     }

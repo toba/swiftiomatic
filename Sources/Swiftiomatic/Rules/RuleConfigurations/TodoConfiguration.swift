@@ -1,4 +1,3 @@
-
 struct TodoConfiguration: SeverityBasedRuleConfiguration {
     enum TodoKeyword: String, AcceptableByConfigurationElement, CaseIterable {
         case todo = "TODO"

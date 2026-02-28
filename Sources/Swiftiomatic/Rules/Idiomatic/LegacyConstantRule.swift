@@ -19,6 +19,7 @@ extension LegacyConstantRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -52,7 +53,8 @@ private extension LegacyConstantRule {
 
         override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
             guard node.isLegacyPiExpression,
-                  let calledExpression = node.calledExpression.as(DeclReferenceExprSyntax.self) else {
+                  let calledExpression = node.calledExpression.as(DeclReferenceExprSyntax.self)
+            else {
                 return super.visit(node)
             }
             numberOfCorrections += 1

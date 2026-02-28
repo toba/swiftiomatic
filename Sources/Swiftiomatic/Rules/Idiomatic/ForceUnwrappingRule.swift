@@ -16,10 +16,14 @@ struct ForceUnwrappingRule: Rule {
             Example("let object: Any!"),
             Example("@IBOutlet var constraints: [NSLayoutConstraint]!"),
             Example("setEditing(!editing, animated: true)"),
-            Example("navigationController.setNavigationBarHidden(!navigationController." +
-                "navigationBarHidden, animated: true)"),
-            Example("if addedToPlaylist && (!self.selectedFilters.isEmpty || " +
-                "self.searchBar?.text?.isEmpty == false) {}"),
+            Example(
+                "navigationController.setNavigationBarHidden(!navigationController."
+                    + "navigationBarHidden, animated: true)"
+            ),
+            Example(
+                "if addedToPlaylist && (!self.selectedFilters.isEmpty || "
+                    + "self.searchBar?.text?.isEmpty == false) {}"
+            ),
             Example("print(\"\\(xVar)!\")"),
             Example("var test = (!bar)"),
             Example("var a: [Int]!"),
@@ -36,28 +40,36 @@ struct ForceUnwrappingRule: Rule {
             Example("let unwrapped = optional↓!"),
             Example("return cell↓!"),
             Example("let url = NSURL(string: \"http://www.google.com\")↓!"),
-            Example("""
-            let dict = ["Boooo": "👻"]
-            func bla() -> String {
-                return dict["Boooo"]↓!
-            }
-            """),
-            Example("""
-            let dict = ["Boooo": "👻"]
-            func bla() -> String {
-                return dict["Boooo"]↓!.contains("B")
-            }
-            """),
+            Example(
+                """
+                let dict = ["Boooo": "👻"]
+                func bla() -> String {
+                    return dict["Boooo"]↓!
+                }
+                """
+            ),
+            Example(
+                """
+                let dict = ["Boooo": "👻"]
+                func bla() -> String {
+                    return dict["Boooo"]↓!.contains("B")
+                }
+                """
+            ),
             Example("let a = dict[\"abc\"]↓!.contains(\"B\")"),
             Example("dict[\"abc\"]↓!.bar(\"B\")"),
             Example("if dict[\"a\"]↓!↓!↓!↓! {}"),
             Example("var foo: [Bool]! = dict[\"abc\"]↓!"),
-            Example("realm.objects(SwiftUTF8Object.self).filter(\"%K == %@\", \"柱нǢкƱаم👍\", utf8TestString).first↓!"),
-            Example("""
-            context("abc") {
-              var foo: [Bool]! = dict["abc"]↓!
-            }
-            """),
+            Example(
+                "realm.objects(SwiftUTF8Object.self).filter(\"%K == %@\", \"柱нǢкƱаم👍\", utf8TestString).first↓!"
+            ),
+            Example(
+                """
+                context("abc") {
+                  var foo: [Bool]! = dict["abc"]↓!
+                }
+                """
+            ),
             Example("open var computed: String { return foo.bar↓! }"),
             Example("return self↓!"),
             Example("[1, 3, 5, 6].first { $0.isMultiple(of: 2) }↓!"),

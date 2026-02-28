@@ -47,7 +47,8 @@ private extension QuickDiscouragedCallRule {
         override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
             if node.name.text == "spec",
                node.signature.parameterClause.parameters.isEmpty,
-               node.signature.returnClause == nil {
+               node.signature.returnClause == nil
+            {
                 return .visitChildren
             }
             return .skipChildren
@@ -76,11 +77,16 @@ private extension QuickDiscouragedCallRule {
             for binding in node.bindings {
                 if let scope = quickScope.lastSuspiciousScope(node),
                    let initializer = binding.initializer,
-                   FunctionCallFinder(viewMode: .sourceAccurate).walk(tree: initializer.value, handler: \.found) {
-                    violations.append(.violation(
-                        at: initializer.value.positionAfterSkippingLeadingTrivia,
-                        kind: scope.kind
-                    ))
+                   FunctionCallFinder(viewMode: .sourceAccurate).walk(
+                       tree: initializer.value, handler: \.found
+                   )
+                {
+                    violations.append(
+                        .violation(
+                            at: initializer.value.positionAfterSkippingLeadingTrivia,
+                            kind: scope.kind
+                        )
+                    )
                 }
             }
             return .skipChildren
@@ -89,8 +95,10 @@ private extension QuickDiscouragedCallRule {
         override func visit(_ node: InfixOperatorExprSyntax) -> SyntaxVisitorContinueKind {
             guard let scope = quickScope.lastSuspiciousScope(node),
                   node.operator.is(AssignmentExprSyntax.self),
-                  node.leftOperand.is(DeclReferenceExprSyntax.self) || node.leftOperand.is(MemberAccessExprSyntax.self),
-                  let call = node.rightOperand.as(FunctionCallExprSyntax.self) else {
+                  node.leftOperand.is(DeclReferenceExprSyntax.self)
+                  || node.leftOperand.is(MemberAccessExprSyntax.self),
+                  let call = node.rightOperand.as(FunctionCallExprSyntax.self)
+            else {
                 return .visitChildren
             }
             violations.append(.violation(at: call.positionAfterSkippingLeadingTrivia, kind: scope.kind))
@@ -139,7 +147,7 @@ private enum QuickCallKind: String {
     case fitBehavesLike
 
     static let restrictiveKinds: Set<QuickCallKind> = [
-        .describe, .fdescribe, .xdescribe, .context, .fcontext, .xcontext, .sharedExamples
+        .describe, .fdescribe, .xdescribe, .context, .fcontext, .xcontext, .sharedExamples,
     ]
 }
 
@@ -148,7 +156,8 @@ private extension Stack where Element == ScopeElement {
         if let scope = peek(), let scope,
            QuickCallKind.restrictiveKinds.contains(scope.kind),
            node.parent?.is(CodeBlockItemSyntax.self) == true,
-           node.parent?.parent?.id == scope.blockId {
+           node.parent?.parent?.id == scope.blockId
+        {
             return scope
         }
         return nil

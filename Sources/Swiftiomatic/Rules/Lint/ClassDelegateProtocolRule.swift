@@ -72,7 +72,8 @@ private extension ClassDelegateProtocolRule {
             if node.name.text.hasSuffix("Delegate"),
                !node.hasObjCAttribute(),
                !node.isClassRestricted(),
-               !node.inheritsFromObjectOrDelegate() {
+               !node.inheritsFromObjectOrDelegate()
+            {
                 violations.append(node.protocolKeyword.positionAfterSkippingLeadingTrivia)
             }
         }
@@ -85,7 +86,8 @@ private extension ProtocolDeclSyntax {
     }
 
     func isClassRestricted() -> Bool {
-        inheritanceClause?.inheritedTypes.contains { $0.type.is(ClassRestrictionTypeSyntax.self) } == true
+        inheritanceClause?.inheritedTypes.contains { $0.type.is(ClassRestrictionTypeSyntax.self) }
+            == true
     }
 
     func inheritsFromObjectOrDelegate() -> Bool {
@@ -98,9 +100,10 @@ private extension ProtocolDeclSyntax {
         }
 
         return requirementList.contains { requirement in
-            guard let conformanceRequirement = requirement.requirement.as(ConformanceRequirementSyntax.self),
-                  let simpleLeftType = conformanceRequirement.leftType.as(IdentifierTypeSyntax.self),
-                  simpleLeftType.typeName == "Self"
+            guard
+                let conformanceRequirement = requirement.requirement.as(ConformanceRequirementSyntax.self),
+                let simpleLeftType = conformanceRequirement.leftType.as(IdentifierTypeSyntax.self),
+                simpleLeftType.typeName == "Self"
             else {
                 return false
             }

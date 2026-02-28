@@ -43,10 +43,14 @@ private extension ProhibitedInterfaceBuilderRule {
     }
 }
 
-private func wrapExample(_ text: String, file: StaticString = #filePath, line: UInt = #line) -> Example {
-    Example("""
-    class ViewController: UIViewController {
-        \(text)
-    }
-    """, file: file, line: line)
+private func wrapExample(_ text: String, file: StaticString = #filePath, line: UInt = #line)
+    -> Example
+{
+    Example(
+        """
+        class ViewController: UIViewController {
+            \(text)
+        }
+        """, file: file, line: line
+    )
 }

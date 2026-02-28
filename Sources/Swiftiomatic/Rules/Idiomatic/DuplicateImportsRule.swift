@@ -5,7 +5,7 @@ import SwiftSyntax
 struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
-    // List of all possible import kinds
+    /// List of all possible import kinds
     static let importKinds = [
         "typealias", "struct", "class",
         "enum", "protocol", "let",
@@ -87,94 +87,99 @@ private struct ImportPathUsage: Hashable {
     }
 
     init(ifConfigRanges: [ByteSourceRange], path: [String]) {
-        self.hashableIfConfigRanges = ifConfigRanges.map(HashableByteSourceRange.init)
+        hashableIfConfigRanges = ifConfigRanges.map(HashableByteSourceRange.init)
         self.path = path
     }
 
-    var ifConfigRanges: [ByteSourceRange] { hashableIfConfigRanges.map(\.value) }
+    var ifConfigRanges: [ByteSourceRange] {
+        hashableIfConfigRanges.map(\.value)
+    }
+
     let hashableIfConfigRanges: [HashableByteSourceRange]
     let path: [String]
 }
 
-private let explicitSystemModules = Set([
-    "AddressBook.ABActions",
-    "AddressBook.ABPeoplePicker",
-    "AddressBook.ABPeoplePickerView",
-    "AddressBook.ABPersonPicker",
-    "AddressBook.ABPersonPickerDelegate",
-    "AddressBook.ABPersonView",
-    "AGL.Context",
-    "AGL.GLM",
-    "AGL.Macro",
-    "AGL.Renderers",
-    "AppKit.NSNibConnector",
-    "AppKit.NSNibControlConnector",
-    "AppKit.NSNibOutletConnector",
-    "AudioToolbox.AUCocoaUIView",
-    "AudioToolbox.AudioUnitCarbonView",
-    "AudioToolbox.DefaultAudioOutput",
-    "AudioUnit.AUCocoaUIView",
-    "AudioUnit.AudioUnitCarbonView",
-    "CoreAudio.AudioServerPlugIn",
-    "CoreData.CloudKit",
-    "CoreFoundation.CFPlugInCOM",
-    "CoreImage.CIFilterBuiltins",
-    "CoreMediaIO.CMIOHardwarePlugIn",
-    "CoreMediaIO.CMIOSampleBuffer",
-    "CoreVideo.CVHostTime",
-    "DirectoryService.DirServicesCustom",
-    "ForceFeedback.IOForceFeedbackLib",
-    "Foundation.NSDebug",
-    "GSS.krb5",
-    "IOKit.ata",
-    "IOKit.audio",
-    "IOKit.avc",
-    "IOKit.firewire",
-    "IOKit.graphics",
-    "IOKit.hid",
-    "IOKit.hidsystem",
-    "IOKit.i2c",
-    "IOKit.kext",
-    "IOKit.ndrvsupport",
-    "IOKit.network",
-    "IOKit.ps",
-    "IOKit.pwr_mgt",
-    "IOKit.sbp2",
-    "IOKit.scsi",
-    "IOKit.serial",
-    "IOKit.storage",
-    "IOKit.stream",
-    "IOKit.usb",
-    "IOKit.video",
-    "Kerberos.CredentialsCache2",
-    "Kerberos.locate_plugin",
-    "Kerberos.preauth_plugin",
-    "LDAP.lber",
-    "NetFS.NetFSPlugin",
-    "NetFS.NetFSUtil",
-    "Network.FoundationExtension",
-    "OpenGL.Ext",
-    "OpenGL.GL",
-    "OpenGL.GL3",
-    "OpenGL.GLU",
-    "OpenGL.IOSurface",
-    "OpenGL.Macro",
-    "SceneKit.ModelIO",
-    "Security.AuthorizationPlugin",
-    "Security.AuthSession",
-    "Security.CodeSigning",
-    "Security.eisl",
-    "Security.SecAsn1Coder",
-    "Security.SecAsn1Templates",
-    "Security.SecKey",
-    "Security.SecRandom",
-    "Security.SecureDownload",
-    "Security.SecureTransport",
-    "SecurityFoundation.SFAuthorization",
-    "SystemConfiguration.CaptiveNetwork",
-    "SystemConfiguration.DHCPClientPreferences",
-    "SystemConfiguration.SCDynamicStoreCopyDHCPInfo",
-].map { $0.split(separator: ".").map(String.init) })
+private let explicitSystemModules = Set(
+    [
+        "AddressBook.ABActions",
+        "AddressBook.ABPeoplePicker",
+        "AddressBook.ABPeoplePickerView",
+        "AddressBook.ABPersonPicker",
+        "AddressBook.ABPersonPickerDelegate",
+        "AddressBook.ABPersonView",
+        "AGL.Context",
+        "AGL.GLM",
+        "AGL.Macro",
+        "AGL.Renderers",
+        "AppKit.NSNibConnector",
+        "AppKit.NSNibControlConnector",
+        "AppKit.NSNibOutletConnector",
+        "AudioToolbox.AUCocoaUIView",
+        "AudioToolbox.AudioUnitCarbonView",
+        "AudioToolbox.DefaultAudioOutput",
+        "AudioUnit.AUCocoaUIView",
+        "AudioUnit.AudioUnitCarbonView",
+        "CoreAudio.AudioServerPlugIn",
+        "CoreData.CloudKit",
+        "CoreFoundation.CFPlugInCOM",
+        "CoreImage.CIFilterBuiltins",
+        "CoreMediaIO.CMIOHardwarePlugIn",
+        "CoreMediaIO.CMIOSampleBuffer",
+        "CoreVideo.CVHostTime",
+        "DirectoryService.DirServicesCustom",
+        "ForceFeedback.IOForceFeedbackLib",
+        "Foundation.NSDebug",
+        "GSS.krb5",
+        "IOKit.ata",
+        "IOKit.audio",
+        "IOKit.avc",
+        "IOKit.firewire",
+        "IOKit.graphics",
+        "IOKit.hid",
+        "IOKit.hidsystem",
+        "IOKit.i2c",
+        "IOKit.kext",
+        "IOKit.ndrvsupport",
+        "IOKit.network",
+        "IOKit.ps",
+        "IOKit.pwr_mgt",
+        "IOKit.sbp2",
+        "IOKit.scsi",
+        "IOKit.serial",
+        "IOKit.storage",
+        "IOKit.stream",
+        "IOKit.usb",
+        "IOKit.video",
+        "Kerberos.CredentialsCache2",
+        "Kerberos.locate_plugin",
+        "Kerberos.preauth_plugin",
+        "LDAP.lber",
+        "NetFS.NetFSPlugin",
+        "NetFS.NetFSUtil",
+        "Network.FoundationExtension",
+        "OpenGL.Ext",
+        "OpenGL.GL",
+        "OpenGL.GL3",
+        "OpenGL.GLU",
+        "OpenGL.IOSurface",
+        "OpenGL.Macro",
+        "SceneKit.ModelIO",
+        "Security.AuthorizationPlugin",
+        "Security.AuthSession",
+        "Security.CodeSigning",
+        "Security.eisl",
+        "Security.SecAsn1Coder",
+        "Security.SecAsn1Templates",
+        "Security.SecKey",
+        "Security.SecRandom",
+        "Security.SecureDownload",
+        "Security.SecureTransport",
+        "SecurityFoundation.SFAuthorization",
+        "SystemConfiguration.CaptiveNetwork",
+        "SystemConfiguration.DHCPClientPreferences",
+        "SystemConfiguration.SCDynamicStoreCopyDHCPInfo",
+    ].map { $0.split(separator: ".").map(String.init) }
+)
 
 private extension SwiftLintFile {
     func duplicateImportsViolationPositions() -> [AbsolutePosition] {
@@ -185,7 +190,7 @@ private extension SwiftLintFile {
             .walk(file: self, handler: \.ifConfigRanges)
 
         func ranges(for position: AbsolutePosition) -> [ByteSourceRange] {
-            let positionRange = position..<(position + SourceLength(utf8Length: 1))
+            let positionRange = position ..< (position + SourceLength(utf8Length: 1))
             return ifConfigRanges.filter { $0.overlapsOrTouches(positionRange) }
         }
 
@@ -209,9 +214,10 @@ private extension SwiftLintFile {
             }
 
             let intersects = {
-                let otherRangesForPosition = seen
-                    .filter { $0.path == path }
-                    .flatMap(\.ifConfigRanges)
+                let otherRangesForPosition =
+                    seen
+                        .filter { $0.path == path }
+                        .flatMap(\.ifConfigRanges)
 
                 return rangesForPosition.contains(where: otherRangesForPosition.contains)
             }
@@ -222,7 +228,9 @@ private extension SwiftLintFile {
         }
 
         // Partial matches
-        for `import` in importPaths where !`import`.hasAttributes && !explicitSystemModules.contains(`import`.path) {
+        for `import` in importPaths
+            where !`import`.hasAttributes && !explicitSystemModules.contains(`import`.path)
+        {
             let path = `import`.path
             let position = `import`.position
             let violation = importPaths.contains { other in
@@ -249,12 +257,15 @@ private extension DuplicateImportsRule {
         private lazy var importPositionsToRemove = file.duplicateImportsViolationPositions()
 
         override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-            let itemsToRemove = node
-                .enumerated()
-                .filter { !$1.isContainedIn(regions: disabledRegions, locationConverter: locationConverter) }
-                .map { ($0, $1.item.positionAfterSkippingLeadingTrivia) }
-                .filter { importPositionsToRemove.contains($1) }
-                .map { (indexInParent: $0, absolutePosition: $1) }
+            let itemsToRemove =
+                node
+                    .enumerated()
+                    .filter {
+                        !$1.isContainedIn(regions: disabledRegions, locationConverter: locationConverter)
+                    }
+                    .map { ($0, $1.item.positionAfterSkippingLeadingTrivia) }
+                    .filter { importPositionsToRemove.contains($1) }
+                    .map { (indexInParent: $0, absolutePosition: $1) }
             if itemsToRemove.isEmpty {
                 return super.visit(node)
             }

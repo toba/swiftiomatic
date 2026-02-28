@@ -15,50 +15,66 @@ struct PrivateOverFilePrivateRule: Rule {
             Example("open extension \n String {}"),
             Example("internal extension String {}"),
             Example("package typealias P = Int"),
-            Example("""
-            extension String {
-              fileprivate func Something(){}
-            }
-            """),
-            Example("""
-            class MyClass {
-              fileprivate let myInt = 4
-            }
-            """),
-            Example("""
-            actor MyActor {
-              fileprivate let myInt = 4
-            }
-            """),
-            Example("""
-            class MyClass {
-              fileprivate(set) var myInt = 4
-            }
-            """),
-            Example("""
-            struct Outer {
-              struct Inter {
-                fileprivate struct Inner {}
-              }
-            }
-            """),
+            Example(
+                """
+                extension String {
+                  fileprivate func Something(){}
+                }
+                """
+            ),
+            Example(
+                """
+                class MyClass {
+                  fileprivate let myInt = 4
+                }
+                """
+            ),
+            Example(
+                """
+                actor MyActor {
+                  fileprivate let myInt = 4
+                }
+                """
+            ),
+            Example(
+                """
+                class MyClass {
+                  fileprivate(set) var myInt = 4
+                }
+                """
+            ),
+            Example(
+                """
+                struct Outer {
+                  struct Inter {
+                    fileprivate struct Inner {}
+                  }
+                }
+                """
+            ),
         ],
         triggeringExamples: [
             Example("↓fileprivate enum MyEnum {}"),
-            Example("""
-            ↓fileprivate class MyClass {
-              fileprivate(set) var myInt = 4
-            }
-            """),
-            Example("""
-            ↓fileprivate actor MyActor {
-              fileprivate let myInt = 4
-            }
-            """),
-            Example("""
-                ↓fileprivate func f() {}
-                ↓fileprivate var x = 0
-            """),
+            Example(
+                """
+                ↓fileprivate class MyClass {
+                  fileprivate(set) var myInt = 4
+                }
+                """
+            ),
+            Example(
+                """
+                ↓fileprivate actor MyActor {
+                  fileprivate let myInt = 4
+                }
+                """
+            ),
+            Example(
+                """
+                    ↓fileprivate func f() {}
+                    ↓fileprivate var x = 0
+                """
+            ),
         ],
         corrections: [
             Example("↓fileprivate enum MyEnum {}"):
@@ -81,7 +97,9 @@ extension PrivateOverFilePrivateRule: SwiftSyntaxCorrectableRule {
 
 private extension PrivateOverFilePrivateRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_ node: ActorDeclSyntax) {
             visit(withModifier: node)

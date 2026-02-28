@@ -12,12 +12,24 @@ struct LineLengthRule: Rule {
         kind: .metrics,
         nonTriggeringExamples: [
             Example(String(repeating: "/", count: 120) + ""),
-            Example(String(repeating: "#colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)", count: 120) + ""),
+            Example(
+                String(
+                    repeating:
+                    "#colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)",
+                    count: 120
+                ) + ""
+            ),
             Example(String(repeating: "#imageLiteral(resourceName: \"image.jpg\")", count: 120) + ""),
         ],
         triggeringExamples: [
             Example(String(repeating: "/", count: 121) + ""),
-            Example(String(repeating: "#colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)", count: 121) + ""),
+            Example(
+                String(
+                    repeating:
+                    "#colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)",
+                    count: 121
+                ) + ""
+            ),
             Example(String(repeating: "#imageLiteral(resourceName: \"image.jpg\")", count: 121) + ""),
         ].skipWrappingInCommentTests().skipWrappingInStringTests()
     )
@@ -111,35 +123,47 @@ private extension LineLengthRule {
                 if configuration.ignoresURLs {
                     strippedString = strippedString.strippingURLs
                 }
-                strippedString = stripLiterals(fromSourceString: strippedString, withDelimiter: "#colorLiteral")
-                strippedString = stripLiterals(fromSourceString: strippedString, withDelimiter: "#imageLiteral")
+                strippedString = stripLiterals(
+                    fromSourceString: strippedString, withDelimiter: "#colorLiteral"
+                )
+                strippedString = stripLiterals(
+                    fromSourceString: strippedString, withDelimiter: "#imageLiteral"
+                )
 
                 let length = strippedString.count // Character count for reporting
 
                 // Check against configured length limits
                 for param in configuration.params where length > param.value {
-                    let reason = "Line should be \(param.value) characters or less; " +
-                        "currently it has \(length) characters"
+                    let reason =
+                        "Line should be \(param.value) characters or less; "
+                            + "currently it has \(length) characters"
                     // Position the violation at the start of the line, consistent with original behavior
-                    violations.append(ReasonedRuleViolation(
-                        position: locationConverter.position(ofLine: line.index, column: 1), // Start of the line
-                        reason: reason,
-                        severity: param.severity
-                    ))
+                    violations.append(
+                        ReasonedRuleViolation(
+                            position: locationConverter.position(ofLine: line.index, column: 1), // Start of the line
+                            reason: reason,
+                            severity: param.severity
+                        )
+                    )
                     break // Only report one violation (the most severe one reached) per line
                 }
             }
         }
 
-        // Strip color and image literals from the source string
-        private func stripLiterals(fromSourceString sourceString: String,
-                                   withDelimiter delimiter: String) -> String {
+        /// Strip color and image literals from the source string
+        private func stripLiterals(
+            fromSourceString sourceString: String,
+            withDelimiter delimiter: String
+        ) -> String {
             var modifiedString = sourceString
             while modifiedString.contains("\(delimiter)(") {
                 if let rangeStart = modifiedString.range(of: "\(delimiter)("),
-                   let rangeEnd = modifiedString.range(of: ")", options: .literal,
-                                                       range: rangeStart.lowerBound..<modifiedString.endIndex) {
-                    modifiedString.replaceSubrange(rangeStart.lowerBound..<rangeEnd.upperBound, with: "#")
+                   let rangeEnd = modifiedString.range(
+                       of: ")", options: .literal,
+                       range: rangeStart.lowerBound ..< modifiedString.endIndex
+                   )
+                {
+                    modifiedString.replaceSubrange(rangeStart.lowerBound ..< rangeEnd.upperBound, with: "#")
                 } else {
                     break
                 }
@@ -151,7 +175,7 @@ private extension LineLengthRule {
 
 // MARK: - Helper Visitors for Pre-computation
 
-// Visitor to find lines spanned by function declaration signatures
+/// Visitor to find lines spanned by function declaration signatures
 private final class FunctionLineVisitor: SyntaxVisitor {
     let locationConverter: SourceLocationConverter
     var lines = Set<Int>()
@@ -188,13 +212,13 @@ private final class FunctionLineVisitor: SyntaxVisitor {
     private func collectLines(from startPosition: AbsolutePosition, to endPosition: AbsolutePosition) {
         let startLocation = locationConverter.location(for: startPosition)
         let endLocation = locationConverter.location(for: endPosition)
-        for line in startLocation.line...endLocation.line {
+        for line in startLocation.line ... endLocation.line {
             lines.insert(line)
         }
     }
 }
 
-// Visitor to find lines with interpolated strings
+/// Visitor to find lines with interpolated strings
 private final class InterpolatedStringLineVisitor: SyntaxVisitor {
     let locationConverter: SourceLocationConverter
     var lines = Set<Int>()
@@ -208,13 +232,13 @@ private final class InterpolatedStringLineVisitor: SyntaxVisitor {
         // ExpressionSegmentSyntax is the interpolation inside a string
         let startLocation = locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
         let endLocation = locationConverter.location(for: node.endPositionBeforeTrailingTrivia)
-        for line in startLocation.line...endLocation.line {
+        for line in startLocation.line ... endLocation.line {
             lines.insert(line)
         }
     }
 }
 
-// Visitor to find lines with regex literals
+/// Visitor to find lines with regex literals
 private final class RegexLiteralVisitor: SyntaxVisitor {
     let locationConverter: SourceLocationConverter
     var lines = Set<Int>()
@@ -227,7 +251,7 @@ private final class RegexLiteralVisitor: SyntaxVisitor {
     override func visitPost(_ node: RegexLiteralExprSyntax) {
         let startLocation = locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
         let endLocation = locationConverter.location(for: node.endPositionBeforeTrailingTrivia)
-        for line in startLocation.line...endLocation.line {
+        for line in startLocation.line ... endLocation.line {
             lines.insert(line)
         }
     }
@@ -239,17 +263,22 @@ private extension String {
         // Workaround for Linux until NSDataDetector is available
         #if os(Linux) || os(Windows)
             // Regex pattern from http://daringfireball.net/2010/07/improved_regex_for_matching_urls
-            let pattern = "(?i)\\b((?:[a-z][\\w-]+:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)" +
-                "(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*" +
-                "\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"
+            let pattern =
+                "(?i)\\b((?:[a-z][\\w-]+:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)"
+                    + "(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*"
+                    + "\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"
             let urlRegex = regex(pattern)
-            return urlRegex.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: "")
+            return urlRegex.stringByReplacingMatches(
+                in: self, options: [], range: range, withTemplate: ""
+            )
         #else
             let types = NSTextCheckingResult.CheckingType.link.rawValue
             guard let urlDetector = try? NSDataDetector(types: types) else {
                 return self
             }
-            return urlDetector.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: "")
+            return urlDetector.stringByReplacingMatches(
+                in: self, options: [], range: range, withTemplate: ""
+            )
         #endif
     }
 }

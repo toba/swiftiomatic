@@ -15,15 +15,19 @@ struct JoinedDefaultParameterRule: Rule {
         ],
         triggeringExamples: [
             Example("let foo = bar.joined(↓separator: \"\")"),
-            Example("""
-            let foo = bar.filter(toto)
-                         .joined(↓separator: ""),
-            """),
-            Example("""
-            func foo() -> String {
-              return ["1", "2"].joined(↓separator: "")
-            }
-            """),
+            Example(
+                """
+                let foo = bar.filter(toto)
+                             .joined(↓separator: ""),
+                """
+            ),
+            Example(
+                """
+                func foo() -> String {
+                  return ["1", "2"].joined(↓separator: "")
+                }
+                """
+            ),
         ],
         corrections: [
             Example("let foo = bar.joined(↓separator: \"\")"): Example("let foo = bar.joined()"),
@@ -41,6 +45,7 @@ extension JoinedDefaultParameterRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -76,7 +81,8 @@ private extension FunctionCallExprSyntax {
               memberExp.declName.baseName.text == "joined",
               argument.label?.text == "separator",
               let strLiteral = argument.expression.as(StringLiteralExprSyntax.self),
-              strLiteral.isEmptyString else {
+              strLiteral.isEmptyString
+        else {
             return nil
         }
 

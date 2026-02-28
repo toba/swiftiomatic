@@ -15,13 +15,24 @@ extension FormatRule {
     ) { formatter in
         formatter.forEach(.keyword("protocol")) { i, _ in
             guard formatter.options.swiftVersion >= "4.1",
-                  let nameIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i, if: {
-                      $0.isIdentifier
-                  }), let colonIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: nameIndex, if: {
-                      $0 == .delimiter(":")
-                  }), let classIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: colonIndex, if: {
-                      $0 == .keyword("class")
-                  })
+                  let nameIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, after: i,
+                      if: {
+                          $0.isIdentifier
+                      }
+                  ),
+                  let colonIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, after: nameIndex,
+                      if: {
+                          $0 == .delimiter(":")
+                      }
+                  ),
+                  let classIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, after: colonIndex,
+                      if: {
+                          $0 == .keyword("class")
+                      }
+                  )
             else {
                 return
             }

@@ -3,19 +3,22 @@ import os.signpost
 private let timelineLog = OSLog(subsystem: "io.realm.swiftlint", category: "Timeline")
 private let fileLog = OSLog(subsystem: "io.realm.swiftlint", category: "File")
 
-struct Signposts {
+enum Signposts {
     enum Span {
-        case timeline, file(String)
+        case timeline
+        case file(String)
     }
 
-    static func record<R>(name: StaticString, span: Span = .timeline, body: () throws -> R) rethrows -> R {
+    static func record<R>(name: StaticString, span: Span = .timeline, body: () throws -> R) rethrows
+        -> R
+    {
         let log: OSLog
         let description: String?
         switch span {
         case .timeline:
             log = timelineLog
             description = nil
-        case .file(let file):
+        case let .file(file):
             log = fileLog
             description = file
         }
@@ -35,14 +38,16 @@ struct Signposts {
         return result
     }
 
-    static func record<R>(name: StaticString, span: Span = .timeline, body: () async throws -> R) async rethrows -> R {
+    static func record<R>(name: StaticString, span: Span = .timeline, body: () async throws -> R)
+        async rethrows -> R
+    {
         let log: OSLog
         let description: String?
         switch span {
         case .timeline:
             log = timelineLog
             description = nil
-        case .file(let file):
+        case let .file(file):
             log = fileLog
             description = file
         }

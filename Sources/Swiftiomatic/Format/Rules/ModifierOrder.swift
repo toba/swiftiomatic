@@ -36,10 +36,12 @@ extension FormatRule {
                     previousIndex = lastIndex
                     lastIndex = index
                 case .endOfScope(")"):
-                    if case let .identifier(param)? = formatter.last(.nonSpaceOrCommentOrLinebreak, before: index),
-                       let openParenIndex = formatter.index(of: .startOfScope("("), before: index),
-                       let index = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: openParenIndex),
-                       let token = formatter.token(at: index), formatter.isModifier(at: index)
+                    if case let .identifier(param)? = formatter.last(
+                        .nonSpaceOrCommentOrLinebreak, before: index
+                    ),
+                        let openParenIndex = formatter.index(of: .startOfScope("("), before: index),
+                        let index = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: openParenIndex),
+                        let token = formatter.token(at: index), formatter.isModifier(at: index)
                     {
                         pushModifier()
                         let modifier = token.string + (param == "set" ? "(set)" : "")
@@ -82,7 +84,7 @@ extension FormatRule {
         ```
 
         **NOTE:** If the `--modifier-order` option isn't set, the default order will be:
-        `\(_FormatRules.defaultModifierOrder.flatMap { $0 }.joined(separator: "`, `"))`
+        `\(_FormatRules.defaultModifierOrder.flatMap(\.self).joined(separator: "`, `"))`
         """
     }
 }
@@ -98,8 +100,10 @@ extension Formatter {
         }
         var order = options.modifierOrder.flatMap { _FormatRules.mapModifiers($0) ?? [] }
         for (i, modifiers) in _FormatRules.defaultModifierOrder.enumerated() {
-            let insertionPoint = order.firstIndex(where: { modifiers.contains($0) }) ??
-                order.firstIndex(where: { (priorities[$0] ?? 0) > i }) ?? order.count
+            let insertionPoint =
+                order.firstIndex(where: { modifiers.contains($0) }) ?? order.firstIndex(where: {
+                    (priorities[$0] ?? 0) > i
+                }) ?? order.count
             order.insert(contentsOf: modifiers.filter { !order.contains($0) }, at: insertionPoint)
         }
         return order

@@ -1,4 +1,4 @@
-internal enum DeploymentTargetRuleExamples {
+enum DeploymentTargetRuleExamples {
     static let nonTriggeringExamples: [Example] = [
         Example("@available(iOS 12.0, *)\nclass A {}"),
         Example("@available(iOSApplicationExtension 13.0, *)\nclass A {}"),

@@ -20,6 +20,7 @@ extension SortedImportsRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -31,11 +32,15 @@ private extension SortedImportsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private var imports = [Import]()
 
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_ node: ImportDeclSyntax) {
             imports.append(
-                Import.from(importDecl: node, grouping: configuration.grouping, locationConverter: locationConverter)
+                Import.from(
+                    importDecl: node, grouping: configuration.grouping, locationConverter: locationConverter
+                )
             )
         }
 
@@ -81,7 +86,9 @@ private extension SortedImportsRule {
 
             for stmt in statements {
                 if let importDecl = stmt.item.as(ImportDeclSyntax.self) {
-                    if importDecl.isContainedIn(regions: disabledRegions, locationConverter: locationConverter) {
+                    if importDecl.isContainedIn(
+                        regions: disabledRegions, locationConverter: locationConverter
+                    ) {
                         rewrittenStatements.append(stmt)
                         continue
                     }
@@ -90,7 +97,9 @@ private extension SortedImportsRule {
                         grouping: configuration.grouping,
                         locationConverter: locationConverter
                     )
-                    if let lastImport = imports.last, !`import`.isDirectlyAfter(previous: lastImport, in: file) {
+                    if let lastImport = imports.last,
+                       !`import`.isDirectlyAfter(previous: lastImport, in: file)
+                    {
                         rewrittenStatements.append(contentsOf: sort(imports))
                         imports = [`import`]
                         continue
@@ -100,17 +109,23 @@ private extension SortedImportsRule {
                     // Recursively rewrite imports inside `#if` blocks.
                     let rewrittenClauses = ifConfigDecl.clauses.map { clause in
                         let rewrittenClause = clause.elements.map { elements in
-                            let rewrittenElements = rewrite(statements: elements.as(CodeBlockItemListSyntax.self) ?? [])
+                            let rewrittenElements = rewrite(
+                                statements: elements.as(CodeBlockItemListSyntax.self) ?? []
+                            )
                             return CodeBlockItemListSyntax(rewrittenElements)
                         }
                         return clause.with(\.elements, .statements(rewrittenClause ?? []))
                     }
-                    let rewrittenIfConfig = ifConfigDecl.with(\.clauses, IfConfigClauseListSyntax(rewrittenClauses))
+                    let rewrittenIfConfig = ifConfigDecl.with(
+                        \.clauses, IfConfigClauseListSyntax(rewrittenClauses)
+                    )
                     if !imports.isEmpty {
                         rewrittenStatements.append(contentsOf: sort(imports))
                         imports = []
                     }
-                    rewrittenStatements.append(CodeBlockItemSyntax(item: .decl(DeclSyntax(rewrittenIfConfig))))
+                    rewrittenStatements.append(
+                        CodeBlockItemSyntax(item: .decl(DeclSyntax(rewrittenIfConfig)))
+                    )
                 } else {
                     rewrittenStatements.append(contentsOf: sort(imports))
                     imports = []
@@ -137,10 +152,12 @@ private extension SortedImportsRule {
                 let sorted = imports.sorted(by: { $0 < $1 })
                 numberOfCorrections += imports.difference(from: sorted).count
                 let first = sorted.first!.importDecl
-                let firstWithTrivia = firstImportWithoutComment == sorted.first
-                    ? first.with(\.leadingTrivia, firstImport.importDecl.leadingTrivia)
-                    : first.with(\.leadingTrivia, leadingTrivia.first + first.leadingTrivia)
-                return [firstWithTrivia.asCodeBlockItem] + sorted.dropFirst().map(\.importDecl.asCodeBlockItem)
+                let firstWithTrivia =
+                    firstImportWithoutComment == sorted.first
+                        ? first.with(\.leadingTrivia, firstImport.importDecl.leadingTrivia)
+                        : first.with(\.leadingTrivia, leadingTrivia.first + first.leadingTrivia)
+                return [firstWithTrivia.asCodeBlockItem]
+                    + sorted.dropFirst().map(\.importDecl.asCodeBlockItem)
             }
             let sorted = imports.sorted(by: { $0 < $1 })
             numberOfCorrections += imports.difference(from: sorted).count
@@ -178,6 +195,7 @@ private extension Trivia {
         return (Trivia(pieces: leading), Trivia(pieces: trailing), foundSplit)
     }
 }
+
 private extension ImportDeclSyntax {
     var asCodeBlockItem: CodeBlockItemSyntax {
         let item = CodeBlockItemSyntax(item: .decl(DeclSyntax(self)))
@@ -202,9 +220,11 @@ private struct Import: Comparable {
         importDecl.path.map(\.name.text).joined(separator: ".")
     }
 
-    static func from(importDecl: ImportDeclSyntax,
-                     grouping: SortedImportsConfiguration.Grouping,
-                     locationConverter: SourceLocationConverter) -> Self {
+    static func from(
+        importDecl: ImportDeclSyntax,
+        grouping: SortedImportsConfiguration.Grouping,
+        locationConverter: SourceLocationConverter
+    ) -> Self {
         let attributes: [String] =
             if grouping == .attributes {
                 importDecl.attributes.compactMap {
@@ -235,11 +255,13 @@ private struct Import: Comparable {
             } else {
                 0
             }
-        let startLine = locationConverter.location(for: importDecl.positionAfterSkippingLeadingTrivia).line
+        let startLine = locationConverter.location(for: importDecl.positionAfterSkippingLeadingTrivia)
+            .line
         return Self(
             importDecl: importDecl,
             line: startLine,
-            offset: locationConverter.location(for: importDecl.path.endPositionBeforeTrailingTrivia).line - startLine,
+            offset: locationConverter.location(for: importDecl.path.endPositionBeforeTrailingTrivia).line
+                - startLine,
             attributes: attributes.joined(),
             modifier: modifier
         )
@@ -251,7 +273,7 @@ private struct Import: Comparable {
         // Import is either directly after the previous import ...
         return lineAfterPrevious == line
             // ... or there are only comment lines between them.
-            || file.commentLines.isSuperset(of: lineAfterPrevious..<line)
+            || file.commentLines.isSuperset(of: lineAfterPrevious ..< line)
     }
 
     static func < (lhs: Self, rhs: Self) -> Bool {

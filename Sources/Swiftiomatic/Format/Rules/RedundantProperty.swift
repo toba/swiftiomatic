@@ -18,14 +18,21 @@ extension FormatRule {
             guard ["let", "var"].contains(introducerToken.string),
                   let property = formatter.parsePropertyDeclaration(atIntroducerIndex: introducerIndex),
                   let (assignmentIndex, expressionRange) = property.value,
-                  let returnIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound),
+                  let returnIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound
+                  ),
                   formatter.tokens[returnIndex] == .keyword("return"),
                   let returnedValueIndex = formatter.index(of: .nonSpaceOrComment, after: returnIndex),
-                  let returnedExpression = formatter.parseExpressionRange(startingAt: returnedValueIndex, allowConditionalExpressions: true),
+                  let returnedExpression = formatter.parseExpressionRange(
+                      startingAt: returnedValueIndex, allowConditionalExpressions: true
+                  ),
                   formatter.tokens[returnedExpression] == [.identifier(property.identifier)]
             else { return }
 
-            let returnRange = formatter.startOfLine(at: returnIndex) ... formatter.endOfLine(at: returnedExpression.upperBound)
+            let returnRange =
+                formatter.startOfLine(
+                    at: returnIndex
+                ) ... formatter.endOfLine(at: returnedExpression.upperBound)
             let propertyRange = introducerIndex ... expressionRange.upperBound
 
             guard !propertyRange.overlaps(returnRange) else { return }
@@ -36,7 +43,8 @@ extension FormatRule {
             // If there's nothing but whitespace between the end of the expression
             // and the return statement, we can remove all of it. But if there's a comment,
             // we should preserve it.
-            let rangeBetweenExpressionAndReturn = (expressionRange.upperBound + 1) ..< (returnRange.lowerBound - 1)
+            let rangeBetweenExpressionAndReturn =
+                (expressionRange.upperBound + 1) ..< (returnRange.lowerBound - 1)
             if formatter.tokens[rangeBetweenExpressionAndReturn].allSatisfy(\.isSpaceOrLinebreak) {
                 formatter.removeTokens(in: rangeBetweenExpressionAndReturn)
             }

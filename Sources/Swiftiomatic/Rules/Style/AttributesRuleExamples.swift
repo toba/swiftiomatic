@@ -1,4 +1,4 @@
-internal struct AttributesRuleExamples {
+enum AttributesRuleExamples {
     static let nonTriggeringExamples = [
         Example("@objc var x: String"),
         Example("@objc private var x: String"),
@@ -29,13 +29,15 @@ internal struct AttributesRuleExamples {
         Example("@objc\nclass ⽺ {}"),
 
         // attribute with allowed empty new line above
-        Example("""
-        extension Property {
+        Example(
+            """
+            extension Property {
 
-            @available(*, unavailable, renamed: \"isOptional\")
-            public var optional: Bool { fatalError() }
-        }
-        """),
+                @available(*, unavailable, renamed: \"isOptional\")
+                public var optional: Bool { fatalError() }
+            }
+            """
+        ),
         Example("@GKInspectable var maxSpeed: Float"),
         Example("@discardableResult\n func a() -> Int"),
         Example("@objc\n @discardableResult\n func a() -> Int"),
@@ -43,59 +45,76 @@ internal struct AttributesRuleExamples {
         Example("func foo(completionHandler: @escaping () -> Void)"),
         Example("private struct DefaultError: Error {}"),
         Example("@testable import foo\n\nprivate let bar = 1"),
-        Example("""
-        import XCTest
-        @testable import DeleteMe
+        Example(
+            """
+            import XCTest
+            @testable import DeleteMe
 
-        @available (iOS 11.0, *)
-        class DeleteMeTests: XCTestCase {
-        }
-        """),
-        Example("""
-        @objc
-        internal func foo(identifier: String, completion: @escaping (() -> Void)) {}
-        """),
-        Example("""
-        @objc
-        internal func foo(identifier: String, completion: @autoclosure (() -> Bool)) {}
-        """),
-        Example("""
-        func printBoolOrTrue(_ expression: @autoclosure () throws -> Bool?) rethrows {
-          try print(expression() ?? true)
-        }
-        """),
-        Example("""
-        import Foundation
+            @available (iOS 11.0, *)
+            class DeleteMeTests: XCTestCase {
+            }
+            """
+        ),
+        Example(
+            """
+            @objc
+            internal func foo(identifier: String, completion: @escaping (() -> Void)) {}
+            """
+        ),
+        Example(
+            """
+            @objc
+            internal func foo(identifier: String, completion: @autoclosure (() -> Bool)) {}
+            """
+        ),
+        Example(
+            """
+            func printBoolOrTrue(_ expression: @autoclosure () throws -> Bool?) rethrows {
+              try print(expression() ?? true)
+            }
+            """
+        ),
+        Example(
+            """
+            import Foundation
 
-        class MyClass: NSObject {
-          @objc(
-            first:
-          )
-          static func foo(first: String) {}
-        }
-        """),
-        Example("""
-        func refreshable(action: @escaping @Sendable () async -> Void) -> some View {
-            modifier(RefreshableModifier(action: action))
-        }
-        """),
-        Example("""
-        import AppKit
+            class MyClass: NSObject {
+              @objc(
+                first:
+              )
+              static func foo(first: String) {}
+            }
+            """
+        ),
+        Example(
+            """
+            func refreshable(action: @escaping @Sendable () async -> Void) -> some View {
+                modifier(RefreshableModifier(action: action))
+            }
+            """
+        ),
+        Example(
+            """
+            import AppKit
 
-        @NSApplicationMain
-        @MainActor
-        final class AppDelegate: NSAppDelegate {}
-        """),
-        Example(#"""
-        @_spi(Private) import SomeFramework
+            @NSApplicationMain
+            @MainActor
+            final class AppDelegate: NSAppDelegate {}
+            """
+        ),
+        Example(
+            #"""
+            @_spi(Private) import SomeFramework
 
-        @_spi(Private)
-        final class MyView: View {
-            @SwiftUI.Environment(\.colorScheme) var first: ColorScheme
-            @Environment(\.colorScheme) var second: ColorScheme
-            @Persisted(primaryKey: true) var id: Int
-        }
-        """#, configuration: ["attributes_with_arguments_always_on_line_above": false], excludeFromDocumentation: true),
+            @_spi(Private)
+            final class MyView: View {
+                @SwiftUI.Environment(\.colorScheme) var first: ColorScheme
+                @Environment(\.colorScheme) var second: ColorScheme
+                @Persisted(primaryKey: true) var id: Int
+            }
+            """#, configuration: ["attributes_with_arguments_always_on_line_above": false],
+            excludeFromDocumentation: true
+        ),
     ]
 
     static let triggeringExamples = [
@@ -130,15 +149,17 @@ internal struct AttributesRuleExamples {
         Example("@discardableResult ↓func a() -> Int"),
         Example("@objc\n @discardableResult ↓func a() -> Int"),
         Example("@objc\n\n @discardableResult\n ↓func a() -> Int"),
-        Example(#"""
-        struct S: View {
-            @Environment(\.colorScheme) ↓var first: ColorScheme
-            @Persisted var id: Int
-            @FetchRequest(
-                  animation: nil
-            )
-            var entities: FetchedResults
-        }
-        """#, excludeFromDocumentation: true),
+        Example(
+            #"""
+            struct S: View {
+                @Environment(\.colorScheme) ↓var first: ColorScheme
+                @Persisted var id: Int
+                @FetchRequest(
+                      animation: nil
+                )
+                var entities: FetchedResults
+            }
+            """#, excludeFromDocumentation: true
+        ),
     ]
 }

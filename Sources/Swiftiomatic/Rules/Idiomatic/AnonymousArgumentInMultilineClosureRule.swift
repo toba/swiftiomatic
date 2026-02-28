@@ -28,23 +28,29 @@ struct AnonymousArgumentInMultilineClosureRule: Rule {
         nonTriggeringExamples: [
             Example("closure { $0 }"),
             Example("closure { print($0) }"),
-            Example("""
-            closure { arg in
-                print(arg)
-            }
-            """),
-            Example("""
-            closure { arg in
-                nestedClosure { $0 + arg }
-            }
-            """),
+            Example(
+                """
+                closure { arg in
+                    print(arg)
+                }
+                """
+            ),
+            Example(
+                """
+                closure { arg in
+                    nestedClosure { $0 + arg }
+                }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            closure {
-                print(↓$0)
-            }
-            """),
+            Example(
+                """
+                closure {
+                    print(↓$0)
+                }
+                """
+            ),
         ]
     )
 }
@@ -60,8 +66,12 @@ extension AnonymousArgumentInMultilineClosureRule: OptInRule {}
 private extension AnonymousArgumentInMultilineClosureRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-            let startLocation = locationConverter.location(for: node.leftBrace.positionAfterSkippingLeadingTrivia)
-            let endLocation = locationConverter.location(for: node.rightBrace.endPositionBeforeTrailingTrivia)
+            let startLocation = locationConverter.location(
+                for: node.leftBrace.positionAfterSkippingLeadingTrivia
+            )
+            let endLocation = locationConverter.location(
+                for: node.rightBrace.endPositionBeforeTrailingTrivia
+            )
             return startLocation.line == endLocation.line ? .skipChildren : .visitChildren
         }
 

@@ -1,4 +1,4 @@
-internal struct PrivateSubjectRuleExamples {
+enum PrivateSubjectRuleExamples {
     static let nonTriggeringExamples: [Example] = [
         Example(
             #"""

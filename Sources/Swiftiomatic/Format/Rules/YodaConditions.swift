@@ -19,13 +19,21 @@ extension FormatRule {
                   let opIndex = ["==", "!=", "<", "<=", ">", ">="].firstIndex(of: op),
                   let prevIndex = formatter.index(of: .nonSpace, before: i),
                   formatter.isConstant(at: prevIndex), let startIndex = formatter.startOfValue(at: prevIndex),
-                  !formatter.isOperator(at: formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startIndex)),
-                  let nextIndex = formatter.index(of: .nonSpace, after: i), !formatter.isConstant(at: nextIndex) ||
-                  formatter.isOperator(at: formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: nextIndex)),
-                  let endIndex = formatter.endOfExpression(at: nextIndex, upTo: [
-                      .operator("&&", .infix), .operator("||", .infix),
-                      .operator("?", .infix), .operator(":", .infix),
-                  ])
+                  !formatter.isOperator(
+                      at: formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startIndex)
+                  ),
+                  let nextIndex = formatter.index(of: .nonSpace, after: i),
+                  !formatter.isConstant(at: nextIndex)
+                  || formatter.isOperator(
+                      at: formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: nextIndex)
+                  ),
+                  let endIndex = formatter.endOfExpression(
+                      at: nextIndex,
+                      upTo: [
+                          .operator("&&", .infix), .operator("||", .infix),
+                          .operator("?", .infix), .operator(":", .infix),
+                      ]
+                  )
             else {
                 return
             }
@@ -65,7 +73,8 @@ extension Formatter {
             case _ where isConstant(at: i), .delimiter(","), .delimiter(":"):
                 index = self.index(of: .nonSpaceOrCommentOrLinebreak, in: i + 1 ..< range.upperBound)
             case .identifier:
-                guard let nextIndex =
+                guard
+                    let nextIndex =
                     self.index(of: .nonSpaceOrComment, in: i + 1 ..< range.upperBound),
                     tokens[nextIndex] == .delimiter(":")
                 else {
@@ -112,8 +121,9 @@ extension Formatter {
             // Don't treat .members as constant
             return false
         case .operator(".", .prefix) where self.token(at: index + 1)?.isIdentifier == true,
-             .identifier where self.token(at: index - 1) == .operator(".", .prefix) &&
-                 self.token(at: index - 2) != .operator("\\", .prefix):
+             .identifier
+                 where self.token(at: index - 1) == .operator(".", .prefix)
+                 && self.token(at: index - 2) != .operator("\\", .prefix):
             return true
         default:
             return false

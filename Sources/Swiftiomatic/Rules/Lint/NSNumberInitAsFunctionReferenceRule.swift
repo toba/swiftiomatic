@@ -1,14 +1,15 @@
 import SwiftSyntax
 
-// this rule exists due to a compiler bug: https://github.com/apple/swift/issues/51036
+/// this rule exists due to a compiler bug: https://github.com/apple/swift/issues/51036
 struct NSNumberInitAsFunctionReferenceRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
     static let description = RuleDescription(
         identifier: "ns_number_init_as_function_reference",
         name: "NSNumber Init as Function Reference",
-        description: "Passing `NSNumber.init` or `NSDecimalNumber.init` as a function reference is dangerous " +
-                     "as it can cause the wrong initializer to be used, causing crashes; use `.init(value:)` instead",
+        description:
+        "Passing `NSNumber.init` or `NSDecimalNumber.init` as a function reference is dangerous "
+            + "as it can cause the wrong initializer to be used, causing crashes; use `.init(value:)` instead",
         kind: .lint,
         nonTriggeringExamples: [
             Example("[0, 0.2].map(NSNumber.init(value:))"),
@@ -37,7 +38,8 @@ private extension NSNumberInitAsFunctionReferenceRule {
                   node.declName.baseName.text == "init",
                   node.parent?.as(FunctionCallExprSyntax.self) == nil,
                   let baseText = node.base?.as(DeclReferenceExprSyntax.self)?.baseName.text,
-                  baseText == "NSNumber" || baseText == "NSDecimalNumber" else {
+                  baseText == "NSNumber" || baseText == "NSDecimalNumber"
+            else {
                 return
             }
 

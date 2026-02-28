@@ -6,7 +6,8 @@ struct ArrayInitRule: Rule, @unchecked Sendable {
     static let description = RuleDescription(
         identifier: "array_init",
         name: "Array Init",
-        description: "Prefer using `Array(seq)` over `seq.map { $0 }` to convert a sequence into an Array",
+        description:
+        "Prefer using `Array(seq)` over `seq.map { $0 }` to convert a sequence into an Array",
         rationale: """
         When converting the elements of a sequence directly into an `Array`, for clarity, prefer using the `Array` \
         constructor over calling `map`. For example
@@ -55,26 +56,34 @@ struct ArrayInitRule: Rule, @unchecked Sendable {
             Example("foo.↓map({ $0 })"),
             Example("foo.↓map { $0 }"),
             Example("foo.↓map { return $0 }"),
-            Example("""
+            Example(
+                """
                 foo.↓map { elem in
                     elem
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 foo.↓map { elem in
                     return elem
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 foo.↓map { (elem: String) in
                     elem
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 foo.↓map { elem -> String in
                     elem
                 }
-                """),
+                """
+            ),
             Example("foo.↓map { $0 /* a comment */ }"),
             Example("foo.↓map { /* a comment */ $0 }"),
         ]
@@ -126,8 +135,9 @@ private extension FunctionCallExprSyntax {
 private extension CodeBlockItemSyntax {
     func returnsInput(_ closureParam: String?) -> Bool {
         let expectedReturnIdentifier = closureParam ?? "$0"
-        let identifier = item.as(DeclReferenceExprSyntax.self) ??
-        item.as(ReturnStmtSyntax.self)?.expression?.as(DeclReferenceExprSyntax.self)
+        let identifier =
+            item.as(DeclReferenceExprSyntax.self)
+                ?? item.as(ReturnStmtSyntax.self)?.expression?.as(DeclReferenceExprSyntax.self)
         return identifier?.baseName.text == expectedReturnIdentifier
     }
 }
@@ -137,8 +147,10 @@ private extension ClosureSignatureSyntax {
         if let list = parameterClause?.as(ClosureShorthandParameterListSyntax.self), list.count == 1 {
             return list.onlyElement?.name.text
         }
-        if let clause = parameterClause?.as(ClosureParameterClauseSyntax.self), clause.parameters.count == 1,
-           clause.parameters.first?.secondName == nil {
+        if let clause = parameterClause?.as(ClosureParameterClauseSyntax.self),
+           clause.parameters.count == 1,
+           clause.parameters.first?.secondName == nil
+        {
             return clause.parameters.first?.firstName.text
         }
         return nil

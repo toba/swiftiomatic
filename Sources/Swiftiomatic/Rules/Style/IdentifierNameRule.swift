@@ -7,11 +7,11 @@ struct IdentifierNameRule: Rule {
     static let description = RuleDescription(
         identifier: "identifier_name",
         name: "Identifier Name",
-        description: "Identifier names should only contain alphanumeric characters and " +
-            "start with a lowercase character or should only contain capital letters. " +
-            "In an exception to the above, variable names may start with a capital letter " +
-            "when they are declared as static. Variable names should not be too " +
-            "long or too short.",
+        description: "Identifier names should only contain alphanumeric characters and "
+            + "start with a lowercase character or should only contain capital letters. "
+            + "In an exception to the above, variable names may start with a capital letter "
+            + "when they are declared as static. Variable names should not be too "
+            + "long or too short.",
         kind: .style,
         nonTriggeringExamples: IdentifierNameRuleExamples.nonTriggeringExamples,
         triggeringExamples: IdentifierNameRuleExamples.triggeringExamples,
@@ -30,7 +30,9 @@ private extension IdentifierNameRule {
         private lazy var nameConfiguration = configuration.nameConfiguration
 
         override func visitPost(_ node: AccessorParametersSyntax) {
-            collectViolations(from: .variable(name: node.name.text, isStatic: false, isPrivate: false), on: node.name)
+            collectViolations(
+                from: .variable(name: node.name.text, isStatic: false, isPrivate: false), on: node.name
+            )
         }
 
         override func visitPost(_ node: ClosureParameterSyntax) {
@@ -46,7 +48,9 @@ private extension IdentifierNameRule {
 
         override func visitPost(_ node: ClosureShorthandParameterSyntax) {
             collectViolations(
-                from: .variable(name: node.name.text.leadingDollarStripped, isStatic: false, isPrivate: false),
+                from: .variable(
+                    name: node.name.text.leadingDollarStripped, isStatic: false, isPrivate: false
+                ),
                 on: node.name
             )
         }
@@ -57,7 +61,9 @@ private extension IdentifierNameRule {
 
         override func visitPost(_ node: EnumCaseParameterSyntax) {
             if let name = node.secondName ?? node.firstName {
-                collectViolations(from: .variable(name: name.text, isStatic: false, isPrivate: false), on: name)
+                collectViolations(
+                    from: .variable(name: name.text, isStatic: false, isPrivate: false), on: name
+                )
             }
         }
 
@@ -110,17 +116,20 @@ private extension IdentifierNameRule {
 
         private func collectViolations(from type: NamedDeclType, on token: TokenSyntax) {
             if let violation = violates(type) {
-                violations.append(ReasonedRuleViolation(
-                    position: token.positionAfterSkippingLeadingTrivia,
-                    reason: violation.reason,
-                    severity: violation.severity
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: token.positionAfterSkippingLeadingTrivia,
+                        reason: violation.reason,
+                        severity: violation.severity
+                    )
+                )
             }
         }
 
         private func violates(_ type: NamedDeclType) -> (reason: String, severity: ViolationSeverity)? {
             guard !nameConfiguration.shouldExclude(name: type.name), type.name != "_",
-                  let firstCharacter = type.name.first else {
+                  let firstCharacter = type.name.first
+            else {
                 return nil
             }
             if case .function = type {
@@ -128,18 +137,18 @@ private extension IdentifierNameRule {
             } else {
                 if !nameConfiguration.containsOnlyAllowedCharacters(name: type.name) {
                     let reason = """
-                        \(type) should only contain alphanumeric and other \
-                        allowed characters
-                        """
+                    \(type) should only contain alphanumeric and other \
+                    allowed characters
+                    """
                     return (reason, nameConfiguration.unallowedSymbolsSeverity.severity)
                 }
 
                 if let severity = nameConfiguration.severity(forLength: type.name.count) {
                     let reason = """
-                        \(type) should be between \
-                        \(nameConfiguration.minLengthThreshold) and \
-                        \(nameConfiguration.maxLengthThreshold) characters long
-                        """
+                    \(type) should be between \
+                    \(nameConfiguration.minLengthThreshold) and \
+                    \(nameConfiguration.maxLengthThreshold) characters long
+                    """
                     return (reason, severity)
                 }
             }
@@ -147,7 +156,8 @@ private extension IdentifierNameRule {
                 return nil
             }
             if let caseCheckSeverity = nameConfiguration.validatesStartWithLowercase.severity,
-               !type.isStatic, type.name.isViolatingCase, !isOperator(name: type.name) {
+               !type.isStatic, type.name.isViolatingCase, !isOperator(name: type.name)
+            {
                 let reason = "\(type) should start with a lowercase character"
                 return (reason, caseCheckSeverity)
             }
@@ -163,19 +173,19 @@ private extension IdentifierNameRule {
 private extension IdentifierPatternSyntax {
     var enclosingVarDecl: VariableDeclSyntax? {
         let identifierDecl =
-             parent?.as(PatternBindingSyntax.self)?
-            .parent?.as(PatternBindingListSyntax.self)?
-            .parent?.as(VariableDeclSyntax.self)
+            parent?.as(PatternBindingSyntax.self)?
+                .parent?.as(PatternBindingListSyntax.self)?
+                .parent?.as(VariableDeclSyntax.self)
         if identifierDecl != nil {
             return identifierDecl
         }
         return
-             parent?.as(TuplePatternElementSyntax.self)?
-            .parent?.as(TuplePatternElementListSyntax.self)?
-            .parent?.as(TuplePatternSyntax.self)?
-            .parent?.as(PatternBindingSyntax.self)?
-            .parent?.as(PatternBindingListSyntax.self)?
-            .parent?.as(VariableDeclSyntax.self)
+            parent?.as(TuplePatternElementSyntax.self)?
+                .parent?.as(TuplePatternElementListSyntax.self)?
+                .parent?.as(TuplePatternSyntax.self)?
+                .parent?.as(PatternBindingSyntax.self)?
+                .parent?.as(PatternBindingListSyntax.self)?
+                .parent?.as(VariableDeclSyntax.self)
     }
 }
 
@@ -208,14 +218,16 @@ private enum NamedDeclType: CustomStringConvertible {
     }
 
     var name: String {
-        let name = switch self {
-        case let .function(name, _, _): name
-        case let .enumElement(name): name
-        case let .variable(name, _, _): name
-        }
-        return name
-            .trimmingCharacters(in: CharacterSet(charactersIn: "`"))
-            .strippingLeadingUnderscore(if: isPrivate)
+        let name =
+            switch self {
+            case let .function(name, _, _): name
+            case let .enumElement(name): name
+            case let .variable(name, _, _): name
+            }
+        return
+            name
+                .trimmingCharacters(in: CharacterSet(charactersIn: "`"))
+                .strippingLeadingUnderscore(if: isPrivate)
     }
 }
 

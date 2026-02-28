@@ -1,4 +1,3 @@
-
 typealias BalancedXCTestLifecycleConfiguration = UnitTestConfiguration<BalancedXCTestLifecycleRule>
 typealias EmptyXCTestMethodConfiguration = UnitTestConfiguration<EmptyXCTestMethodRule>
 typealias FinalTestCaseConfiguration = UnitTestConfiguration<FinalTestCaseRule>

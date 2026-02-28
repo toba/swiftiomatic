@@ -57,64 +57,6 @@ struct LintOrAnalyzeOptions {
     let compileCommands: String?
     let checkForUpdates: Bool
 
-    init(mode: LintOrAnalyzeMode,
-                 paths: [String],
-                 useSTDIN: Bool,
-                 configurationFiles: [String],
-                 strict: Bool,
-                 lenient: Bool,
-                 forceExclude: Bool,
-                 useExcludingByPrefix: Bool,
-                 useScriptInputFiles: Bool,
-                 useScriptInputFileLists: Bool,
-                 benchmark: Bool,
-                 reporter: String?,
-                 baseline: String?,
-                 writeBaseline: String?,
-                 workingDirectory: String?,
-                 quiet: Bool,
-                 output: String?,
-                 progress: Bool,
-                 cachePath: String?,
-                 ignoreCache: Bool,
-                 enableAllRules: Bool,
-                 onlyRule: [String],
-                 autocorrect: Bool,
-                 format: Bool,
-                 disableSourceKit: Bool,
-                 compilerLogPath: String?,
-                 compileCommands: String?,
-                 checkForUpdates: Bool) {
-        self.mode = mode
-        self.paths = paths
-        self.useSTDIN = useSTDIN
-        self.configurationFiles = configurationFiles
-        self.strict = strict
-        self.lenient = lenient
-        self.forceExclude = forceExclude
-        self.useExcludingByPrefix = useExcludingByPrefix
-        self.useScriptInputFiles = useScriptInputFiles
-        self.useScriptInputFileLists = useScriptInputFileLists
-        self.benchmark = benchmark
-        self.reporter = reporter
-        self.baseline = baseline
-        self.writeBaseline = writeBaseline
-        self.workingDirectory = workingDirectory
-        self.quiet = quiet
-        self.output = output
-        self.progress = progress
-        self.cachePath = cachePath
-        self.ignoreCache = ignoreCache
-        self.enableAllRules = enableAllRules
-        self.onlyRule = onlyRule
-        self.autocorrect = autocorrect
-        self.format = format
-        self.disableSourceKit = disableSourceKit
-        self.compilerLogPath = compilerLogPath
-        self.compileCommands = compileCommands
-        self.checkForUpdates = checkForUpdates
-    }
-
     var verb: String {
         autocorrect ? "correcting" : mode.verb
     }
@@ -124,16 +66,16 @@ struct LintOrAnalyzeOptions {
     }
 }
 
-struct LintOrAnalyzeCommand {
+enum LintOrAnalyzeCommand {
     static func run(_ options: LintOrAnalyzeOptions) async throws {
         Request.disableSourceKitOverride = options.mode == .lint && options.disableSourceKit
         if let workingDirectory = options.workingDirectory {
             if !FileManager.default.changeCurrentDirectoryPath(workingDirectory) {
                 throw SwiftLintError.usageError(
                     description: """
-                                 Could not change working directory to '\(workingDirectory)'. \
-                                 Make sure it exists and is accessible.
-                                 """
+                    Could not change working directory to '\(workingDirectory)'. \
+                    Make sure it exists and is accessible.
+                    """
                 )
             }
         }
@@ -148,7 +90,9 @@ struct LintOrAnalyzeCommand {
         if let baselineOutputPath = options.writeBaseline ?? builder.configuration.writeBaseline {
             try Baseline(violations: builder.unfilteredViolations).write(toPath: baselineOutputPath)
         }
-        let numberOfSeriousViolations = try Signposts.record(name: "LintOrAnalyzeCommand.PostProcessViolations") {
+        let numberOfSeriousViolations = try Signposts.record(
+            name: "LintOrAnalyzeCommand.PostProcessViolations"
+        ) {
             try postProcessViolations(files: files, builder: builder)
         }
         if options.checkForUpdates || builder.configuration.checkForUpdates {
@@ -159,18 +103,23 @@ struct LintOrAnalyzeCommand {
         }
     }
 
-    private static func collectViolations(builder: LintOrAnalyzeResultBuilder) async throws -> [SwiftLintFile] {
+    private static func collectViolations(builder: LintOrAnalyzeResultBuilder) async throws
+        -> [SwiftLintFile]
+    {
         let options = builder.options
         let visitorMutationQueue = DispatchQueue(label: "io.realm.swiftlint.lintVisitorMutation")
         let baseline = try baseline(options, builder.configuration)
-        return try await builder.configuration.visitLintableFiles(options: options, cache: builder.cache,
-                                                                  storage: builder.storage) { linter in
+        return try await builder.configuration.visitLintableFiles(
+            options: options, cache: builder.cache,
+            storage: builder.storage
+        ) { linter in
             let currentViolations: [StyleViolation]
             if options.benchmark {
                 CustomRuleTimer.shared.activate()
                 let start = Date()
-                let (violationsBeforeLeniency, currentRuleTimes) = linter
-                    .styleViolationsAndRuleTimes(using: builder.storage)
+                let (violationsBeforeLeniency, currentRuleTimes) =
+                    linter
+                        .styleViolationsAndRuleTimes(using: builder.storage)
                 currentViolations = applyLeniency(
                     options: options,
                     strict: builder.configuration.strict,
@@ -206,17 +155,21 @@ struct LintOrAnalyzeCommand {
     ) throws -> Int {
         let options = builder.options
         let configuration = builder.configuration
-        if isWarningThresholdBroken(configuration: configuration, violations: builder.violations), !options.lenient {
+        if isWarningThresholdBroken(configuration: configuration, violations: builder.violations),
+           !options.lenient
+        {
             builder.violations.append(
                 createThresholdViolation(threshold: configuration.warningThreshold!)
             )
             builder.report(violations: [builder.violations.last!], realtimeCondition: true)
         }
         builder.report(violations: builder.violations, realtimeCondition: false)
-        let numberOfSeriousViolations = builder.violations.filter({ $0.severity == .error }).count
+        let numberOfSeriousViolations = builder.violations.filter { $0.severity == .error }.count
         if !options.quiet {
-            printStatus(violations: builder.violations, files: files, serious: numberOfSeriousViolations,
-                        verb: options.verb)
+            printStatus(
+                violations: builder.violations, files: files, serious: numberOfSeriousViolations,
+                verb: options.verb
+            )
         }
         if options.benchmark {
             builder.fileBenchmark.save()
@@ -232,14 +185,17 @@ struct LintOrAnalyzeCommand {
         return numberOfSeriousViolations
     }
 
-    private static func baseline(_ options: LintOrAnalyzeOptions, _ configuration: Configuration) throws -> Baseline? {
+    private static func baseline(_ options: LintOrAnalyzeOptions, _ configuration: Configuration)
+        throws -> Baseline?
+    {
         if let baselinePath = options.baseline ?? configuration.baseline {
             do {
                 return try Baseline(fromPath: baselinePath)
             } catch {
                 Issue.baselineNotReadable(path: baselinePath).print()
-                if (error as? CocoaError)?.code != CocoaError.fileReadNoSuchFile ||
-                        options.writeBaseline != options.baseline {
+                if (error as? CocoaError)?.code != CocoaError.fileReadNoSuchFile
+                    || options.writeBaseline != options.baseline
+                {
                     throw error
                 }
             }
@@ -247,20 +203,24 @@ struct LintOrAnalyzeCommand {
         return nil
     }
 
-    private static func printStatus(violations: [StyleViolation], files: [SwiftLintFile], serious: Int, verb: String) {
+    private static func printStatus(
+        violations: [StyleViolation], files: [SwiftLintFile], serious: Int, verb: String
+    ) {
         let pluralSuffix = { (collection: [Any]) -> String in
             collection.count != 1 ? "s" : ""
         }
         queuedPrintError(
-            "Done \(verb)! Found \(violations.count) violation\(pluralSuffix(violations)), " +
-            "\(serious) serious in \(files.count) file\(pluralSuffix(files))."
+            "Done \(verb)! Found \(violations.count) violation\(pluralSuffix(violations)), "
+                + "\(serious) serious in \(files.count) file\(pluralSuffix(files))."
         )
     }
 
-    private static func isWarningThresholdBroken(configuration: Configuration,
-                                                 violations: [StyleViolation]) -> Bool {
+    private static func isWarningThresholdBroken(
+        configuration: Configuration,
+        violations: [StyleViolation]
+    ) -> Bool {
         guard let warningThreshold = configuration.warningThreshold else { return false }
-        let numberOfWarningViolations = violations.filter({ $0.severity == .warning }).count
+        let numberOfWarningViolations = violations.filter { $0.severity == .warning }.count
         return numberOfWarningViolations >= warningThreshold
     }
 
@@ -275,7 +235,8 @@ struct LintOrAnalyzeCommand {
             ruleDescription: description,
             severity: .error,
             location: Location(file: "", line: 0, character: 0),
-            reason: "Number of warnings exceeded threshold of \(threshold).")
+            reason: "Number of warnings exceeded threshold of \(threshold)."
+        )
     }
 
     private static func applyLeniency(
@@ -307,7 +268,9 @@ struct LintOrAnalyzeCommand {
             }
 
         case (true, true):
-            queuedFatalError("Invalid command line or config options: 'strict' and 'lenient' are mutually exclusive.")
+            queuedFatalError(
+                "Invalid command line or config options: 'strict' and 'lenient' are mutually exclusive."
+            )
         }
     }
 
@@ -315,38 +278,39 @@ struct LintOrAnalyzeCommand {
         let storage = RuleStorage()
         let configuration = Configuration(options: options)
         let correctionsBuilder = CorrectionsBuilder()
-        let files = try await configuration
-            .visitLintableFiles(options: options, cache: nil, storage: storage) { linter in
-                if options.format {
-                    switch configuration.indentation {
-                    case .tabs:
-                        linter.format(useTabs: true, indentWidth: 4)
-                    case .spaces(let count):
-                        linter.format(useTabs: false, indentWidth: count)
+        let files =
+            try await configuration
+                .visitLintableFiles(options: options, cache: nil, storage: storage) { linter in
+                    if options.format {
+                        switch configuration.indentation {
+                        case .tabs:
+                            linter.format(useTabs: true, indentWidth: 4)
+                        case let .spaces(count):
+                            linter.format(useTabs: false, indentWidth: count)
+                        }
                     }
-                }
 
-                let corrections = linter.correct(using: storage)
-                if !corrections.isEmpty, !options.quiet {
-                    if options.useSTDIN {
-                        queuedPrint(linter.file.contents)
-                    } else {
-                        let corrections = corrections.map {
-                            Correction(
-                                ruleName: $0.0,
-                                filePath: linter.file.path,
-                                numberOfCorrections: $0.1
-                            )
-                        }
-                        if options.progress {
-                            await correctionsBuilder.append(corrections)
+                    let corrections = linter.correct(using: storage)
+                    if !corrections.isEmpty, !options.quiet {
+                        if options.useSTDIN {
+                            queuedPrint(linter.file.contents)
                         } else {
-                            let correctionLogs = corrections.map(\.consoleDescription)
-                            queuedPrint(correctionLogs.joined(separator: "\n"))
+                            let corrections = corrections.map {
+                                Correction(
+                                    ruleName: $0.0,
+                                    filePath: linter.file.path,
+                                    numberOfCorrections: $0.1
+                                )
+                            }
+                            if options.progress {
+                                await correctionsBuilder.append(corrections)
+                            } else {
+                                let correctionLogs = corrections.map(\.consoleDescription)
+                                queuedPrint(correctionLogs.joined(separator: "\n"))
+                            }
                         }
                     }
                 }
-            }
 
         if !options.quiet {
             if options.progress {
@@ -430,7 +394,7 @@ extension LintOrAnalyzeOptions {
 
     typealias Leniency = (strict: Bool, lenient: Bool)
 
-    // Config file settings can be overridden by either `--strict` or `--lenient` command line options.
+    /// Config file settings can be overridden by either `--strict` or `--lenient` command line options.
     func leniency(strict configurationStrict: Bool, lenient configurationLenient: Bool) -> Leniency {
         let strict = strict || (configurationStrict && !lenient)
         let lenient = lenient || (configurationLenient && !self.strict)

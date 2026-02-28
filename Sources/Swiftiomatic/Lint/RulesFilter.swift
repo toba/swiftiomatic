@@ -2,10 +2,6 @@ final class RulesFilter {
     struct ExcludingOptions: OptionSet {
         let rawValue: Int
 
-        init(rawValue: Int) {
-            self.rawValue = rawValue
-        }
-
         static let enabled = Self(rawValue: 1 << 0)
         static let disabled = Self(rawValue: 1 << 1)
         static let uncorrectable = Self(rawValue: 1 << 2)

@@ -1,46 +1,61 @@
 // swiftlint:disable file_length
 
 // swiftlint:disable:next type_body_length
-struct ContrastedOpeningBraceRuleExamples {
+enum ContrastedOpeningBraceRuleExamples {
     static let nonTriggeringExamples = [
-        Example("""
+        Example(
+            """
             func abc()
             {
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             [].map()
             {
                 $0
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             [].map(
                 {
                 }
             )
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             if let a = b
             {
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             while a == b
             {
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             guard let a = b else
             {
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             struct Rule
             {
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             struct Parent
             {
                 struct Child
@@ -48,8 +63,10 @@ struct ContrastedOpeningBraceRuleExamples {
                     let foo: Int
                 }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             func f(rect: CGRect)
             {
                 {
@@ -57,8 +74,10 @@ struct ContrastedOpeningBraceRuleExamples {
                     print(centre)
                 }()
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             func f(rect: CGRect) -> () -> Void
             {
                 {
@@ -66,14 +85,18 @@ struct ContrastedOpeningBraceRuleExamples {
                     print(centre)
                 }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             func f() -> () -> Void
             {
                 {}
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             @MyProperty class Rule:
               NSObject
             {
@@ -82,29 +105,37 @@ struct ContrastedOpeningBraceRuleExamples {
                 return ""
               }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             self.foo(
                 (
                     "String parameter",
                     { "Do something here" }
                 )
             )
-            """),
+            """
+        ),
         Example(##"let pattern = #/(\{(?<key>\w+)\})/#"##),
-        Example("""
+        Example(
+            """
             if c
             {}
             else
             {}
-            """),
-        Example("""
-            if c /* comment */
-            {
-                return
-            }
-        """),
-        Example("""
+            """
+        ),
+        Example(
+            """
+                if c /* comment */
+                {
+                    return
+                }
+            """
+        ),
+        Example(
+            """
             if c1
             {
               return
@@ -115,31 +146,43 @@ struct ContrastedOpeningBraceRuleExamples {
             {
               return
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             let a = f.map
             { a in
                 a
             }
-            """),
+            """
+        ),
     ]
 
     static let triggeringExamples = [
-        Example("""
+        Example(
+            """
             func abc()↓{
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             func abc() { }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             func abc(a: A,
                      b: B) {}
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             [].map { $0 }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             struct OldContentView: View ↓{
               @State private var showOptions = false
 
@@ -153,16 +196,20 @@ struct ContrastedOpeningBraceRuleExamples {
                 }
               }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             class Rule
             {
               var a: String↓{
                 return ""
               }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             @MyProperty class Rule
             {
               var a: String
@@ -175,13 +222,17 @@ struct ContrastedOpeningBraceRuleExamples {
                 }
               }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             precedencegroup Group ↓{
               assignment: true
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             class TestFile
             {
                func problemFunction() ↓{
@@ -194,24 +245,32 @@ struct ContrastedOpeningBraceRuleExamples {
                    print("Brackets")
                }
             }
-            """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             if
                 "test".isEmpty ↓{
                 // code here
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             if c  ↓{}
             else /* comment */  ↓{}
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             if c
               ↓{
                 // code here
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             if c1 ↓{
               return
             } else if c2↓{
@@ -220,142 +279,192 @@ struct ContrastedOpeningBraceRuleExamples {
              ↓{
               return
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             func f()
             {
                 return a.map
                         ↓{ $0 }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             a ↓{
                 $0
             } b: ↓{
                 $1
             }
-            """),
+            """
+        ),
     ]
 
     static let corrections = [
-        Example("""
+        Example(
+            """
             struct Rule{}
-            """): Example("""
-                struct Rule
-                {}
-                """),
-        Example("""
+            """
+        ): Example(
+            """
+            struct Rule
+            {}
+            """
+        ),
+        Example(
+            """
             struct Parent {
                 struct Child {
                     let foo: Int
                 }
             }
-            """): Example("""
-                struct Parent
+            """
+        ): Example(
+            """
+            struct Parent
+            {
+                struct Child
                 {
-                    struct Child
-                    {
-                        let foo: Int
-                    }
+                    let foo: Int
                 }
-                """),
-        Example("""
+            }
+            """
+        ),
+        Example(
+            """
             [].map(){ $0 }
-            """): Example("""
-                [].map()
-                { $0 }
-                """),
-        Example("""
+            """
+        ): Example(
+            """
+            [].map()
+            { $0 }
+            """
+        ),
+        Example(
+            """
             if a == b{ }
-            """): Example("""
-                if a == b
-                { }
-                """),
-        Example("""
+            """
+        ): Example(
+            """
+            if a == b
+            { }
+            """
+        ),
+        Example(
+            """
             @MyProperty actor MyActor<T>  {
 
             }
-            """): Example("""
-                @MyProperty actor MyActor<T>
-                {
+            """
+        ): Example(
+            """
+            @MyProperty actor MyActor<T>
+            {
 
-                }
-                """),
-        Example("""
+            }
+            """
+        ),
+        Example(
+            """
             actor MyActor<T> where T: U  {
 
             }
-            """): Example("""
-                actor MyActor<T> where T: U
-                {
+            """
+        ): Example(
+            """
+            actor MyActor<T> where T: U
+            {
 
-                }
-                """),
-        Example("""
+            }
+            """
+        ),
+        Example(
+            """
             do {
 
             } catch              {
 
             }
-            """): Example("""
-                do
-                {
+            """
+        ): Example(
+            """
+            do
+            {
 
-                } catch
-                {
+            } catch
+            {
 
-                }
-                """),
-        Example("""
+            }
+            """
+        ),
+        Example(
+            """
             do {
 
             } catch MyError.unknown  {
 
             }
-            """): Example("""
-                do
-                {
+            """
+        ): Example(
+            """
+            do
+            {
 
-                } catch MyError.unknown
-                {
+            } catch MyError.unknown
+            {
 
-                }
-                """),
-        Example("""
+            }
+            """
+        ),
+        Example(
+            """
             defer  {
 
             }
-            """): Example("""
-                defer
-                {
+            """
+        ): Example(
+            """
+            defer
+            {
 
-                }
-                """),
-        Example("""
+            }
+            """
+        ),
+        Example(
+            """
             for a in b where a == c {
 
             }
-            """): Example("""
-                for a in b where a == c
-                {
+            """
+        ): Example(
+            """
+            for a in b where a == c
+            {
 
-                }
-                """),
-        Example("""
+            }
+            """
+        ),
+        Example(
+            """
             if varDecl.parent?.is(CodeBlockItemSyntax.self) == true // Local variable declaration
                 || varDecl.bindings.onlyElement?.accessor != nil    // Computed property
                 || !node.type.is(SimpleTypeIdentifierSyntax.self) { // Complex or collection type
                 return .visitChildren
             }
-            """): Example("""
-                if varDecl.parent?.is(CodeBlockItemSyntax.self) == true // Local variable declaration
-                    || varDecl.bindings.onlyElement?.accessor != nil    // Computed property
-                    || !node.type.is(SimpleTypeIdentifierSyntax.self)
-                { // Complex or collection type
-                    return .visitChildren
-                }
-                """),
-        Example("""
+            """
+        ): Example(
+            """
+            if varDecl.parent?.is(CodeBlockItemSyntax.self) == true // Local variable declaration
+                || varDecl.bindings.onlyElement?.accessor != nil    // Computed property
+                || !node.type.is(SimpleTypeIdentifierSyntax.self)
+            { // Complex or collection type
+                return .visitChildren
+            }
+            """
+        ),
+        Example(
+            """
             @MyProperty class Rule
             {
               var a: String {
@@ -364,39 +473,51 @@ struct ContrastedOpeningBraceRuleExamples {
                 }
               }
             }
-            """): Example("""
-                @MyProperty class Rule
+            """
+        ): Example(
+            """
+            @MyProperty class Rule
+            {
+              var a: String
+              {
+                didSet
                 {
-                  var a: String
-                  {
-                    didSet
-                    {
 
-                    }
-                  }
                 }
-                """),
-        Example("""
+              }
+            }
+            """
+        ),
+        Example(
+            """
             precedencegroup Group{
               assignment: true
             }
-            """): Example("""
-                precedencegroup Group
-                {
-                  assignment: true
-                }
-                """),
-        Example("""
+            """
+        ): Example(
+            """
+            precedencegroup Group
+            {
+              assignment: true
+            }
+            """
+        ),
+        Example(
+            """
             if c /* comment */    {
                 return
             }
-            """): Example("""
-                if c /* comment */
-                {
-                    return
-                }
-                """),
-        Example("""
+            """
+        ): Example(
+            """
+            if c /* comment */
+            {
+                return
+            }
+            """
+        ),
+        Example(
+            """
             func foo() {
                 if q1, q2 {
                     do1()
@@ -404,79 +525,102 @@ struct ContrastedOpeningBraceRuleExamples {
                     do2()
                 }
             }
-            """): Example("""
-                func foo()
+            """
+        ): Example(
+            """
+            func foo()
+            {
+                if q1, q2
                 {
-                    if q1, q2
-                    {
-                        do1()
-                    } else if q3, q4
-                    {
-                        do2()
-                    }
+                    do1()
+                } else if q3, q4
+                {
+                    do2()
                 }
-                """),
-        Example("""
+            }
+            """
+        ),
+        Example(
+            """
             if
                 "test".isEmpty
             // swiftlint:disable:next contrasted_opening_brace
               {
                 // code here
             }
-            """): Example("""
-                if
-                    "test".isEmpty
-                // swiftlint:disable:next contrasted_opening_brace
-                  {
-                    // code here
-                }
-                """),
-        Example("""
+            """
+        ): Example(
+            """
+            if
+                "test".isEmpty
+            // swiftlint:disable:next contrasted_opening_brace
+              {
+                // code here
+            }
+            """
+        ),
+        Example(
+            """
             private func f()
                 // comment
             {
                 let a = 1
             }
-            """): Example("""
-                private func f()
-                    // comment
-                {
-                    let a = 1
-                }
-                """),
-        Example("""
+            """
+        ): Example(
+            """
+            private func f()
+                // comment
+            {
+                let a = 1
+            }
+            """
+        ),
+        Example(
+            """
             while true /* endless loop */ {
                 // nothing
             }
-            """): Example("""
-                while true /* endless loop */
-                {
-                    // nothing
-                }
-                """),
-        Example("""
+            """
+        ): Example(
+            """
+            while true /* endless loop */
+            {
+                // nothing
+            }
+            """
+        ),
+        Example(
+            """
             a.b { $0 }
              .c { $1 }
-            """): Example("""
-                a.b
-                { $0 }
-                 .c
-                 { $1 }
-                """),
-        Example("""
+            """
+        ): Example(
+            """
+            a.b
+            { $0 }
+             .c
+             { $1 }
+            """
+        ),
+        Example(
+            """
             a {
                 $0
             } b: {
                 $1
             }
-            """): Example("""
-                a
-                {
-                    $0
-                } b:
-                {
-                    $1
-                }
-                """),
+            """
+        ): Example(
+            """
+            a
+            {
+                $0
+            } b:
+            {
+                $1
+            }
+            """
+        ),
     ]
 }

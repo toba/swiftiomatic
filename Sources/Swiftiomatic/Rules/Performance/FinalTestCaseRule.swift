@@ -33,6 +33,7 @@ extension FinalTestCaseRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -58,7 +59,9 @@ private extension FinalTestCaseRule {
                 newNode =
                     if node.modifiers.isEmpty {
                         node
-                            .with(\.modifiers, [finalModifier.with(\.leadingTrivia, node.classKeyword.leadingTrivia)])
+                            .with(
+                                \.modifiers, [finalModifier.with(\.leadingTrivia, node.classKeyword.leadingTrivia)]
+                            )
                             .with(\.classKeyword.leadingTrivia, .space)
                     } else {
                         node
@@ -72,8 +75,8 @@ private extension FinalTestCaseRule {
 
 private extension ClassDeclSyntax {
     func isNonFinalTestClass(parentClasses: Set<String>) -> Bool {
-           inheritanceClause.containsInheritedType(inheritedTypes: parentClasses)
-        && !modifiers.contains(keyword: .open)
-        && !modifiers.contains(keyword: .final)
+        inheritanceClause.containsInheritedType(inheritedTypes: parentClasses)
+            && !modifiers.contains(keyword: .open)
+            && !modifiers.contains(keyword: .final)
     }
 }

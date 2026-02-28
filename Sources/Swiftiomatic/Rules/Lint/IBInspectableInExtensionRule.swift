@@ -9,18 +9,22 @@ struct IBInspectableInExtensionRule: Rule {
         description: "Extensions shouldn't add @IBInspectable properties",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
-            class Foo {
-              @IBInspectable private var x: Int
-            }
-            """),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private var x: Int
+                }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            extension Foo {
-              ↓@IBInspectable private var x: Int
-            }
-            """),
+            Example(
+                """
+                extension Foo {
+                  ↓@IBInspectable private var x: Int
+                }
+                """
+            ),
         ]
     )
 }

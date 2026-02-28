@@ -6,8 +6,9 @@ struct AccessibilityTraitForButtonRule: Rule {
     static let description = RuleDescription(
         identifier: "accessibility_trait_for_button",
         name: "Accessibility Trait for Button",
-        description: "All views with tap gestures added should include the .isButton or the .isLink accessibility " +
-                     "traits",
+        description:
+        "All views with tap gestures added should include the .isButton or the .isLink accessibility "
+            + "traits",
         rationale: """
         The accessibility button and link traits are used to tell assistive technologies that an element is tappable. \
         When an element has one of these traits, VoiceOver will automatically read "button" or "link" after the \
@@ -70,7 +71,7 @@ private extension AccessibilityTraitForButtonRule {
     }
 }
 
-private struct AccessibilityButtonTraitDeterminator {
+private enum AccessibilityButtonTraitDeterminator {
     static let maxSearchDepth = 20 // Limit for traversing up the syntax tree
 
     static func isExempt(tapGestureNode: FunctionCallExprSyntax) -> Bool {
@@ -95,7 +96,9 @@ private struct AccessibilityButtonTraitDeterminator {
         return hasAccessibilityTraitsForwards(from: tapGestureNode)
     }
 
-    private static func hasAccessibilityTraitsBackwards(from tapGestureNode: FunctionCallExprSyntax) -> Bool {
+    private static func hasAccessibilityTraitsBackwards(from tapGestureNode: FunctionCallExprSyntax)
+        -> Bool
+    {
         var current: ExprSyntax? = ExprSyntax(tapGestureNode)
         var depth = 0
 
@@ -123,7 +126,9 @@ private struct AccessibilityButtonTraitDeterminator {
         return false
     }
 
-    private static func hasAccessibilityTraitsForwards(from tapGestureNode: FunctionCallExprSyntax) -> Bool {
+    private static func hasAccessibilityTraitsForwards(from tapGestureNode: FunctionCallExprSyntax)
+        -> Bool
+    {
         // Look at parent nodes to see if accessibility traits are applied after the tap gesture
         var currentNode: Syntax? = Syntax(tapGestureNode).parent
         var depth = 0
@@ -150,7 +155,9 @@ private struct AccessibilityButtonTraitDeterminator {
         return false
     }
 
-    private static func isInsideInherentlyExemptingContainer(startingFrom node: FunctionCallExprSyntax) -> Bool {
+    private static func isInsideInherentlyExemptingContainer(
+        startingFrom node: FunctionCallExprSyntax
+    ) -> Bool {
         var currentNode: Syntax? = Syntax(node)
         var depth = 0
 
@@ -162,14 +169,15 @@ private struct AccessibilityButtonTraitDeterminator {
 
             if let funcCall = currentSyntaxNode.as(FunctionCallExprSyntax.self),
                let identifier = funcCall.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text,
-               ["Button", "Link"].contains(identifier) {
+               ["Button", "Link"].contains(identifier)
+            {
                 return true
             }
 
             // Stop if we reach a new View declaration or similar boundary
-            if currentSyntaxNode.is(StructDeclSyntax.self) ||
-                currentSyntaxNode.is(ClassDeclSyntax.self) ||
-                currentSyntaxNode.is(EnumDeclSyntax.self) {
+            if currentSyntaxNode.is(StructDeclSyntax.self) || currentSyntaxNode.is(ClassDeclSyntax.self)
+                || currentSyntaxNode.is(EnumDeclSyntax.self)
+            {
                 break
             }
         }
@@ -183,13 +191,16 @@ private struct AccessibilityButtonTraitDeterminator {
         // Traverse down if it's a chain of gesture modifiers like .onEnded to find the base gesture.
         while let memberCall = currentExpr?.as(FunctionCallExprSyntax.self), // e.g. TapGesture().onEnded()
               let memberAccess = memberCall.calledExpression.as(MemberAccessExprSyntax.self),
-              memberAccess.base != nil { // Ensure it's a chain like x.method()
+              memberAccess.base != nil
+        { // Ensure it's a chain like x.method()
             currentExpr = memberAccess.base
         }
 
         guard let gestureCall = currentExpr?.as(FunctionCallExprSyntax.self),
-              let gestureName = gestureCall.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text,
-              gestureName == "TapGesture" else {
+              let gestureName = gestureCall.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName
+              .text,
+              gestureName == "TapGesture"
+        else {
             return false
         }
 
@@ -230,7 +241,9 @@ private extension FunctionCallExprSyntax {
 
         if ["gesture", "simultaneousGesture", "highPriorityGesture"].contains(name) {
             guard let firstArgExpression = arguments.first?.expression else { return false }
-            return AccessibilityButtonTraitDeterminator.isSingleTapGestureInstance(expression: firstArgExpression)
+            return AccessibilityButtonTraitDeterminator.isSingleTapGestureInstance(
+                expression: firstArgExpression
+            )
         }
         return false
     }
@@ -245,7 +258,9 @@ private extension FunctionCallExprSyntax {
         }
 
         if name == "accessibility" {
-            guard let addTraitsArg = arguments.first(where: { $0.label?.text == "addTraits" }) else { return false }
+            guard let addTraitsArg = arguments.first(where: { $0.label?.text == "addTraits" }) else {
+                return false
+            }
             return Self.expressionContainsButtonOrLinkTrait(addTraitsArg.expression)
         }
 
@@ -270,12 +285,16 @@ private extension FunctionCallExprSyntax {
         let name = calledExpr.declName.baseName.text
 
         if name == "accessibilityHidden" {
-            return arguments.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind == .keyword(.true)
+            return arguments.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind
+                == .keyword(.true)
         }
 
         if name == "accessibility" {
-            guard let hiddenArg = arguments.first(where: { $0.label?.text == "hidden" }) else { return false }
-            return hiddenArg.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind == .keyword(.true)
+            guard let hiddenArg = arguments.first(where: { $0.label?.text == "hidden" }) else {
+                return false
+            }
+            return hiddenArg.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind
+                == .keyword(.true)
         }
 
         return false

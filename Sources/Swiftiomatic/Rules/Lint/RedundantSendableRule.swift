@@ -19,23 +19,31 @@ struct RedundantSendableRule: Rule {
         triggeringExamples: [
             Example("@MainActor struct ↓S: Sendable {}"),
             Example("actor ↓A: Sendable {}"),
-            Example("@MyActor enum ↓E: Sendable { case a }", configuration: ["global_actors": ["MyActor"]]),
+            Example(
+                "@MyActor enum ↓E: Sendable { case a }", configuration: ["global_actors": ["MyActor"]]
+            ),
         ],
         corrections: [
             Example("@MainActor struct S: Sendable {}"):
                 Example("@MainActor struct S {}"),
             Example("actor A: Sendable /* trailing comment */{}"):
                 Example("actor A /* trailing comment */{}"),
-            Example("@MyActor enum E: Sendable { case a }", configuration: ["global_actors": ["MyActor"]]):
+            Example(
+                "@MyActor enum E: Sendable { case a }", configuration: ["global_actors": ["MyActor"]]
+            ):
                 Example("@MyActor enum E { case a }"),
-            Example("""
+            Example(
+                """
                 actor A: B, Sendable, C // comment
                 {}
-                """):
-                Example("""
+                """
+            ):
+                Example(
+                    """
                     actor A: B, C // comment
                     {}
-                    """),
+                    """
+                ),
             Example("@MainActor struct P: A, Sendable {}"):
                 Example("@MainActor struct P: A {}"),
         ]
@@ -46,6 +54,7 @@ extension RedundantSendableRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -115,7 +124,8 @@ private extension DeclGroupSyntax where Self: NamedDeclSyntax {
     }
 
     func isIsolatedToActor(actors: Set<String>) -> Bool {
-        attributes.contains(attributeNamed: "MainActor") || actors.contains { attributes.contains(attributeNamed: $0) }
+        attributes.contains(attributeNamed: "MainActor")
+            || actors.contains { attributes.contains(attributeNamed: $0) }
     }
 
     var withoutSendable: Self {
@@ -124,11 +134,16 @@ private extension DeclGroupSyntax where Self: NamedDeclSyntax {
         }
         let inheritedTypes = inheritanceClause.inheritedTypes.filter { !$0.isSendable }
         if let lastType = inheritedTypes.last, let lastIndex = inheritedTypes.index(of: lastType) {
-            return with(\.inheritanceClause, inheritanceClause
-                .with(\.inheritedTypes, inheritedTypes.with(\.[lastIndex], lastType.withoutComma)))
+            return with(
+                \.inheritanceClause,
+                inheritanceClause
+                    .with(\.inheritedTypes, inheritedTypes.with(\.[lastIndex], lastType.withoutComma))
+            )
         }
         return with(\.inheritanceClause, nil)
-            .with(\.name.trailingTrivia, inheritanceClause.leadingTrivia + inheritanceClause.trailingTrivia)
+            .with(
+                \.name.trailingTrivia, inheritanceClause.leadingTrivia + inheritanceClause.trailingTrivia
+            )
     }
 }
 

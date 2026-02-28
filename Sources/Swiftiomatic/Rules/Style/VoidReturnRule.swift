@@ -53,6 +53,7 @@ extension VoidReturnRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -71,9 +72,10 @@ private extension VoidReturnRule {
         override func visit(_ node: ReturnClauseSyntax) -> ReturnClauseSyntax {
             if node.violates {
                 numberOfCorrections += 1
-                let node = node
-                    .with(\.type, TypeSyntax(IdentifierTypeSyntax(name: "Void")))
-                    .with(\.trailingTrivia, node.type.trailingTrivia)
+                let node =
+                    node
+                        .with(\.type, TypeSyntax(IdentifierTypeSyntax(name: "Void")))
+                        .with(\.trailingTrivia, node.type.trailingTrivia)
                 return super.visit(node)
             }
             return super.visit(node)
@@ -85,7 +87,8 @@ private extension ReturnClauseSyntax {
     var violates: Bool {
         if let type = type.as(TupleTypeSyntax.self) {
             let elements = type.elements
-            return elements.isEmpty || elements.onlyElement?.type.as(IdentifierTypeSyntax.self)?.name.text == "Void"
+            return elements.isEmpty
+                || elements.onlyElement?.type.as(IdentifierTypeSyntax.self)?.name.text == "Void"
         }
         return false
     }

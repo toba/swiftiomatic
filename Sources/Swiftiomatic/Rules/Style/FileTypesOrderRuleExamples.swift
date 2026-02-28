@@ -1,4 +1,4 @@
-internal struct FileTypesOrderRuleExamples {
+enum FileTypesOrderRuleExamples {
     static let defaultOrderParts = [
         """
         // Supporting Types
@@ -113,115 +113,131 @@ internal struct FileTypesOrderRuleExamples {
 
     static let nonTriggeringExamples = [
         Example(Self.defaultOrderParts.joined(separator: "\n\n")),
-        Example("""
-        // Only extensions
-        extension Foo {}
-        extension Bar {
-        }
-        """),
-        Example("""
-        // Main Type
-        struct ContentView: View {
-            var body: some View {
-                Text("Hello, World!")
+        Example(
+            """
+            // Only extensions
+            extension Foo {}
+            extension Bar {
             }
-        }
-
-        // Preview Provider
-        struct ContentView_Previews: PreviewProvider {
-            static var previews: some View { ContentView() }
-        }
-
-        // Library Content Provider
-        struct ContentView_LibraryContent: LibraryContentProvider {
-            var views: [LibraryItem] {
-                LibraryItem(ContentView())
+            """
+        ),
+        Example(
+            """
+            // Main Type
+            struct ContentView: View {
+                var body: some View {
+                    Text("Hello, World!")
+                }
             }
-        }
-        """),
+
+            // Preview Provider
+            struct ContentView_Previews: PreviewProvider {
+                static var previews: some View { ContentView() }
+            }
+
+            // Library Content Provider
+            struct ContentView_LibraryContent: LibraryContentProvider {
+                var views: [LibraryItem] {
+                    LibraryItem(ContentView())
+                }
+            }
+            """
+        ),
     ]
 
     static let triggeringExamples = [
-        Example("""
-        ↓class TestViewController: UIViewController {}
+        Example(
+            """
+            ↓class TestViewController: UIViewController {}
 
-        // Supporting Types
-        protocol TestViewControllerDelegate {
-            func didPressTrackedButton()
-        }
-        """),
-        Example("""
-        // Extensions
-        ↓extension TestViewController: UITableViewDataSource {
-            func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-                return 1
+            // Supporting Types
+            protocol TestViewControllerDelegate {
+                func didPressTrackedButton()
             }
-        }
-
-        class TestViewController: UIViewController {}
-        """),
-        Example("""
-        // Supporting Types
-        protocol TestViewControllerDelegate {
-            func didPressTrackedButton()
-        }
-
-        ↓class TestViewController: UIViewController {}
-
-        // Supporting Types
-        protocol TestViewControllerDelegate {
-            func didPressTrackedButton()
-        }
-        """),
-        Example("""
-        // Supporting Types
-        protocol TestViewControllerDelegate {
-            func didPressTrackedButton()
-        }
-
-        // Extensions
-        ↓extension TestViewController: UITableViewDataSource {
-            func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-                return 1
+            """
+        ),
+        Example(
+            """
+            // Extensions
+            ↓extension TestViewController: UITableViewDataSource {
+                func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+                    return 1
+                }
             }
-        }
 
-        class TestViewController: UIViewController {}
+            class TestViewController: UIViewController {}
+            """
+        ),
+        Example(
+            """
+            // Supporting Types
+            protocol TestViewControllerDelegate {
+                func didPressTrackedButton()
+            }
 
-        // Extensions
-        extension TestViewController: UITableViewDataSource {
-            func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-                return 1
-            }
-        }
-        """),
-        Example("""
-        // Preview Provider
-        ↓struct ContentView_Previews: PreviewProvider {
-            static var previews: some View { ContentView() }
-        }
+            ↓class TestViewController: UIViewController {}
 
-        // Main Type
-        struct ContentView: View {
-            var body: some View {
-                Text("Hello, World!")
+            // Supporting Types
+            protocol TestViewControllerDelegate {
+                func didPressTrackedButton()
             }
-        }
-        """),
-        Example("""
-        // Library Content Provider
-        ↓struct ContentView_LibraryContent: LibraryContentProvider {
-            var views: [LibraryItem] {
-                LibraryItem(ContentView())
+            """
+        ),
+        Example(
+            """
+            // Supporting Types
+            protocol TestViewControllerDelegate {
+                func didPressTrackedButton()
             }
-        }
 
-        // Main Type
-        struct ContentView: View {
-            var body: some View {
-                Text("Hello, World!")
+            // Extensions
+            ↓extension TestViewController: UITableViewDataSource {
+                func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+                    return 1
+                }
             }
-        }
-        """),
+
+            class TestViewController: UIViewController {}
+
+            // Extensions
+            extension TestViewController: UITableViewDataSource {
+                func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+                    return 1
+                }
+            }
+            """
+        ),
+        Example(
+            """
+            // Preview Provider
+            ↓struct ContentView_Previews: PreviewProvider {
+                static var previews: some View { ContentView() }
+            }
+
+            // Main Type
+            struct ContentView: View {
+                var body: some View {
+                    Text("Hello, World!")
+                }
+            }
+            """
+        ),
+        Example(
+            """
+            // Library Content Provider
+            ↓struct ContentView_LibraryContent: LibraryContentProvider {
+                var views: [LibraryItem] {
+                    LibraryItem(ContentView())
+                }
+            }
+
+            // Main Type
+            struct ContentView: View {
+                var body: some View {
+                    Text("Hello, World!")
+                }
+            }
+            """
+        ),
     ]
 }

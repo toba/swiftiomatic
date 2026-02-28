@@ -8,27 +8,27 @@ struct PreferConditionListRule: Rule {
         name: "Prefer Condition List",
         description: "Prefer a condition list over chaining conditions with '&&'",
         rationale: """
-            Instead of chaining conditions with `&&`, use a condition list to separate conditions with commas, that is,
-            use
+        Instead of chaining conditions with `&&`, use a condition list to separate conditions with commas, that is,
+        use
 
-            ```
-            if a, b {}
-            ```
+        ```
+        if a, b {}
+        ```
 
-            instead of
+        instead of
 
-            ```
-            if a && b {}
-            ```
+        ```
+        if a && b {}
+        ```
 
-            Using a condition list improves readability and makes it easier to add or remove conditions in the future.
-            It also allows for better formatting and alignment of conditions. All in all, it's the idiomatic way to
-            write conditions in Swift.
+        Using a condition list improves readability and makes it easier to add or remove conditions in the future.
+        It also allows for better formatting and alignment of conditions. All in all, it's the idiomatic way to
+        write conditions in Swift.
 
-            Since function calls with trailing closures trigger a warning in the Swift compiler when used in
-            conditions, this rule makes sure to wrap such expressions in parentheses when transforming them to
-            condition list elements. The scope of the parentheses is limited to the function call itself.
-            """,
+        Since function calls with trailing closures trigger a warning in the Swift compiler when used in
+        conditions, this rule makes sure to wrap such expressions in parentheses when transforming them to
+        condition list elements. The scope of the parentheses is limited to the function call itself.
+        """,
         kind: .idiomatic,
         nonTriggeringExamples: [
             Example("if a, b {}"),
@@ -53,13 +53,17 @@ struct PreferConditionListRule: Rule {
         corrections: [
             Example("if a && b {}"):
                 Example("if a, b {}"),
-            Example("""
+            Example(
+                """
                 if a &&
                    b {}
-                """): Example("""
+                """
+            ): Example(
+                """
                 if a,
                    b {}
-                """),
+                """
+            ),
             Example("guard a && b && c else {}"):
                 Example("guard a, b, c else {}"),
             Example("while a && b {}"):
@@ -92,6 +96,7 @@ extension PreferConditionListRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -105,8 +110,8 @@ extension PreferConditionListRule {
 
 extension PreferConditionListRule: OptInRule {}
 
-private extension PreferConditionListRule {
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+extension PreferConditionListRule {
+    fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: ConditionElementSyntax) {
             if case let .expression(expr) = node.condition {
                 collectViolations(for: expr)
@@ -116,7 +121,8 @@ private extension PreferConditionListRule {
         private func collectViolations(for expr: ExprSyntax) {
             if let opExpr = expr.unwrap.as(InfixOperatorExprSyntax.self),
                let opToken = opExpr.operator.as(BinaryOperatorExprSyntax.self)?.operator,
-               opToken.text == "&&" {
+               opToken.text == "&&"
+            {
                 violations.append(opToken.positionAfterSkippingLeadingTrivia)
                 collectViolations(for: opExpr.leftOperand) // Expressions are left-recursive.
             }
@@ -137,7 +143,8 @@ private extension PreferConditionListRule {
                 }
                 if let opExpr = expr.as(InfixOperatorExprSyntax.self),
                    let opToken = opExpr.operator.as(BinaryOperatorExprSyntax.self)?.operator,
-                   opToken.text == "&&" {
+                   opToken.text == "&&"
+                {
                     numberOfCorrections += 1
 
                     elements[index] = ConditionElementSyntax(
@@ -192,17 +199,21 @@ private extension ExprSyntax {
         `as`(TupleExprSyntax.self)?.elements.onlyElement?.expression
             .with(\.leadingTrivia, leadingTrivia)
             .with(\.trailingTrivia, trailingTrivia)
-        ?? self
+            ?? self
     }
 }
 
 private final class ParenthesizedTrailingClosureRewriter: SyntaxRewriter {
     override func visitAny(_ node: Syntax) -> Syntax? {
-        if let opToken = node.as(InfixOperatorExprSyntax.self)?.operator.as(BinaryOperatorExprSyntax.self)?.operator,
-           ["&&", "||"].contains(opToken.text) {
+        if let opToken = node.as(InfixOperatorExprSyntax.self)?.operator.as(
+            BinaryOperatorExprSyntax.self
+        )?.operator,
+            ["&&", "||"].contains(opToken.text)
+        {
             nil
         } else if let opToken = node.as(PrefixOperatorExprSyntax.self)?.operator,
-                  ["!"].contains(opToken.text) {
+                  ["!"].contains(opToken.text)
+        {
             nil
         } else if node.is(FunctionCallExprSyntax.self) {
             nil
@@ -213,11 +224,13 @@ private final class ParenthesizedTrailingClosureRewriter: SyntaxRewriter {
 
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
         if node.trailingClosure != nil || node.additionalTrailingClosures.isNotEmpty {
-            return ExprSyntax(TupleExprSyntax(
-                elements: LabeledExprListSyntax([
-                    LabeledExprSyntax(label: nil, expression: node.with(\.trailingTrivia, []))
-                ])
-            ))
+            return ExprSyntax(
+                TupleExprSyntax(
+                    elements: LabeledExprListSyntax([
+                        LabeledExprSyntax(label: nil, expression: node.with(\.trailingTrivia, [])),
+                    ])
+                )
+            )
             .with(\.leadingTrivia, node.leadingTrivia)
             .with(\.trailingTrivia, node.trailingTrivia)
         }

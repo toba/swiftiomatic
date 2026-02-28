@@ -6,7 +6,8 @@ struct CSVReporter: Reporter {
 
     static let identifier = "csv"
     static let isRealtime = false
-    static let description = "Reports violations as a newline-separated string of comma-separated values (CSV)."
+    static let description =
+        "Reports violations as a newline-separated string of comma-separated values (CSV)."
 
     static func generateReport(_ violations: [StyleViolation]) -> String {
         let keys = [

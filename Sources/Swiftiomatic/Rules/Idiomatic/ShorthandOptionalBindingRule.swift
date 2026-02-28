@@ -10,7 +10,8 @@ struct ShorthandOptionalBindingRule: Rule {
         kind: .idiomatic,
         minSwiftVersion: .fiveDotSeven,
         nonTriggeringExamples: [
-            Example("""
+            Example(
+                """
                 if let i {}
                 if let i = a {}
                 guard let i = f() else {}
@@ -18,63 +19,94 @@ struct ShorthandOptionalBindingRule: Rule {
                 if let i = i as? Foo {}
                 guard let `self` = self else {}
                 while var i { i = nil }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if let i,
                    var i = a,
                    j > 0 {}
-                """, excludeFromDocumentation: true),
+                """, excludeFromDocumentation: true
+            ),
         ],
         triggeringExamples: [
-            Example("""
+            Example(
+                """
                 if ↓let i = i {}
                 if ↓let self = self {}
                 if ↓var `self` = `self` {}
                 if i > 0, ↓let j = j {}
                 if ↓let i = i, ↓var j = j {}
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if ↓let i = i,
                    ↓var j = j,
                    j > 0 {}
-                """, excludeFromDocumentation: true),
-            Example("""
+                """, excludeFromDocumentation: true
+            ),
+            Example(
+                """
                 guard ↓let i = i else {}
                 guard ↓let self = self else {}
                 guard ↓var `self` = `self` else {}
                 guard i > 0, ↓let j = j else {}
                 guard ↓let i = i, ↓var j = j else {}
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 while ↓var i = i { i = nil }
-                """),
+                """
+            ),
         ],
         corrections: [
-            Example("""
+            Example(
+                """
                 if ↓let i = i {}
-                """): Example("""
-                    if let i {}
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                if let i {}
+                """
+            ),
+            Example(
+                """
                 if ↓let self = self {}
-                """): Example("""
-                    if let self {}
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                if let self {}
+                """
+            ),
+            Example(
+                """
                 if ↓var `self` = `self` {}
-                """): Example("""
-                    if var `self` {}
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                if var `self` {}
+                """
+            ),
+            Example(
+                """
                 guard ↓let i = i, ↓var j = j  , ↓let k  =k else {}
-                """): Example("""
-                    guard let i, var j  , let k else {}
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                guard let i, var j  , let k else {}
+                """
+            ),
+            Example(
+                """
                 while j > 0, ↓var i = i   { i = nil }
-                """): Example("""
-                    while j > 0, var i   { i = nil }
-                    """),
+                """
+            ): Example(
+                """
+                while j > 0, var i   { i = nil }
+                """
+            ),
         ],
         deprecatedAliases: ["if_let_shadowing"]
     )
@@ -84,6 +116,7 @@ extension ShorthandOptionalBindingRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -106,9 +139,10 @@ private extension ShorthandOptionalBindingRule {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let newNode = node
-                .with(\.initializer, nil)
-                .with(\.pattern, node.pattern.with(\.trailingTrivia, node.trailingTrivia))
+            let newNode =
+                node
+                    .with(\.initializer, nil)
+                    .with(\.pattern, node.pattern.with(\.trailingTrivia, node.trailingTrivia))
             return super.visit(newNode)
         }
     }
@@ -118,7 +152,8 @@ private extension OptionalBindingConditionSyntax {
     var isShadowingOptionalBinding: Bool {
         if let id = pattern.as(IdentifierPatternSyntax.self),
            let value = initializer?.value.as(DeclReferenceExprSyntax.self),
-           id.identifier.text == value.baseName.text {
+           id.identifier.text == value.baseName.text
+        {
             return true
         }
         return false

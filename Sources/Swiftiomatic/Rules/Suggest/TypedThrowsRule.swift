@@ -45,13 +45,15 @@ private extension TypedThrowsRule {
             else { return }
 
             let funcName = node.name.text
-            violations.append(ReasonedRuleViolation(
-                position: node.positionAfterSkippingLeadingTrivia,
-                reason: "Function '\(funcName)' throws only '\(errorType)' but declares untyped 'throws'",
-                severity: .warning,
-                confidence: collector.hasRethrows ? .medium : .high,
-                suggestion: "func \(funcName)(...) throws(\(errorType))"
-            ))
+            violations.append(
+                ReasonedRuleViolation(
+                    position: node.positionAfterSkippingLeadingTrivia,
+                    reason: "Function '\(funcName)' throws only '\(errorType)' but declares untyped 'throws'",
+                    severity: .warning,
+                    confidence: collector.hasRethrows ? .medium : .high,
+                    suggestion: "func \(funcName)(...) throws(\(errorType))"
+                )
+            )
         }
 
         override func visitPost(_ node: InitializerDeclSyntax) {
@@ -69,42 +71,15 @@ private extension TypedThrowsRule {
                   let errorType = collector.thrownTypes.first
             else { return }
 
-            violations.append(ReasonedRuleViolation(
-                position: node.positionAfterSkippingLeadingTrivia,
-                reason: "Initializer throws only '\(errorType)' but declares untyped 'throws'",
-                severity: .warning,
-                confidence: collector.hasRethrows ? .medium : .high,
-                suggestion: "init(...) throws(\(errorType))"
-            ))
+            violations.append(
+                ReasonedRuleViolation(
+                    position: node.positionAfterSkippingLeadingTrivia,
+                    reason: "Initializer throws only '\(errorType)' but declares untyped 'throws'",
+                    severity: .warning,
+                    confidence: collector.hasRethrows ? .medium : .high,
+                    suggestion: "init(...) throws(\(errorType))"
+                )
+            )
         }
     }
-}
-
-/// Collects thrown error types from throw expressions.
-private final class ThrowCollector: SyntaxVisitor {
-    var thrownTypes: Set<String> = []
-    var hasRethrows = false
-
-    override func visit(_ node: ThrowStmtSyntax) -> SyntaxVisitorContinueKind {
-        let expr = node.expression
-        if let memberAccess = expr.as(MemberAccessExprSyntax.self),
-           let base = memberAccess.base {
-            thrownTypes.insert(base.trimmedDescription)
-        } else if let funcCall = expr.as(FunctionCallExprSyntax.self) {
-            thrownTypes.insert(funcCall.calledExpression.trimmedDescription)
-        } else {
-            thrownTypes.insert("__unknown__")
-        }
-        return .skipChildren
-    }
-
-    override func visit(_ node: TryExprSyntax) -> SyntaxVisitorContinueKind {
-        if node.questionOrExclamationMark == nil {
-            hasRethrows = true
-        }
-        return .visitChildren
-    }
-
-    override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
-    override func visit(_: FunctionDeclSyntax) -> SyntaxVisitorContinueKind { .skipChildren }
 }

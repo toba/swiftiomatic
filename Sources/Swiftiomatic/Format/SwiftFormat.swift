@@ -128,7 +128,8 @@ func offsetForToken(at index: Int, in tokens: [Token], tabWidth: Int) -> SourceO
 
 /// Get token index for offset
 func tokenIndex(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> Int {
-    var tokenIndex = 0, line = 1
+    var tokenIndex = 0
+    var line = 1
     for index in tokens.indices {
         guard case let .linebreak(_, originalLine) = tokens[index] else {
             continue
@@ -185,12 +186,16 @@ func newOffset(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> S
 }
 
 /// Process parsing errors
-func parsingError(for tokens: [Token], options: FormatOptions, allowErrorsInFragments: Bool = true) -> FormatError? {
-    guard let index = tokens.firstIndex(where: {
-        guard (options.fragment && allowErrorsInFragments) || !$0.isError else { return true }
-        guard !options.ignoreConflictMarkers, case let .operator(string, _) = $0 else { return false }
-        return string.hasPrefix("<<<<<") || string.hasPrefix("=====") || string.hasPrefix(">>>>>")
-    }) else {
+func parsingError(for tokens: [Token], options: FormatOptions, allowErrorsInFragments: Bool = true)
+    -> FormatError?
+{
+    guard
+        let index = tokens.firstIndex(where: {
+            guard (options.fragment && allowErrorsInFragments) || !$0.isError else { return true }
+            guard !options.ignoreConflictMarkers, case let .operator(string, _) = $0 else { return false }
+            return string.hasPrefix("<<<<<") || string.hasPrefix("=====") || string.hasPrefix(">>>>>")
+        })
+    else {
         return nil
     }
     let message: String
@@ -245,11 +250,12 @@ func applyRules(
     // Infer shared options
     var options = options
     options.enabledRules = Set(originalRules.map(\.name))
-    let sharedOptions = FormatRules
-        .sharedOptionsForRules(originalRules)
-        .compactMap { Descriptors.byName[$0] }
-        .filter { $0.defaultArgument == $0.fromOptions(options) }
-        .map(\.propertyName)
+    let sharedOptions =
+        FormatRules
+            .sharedOptionsForRules(originalRules)
+            .compactMap { Descriptors.byName[$0] }
+            .filter { $0.defaultArgument == $0.fromOptions(options) }
+            .map(\.propertyName)
 
     inferFormatOptions(sharedOptions, from: originalTokens, into: &options)
 
@@ -273,7 +279,8 @@ func applyRules(
     /// Split tokens into lines
     func getLines(in tokens: [Token], includingLinebreaks: Bool) -> [Int: ArraySlice<Token>] {
         var lines: [Int: ArraySlice<Token>] = [:]
-        var startIndex = 0, nextLine = 1
+        var startIndex = 0
+        var nextLine = 1
         for (i, token) in tokens.enumerated() {
             if case let .linebreak(_, line) = token {
                 let endIndex = i + (includingLinebreaks ? 1 : 0)
@@ -303,8 +310,10 @@ func applyRules(
     var changes = [Formatter.Change]()
     var lastChanges = [Formatter.Change]()
     for iteration in 0 ..< maxIterations {
-        let formatter = Formatter(tokens, options: options,
-                                  trackChanges: trackChanges, range: range)
+        let formatter = Formatter(
+            tokens, options: options,
+            trackChanges: trackChanges, range: range
+        )
         for rule in rules {
             rule.apply(with: formatter)
         }
@@ -321,7 +330,9 @@ func applyRules(
         // Update range and discard unwanted changes
         var newTokens = formatter.tokens
         if let oldRange = range, let newRange = formatter.range {
-            newTokens = Array(tokens[..<oldRange.lowerBound] + newTokens[newRange] + tokens[oldRange.upperBound...])
+            newTokens = Array(
+                tokens[..<oldRange.lowerBound] + newTokens[newRange] + tokens[oldRange.upperBound...]
+            )
             range = oldRange.lowerBound ..< (oldRange.lowerBound + newRange.count)
         }
 
@@ -367,13 +378,13 @@ func applyRules(
     guard !rulesApplied.isEmpty else {
         throw FormatError.writing("Failed to terminate")
     }
-    let names = rulesApplied.count == 1 ?
-        "\(rulesApplied[0]) rule" :
-        "\(rulesApplied.formattedList(lastSeparator: "and")) rules"
+    let names =
+        rulesApplied.count == 1
+            ? "\(rulesApplied[0]) rule" : "\(rulesApplied.formattedList(lastSeparator: "and")) rules"
     let changeLines = Set(lastChanges.map { "\($0.line)" }).sorted()
-    let lines = changeLines.count == 1 ?
-        "line \(changeLines[0])" :
-        "lines \(changeLines.formattedList(lastSeparator: "and"))"
+    let lines =
+        changeLines.count == 1
+            ? "line \(changeLines[0])" : "lines \(changeLines.formattedList(lastSeparator: "and"))"
     throw FormatError.writing("The \(names) failed to terminate at \(lines)")
 }
 
@@ -421,7 +432,8 @@ func expandPath(_ path: String, in directory: String) -> URL {
     if nsPath.isAbsolutePath {
         return URL(fileURLWithPath: nsPath as String).standardized
     }
-    return URL(fileURLWithPath: directory, isDirectory: true).appendingPathComponent(path).standardized
+    return URL(fileURLWithPath: directory, isDirectory: true).appendingPathComponent(path)
+        .standardized
 }
 
 // MARK: Documentation utilities

@@ -6,14 +6,14 @@ struct RedundantNilCoalescingRule: Rule {
     static let description = RuleDescription(
         identifier: "redundant_nil_coalescing",
         name: "Redundant Nil Coalescing",
-        description: "nil coalescing operator is only evaluated if the lhs is nil" +
-            ", coalescing operator with nil as rhs is redundant",
+        description: "nil coalescing operator is only evaluated if the lhs is nil"
+            + ", coalescing operator with nil as rhs is redundant",
         kind: .idiomatic,
         nonTriggeringExamples: [
-            Example("var myVar: Int?; myVar ?? 0")
+            Example("var myVar: Int?; myVar ?? 0"),
         ],
         triggeringExamples: [
-            Example("var myVar: Int? = nil; myVar ↓?? nil")
+            Example("var myVar: Int? = nil; myVar ↓?? nil"),
         ],
         corrections: [
             Example("var myVar: Int? = nil; let foo = myVar ↓?? nil"):
@@ -26,6 +26,7 @@ extension RedundantNilCoalescingRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -37,7 +38,8 @@ private extension RedundantNilCoalescingRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: TokenSyntax) {
             if node.tokenKind.isNilCoalescingOperator,
-               node.nextToken(viewMode: .sourceAccurate)?.tokenKind == .keyword(.nil) {
+               node.nextToken(viewMode: .sourceAccurate)?.tokenKind == .keyword(.nil)
+            {
                 violations.append(node.position)
             }
         }

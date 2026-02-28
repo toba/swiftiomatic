@@ -1,4 +1,3 @@
-
 struct OverriddenSuperCallConfiguration: SeverityBasedRuleConfiguration {
     private static let defaultIncluded = [
         // NSObject
@@ -48,6 +47,7 @@ struct OverriddenSuperCallConfiguration: SeverityBasedRuleConfiguration {
         names = names.filter { !excluded.contains($0) }
         return names
     }
+
     typealias Parent = OverriddenSuperCallRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $excluded.key.isEmpty {

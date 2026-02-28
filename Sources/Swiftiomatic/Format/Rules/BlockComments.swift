@@ -52,13 +52,18 @@ extension FormatRule {
                     formatter.removeTokens(in: range)
                     endIndex -= range.count
                     startIndex = i + 1
-                    endIndex += formatter.replaceCommentBody(at: startIndex, isDocComment: isDocComment, stripLeadingStars: &stripLeadingStars)
+                    endIndex += formatter.replaceCommentBody(
+                        at: startIndex, isDocComment: isDocComment, stripLeadingStars: &stripLeadingStars
+                    )
                 }
 
                 // Replace ending delimiter
-                if let i = formatter.index(of: .nonSpace, before: endIndex, if: {
-                    $0.isLinebreak
-                }) {
+                if let i = formatter.index(
+                    of: .nonSpace, before: endIndex,
+                    if: {
+                        $0.isLinebreak
+                    }
+                ) {
                     let range = i ... endIndex
                     formatter.removeTokens(in: range)
                     endIndex -= range.count
@@ -92,7 +97,11 @@ extension FormatRule {
                         }
                         index = i
                         formatter.insert(.startOfScope("//"), at: index)
-                        var delta = 1 + formatter.replaceCommentBody(at: index + 1, isDocComment: isDocComment, stripLeadingStars: &stripLeadingStars)
+                        var delta =
+                            1
+                                + formatter.replaceCommentBody(
+                                    at: index + 1, isDocComment: isDocComment, stripLeadingStars: &stripLeadingStars
+                                )
                         index += delta
                         endIndex += delta
                     default:

@@ -16,9 +16,9 @@ struct PreferKeyPathRule: Rule {
         name: "Prefer Key Path",
         description: "Use a key path argument instead of a closure with property access",
         rationale: """
-            Note: Swift 5 doesn't support identity key path conversions (`{ $0 }` -> `(\\.self)`) and so
-            SwiftLint disregards `ignore_identity_closures: false` if it runs on a Swift <6 project.
-            """,
+        Note: Swift 5 doesn't support identity key path conversions (`{ $0 }` -> `(\\.self)`) and so
+        SwiftLint disregards `ignore_identity_closures: false` if it runs on a Swift <6 project.
+        """,
         kind: .idiomatic,
         minSwiftVersion: .fiveDotTwo,
         nonTriggeringExamples: [
@@ -61,14 +61,18 @@ struct PreferKeyPathRule: Rule {
         corrections: [
             Example("f.map { $0.a }"):
                 Example("f.map(\\.a)"),
-            Example("""
+            Example(
+                """
                 // begin
                 f.map { $0.a } // end
-                """):
-                Example("""
+                """
+            ):
+                Example(
+                    """
                     // begin
                     f.map(\\.a) // end
-                    """),
+                    """
+                ),
             Example("f.map({ $0.a })"):
                 Example("f.map(\\.a)"),
             Example("f(a: { $0.a })", configuration: extendedMode):
@@ -103,6 +107,7 @@ extension PreferKeyPathRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -117,9 +122,11 @@ private extension PreferKeyPathRule {
                 return
             }
             if let onlyStmt = node.onlyExprStmt,
-               onlyStmt.accesses(identifier: node.onlyParameter) {
+               onlyStmt.accesses(identifier: node.onlyParameter)
+            {
                 if onlyStmt.is(DeclReferenceExprSyntax.self),
-                   configuration.ignoreIdentityClosures || SwiftVersion.current < .six {
+                   configuration.ignoreIdentityClosures || SwiftVersion.current < .six
+                {
                     return
                 }
 
@@ -135,8 +142,11 @@ private extension PreferKeyPathRule {
                   !closure.isInvalid(restrictToStandardFunctions: configuration.restrictToStandardFunctions),
                   let expr = closure.onlyExprStmt,
                   expr.accesses(identifier: closure.onlyParameter) == true,
-                  let replacement = expr.asKeyPath(ignoreIdentityClosures: configuration.ignoreIdentityClosures),
-                  let calleeName = node.calleeName else {
+                  let replacement = expr.asKeyPath(
+                      ignoreIdentityClosures: configuration.ignoreIdentityClosures
+                  ),
+                  let calleeName = node.calleeName
+            else {
                 return super.visit(node)
             }
             numberOfCorrections += 1
@@ -148,14 +158,16 @@ private extension PreferKeyPathRule {
                 label: argumentLabelByStandardFunction[calleeName, default: nil],
                 expression: replacement
             )
-            node = node.with(\.arguments, [newArg]
+            node = node.with(
+                \.arguments, [newArg]
             )
             if node.rightParen == nil {
                 node = node.with(\.rightParen, .rightParenToken())
             }
-            node = node
-                .with(\.trailingClosure, nil)
-                .with(\.trailingTrivia, node.trailingTrivia)
+            node =
+                node
+                    .with(\.trailingClosure, nil)
+                    .with(\.trailingTrivia, node.trailingTrivia)
             return super.visit(node)
         }
 
@@ -165,11 +177,15 @@ private extension PreferKeyPathRule {
             }
             if let expr = node.onlyExprStmt,
                expr.accesses(identifier: node.onlyParameter) == true,
-               let replacement = expr.asKeyPath(ignoreIdentityClosures: configuration.ignoreIdentityClosures) {
+               let replacement = expr.asKeyPath(
+                   ignoreIdentityClosures: configuration.ignoreIdentityClosures
+               )
+            {
                 numberOfCorrections += 1
-                let node = replacement
-                    .with(\.leadingTrivia, node.leadingTrivia)
-                    .with(\.trailingTrivia, node.trailingTrivia)
+                let node =
+                    replacement
+                        .with(\.leadingTrivia, node.leadingTrivia)
+                        .with(\.trailingTrivia, node.trailingTrivia)
                 return super.visit(node)
             }
             return super.visit(node)
@@ -212,7 +228,8 @@ private extension ClosureExprSyntax {
         guard keyPathInParent != \FunctionCallExprSyntax.calledExpression,
               let parent,
               ![.macroExpansionExpr, .multipleTrailingClosureElement].contains(parent.kind),
-              previousToken(viewMode: .sourceAccurate)?.text != "??" else {
+              previousToken(viewMode: .sourceAccurate)?.text != "??"
+        else {
             return true
         }
         if let call = parent.as(LabeledExprSyntax.self)?.parent?.parent?.as(FunctionCallExprSyntax.self) {
@@ -221,7 +238,8 @@ private extension ClosureExprSyntax {
         }
         if let call = parent.as(FunctionCallExprSyntax.self) {
             // Trailing closure.
-            return call.additionalTrailingClosures.isNotEmpty || restrictToStandardFunctions && !call.isStandardFunction
+            return call.additionalTrailingClosures.isNotEmpty
+                || restrictToStandardFunctions && !call.isStandardFunction
         }
         return false
     }
@@ -265,7 +283,8 @@ private extension ExprSyntax {
                     this = memberAccess.base
                 }
             }
-            return "\\.\(raw: elements.reversed().map(\.baseName.text).joined(separator: "."))" as ExprSyntax
+            return "\\.\(raw: elements.reversed().map(\.baseName.text).joined(separator: "."))"
+                as ExprSyntax
         }
 
         if !ignoreIdentityClosures, SwiftVersion.current >= .six, `is`(DeclReferenceExprSyntax.self) {

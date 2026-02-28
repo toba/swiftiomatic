@@ -13,7 +13,9 @@ private struct FileCacheEntry: Codable {
 private struct FileCache: Codable {
     var entries: [String: FileCacheEntry]
 
-    static var empty: Self { Self(entries: [:]) }
+    static var empty: Self {
+        Self(entries: [:])
+    }
 }
 
 /// A persisted cache for storing and retrieving linter results.
@@ -28,14 +30,17 @@ final class LinterCache {
     private let readCacheLock = NSLock()
     private var writeCache = Cache()
     private let writeCacheLock = NSLock()
-    internal let fileManager: any LintableFileManager
+    let fileManager: any LintableFileManager
     private let location: URL?
     private let swiftVersion: SwiftVersion
 
-    internal init(fileManager: some LintableFileManager = FileManager.default, swiftVersion: SwiftVersion = .current) {
+    init(
+        fileManager: some LintableFileManager = FileManager.default,
+        swiftVersion: SwiftVersion = .current
+    ) {
         location = nil
         self.fileManager = fileManager
-        self.lazyReadCache = Cache()
+        lazyReadCache = Cache()
         self.swiftVersion = swiftVersion
     }
 
@@ -47,17 +52,21 @@ final class LinterCache {
         location = configuration.cacheURL
         lazyReadCache = Cache()
         self.fileManager = fileManager
-        self.swiftVersion = .current
+        swiftVersion = .current
     }
 
-    private init(cache: Cache, location: URL?, fileManager: some LintableFileManager, swiftVersion: SwiftVersion) {
-        self.lazyReadCache = cache
+    private init(
+        cache: Cache, location: URL?, fileManager: some LintableFileManager, swiftVersion: SwiftVersion
+    ) {
+        lazyReadCache = cache
         self.location = location
         self.fileManager = fileManager
         self.swiftVersion = swiftVersion
     }
 
-    internal func cache(violations: [StyleViolation], forFile file: String, configuration: Configuration) {
+    func cache(
+        violations: [StyleViolation], forFile file: String, configuration: Configuration
+    ) {
         guard let lastModification = fileManager.modificationDate(forFileAtPath: file) else {
             return
         }
@@ -66,13 +75,15 @@ final class LinterCache {
 
         writeCacheLock.lock()
         var filesCache = writeCache[configurationDescription] ?? .empty
-        filesCache.entries[file] = FileCacheEntry(violations: violations, lastModification: lastModification,
-                                                  swiftVersion: swiftVersion)
+        filesCache.entries[file] = FileCacheEntry(
+            violations: violations, lastModification: lastModification,
+            swiftVersion: swiftVersion
+        )
         writeCache[configurationDescription] = filesCache
         writeCacheLock.unlock()
     }
 
-    internal func violations(forFile file: String, configuration: Configuration) -> [StyleViolation]? {
+    func violations(forFile file: String, configuration: Configuration) -> [StyleViolation]? {
         guard let lastModification = fileManager.modificationDate(forFileAtPath: file),
               let entry = fileCache(cacheDescription: configuration.cacheDescription).entries[file],
               entry.lastModification == lastModification,
@@ -106,7 +117,9 @@ final class LinterCache {
 
         let encoder = Encoder()
         for (description, writeFileCache) in writeCache where writeFileCache.entries.isNotEmpty {
-            let fileCacheEntries = readCache[description]?.entries.merging(writeFileCache.entries) { _, write in write }
+            let fileCacheEntries = readCache[description]?.entries.merging(writeFileCache.entries) {
+                _, write in write
+            }
             let fileCache = fileCacheEntries.map(FileCache.init) ?? writeFileCache
             let data = try encoder.encode(fileCache)
             let file = url.appendingPathComponent(description).appendingPathExtension(Self.fileExtension)
@@ -114,8 +127,10 @@ final class LinterCache {
         }
     }
 
-    internal func flushed() -> LinterCache {
-        Self(cache: mergeCaches(), location: location, fileManager: fileManager, swiftVersion: swiftVersion)
+    func flushed() -> LinterCache {
+        Self(
+            cache: mergeCaches(), location: location, fileManager: fileManager, swiftVersion: swiftVersion
+        )
     }
 
     private func fileCache(cacheDescription: String) -> FileCache {
@@ -132,7 +147,9 @@ final class LinterCache {
             return .empty
         }
 
-        let file = location.appendingPathComponent(cacheDescription).appendingPathExtension(Self.fileExtension)
+        let file = location.appendingPathComponent(cacheDescription).appendingPathExtension(
+            Self.fileExtension
+        )
         let data = try? Data(contentsOf: file)
         let fileCache = data.flatMap { try? Decoder().decode(FileCache.self, from: $0) } ?? .empty
         lazyReadCache[cacheDescription] = fileCache

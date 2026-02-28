@@ -14,127 +14,165 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
         Example("[1, 2].map { $0 }.foo()"),
         Example("[1, 2].map { $0 }.filter { num in true }"),
         Example("// [1, 2].map { $0 }.filter { num in true }"),
-        Example("""
-        /*
-            class X {
+        Example(
+            """
+            /*
+                class X {
 
-                let x = 5
+                    let x = 5
 
-            }
-        */
-        """),
+                }
+            */
+            """
+        ),
     ]
 
     private static let violatingToValidExamples: [Example: Example] = [
-        Example("""
-        if x == 5 {
-        ↓
-          print("x is 5")
-        }
-        """): Example("""
+        Example(
+            """
+            if x == 5 {
+            ↓
+              print("x is 5")
+            }
+            """
+        ): Example(
+            """
             if x == 5 {
               print("x is 5")
             }
-            """),
-        Example("""
-        if x == 5 {
-        ↓
+            """
+        ),
+        Example(
+            """
+            if x == 5 {
+            ↓
 
-          print("x is 5")
-        }
-        """): Example("""
+              print("x is 5")
+            }
+            """
+        ): Example(
+            """
             if x == 5 {
               print("x is 5")
             }
-            """),
-        Example("""
-        struct MyStruct {
-        ↓
-          let x = 5
-        }
-        """): Example("""
+            """
+        ),
+        Example(
+            """
+            struct MyStruct {
+            ↓
+              let x = 5
+            }
+            """
+        ): Example(
+            """
             struct MyStruct {
               let x = 5
             }
-            """),
-        Example("""
-        class X {
-          struct Y {
-        ↓
-            class Z {
+            """
+        ),
+        Example(
+            """
+            class X {
+              struct Y {
+            ↓
+                class Z {
+                }
+              }
             }
-          }
-        }
-        """): Example("""
+            """
+        ): Example(
+            """
             class X {
               struct Y {
                 class Z {
                 }
               }
             }
-            """),
-        Example("""
-        [
-        ↓
-        1,
-        2,
-        3
-        ]
-        """): Example("""
+            """
+        ),
+        Example(
+            """
+            [
+            ↓
+            1,
+            2,
+            3
+            ]
+            """
+        ): Example(
+            """
             [
             1,
             2,
             3
             ]
-            """),
-        Example("""
-        foo(
-        ↓
-          x: 5,
-          y:6
-        )
-        """): Example("""
+            """
+        ),
+        Example(
+            """
+            foo(
+            ↓
+              x: 5,
+              y:6
+            )
+            """
+        ): Example(
+            """
             foo(
               x: 5,
               y:6
             )
-            """),
-        Example("""
-        func foo() {
-        ↓
-          run(5) { x in
-            print(x)
-          }
-        }
-        """): Example("""
+            """
+        ),
+        Example(
+            """
+            func foo() {
+            ↓
+              run(5) { x in
+                print(x)
+              }
+            }
+            """
+        ): Example(
+            """
             func foo() {
               run(5) { x in
                 print(x)
               }
             }
-            """),
-        Example("""
-        KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: nil) { image, _, _, _ in
-        ↓
-            guard let img = image else { return }
-        }
-        """): Example("""
+            """
+        ),
+        Example(
+            """
+            KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: nil) { image, _, _, _ in
+            ↓
+                guard let img = image else { return }
+            }
+            """
+        ): Example(
+            """
             KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: nil) { image, _, _, _ in
                 guard let img = image else { return }
             }
-            """),
-        Example("""
-        foo({ }) { _ in
-        ↓
-          self.dismiss(animated: false, completion: {
-          })
-        }
-        """): Example("""
+            """
+        ),
+        Example(
+            """
+            foo({ }) { _ in
+            ↓
+              self.dismiss(animated: false, completion: {
+              })
+            }
+            """
+        ): Example(
+            """
             foo({ }) { _ in
               self.dismiss(animated: false, completion: {
               })
             }
-            """),
+            """
+        ),
     ]
 
     private let pattern = "([{(\\[][ \\t]*(?:[^\\n{]+ in[ \\t]*$)?)((?:\\n[ \\t]*)+)(\\n)"
@@ -155,7 +193,9 @@ extension VerticalWhitespaceOpeningBracesRule: OptInRule {
         let patternRegex: NSRegularExpression = regex(pattern)
 
         return file.violatingRanges(for: pattern).map { violationRange in
-            let substring = file.contents.substring(from: violationRange.location, length: violationRange.length)
+            let substring = file.contents.substring(
+                from: violationRange.location, length: violationRange.length
+            )
             let substringRange = NSRange(location: 0, length: substring.count)
             let matchResult = patternRegex.firstMatch(in: substring, options: [], range: substringRange)!
             let violatingSubrange = matchResult.range(at: 2)
@@ -172,7 +212,9 @@ extension VerticalWhitespaceOpeningBracesRule: OptInRule {
 
 extension VerticalWhitespaceOpeningBracesRule: CorrectableRule {
     func correct(file: SwiftLintFile) -> Int {
-        let violatingRanges = file.ruleEnabled(violatingRanges: file.violatingRanges(for: pattern), for: self)
+        let violatingRanges = file.ruleEnabled(
+            violatingRanges: file.violatingRanges(for: pattern), for: self
+        )
         guard violatingRanges.isNotEmpty else {
             return 0
         }
@@ -197,5 +239,8 @@ extension VerticalWhitespaceOpeningBracesRule {
             "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
         ).print()
     }()
-    func notifyRuleDisabledOnce() { _ = Self._postMessage }
+
+    func notifyRuleDisabledOnce() {
+        _ = Self._postMessage
+    }
 }

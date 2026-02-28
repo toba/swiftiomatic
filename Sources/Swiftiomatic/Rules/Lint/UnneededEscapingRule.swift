@@ -51,7 +51,9 @@ private extension UnneededEscapingRule {
             }
         }
 
-        private func checkFunction(parameters: FunctionParameterClauseSyntax, body: CodeBlockItemListSyntax?) {
+        private func checkFunction(
+            parameters: FunctionParameterClauseSyntax, body: CodeBlockItemListSyntax?
+        ) {
             guard let body else {
                 return
             }
@@ -67,12 +69,15 @@ private extension UnneededEscapingRule {
             }
         }
 
-        private func validate(paramName: String,
-                              with attr: AttributeSyntax,
-                              isAutoclosure: Bool,
-                              in body: CodeBlockItemListSyntax) {
+        private func validate(
+            paramName: String,
+            with attr: AttributeSyntax,
+            isAutoclosure: Bool,
+            in body: CodeBlockItemListSyntax
+        ) {
             if EscapeChecker(paramName: paramName, isAutoclosure: isAutoclosure)
-                .walk(tree: body, handler: \.doesEscape) {
+                .walk(tree: body, handler: \.doesEscape)
+            {
                 return
             }
             let correctionEndPosition =
@@ -118,7 +123,8 @@ private final class EscapeChecker: SyntaxVisitor {
         for binding in node.bindings {
             if let initializer = binding.initializer,
                isTainted(initializer.value),
-               let pattern = binding.pattern.as(IdentifierPatternSyntax.self) {
+               let pattern = binding.pattern.as(IdentifierPatternSyntax.self)
+            {
                 taintedVariables.insert(pattern.identifier.text)
             }
         }
@@ -144,7 +150,9 @@ private final class EscapeChecker: SyntaxVisitor {
     }
 
     override func visitPost(_ node: FunctionCallExprSyntax) {
-        for argument in node.arguments where isTainted(argument.expression) || usesTaintedCallee(argument.expression) {
+        for argument in node.arguments
+            where isTainted(argument.expression) || usesTaintedCallee(argument.expression)
+        {
             doesEscape = true
         }
     }
@@ -162,7 +170,9 @@ private final class EscapeChecker: SyntaxVisitor {
         guard isTainted(ExprSyntax(node)) else {
             return
         }
-        if (inClosureContext.peek() ?? false) || [.arrayElement, .dictionaryElement].contains(node.parent?.kind) {
+        if (inClosureContext.peek() ?? false)
+            || [.arrayElement, .dictionaryElement].contains(node.parent?.kind)
+        {
             doesEscape = true
         }
     }
@@ -172,7 +182,8 @@ private final class EscapeChecker: SyntaxVisitor {
             return taintedVariables.contains(declRef.baseName.text)
         }
         if let optChain = expr.as(OptionalChainingExprSyntax.self),
-           let declRef = optChain.expression.as(DeclReferenceExprSyntax.self) {
+           let declRef = optChain.expression.as(DeclReferenceExprSyntax.self)
+        {
             return taintedVariables.contains(declRef.baseName.text)
         }
         if let ternary = expr.as(TernaryExprSyntax.self) {
@@ -186,7 +197,8 @@ private final class EscapeChecker: SyntaxVisitor {
               let callExpr = expr.as(FunctionCallExprSyntax.self),
               callExpr.arguments.isEmpty,
               callExpr.trailingClosure == nil,
-              callExpr.additionalTrailingClosures.isEmpty else {
+              callExpr.additionalTrailingClosures.isEmpty
+        else {
             return false
         }
         return isTainted(callExpr.calledExpression)
@@ -210,8 +222,8 @@ private extension TypeSyntax {
 
 private extension ExprSyntax {
     var baseNameToken: TokenSyntax? {
-           `as`(DeclReferenceExprSyntax.self)?.baseName
-        ?? `as`(MemberAccessExprSyntax.self)?.base?.baseNameToken
+        `as`(DeclReferenceExprSyntax.self)?.baseName
+            ?? `as`(MemberAccessExprSyntax.self)?.base?.baseNameToken
     }
 
     var isLocalVariable: Bool {
@@ -220,12 +232,13 @@ private extension ExprSyntax {
         }
         if let baseNameToken {
             let results = lookup(.init(baseNameToken))
-            return results.isNotEmpty && results.allSatisfy {
-                switch $0 {
-                case .fromScope: true
-                default: false
+            return results.isNotEmpty
+                && results.allSatisfy {
+                    switch $0 {
+                    case .fromScope: true
+                    default: false
+                    }
                 }
-            }
         }
         return false
     }

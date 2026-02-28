@@ -10,83 +10,109 @@ struct MultilineParametersBracketsRule: OptInRule {
         description: "Multiline parameters should have their surrounding brackets in a new line",
         kind: .style,
         nonTriggeringExamples: [
-            Example("""
-            func foo(param1: String, param2: String, param3: String)
-            """),
-            Example("""
-            func foo(
-                param1: String, param2: String, param3: String
-            )
-            """),
-            Example("""
-            func foo(
-                param1: String,
-                param2: String,
-                param3: String
-            )
-            """),
-            Example("""
-            class SomeType {
+            Example(
+                """
                 func foo(param1: String, param2: String, param3: String)
-            }
-            """),
-            Example("""
-            class SomeType {
+                """
+            ),
+            Example(
+                """
                 func foo(
                     param1: String, param2: String, param3: String
                 )
-            }
-            """),
-            Example("""
-            class SomeType {
+                """
+            ),
+            Example(
+                """
                 func foo(
                     param1: String,
                     param2: String,
                     param3: String
                 )
-            }
-            """),
-            Example("""
-            func foo<T>(param1: T, param2: String, param3: String) -> T { /* some code */ }
-            """),
-            Example("""
-                func foo(a: [Int] = [
-                    1
-                ])
-            """),
+                """
+            ),
+            Example(
+                """
+                class SomeType {
+                    func foo(param1: String, param2: String, param3: String)
+                }
+                """
+            ),
+            Example(
+                """
+                class SomeType {
+                    func foo(
+                        param1: String, param2: String, param3: String
+                    )
+                }
+                """
+            ),
+            Example(
+                """
+                class SomeType {
+                    func foo(
+                        param1: String,
+                        param2: String,
+                        param3: String
+                    )
+                }
+                """
+            ),
+            Example(
+                """
+                func foo<T>(param1: T, param2: String, param3: String) -> T { /* some code */ }
+                """
+            ),
+            Example(
+                """
+                    func foo(a: [Int] = [
+                        1
+                    ])
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            func foo(↓param1: String, param2: String,
-                     param3: String
-            )
-            """),
-            Example("""
-            func foo(
-                param1: String,
-                param2: String,
-                param3: String↓)
-            """),
-            Example("""
-            class SomeType {
+            Example(
+                """
                 func foo(↓param1: String, param2: String,
                          param3: String
                 )
-            }
-            """),
-            Example("""
-            class SomeType {
+                """
+            ),
+            Example(
+                """
                 func foo(
                     param1: String,
                     param2: String,
                     param3: String↓)
-            }
-            """),
-            Example("""
-            func foo<T>(↓param1: T, param2: String,
-                     param3: String
-            ) -> T
-            """),
+                """
+            ),
+            Example(
+                """
+                class SomeType {
+                    func foo(↓param1: String, param2: String,
+                             param3: String
+                    )
+                }
+                """
+            ),
+            Example(
+                """
+                class SomeType {
+                    func foo(
+                        param1: String,
+                        param2: String,
+                        param3: String↓)
+                }
+                """
+            ),
+            Example(
+                """
+                func foo<T>(↓param1: T, param2: String,
+                         param3: String
+                ) -> T
+                """
+            ),
         ]
     )
 
@@ -94,12 +120,15 @@ struct MultilineParametersBracketsRule: OptInRule {
         violations(in: file.structureDictionary, file: file)
     }
 
-    private func violations(in substructure: SourceKittenDictionary, file: SwiftLintFile) -> [StyleViolation] {
+    private func violations(in substructure: SourceKittenDictionary, file: SwiftLintFile)
+        -> [StyleViolation]
+    {
         var violations = [StyleViolation]()
 
         // find violations at current level
         if let kind = substructure.declarationKind,
-           SwiftDeclarationKind.functionKinds.contains(kind) {
+           SwiftDeclarationKind.functionKinds.contains(kind)
+        {
             guard
                 let nameOffset = substructure.nameOffset,
                 let nameLength = substructure.nameLength,
@@ -136,8 +165,10 @@ struct MultilineParametersBracketsRule: OptInRule {
         return violations
     }
 
-    private func openingBracketViolation(parameters: [SourceKittenDictionary],
-                                         file: SwiftLintFile) -> StyleViolation? {
+    private func openingBracketViolation(
+        parameters: [SourceKittenDictionary],
+        file: SwiftLintFile
+    ) -> StyleViolation? {
         guard
             let firstParamByteRange = parameters.first?.byteRange,
             let firstParamRange = file.stringView.byteRangeToNSRange(firstParamByteRange)
@@ -148,7 +179,9 @@ struct MultilineParametersBracketsRule: OptInRule {
         let prefix = file.stringView.nsString.substring(to: firstParamRange.lowerBound)
         let invalidRegex = regex("\\([ \\t]*\\z")
 
-        guard let invalidMatch = invalidRegex.firstMatch(in: prefix, options: [], range: prefix.fullNSRange) else {
+        guard
+            let invalidMatch = invalidRegex.firstMatch(in: prefix, options: [], range: prefix.fullNSRange)
+        else {
             return nil
         }
 
@@ -159,8 +192,10 @@ struct MultilineParametersBracketsRule: OptInRule {
         )
     }
 
-    private func closingBracketViolation(parameters: [SourceKittenDictionary],
-                                         file: SwiftLintFile) -> StyleViolation? {
+    private func closingBracketViolation(
+        parameters: [SourceKittenDictionary],
+        file: SwiftLintFile
+    ) -> StyleViolation? {
         guard
             let lastParamByteRange = parameters.last?.byteRange,
             let lastParamRange = file.stringView.byteRangeToNSRange(lastParamByteRange)
@@ -171,7 +206,9 @@ struct MultilineParametersBracketsRule: OptInRule {
         let suffix = file.stringView.nsString.substring(from: lastParamRange.upperBound)
         let invalidRegex = regex("\\A[ \\t]*\\)")
 
-        guard let invalidMatch = invalidRegex.firstMatch(in: suffix, options: [], range: suffix.fullNSRange) else {
+        guard
+            let invalidMatch = invalidRegex.firstMatch(in: suffix, options: [], range: suffix.fullNSRange)
+        else {
             return nil
         }
 
@@ -190,5 +227,8 @@ extension MultilineParametersBracketsRule {
             "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
         ).print()
     }()
-    func notifyRuleDisabledOnce() { _ = Self._postMessage }
+
+    func notifyRuleDisabledOnce() {
+        _ = Self._postMessage
+    }
 }

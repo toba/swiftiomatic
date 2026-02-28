@@ -4,7 +4,7 @@ import Foundation
 struct FormatCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "format",
-        abstract: "Format Swift source files",
+        abstract: "Format Swift source files"
     )
 
     @Argument(help: "Paths to format (files or directories)")
@@ -80,13 +80,14 @@ struct FormatCommand: ParsableCommand {
     private func printRules() {
         let defaultRuleNames = Set(FormatRules.default.map(\.name))
         for rule in FormatRules.all {
-            let status = if rule.isDeprecated {
-                " (deprecated)"
-            } else if defaultRuleNames.contains(rule.name) {
-                ""
-            } else {
-                " (disabled)"
-            }
+            let status =
+                if rule.isDeprecated {
+                    " (deprecated)"
+                } else if defaultRuleNames.contains(rule.name) {
+                    ""
+                } else {
+                    " (disabled)"
+                }
             print("\(rule.name)\(status)")
         }
     }

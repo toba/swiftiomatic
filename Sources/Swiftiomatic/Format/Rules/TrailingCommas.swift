@@ -18,12 +18,16 @@ extension FormatRule {
 
             switch formatter.scopeType(at: startOfScope) {
             case .array, .dictionary:
-                formatter.addOrRemoveTrailingComma(beforeEndOfScope: i, trailingCommaSupported: true, isCollection: true)
+                formatter.addOrRemoveTrailingComma(
+                    beforeEndOfScope: i, trailingCommaSupported: true, isCollection: true
+                )
                 return
 
             case .subscript, .captureList, .functionCall, .parameterList:
                 let trailingCommaSupported = formatter.options.swiftVersion >= "6.1"
-                formatter.addOrRemoveTrailingComma(beforeEndOfScope: i, trailingCommaSupported: trailingCommaSupported)
+                formatter.addOrRemoveTrailingComma(
+                    beforeEndOfScope: i, trailingCommaSupported: trailingCommaSupported
+                )
                 return
 
             case .arrayType, .dictionaryType, .throwsType:
@@ -69,7 +73,9 @@ extension FormatRule {
                 // If the previous token is the closing `>` of a generic list, then this is a function declaration or initializer,
                 // like `func foo<T>(args...)` or `Foo<Bar>(args...)`.
                 else if formatter.options.swiftVersion >= "6.1",
-                        let tokenBeforeStartOfScope = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startOfScope),
+                        let tokenBeforeStartOfScope = formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak, before: startOfScope
+                        ),
                         formatter.tokens[tokenBeforeStartOfScope] == .endOfScope(">")
                 {
                     trailingCommaSupported = true
@@ -100,7 +106,9 @@ extension FormatRule {
 
                     // There is also a bug in Swift 6.2 where closure tuple return types don't support trailing commas.
                     if formatter.options.swiftVersion == "6.2",
-                       let tokenBeforeStartOfScope = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startOfScope),
+                       let tokenBeforeStartOfScope = formatter.index(
+                           of: .nonSpaceOrCommentOrLinebreak, before: startOfScope
+                       ),
                        formatter.tokens[tokenBeforeStartOfScope] == .operator("->", .infix),
                        formatter.isInClosureArguments(at: tokenBeforeStartOfScope)
                     {
@@ -115,11 +123,16 @@ extension FormatRule {
                 // This also handles paren scopes with only a single element (so, not a tuple)
                 // where trailing commas are allowed in Swift 6.2 and later.
                 else if formatter.options.swiftVersion >= "6.1",
-                        let tokenBeforeStartOfScope = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startOfScope)
+                        let tokenBeforeStartOfScope = formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak, before: startOfScope
+                        )
                 {
                     // `{ (...) }`, `return (...)` etc are always tuple values
                     // (except in the case of a typealias, where the rhs is a type)
-                    let tokensPrecedingValuesNotTypes: Set<Token> = [.startOfScope("{"), .keyword("return"), .keyword("throw"), .keyword("switch"), .endOfScope("case")]
+                    let tokensPrecedingValuesNotTypes: Set<Token> = [
+                        .startOfScope("{"), .keyword("return"), .keyword("throw"), .keyword("switch"),
+                        .endOfScope("case"),
+                    ]
                     if tokensPrecedingValuesNotTypes.contains(formatter.tokens[tokenBeforeStartOfScope]) {
                         trailingCommaSupported = true
                     }
@@ -143,12 +156,16 @@ extension FormatRule {
                 // In Swift 6.2 and later, trailing commas are always supported in closure argument lists.
                 if formatter.options.swiftVersion >= "6.2",
                    let tokenAfterEndOfScope = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
-                   [.identifier("async"), .keyword("throws"), .operator("->", .infix)].contains(formatter.tokens[tokenAfterEndOfScope])
+                   [.identifier("async"), .keyword("throws"), .operator("->", .infix)].contains(
+                       formatter.tokens[tokenAfterEndOfScope]
+                   )
                 {
                     trailingCommaSupported = true
                 }
 
-                formatter.addOrRemoveTrailingComma(beforeEndOfScope: i, trailingCommaSupported: trailingCommaSupported)
+                formatter.addOrRemoveTrailingComma(
+                    beforeEndOfScope: i, trailingCommaSupported: trailingCommaSupported
+                )
 
             case .endOfScope(">"):
                 var trailingCommaSupported = false
@@ -159,18 +176,24 @@ extension FormatRule {
                     // In Swift 6.1, only generic lists in concrete type / function / typealias declarations are allowed.
                     // https://github.com/swiftlang/swift/issues/81474
                     // All of these cases have the form `keyword identifier<...>`, like `class Foo<...>` or `func foo<...>`.
-                    if let identifierIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startOfScope),
-                       formatter.tokens[identifierIndex].isIdentifier,
-                       let keywordIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: identifierIndex),
-                       let keyword = formatter.token(at: keywordIndex),
-                       keyword.isKeyword,
-                       ["class", "actor", "struct", "enum", "typealias", "func"].contains(keyword.string)
+                    if let identifierIndex = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak, before: startOfScope
+                    ),
+                        formatter.tokens[identifierIndex].isIdentifier,
+                        let keywordIndex = formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak, before: identifierIndex
+                        ),
+                        let keyword = formatter.token(at: keywordIndex),
+                        keyword.isKeyword,
+                        ["class", "actor", "struct", "enum", "typealias", "func"].contains(keyword.string)
                     {
                         trailingCommaSupported = true
                     }
                 }
 
-                formatter.addOrRemoveTrailingComma(beforeEndOfScope: i, trailingCommaSupported: trailingCommaSupported)
+                formatter.addOrRemoveTrailingComma(
+                    beforeEndOfScope: i, trailingCommaSupported: trailingCommaSupported
+                )
 
             default:
                 break
@@ -288,9 +311,11 @@ extension Formatter {
         // Remove or insert the comma
         switch tokens[prevTokenIndex] {
         case .linebreak:
-            guard let prevTokenIndex = index(
-                of: .nonSpaceOrCommentOrLinebreak, before: prevTokenIndex + 1
-            ) else {
+            guard
+                let prevTokenIndex = index(
+                    of: .nonSpaceOrCommentOrLinebreak, before: prevTokenIndex + 1
+                )
+            else {
                 break
             }
             switch tokens[prevTokenIndex] {

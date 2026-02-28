@@ -6,8 +6,9 @@ struct AccessibilityLabelForImageRule: Rule, OptInRule {
     static let description = RuleDescription(
         identifier: "accessibility_label_for_image",
         name: "Accessibility Label for Image",
-        description: "Images that provide context should have an accessibility label or should be explicitly hidden " +
-                     "from accessibility",
+        description:
+        "Images that provide context should have an accessibility label or should be explicitly hidden "
+            + "from accessibility",
         rationale: """
         In UIKit, a `UIImageView` was by default not an accessibility element, and would only be visible to VoiceOver \
         and other assistive technologies if the developer explicitly made them an accessibility element. In SwiftUI, \
@@ -57,9 +58,9 @@ private extension AccessibilityLabelForImageRule {
                 let violation = ReasonedRuleViolation(
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason: """
-                        Images that provide context should have an accessibility label or should be \
-                        explicitly hidden from accessibility
-                        """,
+                    Images that provide context should have an accessibility label or should be \
+                    explicitly hidden from accessibility
+                    """,
                     severity: configuration.severity
                 )
                 violations.append(violation)
@@ -70,7 +71,7 @@ private extension AccessibilityLabelForImageRule {
 
 // MARK: Accessibility Exemption Logic
 
-private struct AccessibilityDeterminator {
+private enum AccessibilityDeterminator {
     /// Maximum depth to search up the syntax tree for exemptions
     static let maxSearchDepth = 20
 
@@ -109,9 +110,10 @@ private extension FunctionCallExprSyntax {
 
         // Check for SwiftUI.Image call
         if let memberAccessExpr = calledExpression.as(MemberAccessExprSyntax.self),
-           let baseIdentifier = memberAccessExpr.base?.as(DeclReferenceExprSyntax.self) {
-            return baseIdentifier.baseName.text == "SwiftUI" &&
-                   memberAccessExpr.declName.baseName.text == "Image"
+           let baseIdentifier = memberAccessExpr.base?.as(DeclReferenceExprSyntax.self)
+        {
+            return baseIdentifier.baseName.text == "SwiftUI"
+                && memberAccessExpr.declName.baseName.text == "Image"
         }
 
         return false
@@ -143,8 +145,9 @@ private extension FunctionCallExprSyntax {
             if let memberAccess = funcCall.calledExpression.as(MemberAccessExprSyntax.self) {
                 let modifierName = memberAccess.declName.baseName.text
 
-                if funcCall.isDirectAccessibilityModifier(modifierName) ||
-                    funcCall.isContainerExemptingModifier(modifierName) {
+                if funcCall.isDirectAccessibilityModifier(modifierName)
+                    || funcCall.isContainerExemptingModifier(modifierName)
+                {
                     return true
                 }
             }
@@ -170,8 +173,12 @@ private extension FunctionCallExprSyntax {
 
     /// Check if this function call represents a container view
     func isContainerView() -> Bool {
-        guard let identifierExpr = calledExpression.as(DeclReferenceExprSyntax.self) else { return false }
-        let containerNames: Set<String> = ["VStack", "HStack", "ZStack", "Group", "LazyVStack", "LazyHStack"]
+        guard let identifierExpr = calledExpression.as(DeclReferenceExprSyntax.self) else {
+            return false
+        }
+        let containerNames: Set<String> = [
+            "VStack", "HStack", "ZStack", "Group", "LazyVStack", "LazyHStack",
+        ]
         return containerNames.contains(identifierExpr.baseName.text)
     }
 
@@ -187,12 +194,14 @@ private extension FunctionCallExprSyntax {
             }
 
             guard let funcCall = node.as(FunctionCallExprSyntax.self),
-                  let memberAccess = funcCall.calledExpression.as(MemberAccessExprSyntax.self) else { continue }
+                  let memberAccess = funcCall.calledExpression.as(MemberAccessExprSyntax.self)
+            else { continue }
 
             let modifierName = memberAccess.declName.baseName.text
 
-            if funcCall.isDirectAccessibilityModifier(modifierName) ||
-                funcCall.isContainerExemptingModifier(modifierName) {
+            if funcCall.isDirectAccessibilityModifier(modifierName)
+                || funcCall.isContainerExemptingModifier(modifierName)
+            {
                 return true
             }
 
@@ -209,7 +218,8 @@ private extension FunctionCallExprSyntax {
     func isDirectAccessibilityModifier(_ name: String) -> Bool {
         switch name {
         case "accessibilityHidden":
-            return arguments.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind == .keyword(.true)
+            return arguments.first?.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind
+                == .keyword(.true)
         case "accessibilityLabel", "accessibilityValue", "accessibilityHint":
             return true
         case "accessibility":
@@ -217,7 +227,8 @@ private extension FunctionCallExprSyntax {
                 guard let label = arg.label?.text else { return false }
                 if ["label", "value", "hint"].contains(label) { return true }
                 if label == "hidden" {
-                    return arg.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind == .keyword(.true)
+                    return arg.expression.as(BooleanLiteralExprSyntax.self)?.literal.tokenKind
+                        == .keyword(.true)
                 }
                 return false
             }
@@ -232,7 +243,8 @@ private extension FunctionCallExprSyntax {
 
         // Check for .accessibilityElement(children: .ignore) which exempts children
         if let childrenArg = arguments.first(where: { $0.label?.text == "children" }) {
-            let childrenValue = childrenArg.expression.as(MemberAccessExprSyntax.self)?.declName.baseName.text
+            let childrenValue = childrenArg.expression.as(MemberAccessExprSyntax.self)?.declName.baseName
+                .text
             return childrenValue == "ignore" // Only .ignore exempts individual children
         }
 
@@ -270,7 +282,8 @@ private extension FunctionCallExprSyntax {
             }
 
             guard let funcCall = node.as(FunctionCallExprSyntax.self),
-                  let memberAccess = funcCall.calledExpression.as(MemberAccessExprSyntax.self) else { continue }
+                  let memberAccess = funcCall.calledExpression.as(MemberAccessExprSyntax.self)
+            else { continue }
 
             let modifierName = memberAccess.declName.baseName.text
             if funcCall.isDirectAccessibilityModifier(modifierName) {

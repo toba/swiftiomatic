@@ -18,11 +18,13 @@ extension FormatRule {
     ) { formatter in
         formatter.parseEnumCaseRanges()
             .filter(formatter.shouldWrapCaseRangeGroup)
-            .flatMap { $0 }
+            .flatMap(\.self)
             .filter { $0.endOfCaseRangeToken == .delimiter(",") }
             .reversed()
             .forEach { enumCase in
-                guard var nextNonSpaceIndex = formatter.index(of: .nonSpace, after: enumCase.value.upperBound) else {
+                guard
+                    var nextNonSpaceIndex = formatter.index(of: .nonSpace, after: enumCase.value.upperBound)
+                else {
                     return
                 }
                 let caseIndex = formatter.lastIndex(of: .keyword("case"), in: 0 ..< enumCase.value.lowerBound)
@@ -35,7 +37,8 @@ extension FormatRule {
                     {
                         formatter.removeToken(at: enumCase.value.upperBound - 1)
                     }
-                    nextNonSpaceIndex = formatter.index(of: .linebreak, after: enumCase.value.upperBound) ?? nextNonSpaceIndex
+                    nextNonSpaceIndex =
+                        formatter.index(of: .linebreak, after: enumCase.value.upperBound) ?? nextNonSpaceIndex
                 } else {
                     formatter.removeTokens(in: enumCase.value.upperBound ..< nextNonSpaceIndex)
                     nextNonSpaceIndex = enumCase.value.upperBound
@@ -93,10 +96,12 @@ extension Formatter {
                   commaIndex <= declaration.range.upperBound
             {
                 // Add the case before this comma
-                caseRanges.append(EnumCaseRange(
-                    value: currentStart ..< commaIndex,
-                    endOfCaseRangeToken: .delimiter(",")
-                ))
+                caseRanges.append(
+                    EnumCaseRange(
+                        value: currentStart ..< commaIndex,
+                        endOfCaseRangeToken: .delimiter(",")
+                    )
+                )
 
                 // Move to start of next case
                 currentStart = index(of: .nonSpaceOrCommentOrLinebreak, after: commaIndex) ?? commaIndex
@@ -104,13 +109,19 @@ extension Formatter {
             }
 
             // Add the final case
-            let finalCaseEnd = lastIndex(of: .nonSpaceOrCommentOrLinebreak, in: currentStart ..< (declaration.range.upperBound + 1)) ?? declaration.range.upperBound
+            let finalCaseEnd =
+                lastIndex(
+                    of: .nonSpaceOrCommentOrLinebreak, in: currentStart ..< (declaration.range.upperBound + 1)
+                )
+                ?? declaration.range.upperBound
 
             let endToken = token(at: finalCaseEnd) ?? .linebreak("\n", 1)
-            caseRanges.append(EnumCaseRange(
-                value: currentStart ..< finalCaseEnd,
-                endOfCaseRangeToken: endToken
-            ))
+            caseRanges.append(
+                EnumCaseRange(
+                    value: currentStart ..< finalCaseEnd,
+                    endOfCaseRangeToken: endToken
+                )
+            )
 
             // Only add if there are multiple cases in this declaration
             if caseRanges.count > 1 {
@@ -129,10 +140,11 @@ extension Formatter {
             // Don't wrap if first case is on same line as opening `{`
             return false
         }
-        return options.wrapEnumCases == .always || caseRangeGroup.contains(where: {
-            tokens[$0.value].contains(where: {
-                [.startOfScope("("), .operator("=", .infix)].contains($0)
+        return options.wrapEnumCases == .always
+            || caseRangeGroup.contains(where: {
+                tokens[$0.value].contains(where: {
+                    [.startOfScope("("), .operator("=", .infix)].contains($0)
+                })
             })
-        })
     }
 }

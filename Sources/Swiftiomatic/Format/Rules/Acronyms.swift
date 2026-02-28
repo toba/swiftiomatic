@@ -53,7 +53,8 @@ extension FormatRule {
                         return indexAfterMatch
                     }
                     let characterAfterNext = updatedText[updatedText.index(after: indexAfterMatch)]
-                    return characterAfterNext.isUppercase || characterAfterNext.isWhitespace ? indexAfterMatch : nil
+                    return characterAfterNext.isUppercase || characterAfterNext.isWhitespace
+                        ? indexAfterMatch : nil
                 }
 
                 return nil

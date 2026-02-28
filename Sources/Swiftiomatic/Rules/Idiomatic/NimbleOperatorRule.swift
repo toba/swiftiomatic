@@ -23,12 +23,14 @@ struct NimbleOperatorRule: Rule {
             Example("expect(value) != nil"),
             Example("expect(object.asyncFunction()).toEventually(equal(1))"),
             Example("expect(actual).to(haveCount(expected))"),
-            Example("""
-            foo.method {
-                expect(value).to(equal(expectedValue), description: "Failed")
-                return Bar(value: ())
-            }
-            """),
+            Example(
+                """
+                foo.method {
+                    expect(value).to(equal(expectedValue), description: "Failed")
+                    return Bar(value: ())
+                }
+                """
+            ),
         ],
         triggeringExamples: [
             Example("↓expect(seagull.squawk).toNot(equal(\"Hi\"))"),
@@ -47,11 +49,15 @@ struct NimbleOperatorRule: Rule {
             Example("expect(10) > 2\n ↓expect(10).to(beGreaterThan(2))"),
         ],
         corrections: [
-            Example("↓expect(seagull.squawk).toNot(equal(\"Hi\"))"): Example("expect(seagull.squawk) != \"Hi\""),
+            Example("↓expect(seagull.squawk).toNot(equal(\"Hi\"))"): Example(
+                "expect(seagull.squawk) != \"Hi\""
+            ),
             Example("↓expect(\"Hi!\").to(equal(\"Hi!\"))"): Example("expect(\"Hi!\") == \"Hi!\""),
             Example("↓expect(12).toNot(equal(10))"): Example("expect(12) != 10"),
             Example("↓expect(value1).to(equal(value2))"): Example("expect(value1) == value2"),
-            Example("↓expect(   value1  ).to(equal(  value2.foo))"): Example("expect(   value1  ) == value2.foo"),
+            Example("↓expect(   value1  ).to(equal(  value2.foo))"): Example(
+                "expect(   value1  ) == value2.foo"
+            ),
             Example("↓expect(value1).to(equal(10))"): Example("expect(value1) == 10"),
             Example("↓expect(10).to(beGreaterThan(8))"): Example("expect(10) > 8"),
             Example("↓expect(10).to(beGreaterThanOrEqualTo(10))"): Example("expect(10) >= 10"),
@@ -64,7 +70,9 @@ struct NimbleOperatorRule: Rule {
             Example("↓expect(success).toNot(beTrue())"): Example("expect(success) != true"),
             Example("↓expect(value).to(beNil())"): Example("expect(value) == nil"),
             Example("↓expect(value).toNot(beNil())"): Example("expect(value) != nil"),
-            Example("expect(10) > 2\n ↓expect(10).to(beGreaterThan(2))"): Example("expect(10) > 2\n expect(10) > 2"),
+            Example("expect(10) > 2\n ↓expect(10).to(beGreaterThan(2))"): Example(
+                "expect(10) > 2\n expect(10) > 2"
+            ),
         ]
     )
 }
@@ -73,6 +81,7 @@ extension NimbleOperatorRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -95,15 +104,18 @@ private extension NimbleOperatorRule {
             guard let expectation = node.expectation(),
                   let predicate = predicatesMapping[expectation.operatorExpr.baseName.text],
                   let operatorExpr = expectation.operatorExpr(for: predicate),
-                  let expectedValueExpr = expectation.expectedValueExpr(for: predicate) else {
+                  let expectedValueExpr = expectation.expectedValueExpr(for: predicate)
+            else {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let elements = ExprListSyntax([
-                expectation.baseExpr.with(\.trailingTrivia, .space),
-                operatorExpr.with(\.trailingTrivia, .space),
-                expectedValueExpr.with(\.trailingTrivia, node.trailingTrivia),
-            ].map(ExprSyntax.init))
+            let elements = ExprListSyntax(
+                [
+                    expectation.baseExpr.with(\.trailingTrivia, .space),
+                    operatorExpr.with(\.trailingTrivia, .space),
+                    expectedValueExpr.with(\.trailingTrivia, node.trailingTrivia),
+                ].map(ExprSyntax.init)
+            )
             return super.visit(SequenceExprSyntax(elements: elements))
         }
     }
@@ -117,12 +129,22 @@ private extension NimbleOperatorRule {
         "beGreaterThanOrEqualTo": (to: ">=", toNot: nil, .withArguments),
         "beLessThan": (to: "<", toNot: nil, .withArguments),
         "beLessThanOrEqualTo": (to: "<=", toNot: nil, .withArguments),
-        "beTrue": (to: "==", toNot: "!=", .nullary(analogueValue: BooleanLiteralExprSyntax(booleanLiteral: true))),
-        "beFalse": (to: "==", toNot: "!=", .nullary(analogueValue: BooleanLiteralExprSyntax(booleanLiteral: false))),
-        "beNil": (to: "==", toNot: "!=", .nullary(analogueValue: NilLiteralExprSyntax(nilKeyword: .keyword(.nil)))),
+        "beTrue": (
+            to: "==", toNot: "!=", .nullary(analogueValue: BooleanLiteralExprSyntax(booleanLiteral: true))
+        ),
+        "beFalse": (
+            to: "==", toNot: "!=",
+            .nullary(analogueValue: BooleanLiteralExprSyntax(booleanLiteral: false))
+        ),
+        "beNil": (
+            to: "==", toNot: "!=",
+            .nullary(analogueValue: NilLiteralExprSyntax(nilKeyword: .keyword(.nil)))
+        ),
     ]
 
-    static func predicateDescription(for node: FunctionCallExprSyntax) -> PredicateDescription? {
+    static func predicateDescription(for node: FunctionCallExprSyntax)
+        -> PredicateDescription?
+    {
         guard let expectation = node.expectation() else {
             return nil
         }
@@ -139,12 +161,15 @@ private extension FunctionCallExprSyntax {
               let baseExpr = memberExpr.base?.as(FunctionCallExprSyntax.self),
               baseExpr.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == "expect",
               let predicateExpr = arguments.first?.expression.as(FunctionCallExprSyntax.self),
-              let operatorExpr = predicateExpr.calledExpression.as(DeclReferenceExprSyntax.self) else {
+              let operatorExpr = predicateExpr.calledExpression.as(DeclReferenceExprSyntax.self)
+        else {
             return nil
         }
 
         let expected = predicateExpr.arguments.first?.expression
-        return Expectation(kind: kind, baseExpr: baseExpr, operatorExpr: operatorExpr, expected: expected)
+        return Expectation(
+            kind: kind, baseExpr: baseExpr, operatorExpr: operatorExpr, expected: expected
+        )
     }
 }
 
@@ -181,7 +206,7 @@ private struct Expectation {
         switch predicate.arity {
         case .withArguments:
             expected
-        case .nullary(let analogueValue):
+        case let .nullary(analogueValue):
             ExprSyntax(analogueValue)
         }
     }

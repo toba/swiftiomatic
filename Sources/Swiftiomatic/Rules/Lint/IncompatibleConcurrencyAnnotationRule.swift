@@ -9,13 +9,13 @@ struct IncompatibleConcurrencyAnnotationRule: Rule {
         name: "Incompatible Concurrency Annotation",
         description: "Declaration should be @preconcurrency to maintain compatibility with Swift 5",
         rationale: """
-            Declarations that use concurrency features such as `@Sendable` closures, `Sendable` generic type
-            arguments or `@MainActor` (or other global actors) should be annotated with `@preconcurrency`
-            to ensure compatibility with Swift 5.
+        Declarations that use concurrency features such as `@Sendable` closures, `Sendable` generic type
+        arguments or `@MainActor` (or other global actors) should be annotated with `@preconcurrency`
+        to ensure compatibility with Swift 5.
 
-            This rule detects public declarations that require `@preconcurrency` and can automatically add
-            the annotation.
-            """,
+        This rule detects public declarations that require `@preconcurrency` and can automatically add
+        the annotation.
+        """,
         kind: .lint,
         minSwiftVersion: .six,
         nonTriggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.nonTriggeringExamples,
@@ -28,6 +28,7 @@ extension IncompatibleConcurrencyAnnotationRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -65,8 +66,10 @@ private extension IncompatibleConcurrencyAnnotationRule {
             collectViolations(node, introducer: node.subscriptKeyword)
         }
 
-        private func collectViolations(_ node: some WithModifiersSyntax & WithAttributesSyntax,
-                                       introducer: TokenSyntax) {
+        private func collectViolations(
+            _ node: some WithModifiersSyntax & WithAttributesSyntax,
+            introducer: TokenSyntax
+        ) {
             if preconcurrencyRequired(for: node, with: configuration.globalActors) {
                 violations.append(at: introducer.positionAfterSkippingLeadingTrivia)
             }
@@ -112,45 +115,54 @@ private extension IncompatibleConcurrencyAnnotationRule {
     }
 }
 
-private func preconcurrencyRequired(for syntax: some WithModifiersSyntax & WithAttributesSyntax,
-                                    with globalActors: Set<String>) -> Bool {
-        guard syntax.isPublic, !syntax.isPreconcurrency else {
-            return false
-        }
+private func preconcurrencyRequired(
+    for syntax: some WithModifiersSyntax & WithAttributesSyntax,
+    with globalActors: Set<String>
+) -> Bool {
+    guard syntax.isPublic, !syntax.isPreconcurrency else {
+        return false
+    }
 
-        // Check attributes for global actors.
-        let attributeNames = syntax.attributes.compactMap { $0.as(AttributeSyntax.self)?.attributeNameText }
-        var required = globalActors.intersection(attributeNames).isNotEmpty
-        if required { return true }
+    // Check attributes for global actors.
+    let attributeNames = syntax.attributes.compactMap {
+        $0.as(AttributeSyntax.self)?.attributeNameText
+    }
+    var required = globalActors.intersection(attributeNames).isNotEmpty
+    if required { return true }
 
-        // Check generic type constraints for `@Sendable`.
-        if let whereClause = syntax.asProtocol((any WithGenericParametersSyntax).self)?.genericWhereClause {
-            required = required || whereClause.requirements.contains { requirement in
-                if case let .conformanceRequirement(conformance) = requirement.requirement {
-                    return conformance.rightType.isSendable
+    // Check generic type constraints for `@Sendable`.
+    if let whereClause = syntax.asProtocol((any WithGenericParametersSyntax).self)?.genericWhereClause {
+        required =
+            required
+                || whereClause.requirements.contains { requirement in
+                    if case let .conformanceRequirement(conformance) = requirement.requirement {
+                        return conformance.rightType.isSendable
+                    }
+                    return false
                 }
-                return false
-            }
-            if required { return true }
-        }
+        if required { return true }
+    }
 
-        // Check parameters for `@Sendable` and global actors.
-        let parameterClause = syntax.as(FunctionDeclSyntax.self)?.signature.parameterClause
+    // Check parameters for `@Sendable` and global actors.
+    let parameterClause =
+        syntax.as(FunctionDeclSyntax.self)?.signature.parameterClause
             ?? syntax.as(InitializerDeclSyntax.self)?.signature.parameterClause
             ?? syntax.as(SubscriptDeclSyntax.self)?.parameterClause
-        let visitor = SendableTypeVisitor(globalActors: globalActors)
-        if let parameterClause {
-            required = required || parameterClause.parameters.contains { visitor.walk(tree: $0, handler: \.found) }
-            if required { return true }
-        }
+    let visitor = SendableTypeVisitor(globalActors: globalActors)
+    if let parameterClause {
+        required =
+            required || parameterClause.parameters.contains { visitor.walk(tree: $0, handler: \.found) }
+        if required { return true }
+    }
 
-        // Check return types for `@Sendable` and global actors.
-        let returnType = syntax.as(FunctionDeclSyntax.self)?.signature.returnClause?.type
+    // Check return types for `@Sendable` and global actors.
+    let returnType =
+        syntax.as(FunctionDeclSyntax.self)?.signature.returnClause?.type
             ?? syntax.as(SubscriptDeclSyntax.self)?.returnClause.type
-        if let returnType {
-            required = required || visitor.walk(tree: returnType, handler: \.found)
-        }
-        return required
+    if let returnType {
+        required = required || visitor.walk(tree: returnType, handler: \.found)
+    }
+    return required
 }
 
 private extension WithAttributesSyntax where Self: WithModifiersSyntax {
@@ -163,7 +175,9 @@ private extension WithAttributesSyntax where Self: WithModifiersSyntax {
     }
 
     var withPreconcurrencyPrepended: Self {
-        let leadingWhitespace = Trivia(pieces: leadingTrivia.reversed().prefix(while: \.isSpaceOrTab).reversed())
+        let leadingWhitespace = Trivia(
+            pieces: leadingTrivia.reversed().prefix(while: \.isSpaceOrTab).reversed()
+        )
         let attribute = AttributeListSyntax.Element.attribute("@preconcurrency")
             .with(\.leadingTrivia, leadingTrivia)
             .with(\.trailingTrivia, .newlines(1))
@@ -199,12 +213,14 @@ private final class SendableTypeVisitor: SyntaxVisitor {
         if found {
             return
         }
-        found = found || node.attributes.contains {
-            if let attribute = $0.as(AttributeSyntax.self) {
-                let name = attribute.attributeNameText
-                return name == "Sendable" || globalActors.contains(name)
-            }
-            return false
-        }
+        found =
+            found
+                || node.attributes.contains {
+                    if let attribute = $0.as(AttributeSyntax.self) {
+                        let name = attribute.attributeNameText
+                        return name == "Sendable" || globalActors.contains(name)
+                    }
+                    return false
+                }
     }
 }

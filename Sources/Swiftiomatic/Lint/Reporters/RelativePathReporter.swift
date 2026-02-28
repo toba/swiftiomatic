@@ -15,7 +15,7 @@ struct RelativePathReporter: Reporter {
     /// - parameter violation: The violation to report.
     ///
     /// - returns: The report for a single violation.
-    internal static func generateForSingleViolation(_ violation: StyleViolation) -> String {
+    static func generateForSingleViolation(_ violation: StyleViolation) -> String {
         // {relative_path_to_file}{:line}{:character}: {error,warning}: {content}
 
         [

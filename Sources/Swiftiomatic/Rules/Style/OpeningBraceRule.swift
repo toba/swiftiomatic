@@ -9,13 +9,13 @@ struct OpeningBraceRule: Rule {
         identifier: "opening_brace",
         name: "Opening Brace Spacing",
         description: """
-            The correct positioning of braces that introduce a block of code or member list is highly controversial. \
-            No matter which style is preferred, consistency is key. Apart from different tastes, \
-            the positioning of braces can also have a significant impact on the readability of the code, \
-            especially for visually impaired developers. This rule ensures that braces are preceded \
-            by a single space and on the same line as the declaration. Comments between the declaration and the \
-            opening brace are respected. Check out the `contrasted_opening_brace` rule for a different style.
-            """,
+        The correct positioning of braces that introduce a block of code or member list is highly controversial. \
+        No matter which style is preferred, consistency is key. Apart from different tastes, \
+        the positioning of braces can also have a significant impact on the readability of the code, \
+        especially for visually impaired developers. This rule ensures that braces are preceded \
+        by a single space and on the same line as the declaration. Comments between the declaration and the \
+        opening brace are respected. Check out the `contrasted_opening_brace` rule for a different style.
+        """,
         kind: .style,
         nonTriggeringExamples: OpeningBraceRuleExamples.nonTriggeringExamples,
         triggeringExamples: OpeningBraceRuleExamples.triggeringExamples,
@@ -35,7 +35,8 @@ private extension OpeningBraceRule {
 
         override func visitPost(_ node: ActorDeclSyntax) {
             if configuration.ignoreMultilineTypeHeaders,
-               hasMultilinePredecessors(node.memberBlock, keyword: node.actorKeyword) {
+               hasMultilinePredecessors(node.memberBlock, keyword: node.actorKeyword)
+            {
                 return
             }
 
@@ -44,7 +45,8 @@ private extension OpeningBraceRule {
 
         override func visitPost(_ node: ClassDeclSyntax) {
             if configuration.ignoreMultilineTypeHeaders,
-               hasMultilinePredecessors(node.memberBlock, keyword: node.classKeyword) {
+               hasMultilinePredecessors(node.memberBlock, keyword: node.classKeyword)
+            {
                 return
             }
 
@@ -53,7 +55,8 @@ private extension OpeningBraceRule {
 
         override func visitPost(_ node: EnumDeclSyntax) {
             if configuration.ignoreMultilineTypeHeaders,
-               hasMultilinePredecessors(node.memberBlock, keyword: node.enumKeyword) {
+               hasMultilinePredecessors(node.memberBlock, keyword: node.enumKeyword)
+            {
                 return
             }
 
@@ -62,7 +65,8 @@ private extension OpeningBraceRule {
 
         override func visitPost(_ node: ExtensionDeclSyntax) {
             if configuration.ignoreMultilineTypeHeaders,
-               hasMultilinePredecessors(node.memberBlock, keyword: node.extensionKeyword) {
+               hasMultilinePredecessors(node.memberBlock, keyword: node.extensionKeyword)
+            {
                 return
             }
 
@@ -71,7 +75,8 @@ private extension OpeningBraceRule {
 
         override func visitPost(_ node: ProtocolDeclSyntax) {
             if configuration.ignoreMultilineTypeHeaders,
-               hasMultilinePredecessors(node.memberBlock, keyword: node.protocolKeyword) {
+               hasMultilinePredecessors(node.memberBlock, keyword: node.protocolKeyword)
+            {
                 return
             }
 
@@ -80,7 +85,8 @@ private extension OpeningBraceRule {
 
         override func visitPost(_ node: StructDeclSyntax) {
             if configuration.ignoreMultilineTypeHeaders,
-               hasMultilinePredecessors(node.memberBlock, keyword: node.structKeyword) {
+               hasMultilinePredecessors(node.memberBlock, keyword: node.structKeyword)
+            {
                 return
             }
 
@@ -91,7 +97,8 @@ private extension OpeningBraceRule {
 
         override func visitPost(_ node: ForStmtSyntax) {
             if configuration.ignoreMultilineStatementConditions,
-               hasMultilinePredecessors(node.body, keyword: node.forKeyword) {
+               hasMultilinePredecessors(node.body, keyword: node.forKeyword)
+            {
                 return
             }
 
@@ -100,7 +107,8 @@ private extension OpeningBraceRule {
 
         override func visitPost(_ node: IfExprSyntax) {
             if configuration.ignoreMultilineStatementConditions,
-               hasMultilinePredecessors(node.body, keyword: node.ifKeyword) {
+               hasMultilinePredecessors(node.body, keyword: node.ifKeyword)
+            {
                 return
             }
 
@@ -109,7 +117,8 @@ private extension OpeningBraceRule {
 
         override func visitPost(_ node: WhileStmtSyntax) {
             if configuration.ignoreMultilineStatementConditions,
-               hasMultilinePredecessors(node.body, keyword: node.whileKeyword) {
+               hasMultilinePredecessors(node.body, keyword: node.whileKeyword)
+            {
                 return
             }
 
@@ -121,7 +130,8 @@ private extension OpeningBraceRule {
         override func visitPost(_ node: FunctionDeclSyntax) {
             if let body = node.body,
                configuration.shouldIgnoreMultilineFunctionSignatures,
-               hasMultilinePredecessors(body, keyword: node.funcKeyword) {
+               hasMultilinePredecessors(body, keyword: node.funcKeyword)
+            {
                 return
             }
 
@@ -131,7 +141,8 @@ private extension OpeningBraceRule {
         override func visitPost(_ node: InitializerDeclSyntax) {
             if let body = node.body,
                configuration.shouldIgnoreMultilineFunctionSignatures,
-               hasMultilinePredecessors(body, keyword: node.initKeyword) {
+               hasMultilinePredecessors(body, keyword: node.initKeyword)
+            {
                 return
             }
 
@@ -159,16 +170,18 @@ private extension OpeningBraceRule {
                     ReasonedRuleViolation(
                         position: bracedItem.openingPosition,
                         reason: """
-                              Opening braces should be preceded by a single space and on the same line \
-                              as the declaration
-                              """,
+                        Opening braces should be preceded by a single space and on the same line \
+                        as the declaration
+                        """,
                         correction: correction
                     )
                 )
             }
         }
 
-        private func violationCorrection(_ node: some BracedSyntax) -> ReasonedRuleViolation.ViolationCorrection? {
+        private func violationCorrection(_ node: some BracedSyntax) -> ReasonedRuleViolation
+            .ViolationCorrection?
+        {
             let leftBrace = node.leftBrace
             guard let previousToken = leftBrace.previousToken(viewMode: .sourceAccurate) else {
                 return nil
@@ -178,7 +191,9 @@ private extension OpeningBraceRule {
             let previousLocation = previousToken.endLocation(converter: locationConverter)
             let leftBraceLocation = leftBrace.startLocation(converter: locationConverter)
             if previousLocation.line != leftBraceLocation.line {
-                let trailingCommentText = previousToken.trailingTrivia.description.trimmingCharacters(in: .whitespaces)
+                let trailingCommentText = previousToken.trailingTrivia.description.trimmingCharacters(
+                    in: .whitespaces
+                )
                 return .init(
                     start: previousToken.endPositionBeforeTrailingTrivia,
                     end: openingPosition.advanced(by: trailingCommentText.isNotEmpty ? 1 : 0),

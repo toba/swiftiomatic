@@ -14,13 +14,17 @@ struct TrailingWhitespaceRule: Rule {
             Example("let name: String\n"), Example("//\n"), Example("// \n"),
             Example("let name: String //\n"), Example("let name: String // \n"),
             Example("let stringWithSpace = \"hello \"\n"),
-            Example("let multiline = \"\"\"\n    line with spaces    \n    \"\"\"   \n",
-                    configuration: ["ignores_literals": true]),
+            Example(
+                "let multiline = \"\"\"\n    line with spaces    \n    \"\"\"   \n",
+                configuration: ["ignores_literals": true]
+            ),
         ],
         triggeringExamples: [
             Example("let name: String↓ \n"), Example("/* */ let name: String↓ \n"),
-            Example("let codeWithSpace = 123↓    \n", configuration: ["ignores_literals": true],
-                    testWrappingInComment: false),
+            Example(
+                "let codeWithSpace = 123↓    \n", configuration: ["ignores_literals": true],
+                testWrappingInComment: false
+            ),
         ],
         corrections: [
             Example("let name: String↓ \n"): Example("let name: String\n"),
@@ -41,7 +45,7 @@ private extension TrailingWhitespaceRule {
         private var linesFullyCoveredByBlockComments = Set<Int>()
         private var linesEndingWithComment = Set<Int>()
 
-        // Pre-computed string literal information for performance
+        /// Pre-computed string literal information for performance
         private var stringLiteralLines = Set<Int>()
 
         override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
@@ -98,10 +102,12 @@ private extension TrailingWhitespaceRule {
 
                 let correctionEnd = lineStartPos.advanced(by: line.utf8.count)
 
-                violations.append(ReasonedRuleViolation(
-                    position: violationPosition,
-                    correction: .init(start: violationPosition, end: correctionEnd, replacement: "")
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: violationPosition,
+                        correction: .init(start: violationPosition, end: correctionEnd, replacement: "")
+                    )
+                )
             }
             return .skipChildren
         }
@@ -124,7 +130,9 @@ private extension TrailingWhitespaceRule {
         }
 
         /// Collects ranges of line comments organized by line number
-        private func collectLineCommentRanges(from node: SourceFileSyntax) -> [Int: [Range<AbsolutePosition>]] {
+        private func collectLineCommentRanges(from node: SourceFileSyntax) -> [Int: [Range<
+            AbsolutePosition
+        >]] {
             var lineCommentRanges: [Int: [Range<AbsolutePosition>]] = [:]
 
             for token in node.tokens(viewMode: .sourceAccurate) {
@@ -136,7 +144,7 @@ private extension TrailingWhitespaceRule {
 
                     if piece.isComment, !piece.isBlockComment {
                         let pieceStartLine = locationConverter.location(for: pieceStart).line
-                        lineCommentRanges[pieceStartLine, default: []].append(pieceStart..<currentPos)
+                        lineCommentRanges[pieceStartLine, default: []].append(pieceStart ..< currentPos)
                     }
                 }
 
@@ -148,7 +156,7 @@ private extension TrailingWhitespaceRule {
 
                     if piece.isComment, !piece.isBlockComment {
                         let pieceStartLine = locationConverter.location(for: pieceStart).line
-                        lineCommentRanges[pieceStartLine, default: []].append(pieceStart..<currentPos)
+                        lineCommentRanges[pieceStartLine, default: []].append(pieceStart ..< currentPos)
                     }
                 }
             }
@@ -157,8 +165,10 @@ private extension TrailingWhitespaceRule {
         }
 
         /// Determines which lines end with comments based on line comment ranges
-        private func determineLineEndingComments(using lineCommentRanges: [Int: [Range<AbsolutePosition>]]) {
-            for lineNumber in 1...file.lines.count {
+        private func determineLineEndingComments(
+            using lineCommentRanges: [Int: [Range<AbsolutePosition>]]
+        ) {
+            for lineNumber in 1 ... file.lines.count {
                 let line = file.lines[lineNumber - 1].content
 
                 // Skip if no trailing whitespace
@@ -185,7 +195,9 @@ private extension TrailingWhitespaceRule {
             from line: String,
             removing trailingWhitespaceInfo: TrailingWhitespaceInfo
         ) -> String {
-            if trailingWhitespaceInfo.characterCount > 0, line.count >= trailingWhitespaceInfo.characterCount {
+            if trailingWhitespaceInfo.characterCount > 0,
+               line.count >= trailingWhitespaceInfo.characterCount
+            {
                 return String(line.prefix(line.count - trailingWhitespaceInfo.characterCount))
             }
             return ""
@@ -198,7 +210,8 @@ private extension TrailingWhitespaceRule {
             lineCommentRanges: [Int: [Range<AbsolutePosition>]]
         ) -> Bool {
             guard !effectiveContent.isEmpty,
-                  let lastNonWhitespaceIdx = effectiveContent.lastIndex(where: { !$0.isWhitespace }) else {
+                  let lastNonWhitespaceIdx = effectiveContent.lastIndex(where: { !$0.isWhitespace })
+            else {
                 return false
             }
 
@@ -272,7 +285,7 @@ private extension TrailingWhitespaceRule {
                 endLine -= 1
             }
 
-            for lineNum in startLine...endLine {
+            for lineNum in startLine ... endLine {
                 if lineNum <= 0 || lineNum > file.lines.count { continue }
 
                 let lineInfo = file.lines[lineNum - 1]
@@ -281,7 +294,8 @@ private extension TrailingWhitespaceRule {
 
                 // Check if the line's non-whitespace content is fully within the block comment
                 if let firstNonWhitespaceIdx = lineContent.firstIndex(where: { !$0.isWhitespace }),
-                   let lastNonWhitespaceIdx = lineContent.lastIndex(where: { !$0.isWhitespace }) {
+                   let lastNonWhitespaceIdx = lineContent.lastIndex(where: { !$0.isWhitespace })
+                {
                     // Line has non-whitespace content
                     // Calculate byte offsets (not character offsets) for AbsolutePosition
                     let contentBeforeFirstNonWS = lineContent.prefix(upTo: firstNonWhitespaceIdx)
@@ -308,7 +322,7 @@ private extension TrailingWhitespaceRule {
     }
 }
 
-// Helper struct to return both character count and byte length for whitespace
+/// Helper struct to return both character count and byte length for whitespace
 private struct TrailingWhitespaceInfo {
     let characterCount: Int
     let byteLength: Int
@@ -327,7 +341,8 @@ private extension String {
                 break
             }
         }
-        return charCount > 0 ? TrailingWhitespaceInfo(characterCount: charCount, byteLength: byteLen) : nil
+        return charCount > 0
+            ? TrailingWhitespaceInfo(characterCount: charCount, byteLength: byteLen) : nil
     }
 
     func trimmingTrailingCharacters(in characterSet: CharacterSet) -> String {

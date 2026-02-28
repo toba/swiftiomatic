@@ -17,15 +17,19 @@ extension FormatRule {
         size (the number of digits in each group) and a threshold (the minimum number of
         digits in a number before grouping is applied).
         """,
-        options: ["decimal-grouping", "binary-grouping", "octal-grouping", "hex-grouping",
-                  "fraction-grouping", "exponent-grouping", "hex-literal-case", "exponent-case"]
+        options: [
+            "decimal-grouping", "binary-grouping", "octal-grouping", "hex-grouping",
+            "fraction-grouping", "exponent-grouping", "hex-literal-case", "exponent-case",
+        ]
     ) { formatter in
         formatter.forEachToken { i, token in
             guard case let .number(number, type) = token else {
                 return
             }
             let grouping: Grouping
-            let prefix: String, exponentSeparator: String, parts: [String]
+            let prefix: String
+            let exponentSeparator: String
+            let parts: [String]
             switch type {
             case .integer, .decimal:
                 grouping = formatter.options.decimalGrouping
@@ -46,11 +50,15 @@ extension FormatRule {
                 grouping = formatter.options.hexGrouping
                 prefix = "0x"
                 exponentSeparator = formatter.options.uppercaseExponent ? "P" : "p"
-                parts = number[prefix.endIndex...].components(separatedBy: CharacterSet(charactersIn: ".pP")).map {
+                parts = number[prefix.endIndex...].components(
+                    separatedBy: CharacterSet(charactersIn: ".pP")
+                ).map {
                     formatter.options.uppercaseHex ? $0.uppercased() : $0.lowercased()
                 }
             }
-            var main = parts[0], fraction = "", exponent = ""
+            var main = parts[0]
+            var fraction = ""
+            var exponent = ""
             switch parts.count {
             case 2 where number.contains("."):
                 fraction = parts[1]
@@ -101,7 +109,8 @@ extension Formatter {
         case .ignore:
             return
         }
-        guard case let .group(group, threshold) = grouping, group > 0, number.count >= threshold else {
+        guard case let .group(group, threshold) = grouping, group > 0, number.count >= threshold
+        else {
             return
         }
         var output = Substring()

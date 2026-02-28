@@ -38,7 +38,8 @@ extension FormatRule {
                 formatter.insert(.space(" "), at: i)
             case .space:
                 switch formatter.token(at: i + 1) {
-                case .startOfScope("(")? where !formatter.isInClosureArguments(at: i + 1), .startOfScope("[")?:
+                case .startOfScope("(") where !formatter.isInClosureArguments(at: i + 1),
+                     .startOfScope("["):
                     formatter.removeToken(at: i)
                 default:
                     break

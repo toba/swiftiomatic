@@ -13,7 +13,10 @@ extension FormatRule {
         help: "Organize declarations within class, struct, enum, actor, and extension bodies.",
         runOnceOnly: true,
         disabledByDefault: true,
-        orderAfter: [.extensionAccessControl, .redundantFileprivate, .redundantPublic, .validateTestCases, .redundantMemberwiseInit],
+        orderAfter: [
+            .extensionAccessControl, .redundantFileprivate, .redundantPublic, .validateTestCases,
+            .redundantMemberwiseInit,
+        ],
         options: [
             "category-mark", "mark-categories", "before-marks",
             "lifecycle", "organize-types", "struct-threshold", "class-threshold",
@@ -176,10 +179,12 @@ extension Formatter {
         }
 
         // Sort the declarations based on their category and type
-        guard let sortedTypeBody = sortCategorizedDeclarations(
-            categorizedDeclarations,
-            in: typeDeclaration
-        ) else { return }
+        guard
+            let sortedTypeBody = sortCategorizedDeclarations(
+                categorizedDeclarations,
+                in: typeDeclaration
+            )
+        else { return }
 
         typeDeclaration.updateBody(to: sortedTypeBody.map(\.declaration))
 
@@ -202,7 +207,9 @@ extension Formatter {
         _ categorizedDeclarations: [CategorizedDeclaration],
         in typeDeclaration: TypeDeclaration
     ) -> [CategorizedDeclaration]? {
-        let sortAlphabeticallyWithinSubcategories = shouldSortAlphabeticallyWithinSubcategories(in: typeDeclaration)
+        let sortAlphabeticallyWithinSubcategories = shouldSortAlphabeticallyWithinSubcategories(
+            in: typeDeclaration
+        )
 
         var sortedDeclarations = sortDeclarations(
             categorizedDeclarations,
@@ -215,18 +222,26 @@ extension Formatter {
            !sortAlphabeticallyWithinSubcategories,
            !typeDeclaration.body.contains(where: { $0.keyword == "init" })
         {
-            let requiredSubordering = categorizedDeclarations.filter { affectsSynthesizedMemberwiseInitializerParameterOrdering($0.declaration) }
+            let requiredSubordering = categorizedDeclarations.filter {
+                affectsSynthesizedMemberwiseInitializerParameterOrdering($0.declaration)
+            }
 
             if !requiredSubordering.isEmpty {
                 for index in requiredSubordering.indices.dropFirst() {
                     let declarationToReorder = requiredSubordering[index]
-                    let currentIndex = sortedDeclarations.firstIndex(where: { $0.declaration === declarationToReorder.declaration })!
+                    let currentIndex = sortedDeclarations.firstIndex(where: {
+                        $0.declaration === declarationToReorder.declaration
+                    })!
                     let requiredPreviousDeclaration = requiredSubordering[index - 1]
-                    let currentIndexOfPreviousDeclaration = sortedDeclarations.firstIndex(where: { $0.declaration === requiredPreviousDeclaration.declaration })!
+                    let currentIndexOfPreviousDeclaration = sortedDeclarations.firstIndex(where: {
+                        $0.declaration === requiredPreviousDeclaration.declaration
+                    })!
 
                     // If this declaration is ordered before the next required declaration, move it to be after it. This preserves the required ordering.
                     if currentIndex < currentIndexOfPreviousDeclaration {
-                        sortedDeclarations.insert(declarationToReorder, at: currentIndexOfPreviousDeclaration + 1)
+                        sortedDeclarations.insert(
+                            declarationToReorder, at: currentIndexOfPreviousDeclaration + 1
+                        )
                         sortedDeclarations.remove(at: currentIndex)
                     }
                 }
@@ -280,11 +295,14 @@ extension Formatter {
             .map(\.element)
     }
 
-    func customDeclarationSortOrderList(from categorizedDeclarations: [CategorizedDeclaration]) -> [String] {
+    func customDeclarationSortOrderList(from categorizedDeclarations: [CategorizedDeclaration])
+        -> [String]
+    {
         guard options.swiftUIPropertiesSortMode == .firstAppearanceSort else { return [] }
-        return categorizedDeclarations
-            .compactMap(\.declaration.swiftUIPropertyWrapper)
-            .firstElementAppearanceOrder()
+        return
+            categorizedDeclarations
+                .compactMap(\.declaration.swiftUIPropertyWrapper)
+                .firstElementAppearanceOrder()
     }
 
     /// Whether or not type members should additionally be sorted alphabetically
@@ -366,17 +384,22 @@ extension Formatter {
         _ lhs: [CategorizedDeclaration],
         _ rhs: [CategorizedDeclaration]
     ) -> Bool {
-        let lhsPropertiesOrder = lhs
-            .filter { affectsSynthesizedMemberwiseInitializerParameterOrdering($0.declaration) }
-            .map(\.declaration)
+        let lhsPropertiesOrder =
+            lhs
+                .filter { affectsSynthesizedMemberwiseInitializerParameterOrdering($0.declaration) }
+                .map(\.declaration)
 
-        let rhsPropertiesOrder = rhs
-            .filter { affectsSynthesizedMemberwiseInitializerParameterOrdering($0.declaration) }
-            .map(\.declaration)
+        let rhsPropertiesOrder =
+            rhs
+                .filter { affectsSynthesizedMemberwiseInitializerParameterOrdering($0.declaration) }
+                .map(\.declaration)
 
-        return lhsPropertiesOrder.elementsEqual(rhsPropertiesOrder, by: { lhs, rhs in
-            lhs === rhs
-        })
+        return lhsPropertiesOrder.elementsEqual(
+            rhsPropertiesOrder,
+            by: { lhs, rhs in
+                lhs === rhs
+            }
+        )
     }
 
     /// Adjust the ranges of the type's body declarations so that any existing MARK comment
@@ -386,9 +409,13 @@ extension Formatter {
         for (index, declaration) in typeDeclaration.body.enumerated() {
             guard index != 0 else { continue }
 
-            let matchingComments = matchingCategorySeparatorComments(in: declaration.leadingCommentRange, order: order)
+            let matchingComments = matchingCategorySeparatorComments(
+                in: declaration.leadingCommentRange, order: order
+            )
             guard let markCommentRange = matchingComments.first,
-                  let newlineBeforeMarkComment = self.index(of: .linebreak, before: markCommentRange.lowerBound)
+                  let newlineBeforeMarkComment = self.index(
+                      of: .linebreak, before: markCommentRange.lowerBound
+                  )
             else { continue }
 
             let previousDeclaration = typeDeclaration.body[index - 1]
@@ -404,7 +431,9 @@ extension Formatter {
         in typeDeclaration: TypeDeclaration,
         order: ParsedOrder
     ) {
-        let typeExceedsThresholdToAddMarks = typeLengthExceedsMarkThreshold(at: typeDeclaration.keywordIndex)
+        let typeExceedsThresholdToAddMarks = typeLengthExceedsMarkThreshold(
+            at: typeDeclaration.keywordIndex
+        )
 
         let numberOfCategories: Int = {
             switch options.organizationMode {
@@ -427,14 +456,19 @@ extension Formatter {
             if options.markCategories,
                typeExceedsThresholdToAddMarks,
                numberOfCategories > 1,
-               let markCommentBody = category.markCommentBody(from: options.categoryMarkComment, with: options.organizationMode),
+               let markCommentBody = category.markCommentBody(
+                   from: options.categoryMarkComment, with: options.organizationMode
+               ),
                category.shouldBeMarked(in: Set(formattedCategories), for: options.organizationMode)
             {
                 formattedCategories.append(category)
 
                 let indentation = currentIndentForLine(at: declaration.range.lowerBound)
                 let markDeclaration = tokenize("\(indentation)// \(markCommentBody)")
-                let eligibleCommentRange = declaration.range.lowerBound ..< self.index(of: .nonSpaceOrCommentOrLinebreak, after: declaration.range.lowerBound - 1)!
+                let eligibleCommentRange =
+                    declaration.range.lowerBound ..< self.index(
+                        of: .nonSpaceOrCommentOrLinebreak, after: declaration.range.lowerBound - 1
+                    )!
 
                 // Remove any comments other than the expected mark comment if present
                 removeExistingCategorySeparators(
@@ -446,15 +480,20 @@ extension Formatter {
                     }
                 )
 
-                let matchingComments = singleLineComments(in: eligibleCommentRange, matching: { commentBody in
-                    commentBody == markCommentBody
-                })
+                let matchingComments = singleLineComments(
+                    in: eligibleCommentRange,
+                    matching: { commentBody in
+                        commentBody == markCommentBody
+                    }
+                )
 
                 if matchingComments.count == 1, let matchingComment = matchingComments.first {
                     // The declaration already has the expected mark comment.
                     // However, we need to make sure it also has a trailing blank line.
                     if options.lineAfterMarks,
-                       let tokenAfterComment = self.index(of: .nonSpaceOrComment, after: matchingComment.upperBound),
+                       let tokenAfterComment = self.index(
+                           of: .nonSpaceOrComment, after: matchingComment.upperBound
+                       ),
                        tokens[tokenAfterComment].isLinebreak,
                        let nextToken = self.index(of: .nonSpaceOrComment, after: tokenAfterComment),
                        !tokens[nextToken].isLinebreak
@@ -517,8 +556,10 @@ extension Formatter {
         order: ParsedOrder,
         preserving shouldPreserveComment: (_ commentBody: String) -> Bool = { _ in false }
     ) {
-        var matchingComments = matchingCategorySeparatorComments(in: declaration.leadingCommentRange, order: order)
-            .map { $0.autoUpdating(in: self) }
+        var matchingComments = matchingCategorySeparatorComments(
+            in: declaration.leadingCommentRange, order: order
+        )
+        .map { $0.autoUpdating(in: self) }
         var preservedComment = false
 
         while !matchingComments.isEmpty {
@@ -553,7 +594,8 @@ extension Formatter {
             // Don't do this is we preserved a previous comment, since this following comment is no longer the first one.
             if let previousDeclaration, startOfCommentLine != 0, !preservedComment {
                 // Remove the tokens before the category separator from this declaration...
-                let rangeBeforeComment = min(startOfCommentLine, declaration.range.lowerBound) ..< startOfCommentLine
+                let rangeBeforeComment =
+                    min(startOfCommentLine, declaration.range.lowerBound) ..< startOfCommentLine
                 let tokensBeforeCommentLine = Array(tokens[rangeBeforeComment])
                 removeTokens(in: rangeBeforeComment)
 
@@ -565,48 +607,65 @@ extension Formatter {
 
     /// The set of category separate comments like `// MARK: - Public` in the given range.
     /// Looks for approximate matches using edit distance, not exact matches.
-    func matchingCategorySeparatorComments(in range: Range<Int>, order: ParsedOrder) -> [ClosedRange<Int>] {
+    func matchingCategorySeparatorComments(in range: Range<Int>, order: ParsedOrder) -> [ClosedRange<
+        Int
+    >] {
         switch options.typeBodyMarks {
         case .remove:
-            return singleLineComments(in: range, matching: { commentBody in
-                commentBody.uppercased().trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("MARK:")
-            })
+            return singleLineComments(
+                in: range,
+                matching: { commentBody in
+                    commentBody.uppercased().trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix(
+                        "MARK:"
+                    )
+                }
+            )
 
         case .preserve:
             // Current amount of variants to pair visibility-type is over 300,
             // so we take only categories that could provide typemark that we want to erase
-            let potentialCategorySeparatorCommentBodies = (
-                VisibilityCategory.allCases.map { DeclarationCategory(visibility: $0, type: .classMethod, order: 0) }
-                    + DeclarationType.allCases.map { DeclarationCategory(visibility: .visibility(.open), type: $0, order: 0) }
-                    + DeclarationType.allCases.map { DeclarationCategory(visibility: .explicit($0), type: .classMethod, order: 0) }
-                    + order.filter { $0.comment != nil }
-            ).flatMap {
-                Array(Set([
-                    // The user's specific category separator template
-                    $0.markCommentBody(from: options.categoryMarkComment, with: options.organizationMode),
-                    // Always look for MARKs even if the user is using a different template
-                    $0.markCommentBody(from: "MARK: %c", with: options.organizationMode),
-                ]))
-            }.compactMap { $0 }
-
-            return singleLineComments(in: range, matching: { commentBody in
-                // Check if this comment matches an expected category separator comment
-                for potentialSeparatorCommentBody in potentialCategorySeparatorCommentBodies {
-                    let existingComment = "// \(commentBody)".lowercased()
-                    let potentialMatch = "// \(potentialSeparatorCommentBody)".lowercased()
-
-                    // Check the edit distance of this existing comment with the potential
-                    // valid category separators for this category. If they are similar or identical,
-                    // we'll want to replace the existing comment with the correct comment.
-                    let minimumEditDistance = Int(0.2 * Float(existingComment.count))
-
-                    if existingComment.editDistance(from: potentialMatch) <= minimumEditDistance {
-                        return true
-                    }
+            let potentialCategorySeparatorCommentBodies =
+                (VisibilityCategory.allCases.map {
+                    DeclarationCategory(visibility: $0, type: .classMethod, order: 0)
                 }
+                    + DeclarationType.allCases.map {
+                        DeclarationCategory(visibility: .visibility(.open), type: $0, order: 0)
+                    }
+                    + DeclarationType.allCases.map {
+                        DeclarationCategory(visibility: .explicit($0), type: .classMethod, order: 0)
+                    }
+                    + order.filter { $0.comment != nil }).flatMap {
+                    Array(
+                        Set([
+                            // The user's specific category separator template
+                            $0.markCommentBody(from: options.categoryMarkComment, with: options.organizationMode),
+                            // Always look for MARKs even if the user is using a different template
+                            $0.markCommentBody(from: "MARK: %c", with: options.organizationMode),
+                        ])
+                    )
+                }.compactMap(\.self)
 
-                return false
-            })
+            return singleLineComments(
+                in: range,
+                matching: { commentBody in
+                    // Check if this comment matches an expected category separator comment
+                    for potentialSeparatorCommentBody in potentialCategorySeparatorCommentBodies {
+                        let existingComment = "// \(commentBody)".lowercased()
+                        let potentialMatch = "// \(potentialSeparatorCommentBody)".lowercased()
+
+                        // Check the edit distance of this existing comment with the potential
+                        // valid category separators for this category. If they are similar or identical,
+                        // we'll want to replace the existing comment with the correct comment.
+                        let minimumEditDistance = Int(0.2 * Float(existingComment.count))
+
+                        if existingComment.editDistance(from: potentialMatch) <= minimumEditDistance {
+                            return true
+                        }
+                    }
+
+                    return false
+                }
+            )
         }
     }
 
@@ -632,8 +691,10 @@ extension Formatter {
 
             // The last declaration in the original ordering might have a
             // trailing blank line which is no longer necessary.
-            if let declarationIndex = typeDeclaration.body.firstIndex(where: { $0 === lastDeclarationInOriginalOrder }),
-               declarationIndex != typeDeclaration.body.indices.last
+            if let declarationIndex = typeDeclaration.body.firstIndex(where: {
+                $0 === lastDeclarationInOriginalOrder
+            }),
+                declarationIndex != typeDeclaration.body.indices.last
             {
                 let followingDeclaration = typeDeclaration.body[declarationIndex + 1]
 
@@ -719,14 +780,18 @@ struct DeclarationCategory: Equatable, Hashable {
 
     /// Whether or not a mark comment should be added for this category,
     /// given the set of existing categories with existing mark comments
-    func shouldBeMarked(in categoriesWithMarkComment: Set<DeclarationCategory>, for mode: DeclarationOrganizationMode) -> Bool {
+    func shouldBeMarked(
+        in categoriesWithMarkComment: Set<DeclarationCategory>, for mode: DeclarationOrganizationMode
+    ) -> Bool {
         guard type != .beforeMarks else {
             return false
         }
 
         switch mode {
         case .type:
-            return !categoriesWithMarkComment.contains(where: { $0.type == type || $0.visibility == .explicit(type) })
+            return !categoriesWithMarkComment.contains(where: {
+                $0.type == type || $0.visibility == .explicit(type)
+            })
         case .visibility:
             return !categoriesWithMarkComment.contains(where: { $0.visibility == visibility })
         }
@@ -825,19 +890,24 @@ extension Formatter {
         typealias ParsedVisibilityMarks = [VisibilityCategory: String]
         typealias ParsedTypeMarks = [DeclarationType: String]
 
-        let VisibilityCategorys = options.visibilityOrder?.compactMap { VisibilityCategory(rawValue: $0) }
-            ?? VisibilityCategory.defaultOrdering(for: mode)
+        let VisibilityCategorys =
+            options.visibilityOrder?.compactMap { VisibilityCategory(rawValue: $0) }
+                ?? VisibilityCategory.defaultOrdering(for: mode)
 
-        let declarationTypes = options.typeOrder?.compactMap { DeclarationType(rawValue: $0) }
-            ?? DeclarationType.defaultOrdering(for: mode)
+        let declarationTypes =
+            options.typeOrder?.compactMap { DeclarationType(rawValue: $0) }
+                ?? DeclarationType.defaultOrdering(for: mode)
 
         // Validate that every essential declaration type is included in either `declarationTypes` or `VisibilityCategorys`.
         // Otherwise, we will just crash later when we find a declaration with this type.
         for essentialDeclarationType in DeclarationType.essentialCases {
-            guard declarationTypes.contains(essentialDeclarationType)
+            guard
+                declarationTypes.contains(essentialDeclarationType)
                 || VisibilityCategorys.contains(.explicit(essentialDeclarationType))
             else {
-                Swift.fatalError("\(essentialDeclarationType.rawValue) must be included in either --type-order or --visibility-order")
+                Swift.fatalError(
+                    "\(essentialDeclarationType.rawValue) must be included in either --type-order or --visibility-order"
+                )
             }
         }
 
@@ -849,7 +919,8 @@ extension Formatter {
 
         switch mode {
         case .visibility:
-            let categoryPairings = VisibilityCategorys.flatMap { VisibilityCategory -> [(VisibilityCategory, DeclarationType)] in
+            let categoryPairings = VisibilityCategorys.flatMap {
+                VisibilityCategory -> [(VisibilityCategory, DeclarationType)] in
                 switch VisibilityCategory {
                 case let .visibility(visibility):
                     // Each visibility / access control level pairs with all of the declaration types
@@ -875,7 +946,8 @@ extension Formatter {
             }
 
         case .type:
-            let categoryPairings = declarationTypes.flatMap { declarationType -> [(VisibilityCategory, DeclarationType)] in
+            let categoryPairings = declarationTypes.flatMap {
+                declarationType -> [(VisibilityCategory, DeclarationType)] in
                 VisibilityCategorys.map { VisibilityCategory in
                     (VisibilityCategory, declarationType)
                 }
@@ -898,12 +970,15 @@ extension Formatter {
         for visibility: VisibilityCategory,
         with type: DeclarationType
     ) -> DeclarationCategory {
-        guard let category = order.first(where: { entry in
-            entry.visibility == visibility && entry.type == type
-                || (entry.visibility == .explicit(type) && entry.type == type)
-        })
+        guard
+            let category = order.first(where: { entry in
+                entry.visibility == visibility && entry.type == type
+                    || (entry.visibility == .explicit(type) && entry.type == type)
+            })
         else {
-            Swift.fatalError("Cannot determine ordering for declaration with visibility=\(visibility.rawValue) and type=\(type.rawValue).")
+            Swift.fatalError(
+                "Cannot determine ordering for declaration with visibility=\(visibility.rawValue) and type=\(type.rawValue)."
+            )
         }
 
         return category
@@ -923,7 +998,7 @@ extension Formatter {
 
             return (concreteType, String(mark))
         }
-        .compactMap { $0 }
+        .compactMap(\.self)
         .reduce(into: [:]) { dictionary, option in
             dictionary[option.0] = option.1
         }
@@ -949,10 +1024,11 @@ extension Formatter {
         else {
             return true
         }
-        let lineCount = tokens[startOfScope ... endOfScope]
-            .filter(\.isLinebreak)
-            .count
-            - 1
+        let lineCount =
+            tokens[startOfScope ... endOfScope]
+                .filter(\.isLinebreak)
+                .count
+                - 1
         return lineCount >= markThreshold
     }
 }

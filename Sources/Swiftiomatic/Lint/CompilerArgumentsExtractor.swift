@@ -1,6 +1,6 @@
 import Foundation
 
-struct CompilerArgumentsExtractor {
+enum CompilerArgumentsExtractor {
     static func allCompilerInvocations(compilerLogs: String) -> [[String]] {
         var compilerInvocations = [[String]]()
         compilerLogs.enumerateLines { line, _ in
@@ -38,14 +38,12 @@ private func parseCLIArguments(_ string: String) -> [String] {
         .map { $0.replacingOccurrences(of: escapedSpacePlaceholder, with: " ") }
 }
 
-/**
- Partially filters compiler arguments from `xcodebuild` to something that SourceKit/Clang will accept.
-
- - parameter args: Compiler arguments, as parsed from `xcodebuild`.
-
- - returns: A tuple of partially filtered compiler arguments in `.0`, and whether or not there are
- more flags to remove in `.1`.
- */
+/// Partially filters compiler arguments from `xcodebuild` to something that SourceKit/Clang will accept.
+///
+/// - parameter args: Compiler arguments, as parsed from `xcodebuild`.
+///
+/// - returns: A tuple of partially filtered compiler arguments in `.0`, and whether or not there are
+/// more flags to remove in `.1`.
 private func partiallyFilter(arguments args: [String]) -> ([String], Bool) {
     guard let indexOfFlagToRemove = args.firstIndex(of: "-output-file-map") else {
         return (args, false)
@@ -64,11 +62,12 @@ extension Array where Element == String {
                 return [arg]
             }
             let responseFile = String(arg.dropFirst())
-            return (try? String(contentsOf: URL(fileURLWithPath: responseFile, isDirectory: false))).flatMap {
-                $0.trimmingCharacters(in: .newlines)
-                    .components(separatedBy: "\n")
-                    .expandingResponseFiles
-            } ?? [arg]
+            return (try? String(contentsOf: URL(fileURLWithPath: responseFile, isDirectory: false)))
+                .flatMap {
+                    $0.trimmingCharacters(in: .newlines)
+                        .components(separatedBy: "\n")
+                        .expandingResponseFiles
+                } ?? [arg]
         }
     }
 

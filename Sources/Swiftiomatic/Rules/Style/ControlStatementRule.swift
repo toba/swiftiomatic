@@ -7,8 +7,8 @@ struct ControlStatementRule: Rule {
         identifier: "control_statement",
         name: "Control Statement",
         description:
-            "`if`, `for`, `guard`, `switch`, `while`, and `catch` statements shouldn't unnecessarily wrap their " +
-            "conditionals or arguments in parentheses",
+        "`if`, `for`, `guard`, `switch`, `while`, and `catch` statements shouldn't unnecessarily wrap their "
+            + "conditionals or arguments in parentheses",
         kind: .style,
         nonTriggeringExamples: [
             Example("if condition {}"),
@@ -60,15 +60,21 @@ struct ControlStatementRule: Rule {
             Example("do { ; } ↓while(condition) {}"): Example("do { ; } while condition {}"),
             Example("do { ; } ↓while (condition) {}"): Example("do { ; } while condition {}"),
             Example("↓switch (foo) {}"): Example("switch foo {}"),
-            Example("do {} ↓catch(let error as NSError) {}"): Example("do {} catch let error as NSError {}"),
+            Example("do {} ↓catch(let error as NSError) {}"): Example(
+                "do {} catch let error as NSError {}"
+            ),
             Example("↓if (max(a, b) < c) {}"): Example("if max(a, b) < c {}"),
-            Example("""
-            if (a),
-               ( b == 1 ) {}
-            """): Example("""
+            Example(
+                """
+                if (a),
+                   ( b == 1 ) {}
+                """
+            ): Example(
+                """
                 if a,
                    b == 1 {}
-                """),
+                """
+            ),
         ]
     )
 }
@@ -77,6 +83,7 @@ extension ControlStatementRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -84,7 +91,9 @@ extension ControlStatementRule: SwiftSyntaxCorrectableRule {
 
 private extension ControlStatementRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { [ProtocolDeclSyntax.self] }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
         override func visitPost(_ node: CatchClauseSyntax) {
             if node.catchItems.containSuperfluousParens == true {
@@ -123,9 +132,10 @@ private extension ControlStatementRule {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let node = node
-                .with(\.catchKeyword, node.catchKeyword.with(\.trailingTrivia, .space))
-                .with(\.catchItems, items.withoutParens)
+            let node =
+                node
+                    .with(\.catchKeyword, node.catchKeyword.with(\.trailingTrivia, .space))
+                    .with(\.catchItems, items.withoutParens)
             return super.visit(node)
         }
 
@@ -134,9 +144,10 @@ private extension ControlStatementRule {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let node = node
-                .with(\.guardKeyword, node.guardKeyword.with(\.trailingTrivia, .space))
-                .with(\.conditions, node.conditions.withoutParens)
+            let node =
+                node
+                    .with(\.guardKeyword, node.guardKeyword.with(\.trailingTrivia, .space))
+                    .with(\.conditions, node.conditions.withoutParens)
             return super.visit(node)
         }
 
@@ -145,9 +156,10 @@ private extension ControlStatementRule {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let node = node
-                .with(\.ifKeyword, node.ifKeyword.with(\.trailingTrivia, .space))
-                .with(\.conditions, node.conditions.withoutParens)
+            let node =
+                node
+                    .with(\.ifKeyword, node.ifKeyword.with(\.trailingTrivia, .space))
+                    .with(\.conditions, node.conditions.withoutParens)
             return super.visit(node)
         }
 
@@ -156,9 +168,10 @@ private extension ControlStatementRule {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let node = node
-                .with(\.switchKeyword, node.switchKeyword.with(\.trailingTrivia, .space))
-                .with(\.subject, tupleElement.with(\.trailingTrivia, .space))
+            let node =
+                node
+                    .with(\.switchKeyword, node.switchKeyword.with(\.trailingTrivia, .space))
+                    .with(\.subject, tupleElement.with(\.trailingTrivia, .space))
             return super.visit(node)
         }
 
@@ -167,16 +180,17 @@ private extension ControlStatementRule {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let node = node
-                .with(\.whileKeyword, node.whileKeyword.with(\.trailingTrivia, .space))
-                .with(\.conditions, node.conditions.withoutParens)
+            let node =
+                node
+                    .with(\.whileKeyword, node.whileKeyword.with(\.trailingTrivia, .space))
+                    .with(\.conditions, node.conditions.withoutParens)
             return super.visit(node)
         }
     }
 }
 
-private extension ExprSyntax {
-    var unwrapped: ExprSyntax? {
+extension ExprSyntax {
+    fileprivate var unwrapped: ExprSyntax? {
         if let expr = `as`(TupleExprSyntax.self)?.elements.onlyElement?.expression {
             return containsTrailingClosure(Syntax(expr)) ? nil : expr
         }
@@ -185,9 +199,9 @@ private extension ExprSyntax {
 
     private func containsTrailingClosure(_ node: Syntax) -> Bool {
         switch node.as(SyntaxEnum.self) {
-        case .functionCallExpr(let node):
+        case let .functionCallExpr(node):
             node.trailingClosure != nil || node.calledExpression.is(ClosureExprSyntax.self)
-        case .sequenceExpr(let node):
+        case let .sequenceExpr(node):
             node.elements.contains { containsTrailingClosure(Syntax($0)) }
         default: false
         }
@@ -207,10 +221,11 @@ private extension ConditionElementListSyntax {
     var withoutParens: Self {
         let conditions = map { (element: ConditionElementSyntax) -> ConditionElementSyntax in
             if let expression = element.condition.as(ExprSyntax.self)?.unwrapped {
-                return element
-                    .with(\.condition, .expression(expression))
-                    .with(\.leadingTrivia, element.leadingTrivia)
-                    .with(\.trailingTrivia, element.trailingTrivia)
+                return
+                    element
+                        .with(\.condition, .expression(expression))
+                        .with(\.leadingTrivia, element.leadingTrivia)
+                        .with(\.trailingTrivia, element.trailingTrivia)
             }
             return element
         }
@@ -228,10 +243,11 @@ private extension CatchItemListSyntax {
     var withoutParens: Self {
         let items = map { (item: CatchItemSyntax) -> CatchItemSyntax in
             if let expression = item.unwrapped {
-                return item
-                    .with(\.pattern, PatternSyntax(ExpressionPatternSyntax(expression: expression)))
-                    .with(\.leadingTrivia, item.leadingTrivia)
-                    .with(\.trailingTrivia, item.trailingTrivia)
+                return
+                    item
+                        .with(\.pattern, PatternSyntax(ExpressionPatternSyntax(expression: expression)))
+                        .with(\.leadingTrivia, item.leadingTrivia)
+                        .with(\.trailingTrivia, item.trailingTrivia)
             }
             return item
         }

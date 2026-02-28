@@ -33,9 +33,8 @@ private extension DiscouragedOptionalCollectionRule {
 
 private extension SyntaxProtocol {
     var isCollectionType: Bool {
-        `is`(ArrayTypeSyntax.self) ||
-            `is`(DictionaryTypeSyntax.self) ||
-            `as`(IdentifierTypeSyntax.self)?.isCollectionType == true
+        `is`(ArrayTypeSyntax.self) || `is`(DictionaryTypeSyntax.self)
+            || `as`(IdentifierTypeSyntax.self)?.isCollectionType == true
     }
 }
 

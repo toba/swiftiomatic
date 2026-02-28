@@ -15,9 +15,12 @@ extension FormatRule {
     ) { formatter in
         formatter.forEach(.identifier("_")) { i, _ in
             guard formatter.next(.nonSpaceOrCommentOrLinebreak, after: i) != .delimiter(":"),
-                  let prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i, if: {
-                      [.keyword("let"), .keyword("var")].contains($0)
-                  }),
+                  let prevIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, before: i,
+                      if: {
+                          [.keyword("let"), .keyword("var")].contains($0)
+                      }
+                  ),
                   let nextNonSpaceIndex = formatter.index(of: .nonSpaceOrLinebreak, after: prevIndex)
             else {
                 return

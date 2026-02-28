@@ -14,9 +14,14 @@ extension FormatRule {
         sharedOptions: ["linebreaks"]
     ) { formatter in
         formatter.forEach(.delimiter) { i, _ in
-            guard let endOfLine = formatter.index(of: .nonSpace, before: i, if: {
-                $0.isLinebreak
-            }) else {
+            guard
+                let endOfLine = formatter.index(
+                    of: .nonSpace, before: i,
+                    if: {
+                        $0.isLinebreak
+                    }
+                )
+            else {
                 return
             }
             let nextIndex = formatter.index(of: .nonSpace, after: i) ?? (i + 1)

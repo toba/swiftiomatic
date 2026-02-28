@@ -26,18 +26,24 @@ struct TrailingClosureRule: Rule {
             Example("foo(param1: 1, param2: { _ in true }) { $0 + 1 }"),
             Example("foo(param1: { _ in false }, param2: { _ in true })"),
             Example("foo(param1: { _ in false }, param2: { _ in true }, param3: { _ in false })"),
-            Example("""
-            if f({ true }), g({ true }) {
-                print("Hello")
-            }
-            """),
-            Example("""
-            for i in h({ [1,2,3] }) {
-                print(i)
-            }
-            """),
+            Example(
+                """
+                if f({ true }), g({ true }) {
+                    print("Hello")
+                }
+                """
+            ),
+            Example(
+                """
+                for i in h({ [1,2,3] }) {
+                    print(i)
+                }
+                """
+            ),
             Example("foo.reduce(0, combine: { $0 + 1 })", configuration: onlySingleMutedConfig),
-            Example("offsets.sorted(by: { $0.offset < $1.offset })", configuration: onlySingleMutedConfig),
+            Example(
+                "offsets.sorted(by: { $0.offset < $1.offset })", configuration: onlySingleMutedConfig
+            ),
             Example("foo.something(0, { $0 + 1 })", configuration: onlySingleMutedConfig),
         ],
         triggeringExamples: [
@@ -46,11 +52,13 @@ struct TrailingClosureRule: Rule {
             Example("offsets.sorted(by: ↓{ $0.offset < $1.offset })"),
             Example("foo.something(0, ↓{ $0 + 1 })"),
             Example("foo.something(param1: { _ in true }, param2: 0, param3: ↓{ _ in false })"),
-            Example("""
-            for n in list {
-                n.forEach(↓{ print($0) })
-            }
-            """, excludeFromDocumentation: true),
+            Example(
+                """
+                for n in list {
+                    n.forEach(↓{ print($0) })
+                }
+                """, excludeFromDocumentation: true
+            ),
             Example("foo.map(↓{ $0 + 1 })", configuration: onlySingleMutedConfig),
         ],
         corrections: [
@@ -66,71 +74,103 @@ struct TrailingClosureRule: Rule {
                 Example("foo.something(param1: { _ in true }, param2: 0) { _ in false }"),
             Example("f(a: ↓{ g(b: ↓{ 1 }) })"):
                 Example("f { g { 1 }}"),
-            Example("""
+            Example(
+                """
                 for n in list {
                     n.forEach(↓{ print($0) })
                 }
-                """): Example("""
-                    for n in list {
-                        n.forEach { print($0) }
-                    }
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                for n in list {
+                    n.forEach { print($0) }
+                }
+                """
+            ),
+            Example(
+                """
                 f(a: 1,
                 b: 2,
                 c: { 3 })
-                """): Example("""
-                    f(a: 1,
-                    b: 2) { 3 }
-                    """),
+                """
+            ): Example(
+                """
+                f(a: 1,
+                b: 2) { 3 }
+                """
+            ),
             Example("foo.map(↓{ $0 + 1 })", configuration: onlySingleMutedConfig):
                 Example("foo.map { $0 + 1 }", configuration: onlySingleMutedConfig),
             Example("f(↓{ g(↓{ 1 }) })", configuration: onlySingleMutedConfig):
                 Example("f { g { 1 }}", configuration: onlySingleMutedConfig),
-            Example("""
+            Example(
+                """
                 for n in list {
                     n.forEach(↓{ print($0) })
                 }
-                """, configuration: onlySingleMutedConfig): Example("""
-                    for n in list {
-                        n.forEach { print($0) }
-                    }
-                    """),
-            Example("""
+                """, configuration: onlySingleMutedConfig
+            ): Example(
+                """
+                for n in list {
+                    n.forEach { print($0) }
+                }
+                """
+            ),
+            Example(
+                """
                 f(a: 1, // comment
                 b: 2, /* comment */ c: { 3 })
-                """): Example("""
-                    f(a: 1, // comment
-                    b: 2) /* comment */ { 3 }
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                f(a: 1, // comment
+                b: 2) /* comment */ { 3 }
+                """
+            ),
+            Example(
+                """
                 f(a: 2, c: /* comment */ { 3 } /* comment */)
-                """): Example("""
-                    f(a: 2) /* comment */ { 3 } /* comment */
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                f(a: 2) /* comment */ { 3 } /* comment */
+                """
+            ),
+            Example(
+                """
                 f(a: 2, /* comment */ c /* comment */ : /* comment */ { 3 } /* comment */)
-                """): Example("""
-                    f(a: 2) /* comment */ { 3 } /* comment */
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                f(a: 2) /* comment */ { 3 } /* comment */
+                """
+            ),
+            Example(
+                """
                 f(a: 2, /* comment1 */ c /* comment2 */ : /* comment3 */ { 3 } /* comment4 */)
-                """): Example("""
-                    f(a: 2) /* comment1 */ /* comment2 */ /* comment3 */ { 3 } /* comment4 */
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                f(a: 2) /* comment1 */ /* comment2 */ /* comment3 */ { 3 } /* comment4 */
+                """
+            ),
+            Example(
+                """
                 let dataSource = RxTableViewSectionedReloadDataSource(
                     configureCell: { cell in // swiftlint:disable:this trailing_closure
                         return cell
                     }
                 )
-                """): Example("""
+                """
+            ): Example(
+                """
                 let dataSource = RxTableViewSectionedReloadDataSource(
                     configureCell: { cell in // swiftlint:disable:this trailing_closure
                         return cell
                     }
                 )
-                """),
+                """
+            ),
         ]
     )
 }
@@ -139,6 +179,7 @@ extension TrailingClosureRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -183,13 +224,15 @@ private extension TrailingClosureRule {
             if configuration.onlySingleMutedParameter {
                 if let param = node.singleMutedClosureParameter,
                    !isDisabled(atStartPositionOf: param),
-                   let converted = node.convertToTrailingClosure() {
+                   let converted = node.convertToTrailingClosure()
+                {
                     numberOfCorrections += 1
                     return super.visit(converted)
                 }
             } else if let param = node.lastDistinctClosureParameter,
                       !isDisabled(atStartPositionOf: param),
-                      let converted = node.convertToTrailingClosure() {
+                      let converted = node.convertToTrailingClosure()
+            {
                 numberOfCorrections += 1
                 return super.visit(converted)
             }
@@ -220,7 +263,8 @@ private extension FunctionCallExprSyntax {
 
     var lastDistinctClosureParameter: ClosureExprSyntax? {
         // If at least the last two (connected) arguments were ClosureExprSyntax, a violation should not be triggered.
-        guard arguments.count > 1, arguments.dropFirst(arguments.count - 2).allSatisfy(\.isClosureExpr) else {
+        guard arguments.count > 1, arguments.dropFirst(arguments.count - 2).allSatisfy(\.isClosureExpr)
+        else {
             return arguments.last?.expression.as(ClosureExprSyntax.self)
         }
         return nil
@@ -244,9 +288,10 @@ private extension FunctionCallExprSyntax {
         guard let lastDistinctClosureParameter else {
             return nil
         }
-        let leadingTrivia = lastTriviaInArguments?
-            .removingLeadingNewlines()
-            .appendingMissingSpace() ?? []
+        let leadingTrivia =
+            lastTriviaInArguments?
+                .removingLeadingNewlines()
+                .appendingMissingSpace() ?? []
 
         return dropLastArgument()
             .with(\.trailingClosure, lastDistinctClosureParameter.with(\.leadingTrivia, leadingTrivia))
@@ -255,12 +300,14 @@ private extension FunctionCallExprSyntax {
 
     var lastTriviaInArguments: Trivia? {
         guard let lastArgument = arguments.last,
-              let previous = lastArgument.previousToken(viewMode: .sourceAccurate)?.trailingTrivia else { return nil }
+              let previous = lastArgument.previousToken(viewMode: .sourceAccurate)?.trailingTrivia
+        else { return nil }
 
-        return previous
-            .merging(lastArgument.leadingTrivia)
-            .merging(triviaOf: lastArgument.label)
-            .merging(triviaOf: lastArgument.colon)
+        return
+            previous
+                .merging(lastArgument.leadingTrivia)
+                .merging(triviaOf: lastArgument.label)
+                .merging(triviaOf: lastArgument.colon)
     }
 }
 

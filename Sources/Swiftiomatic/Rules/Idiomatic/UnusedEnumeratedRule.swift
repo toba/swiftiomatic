@@ -23,19 +23,23 @@ struct UnusedEnumeratedRule: Rule {
             Example("list.enumerated().something().map { _, elem in elem }"),
             Example("list.enumerated().map { ($0.offset, $0.element) }"),
             Example("list.enumerated().map { ($0.0, $0.1) }"),
-            Example("""
-            list.enumerated().map {
-                $1.enumerated().forEach { print($0, $1) }
-                return $0
-            }
-            """),
-            Example("""
-            list.enumerated().forEach {
-                f($0)
-                let (i, e) = $0
-                print(i)
-            }
-            """, excludeFromDocumentation: true),
+            Example(
+                """
+                list.enumerated().map {
+                    $1.enumerated().forEach { print($0, $1) }
+                    return $0
+                }
+                """
+            ),
+            Example(
+                """
+                list.enumerated().forEach {
+                    f($0)
+                    let (i, e) = $0
+                    print(i)
+                }
+                """, excludeFromDocumentation: true
+            ),
         ],
         triggeringExamples: [
             Example("for (↓_, foo) in bar.enumerated() { }"),
@@ -46,44 +50,53 @@ struct UnusedEnumeratedRule: Rule {
             Example("list.enumerated().map { ↓_, elem in elem }"),
             Example("list.↓enumerated().forEach { print($0) }"),
             Example("list.↓enumerated().map { $1 }"),
-            Example("""
-            list.enumerated().map {
-                $1.↓enumerated().forEach { print($1) }
-                return $0
-            }
-            """),
-            Example("""
-            list.↓enumerated().map {
-                $1.enumerated().forEach { print($0, $1) }
-                return 1
-            }
-            """),
-            Example("""
-            list.enumerated().map {
-                $1.enumerated().filter {
-                    print($0, $1)
-                    $1.↓enumerated().forEach {
-                         if $1 == 2 {
-                             return true
-                         }
-                    }
-                    return false
+            Example(
+                """
+                list.enumerated().map {
+                    $1.↓enumerated().forEach { print($1) }
+                    return $0
                 }
-                return $0
-            }
-            """, excludeFromDocumentation: true)
-            ,
-            Example("""
-            list.↓enumerated().map {
-                $1.forEach { print($0) }
-                return $1
-            }
-            """, excludeFromDocumentation: true),
-            Example("""
-            list.↓enumerated().forEach {
-                let (i, _) = $0
-            }
-            """),
+                """
+            ),
+            Example(
+                """
+                list.↓enumerated().map {
+                    $1.enumerated().forEach { print($0, $1) }
+                    return 1
+                }
+                """
+            ),
+            Example(
+                """
+                list.enumerated().map {
+                    $1.enumerated().filter {
+                        print($0, $1)
+                        $1.↓enumerated().forEach {
+                             if $1 == 2 {
+                                 return true
+                             }
+                        }
+                        return false
+                    }
+                    return $0
+                }
+                """, excludeFromDocumentation: true
+            ),
+            Example(
+                """
+                list.↓enumerated().map {
+                    $1.forEach { print($0) }
+                    return $1
+                }
+                """, excludeFromDocumentation: true
+            ),
+            Example(
+                """
+                list.↓enumerated().forEach {
+                    let (i, _) = $0
+                }
+                """
+            ),
         ]
     )
 }
@@ -94,7 +107,7 @@ extension UnusedEnumeratedRule: SwiftSyntaxRule {
     }
 }
 
-private extension UnusedEnumeratedRule {
+extension UnusedEnumeratedRule {
     private struct Closure {
         let enumeratedPosition: AbsolutePosition?
         var zeroPosition: AbsolutePosition?
@@ -105,7 +118,7 @@ private extension UnusedEnumeratedRule {
         }
     }
 
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private var nextClosureId: SyntaxIdentifier?
         private var lastEnumeratedPosition: AbsolutePosition?
         private var closures = Stack<Closure>()
@@ -128,7 +141,8 @@ private extension UnusedEnumeratedRule {
             }
 
             addViolation(
-                zeroPosition: firstTokenIsUnderscore ? firstElement.positionAfterSkippingLeadingTrivia : nil,
+                zeroPosition: firstTokenIsUnderscore
+                    ? firstElement.positionAfterSkippingLeadingTrivia : nil,
                 onePosition: firstTokenIsUnderscore ? nil : secondElement.positionAfterSkippingLeadingTrivia
             )
         }
@@ -158,8 +172,10 @@ private extension UnusedEnumeratedRule {
                 }
 
                 addViolation(
-                    zeroPosition: firstTokenIsUnderscore ? firstElement.positionAfterSkippingLeadingTrivia : nil,
-                    onePosition: firstTokenIsUnderscore ? nil : secondElement.positionAfterSkippingLeadingTrivia
+                    zeroPosition: firstTokenIsUnderscore
+                        ? firstElement.positionAfterSkippingLeadingTrivia : nil,
+                    onePosition: firstTokenIsUnderscore
+                        ? nil : secondElement.positionAfterSkippingLeadingTrivia
                 )
             } else {
                 nextClosureId = trailingClosure.id
@@ -250,7 +266,8 @@ private extension FunctionCallExprSyntax {
         if let memberAccess = calledExpression.as(MemberAccessExprSyntax.self),
            memberAccess.base != nil,
            memberAccess.declName.baseName.text == "enumerated",
-           hasNoArguments {
+           hasNoArguments
+        {
             return memberAccess.declName.positionAfterSkippingLeadingTrivia
         }
 
@@ -258,9 +275,9 @@ private extension FunctionCallExprSyntax {
     }
 
     var hasNoArguments: Bool {
-           trailingClosure == nil
-        && additionalTrailingClosures.isEmpty
-        && arguments.isEmpty
+        trailingClosure == nil
+            && additionalTrailingClosures.isEmpty
+            && arguments.isEmpty
     }
 }
 
@@ -280,8 +297,10 @@ private extension DeclReferenceExprSyntax {
     var isUnpacked: Bool {
         if let initializer = parent?.as(InitializerClauseSyntax.self),
            let binding = initializer.parent?.as(PatternBindingSyntax.self),
-           let elements = binding.pattern.as(TuplePatternSyntax.self)?.elements {
-            return elements.count == 2 && elements.allSatisfy { !$0.pattern.is(WildcardPatternSyntax.self) }
+           let elements = binding.pattern.as(TuplePatternSyntax.self)?.elements
+        {
+            return elements.count == 2
+                && elements.allSatisfy { !$0.pattern.is(WildcardPatternSyntax.self) }
         }
         return false
     }

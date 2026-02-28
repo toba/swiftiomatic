@@ -40,13 +40,15 @@ private extension UnusedOptionalBindingRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: OptionalBindingConditionSyntax) {
             guard let pattern = node.pattern.as(ExpressionPatternSyntax.self),
-                  pattern.expression.isDiscardExpression else {
+                  pattern.expression.isDiscardExpression
+            else {
                 return
             }
 
             if configuration.ignoreOptionalTry,
                let tryExpr = node.initializer?.value.as(TryExprSyntax.self),
-               tryExpr.questionOrExclamationMark?.tokenKind == .postfixQuestionMark {
+               tryExpr.questionOrExclamationMark?.tokenKind == .postfixQuestionMark
+            {
                 return
             }
 

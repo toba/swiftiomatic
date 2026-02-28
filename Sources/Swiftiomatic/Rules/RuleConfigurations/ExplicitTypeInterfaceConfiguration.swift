@@ -1,4 +1,3 @@
-
 struct ExplicitTypeInterfaceConfiguration: SeverityBasedRuleConfiguration {
     enum VariableKind: String, AcceptableByConfigurationElement, CaseIterable {
         case instance
@@ -19,6 +18,7 @@ struct ExplicitTypeInterfaceConfiguration: SeverityBasedRuleConfiguration {
     var allowedKinds: Set<VariableKind> {
         VariableKind.all.subtracting(excluded)
     }
+
     typealias Parent = ExplicitTypeInterfaceRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $excluded.key.isEmpty {

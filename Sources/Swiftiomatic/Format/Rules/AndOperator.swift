@@ -59,7 +59,8 @@ extension FormatRule {
                         endIndex -= 1
                         index -= 1
                     } else if let prevIndex = formatter.index(of: .nonSpace, before: index),
-                              formatter.tokens[prevIndex].isLinebreak, let nonLinbreak =
+                              formatter.tokens[prevIndex].isLinebreak,
+                              let nonLinbreak =
                               formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: prevIndex)
                     {
                         formatter.removeToken(at: index)

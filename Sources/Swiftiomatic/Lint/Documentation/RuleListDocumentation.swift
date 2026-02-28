@@ -38,21 +38,21 @@ struct RuleListDocumentation {
         let analyzerRuleDocumentations = ruleDocumentations.filter(\.isAnalyzerRule)
 
         return """
-            # Rule Directory
+        # Rule Directory
 
-            ## Default Rules
+        ## Default Rules
 
-            \(defaultRuleDocumentations.map(makeListEntry).joined(separator: "\n"))
+        \(defaultRuleDocumentations.map(makeListEntry).joined(separator: "\n"))
 
-            ## Opt-in Rules
+        ## Opt-in Rules
 
-            \(optInRuleDocumentations.map(makeListEntry).joined(separator: "\n"))
+        \(optInRuleDocumentations.map(makeListEntry).joined(separator: "\n"))
 
-            ## Analyzer Rules
+        ## Analyzer Rules
 
-            \(analyzerRuleDocumentations.map(makeListEntry).joined(separator: "\n"))
+        \(analyzerRuleDocumentations.map(makeListEntry).joined(separator: "\n"))
 
-            """
+        """
     }
 
     private func makeListEntry(from rule: RuleDocumentation) -> String {
@@ -63,43 +63,45 @@ struct RuleListDocumentation {
         let linterRuleDocumentations = ruleDocumentations.filter(\.isLinterRule)
         let rulesUsingSourceKit = linterRuleDocumentations.filter(\.usesSourceKit)
         let rulesNotUsingSourceKit = linterRuleDocumentations.filter { !$0.usesSourceKit }
-        let percentUsingSourceKit = Int(rulesUsingSourceKit.count * 100 / linterRuleDocumentations.count)
+        let percentUsingSourceKit = Int(
+            rulesUsingSourceKit.count * 100 / linterRuleDocumentations.count
+        )
         let enabledSourceKitRules = rulesUsingSourceKit.filter(\.isEnabledByDefault)
         let disabledSourceKitRules = rulesUsingSourceKit.filter(\.isDisabledByDefault)
         let enabledSourceKitFreeRules = rulesNotUsingSourceKit.filter(\.isEnabledByDefault)
         let disabledSourceKitFreeRules = rulesNotUsingSourceKit.filter(\.isDisabledByDefault)
 
         return """
-            # Swift Syntax Dashboard
+        # Swift Syntax Dashboard
 
-            Efforts are actively under way to migrate most rules off SourceKit to use SwiftSyntax instead.
+        Efforts are actively under way to migrate most rules off SourceKit to use SwiftSyntax instead.
 
-            Rules written using SwiftSyntax tend to be significantly faster and have fewer false positives
-            than rules that use SourceKit to get source structure information.
+        Rules written using SwiftSyntax tend to be significantly faster and have fewer false positives
+        than rules that use SourceKit to get source structure information.
 
-            \(rulesUsingSourceKit.count) out of \(linterRuleDocumentations.count) (\(percentUsingSourceKit)%)
-            of SwiftLint's linter rules use SourceKit.
+        \(rulesUsingSourceKit.count) out of \(linterRuleDocumentations.count) (\(percentUsingSourceKit)%)
+        of SwiftLint's linter rules use SourceKit.
 
-            ## Rules Using SourceKit
+        ## Rules Using SourceKit
 
-            ### Default Rules (\(enabledSourceKitRules.count))
+        ### Default Rules (\(enabledSourceKitRules.count))
 
-            \(enabledSourceKitRules.map(makeListEntry).joined(separator: "\n"))
+        \(enabledSourceKitRules.map(makeListEntry).joined(separator: "\n"))
 
-            ### Opt-in Rules (\(disabledSourceKitRules.count))
+        ### Opt-in Rules (\(disabledSourceKitRules.count))
 
-            \(disabledSourceKitRules.map(makeListEntry).joined(separator: "\n"))
+        \(disabledSourceKitRules.map(makeListEntry).joined(separator: "\n"))
 
-            ## Rules not Using SourceKit
+        ## Rules not Using SourceKit
 
-            ### Default Rules (\(enabledSourceKitFreeRules.count))
+        ### Default Rules (\(enabledSourceKitFreeRules.count))
 
-            \(enabledSourceKitFreeRules.map(makeListEntry).joined(separator: "\n"))
+        \(enabledSourceKitFreeRules.map(makeListEntry).joined(separator: "\n"))
 
-            ### Opt-in Rules (\(disabledSourceKitFreeRules.count))
+        ### Opt-in Rules (\(disabledSourceKitFreeRules.count))
 
-            \(disabledSourceKitFreeRules.map(makeListEntry).joined(separator: "\n"))
+        \(disabledSourceKitFreeRules.map(makeListEntry).joined(separator: "\n"))
 
-            """
+        """
     }
 }

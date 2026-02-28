@@ -10,63 +10,71 @@ struct CyclomaticComplexityRule: Rule {
         description: "Complexity of function bodies should be limited.",
         kind: .metrics,
         nonTriggeringExamples: [
-            Example("""
-            func f1() {
-                if true {
-                    for _ in 1..5 { }
+            Example(
+                """
+                func f1() {
+                    if true {
+                        for _ in 1..5 { }
+                    }
+                    if false { }
                 }
-                if false { }
-            }
-            """),
-            Example("""
-            func f(code: Int) -> Int {
-                switch code {
-                case 0: fallthrough
-                case 1: return 1
-                case 2: return 1
-                case 3: return 1
-                case 4: return 1
-                case 5: return 1
-                case 6: return 1
-                case 7: return 1
-                case 8: return 1
-                default: return 1
+                """
+            ),
+            Example(
+                """
+                func f(code: Int) -> Int {
+                    switch code {
+                    case 0: fallthrough
+                    case 1: return 1
+                    case 2: return 1
+                    case 3: return 1
+                    case 4: return 1
+                    case 5: return 1
+                    case 6: return 1
+                    case 7: return 1
+                    case 8: return 1
+                    default: return 1
+                    }
                 }
-            }
-            """),
-            Example("""
-            func f1() {
-                if true {}; if true {}; if true {}; if true {}; if true {}; if true {}
-                func f2() {
-                    if true {}; if true {}; if true {}; if true {}; if true {}
+                """
+            ),
+            Example(
+                """
+                func f1() {
+                    if true {}; if true {}; if true {}; if true {}; if true {}; if true {}
+                    func f2() {
+                        if true {}; if true {}; if true {}; if true {}; if true {}
+                    }
                 }
-            }
-            """),
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            ↓func f1() {
-                if true {
+            Example(
+                """
+                ↓func f1() {
                     if true {
-                        if false {}
+                        if true {
+                            if false {}
+                        }
+                    }
+                    if false {}
+                    let i = 0
+                    switch i {
+                        case 1: break
+                        case 2: break
+                        case 3: break
+                        case 4: break
+                        default: break
+                    }
+                    for _ in 1...5 {
+                        guard true else {
+                            return
+                        }
                     }
                 }
-                if false {}
-                let i = 0
-                switch i {
-                    case 1: break
-                    case 2: break
-                    case 3: break
-                    case 4: break
-                    default: break
-                }
-                for _ in 1...5 {
-                    guard true else {
-                        return
-                    }
-                }
-            }
-            """),
+                """
+            ),
         ]
     )
 }
@@ -77,8 +85,8 @@ extension CyclomaticComplexityRule: SwiftSyntaxRule {
     }
 }
 
-private extension CyclomaticComplexityRule {
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+extension CyclomaticComplexityRule {
+    fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionDeclSyntax) {
             guard let body = node.body else {
                 return
@@ -103,8 +111,9 @@ private extension CyclomaticComplexityRule {
             ).walk(tree: body, handler: \.complexity)
 
             for parameter in configuration.params where complexity > parameter.value {
-                let reason = "Function should have complexity \(configuration.length.warning) or less; " +
-                             "currently complexity is \(complexity)"
+                let reason =
+                    "Function should have complexity \(configuration.length.warning) or less; "
+                        + "currently complexity is \(complexity)"
 
                 let violation = ReasonedRuleViolation(
                     position: violationToken.positionAfterSkippingLeadingTrivia,

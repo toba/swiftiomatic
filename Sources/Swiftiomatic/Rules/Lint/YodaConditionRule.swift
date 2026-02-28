@@ -6,7 +6,8 @@ struct YodaConditionRule: Rule {
     static let description = RuleDescription(
         identifier: "yoda_condition",
         name: "Yoda Condition",
-        description: "The constant literal should be placed on the right-hand side of the comparison operator",
+        description:
+        "The constant literal should be placed on the right-hand side of the comparison operator",
         kind: .lint,
         nonTriggeringExamples: [
             Example("if foo == 42 {}"),
@@ -32,7 +33,8 @@ struct YodaConditionRule: Rule {
             Example("if ↓nil == foo {}"),
             Example("while ↓1 > i + 5 {}"),
             Example("if ↓200 <= i && i <= 299 || ↓600 <= i {}"),
-        ])
+        ]
+    )
 }
 
 extension YodaConditionRule: SwiftSyntaxRule {
@@ -72,9 +74,10 @@ private extension YodaConditionRule {
                 return
             }
             let children = elements.children(viewMode: .sourceAccurate)
-            let comparisonOperators = children
-                .compactMap { $0.as(BinaryOperatorExprSyntax.self) }
-                .filter { ["==", "!=", ">", "<", ">=", "<="].contains($0.operator.text) }
+            let comparisonOperators =
+                children
+                    .compactMap { $0.as(BinaryOperatorExprSyntax.self) }
+                    .filter { ["==", "!=", ">", "<", ">=", "<="].contains($0.operator.text) }
             for comparisonOperator in comparisonOperators {
                 guard let operatorIndex = children.index(of: comparisonOperator) else {
                     continue
@@ -95,7 +98,9 @@ private extension YodaConditionRule {
                 let lhsIdx = children.index(before: operatorIndex)
                 let lhs = children[lhsIdx]
                 if lhs.isLiteral,
-                   children.startIndex == lhsIdx || children[children.index(before: lhsIdx)].isLogicalBinaryOperator {
+                   children.startIndex == lhsIdx
+                   || children[children.index(before: lhsIdx)].isLogicalBinaryOperator
+                {
                     // Literal is at the very beginning of the expression or the previous token is an operator with
                     // weaker binding. Thus, the literal is unique on the left-hand side of the comparison operator.
                     violations.append(lhs.positionAfterSkippingLeadingTrivia)
@@ -107,11 +112,11 @@ private extension YodaConditionRule {
 
 private extension Syntax {
     var isLiteral: Bool {
-           `is`(IntegerLiteralExprSyntax.self)
-        || `is`(FloatLiteralExprSyntax.self)
-        || `is`(BooleanLiteralExprSyntax.self)
-        || `is`(StringLiteralExprSyntax.self)
-        || `is`(NilLiteralExprSyntax.self)
+        `is`(IntegerLiteralExprSyntax.self)
+            || `is`(FloatLiteralExprSyntax.self)
+            || `is`(BooleanLiteralExprSyntax.self)
+            || `is`(StringLiteralExprSyntax.self)
+            || `is`(NilLiteralExprSyntax.self)
     }
 
     var isLogicalBinaryOperator: Bool {

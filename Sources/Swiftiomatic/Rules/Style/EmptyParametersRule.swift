@@ -27,7 +27,9 @@ struct EmptyParametersRule: Rule {
             Example("func foo(completion: ↓(Void) -> Void)"): Example("func foo(completion: () -> Void)"),
             Example("func foo(completion: ↓(Void) throws -> Void)"):
                 Example("func foo(completion: () throws -> Void)"),
-            Example("let foo: ↓(Void) -> () throws -> Void)"): Example("let foo: () -> () throws -> Void)"),
+            Example("let foo: ↓(Void) -> () throws -> Void)"): Example(
+                "let foo: () -> () throws -> Void)"
+            ),
         ]
     )
 }
@@ -36,6 +38,7 @@ extension EmptyParametersRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }

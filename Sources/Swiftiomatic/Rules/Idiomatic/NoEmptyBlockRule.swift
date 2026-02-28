@@ -9,143 +9,169 @@ struct NoEmptyBlockRule: Rule {
         description: "Code blocks should contain at least one statement or comment",
         kind: .idiomatic,
         nonTriggeringExamples: [
-            Example("""
-            func f() {
-                /* do something */
-            }
-
-            var flag = true {
-                willSet { /* do something */ }
-            }
-            """),
-
-            Example("""
-            class Apple {
-                init() { /* do something */ }
-
-                deinit { /* do something */ }
-            }
-            """),
-
-            Example("""
-            for _ in 0..<10 { /* do something */ }
-
-            do {
-                /* do something */
-            } catch {
-                /* do something */
-            }
-
-            func f() {
-                defer {
+            Example(
+                """
+                func f() {
                     /* do something */
                 }
-                print("other code")
-            }
 
-            if flag {
-                /* do something */
-            } else {
-                /* do something */
-            }
+                var flag = true {
+                    willSet { /* do something */ }
+                }
+                """
+            ),
 
-            repeat { /* do something */ } while (flag)
+            Example(
+                """
+                class Apple {
+                    init() { /* do something */ }
 
-            while i < 10 { /* do something */ }
-            """),
+                    deinit { /* do something */ }
+                }
+                """
+            ),
 
-            Example("""
-            func f() {}
+            Example(
+                """
+                for _ in 0..<10 { /* do something */ }
 
-            var flag = true {
-                willSet {}
-            }
-            """, configuration: ["disabled_block_types": ["function_bodies"]]),
+                do {
+                    /* do something */
+                } catch {
+                    /* do something */
+                }
 
-            Example("""
-            class Apple {
-                init() {}
+                func f() {
+                    defer {
+                        /* do something */
+                    }
+                    print("other code")
+                }
 
-                deinit {}
-            }
-            """, configuration: ["disabled_block_types": ["initializer_bodies"]]),
+                if flag {
+                    /* do something */
+                } else {
+                    /* do something */
+                }
 
-            Example("""
-            for _ in 0..<10 {}
+                repeat { /* do something */ } while (flag)
 
-            do {
-            } catch {
-            }
+                while i < 10 { /* do something */ }
+                """
+            ),
 
-            func f() {
-                defer {}
-                print("other code")
-            }
+            Example(
+                """
+                func f() {}
 
-            if flag {
-            } else {
-            }
+                var flag = true {
+                    willSet {}
+                }
+                """, configuration: ["disabled_block_types": ["function_bodies"]]
+            ),
 
-            repeat {} while (flag)
+            Example(
+                """
+                class Apple {
+                    init() {}
 
-            while i < 10 {}
-            """, configuration: ["disabled_block_types": ["statement_blocks"]]),
-            Example("""
-            f { _ in /* comment */ }
-            f { _ in // comment
-            }
-            f { _ in
-                // comment
-            }
-            """),
-            Example("""
-            f {}
-            {}()
-            """, configuration: ["disabled_block_types": ["closure_blocks"]]),
+                    deinit {}
+                }
+                """, configuration: ["disabled_block_types": ["initializer_bodies"]]
+            ),
+
+            Example(
+                """
+                for _ in 0..<10 {}
+
+                do {
+                } catch {
+                }
+
+                func f() {
+                    defer {}
+                    print("other code")
+                }
+
+                if flag {
+                } else {
+                }
+
+                repeat {} while (flag)
+
+                while i < 10 {}
+                """, configuration: ["disabled_block_types": ["statement_blocks"]]
+            ),
+            Example(
+                """
+                f { _ in /* comment */ }
+                f { _ in // comment
+                }
+                f { _ in
+                    // comment
+                }
+                """
+            ),
+            Example(
+                """
+                f {}
+                {}()
+                """, configuration: ["disabled_block_types": ["closure_blocks"]]
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            func f() ↓{}
+            Example(
+                """
+                func f() ↓{}
 
-            var flag = true {
-                willSet ↓{}
-            }
-            """),
+                var flag = true {
+                    willSet ↓{}
+                }
+                """
+            ),
 
-            Example("""
-            class Apple {
-                init() ↓{}
+            Example(
+                """
+                class Apple {
+                    init() ↓{}
 
-                deinit ↓{}
-            }
-            """),
+                    deinit ↓{}
+                }
+                """
+            ),
 
-            Example("""
-            for _ in 0..<10 ↓{}
+            Example(
+                """
+                for _ in 0..<10 ↓{}
 
-            do ↓{
-            } catch ↓{
-            }
+                do ↓{
+                } catch ↓{
+                }
 
-            func f() {
-                defer ↓{}
-                print("other code")
-            }
+                func f() {
+                    defer ↓{}
+                    print("other code")
+                }
 
-            if flag ↓{
-            } else ↓{
-            }
+                if flag ↓{
+                } else ↓{
+                }
 
-            repeat ↓{} while (flag)
+                repeat ↓{} while (flag)
 
-            while i < 10 ↓{}
-            """),
-            Example("""
-            f ↓{}
-            """),
-            Example("""
-            Button ↓{} label: ↓{}
-            """),
+                while i < 10 ↓{}
+                """
+            ),
+            Example(
+                """
+                f ↓{}
+                """
+            ),
+            Example(
+                """
+                Button ↓{} label: ↓{}
+                """
+            ),
         ]
     )
 }
@@ -161,14 +187,17 @@ extension NoEmptyBlockRule: OptInRule {}
 private extension NoEmptyBlockRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: CodeBlockSyntax) {
-            if let codeBlockType = node.codeBlockType, configuration.enabledBlockTypes.contains(codeBlockType) {
+            if let codeBlockType = node.codeBlockType,
+               configuration.enabledBlockTypes.contains(codeBlockType)
+            {
                 validate(node: node)
             }
         }
 
         override func visitPost(_ node: ClosureExprSyntax) {
             if configuration.enabledBlockTypes.contains(.closureBlocks),
-               node.signature?.inKeyword.trailingTrivia.containsComments != true {
+               node.signature?.inKeyword.trailingTrivia.containsComments != true
+            {
                 validate(node: node)
             }
         }
@@ -176,7 +205,8 @@ private extension NoEmptyBlockRule {
         func validate(node: some BracedSyntax & WithStatementsSyntax) {
             guard node.statements.isEmpty,
                   !node.leftBrace.trailingTrivia.containsComments,
-                  !node.rightBrace.leadingTrivia.containsComments else {
+                  !node.rightBrace.leadingTrivia.containsComments
+            else {
                 return
             }
             violations.append(node.leftBrace.positionAfterSkippingLeadingTrivia)

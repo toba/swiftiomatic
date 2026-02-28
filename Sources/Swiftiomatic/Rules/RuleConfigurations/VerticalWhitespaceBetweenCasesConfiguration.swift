@@ -1,4 +1,3 @@
-
 struct VerticalWhitespaceBetweenCasesConfiguration: SeverityBasedRuleConfiguration {
     enum SeparationStyle: String, AcceptableByConfigurationElement {
         case always

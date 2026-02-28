@@ -36,11 +36,15 @@ private extension MultilineArgumentsRule {
                     Argument(element: argument, locationConverter: locationConverter, index: idx)
                 }
 
-            var violatingArguments = findViolations(in: wrappedArguments, functionCallLine: functionCallLine)
+            var violatingArguments = findViolations(
+                in: wrappedArguments, functionCallLine: functionCallLine
+            )
 
             if configuration.onlyEnforceAfterFirstClosureOnFirstLine {
-                violatingArguments = removeViolationsBeforeFirstClosure(arguments: wrappedArguments,
-                                                                        violations: violatingArguments)
+                violatingArguments = removeViolationsBeforeFirstClosure(
+                    arguments: wrappedArguments,
+                    violations: violatingArguments
+                )
             }
 
             violations.append(contentsOf: violatingArguments.map(\.offset))
@@ -48,8 +52,10 @@ private extension MultilineArgumentsRule {
 
         // MARK: - Violation Logic
 
-        private func findViolations(in arguments: [Argument],
-                                    functionCallLine: Int) -> [Argument] {
+        private func findViolations(
+            in arguments: [Argument],
+            functionCallLine: Int
+        ) -> [Argument] {
             var visitedLines = Set<Int>()
 
             if configuration.firstArgumentLocation == .sameLine {
@@ -75,21 +81,24 @@ private extension MultilineArgumentsRule {
             return visitedLines.count > 1 ? violations : []
         }
 
-        private func removeViolationsBeforeFirstClosure(arguments: [Argument],
-                                                        violations: [Argument]) -> [Argument] {
+        private func removeViolationsBeforeFirstClosure(
+            arguments: [Argument],
+            violations: [Argument]
+        ) -> [Argument] {
             guard let firstClosure = arguments.first(where: \.isClosure),
-                  let firstArgument = arguments.first else {
+                  let firstArgument = arguments.first
+            else {
                 return violations
             }
 
-            let violationSlice: ArraySlice<Argument> = violations
-                .drop { argument in
-                    // drop violations if they precede the first closure,
-                    // if that closure is in the first line
-                    firstArgument.line == firstClosure.line &&
-                    argument.line == firstClosure.line &&
-                    argument.index <= firstClosure.index
-                }
+            let violationSlice: ArraySlice<Argument> =
+                violations
+                    .drop { argument in
+                        // drop violations if they precede the first closure,
+                        // if that closure is in the first line
+                        firstArgument.line == firstClosure.line && argument.line == firstClosure.line
+                            && argument.index <= firstClosure.index
+                    }
 
             return Array(violationSlice)
         }
@@ -103,10 +112,10 @@ private struct Argument {
     let expression: ExprSyntax
 
     init?(element: LabeledExprSyntax, locationConverter: SourceLocationConverter, index: Int) {
-        self.offset = element.positionAfterSkippingLeadingTrivia
-        self.line = locationConverter.location(for: offset).line
+        offset = element.positionAfterSkippingLeadingTrivia
+        line = locationConverter.location(for: offset).line
         self.index = index
-        self.expression = element.expression
+        expression = element.expression
     }
 
     var isClosure: Bool {

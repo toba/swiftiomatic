@@ -51,5 +51,7 @@ extension SwiftDeclarationAttributeKind.ModifierGroup: AcceptableByConfiguration
         }
     }
 
-    func asOption() -> OptionType { .symbol(rawValue) }
+    func asOption() -> OptionType {
+        .symbol(rawValue)
+    }
 }

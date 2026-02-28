@@ -16,7 +16,9 @@ struct IsDisjointRule: Rule {
         ],
         triggeringExamples: [
             Example("_ = Set(syntaxKinds).↓intersection(commentAndStringKindsSet).isEmpty"),
-            Example("let isObjc = !objcAttributes.↓intersection(dictionary.enclosedSwiftAttributes).isEmpty"),
+            Example(
+                "let isObjc = !objcAttributes.↓intersection(dictionary.enclosedSwiftAttributes).isEmpty"
+            ),
         ]
     )
 }
@@ -39,7 +41,9 @@ private extension IsDisjointRule {
                 return
             }
 
-            violations.append(firstBaseCalledExpression.declName.baseName.positionAfterSkippingLeadingTrivia)
+            violations.append(
+                firstBaseCalledExpression.declName.baseName.positionAfterSkippingLeadingTrivia
+            )
         }
     }
 }

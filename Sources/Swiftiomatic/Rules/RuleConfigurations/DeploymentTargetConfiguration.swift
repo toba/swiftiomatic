@@ -67,11 +67,11 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
             case 0:
                 throw .invalidConfiguration(ruleID: Parent.identifier)
             case 1:
-                return (try parseNumber(parts[0]), 0, 0)
+                return try (parseNumber(parts[0]), 0, 0)
             case 2:
-                return (try parseNumber(parts[0]), try parseNumber(parts[1]), 0)
+                return try (parseNumber(parts[0]), parseNumber(parts[1]), 0)
             default:
-                return (try parseNumber(parts[0]), try parseNumber(parts[1]), try parseNumber(parts[2]))
+                return try (parseNumber(parts[0]), parseNumber(parts[1]), parseNumber(parts[2]))
             }
         }
 
@@ -91,28 +91,38 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
     }
 
     private(set) var iOSDeploymentTarget = Version(platform: .iOS, major: 7)
-    private(set) var iOSAppExtensionDeploymentTarget = Version(platform: .iOSApplicationExtension, major: 7)
+    private(set) var iOSAppExtensionDeploymentTarget = Version(
+        platform: .iOSApplicationExtension, major: 7
+    )
     private(set) var macOSDeploymentTarget = Version(platform: .macOS, major: 10, minor: 9)
-    private(set) var macOSAppExtensionDeploymentTarget = Version(platform: .macOSApplicationExtension,
-                                                                 major: 10, minor: 9)
+    private(set) var macOSAppExtensionDeploymentTarget = Version(
+        platform: .macOSApplicationExtension,
+        major: 10, minor: 9
+    )
     private(set) var watchOSDeploymentTarget = Version(platform: .watchOS, major: 1)
-    private(set) var watchOSAppExtensionDeploymentTarget = Version(platform: .watchOSApplicationExtension, major: 1)
+    private(set) var watchOSAppExtensionDeploymentTarget = Version(
+        platform: .watchOSApplicationExtension, major: 1
+    )
     private(set) var tvOSDeploymentTarget = Version(platform: .tvOS, major: 9)
-    private(set) var tvOSAppExtensionDeploymentTarget = Version(platform: .tvOSApplicationExtension, major: 9)
+    private(set) var tvOSAppExtensionDeploymentTarget = Version(
+        platform: .tvOSApplicationExtension, major: 9
+    )
 
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.warning)
 
     var parameterDescription: RuleConfigurationDescription? {
-        let targets = Dictionary(uniqueKeysWithValues: [
-            iOSDeploymentTarget,
-            iOSAppExtensionDeploymentTarget,
-            macOSDeploymentTarget,
-            macOSAppExtensionDeploymentTarget,
-            watchOSDeploymentTarget,
-            watchOSAppExtensionDeploymentTarget,
-            tvOSDeploymentTarget,
-            tvOSAppExtensionDeploymentTarget,
-        ].map { ($0.platform.configurationKey, $0) })
+        let targets = Dictionary(
+            uniqueKeysWithValues: [
+                iOSDeploymentTarget,
+                iOSAppExtensionDeploymentTarget,
+                macOSDeploymentTarget,
+                macOSAppExtensionDeploymentTarget,
+                watchOSDeploymentTarget,
+                watchOSAppExtensionDeploymentTarget,
+                tvOSDeploymentTarget,
+                tvOSAppExtensionDeploymentTarget,
+            ].map { ($0.platform.configurationKey, $0) }
+        )
         severityConfiguration
         for (platform, target) in targets.sorted(by: { $0.key < $1.key }) {
             platform => .symbol(target.stringValue)
@@ -133,32 +143,43 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
             case iOSDeploymentTarget.platform.configurationKey:
                 try apply(value: value, to: \.iOSDeploymentTarget, from: configuration)
             case iOSAppExtensionDeploymentTarget.platform.configurationKey:
-                iOSAppExtensionDeploymentTarget = try Version(platform: .iOSApplicationExtension, value: value)
+                iOSAppExtensionDeploymentTarget = try Version(
+                    platform: .iOSApplicationExtension, value: value
+                )
             case macOSDeploymentTarget.platform.configurationKey:
                 try apply(value: value, to: \.macOSDeploymentTarget, from: configuration)
             case macOSAppExtensionDeploymentTarget.platform.configurationKey:
-                macOSAppExtensionDeploymentTarget = try Version(platform: .macOSApplicationExtension, value: value)
+                macOSAppExtensionDeploymentTarget = try Version(
+                    platform: .macOSApplicationExtension, value: value
+                )
             case watchOSDeploymentTarget.platform.configurationKey:
                 try apply(value: value, to: \.watchOSDeploymentTarget, from: configuration)
             case watchOSAppExtensionDeploymentTarget.platform.configurationKey:
-                watchOSAppExtensionDeploymentTarget = try Version(platform: .watchOSApplicationExtension, value: value)
+                watchOSAppExtensionDeploymentTarget = try Version(
+                    platform: .watchOSApplicationExtension, value: value
+                )
             case tvOSDeploymentTarget.platform.configurationKey:
                 try apply(value: value, to: \.tvOSDeploymentTarget, from: configuration)
             case tvOSAppExtensionDeploymentTarget.platform.configurationKey:
-                tvOSAppExtensionDeploymentTarget = try Version(platform: .tvOSApplicationExtension, value: value)
+                tvOSAppExtensionDeploymentTarget = try Version(
+                    platform: .tvOSApplicationExtension, value: value
+                )
             default: throw .invalidConfiguration(ruleID: Parent.identifier)
             }
         }
     }
 
-    private mutating func apply(value: Any,
-                                to target: WritableKeyPath<Self, Version>,
-                                from configuration: [String: Any]) throws(Issue) {
+    private mutating func apply(
+        value: Any,
+        to target: WritableKeyPath<Self, Version>,
+        from configuration: [String: Any]
+    ) throws(Issue) {
         let platform = self[keyPath: target].platform
         self[keyPath: target] = try Version(platform: platform, value: value)
         if let counterpart = platform.appExtensionCounterpart,
            case let counterPlatform = self[keyPath: counterpart].platform,
-           configuration[counterPlatform.configurationKey] == nil {
+           configuration[counterPlatform.configurationKey] == nil
+        {
             self[keyPath: counterpart] = try Version(platform: counterPlatform, value: value)
         }
     }

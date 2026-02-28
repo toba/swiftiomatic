@@ -1,7 +1,6 @@
-
 struct StatementPositionConfiguration: SeverityBasedRuleConfiguration {
     enum StatementModeConfiguration: String, AcceptableByConfigurationElement {
-        case `default` = "default"
+        case `default`
         case uncuddledElse = "uncuddled_else"
     }
 

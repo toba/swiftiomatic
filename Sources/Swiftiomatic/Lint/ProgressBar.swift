@@ -1,7 +1,7 @@
 import Dispatch
 import Foundation
 
-// Inspired by https://github.com/jkandzi/Progress.swift
+/// Inspired by https://github.com/jkandzi/Progress.swift
 actor ProgressBar {
     private var index = 1
     private var lastPrintedTime: TimeInterval = 0.0
@@ -38,8 +38,9 @@ actor ProgressBar {
     private func makeBar() -> String {
         let barLength = 30
         let completedBarElements = Int(Double(barLength) * (Double(index) / Double(count)))
-        let barArray = Array(repeating: "=", count: completedBarElements) +
-            Array(repeating: " ", count: barLength - completedBarElements)
+        let barArray =
+            Array(repeating: "=", count: completedBarElements)
+                + Array(repeating: " ", count: barLength - completedBarElements)
         return "[\(barArray.joined())]"
     }
 

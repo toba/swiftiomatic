@@ -1,4 +1,4 @@
-internal struct XCTSpecificMatcherRuleExamples {
+enum XCTSpecificMatcherRuleExamples {
     static let nonTriggeringExamples = [
         // True/False
         Example("XCTAssert(foo"),
@@ -53,12 +53,16 @@ internal struct XCTSpecificMatcherRuleExamples {
         Example("XCTAssertEqual(.toto(.zoo), foo?.bar)"),
 
         // Configurations Disabled
-        Example("XCTAssertEqual(foo, true)",
-                configuration: ["matchers": ["one-argument-asserts"]],
-                excludeFromDocumentation: true),
-        Example("XCTAssert(foo == bar)",
-                configuration: ["matchers": ["two-argument-asserts"]],
-                excludeFromDocumentation: true),
+        Example(
+            "XCTAssertEqual(foo, true)",
+            configuration: ["matchers": ["one-argument-asserts"]],
+            excludeFromDocumentation: true
+        ),
+        Example(
+            "XCTAssert(foo == bar)",
+            configuration: ["matchers": ["two-argument-asserts"]],
+            excludeFromDocumentation: true
+        ),
 
         // Skip if one operand might be a type or a tuple
         Example("XCTAssert(foo.self == bar)"),

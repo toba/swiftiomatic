@@ -107,9 +107,10 @@ extension FormatRule {
             if !commentTemplate.contains("%c") {
                 markForType = commentTemplate.replacingOccurrences(of: "%t", with: typeName)
             } else if commentTemplate.contains("%c"), let conformanceNames {
-                markForType = commentTemplate
-                    .replacingOccurrences(of: "%t", with: typeName)
-                    .replacingOccurrences(of: "%c", with: conformanceNames)
+                markForType =
+                    commentTemplate
+                        .replacingOccurrences(of: "%t", with: typeName)
+                        .replacingOccurrences(of: "%c", with: conformanceNames)
             }
 
             // If this is an extension without any conformances, but contains exactly
@@ -171,21 +172,24 @@ extension FormatRule {
             var alreadyHasExpectedComment = false
             let potentialCommentRange = markInsertIndex ..< typeDeclaration.leadingCommentRange.upperBound
 
-            let commentsToRemove = formatter.singleLineComments(in: potentialCommentRange, matching: { comment in
-                // If we find the exact expected comment, preserve it.
-                if comment == expectedCommentBody {
-                    alreadyHasExpectedComment = true
+            let commentsToRemove = formatter.singleLineComments(
+                in: potentialCommentRange,
+                matching: { comment in
+                    // If we find the exact expected comment, preserve it.
+                    if comment == expectedCommentBody {
+                        alreadyHasExpectedComment = true
+                        return false
+                    }
+
+                    for commentPrefix in commentPrefixes {
+                        if comment.lowercased().hasPrefix(commentPrefix.lowercased()) {
+                            return true
+                        }
+                    }
+
                     return false
                 }
-
-                for commentPrefix in commentPrefixes {
-                    if comment.lowercased().hasPrefix(commentPrefix.lowercased()) {
-                        return true
-                    }
-                }
-
-                return false
-            })
+            )
 
             for commentToRemove in commentsToRemove.reversed() {
                 let startOfLine = formatter.startOfLine(at: commentToRemove.lowerBound)

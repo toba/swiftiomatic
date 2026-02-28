@@ -15,32 +15,44 @@ struct FunctionDefaultParameterAtEndRule: Rule {
             Example("func foo(bar: String, z: () -> Void, baz: Int = 0) {}"),
             Example("func foo(bar: Int = 0) {}"),
             Example("func foo() {}"),
-            Example("""
-            class A: B {
-              override func foo(bar: Int = 0, baz: String) {}
-            """),
+            Example(
+                """
+                class A: B {
+                  override func foo(bar: Int = 0, baz: String) {}
+                """
+            ),
             Example("func foo(bar: Int = 0, completion: @escaping CompletionHandler) {}"),
-            Example("""
-            func foo(a: Int, b: CGFloat = 0) {
-              let block = { (error: Error?) in }
-            }
-            """),
-            Example("""
-            func foo(a: String, b: String? = nil,
-                     c: String? = nil, d: @escaping AlertActionHandler = { _ in }) {}
-            """),
+            Example(
+                """
+                func foo(a: Int, b: CGFloat = 0) {
+                  let block = { (error: Error?) in }
+                }
+                """
+            ),
+            Example(
+                """
+                func foo(a: String, b: String? = nil,
+                         c: String? = nil, d: @escaping AlertActionHandler = { _ in }) {}
+                """
+            ),
             Example("override init?(for date: Date = Date(), coordinate: CLLocationCoordinate2D) {}"),
-            Example("""
-            func handleNotification(_ userInfo: NSDictionary,
-                                    userInteraction: Bool = false,
-                                    completionHandler: ((UIBackgroundFetchResult) -> Void)?) {}
-            """),
-            Example("""
-            func write(withoutNotifying tokens: [NotificationToken] =  {}, _ block: (() throws -> Int)) {}
-            """),
-            Example("""
-            func expect<T>(file: String = #file, _ expression: @autoclosure () -> (() throws -> T)) -> Expectation<T> {}
-            """, excludeFromDocumentation: true),
+            Example(
+                """
+                func handleNotification(_ userInfo: NSDictionary,
+                                        userInteraction: Bool = false,
+                                        completionHandler: ((UIBackgroundFetchResult) -> Void)?) {}
+                """
+            ),
+            Example(
+                """
+                func write(withoutNotifying tokens: [NotificationToken] =  {}, _ block: (() throws -> Int)) {}
+                """
+            ),
+            Example(
+                """
+                func expect<T>(file: String = #file, _ expression: @autoclosure () -> (() throws -> T)) -> Expectation<T> {}
+                """, excludeFromDocumentation: true
+            ),
             Example("func foo(bar: Int, baz: Int = 0, z: () -> Void) {}"),
             Example("func foo(bar: Int, baz: Int = 0, z: () -> Void, x: Int = 0) {}"),
             Example("func foo(isolation: isolated (any Actor)? = #isolation, bar: String) {}"),
@@ -94,7 +106,8 @@ private extension FunctionDefaultParameterAtEndRule {
                 if !previousWithDefault, hasDefault {
                     if index + 1 == numberOfParameters,
                        param.isInheritedIsolation,
-                       configuration.ignoreFirstIsolationInheritanceParameter {
+                       configuration.ignoreFirstIsolationInheritanceParameter
+                    {
                         break // It's the last element anyway.
                     }
                     violations.append(param.positionAfterSkippingLeadingTrivia)

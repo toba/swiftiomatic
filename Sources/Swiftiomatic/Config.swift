@@ -13,13 +13,15 @@ struct SwiftiomaticConfig {
         disabledRules: [],
         indent: "    ",
         maxWidth: 120,
-        swiftVersion: "6.2",
+        swiftVersion: "6.2"
     )
 
     static func load(from path: String) throws -> SwiftiomaticConfig {
         let url = URL(fileURLWithPath: path)
         let data = try Data(contentsOf: url)
-        guard let yaml = try Yams.load(yaml: String(data: data, encoding: .utf8) ?? "") as? [String: Any] else {
+        guard
+            let yaml = try Yams.load(yaml: String(data: data, encoding: .utf8) ?? "") as? [String: Any]
+        else {
             return .default
         }
         guard let format = yaml["format"] as? [String: Any] else {

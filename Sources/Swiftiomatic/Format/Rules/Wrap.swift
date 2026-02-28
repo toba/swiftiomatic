@@ -11,17 +11,26 @@ import Foundation
 extension FormatRule {
     static let wrap = FormatRule(
         help: "Wrap lines that exceed the specified maximum width.",
-        options: ["max-width", "no-wrap-operators", "asset-literals", "wrap-ternary", "wrap-string-interpolation"],
-        sharedOptions: ["wrap-arguments", "wrap-parameters", "wrap-collections", "closing-paren", "call-site-paren", "indent",
-                        "trim-whitespace", "linebreaks", "tab-width", "max-width", "smart-tabs", "wrap-return-type",
-                        "wrap-conditions", "wrap-type-aliases", "wrap-ternary", "wrap-effects", "allow-partial-wrapping"]
+        options: [
+            "max-width", "no-wrap-operators", "asset-literals", "wrap-ternary",
+            "wrap-string-interpolation",
+        ],
+        sharedOptions: [
+            "wrap-arguments", "wrap-parameters", "wrap-collections", "closing-paren", "call-site-paren",
+            "indent",
+            "trim-whitespace", "linebreaks", "tab-width", "max-width", "smart-tabs", "wrap-return-type",
+            "wrap-conditions", "wrap-type-aliases", "wrap-ternary", "wrap-effects",
+            "allow-partial-wrapping",
+        ]
     ) { formatter in
         let maxWidth = formatter.options.maxWidth
         guard maxWidth > 0 else { return }
 
         // Wrap collections first to avoid conflict
-        formatter.wrapCollectionsAndArguments(completePartialWrapping: false,
-                                              wrapSingleArguments: false)
+        formatter.wrapCollectionsAndArguments(
+            completePartialWrapping: false,
+            wrapSingleArguments: false
+        )
 
         // Wrap other line types
         var currentIndex = 0
@@ -30,7 +39,7 @@ extension FormatRule {
 
         func isLinewrapToken(_ token: Token?) -> Bool {
             switch token {
-            case .delimiter?, .operator(_, .infix)?:
+            case .delimiter, .operator(_, .infix):
                 return true
             default:
                 return false
@@ -62,8 +71,10 @@ extension FormatRule {
             }
         }
 
-        formatter.wrapCollectionsAndArguments(completePartialWrapping: true,
-                                              wrapSingleArguments: true)
+        formatter.wrapCollectionsAndArguments(
+            completePartialWrapping: true,
+            wrapSingleArguments: true
+        )
     } examples: {
         nil
     }

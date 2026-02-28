@@ -17,7 +17,9 @@ struct InvalidSwiftLintCommandRule: Rule, SourceKitFreeRule {
             Example("// swiftlint:disable:this unused_import"),
             Example("//swiftlint:disable:this unused_import"),
             Example("_ = \"🤵🏼‍♀️\" // swiftlint:disable:this unused_import", excludeFromDocumentation: true),
-            Example("_ = \"🤵🏼‍♀️ 🤵🏼‍♀️\" // swiftlint:disable:this unused_import", excludeFromDocumentation: true),
+            Example(
+                "_ = \"🤵🏼‍♀️ 🤵🏼‍♀️\" // swiftlint:disable:this unused_import", excludeFromDocumentation: true
+            ),
         ],
         triggeringExamples: [
             Example("// ↓swiftlint:"),
@@ -57,11 +59,15 @@ struct InvalidSwiftLintCommandRule: Rule, SourceKitFreeRule {
 
     private func invalidCommandViolations(in file: SwiftLintFile) -> [StyleViolation] {
         file.invalidCommands.map { command in
-            styleViolation(for: command, in: file, reason: command.invalidReason() ?? Self.description.description)
+            styleViolation(
+                for: command, in: file, reason: command.invalidReason() ?? Self.description.description
+            )
         }
     }
 
-    private func styleViolation(for command: Command, in file: SwiftLintFile, reason: String) -> StyleViolation {
+    private func styleViolation(for command: Command, in file: SwiftLintFile, reason: String)
+        -> StyleViolation
+    {
         StyleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
@@ -73,12 +79,14 @@ struct InvalidSwiftLintCommandRule: Rule, SourceKitFreeRule {
 
 private extension Command {
     func isPrecededByInvalidCharacter(in file: SwiftLintFile) -> Bool {
-        guard line > 0, let character = range?.lowerBound, character > 1, line <= file.lines.count else {
+        guard line > 0, let character = range?.lowerBound, character > 1, line <= file.lines.count
+        else {
             return false
         }
         let line = file.lines[line - 1].content
         guard line.count > character,
-              let char = line[line.index(line.startIndex, offsetBy: character - 2)].unicodeScalars.first else {
+              let char = line[line.index(line.startIndex, offsetBy: character - 2)].unicodeScalars.first
+        else {
             return false
         }
         return !CharacterSet.whitespaces.union(CharacterSet(charactersIn: "/")).contains(char)

@@ -139,12 +139,14 @@ extension Formatter {
 
         // Check if the new name would create a collision
         let newName = "test" + name.prefix(1).uppercased() + name.dropFirst()
-        let existingIdentifiers = Set(tokens.compactMap { token -> String? in
-            if case let .identifier(name) = token {
-                return name
+        let existingIdentifiers = Set(
+            tokens.compactMap { token -> String? in
+                if case let .identifier(name) = token {
+                    return name
+                }
+                return nil
             }
-            return nil
-        })
+        )
 
         // If the new name already exists elsewhere, don't rename
         if existingIdentifiers.contains(newName) {

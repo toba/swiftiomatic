@@ -6,7 +6,8 @@ struct ConcurrencyModernizationRule: Rule {
     static let description = RuleDescription(
         identifier: "concurrency_modernization",
         name: "Concurrency Modernization",
-        description: "Flags GCD usage and legacy concurrency patterns that should use structured concurrency",
+        description:
+        "Flags GCD usage and legacy concurrency patterns that should use structured concurrency",
         kind: .concurrency,
         nonTriggeringExamples: [
             Example("Task { @MainActor in update() }"),
@@ -32,18 +33,16 @@ private extension ConcurrencyModernizationRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionDeclSyntax) {
             for param in node.signature.parameterClause.parameters {
-                let paramName = param.firstName.text
-                let isCompletion = paramName == "completion" || paramName == "completionHandler"
-                    || paramName == "handler" || paramName == "callback"
-
-                if isCompletion, param.type.trimmedDescription.contains("@escaping") {
-                    violations.append(ReasonedRuleViolation(
-                        position: node.positionAfterSkippingLeadingTrivia,
-                        reason: "Function '\(node.name.text)' uses completion handler pattern",
-                        severity: .warning,
-                        confidence: .high,
-                        suggestion: "Convert to async/await"
-                    ))
+                if ConcurrencyDetectionHelpers.isCompletionHandlerParam(param) {
+                    violations.append(
+                        ReasonedRuleViolation(
+                            position: node.positionAfterSkippingLeadingTrivia,
+                            reason: "Function '\(node.name.text)' uses completion handler pattern",
+                            severity: .warning,
+                            confidence: .high,
+                            suggestion: "Convert to async/await"
+                        )
+                    )
                     break
                 }
             }
@@ -52,45 +51,54 @@ private extension ConcurrencyModernizationRule {
         override func visitPost(_ node: FunctionCallExprSyntax) {
             let callee = node.calledExpression.trimmedDescription
 
-            if callee.contains("DispatchQueue") && callee.hasSuffix(".async") {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "DispatchQueue.async can be replaced with structured concurrency",
-                    severity: .warning,
-                    confidence: .medium,
-                    suggestion: "Use Task { @MainActor in ... } or async function"
-                ))
+            if ConcurrencyDetectionHelpers.isDispatchQueueAsync(callee) {
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: "DispatchQueue.async can be replaced with structured concurrency",
+                        severity: .warning,
+                        confidence: .medium,
+                        suggestion: "Use Task { @MainActor in ... } or async function"
+                    )
+                )
             }
 
             if callee.contains("DispatchGroup") {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "DispatchGroup can be replaced with TaskGroup",
-                    severity: .warning,
-                    confidence: .medium,
-                    suggestion: "Use withTaskGroup or withThrowingTaskGroup"
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: "DispatchGroup can be replaced with TaskGroup",
+                        severity: .warning,
+                        confidence: .medium,
+                        suggestion: "Use withTaskGroup or withThrowingTaskGroup"
+                    )
+                )
             }
 
             if callee.contains("NSLock()") || callee.contains("os_unfair_lock") {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "Lock-based synchronization can be replaced with Mutex",
-                    severity: .warning,
-                    confidence: .medium,
-                    suggestion: "Use Mutex<Value> for state protection"
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: "Lock-based synchronization can be replaced with Mutex",
+                        severity: .warning,
+                        confidence: .medium,
+                        suggestion: "Use Mutex<Value> for state protection"
+                    )
+                )
             }
         }
 
         override func visitPost(_ node: ClassDeclSyntax) {
-            if let clause = node.inheritanceClause, clause.trimmedDescription.contains("@unchecked Sendable") {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "Class '\(node.name.text)' uses @unchecked Sendable — check if Mutex would enable proper Sendable",
-                    severity: .warning,
-                    confidence: .low
-                ))
+            if ConcurrencyDetectionHelpers.hasUncheckedSendable(node.inheritanceClause) {
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason:
+                        "Class '\(node.name.text)' uses @unchecked Sendable — check if Mutex would enable proper Sendable",
+                        severity: .warning,
+                        confidence: .low
+                    )
+                )
             }
         }
     }

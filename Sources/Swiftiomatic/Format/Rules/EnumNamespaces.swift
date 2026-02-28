@@ -17,13 +17,15 @@ extension FormatRule {
         """,
         options: ["enum-namespaces"]
     ) { formatter in
-        formatter.forEachToken(where: { [.keyword("class"), .keyword("struct")].contains($0) }) { i, token in
+        formatter.forEachToken(where: { [.keyword("class"), .keyword("struct")].contains($0) }) {
+            i, token in
             if token == .keyword("class") {
                 guard let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
                       // exit if structs only
                       formatter.options.enumNamespaces != .structsOnly,
                       // exit if class is a type modifier
-                      !(formatter.tokens[nextIndex].isKeywordOrAttribute || formatter.isModifier(at: nextIndex)),
+                      !(formatter.tokens[nextIndex].isKeywordOrAttribute
+                          || formatter.isModifier(at: nextIndex)),
                       // exit for class as protocol conformance
                       formatter.last(.nonSpaceOrCommentOrLinebreak, before: i) != .delimiter(":"),
                       // exit if not closed for extension
@@ -46,7 +48,8 @@ extension FormatRule {
             }
             let range = braceIndex + 1 ..< endIndex
             if formatter.rangeHostsOnlyStaticMembersAtTopLevel(range),
-               !formatter.rangeContainsTypeInit(name, in: range), !formatter.rangeContainsSelfAssignment(range)
+               !formatter.rangeContainsTypeInit(name, in: range),
+               !formatter.rangeContainsSelfAssignment(range)
             {
                 formatter.replaceToken(at: i, with: .keyword("enum"))
 
@@ -88,10 +91,12 @@ extension Formatter {
             // exit if there's a explicit init
             if token == .keyword("init") {
                 return false
-            } else if [.keyword("let"),
-                       .keyword("var"),
-                       .keyword("func"),
-                       .keyword("subscript")].contains(token),
+            } else if [
+                .keyword("let"),
+                .keyword("var"),
+                .keyword("func"),
+                .keyword("subscript"),
+            ].contains(token),
                 !modifiersForDeclaration(at: j, contains: "static")
             {
                 return false
@@ -109,8 +114,10 @@ extension Formatter {
                 continue
             }
             if let nextIndex = index(of: .nonSpaceOrComment, after: i),
-               let nextToken = token(at: nextIndex), nextToken == .startOfScope("(") ||
-               (nextToken == .operator(".", .infix) && [.identifier("init"), .identifier("self")]
+               let nextToken = token(at: nextIndex),
+               nextToken == .startOfScope("(")
+               || (nextToken == .operator(".", .infix)
+                   && [.identifier("init"), .identifier("self")]
                    .contains(next(.nonSpaceOrComment, after: nextIndex) ?? .space("")))
             {
                 return true

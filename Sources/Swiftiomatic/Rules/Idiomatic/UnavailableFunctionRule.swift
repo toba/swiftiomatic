@@ -9,64 +9,78 @@ struct UnavailableFunctionRule: Rule {
         description: "Unimplemented functions should be marked as unavailable",
         kind: .idiomatic,
         nonTriggeringExamples: [
-            Example("""
-            class ViewController: UIViewController {
-              @available(*, unavailable)
-              public required init?(coder aDecoder: NSCoder) {
-                preconditionFailure("init(coder:) has not been implemented")
-              }
-            }
-            """),
-            Example("""
-            func jsonValue(_ jsonString: String) -> NSObject {
-               let data = jsonString.data(using: .utf8)!
-               let result = try! JSONSerialization.jsonObject(with: data, options: [])
-               if let dict = (result as? [String: Any])?.bridge() {
-                return dict
-               } else if let array = (result as? [Any])?.bridge() {
-                return array
-               }
-               fatalError()
-            }
-            """),
-            Example("""
-            func resetOnboardingStateAndCrash() -> Never {
-                resetUserDefaults()
-                // Crash the app to re-start the onboarding flow.
-                fatalError("Onboarding re-start crash.")
-            }
-            """),
+            Example(
+                """
+                class ViewController: UIViewController {
+                  @available(*, unavailable)
+                  public required init?(coder aDecoder: NSCoder) {
+                    preconditionFailure("init(coder:) has not been implemented")
+                  }
+                }
+                """
+            ),
+            Example(
+                """
+                func jsonValue(_ jsonString: String) -> NSObject {
+                   let data = jsonString.data(using: .utf8)!
+                   let result = try! JSONSerialization.jsonObject(with: data, options: [])
+                   if let dict = (result as? [String: Any])?.bridge() {
+                    return dict
+                   } else if let array = (result as? [Any])?.bridge() {
+                    return array
+                   }
+                   fatalError()
+                }
+                """
+            ),
+            Example(
+                """
+                func resetOnboardingStateAndCrash() -> Never {
+                    resetUserDefaults()
+                    // Crash the app to re-start the onboarding flow.
+                    fatalError("Onboarding re-start crash.")
+                }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            class ViewController: UIViewController {
-              public required ↓init?(coder aDecoder: NSCoder) {
-                fatalError("init(coder:) has not been implemented")
-              }
-            }
-            """),
-            Example("""
-            class ViewController: UIViewController {
-              public required ↓init?(coder aDecoder: NSCoder) {
-                let reason = "init(coder:) has not been implemented"
-                fatalError(reason)
-              }
-            }
-            """),
-            Example("""
-            class ViewController: UIViewController {
-              public required ↓init?(coder aDecoder: NSCoder) {
-                preconditionFailure("init(coder:) has not been implemented")
-              }
-            }
-            """),
-            Example("""
-            ↓func resetOnboardingStateAndCrash() {
-                resetUserDefaults()
-                // Crash the app to re-start the onboarding flow.
-                fatalError("Onboarding re-start crash.")
-            }
-            """),
+            Example(
+                """
+                class ViewController: UIViewController {
+                  public required ↓init?(coder aDecoder: NSCoder) {
+                    fatalError("init(coder:) has not been implemented")
+                  }
+                }
+                """
+            ),
+            Example(
+                """
+                class ViewController: UIViewController {
+                  public required ↓init?(coder aDecoder: NSCoder) {
+                    let reason = "init(coder:) has not been implemented"
+                    fatalError(reason)
+                  }
+                }
+                """
+            ),
+            Example(
+                """
+                class ViewController: UIViewController {
+                  public required ↓init?(coder aDecoder: NSCoder) {
+                    preconditionFailure("init(coder:) has not been implemented")
+                  }
+                }
+                """
+            ),
+            Example(
+                """
+                ↓func resetOnboardingStateAndCrash() {
+                    resetUserDefaults()
+                    // Crash the app to re-start the onboarding flow.
+                    fatalError("Onboarding re-start crash.")
+                }
+                """
+            ),
         ]
     )
 }
@@ -85,7 +99,8 @@ private extension UnavailableFunctionRule {
             guard !node.returnsNever,
                   !node.attributes.hasUnavailableAttribute,
                   node.body.containsTerminatingCall,
-                  !node.body.containsReturn else {
+                  !node.body.containsReturn
+            else {
                 return
             }
 
@@ -95,7 +110,8 @@ private extension UnavailableFunctionRule {
         override func visitPost(_ node: InitializerDeclSyntax) {
             guard !node.attributes.hasUnavailableAttribute,
                   node.body.containsTerminatingCall,
-                  !node.body.containsReturn else {
+                  !node.body.containsReturn
+            else {
                 return
             }
 
@@ -117,14 +133,16 @@ private extension AttributeListSyntax {
     var hasUnavailableAttribute: Bool {
         contains { elem in
             guard let attr = elem.as(AttributeSyntax.self),
-                  let arguments = attr.arguments?.as(AvailabilityArgumentListSyntax.self) else {
+                  let arguments = attr.arguments?.as(AvailabilityArgumentListSyntax.self)
+            else {
                 return false
             }
 
             let attributeName = attr.attributeNameText
-            return attributeName == "available" && arguments.contains { arg in
-                arg.argument.as(TokenSyntax.self)?.tokenKind.isUnavailableKeyword == true
-            }
+            return attributeName == "available"
+                && arguments.contains { arg in
+                    arg.argument.as(TokenSyntax.self)?.tokenKind.isUnavailableKeyword == true
+                }
         }
     }
 }
@@ -143,7 +161,8 @@ private extension CodeBlockSyntax? {
 
         return statements.contains { item in
             guard let function = item.item.as(FunctionCallExprSyntax.self),
-                  let identifierExpr = function.calledExpression.as(DeclReferenceExprSyntax.self) else {
+                  let identifierExpr = function.calledExpression.as(DeclReferenceExprSyntax.self)
+            else {
                 return false
             }
 

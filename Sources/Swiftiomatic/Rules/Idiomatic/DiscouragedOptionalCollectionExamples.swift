@@ -1,4 +1,4 @@
-internal struct DiscouragedOptionalCollectionExamples {
+enum DiscouragedOptionalCollectionExamples {
     static let nonTriggeringExamples = [
         // Global variable
         Example("var foo: [Int]"),
@@ -210,13 +210,17 @@ internal struct DiscouragedOptionalCollectionExamples {
 
 // MARK: - Private
 
-private func wrapExample(_ type: String,
-                         _ test: String,
-                         file: StaticString = #filePath,
-                         line: UInt = #line) -> Example {
-    Example("""
+private func wrapExample(
+    _ type: String,
+    _ test: String,
+    file: StaticString = #filePath,
+    line: UInt = #line
+) -> Example {
+    Example(
+        """
         \(type) Foo {
             \(test)
         }
-        """, file: file, line: line)
+        """, file: file, line: line
+    )
 }

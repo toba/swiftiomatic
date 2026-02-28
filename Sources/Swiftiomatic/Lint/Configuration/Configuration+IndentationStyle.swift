@@ -12,7 +12,7 @@ extension Configuration {
         /// Creates an indentation style based on an untyped configuration value.
         ///
         /// - parameter object: The configuration value.
-        internal init?(_ object: Any?) {
+        init?(_ object: Any?) {
             switch object {
             case let value as Int: self = .spaces(count: value)
             case let value as String where value == "tabs": self = .tabs

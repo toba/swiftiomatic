@@ -13,7 +13,7 @@ struct FlatMapOverMapReduceRule: Rule {
             Example("let foo = bar.flatMap { $0.array }"),
         ],
         triggeringExamples: [
-            Example("let foo = ↓bar.map { $0.array }.reduce([], +)")
+            Example("let foo = ↓bar.map { $0.array }.reduce([], +)"),
         ]
     )
 }

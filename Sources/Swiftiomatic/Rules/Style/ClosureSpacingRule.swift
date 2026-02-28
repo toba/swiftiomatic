@@ -14,13 +14,17 @@ struct ClosureSpacingRule: Rule {
             Example("extension UITableViewCell: ReusableView { }"),
             Example("extension UITableViewCell: ReusableView {}"),
             Example(#"let r = /\{\}/"#, excludeFromDocumentation: true),
-            Example("""
-            var tapped: (UITapGestureRecognizer) -> Void = { _ in /* no-op */ }
-            """, excludeFromDocumentation: true),
-            Example("""
-            let test1 = func1(arg: { /* do nothing */ })
-            let test2 = func1 { /* do nothing */ }
-            """, excludeFromDocumentation: true),
+            Example(
+                """
+                var tapped: (UITapGestureRecognizer) -> Void = { _ in /* no-op */ }
+                """, excludeFromDocumentation: true
+            ),
+            Example(
+                """
+                let test1 = func1(arg: { /* do nothing */ })
+                let test2 = func1 { /* do nothing */ }
+                """, excludeFromDocumentation: true
+            ),
         ],
         triggeringExamples: [
             Example("[].filter↓{ $0.contains(location) }"),
@@ -28,9 +32,11 @@ struct ClosureSpacingRule: Rule {
             Example("[].map(↓{$0})"),
             Example("(↓{each in return result.contains(where: ↓{e in return e}) }).count"),
             Example("filter ↓{ sorted ↓{ $0 < $1}}"),
-            Example("""
-            var tapped: (UITapGestureRecognizer) -> Void = ↓{ _ in /* no-op */  }
-            """, excludeFromDocumentation: true),
+            Example(
+                """
+                var tapped: (UITapGestureRecognizer) -> Void = ↓{ _ in /* no-op */  }
+                """, excludeFromDocumentation: true
+            ),
         ],
         corrections: [
             Example("[].filter(↓{$0.contains(location) })"):
@@ -49,6 +55,7 @@ extension ClosureSpacingRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -60,7 +67,8 @@ private extension ClosureSpacingRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: ClosureExprSyntax) {
             if node.shouldCheckForClosureSpacingRule(locationConverter: locationConverter),
-               node.violations.hasViolations {
+               node.violations.hasViolations
+            {
                 violations.append(node.positionAfterSkippingLeadingTrivia)
             }
         }
@@ -105,28 +113,25 @@ private struct ClosureSpacingRuleClosureViolations {
     let rightBraceRightSpace: Bool
 
     var hasViolations: Bool {
-        leftBraceLeftSpace ||
-            leftBraceRightSpace ||
-            rightBraceLeftSpace ||
-            rightBraceRightSpace
+        leftBraceLeftSpace || leftBraceRightSpace || rightBraceLeftSpace || rightBraceRightSpace
     }
 }
 
 private extension ClosureExprSyntax {
     var violations: ClosureSpacingRuleClosureViolations {
         ClosureSpacingRuleClosureViolations(
-            leftBraceLeftSpace: !leftBrace.hasSingleSpaceToItsLeft &&
-                !leftBrace.hasAllowedNoSpaceLeftToken &&
-                !leftBrace.hasLeadingNewline,
+            leftBraceLeftSpace: !leftBrace.hasSingleSpaceToItsLeft
+                && !leftBrace.hasAllowedNoSpaceLeftToken && !leftBrace.hasLeadingNewline,
             leftBraceRightSpace: !leftBrace.hasSingleSpaceToItsRight,
             rightBraceLeftSpace: !rightBrace.hasSingleSpaceToItsLeft,
-            rightBraceRightSpace: !rightBrace.hasSingleSpaceToItsRight &&
-                !rightBrace.hasAllowedNoSpaceRightToken &&
-                !rightBrace.hasTrailingLineComment
+            rightBraceRightSpace: !rightBrace.hasSingleSpaceToItsRight
+                && !rightBrace.hasAllowedNoSpaceRightToken && !rightBrace.hasTrailingLineComment
         )
     }
 
-    func shouldCheckForClosureSpacingRule(locationConverter: SourceLocationConverter) -> Bool {
+    func shouldCheckForClosureSpacingRule(locationConverter: SourceLocationConverter)
+        -> Bool
+    {
         guard parent?.is(PostfixOperatorExprSyntax.self) == false, // Workaround for Regex literals
               (rightBrace.position.utf8Offset - leftBrace.position.utf8Offset) > 1, // Allow '{}'
               case let startLine = startLocation(converter: locationConverter).line,
@@ -146,7 +151,8 @@ private extension TokenSyntax {
             return true
         }
         if let previousToken = previousToken(viewMode: .sourceAccurate),
-           case .spaces(1) = Array(previousToken.trailingTrivia).last {
+           case .spaces(1) = Array(previousToken.trailingTrivia).last
+        {
             return true
         }
         return false
@@ -157,7 +163,8 @@ private extension TokenSyntax {
             return true
         }
         if let nextToken = nextToken(viewMode: .sourceAccurate),
-           case .spaces(1) = nextToken.leadingTrivia.first {
+           case .spaces(1) = nextToken.leadingTrivia.first
+        {
             return true
         }
         return false
@@ -207,7 +214,8 @@ private extension TokenSyntax {
             return true
         }
         if let nextToken = nextToken(viewMode: .sourceAccurate),
-           allowedKinds.contains(nextToken.tokenKind) {
+           allowedKinds.contains(nextToken.tokenKind)
+        {
             return true
         }
         return false

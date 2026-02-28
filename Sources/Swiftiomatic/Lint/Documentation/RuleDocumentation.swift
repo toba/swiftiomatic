@@ -3,27 +3,36 @@ struct RuleDocumentation {
     private let ruleType: any Rule.Type
 
     /// If this rule is an opt-in rule.
-    var isOptInRule: Bool { ruleType is any OptInRule.Type }
+    var isOptInRule: Bool {
+        ruleType is any OptInRule.Type
+    }
 
     /// If this rule is an analyzer rule.
-    var isAnalyzerRule: Bool { ruleType is any AnalyzerRule.Type }
+    var isAnalyzerRule: Bool {
+        ruleType is any AnalyzerRule.Type
+    }
 
     /// If this rule is a linter rule.
-    var isLinterRule: Bool { !isAnalyzerRule }
+    var isLinterRule: Bool {
+        !isAnalyzerRule
+    }
 
     /// If this rule uses SourceKit.
     /// Note: For ConditionallySourceKitFree rules, this returns true since we can't
     /// determine at the type level if they're effectively SourceKit-free.
     var usesSourceKit: Bool {
-        !(ruleType is any SourceKitFreeRule.Type) ||
-            (ruleType is any ConditionallySourceKitFree.Type)
+        !(ruleType is any SourceKitFreeRule.Type) || (ruleType is any ConditionallySourceKitFree.Type)
     }
 
     /// If this rule is disabled by default.
-    var isDisabledByDefault: Bool { ruleType is any OptInRule.Type }
+    var isDisabledByDefault: Bool {
+        ruleType is any OptInRule.Type
+    }
 
     /// If this rule is enabled by default.
-    var isEnabledByDefault: Bool { !isDisabledByDefault }
+    var isEnabledByDefault: Bool {
+        !isDisabledByDefault
+    }
 
     /// Creates a RuleDocumentation instance from a Rule type.
     ///
@@ -33,13 +42,19 @@ struct RuleDocumentation {
     }
 
     /// The name of the documented rule.
-    var ruleName: String { ruleType.description.name }
+    var ruleName: String {
+        ruleType.description.name
+    }
 
     /// The identifier of the documented rule.
-    var ruleIdentifier: String { ruleType.identifier }
+    var ruleIdentifier: String {
+        ruleType.identifier
+    }
 
     /// The name of the file on disk for this rule documentation.
-    var fileName: String { "\(ruleType.identifier).md" }
+    var fileName: String {
+        "\(ruleType.identifier).md"
+    }
 
     /// The contents of the file for this rule documentation.
     var fileContents: String {
@@ -49,7 +64,9 @@ struct RuleDocumentation {
             content += [h2("Rationale")]
             content.append(formattedRationale)
         }
-        let nonTriggeringExamples = description.nonTriggeringExamples.filter { !$0.excludeFromDocumentation }
+        let nonTriggeringExamples = description.nonTriggeringExamples.filter {
+            !$0.excludeFromDocumentation
+        }
         if nonTriggeringExamples.isNotEmpty {
             content += [h2("Non Triggering Examples")]
             content += nonTriggeringExamples.map(formattedCode)
@@ -63,47 +80,55 @@ struct RuleDocumentation {
     }
 
     private func formattedCode(_ example: Example) -> String {
-        if let config = example.configuration, let configuredRule = try? ruleType.init(configuration: config) {
-            let configDescription = configuredRule.createConfigurationDescription(exclusiveOptions: Set(config.keys))
+        if let config = example.configuration,
+           let configuredRule = try? ruleType.init(configuration: config)
+        {
+            let configDescription = configuredRule.createConfigurationDescription(
+                exclusiveOptions: Set(config.keys)
+            )
             return """
-                ```swift
-                //
-                // \(configDescription.yaml().linesPrefixed(with: "// "))
-                //
-
-                \(example.code)
-
-                ```
-                """
-        }
-        return """
             ```swift
+            //
+            // \(configDescription.yaml().linesPrefixed(with: "// "))
+            //
+
             \(example.code)
+
             ```
             """
+        }
+        return """
+        ```swift
+        \(example.code)
+        ```
+        """
     }
 }
 
-private func h1(_ text: String) -> String { "# \(text)" }
+private func h1(_ text: String) -> String {
+    "# \(text)"
+}
 
-private func h2(_ text: String) -> String { "## \(text)" }
+private func h2(_ text: String) -> String {
+    "## \(text)"
+}
 
 private func detailsSummary(_ rule: some Rule) -> String {
     let ruleDescription = """
-        * **Identifier:** `\(type(of: rule).identifier)`
-        * **Enabled by default:** \(rule is any OptInRule ? "No" : "Yes")
-        * **Supports autocorrection:** \(rule is any CorrectableRule ? "Yes" : "No")
-        * **Kind:** \(type(of: rule).description.kind)
-        * **Analyzer rule:** \(rule is any AnalyzerRule ? "Yes" : "No")
-        * **Minimum Swift compiler version:** \(type(of: rule).description.minSwiftVersion.rawValue)
-        """
+    * **Identifier:** `\(type(of: rule).identifier)`
+    * **Enabled by default:** \(rule is any OptInRule ? "No" : "Yes")
+    * **Supports autocorrection:** \(rule is any CorrectableRule ? "Yes" : "No")
+    * **Kind:** \(type(of: rule).description.kind)
+    * **Analyzer rule:** \(rule is any AnalyzerRule ? "Yes" : "No")
+    * **Minimum Swift compiler version:** \(type(of: rule).description.minSwiftVersion.rawValue)
+    """
     let description = rule.createConfigurationDescription()
     if description.hasContent {
         return ruleDescription + """
 
-            * **Default configuration:**
-              \(description.markdown().linesPrefixed(with: "  "))
-            """
+        * **Default configuration:**
+          \(description.markdown().linesPrefixed(with: "  "))
+        """
     }
     return ruleDescription
 }

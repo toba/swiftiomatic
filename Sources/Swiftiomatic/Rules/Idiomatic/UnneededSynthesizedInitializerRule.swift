@@ -21,8 +21,8 @@ struct UnneededSynthesizedInitializerRule: Rule {
     static let description = RuleDescription(
         identifier: "unneeded_synthesized_initializer",
         name: "Unneeded Synthesized Initializer",
-        description: "Default or memberwise initializers that will be automatically synthesized " +
-                     "do not need to be manually defined.",
+        description: "Default or memberwise initializers that will be automatically synthesized "
+            + "do not need to be manually defined.",
         kind: .idiomatic,
         nonTriggeringExamples: UnneededSynthesizedInitializerRuleExamples.nonTriggering,
         triggeringExamples: UnneededSynthesizedInitializerRuleExamples.triggering,
@@ -34,6 +34,7 @@ extension UnneededSynthesizedInitializerRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -48,9 +49,12 @@ private extension UnneededSynthesizedInitializerRule {
         override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
             violations += node.unneededInitializers.map {
                 let initializerType = $0.parameterList.isEmpty ? "default" : "memberwise"
-                let reason = "This \(initializerType) initializer would be synthesized automatically - " +
-                    "you do not need to define it"
-                return ReasonedRuleViolation(position: $0.positionAfterSkippingLeadingTrivia, reason: reason)
+                let reason =
+                    "This \(initializerType) initializer would be synthesized automatically - "
+                        + "you do not need to define it"
+                return ReasonedRuleViolation(
+                    position: $0.positionAfterSkippingLeadingTrivia, reason: reason
+                )
             }
             return .visitChildren
         }
@@ -59,7 +63,9 @@ private extension UnneededSynthesizedInitializerRule {
     final class Rewriter: ViolationsSyntaxRewriter<ConfigurationType> {
         private var unneededInitializers: [InitializerDeclSyntax] = []
 
-        override func visitAny(_: Syntax) -> Syntax? { nil }
+        override func visitAny(_: Syntax) -> Syntax? {
+            nil
+        }
 
         override func visit(_ node: StructDeclSyntax) -> DeclSyntax {
             unneededInitializers = node.unneededInitializers.filter {
@@ -72,9 +78,10 @@ private extension UnneededSynthesizedInitializerRule {
             if unneededInitializers.contains(node) {
                 numberOfCorrections += 1
                 let expr: DeclSyntax = ""
-                return expr
-                    .with(\.leadingTrivia, node.leadingTrivia)
-                    .with(\.trailingTrivia, node.trailingTrivia)
+                return
+                    expr
+                        .with(\.leadingTrivia, node.leadingTrivia)
+                        .with(\.trailingTrivia, node.trailingTrivia)
             }
             return super.visit(node)
         }
@@ -100,8 +107,8 @@ private final class ElementCollector: SyntaxAnyVisitor {
     }
 }
 
-private extension StructDeclSyntax {
-    var unneededInitializers: [InitializerDeclSyntax] {
+extension StructDeclSyntax {
+    fileprivate var unneededInitializers: [InitializerDeclSyntax] {
         let collector = ElementCollector(viewMode: .sourceAccurate)
         collector.walk(memberBlock)
         let unneededInitializers = findUnneededInitializers(in: collector)
@@ -111,22 +118,22 @@ private extension StructDeclSyntax {
         return []
     }
 
-    // Finds all of the initializers that could be replaced by the synthesized
-    // memberwise or default initializer(s).
+    /// Finds all of the initializers that could be replaced by the synthesized
+    /// memberwise or default initializer(s).
     private func findUnneededInitializers(in collector: ElementCollector) -> [InitializerDeclSyntax] {
         let initializers = collector.initializers.filter {
             $0.optionalMark == nil && !$0.hasThrowsOrRethrowsKeyword
         }
         let varDecls = collector.varDecls.filter { !$0.modifiers.contains(keyword: .static) }
         return initializers.filter {
-            self.initializerParameters($0.parameterList, match: varDecls) &&
-            (($0.parameterList.isEmpty && hasNoSideEffects($0.body)) ||
-             initializerBody($0.body, matches: varDecls)) &&
-            initializerModifiers($0.modifiers, match: varDecls) && $0.attributes.isEmpty
+            self.initializerParameters($0.parameterList, match: varDecls)
+                && (($0.parameterList.isEmpty && hasNoSideEffects($0.body))
+                    || initializerBody($0.body, matches: varDecls))
+                && initializerModifiers($0.modifiers, match: varDecls) && $0.attributes.isEmpty
         }
     }
 
-    // Are the initializer parameters empty, or do they match the stored properties of the struct?
+    /// Are the initializer parameters empty, or do they match the stored properties of the struct?
     private func initializerParameters(
         _ initializerParameters: FunctionParameterListSyntax,
         match storedProperties: [VariableDeclSyntax]
@@ -152,20 +159,23 @@ private extension StructDeclSyntax {
             // Ensure that parameters that correspond to properties declared using 'var' have a default
             // argument that is identical to the property's default value. Otherwise, a default argument
             // doesn't match the memberwise initializer.
-            if property.bindingSpecifier.tokenKind == .keyword(.var), let initializer = property.initializer {
+            if property.bindingSpecifier.tokenKind == .keyword(.var),
+               let initializer = property.initializer
+            {
                 guard initializer.value.description == parameter.defaultValue?.value.description else {
                     return false
                 }
-            } else if parameter.defaultValue != nil ||
-                      propertyId.identifier.text != parameter.firstName.text ||
-                      (propertyTypeDescription != nil && propertyTypeDescription != parameter.typeDescription) {
+            } else if parameter.defaultValue != nil
+                || propertyId.identifier.text != parameter.firstName.text
+                || (propertyTypeDescription != nil && propertyTypeDescription != parameter.typeDescription)
+            {
                 return false
             }
         }
         return true
     }
 
-    // Does the body initialize all, and only, the stored properties for the struct?
+    /// Does the body initialize all, and only, the stored properties for the struct?
     private func initializerBody( // swiftlint:disable:this cyclomatic_complexity
         _ initializerBody: CodeBlockSyntax?,
         matches storedProperties: [VariableDeclSyntax]
@@ -185,16 +195,16 @@ private extension StructDeclSyntax {
 
             for element in exp.elements {
                 switch Syntax(element).as(SyntaxEnum.self) {
-                case .memberAccessExpr(let element):
+                case let .memberAccessExpr(element):
                     guard element.isBaseSelf else {
                         return false
                     }
                     leftName = element.declName.baseName.text
-                case .assignmentExpr(let element) where element.equal.tokenKind != .equal:
+                case let .assignmentExpr(element) where element.equal.tokenKind != .equal:
                     return false
                 case .assignmentExpr:
                     break
-                case .declReferenceExpr(let element):
+                case let .declReferenceExpr(element):
                     rightName = element.baseName.text
                 default:
                     return false
@@ -223,8 +233,8 @@ private extension StructDeclSyntax {
         return initializerBody.statements.isEmpty
     }
 
-    // Does the actual access level of an initializer match the access level of the synthesized
-    // memberwise initializer?
+    /// Does the actual access level of an initializer match the access level of the synthesized
+    /// memberwise initializer?
     private func initializerModifiers(
         _ modifiers: DeclModifierListSyntax?,
         match storedProperties: [VariableDeclSyntax]
@@ -262,27 +272,32 @@ private extension VariableDeclSyntax {
     var identifiers: [IdentifierPatternSyntax] {
         bindings.compactMap { $0.pattern.as(IdentifierPatternSyntax.self) }
     }
+
     var firstIdentifier: IdentifierPatternSyntax {
         identifiers[0]
     }
+
     var typeDescription: String? {
         bindings.first?.typeAnnotation?.type.description.trimmingCharacters(in: .whitespaces)
     }
+
     var initializer: InitializerClauseSyntax? {
         bindings.first?.initializer
     }
 }
 
-// Defines the access levels which may be assigned to a synthesized memberwise initializer.
+/// Defines the access levels which may be assigned to a synthesized memberwise initializer.
 private enum AccessLevel {
     case `internal`
     case `fileprivate`
     case `private`
 }
 
-// See https://docs.swift.org/swift-book/LanguageGuide/AccessControl.html#ID21
-// for the rules defining default memberwise initializer access levels
-private func synthesizedInitializerAccessLevel(using storedProperties: [VariableDeclSyntax]) -> AccessLevel {
+/// See https://docs.swift.org/swift-book/LanguageGuide/AccessControl.html#ID21
+/// for the rules defining default memberwise initializer access levels
+private func synthesizedInitializerAccessLevel(using storedProperties: [VariableDeclSyntax])
+    -> AccessLevel
+{
     var hasFileprivate = false
     for property in storedProperties {
         let modifiers = property.modifiers

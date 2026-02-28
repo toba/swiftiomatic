@@ -7,7 +7,8 @@ struct PreferZeroOverExplicitInitRule: Rule {
     static let description = RuleDescription(
         identifier: "prefer_zero_over_explicit_init",
         name: "Prefer Zero Over Explicit Init",
-        description: "Prefer `.zero` over explicit init with zero parameters (e.g. `CGPoint(x: 0, y: 0)`)",
+        description:
+        "Prefer `.zero` over explicit init with zero parameters (e.g. `CGPoint(x: 0, y: 0)`)",
         kind: .idiomatic,
         nonTriggeringExamples: [
             Example("CGRect(x: 0, y: 0, width: 0, height: 1)"),
@@ -40,6 +41,7 @@ extension PreferZeroOverExplicitInitRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -73,41 +75,28 @@ private extension PreferZeroOverExplicitInitRule {
 
 private extension FunctionCallExprSyntax {
     var hasViolation: Bool {
-        isCGPointZeroCall ||
-            isCGSizeCall ||
-            isCGRectCall ||
-            isCGVectorCall ||
-            isUIEdgeInsetsCall
+        isCGPointZeroCall || isCGSizeCall || isCGRectCall || isCGVectorCall || isUIEdgeInsetsCall
     }
 
     var isCGPointZeroCall: Bool {
-        name == "CGPoint" &&
-            argumentNames == ["x", "y"] &&
-            argumentsAreAllZero
+        name == "CGPoint" && argumentNames == ["x", "y"] && argumentsAreAllZero
     }
 
     var isCGSizeCall: Bool {
-        name == "CGSize" &&
-            argumentNames == ["width", "height"] &&
-            argumentsAreAllZero
+        name == "CGSize" && argumentNames == ["width", "height"] && argumentsAreAllZero
     }
 
     var isCGRectCall: Bool {
-        name == "CGRect" &&
-            argumentNames == ["x", "y", "width", "height"] &&
-            argumentsAreAllZero
+        name == "CGRect" && argumentNames == ["x", "y", "width", "height"] && argumentsAreAllZero
     }
 
     var isCGVectorCall: Bool {
-        name == "CGVector" &&
-            argumentNames == ["dx", "dy"] &&
-            argumentsAreAllZero
+        name == "CGVector" && argumentNames == ["dx", "dy"] && argumentsAreAllZero
     }
 
     var isUIEdgeInsetsCall: Bool {
-        name == "UIEdgeInsets" &&
-            argumentNames == ["top", "left", "bottom", "right"] &&
-            argumentsAreAllZero
+        name == "UIEdgeInsets" && argumentNames == ["top", "left", "bottom", "right"]
+            && argumentsAreAllZero
     }
 
     var name: String? {

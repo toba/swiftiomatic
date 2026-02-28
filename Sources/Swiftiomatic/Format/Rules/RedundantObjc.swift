@@ -49,11 +49,19 @@ extension FormatRule {
                 }
                 index = nextIndex
             }
-            if formatter.last(.nonSpaceOrCommentOrLinebreak, before: i, if: {
-                $0.isAttribute && objcAttributes.contains($0.string)
-            }) != nil || formatter.next(.nonSpaceOrCommentOrLinebreak, after: i, if: {
-                $0.isAttribute && objcAttributes.contains($0.string)
-            }) != nil {
+            if formatter.last(
+                .nonSpaceOrCommentOrLinebreak, before: i,
+                if: {
+                    $0.isAttribute && objcAttributes.contains($0.string)
+                }
+            ) != nil
+                || formatter.next(
+                    .nonSpaceOrCommentOrLinebreak, after: i,
+                    if: {
+                        $0.isAttribute && objcAttributes.contains($0.string)
+                    }
+                ) != nil
+            {
                 formatter.removeAttribute(at: i)
                 return
             }

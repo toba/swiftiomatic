@@ -14,72 +14,88 @@ struct UnusedControlFlowLabelRule: Rule {
             Example("loop:\n    while true { break loop }"),
             Example("while true { break }"),
             Example("loop: for x in array { break loop }"),
-            Example("""
-            label: switch number {
-            case 1: print("1")
-            case 2: print("2")
-            default: break label
-            }
-            """),
-            Example("""
-            loop: repeat {
-                if x == 10 {
-                    break loop
+            Example(
+                """
+                label: switch number {
+                case 1: print("1")
+                case 2: print("2")
+                default: break label
                 }
-            } while true
-            """),
+                """
+            ),
+            Example(
+                """
+                loop: repeat {
+                    if x == 10 {
+                        break loop
+                    }
+                } while true
+                """
+            ),
         ],
         triggeringExamples: [
             Example("↓loop: while true { break }"),
             Example("↓loop: while true { break loop1 }"),
             Example("↓loop: while true { break outerLoop }"),
             Example("↓loop: for x in array { break }"),
-            Example("""
-            ↓label: switch number {
-            case 1: print("1")
-            case 2: print("2")
-            default: break
-            }
-            """),
-            Example("""
-            ↓loop: repeat {
-                if x == 10 {
-                    break
+            Example(
+                """
+                ↓label: switch number {
+                case 1: print("1")
+                case 2: print("2")
+                default: break
                 }
-            } while true
-            """),
+                """
+            ),
+            Example(
+                """
+                ↓loop: repeat {
+                    if x == 10 {
+                        break
+                    }
+                } while true
+                """
+            ),
         ],
         corrections: [
             Example("↓loop: while true { break }"): Example("while true { break }"),
             Example("↓loop: while true { break loop1 }"): Example("while true { break loop1 }"),
             Example("↓loop: while true { break outerLoop }"): Example("while true { break outerLoop }"),
             Example("↓loop: for x in array { break }"): Example("for x in array { break }"),
-            Example("""
-            ↓label: switch number {
-            case 1: print("1")
-            case 2: print("2")
-            default: break
-            }
-            """): Example("""
+            Example(
+                """
+                ↓label: switch number {
+                case 1: print("1")
+                case 2: print("2")
+                default: break
+                }
+                """
+            ): Example(
+                """
                 switch number {
                 case 1: print("1")
                 case 2: print("2")
                 default: break
                 }
-                """),
-            Example("""
-            ↓loop: repeat {
-                if x == 10 {
-                    break
-                }
-            } while true
-            """): Example("""
+                """
+            ),
+            Example(
+                """
+                ↓loop: repeat {
+                    if x == 10 {
+                        break
+                    }
+                } while true
+                """
+            ): Example(
+                """
                 repeat {
                     if x == 10 {
                         break
                     }
                 } while true
-                """),
+                """
+            ),
         ]
     )
 }
@@ -88,6 +104,7 @@ extension UnusedControlFlowLabelRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }

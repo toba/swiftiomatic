@@ -34,6 +34,7 @@ extension ToggleBoolRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -52,16 +53,19 @@ private extension ToggleBoolRule {
 
     final class Rewriter: ViolationsSyntaxRewriter<ConfigurationType> {
         override func visit(_ node: ExprListSyntax) -> ExprListSyntax {
-            guard node.hasToggleBoolViolation, let firstExpr = node.first, let index = node.index(of: firstExpr) else {
+            guard node.hasToggleBoolViolation, let firstExpr = node.first,
+                  let index = node.index(of: firstExpr)
+            else {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let elements = node
-                .with(
-                    \.[index],
-                    "\(firstExpr.trimmed).toggle()"
-                )
-                .dropLast(2)
+            let elements =
+                node
+                    .with(
+                        \.[index],
+                        "\(firstExpr.trimmed).toggle()"
+                    )
+                    .dropLast(2)
             let newNode = ExprListSyntax(elements)
                 .with(\.leadingTrivia, node.leadingTrivia)
                 .with(\.trailingTrivia, node.trailingTrivia)

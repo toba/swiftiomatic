@@ -101,7 +101,7 @@ private extension ExpiringTodoRule {
                     let remainingTrivia = trivia.dropFirst(index + 1)
 
                     for nextPiece in remainingTrivia {
-                        if case .lineComment(let nextText) = nextPiece {
+                        if case let .lineComment(nextText) = nextPiece {
                             // Check if it's a continuation (starts with //)
                             if nextText.hasPrefix("//") {
                                 combinedText += "\n" + nextText
@@ -138,7 +138,8 @@ private extension ExpiringTodoRule {
                     .trimmingCharacters(in: .whitespacesAndNewlines)
 
                 if let violationLevel = getViolationLevel(for: parseDate(dateString: dateString)),
-                   let severity = getSeverity(for: violationLevel) {
+                   let severity = getSeverity(for: violationLevel)
+                {
                     let violation = ReasonedRuleViolation(
                         position: matchPosition,
                         reason: violationLevel.reason,
@@ -186,9 +187,7 @@ private extension ExpiringTodoRule {
                 return nil
             }
 
-            return approachingDate.isAfterToday ?
-                nil :
-                .approachingExpiry
+            return approachingDate.isAfterToday ? nil : .approachingExpiry
         }
     }
 }
@@ -211,8 +210,8 @@ private extension TriviaPiece {
 
     var commentText: String? {
         switch self {
-        case .lineComment(let text), .blockComment(let text),
-             .docLineComment(let text), .docBlockComment(let text):
+        case let .lineComment(text), let .blockComment(text),
+             let .docLineComment(text), let .docBlockComment(text):
             text
         default:
             nil

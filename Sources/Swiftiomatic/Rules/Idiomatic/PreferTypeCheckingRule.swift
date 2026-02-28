@@ -13,16 +13,20 @@ struct PreferTypeCheckingRule: Rule {
             Example("let foo = bar as? Foo"),
             Example("bar is Foo"),
             Example("2*x is X"),
-            Example("""
-            if foo is Bar {
-                doSomeThing()
-            }
-            """),
-            Example("""
-            if let bar = foo as? Bar {
-                foo.run()
-            }
-            """),
+            Example(
+                """
+                if foo is Bar {
+                    doSomeThing()
+                }
+                """
+            ),
+            Example(
+                """
+                if let bar = foo as? Bar {
+                    foo.run()
+                }
+                """
+            ),
             Example("bar as Foo != nil"),
             Example("nil != bar as Foo"),
             Example("bar as Foo? != nil"),
@@ -31,11 +35,13 @@ struct PreferTypeCheckingRule: Rule {
         triggeringExamples: [
             Example("bar ↓as? Foo != nil"),
             Example("2*x as? X != nil"),
-            Example("""
-            if foo ↓as? Bar != nil {
-                doSomeThing()
-            }
-            """),
+            Example(
+                """
+                if foo ↓as? Bar != nil {
+                    doSomeThing()
+                }
+                """
+            ),
             Example("nil != bar ↓as? Foo"),
             Example("nil != 2*x ↓as? X"),
         ],
@@ -43,15 +49,19 @@ struct PreferTypeCheckingRule: Rule {
             Example("bar ↓as? Foo != nil"): Example("bar is Foo"),
             Example("nil != bar ↓as? Foo"): Example("bar is Foo"),
             Example("2*x ↓as? X != nil"): Example("2*x is X"),
-            Example("""
-            if foo ↓as? Bar != nil {
-                doSomeThing()
-            }
-            """): Example("""
-            if foo is Bar {
-                doSomeThing()
-            }
-            """),
+            Example(
+                """
+                if foo ↓as? Bar != nil {
+                    doSomeThing()
+                }
+                """
+            ): Example(
+                """
+                if foo is Bar {
+                    doSomeThing()
+                }
+                """
+            ),
         ]
     )
 }
@@ -60,6 +70,7 @@ extension PreferTypeCheckingRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -101,7 +112,8 @@ private extension InfixOperatorExprSyntax {
            asExpr.questionOrExclamationMark?.tokenKind == .postfixQuestionMark,
            !asExpr.type.is(OptionalTypeSyntax.self),
            `operator`.as(BinaryOperatorExprSyntax.self)?.operator.tokenKind == .binaryOperator("!="),
-           rightOperand.is(NilLiteralExprSyntax.self) || leftOperand.is(NilLiteralExprSyntax.self) {
+           rightOperand.is(NilLiteralExprSyntax.self) || leftOperand.is(NilLiteralExprSyntax.self)
+        {
             asExpr
         } else {
             nil

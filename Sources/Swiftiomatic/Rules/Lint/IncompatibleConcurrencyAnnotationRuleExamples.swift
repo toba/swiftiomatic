@@ -1,5 +1,5 @@
 // swiftlint:disable:next type_name
-struct IncompatibleConcurrencyAnnotationRuleExamples {
+enum IncompatibleConcurrencyAnnotationRuleExamples {
     static let nonTriggeringExamples = [
         // Sendable conformance is fine
         Example("public struct S: Sendable {}"),
@@ -23,27 +23,35 @@ struct IncompatibleConcurrencyAnnotationRuleExamples {
         Example("@preconcurrency public func globalActorClosure(_ block: @MainActor () -> Void)"),
         Example("@preconcurrency public init(_ block: @Sendable () -> Void)"),
         Example(
-            "@preconcurrency public subscript(index: Int) -> String where String: Sendable { get }"),
+            "@preconcurrency public subscript(index: Int) -> String where String: Sendable { get }"
+        ),
         Example("@preconcurrency public func sendableReturningClosure() -> @Sendable () -> Void"),
         Example(
-            "@preconcurrency public func globalActorReturningClosure() -> @MainActor () -> Void"),
+            "@preconcurrency public func globalActorReturningClosure() -> @MainActor () -> Void"
+        ),
         Example("@preconcurrency public func sendingParameter(_ value: sending MyClass)"),
-        Example("""
+        Example(
+            """
             @preconcurrency public func tupleParameterClosures(
                 _ handlers: (@Sendable () -> Void, @MainActor () -> Void)
             )
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             @preconcurrency public func tupleReturningClosures() -> (
                 @Sendable () -> Void,
                 @MainActor () -> Void
             )
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             @preconcurrency public func closureWithSendingArgument(
                 _ handler: (_ value: sending MyClass) -> Void
             )
-            """),
+            """
+        ),
 
         // Non-concurrency related cases
         Example("public func nonSendableClosure(_ block: () -> Void)"),
@@ -65,20 +73,26 @@ struct IncompatibleConcurrencyAnnotationRuleExamples {
         Example("@MainActor public ↓func globalActor()"),
 
         // Initializers with global actors
-        Example("""
+        Example(
+            """
             class C {
                 @MainActor public ↓init() {}
             }
-            """),
+            """
+        ),
         Example("@MainActor public ↓init<T>()"),
 
         // Subscripts with global actors and sendable generics
-        Example("""
+        Example(
+            """
             struct S {
                 @MainActor public ↓subscript(index: Int) -> String { get }
             }
-            """),
-        Example("public ↓subscript<T>(index: T) -> Int where T: ExpressibleByIntegerLiteral & Sendable { get }"),
+            """
+        ),
+        Example(
+            "public ↓subscript<T>(index: T) -> Int where T: ExpressibleByIntegerLiteral & Sendable { get }"
+        ),
 
         // Function parameters with concurrency attributes
         Example("public ↓func sendableClosure(_ block: @Sendable () -> Void)"),
@@ -86,16 +100,20 @@ struct IncompatibleConcurrencyAnnotationRuleExamples {
         Example("public struct S { public ↓func sendableClosure(_ block: @Sendable () -> Void) }"),
         Example("public ↓init(_ block: @Sendable () -> Void)"),
         Example("public ↓init(param: @MainActor () -> Void)"),
-        Example("""
+        Example(
+            """
             public ↓func tupleParameter(
                 _ handlers: (@Sendable () -> Void, @MainActor () -> Void)
             )
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             public ↓func tupleWithSending(
                 _ handlers: ((_ value: sending MyClass) -> Void, @MainActor () -> Void)
             )
-            """),
+            """
+        ),
 
         // Generic where clauses with Sendable
         Example("public ↓func generic<T>() where T: Sendable {}"),
@@ -130,156 +148,210 @@ struct IncompatibleConcurrencyAnnotationRuleExamples {
 
     static let corrections = [
         // Global actor on declarations
-        Example("""
+        Example(
+            """
             @MainActor
             public enum E { case a }
-            """):
-            Example("""
+            """
+        ):
+            Example(
+                """
                 @preconcurrency
                 @MainActor
                 public enum E { case a }
-                """),
+                """
+            ),
 
         Example("@MainActor public struct S {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 @MainActor public struct S {}
-                """),
+                """
+            ),
 
         Example("@MainActor public class C {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 @MainActor public class C {}
-                """),
+                """
+            ),
 
         Example("@MainActor public protocol P {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 @MainActor public protocol P {}
-                """),
+                """
+            ),
 
         Example("@MainActor public func globalActor() {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 @MainActor public func globalActor() {}
-                """),
+                """
+            ),
 
         // Initializers with global actors
-        Example("""
+        Example(
+            """
             class C {
                 @MainActor public init() {}
             }
-            """):
-            Example("""
+            """
+        ):
+            Example(
+                """
                 class C {
                     @preconcurrency
                     @MainActor public init() {}
                 }
-                """),
+                """
+            ),
 
         // Subscripts with global actors
-        Example("""
+        Example(
+            """
             struct S {
                 @MainActor public subscript(index: Int) -> String { get }
             }
-            """):
-            Example("""
+            """
+        ):
+            Example(
+                """
                 struct S {
                     @preconcurrency
                     @MainActor public subscript(index: Int) -> String { get }
                 }
-                """),
+                """
+            ),
 
         // Functions with Sendable parameters
         Example("public func sendableClosure(_ block: @Sendable () -> Void) {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 public func sendableClosure(_ block: @Sendable () -> Void) {}
-                """),
+                """
+            ),
 
         Example("public func globalActorClosure(_ block: @MainActor () -> Void) {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 public func globalActorClosure(_ block: @MainActor () -> Void) {}
-                """),
+                """
+            ),
 
-        Example("public func tupleParameter(_ handlers: (@Sendable () -> Void, @MainActor () -> Void)) {}"):
-            Example("""
+        Example(
+            "public func tupleParameter(_ handlers: (@Sendable () -> Void, @MainActor () -> Void)) {}"
+        ):
+            Example(
+                """
                 @preconcurrency
                 public func tupleParameter(_ handlers: (@Sendable () -> Void, @MainActor () -> Void)) {}
-                """),
+                """
+            ),
 
-        Example("""
+        Example(
+            """
             public func tupleWithSending(
                 _ handlers: ((_ value: sending MyClass) -> Void, @MainActor () -> Void)
             ) {}
-            """):
-            Example("""
+            """
+        ):
+            Example(
+                """
                 @preconcurrency
                 public func tupleWithSending(
                     _ handlers: ((_ value: sending MyClass) -> Void, @MainActor () -> Void)
                 ) {}
-                """),
+                """
+            ),
 
         // Initializers with Sendable parameters
         Example("public init(_ block: @Sendable () -> Void) {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 public init(_ block: @Sendable () -> Void) {}
-                """),
+                """
+            ),
 
         // Generic where clauses with Sendable
         Example("public func generic<T>() where T: Sendable {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 public func generic<T>() where T: Sendable {}
-                """),
+                """
+            ),
 
         Example("public struct S<T> where T: Sendable {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 public struct S<T> where T: Sendable {}
-                """),
+                """
+            ),
 
         Example("public subscript<T>(index: T) -> Int where T: Sendable { get }"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 public subscript<T>(index: T) -> Int where T: Sendable { get }
-                """),
+                """
+            ),
 
         Example("public func returnsSendableClosure() -> @Sendable () -> Void {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 public func returnsSendableClosure() -> @Sendable () -> Void {}
-                """),
+                """
+            ),
 
         Example("public func returnsActorClosure() -> @MainActor () -> Void {}"):
-            Example("""
+            Example(
+                """
                 @preconcurrency
                 public func returnsActorClosure() -> @MainActor () -> Void {}
-                """),
+                """
+            ),
 
-        Example("public func returnsClosureTuple() -> (@Sendable () -> Void, @MainActor () -> Void) {}"):
-            Example("""
+        Example(
+            "public func returnsClosureTuple() -> (@Sendable () -> Void, @MainActor () -> Void) {}"
+        ):
+            Example(
+                """
                 @preconcurrency
                 public func returnsClosureTuple() -> (@Sendable () -> Void, @MainActor () -> Void) {}
-                """),
+                """
+            ),
 
         // Custom global actors with configuration
         Example(
             "@MyActor public struct S {}",
-            configuration: ["global_actors": ["MyActor"]]):
-            Example("""
+            configuration: ["global_actors": ["MyActor"]]
+        ):
+            Example(
+                """
                 @preconcurrency
                 @MyActor public struct S {}
-                """),
+                """
+            ),
 
         Example(
             "public func globalActorClosure(_ block: @MyActor () -> Void) {}",
-            configuration: ["global_actors": ["MyActor"]]):
-            Example("""
+            configuration: ["global_actors": ["MyActor"]]
+        ):
+            Example(
+                """
                 @preconcurrency
                 public func globalActorClosure(_ block: @MyActor () -> Void) {}
-                """),
+                """
+            ),
     ]
 }

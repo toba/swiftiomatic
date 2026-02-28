@@ -1,4 +1,3 @@
-
 /// The configuration payload mapping an imported module to a set of modules that are allowed to be
 /// transitively imported.
 struct TransitiveModuleConfiguration<Parent: Rule>: Equatable, AcceptableByConfigurationElement {

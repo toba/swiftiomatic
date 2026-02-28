@@ -21,20 +21,21 @@ extension AsyncWithoutAwaitRule: SwiftSyntaxCorrectableRule {
 }
 
 extension AsyncWithoutAwaitRule: OptInRule {}
-private extension AsyncWithoutAwaitRule {
+extension AsyncWithoutAwaitRule {
     private struct FuncInfo {
         var containsAwait = false
         let asyncToken: TokenSyntax?
     }
 
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private var functionScopes = Stack<FuncInfo>()
         private var actorTypeStack = Stack<Bool>()
         private var pendingAsync: TokenSyntax?
 
         override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
             if node.body != nil {
-                let asyncToken = node.needsToKeepAsync ? nil : node.signature.effectSpecifiers?.asyncSpecifier
+                let asyncToken =
+                    node.needsToKeepAsync ? nil : node.signature.effectSpecifiers?.asyncSpecifier
                 functionScopes.push(.init(asyncToken: asyncToken))
             }
             return .visitChildren
@@ -48,9 +49,10 @@ private extension AsyncWithoutAwaitRule {
 
         override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
             // @concurrent closures require the async keyword even without await calls,
-            let asyncToken = (node.signature?.attributes.contains(attributeNamed: "concurrent") ?? false)
-                ? nil
-                : pendingAsync
+            let asyncToken =
+                (node.signature?.attributes.contains(attributeNamed: "concurrent") ?? false)
+                    ? nil
+                    : pendingAsync
             functionScopes.push(.init(asyncToken: asyncToken))
             pendingAsync = nil
             return .visitChildren
@@ -80,9 +82,10 @@ private extension AsyncWithoutAwaitRule {
 
         override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
             if node.body != nil {
-                let asyncToken = node.needsToKeepAsync || actorTypeStack.peek() == true
-                    ? nil
-                    : node.signature.effectSpecifiers?.asyncSpecifier
+                let asyncToken =
+                    node.needsToKeepAsync || actorTypeStack.peek() == true
+                        ? nil
+                        : node.signature.effectSpecifiers?.asyncSpecifier
                 functionScopes.push(.init(asyncToken: asyncToken))
             }
             return .visitChildren
@@ -166,7 +169,8 @@ private extension AsyncWithoutAwaitRule {
         private func checkViolation() {
             guard let info = functionScopes.pop(),
                   let asyncToken = info.asyncToken,
-                  !info.containsAwait else {
+                  !info.containsAwait
+            else {
                 return
             }
 

@@ -8,9 +8,9 @@ struct FileHeaderRule: Rule {
     static let description = RuleDescription(
         identifier: "file_header",
         name: "File Header",
-        description: "Header comments should be consistent with project patterns. " +
-            "The SWIFTLINT_CURRENT_FILENAME placeholder can optionally be used in the " +
-            "required and forbidden patterns. It will be replaced by the real file name.",
+        description: "Header comments should be consistent with project patterns. "
+            + "The SWIFTLINT_CURRENT_FILENAME placeholder can optionally be used in the "
+            + "required and forbidden patterns. It will be replaced by the real file name.",
         kind: .style,
         nonTriggeringExamples: [
             Example("let foo = \"Copyright\""),
@@ -20,15 +20,17 @@ struct FileHeaderRule: Rule {
         triggeringExamples: [
             Example("// ↓Copyright"),
             Example("//\n// ↓Copyright"),
-            Example("""
-            //
-            //  FileHeaderRule.swift
-            //  SwiftLint
-            //
-            //  Created by Marcelo Fabri on 27/11/16.
-            //  ↓Copyright © 2016 Realm. All rights reserved.
-            //
-            """),
+            Example(
+                """
+                //
+                //  FileHeaderRule.swift
+                //  SwiftLint
+                //
+                //  Created by Marcelo Fabri on 27/11/16.
+                //  ↓Copyright © 2016 Realm. All rights reserved.
+                //
+                """
+            ),
         ].skipWrappingInCommentTests()
     )
 }
@@ -56,10 +58,12 @@ private extension FileHeaderRule {
             guard let headerRange else {
                 if requiredRegex != nil {
                     let violationPosition = node.shebang?.endPosition ?? node.position
-                    violations.append(ReasonedRuleViolation(
-                        position: violationPosition,
-                        reason: requiredReason()
-                    ))
+                    violations.append(
+                        ReasonedRuleViolation(
+                            position: violationPosition,
+                            reason: requiredReason()
+                        )
+                    )
                 }
                 return .skipChildren
             }
@@ -111,26 +115,31 @@ private extension FileHeaderRule {
 
                 // Process trailing trivia if it's EOF
                 if token.tokenKind == .endOfFile {
-                    _ = processTrivia(token.trailingTrivia,
-                                      startingAt: &currentPosition,
-                                      firstStart: &firstHeaderCommentStart,
-                                      lastEnd: &lastHeaderCommentEnd)
+                    _ = processTrivia(
+                        token.trailingTrivia,
+                        startingAt: &currentPosition,
+                        firstStart: &firstHeaderCommentStart,
+                        lastEnd: &lastHeaderCommentEnd
+                    )
                 }
             }
 
             guard let start = firstHeaderCommentStart,
                   let end = lastHeaderCommentEnd,
-                  start < end else {
+                  start < end
+            else {
                 return nil
             }
 
             return (start: start, end: end)
         }
 
-        private func processTrivia(_ trivia: Trivia,
-                                   startingAt currentPosition: inout AbsolutePosition,
-                                   firstStart: inout AbsolutePosition?,
-                                   lastEnd: inout AbsolutePosition?) -> ProcessTriviaResult {
+        private func processTrivia(
+            _ trivia: Trivia,
+            startingAt currentPosition: inout AbsolutePosition,
+            firstStart: inout AbsolutePosition?,
+            lastEnd: inout AbsolutePosition?
+        ) -> ProcessTriviaResult {
             for piece in trivia {
                 let pieceStart = currentPosition
                 currentPosition += piece.sourceLength
@@ -151,7 +160,9 @@ private extension FileHeaderRule {
             return ProcessTriviaResult(foundNonComment: false)
         }
 
-        private func extractHeaderContent(from range: (start: AbsolutePosition, end: AbsolutePosition)) -> String? {
+        private func extractHeaderContent(from range: (start: AbsolutePosition, end: AbsolutePosition))
+            -> String?
+        {
             let headerByteRange = ByteRange(
                 location: ByteCount(range.start.utf8Offset),
                 length: ByteCount(range.end.utf8Offset - range.start.utf8Offset)
@@ -159,10 +170,12 @@ private extension FileHeaderRule {
 
             return file.stringView.substringWithByteRange(headerByteRange)
                 .map { $0 + "\n" } // Ensure there's a newline at the end since YAML will always add it to the regex
-                                   // when a `|` block is used to define the pattern.
+            // when a `|` block is used to define the pattern.
         }
 
-        private func checkForbiddenPattern(in headerContent: String, startingAt headerStart: AbsolutePosition) {
+        private func checkForbiddenPattern(
+            in headerContent: String, startingAt headerStart: AbsolutePosition
+        ) {
             guard
                 let forbiddenRegex = configuration.forbiddenRegex(for: file),
                 let firstMatch = forbiddenRegex.firstMatch(
@@ -178,28 +191,37 @@ private extension FileHeaderRule {
             let matchLocationUTF16 = firstMatch.range.location
             let headerPrefix = String(headerContent.utf16.prefix(matchLocationUTF16)) ?? ""
             let utf8OffsetInHeader = headerPrefix.utf8.count
-            let violationPosition = AbsolutePosition(utf8Offset: headerStart.utf8Offset + utf8OffsetInHeader)
+            let violationPosition = AbsolutePosition(
+                utf8Offset: headerStart.utf8Offset + utf8OffsetInHeader
+            )
 
-            violations.append(ReasonedRuleViolation(
-                position: violationPosition,
-                reason: forbiddenReason()
-            ))
+            violations.append(
+                ReasonedRuleViolation(
+                    position: violationPosition,
+                    reason: forbiddenReason()
+                )
+            )
         }
 
-        private func checkRequiredPattern(_ requiredRegex: NSRegularExpression?,
-                                          in headerContent: String,
-                                          startingAt headerStart: AbsolutePosition) {
+        private func checkRequiredPattern(
+            _ requiredRegex: NSRegularExpression?,
+            in headerContent: String,
+            startingAt headerStart: AbsolutePosition
+        ) {
             guard
                 let requiredRegex,
-                requiredRegex.firstMatch(in: headerContent, options: [], range: headerContent.fullNSRange) == nil
+                requiredRegex.firstMatch(in: headerContent, options: [], range: headerContent.fullNSRange)
+                == nil
             else {
                 return
             }
 
-            violations.append(ReasonedRuleViolation(
-                position: headerStart,
-                reason: requiredReason()
-            ))
+            violations.append(
+                ReasonedRuleViolation(
+                    position: headerStart,
+                    reason: requiredReason()
+                )
+            )
         }
 
         private func isSwiftLintCommand(piece: TriviaPiece) -> Bool {
@@ -217,7 +239,7 @@ private extension FileHeaderRule {
     }
 }
 
-// Helper extensions
+/// Helper extensions
 private extension TriviaPiece {
     var isDocComment: Bool {
         switch self {
@@ -230,8 +252,8 @@ private extension TriviaPiece {
 
     var commentText: String? {
         switch self {
-        case .lineComment(let text), .blockComment(let text),
-             .docLineComment(let text), .docBlockComment(let text):
+        case let .lineComment(text), let .blockComment(text),
+             let .docLineComment(text), let .docBlockComment(text):
             return text
         default:
             return nil

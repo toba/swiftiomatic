@@ -1,4 +1,4 @@
-internal struct LegacyConstantRuleExamples {
+enum LegacyConstantRuleExamples {
     static let nonTriggeringExamples: [Example] = [
         Example("CGRect.infinite"),
         Example("CGPoint.zero"),

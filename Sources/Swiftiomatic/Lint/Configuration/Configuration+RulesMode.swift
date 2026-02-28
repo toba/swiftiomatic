@@ -33,7 +33,7 @@ extension Configuration {
         /// Enable all available rules.
         case allCommandLine
 
-        internal init(
+        init(
             enableAllRules: Bool,
             onlyRule: [String],
             onlyRules: [String],
@@ -58,9 +58,9 @@ extension Configuration {
             } else if onlyRules.isNotEmpty {
                 if disabledRules.isNotEmpty || optInRules.isNotEmpty {
                     throw Issue.genericWarning(
-                        "'\(Configuration.Key.disabledRules.rawValue)' or " +
-                            "'\(Configuration.Key.optInRules.rawValue)' cannot be used in combination " +
-                        "with '\(Configuration.Key.onlyRules.rawValue)'"
+                        "'\(Configuration.Key.disabledRules.rawValue)' or "
+                            + "'\(Configuration.Key.optInRules.rawValue)' cannot be used in combination "
+                            + "with '\(Configuration.Key.onlyRules.rawValue)'"
                     )
                 }
 
@@ -96,7 +96,7 @@ extension Configuration {
             }
         }
 
-        internal func applied(aliasResolver: (String) -> String) -> Self {
+        func applied(aliasResolver: (String) -> String) -> Self {
             switch self {
             case let .defaultConfiguration(disabled, optIn):
                 return .defaultConfiguration(
@@ -115,15 +115,18 @@ extension Configuration {
             }
         }
 
-        internal func activateCustomRuleIdentifiers(allRulesWrapped: [ConfigurationRuleWrapper]) -> Self {
+        func activateCustomRuleIdentifiers(allRulesWrapped: [ConfigurationRuleWrapper]) -> Self {
             // In the only mode, if the custom rules rule is enabled, all custom rules are also enabled implicitly
             // This method makes the implicitly explicit
             switch self {
-            case let .onlyConfiguration(onlyRules) where onlyRules.contains {
-                $0 == CustomRules.identifier
-            }:
+            case let .onlyConfiguration(onlyRules)
+                where onlyRules.contains {
+                    $0 == CustomRules.identifier
+                }:
                 let customRulesRule = allRulesWrapped.customRules
-                return .onlyConfiguration(onlyRules.union(Set(customRulesRule?.customRuleIdentifiers ?? [])))
+                return .onlyConfiguration(
+                    onlyRules.union(Set(customRulesRule?.customRuleIdentifiers ?? []))
+                )
 
             default:
                 return self

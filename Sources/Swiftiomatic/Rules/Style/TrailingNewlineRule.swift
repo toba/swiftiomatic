@@ -27,7 +27,7 @@ struct TrailingNewlineRule: CorrectableRule, SourceKitFreeRule {
         description: "Files should have a single trailing newline",
         kind: .style,
         nonTriggeringExamples: [
-            Example("let a = 0\n")
+            Example("let a = 0\n"),
         ],
         triggeringExamples: [
             Example("let a = 0"),

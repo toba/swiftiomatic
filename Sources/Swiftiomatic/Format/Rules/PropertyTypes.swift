@@ -10,7 +10,8 @@ import Foundation
 
 extension FormatRule {
     static let propertyTypes = FormatRule(
-        help: "Convert property declarations to use inferred types (`let foo = Foo()`) or explicit types (`let foo: Foo = .init()`).",
+        help:
+        "Convert property declarations to use inferred types (`let foo = Foo()`) or explicit types (`let foo: Foo = .init()`).",
         disabledByDefault: true,
         orderAfter: [.redundantType],
         options: ["property-types", "inferred-types", "preserved-property-types"]
@@ -70,9 +71,12 @@ extension FormatRule {
                 // Preserve the existing formatting if the RHS expression has a top-level infix operator.
                 //  - `let value: ClosedRange<Int> = .zero ... 10` would not be valid to convert to
                 //    `let value = ClosedRange<Int>.zero ... 10`.
-                if let nextInfixOperatorIndex = formatter.index(after: rhsStartIndex, where: { token in
-                    token.isOperator(ofType: .infix) && token != .operator(".", .infix)
-                }),
+                if let nextInfixOperatorIndex = formatter.index(
+                    after: rhsStartIndex,
+                    where: { token in
+                        token.isOperator(ofType: .infix) && token != .operator(".", .infix)
+                    }
+                ),
                     rhsExpressionRange.contains(nextInfixOperatorIndex)
                 {
                     return
@@ -86,9 +90,15 @@ extension FormatRule {
                 // If the RHS starts with a leading dot, then we know its accessing some static member on this type.
                 if formatter.tokens[rhsStartIndex].isOperator(".") {
                     // Preserve the formatting as-is if the identifier is manually excluded
-                    if let identifierAfterDot = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: rhsStartIndex),
-                       formatter.options.preservedPropertyTypes.contains(formatter.tokens[identifierAfterDot].string)
-                    { return }
+                    if let identifierAfterDot = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak, after: rhsStartIndex
+                    ),
+                        formatter.options.preservedPropertyTypes.contains(
+                            formatter.tokens[identifierAfterDot].string
+                        )
+                    {
+                        return
+                    }
 
                     // Update the . token from a prefix operator to an infix operator.
                     formatter.replaceToken(at: rhsStartIndex, with: .operator(".", .infix))
@@ -104,7 +114,11 @@ extension FormatRule {
                 {
                     var hasInvalidConditionalBranch = false
                     formatter.forEachRecursiveConditionalBranch(in: conditonalBranches) { branch in
-                        guard let firstTokenInBranch = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch) else {
+                        guard
+                            let firstTokenInBranch = formatter.index(
+                                of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch
+                            )
+                        else {
                             hasInvalidConditionalBranch = true
                             return
                         }
@@ -114,8 +128,12 @@ extension FormatRule {
                         }
 
                         // Preserve the formatting as-is if the identifier is manually excluded
-                        if let identifierAfterDot = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: rhsStartIndex),
-                           formatter.options.preservedPropertyTypes.contains(formatter.tokens[identifierAfterDot].string)
+                        if let identifierAfterDot = formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak, after: rhsStartIndex
+                        ),
+                            formatter.options.preservedPropertyTypes.contains(
+                                formatter.tokens[identifierAfterDot].string
+                            )
                         {
                             hasInvalidConditionalBranch = true
                         }
@@ -125,7 +143,11 @@ extension FormatRule {
 
                     // Insert a copy of the type on the RHS before the dot in each branch
                     formatter.forEachRecursiveConditionalBranch(in: conditonalBranches) { branch in
-                        guard let dotIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch) else { return }
+                        guard
+                            let dotIndex = formatter.index(
+                                of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch
+                            )
+                        else { return }
 
                         // Update the . token from a prefix operator to an infix operator.
                         formatter.replaceToken(at: dotIndex, with: .operator(".", .infix))
@@ -148,7 +170,9 @@ extension FormatRule {
                 // Convert `let array: [Foo: Bar] = [:]` to `let array = [Foo: Bar]()`
                 else if type.isDictionary,
                         formatter.tokens[rhsStartIndex] == .startOfScope("["),
-                        let secondToken = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: rhsStartIndex),
+                        let secondToken = formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak, after: rhsStartIndex
+                        ),
                         formatter.tokens[secondToken] == .delimiter(":"),
                         let thirdToken = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: secondToken),
                         formatter.tokens[thirdToken] == .endOfScope("]"),
@@ -181,19 +205,27 @@ extension FormatRule {
                     // and so `Foo.init` is parsed as `Foo` instead of `Foo.init`.
                     let rhsType = formatter.parseType(at: rhsStartIndex, excludeLowercaseIdentifiers: true),
                     property.type == nil,
-                    let indexAfterIdentifier = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: property.identifierIndex),
+                    let indexAfterIdentifier = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak, after: property.identifierIndex
+                    ),
                     formatter.tokens[indexAfterIdentifier] != .delimiter(":"),
-                    let indexAfterType = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: rhsType.range.upperBound),
+                    let indexAfterType = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak, after: rhsType.range.upperBound
+                    ),
                     [.operator(".", .infix), .startOfScope("(")].contains(formatter.tokens[indexAfterType]),
                     !rhsType.string.contains(".")
                 else { return }
 
                 // Preserve the existing formatting if the RHS expression has a top-level operator.
                 //  - `let foo = Foo.foo.bar` would not be valid to convert to `let foo: Foo = .foo.bar`.
-                let operatorSearchIndex = formatter.tokens[indexAfterType].isStartOfScope ? (indexAfterType - 1) : indexAfterType
-                if let nextInfixOperatorIndex = formatter.index(after: operatorSearchIndex, where: { token in
-                    token.isOperator(ofType: .infix)
-                }),
+                let operatorSearchIndex =
+                    formatter.tokens[indexAfterType].isStartOfScope ? (indexAfterType - 1) : indexAfterType
+                if let nextInfixOperatorIndex = formatter.index(
+                    after: operatorSearchIndex,
+                    where: { token in
+                        token.isOperator(ofType: .infix)
+                    }
+                ),
                     rhsExpressionRange.contains(nextInfixOperatorIndex)
                 {
                     return
@@ -216,7 +248,9 @@ extension FormatRule {
                         return
                     }
 
-                    let initializerHasNoArguments = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: indexAfterType) == endOfInitCallScope
+                    let initializerHasNoArguments =
+                        formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: indexAfterType)
+                            == endOfInitCallScope
 
                     // If this is an empty array initializer, use `[]` instead of `.init()`
                     if rhsType.isArray, initializerHasNoArguments {
@@ -250,9 +284,13 @@ extension FormatRule {
                     // Preserve the formatting as-is if the identifier is manually excluded.
                     // Don't convert `let foo = Foo.self` to `let foo: Foo = .self`, since `.self` returns the metatype
                     let symbolsToExclude = formatter.options.preservedPropertyTypes + ["self"]
-                    if let indexAfterDot = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: indexAfterType),
-                       symbolsToExclude.contains(formatter.tokens[indexAfterDot].string)
-                    { return }
+                    if let indexAfterDot = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak, after: indexAfterType
+                    ),
+                        symbolsToExclude.contains(formatter.tokens[indexAfterDot].string)
+                    {
+                        return
+                    }
 
                     formatter.replaceToken(at: indexAfterType, with: .operator(".", .prefix))
                 }
@@ -260,7 +298,9 @@ extension FormatRule {
                 // Move the type name to the LHS of the property, followed by a colon
                 let typeTokens = formatter.tokens[rhsType.range]
                 formatter.removeTokens(in: rhsType.range)
-                formatter.insert([.delimiter(":"), .space(" ")] + typeTokens, at: property.identifierIndex + 1)
+                formatter.insert(
+                    [.delimiter(":"), .space(" ")] + typeTokens, at: property.identifierIndex + 1
+                )
             }
         }
     } examples: {

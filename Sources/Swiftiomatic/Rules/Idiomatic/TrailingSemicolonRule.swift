@@ -29,6 +29,7 @@ extension TrailingSemicolonRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -56,10 +57,8 @@ private extension TrailingSemicolonRule {
 
 private extension TokenSyntax {
     var isTrailingSemicolon: Bool {
-        tokenKind == .semicolon &&
-            (
-                trailingTrivia.containsNewlines() ||
-                    (nextToken(viewMode: .sourceAccurate)?.leadingTrivia.containsNewlines() == true)
-            )
+        tokenKind == .semicolon
+            && (trailingTrivia.containsNewlines()
+                || (nextToken(viewMode: .sourceAccurate)?.leadingTrivia.containsNewlines() == true))
     }
 }

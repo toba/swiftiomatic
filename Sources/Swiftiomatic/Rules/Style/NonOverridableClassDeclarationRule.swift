@@ -7,91 +7,117 @@ struct NonOverridableClassDeclarationRule: Rule {
         identifier: "non_overridable_class_declaration",
         name: "Class Declaration in Final Class",
         description: """
-            Class methods and properties in final classes should themselves be final, just as if the declarations
-            are private. In both cases, they cannot be overridden. Using `final class` or `static` makes this explicit.
-            """,
+        Class methods and properties in final classes should themselves be final, just as if the declarations
+        are private. In both cases, they cannot be overridden. Using `final class` or `static` makes this explicit.
+        """,
         kind: .style,
         nonTriggeringExamples: [
-            Example("""
-            final class C {
-                final class var b: Bool { true }
-                final class func f() {}
-            }
-            """),
-            Example("""
-            class C {
-                final class var b: Bool { true }
-                final class func f() {}
-            }
-            """),
-            Example("""
-            class C {
-                class var b: Bool { true }
-                class func f() {}
-            }
-            """),
-            Example("""
-            class C {
-                static var b: Bool { true }
-                static func f() {}
-            }
-            """),
-            Example("""
-            final class C {
-                static var b: Bool { true }
-                static func f() {}
-            }
-            """),
-            Example("""
-            final class C {
-                class D {
+            Example(
+                """
+                final class C {
+                    final class var b: Bool { true }
+                    final class func f() {}
+                }
+                """
+            ),
+            Example(
+                """
+                class C {
+                    final class var b: Bool { true }
+                    final class func f() {}
+                }
+                """
+            ),
+            Example(
+                """
+                class C {
                     class var b: Bool { true }
                     class func f() {}
                 }
-            }
-            """),
+                """
+            ),
+            Example(
+                """
+                class C {
+                    static var b: Bool { true }
+                    static func f() {}
+                }
+                """
+            ),
+            Example(
+                """
+                final class C {
+                    static var b: Bool { true }
+                    static func f() {}
+                }
+                """
+            ),
+            Example(
+                """
+                final class C {
+                    class D {
+                        class var b: Bool { true }
+                        class func f() {}
+                    }
+                }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            final class C {
-                ↓class var b: Bool { true }
-                ↓class func f() {}
-            }
-            """),
-            Example("""
-            class C {
-                final class D {
+            Example(
+                """
+                final class C {
                     ↓class var b: Bool { true }
                     ↓class func f() {}
                 }
-            }
-            """),
-            Example("""
-            class C {
-                private ↓class var b: Bool { true }
-                private ↓class func f() {}
-            }
-            """),
+                """
+            ),
+            Example(
+                """
+                class C {
+                    final class D {
+                        ↓class var b: Bool { true }
+                        ↓class func f() {}
+                    }
+                }
+                """
+            ),
+            Example(
+                """
+                class C {
+                    private ↓class var b: Bool { true }
+                    private ↓class func f() {}
+                }
+                """
+            ),
         ],
         corrections: [
-            Example("""
-            final class C {
-                class func f() {}
-            }
-            """): Example("""
+            Example(
+                """
+                final class C {
+                    class func f() {}
+                }
+                """
+            ): Example(
+                """
                 final class C {
                     final class func f() {}
                 }
-                """),
-            Example("""
-            final class C {
-                class var b: Bool { true }
-            }
-            """, configuration: ["final_class_modifier": "static"]): Example("""
+                """
+            ),
+            Example(
+                """
+                final class C {
+                    class var b: Bool { true }
+                }
+                """, configuration: ["final_class_modifier": "static"]
+            ): Example(
+                """
                 final class C {
                     static var b: Bool { true }
                 }
-                """),
+                """
+            ),
         ]
     )
 }
@@ -108,7 +134,9 @@ private extension NonOverridableClassDeclarationRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private var finalClassScope = Stack<Bool>()
 
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { [ProtocolDeclSyntax.self] }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
         override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
             finalClassScope.push(node.modifiers.contains(keyword: .final))
@@ -131,21 +159,24 @@ private extension NonOverridableClassDeclarationRule {
             guard !modifiers.contains(keyword: .final),
                   let classKeyword = modifiers.first(where: { $0.name.text == "class" }),
                   case let inFinalClass = finalClassScope.peek() == true,
-                  inFinalClass || modifiers.contains(keyword: .private) else {
+                  inFinalClass || modifiers.contains(keyword: .private)
+            else {
                 return
             }
-            violations.append(.init(
-                position: classKeyword.positionAfterSkippingLeadingTrivia,
-                reason: inFinalClass
-                    ? "Class \(types) in final classes should themselves be final"
-                    : "Private class methods and properties should be declared final",
-                severity: configuration.severity,
-                correction: .init(
-                    start: classKeyword.positionAfterSkippingLeadingTrivia,
-                    end: classKeyword.endPositionBeforeTrailingTrivia,
-                    replacement: configuration.finalClassModifier.rawValue
+            violations.append(
+                .init(
+                    position: classKeyword.positionAfterSkippingLeadingTrivia,
+                    reason: inFinalClass
+                        ? "Class \(types) in final classes should themselves be final"
+                        : "Private class methods and properties should be declared final",
+                    severity: configuration.severity,
+                    correction: .init(
+                        start: classKeyword.positionAfterSkippingLeadingTrivia,
+                        end: classKeyword.endPositionBeforeTrailingTrivia,
+                        replacement: configuration.finalClassModifier.rawValue
+                    )
                 )
-            ))
+            )
         }
     }
 }

@@ -19,6 +19,7 @@ extension MarkRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -50,23 +51,27 @@ private struct ViolationResult {
     let correct: (inout [TriviaPiece]) -> Void
 }
 
-private extension TokenSyntax {
+extension TokenSyntax {
     private enum Mark {
         static func lint(in text: String) -> [() -> String] {
-            regex(badPattern).matches(in: text, options: [], range: text.fullNSRange).compactMap { match in
-                isIgnoredCases(text, range: match.range) ? nil : {
-                    var corrected = replace(text, range: match.range(at: 2), to: "- ")
-                    corrected = replace(corrected, range: match.range(at: 1), to: "// MARK: ")
-                    if !text.hasSuffix(" "), corrected.hasSuffix(" ") {
-                        corrected.removeLast()
+            regex(badPattern).matches(in: text, options: [], range: text.fullNSRange).compactMap {
+                match in
+                isIgnoredCases(text, range: match.range)
+                    ? nil
+                    : {
+                        var corrected = replace(text, range: match.range(at: 2), to: "- ")
+                        corrected = replace(corrected, range: match.range(at: 1), to: "// MARK: ")
+                        if !text.hasSuffix(" "), corrected.hasSuffix(" ") {
+                            corrected.removeLast()
+                        }
+                        return corrected
                     }
-                    return corrected
-                }
             }
         }
 
         private static func isIgnoredCases(_ text: String, range: NSRange) -> Bool {
-            range.lowerBound != 0 || regex(goodPattern).firstMatch(in: text, range: text.fullNSRange) != nil
+            range.lowerBound != 0
+                || regex(goodPattern).firstMatch(in: text, range: text.fullNSRange) != nil
         }
 
         private static let goodPattern = [
@@ -79,11 +84,14 @@ private extension TokenSyntax {
             "^\(twoOrThreeSlashes) +[Mm]ark[^:]",
         ].map(nonCapturingGroup).joined(separator: "|")
 
-        private static let badPattern = capturingGroup([
-            "MARK[^\\s:]",
-            "[Mm]ark",
-            "MARK",
-        ].map(basePattern).joined(separator: "|")) + capturingGroup(hyphenOrEmpty)
+        private static let badPattern =
+            capturingGroup(
+                [
+                    "MARK[^\\s:]",
+                    "[Mm]ark",
+                    "MARK",
+                ].map(basePattern).joined(separator: "|")
+            ) + capturingGroup(hyphenOrEmpty)
 
         private static let anySpace = " *"
 
@@ -105,10 +113,14 @@ private extension TokenSyntax {
         }
 
         private static func basePattern(_ pattern: String) -> String {
-            nonCapturingGroup("\(twoOrThreeSlashes)\(anySpace)\(pattern)\(anySpace)\(colonOrEmpty)\(anySpace)")
+            nonCapturingGroup(
+                "\(twoOrThreeSlashes)\(anySpace)\(pattern)\(anySpace)\(colonOrEmpty)\(anySpace)"
+            )
         }
 
-        private static func replace(_ target: String, range nsrange: NSRange, to replaceString: String) -> String {
+        private static func replace(_ target: String, range nsrange: NSRange, to replaceString: String)
+            -> String
+        {
             guard nsrange.length > 0, let range = Range(nsrange, in: target) else {
                 return target
             }
@@ -116,7 +128,7 @@ private extension TokenSyntax {
         }
     }
 
-    func violationResults() -> [ViolationResult] {
+    fileprivate func violationResults() -> [ViolationResult] {
         var utf8Offset = 0
         var results: [ViolationResult] = []
 
@@ -125,12 +137,14 @@ private extension TokenSyntax {
             defer { utf8Offset += piece.sourceLength.utf8Length }
 
             switch piece {
-            case .lineComment(let comment), .docLineComment(let comment):
+            case let .lineComment(comment), let .docLineComment(comment):
                 for correct in Mark.lint(in: comment) {
                     let position = position.advanced(by: utf8Offset)
-                    results.append(ViolationResult(position: position) { pieces in
-                        pieces[index] = .lineComment(correct())
-                    })
+                    results.append(
+                        ViolationResult(position: position) { pieces in
+                            pieces[index] = .lineComment(correct())
+                        }
+                    )
                 }
 
             default:

@@ -1,13 +1,13 @@
 enum ImplicitOptionalInitializationRuleExamples { // swiftlint:disable:this type_name
     static let nonTriggeringExamples = [
-        Example(  // properties with body should be ignored
+        Example( // properties with body should be ignored
             """
             var foo: Int? {
               if bar != nil { }
               return 0
             }
             """),
-        Example(  // properties with a closure call
+        Example( // properties with a closure call
             """
             var foo: Int? = {
               if bar != nil { }
@@ -15,10 +15,10 @@ enum ImplicitOptionalInitializationRuleExamples { // swiftlint:disable:this type
             }()
             """
         ),
-        Example("lazy var test: Int? = nil"),  // lazy variables need to be initialized
-        Example("let myVar: String? = nil"),  // let variables need to be initialized
-        Example("var myVar: Int? { nil }"),  // computed properties should be ignored
-        Example("var x: Int? = 1"),  // initialized with a value
+        Example("lazy var test: Int? = nil"), // lazy variables need to be initialized
+        Example("let myVar: String? = nil"), // let variables need to be initialized
+        Example("var myVar: Int? { nil }"), // computed properties should be ignored
+        Example("var x: Int? = 1"), // initialized with a value
 
         // never style
         Example("private var myVar: Int? = nil", configuration: ["style": "never"]),
@@ -31,33 +31,38 @@ enum ImplicitOptionalInitializationRuleExamples { // swiftlint:disable:this type
             var myVar: String? = nil {
               didSet { print("didSet") }
             }
-            """, configuration: ["style": "never"]),
+            """, configuration: ["style": "never"]
+        ),
         Example(
             """
             func funcName() {
                 var myVar: String? = nil
             }
-            """, configuration: ["style": "never"]),
-        Example("var x: Int? = nil // comment", configuration: ["style": "never"]),  // with comment after
+            """, configuration: ["style": "never"]
+        ),
+        Example("var x: Int? = nil // comment", configuration: ["style": "never"]), // with comment after
 
         // always style
         Example("public var myVar: Int?", configuration: ["style": "always"]),
         Example("var myVar: Optional<Int>", configuration: ["style": "always"]),
         Example(
-            "var myVar: Int? { nil }, myOtherVar: Int?", configuration: ["style": "always"]),
+            "var myVar: Int? { nil }, myOtherVar: Int?", configuration: ["style": "always"]
+        ),
         Example(
             """
             var myVar: String? {
               didSet { print("didSet") }
             }
-            """, configuration: ["style": "always"]),
+            """, configuration: ["style": "always"]
+        ),
         Example(
             """
             func funcName() {
               var myVar: String?
             }
-            """, configuration: ["style": "always"]),
-        Example("var x: Int? // comment", configuration: ["style": "always"]),  // with comment after
+            """, configuration: ["style": "always"]
+        ),
+        Example("var x: Int? // comment", configuration: ["style": "always"]), // with comment after
     ]
 
     static let triggeringExamples = [
@@ -70,7 +75,8 @@ enum ImplicitOptionalInitializationRuleExamples { // swiftlint:disable:this type
             var ↓myVar: String? {
               didSet { print("didSet") }
             }
-            """, configuration: ["style": "never"]),
+            """, configuration: ["style": "never"]
+        ),
         Example(
             """
             func funcName() {
@@ -88,13 +94,15 @@ enum ImplicitOptionalInitializationRuleExamples { // swiftlint:disable:this type
             var ↓myVar: String? = nil {
               didSet { print("didSet") }
             }
-            """, configuration: ["style": "always"]),
+            """, configuration: ["style": "always"]
+        ),
         Example(
             """
             func funcName() {
                 var ↓myVar: String? = nil
             }
-            """, configuration: ["style": "always"]),
+            """, configuration: ["style": "always"]
+        ),
     ]
 
     static let corrections = [
@@ -108,13 +116,15 @@ enum ImplicitOptionalInitializationRuleExamples { // swiftlint:disable:this type
             var ↓myVar: String? {
               didSet { print("didSet") }
             }
-            """, configuration: ["style": "never"]):
+            """, configuration: ["style": "never"]
+        ):
             Example(
                 """
                 var myVar: String? = nil {
                   didSet { print("didSet") }
                 }
-                """),
+                """
+            ),
         Example(
             """
             func funcName() {
@@ -126,7 +136,8 @@ enum ImplicitOptionalInitializationRuleExamples { // swiftlint:disable:this type
             func funcName() {
               var myVar: String? = nil
             }
-            """),
+            """
+        ),
 
         Example("var ↓myVar: Int? = nil // comment", configuration: ["style": "always"]):
             Example("var myVar: Int? // comment"),
@@ -137,24 +148,28 @@ enum ImplicitOptionalInitializationRuleExamples { // swiftlint:disable:this type
             var ↓myVar: String? = nil {
               didSet { print("didSet") }
             }
-            """, configuration: ["style": "always"]):
+            """, configuration: ["style": "always"]
+        ):
             Example(
                 """
                 var myVar: String? {
                   didSet { print("didSet") }
                 }
-                """),
+                """
+            ),
         Example(
             """
             func funcName() {
                 var ↓myVar: String? = nil
             }
-            """, configuration: ["style": "always"]):
+            """, configuration: ["style": "always"]
+        ):
             Example(
                 """
                 func funcName() {
                     var myVar: String?
                 }
-                """),
+                """
+            ),
     ]
 }

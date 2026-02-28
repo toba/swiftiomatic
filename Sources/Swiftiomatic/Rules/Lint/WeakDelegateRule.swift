@@ -22,46 +22,56 @@ struct WeakDelegateRule: Rule {
             Example("protocol P {\n var delegate: AnyObject? { get set }\n}"),
             Example("class Foo {\n protocol P {\n var delegate: AnyObject? { get set }\n}\n}"),
             Example("class Foo {\n var computedDelegate: ComputedDelegate {\n return bar() \n} \n}"),
-            Example("""
-            class Foo {
-                var computedDelegate: ComputedDelegate {
-                    get {
-                        return bar()
-                    }
-               }
-            """),
+            Example(
+                """
+                class Foo {
+                    var computedDelegate: ComputedDelegate {
+                        get {
+                            return bar()
+                        }
+                   }
+                """
+            ),
             Example("struct Foo {\n @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate \n}"),
             Example("struct Foo {\n @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate \n}"),
-            Example("struct Foo {\n @WKExtensionDelegateAdaptor(ExtensionDelegate.self) var extensionDelegate \n}"),
-            Example("""
-            class Foo {
-                func makeDelegate() -> SomeDelegate {
-                    let delegate = SomeDelegate()
-                    return delegate
+            Example(
+                "struct Foo {\n @WKExtensionDelegateAdaptor(ExtensionDelegate.self) var extensionDelegate \n}"
+            ),
+            Example(
+                """
+                class Foo {
+                    func makeDelegate() -> SomeDelegate {
+                        let delegate = SomeDelegate()
+                        return delegate
+                    }
                 }
-            }
-            """),
-            Example("""
-            class Foo {
-                var bar: Bool {
-                    let appDelegate = AppDelegate.bar
-                    return appDelegate.bar
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                    var bar: Bool {
+                        let appDelegate = AppDelegate.bar
+                        return appDelegate.bar
+                    }
                 }
-            }
-            """, excludeFromDocumentation: true),
+                """, excludeFromDocumentation: true
+            ),
             Example("private var appDelegate: String?", excludeFromDocumentation: true),
         ],
         triggeringExamples: [
             Example("class Foo {\n  ↓var delegate: SomeProtocol?\n}"),
             Example("class Foo {\n  ↓var scrollDelegate: ScrollDelegate?\n}"),
-            Example("""
-            class Foo {
-                ↓var delegate: SomeProtocol? {
-                    didSet {
-                        print("Updated delegate")
-                    }
-               }
-            """),
+            Example(
+                """
+                class Foo {
+                    ↓var delegate: SomeProtocol? {
+                        didSet {
+                            print("Updated delegate")
+                        }
+                   }
+                """
+            ),
         ]
     )
 }
@@ -76,7 +86,9 @@ extension WeakDelegateRule: OptInRule {}
 
 private extension WeakDelegateRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { [ProtocolDeclSyntax.self] }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
         override func visitPost(_ node: VariableDeclSyntax) {
             guard node.hasDelegateSuffix,
@@ -84,7 +96,8 @@ private extension WeakDelegateRule {
                   !node.hasComputedBody,
                   !node.containsIgnoredAttribute,
                   let parent = node.parent,
-                  Syntax(parent).enclosingClass() != nil else {
+                  Syntax(parent).enclosingClass() != nil
+            else {
                 return
             }
 
@@ -135,7 +148,8 @@ private extension VariableDeclSyntax {
 
         return attributes.contains { attr in
             guard case let .attribute(customAttr) = attr,
-                  let typeIdentifier = customAttr.attributeName.as(IdentifierTypeSyntax.self) else {
+                  let typeIdentifier = customAttr.attributeName.as(IdentifierTypeSyntax.self)
+            else {
                 return false
             }
 

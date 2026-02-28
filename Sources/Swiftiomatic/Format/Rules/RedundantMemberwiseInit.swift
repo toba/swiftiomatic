@@ -29,11 +29,15 @@ extension FormatRule {
 
             for childDeclaration in structDeclaration.body {
                 guard ["var", "let"].contains(childDeclaration.keyword),
-                      let property = formatter.parsePropertyDeclaration(atIntroducerIndex: childDeclaration.keywordIndex),
+                      let property = formatter.parsePropertyDeclaration(
+                          atIntroducerIndex: childDeclaration.keywordIndex
+                      ),
                       let type = property.type,
                       childDeclaration.isStoredInstanceProperty
                 else { continue }
-                storedProperties.append((name: property.identifier, type: type, declaration: childDeclaration))
+                storedProperties.append(
+                    (name: property.identifier, type: type, declaration: childDeclaration)
+                )
             }
 
             guard !storedProperties.isEmpty else { continue }
@@ -66,7 +70,8 @@ extension FormatRule {
                 // Compute what visibility the synthesized init would have after any modifications.
                 // The synthesized init has the minimum visibility of all stored properties in the memberwise init.
                 // We can only remove private ACL from properties that don't have SwiftUI attributes (like @State).
-                let synthesizedInitVisibility: Visibility = structDeclaration.body.reduce(.internal) { minVisibility, childDeclaration in
+                let synthesizedInitVisibility: Visibility = structDeclaration.body.reduce(.internal) {
+                    minVisibility, childDeclaration in
                     guard ["var", "let"].contains(childDeclaration.keyword),
                           childDeclaration.isStoredInstanceProperty
                     else { return minVisibility }
@@ -79,7 +84,9 @@ extension FormatRule {
                         return minVisibility
                     }
 
-                    let property = formatter.parsePropertyDeclaration(atIntroducerIndex: childDeclaration.keywordIndex)
+                    let property = formatter.parsePropertyDeclaration(
+                        atIntroducerIndex: childDeclaration.keywordIndex
+                    )
                     let hasDefaultValue = property?.value != nil
 
                     // Private `let` with default value is NOT in memberwise init
@@ -116,9 +123,11 @@ extension FormatRule {
 
                 // Don't remove failable inits (init? or init!)
                 // Check if there's a ? or ! after the init keyword
-                if let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: initDeclaration.keywordIndex),
-                   let nextToken = formatter.token(at: nextIndex),
-                   nextToken.isOperator("?") || nextToken.isOperator("!")
+                if let nextIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: initDeclaration.keywordIndex
+                ),
+                    let nextToken = formatter.token(at: nextIndex),
+                    nextToken.isOperator("?") || nextToken.isOperator("!")
                 {
                     continue
                 }
@@ -130,8 +139,11 @@ extension FormatRule {
                 }
 
                 // Parse the init function using the parseFunctionDeclaration helper
-                guard let functionDecl = formatter.parseFunctionDeclaration(keywordIndex: initDeclaration.keywordIndex),
-                      let bodyRange = functionDecl.bodyRange
+                guard
+                    let functionDecl = formatter.parseFunctionDeclaration(
+                        keywordIndex: initDeclaration.keywordIndex
+                    ),
+                    let bodyRange = functionDecl.bodyRange
                 else { continue }
 
                 // Check if parameters match stored properties exactly
@@ -162,11 +174,14 @@ extension FormatRule {
 
                 // Don't remove if any parameter has different external and internal labels
                 // This includes cases where external label is explicitly different or uses underscore
-                guard !parameters.contains(where: { param in
-                    // If externalLabel is nil, it means underscore was used (different from internal name)
-                    // If externalLabel exists and is different from internal name, it's also different
-                    param.externalLabel == nil || (param.externalLabel != nil && param.externalLabel != param.name)
-                }) else { continue }
+                guard
+                    !parameters.contains(where: { param in
+                        // If externalLabel is nil, it means underscore was used (different from internal name)
+                        // If externalLabel exists and is different from internal name, it's also different
+                        param.externalLabel == nil
+                            || (param.externalLabel != nil && param.externalLabel != param.name)
+                    })
+                else { continue }
 
                 // Before Swift 6.4 there's a bug where synthesized inits with result builder attributes
                 // in _non-generic structs_ behave incorrectly and can crash at runtime:
@@ -186,7 +201,9 @@ extension FormatRule {
                 }
 
                 guard parameters.count == propertiesWithoutDefaults.count,
-                      zip(parameters, propertiesWithoutDefaults).allSatisfy({ formatter.parameterMatchesProperty($0, property: $1) })
+                      zip(parameters, propertiesWithoutDefaults).allSatisfy({
+                          formatter.parameterMatchesProperty($0, property: $1)
+                      })
                 else { continue }
 
                 // Check if body only contains memberwise assignments
@@ -209,20 +226,28 @@ extension FormatRule {
                 var assignmentsNeedingResultBuilder = Set<String>()
 
                 if isRedundant {
-                    while let nextToken = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: bodyIndex - 1),
-                          nextToken < bodyEnd
+                    while let nextToken = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak, after: bodyIndex - 1
+                    ),
+                        nextToken < bodyEnd
                     {
                         let token = formatter.tokens[nextToken]
 
                         if token == .identifier("self") {
-                            guard let dotIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: nextToken, if: {
-                                $0.isOperator(".")
-                            }),
+                            guard
+                                let dotIndex = formatter.index(
+                                    of: .nonSpaceOrCommentOrLinebreak, after: nextToken,
+                                    if: {
+                                        $0.isOperator(".")
+                                    }
+                                ),
                                 let propIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: dotIndex),
                                 let propToken = formatter.token(at: propIndex),
                                 propToken.isIdentifier,
                                 let equalsIndex = formatter.index(of: .operator("=", .infix), after: propIndex),
-                                let valueIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex),
+                                let valueIndex = formatter.index(
+                                    of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex
+                                ),
                                 let valueToken = formatter.token(at: valueIndex),
                                 valueToken.isIdentifier,
                                 propToken.string == valueToken.string,
@@ -234,10 +259,13 @@ extension FormatRule {
 
                             // Check if this is a closure invocation: `self.prop = param()`
                             var nextAfterValue = valueIndex + 1
-                            if let parenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: valueIndex),
-                               formatter.tokens[parenIndex] == .startOfScope("("),
-                               let endParen = formatter.endOfScope(at: parenIndex),
-                               formatter.index(of: .nonSpaceOrCommentOrLinebreak, in: parenIndex + 1 ..< endParen) == nil
+                            if let parenIndex = formatter.index(
+                                of: .nonSpaceOrCommentOrLinebreak, after: valueIndex
+                            ),
+                                formatter.tokens[parenIndex] == .startOfScope("("),
+                                let endParen = formatter.endOfScope(at: parenIndex),
+                                formatter.index(of: .nonSpaceOrCommentOrLinebreak, in: parenIndex + 1 ..< endParen)
+                                == nil
                             {
                                 // This is `param()` - a closure invocation with no arguments
                                 assignmentsNeedingResultBuilder.insert(propToken.string)
@@ -264,7 +292,8 @@ extension FormatRule {
                     // This includes both closure invocations (self.prop = param()) and direct assignments (self.prop = param)
                     for property in propertiesWithoutDefaults {
                         guard assignmentsNeedingResultBuilder.contains(property.name),
-                              let attribute = parameters.first(where: { $0.name == property.name })?.resultBuilderAttribute
+                              let attribute = parameters.first(where: { $0.name == property.name })?
+                              .resultBuilderAttribute
                         else { continue }
 
                         let insertIndex = property.declaration.startOfModifiersIndex(includingAttributes: true)
@@ -285,7 +314,9 @@ extension FormatRule {
                             // Don't remove private from `let` properties with default values
                             // (they're not in the memberwise init)
                             if childDeclaration.keyword == "let" {
-                                let prop = formatter.parsePropertyDeclaration(atIntroducerIndex: childDeclaration.keywordIndex)
+                                let prop = formatter.parsePropertyDeclaration(
+                                    atIntroducerIndex: childDeclaration.keywordIndex
+                                )
                                 if prop?.value != nil {
                                     continue
                                 }
@@ -302,7 +333,9 @@ extension FormatRule {
                     // Re-calculate the removal range after potential insertions and ACL removals
                     // Use the declaration's range which includes leading comments
                     let startRemovalIndex = initDeclaration.range.lowerBound
-                    let updatedBodyRange = formatter.parseFunctionDeclaration(keywordIndex: initDeclaration.keywordIndex)?.bodyRange ?? bodyRange
+                    let updatedBodyRange =
+                        formatter.parseFunctionDeclaration(keywordIndex: initDeclaration.keywordIndex)?
+                            .bodyRange ?? bodyRange
                     let endRemovalIndex = updatedBodyRange.upperBound
 
                     // Find the range including preceding whitespace, but be conservative about trailing

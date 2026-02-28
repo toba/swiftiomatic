@@ -23,27 +23,45 @@ extension FormatRule {
             else {
                 return
             }
-            let dotIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: endIndex, if: {
-                $0.isOperator(".")
-            })
-            if let dotIndex, formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: dotIndex, if: {
-                ![.identifier("self"), .identifier("Type")].contains($0)
-            }) != nil, identifier != "Optional" {
+            let dotIndex = formatter.index(
+                of: .nonSpaceOrCommentOrLinebreak, after: endIndex,
+                if: {
+                    $0.isOperator(".")
+                }
+            )
+            if let dotIndex,
+               formatter.index(
+                   of: .nonSpaceOrCommentOrLinebreak, after: dotIndex,
+                   if: {
+                       ![.identifier("self"), .identifier("Type")].contains($0)
+                   }
+               ) != nil, identifier != "Optional"
+            {
                 return
             }
             // Workaround for https://bugs.swift.org/browse/SR-12856
-            if formatter.last(.nonSpaceOrCommentOrLinebreak, before: typeIndex) != .delimiter(":") ||
-                formatter.currentScope(at: i) == .startOfScope("[")
+            if formatter.last(.nonSpaceOrCommentOrLinebreak, before: typeIndex) != .delimiter(":")
+                || formatter.currentScope(at: i) == .startOfScope("[")
             {
                 var startIndex = i
                 if formatter.tokens[typeIndex] == .identifier("Dictionary") {
                     startIndex = formatter.index(of: .delimiter(","), in: i + 1 ..< endIndex) ?? startIndex
                 }
-                if let parenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: startIndex, if: {
-                    $0 == .startOfScope("(")
-                }), let underscoreIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: parenIndex, if: {
-                    $0 == .identifier("_")
-                }), formatter.next(.nonSpaceOrCommentOrLinebreak, after: underscoreIndex)?.isIdentifier == true {
+                if let parenIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: startIndex,
+                    if: {
+                        $0 == .startOfScope("(")
+                    }
+                ),
+                    let underscoreIndex = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak, after: parenIndex,
+                        if: {
+                            $0 == .identifier("_")
+                        }
+                    ),
+                    formatter.next(.nonSpaceOrCommentOrLinebreak, after: underscoreIndex)?.isIdentifier
+                    == true
+                {
                     return
                 }
             }
@@ -59,16 +77,20 @@ extension FormatRule {
 
             switch formatter.tokens[typeIndex] {
             case .identifier("Array"):
-                formatter.replaceTokens(in: typeIndex ... endIndex, with:
-                    [.startOfScope("[")] + formatter.tokens[typeStart ... typeEnd] + [.endOfScope("]")])
+                formatter.replaceTokens(
+                    in: typeIndex ... endIndex,
+                    with: [.startOfScope("[")] + formatter.tokens[typeStart ... typeEnd] + [.endOfScope("]")]
+                )
 
             case .identifier("Dictionary"):
                 guard let commaIndex = formatter.index(of: .delimiter(","), in: typeStart ..< typeEnd) else {
                     return
                 }
                 formatter.replaceToken(at: commaIndex, with: .delimiter(":"))
-                formatter.replaceTokens(in: typeIndex ... endIndex, with:
-                    [.startOfScope("[")] + formatter.tokens[typeStart ... typeEnd] + [.endOfScope("]")])
+                formatter.replaceTokens(
+                    in: typeIndex ... endIndex,
+                    with: [.startOfScope("[")] + formatter.tokens[typeStart ... typeEnd] + [.endOfScope("]")]
+                )
 
             case .identifier("Optional"):
                 switch formatter.options.shortOptionals {
@@ -79,8 +101,9 @@ extension FormatRule {
                        let property = parentType.body.declaration(containing: i),
                        property.keyword == "var"
                     {
-                        let inStructWithSynthesizedMemberwiseInit = parentType.keyword == "struct"
-                            && !parentType.body.contains(where: { $0.keyword == "init" })
+                        let inStructWithSynthesizedMemberwiseInit =
+                            parentType.keyword == "struct"
+                                && !parentType.body.contains(where: { $0.keyword == "init" })
 
                         let isStoredInstanceProperty = property.isStoredInstanceProperty
                         let hasNoDefaultValue = property.parsePropertyDeclaration()?.value == nil
@@ -91,16 +114,17 @@ extension FormatRule {
                     }
                 }
 
-                if formatter.lastSignificantKeyword(at: i) == "case" ||
-                    formatter.last(.endOfScope, before: i) == .endOfScope("case")
+                if formatter.lastSignificantKeyword(at: i) == "case"
+                    || formatter.last(.endOfScope, before: i) == .endOfScope("case")
                 {
                     // https://bugs.swift.org/browse/SR-13838
                     return
                 }
                 var typeTokens = formatter.tokens[typeStart ... typeEnd]
-                if [.operator("&", .infix), .operator("->", .infix),
-                    .identifier("some"), .identifier("any")].contains(where: typeTokens.contains)
-                {
+                if [
+                    .operator("&", .infix), .operator("->", .infix),
+                    .identifier("some"), .identifier("any"),
+                ].contains(where: typeTokens.contains) {
                     typeTokens.insert(.startOfScope("("), at: typeTokens.startIndex)
                     typeTokens.append(.endOfScope(")"))
                 }
@@ -112,11 +136,19 @@ extension FormatRule {
             }
 
             // Drop leading Swift. namespace
-            if let dotIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: typeIndex, if: {
-                $0.isOperator(".")
-            }), let swiftTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: dotIndex, if: {
-                $0 == .identifier("Swift")
-            }) {
+            if let dotIndex = formatter.index(
+                of: .nonSpaceOrCommentOrLinebreak, before: typeIndex,
+                if: {
+                    $0.isOperator(".")
+                }
+            ),
+                let swiftTokenIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, before: dotIndex,
+                    if: {
+                        $0 == .identifier("Swift")
+                    }
+                )
+            {
                 formatter.removeTokens(in: swiftTokenIndex ..< typeIndex)
             }
         }

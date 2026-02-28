@@ -1,1 +1,3 @@
-func extraRules() -> [any Rule.Type] { [] }
+func extraRules() -> [any Rule.Type] {
+    []
+}

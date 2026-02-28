@@ -1,20 +1,19 @@
-
 enum TypeContent: String, AcceptableByConfigurationElement {
-    case `case` = "case"
+    case `case`
     case typeAlias = "type_alias"
     case associatedType = "associated_type"
-    case subtype = "subtype"
+    case subtype
     case typeProperty = "type_property"
     case instanceProperty = "instance_property"
     case ibOutlet = "ib_outlet"
     case ibInspectable = "ib_inspectable"
-    case initializer = "initializer"
+    case initializer
     case typeMethod = "type_method"
     case viewLifeCycleMethod = "view_life_cycle_method"
     case ibAction = "ib_action"
     case otherMethod = "other_method"
-    case `subscript` = "subscript"
-    case deinitializer = "deinitializer"
+    case `subscript`
+    case deinitializer
     case ibSegueAction = "ib_segue_action"
 }
 

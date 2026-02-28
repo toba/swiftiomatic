@@ -6,7 +6,8 @@ struct VerticalParameterAlignmentRule: Rule {
     static let description = RuleDescription(
         identifier: "vertical_parameter_alignment",
         name: "Vertical Parameter Alignment",
-        description: "Function parameters should be aligned vertically if they're in multiple lines in a declaration",
+        description:
+        "Function parameters should be aligned vertically if they're in multiple lines in a declaration",
         kind: .style,
         nonTriggeringExamples: VerticalParameterAlignmentRuleExamples.nonTriggeringExamples,
         triggeringExamples: VerticalParameterAlignmentRuleExamples.triggeringExamples
@@ -34,7 +35,8 @@ private extension VerticalParameterAlignmentRule {
                 return []
             }
 
-            let paramLocations = params.compactMap { param -> (position: AbsolutePosition, line: Int, column: Int)? in
+            let paramLocations = params.compactMap {
+                param -> (position: AbsolutePosition, line: Int, column: Int)? in
                 let position = param.positionAfterSkippingLeadingTrivia
                 let location = locationConverter.location(for: position)
                 return (position, location.line, location.column)
@@ -43,7 +45,9 @@ private extension VerticalParameterAlignmentRule {
             guard let firstParamLoc = paramLocations.first else { return [] }
 
             var violations: [AbsolutePosition] = []
-            for (index, paramLoc) in paramLocations.enumerated() where index > 0 && paramLoc.line > firstParamLoc.line {
+            for (index, paramLoc) in paramLocations.enumerated()
+                where index > 0 && paramLoc.line > firstParamLoc.line
+            {
                 let previousParamLoc = paramLocations[index - 1]
                 if previousParamLoc.line < paramLoc.line, firstParamLoc.column != paramLoc.column {
                     violations.append(paramLoc.position)

@@ -44,9 +44,10 @@ extension FormatRule {
                 let propertiesBeforeLast = multiplePropertyDecl.properties.dropLast()
 
                 // If ONLY the final property has a type or default value, redistribute it to all properties
-                let singleTypeSharedByAllProperties = propertiesBeforeLast.allSatisfy { $0.typeRange == nil && $0.valueRange == nil }
-                    && lastProperty.typeRange != nil
-                    && lastProperty.valueRange == nil
+                let singleTypeSharedByAllProperties =
+                    propertiesBeforeLast.allSatisfy { $0.typeRange == nil && $0.valueRange == nil }
+                        && lastProperty.typeRange != nil
+                        && lastProperty.valueRange == nil
 
                 if singleTypeSharedByAllProperties, let lastPropertyType = lastProperty.typeRange {
                     sharedTypeTokens = Array(formatter.tokens[lastPropertyType])
@@ -99,7 +100,9 @@ extension FormatRule {
                 }
 
                 // Replace the entire multiple property declaration with the new tokens
-                formatter.replaceTokens(in: startOfModifiers ... multiplePropertyDecl.range.upperBound, with: allReplacementTokens)
+                formatter.replaceTokens(
+                    in: startOfModifiers ... multiplePropertyDecl.range.upperBound, with: allReplacementTokens
+                )
             }
 
             // Handle tuple destructing properties like `let (foo, bar) = (1, 2)
@@ -173,7 +176,9 @@ extension FormatRule {
                 }
 
                 // Replace the entire tuple declaration with the new tokens
-                formatter.replaceTokens(in: startOfModifiers ... tupleDecl.range.upperBound, with: allReplacementTokens)
+                formatter.replaceTokens(
+                    in: startOfModifiers ... tupleDecl.range.upperBound, with: allReplacementTokens
+                )
             }
         }
     } examples: {
@@ -222,7 +227,9 @@ extension Formatter {
             guard let finalProperty = properties.last else {
                 return introducerIndex ... introducerIndex
             }
-            let endIndex = finalProperty.valueRange?.upperBound ?? finalProperty.typeRange?.upperBound ?? finalProperty.identifierIndex
+            let endIndex =
+                finalProperty.valueRange?.upperBound ?? finalProperty.typeRange?.upperBound
+                    ?? finalProperty.identifierIndex
             return introducerIndex ... endIndex
         }
     }
@@ -260,10 +267,14 @@ extension Formatter {
             let endOfTypeOrIdentifier = typeInformation?.type.range.upperBound ?? propertyIdentifierIndex
             var valueInformation: (assignmentIndex: Int, expressionRange: ClosedRange<Int>)?
 
-            if let assignmentIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: endOfTypeOrIdentifier),
-               tokens[assignmentIndex] == .operator("=", .infix),
-               let startOfExpression = index(of: .nonSpaceOrCommentOrLinebreak, after: assignmentIndex),
-               let expressionRange = parseExpressionRange(startingAt: startOfExpression, allowConditionalExpressions: true)
+            if let assignmentIndex = index(
+                of: .nonSpaceOrCommentOrLinebreak, after: endOfTypeOrIdentifier
+            ),
+                tokens[assignmentIndex] == .operator("=", .infix),
+                let startOfExpression = index(of: .nonSpaceOrCommentOrLinebreak, after: assignmentIndex),
+                let expressionRange = parseExpressionRange(
+                    startingAt: startOfExpression, allowConditionalExpressions: true
+                )
             {
                 valueInformation = (
                     assignmentIndex: assignmentIndex,
@@ -272,22 +283,28 @@ extension Formatter {
             }
 
             var trailingCommaIndex: Int?
-            let lastTokenInProperty = valueInformation?.expressionRange.last ?? typeInformation?.type.range.upperBound ?? propertyIdentifierIndex
+            let lastTokenInProperty =
+                valueInformation?.expressionRange.last ?? typeInformation?.type.range.upperBound
+                    ?? propertyIdentifierIndex
             if let nextToken = index(of: .nonSpaceOrCommentOrLinebreak, after: lastTokenInProperty),
                tokens[nextToken] == .delimiter(",")
             {
                 trailingCommaIndex = nextToken
             }
 
-            properties.append(MultiplePropertyDeclaration.Property(
-                identifier: tokens[propertyIdentifierIndex].string,
-                identifierIndex: propertyIdentifierIndex,
-                typeRange: typeInformation?.type.range.range,
-                valueRange: valueInformation?.expressionRange,
-                trailingCommaIndex: trailingCommaIndex
-            ))
+            properties.append(
+                MultiplePropertyDeclaration.Property(
+                    identifier: tokens[propertyIdentifierIndex].string,
+                    identifierIndex: propertyIdentifierIndex,
+                    typeRange: typeInformation?.type.range.range,
+                    valueRange: valueInformation?.expressionRange,
+                    trailingCommaIndex: trailingCommaIndex
+                )
+            )
 
-            guard let trailingCommaIndex, let followingIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: trailingCommaIndex) else {
+            guard let trailingCommaIndex,
+                  let followingIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: trailingCommaIndex)
+            else {
                 break
             }
 
@@ -339,15 +356,20 @@ extension Formatter {
         else { return nil }
 
         // Parse identifiers from the pattern tuple
-        let identifiers: [(name: String, range: ClosedRange<Int>)] = parseTupleArguments(startOfScope: parenIndex).map { argument in
+        let identifiers: [(name: String, range: ClosedRange<Int>)] = parseTupleArguments(
+            startOfScope: parenIndex
+        ).map { argument in
             (name: argument.value, range: argument.valueRange)
         }
 
         guard identifiers.count > 1 else { return nil }
 
-        guard var parseIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: endOfTuple) else { return nil }
+        guard var parseIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: endOfTuple) else {
+            return nil
+        }
 
-        var propertyType: (range: ClosedRange<Int>, tupleTypes: [(name: String, range: ClosedRange<Int>)]?)?
+        var propertyType:
+            (range: ClosedRange<Int>, tupleTypes: [(name: String, range: ClosedRange<Int>)]?)?
         var propertyValue: (range: ClosedRange<Int>, tupleValueRanges: [ClosedRange<Int>]?)?
 
         // Parse the optional type, which can be a tuple or non-tuple
@@ -359,9 +381,12 @@ extension Formatter {
             // If the type is a tuple, parse the individual tuple types
             if tokens[typeStart] == .startOfScope("("), type.range.upperBound == endOfScope(at: typeStart) {
                 let parsedTypes = parseTupleArguments(startOfScope: typeStart)
-                propertyType = (range: type.range.range, tupleTypes: parsedTypes.map { type in
-                    (name: type.value, range: type.valueRange)
-                })
+                propertyType = (
+                    range: type.range.range,
+                    tupleTypes: parsedTypes.map { type in
+                        (name: type.value, range: type.valueRange)
+                    }
+                )
             } else {
                 propertyType = (range: type.range.range, tupleTypes: nil)
             }
@@ -375,15 +400,20 @@ extension Formatter {
 
         if tokens[parseIndex] == .operator("=", .infix) {
             guard let valueStart = index(of: .nonSpaceOrCommentOrLinebreak, after: parseIndex),
-                  let expressionRange = parseExpressionRange(startingAt: valueStart, allowConditionalExpressions: true)
+                  let expressionRange = parseExpressionRange(
+                      startingAt: valueStart, allowConditionalExpressions: true
+                  )
             else { return nil }
 
             // If the value is a tuple, parse the individual tuple values
-            if tokens[valueStart] == .startOfScope("("), expressionRange.upperBound == endOfScope(at: valueStart) {
+            if tokens[valueStart] == .startOfScope("("),
+               expressionRange.upperBound == endOfScope(at: valueStart)
+            {
                 let parsedValues = parseTupleArguments(startOfScope: valueStart)
-                propertyValue = (range: expressionRange, tupleValueRanges: parsedValues.map { value in
-                    value.valueRange
-                })
+                propertyValue = (
+                    range: expressionRange,
+                    tupleValueRanges: parsedValues.map(\.valueRange)
+                )
             } else {
                 propertyValue = (range: expressionRange, tupleValueRanges: nil)
             }

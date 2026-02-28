@@ -10,18 +10,28 @@ import Foundation
 
 extension FormatRule {
     static let privateStateVariables = FormatRule(
-        help: "Adds `private` access control to @State properties without existing access control modifiers.",
+        help:
+        "Adds `private` access control to @State properties without existing access control modifiers.",
         disabledByDefault: true
     ) { formatter in
-        formatter.forEachToken(where: { $0 == .keyword("@State") || $0 == .keyword("@StateObject") }) { stateIndex, _ in
-            guard let keywordIndex = formatter.index(after: stateIndex, where: {
-                $0 == .keyword("let") || $0 == .keyword("var")
-            }) else { return }
+        formatter.forEachToken(where: { $0 == .keyword("@State") || $0 == .keyword("@StateObject") }) {
+            stateIndex, _ in
+            guard
+                let keywordIndex = formatter.index(
+                    after: stateIndex,
+                    where: {
+                        $0 == .keyword("let") || $0 == .keyword("var")
+                    }
+                )
+            else { return }
 
             // Don't override any existing access control:
-            guard !formatter.tokens[stateIndex ..< keywordIndex].contains(where: {
-                _FormatRules.aclModifiers.contains($0.string) || _FormatRules.aclSetterModifiers.contains($0.string)
-            }) else {
+            guard
+                !formatter.tokens[stateIndex ..< keywordIndex].contains(where: {
+                    _FormatRules.aclModifiers.contains($0.string)
+                        || _FormatRules.aclSetterModifiers.contains($0.string)
+                })
+            else {
                 return
             }
 

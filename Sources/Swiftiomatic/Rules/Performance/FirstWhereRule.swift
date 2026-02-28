@@ -14,8 +14,12 @@ struct FirstWhereRule: Rule {
             Example("match(pattern: pattern).filter { $0.first == .identifier }"),
             Example("(myList.filter { $0 == 1 }.suffix(2)).first"),
             Example(#"collection.filter("stringCol = '3'").first"#),
-            Example(#"realm?.objects(User.self).filter(NSPredicate(format: "email ==[c] %@", email)).first"#),
-            Example(#"if let pause = timeTracker.pauses.filter("beginDate < %@", beginDate).first { print(pause) }"#),
+            Example(
+                #"realm?.objects(User.self).filter(NSPredicate(format: "email ==[c] %@", email)).first"#
+            ),
+            Example(
+                #"if let pause = timeTracker.pauses.filter("beginDate < %@", beginDate).first { print(pause) }"#
+            ),
         ],
         triggeringExamples: [
             Example("↓myList.filter { $0 % 2 == 0 }.first"),
@@ -64,7 +68,8 @@ private extension ExprSyntax {
         }
         if let functionCall = `as`(FunctionCallExprSyntax.self),
            let calledExpression = functionCall.calledExpression.as(DeclReferenceExprSyntax.self),
-           calledExpression.baseName.text == "NSPredicate" {
+           calledExpression.baseName.text == "NSPredicate"
+        {
             return true
         }
         return false

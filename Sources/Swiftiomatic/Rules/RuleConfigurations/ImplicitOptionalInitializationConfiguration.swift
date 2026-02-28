@@ -1,4 +1,3 @@
-
 struct ImplicitOptionalInitializationConfiguration: SeverityBasedRuleConfiguration { // swiftlint:disable:this type_name
     enum Style: String, AcceptableByConfigurationElement {
         case always

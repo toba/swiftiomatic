@@ -28,39 +28,47 @@ struct RedundantTypeAnnotationRule: Rule {
             Example("var one: A<T> = B<T>()"),
             Example("let a = A.b.c.d"),
             Example("let a: B = A.b.c.d"),
-            Example("""
-            enum Direction {
-                case up
-                case down
-            }
+            Example(
+                """
+                enum Direction {
+                    case up
+                    case down
+                }
 
-            var direction: Direction = .up
-            """),
-            Example("""
-            enum Direction {
-                case up
-                case down
-            }
+                var direction: Direction = .up
+                """
+            ),
+            Example(
+                """
+                enum Direction {
+                    case up
+                    case down
+                }
 
-            var direction = Direction.up
-            """),
+                var direction = Direction.up
+                """
+            ),
             Example("@IgnoreMe var a: Int = Int(5)", configuration: ["ignore_attributes": ["IgnoreMe"]]),
-            Example("""
-            var a: Int {
-                @IgnoreMe let i: Int = Int(1)
-                return i
-            }
-            """, configuration: ["ignore_attributes": ["IgnoreMe"]]),
+            Example(
+                """
+                var a: Int {
+                    @IgnoreMe let i: Int = Int(1)
+                    return i
+                }
+                """, configuration: ["ignore_attributes": ["IgnoreMe"]]
+            ),
             Example("var bol: Bool = true"),
             Example("var dbl: Double = 0.0"),
             Example("var int: Int = 0"),
             Example("var str: String = \"str\""),
-            Example("""
-            struct Foo {
-                var url: URL = URL()
-                let myVar: Int? = 0, s: String = ""
-            }
-            """, configuration: ["ignore_properties": true]),
+            Example(
+                """
+                struct Foo {
+                    var url: URL = URL()
+                    let myVar: Int? = 0, s: String = ""
+                }
+                """, configuration: ["ignore_properties": true]
+            ),
         ],
         triggeringExamples: [
             Example("var url↓:URL=URL()"),
@@ -85,42 +93,61 @@ struct RedundantTypeAnnotationRule: Rule {
             Example("var num↓: Int = Int.random(0..<10)"),
             Example("let a↓: A = A.b.c.d"),
             Example("let a↓: A = A.f().b"),
-            Example("""
-            class ViewController: UIViewController {
-              func someMethod() {
-                let myVar↓: Int = Int(5)
-              }
-            }
-            """),
-            Example("""
-            class ViewController: UIViewController {
-              func someMethod() {
-                let myVar↓: Int = Int(5)
-              }
-            }
-            """, configuration: ["ignore_properties": true]),
+            Example(
+                """
+                class ViewController: UIViewController {
+                  func someMethod() {
+                    let myVar↓: Int = Int(5)
+                  }
+                }
+                """
+            ),
+            Example(
+                """
+                class ViewController: UIViewController {
+                  func someMethod() {
+                    let myVar↓: Int = Int(5)
+                  }
+                }
+                """, configuration: ["ignore_properties": true]
+            ),
             Example("let a↓: [Int] = [Int]()"),
             Example("let a↓: A.B = A.B()"),
-            Example("""
-            enum Direction {
-                case up
-                case down
-            }
+            Example(
+                """
+                enum Direction {
+                    case up
+                    case down
+                }
 
-            var direction↓: Direction = Direction.up
-            """),
-            Example("@DontIgnoreMe var a↓: Int = Int(5)", configuration: ["ignore_attributes": ["IgnoreMe"]]),
-            Example("""
-            @IgnoreMe
-            var a: Int {
-                let i↓: Int = Int(1)
-                return i
-            }
-            """, configuration: ["ignore_attributes": ["IgnoreMe"]]),
-            Example("var bol↓: Bool = true", configuration: ["consider_default_literal_types_redundant": true]),
-            Example("var dbl↓: Double = 0.0", configuration: ["consider_default_literal_types_redundant": true]),
-            Example("var int↓: Int = 0", configuration: ["consider_default_literal_types_redundant": true]),
-            Example("var str↓: String = \"str\"", configuration: ["consider_default_literal_types_redundant": true]),
+                var direction↓: Direction = Direction.up
+                """
+            ),
+            Example(
+                "@DontIgnoreMe var a↓: Int = Int(5)", configuration: ["ignore_attributes": ["IgnoreMe"]]
+            ),
+            Example(
+                """
+                @IgnoreMe
+                var a: Int {
+                    let i↓: Int = Int(1)
+                    return i
+                }
+                """, configuration: ["ignore_attributes": ["IgnoreMe"]]
+            ),
+            Example(
+                "var bol↓: Bool = true", configuration: ["consider_default_literal_types_redundant": true]
+            ),
+            Example(
+                "var dbl↓: Double = 0.0", configuration: ["consider_default_literal_types_redundant": true]
+            ),
+            Example(
+                "var int↓: Int = 0", configuration: ["consider_default_literal_types_redundant": true]
+            ),
+            Example(
+                "var str↓: String = \"str\"",
+                configuration: ["consider_default_literal_types_redundant": true]
+            ),
         ],
         corrections: [
             Example("var url↓: URL = URL()"): Example("var url = URL()"),
@@ -149,42 +176,59 @@ struct RedundantTypeAnnotationRule: Rule {
                 Example("var set = Set<Int>([]), otherSet: Set<Int>"),
             Example("let a↓: A = A.b.c.d"):
                 Example("let a = A.b.c.d"),
-            Example("""
-            class ViewController: UIViewController {
-              func someMethod() {
-                let myVar↓: Int = Int(5)
-              }
-            }
-            """):
-            Example("""
-            class ViewController: UIViewController {
-              func someMethod() {
-                let myVar = Int(5)
-              }
-            }
-            """),
+            Example(
+                """
+                class ViewController: UIViewController {
+                  func someMethod() {
+                    let myVar↓: Int = Int(5)
+                  }
+                }
+                """
+            ):
+                Example(
+                    """
+                    class ViewController: UIViewController {
+                      func someMethod() {
+                        let myVar = Int(5)
+                      }
+                    }
+                    """
+                ),
             Example("var num: Int = Int.random(0..<10)"): Example("var num = Int.random(0..<10)"),
-            Example("""
-            @IgnoreMe
-            var a: Int {
-                let i↓: Int = Int(1)
-                return i
-            }
-            """, configuration: ["ignore_attributes": ["IgnoreMe"]]):
-            Example("""
-            @IgnoreMe
-            var a: Int {
-                let i = Int(1)
-                return i
-            }
-            """),
-            Example("var bol: Bool = true", configuration: ["consider_default_literal_types_redundant": true]):
+            Example(
+                """
+                @IgnoreMe
+                var a: Int {
+                    let i↓: Int = Int(1)
+                    return i
+                }
+                """, configuration: ["ignore_attributes": ["IgnoreMe"]]
+            ):
+                Example(
+                    """
+                    @IgnoreMe
+                    var a: Int {
+                        let i = Int(1)
+                        return i
+                    }
+                    """
+                ),
+            Example(
+                "var bol: Bool = true", configuration: ["consider_default_literal_types_redundant": true]
+            ):
                 Example("var bol = true"),
-            Example("var dbl: Double = 0.0", configuration: ["consider_default_literal_types_redundant": true]):
+            Example(
+                "var dbl: Double = 0.0", configuration: ["consider_default_literal_types_redundant": true]
+            ):
                 Example("var dbl = 0.0"),
-            Example("var int: Int = 0", configuration: ["consider_default_literal_types_redundant": true]):
+            Example(
+                "var int: Int = 0", configuration: ["consider_default_literal_types_redundant": true]
+            ):
                 Example("var int = 0"),
-            Example("var str: String = \"str\"", configuration: ["consider_default_literal_types_redundant": true]):
+            Example(
+                "var str: String = \"str\"",
+                configuration: ["consider_default_literal_types_redundant": true]
+            ):
                 Example("var str = \"str\""),
         ]
     )
@@ -204,19 +248,23 @@ private extension RedundantTypeAnnotationRule {
             if let varDecl = node.parent?.parent?.as(VariableDeclSyntax.self),
                !configuration.shouldSkipRuleCheck(for: varDecl),
                let typeAnnotation = node.typeAnnotation,
-               let initializer = node.initializer?.value {
+               let initializer = node.initializer?.value
+            {
                 collectViolation(forType: typeAnnotation, withInitializer: initializer)
             }
         }
 
         override func visitPost(_ node: OptionalBindingConditionSyntax) {
             if let typeAnnotation = node.typeAnnotation,
-               let initializer = node.initializer?.value {
+               let initializer = node.initializer?.value
+            {
                 collectViolation(forType: typeAnnotation, withInitializer: initializer)
             }
         }
 
-        private func collectViolation(forType type: TypeAnnotationSyntax, withInitializer initializer: ExprSyntax) {
+        private func collectViolation(
+            forType type: TypeAnnotationSyntax, withInitializer initializer: ExprSyntax
+        ) {
             let validateLiterals = configuration.considerDefaultLiteralTypesRedundant
             let isLiteralRedundant = validateLiterals && initializer.hasRedundant(literalType: type.type)
             guard isLiteralRedundant || initializer.hasRedundant(type: type.type) else {

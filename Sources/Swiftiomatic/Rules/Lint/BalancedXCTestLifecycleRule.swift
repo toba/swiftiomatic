@@ -19,98 +19,126 @@ struct BalancedXCTestLifecycleRule: Rule {
         """,
         kind: .lint,
         nonTriggeringExamples: [
-            Example(#"""
-            final class FooTests: XCTestCase {
-                override func setUp() {}
-                override func tearDown() {}
-            }
-            """#),
-            Example(#"""
-            final class FooTests: XCTestCase {
-                override func setUpWithError() throws {}
-                override func tearDown() {}
-            }
-            """#),
-            Example(#"""
-            final class FooTests: XCTestCase {
-                override func setUp() {}
-                override func tearDownWithError() throws {}
-            }
-            """#),
-            Example(#"""
-            final class FooTests: XCTestCase {
-                override func setUpWithError() throws {}
-                override func tearDownWithError() throws {}
-            }
-            final class BarTests: XCTestCase {
-                override func setUpWithError() throws {}
-                override func tearDownWithError() throws {}
-            }
-            """#),
-            Example(#"""
-            struct FooTests {
-                override func setUp() {}
-            }
-            class BarTests {
-                override func setUpWithError() throws {}
-            }
-            """#),
-            Example(#"""
-            final class FooTests: XCTestCase {
-                override func setUpAlLExamples() {}
-            }
-            """#),
-            Example(#"""
-            final class FooTests: XCTestCase {
-                class func setUp() {}
-                class func tearDown() {}
-            }
-            """#),
+            Example(
+                #"""
+                final class FooTests: XCTestCase {
+                    override func setUp() {}
+                    override func tearDown() {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class FooTests: XCTestCase {
+                    override func setUpWithError() throws {}
+                    override func tearDown() {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class FooTests: XCTestCase {
+                    override func setUp() {}
+                    override func tearDownWithError() throws {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class FooTests: XCTestCase {
+                    override func setUpWithError() throws {}
+                    override func tearDownWithError() throws {}
+                }
+                final class BarTests: XCTestCase {
+                    override func setUpWithError() throws {}
+                    override func tearDownWithError() throws {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                struct FooTests {
+                    override func setUp() {}
+                }
+                class BarTests {
+                    override func setUpWithError() throws {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class FooTests: XCTestCase {
+                    override func setUpAlLExamples() {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class FooTests: XCTestCase {
+                    class func setUp() {}
+                    class func tearDown() {}
+                }
+                """#
+            ),
         ],
         triggeringExamples: [
-            Example(#"""
-            final class ↓FooTests: XCTestCase {
-                override func setUp() {}
-            }
-            """#),
-            Example(#"""
-            final class ↓FooTests: XCTestCase {
-                override func setUpWithError() throws {}
-            }
-            """#),
-            Example(#"""
-            final class FooTests: XCTestCase {
-                override func setUp() {}
-                override func tearDownWithError() throws {}
-            }
-            final class ↓BarTests: XCTestCase {
-                override func setUpWithError() throws {}
-            }
-            """#),
-            Example(#"""
-            final class ↓FooTests: XCTestCase {
-                class func tearDown() {}
-            }
-            """#),
-            Example(#"""
-            final class ↓FooTests: XCTestCase {
-                override func tearDown() {}
-            }
-            """#),
-            Example(#"""
-            final class ↓FooTests: XCTestCase {
-                override func tearDownWithError() throws {}
-            }
-            """#),
-            Example(#"""
-            final class FooTests: XCTestCase {
-                override func setUp() {}
-                override func tearDownWithError() throws {}
-            }
-            final class ↓BarTests: XCTestCase {
-                override func tearDownWithError() throws {}
-            }
-            """#),
+            Example(
+                #"""
+                final class ↓FooTests: XCTestCase {
+                    override func setUp() {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class ↓FooTests: XCTestCase {
+                    override func setUpWithError() throws {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class FooTests: XCTestCase {
+                    override func setUp() {}
+                    override func tearDownWithError() throws {}
+                }
+                final class ↓BarTests: XCTestCase {
+                    override func setUpWithError() throws {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class ↓FooTests: XCTestCase {
+                    class func tearDown() {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class ↓FooTests: XCTestCase {
+                    override func tearDown() {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class ↓FooTests: XCTestCase {
+                    override func tearDownWithError() throws {}
+                }
+                """#
+            ),
+            Example(
+                #"""
+                final class FooTests: XCTestCase {
+                    override func setUp() {}
+                    override func tearDownWithError() throws {}
+                }
+                final class ↓BarTests: XCTestCase {
+                    override func tearDownWithError() throws {}
+                }
+                """#
+            ),
         ]
     )
 }
@@ -127,7 +155,9 @@ extension BalancedXCTestLifecycleRule: OptInRule {}
 
 private extension BalancedXCTestLifecycleRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_ node: ClassDeclSyntax) {
             guard node.isXCTestCase(configuration.testParentClasses) else {
@@ -145,13 +175,19 @@ private extension BalancedXCTestLifecycleRule {
     }
 }
 
-private final class SetupTearDownVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxVisitor<Configuration> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+private final class SetupTearDownVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxVisitor<
+    Configuration
+> {
+    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+        .all
+    }
+
     private(set) var methods: Set<XCTMethod> = []
 
     override func visitPost(_ node: FunctionDeclSyntax) {
         if let method = XCTMethod(node.name.description),
-           node.signature.parameterClause.parameters.isEmpty {
+           node.signature.parameterClause.parameters.isEmpty
+        {
             methods.insert(method)
         }
     }

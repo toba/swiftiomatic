@@ -152,9 +152,11 @@ struct Analyzer: Sendable {
             }
             if !allFingerprints.isEmpty {
                 let dupeCheck = StructuralDuplicationCheck(filePath: "")
-                findings.append(contentsOf: dupeCheck.generateDuplicationFindings(
-                    allCollected: allFingerprints
-                ))
+                findings.append(
+                    contentsOf: dupeCheck.generateDuplicationFindings(
+                        allCollected: allFingerprints
+                    )
+                )
             }
         }
 

@@ -47,7 +47,8 @@ private extension NonOptionalStringDataConversionRule {
                argument.label?.text == "using",
                argument.expression.as(MemberAccessExprSyntax.self)?.isUTF8 == true,
                let base = node.base,
-               base.is(StringLiteralExprSyntax.self) || configuration.includeVariables {
+               base.is(StringLiteralExprSyntax.self) || configuration.includeVariables
+            {
                 violations.append(node.positionAfterSkippingLeadingTrivia)
             }
         }

@@ -1,4 +1,3 @@
-
 struct ProhibitedSuperConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.warning)
@@ -27,6 +26,7 @@ struct ProhibitedSuperConfiguration: SeverityBasedRuleConfiguration {
         names = names.filter { !excluded.contains($0) }
         return names
     }
+
     typealias Parent = ProhibitedSuperRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $excluded.key.isEmpty {

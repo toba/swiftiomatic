@@ -37,7 +37,8 @@ extension FormatRule {
                 bodyScope = function.bodyRange
                 // A func named "body" is only the protocol body if it's on a ViewModifier
                 // (View.body must be a property, not a function)
-                isBodyMember = function.name == "body" && formatter.isViewModifierType(declaration.parentType)
+                isBodyMember =
+                    function.name == "body" && formatter.isViewModifierType(declaration.parentType)
             } else {
                 return
             }
@@ -47,8 +48,9 @@ extension FormatRule {
             // @ViewBuilder is redundant if:
             // 1. It's the body protocol requirement of a View/ViewModifier, OR
             // 2. The body contains only a single non-conditional expression
-            let isRedundant = isBodyMember
-                || formatter.scopeBodyIsSingleNonConditionalExpression(at: bodyScope.lowerBound)
+            let isRedundant =
+                isBodyMember
+                    || formatter.scopeBodyIsSingleNonConditionalExpression(at: bodyScope.lowerBound)
 
             if isRedundant {
                 attributeIndicesToRemove.append(viewBuilderIndex)

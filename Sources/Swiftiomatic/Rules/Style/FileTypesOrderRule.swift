@@ -1,7 +1,9 @@
 import Foundation
 import SourceKittenFramework
 
-private typealias FileTypeOffset = (fileType: FileTypesOrderConfiguration.FileType, offset: ByteCount)
+private typealias FileTypeOffset = (
+    fileType: FileTypesOrderConfiguration.FileType, offset: ByteCount
+)
 
 struct FileTypesOrderRule: OptInRule {
     var configuration = FileTypesOrderConfiguration()
@@ -17,7 +19,8 @@ struct FileTypesOrderRule: OptInRule {
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
         guard let mainTypeSubstructure = mainTypeSubstructure(in: file),
-              let mainTypeSubstuctureOffset = mainTypeSubstructure.offset else { return [] }
+              let mainTypeSubstuctureOffset = mainTypeSubstructure.offset
+        else { return [] }
 
         let extensionsSubstructures = extensionsSubstructures(
             in: file,
@@ -41,15 +44,22 @@ struct FileTypesOrderRule: OptInRule {
 
         let mainTypeOffset: [FileTypeOffset] = [(.mainType, mainTypeSubstuctureOffset)]
         let extensionOffsets: [FileTypeOffset] = extensionsSubstructures.offsets(for: .extension)
-        let supportingTypeOffsets: [FileTypeOffset] = supportingTypesSubstructures.offsets(for: .supportingType)
-        let previewProviderOffsets: [FileTypeOffset] = previewProviderSubstructures.offsets(for: .previewProvider)
-        let libraryContentOffsets: [FileTypeOffset] = libraryContentSubstructures.offsets(for: .libraryContentProvider)
+        let supportingTypeOffsets: [FileTypeOffset] = supportingTypesSubstructures.offsets(
+            for: .supportingType
+        )
+        let previewProviderOffsets: [FileTypeOffset] = previewProviderSubstructures.offsets(
+            for: .previewProvider
+        )
+        let libraryContentOffsets: [FileTypeOffset] = libraryContentSubstructures.offsets(
+            for: .libraryContentProvider
+        )
 
-        let allOffsets = mainTypeOffset
-            + extensionOffsets
-            + supportingTypeOffsets
-            + previewProviderOffsets
-            + libraryContentOffsets
+        let allOffsets =
+            mainTypeOffset
+                + extensionOffsets
+                + supportingTypeOffsets
+                + previewProviderOffsets
+                + libraryContentOffsets
 
         let orderedFileTypeOffsets = allOffsets.sorted { lhs, rhs in lhs.offset < rhs.offset }
 
@@ -60,7 +70,7 @@ struct FileTypesOrderRule: OptInRule {
             var potentialViolatingIndexes = [Int]()
 
             let startIndex = lastMatchingIndex + 1
-            (startIndex..<orderedFileTypeOffsets.count).forEach { index in
+            for index in startIndex ..< orderedFileTypeOffsets.count {
                 let fileType = orderedFileTypeOffsets[index].fileType
                 if expectedTypes.contains(fileType) {
                     lastMatchingIndex = index
@@ -70,18 +80,20 @@ struct FileTypesOrderRule: OptInRule {
             }
 
             let violatingIndexes = potentialViolatingIndexes.filter { $0 < lastMatchingIndex }
-            violatingIndexes.forEach { index in
+            for index in violatingIndexes {
                 let fileTypeOffset = orderedFileTypeOffsets[index]
 
                 let fileType = fileTypeOffset.fileType.rawValue
                 let expected = expectedTypes.map(\.rawValue).joined(separator: ",")
-                let article = ["a", "e", "i", "o", "u"].contains(fileType.substring(from: 0, length: 1)) ? "An" : "A"
+                let article =
+                    ["a", "e", "i", "o", "u"].contains(fileType.substring(from: 0, length: 1)) ? "An" : "A"
 
                 let styleViolation = StyleViolation(
                     ruleDescription: Self.description,
                     severity: configuration.severityConfiguration.severity,
                     location: Location(file: file, byteOffset: fileTypeOffset.offset),
-                    reason: "\(article) '\(fileType)' should not be placed amongst the file type(s) '\(expected)'"
+                    reason:
+                    "\(article) '\(fileType)' should not be placed amongst the file type(s) '\(expected)'"
                 )
                 violations.append(styleViolation)
             }
@@ -187,5 +199,8 @@ extension FileTypesOrderRule {
             "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
         ).print()
     }()
-    func notifyRuleDisabledOnce() { _ = Self._postMessage }
+
+    func notifyRuleDisabledOnce() {
+        _ = Self._postMessage
+    }
 }

@@ -15,7 +15,8 @@ struct FileNameNoSpaceRule: OptInRule, SourceKitFreeRule {
         guard let filePath = file.path,
               case let fileName = filePath.bridge().lastPathComponent,
               !configuration.excluded.contains(fileName),
-              fileName.rangeOfCharacter(from: .whitespaces) != nil else {
+              fileName.rangeOfCharacter(from: .whitespaces) != nil
+        else {
             return []
         }
 

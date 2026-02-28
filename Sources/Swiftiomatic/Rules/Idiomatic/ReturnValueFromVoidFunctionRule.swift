@@ -19,6 +19,7 @@ extension ReturnValueFromVoidFunctionRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -31,7 +32,8 @@ private extension ReturnValueFromVoidFunctionRule {
         override func visitPost(_ node: ReturnStmtSyntax) {
             if node.expression != nil,
                let functionNode = Syntax(node).enclosingFunction(),
-               functionNode.returnsVoid {
+               functionNode.returnsVoid
+            {
                 violations.append(node.positionAfterSkippingLeadingTrivia)
             }
         }
@@ -41,22 +43,29 @@ private extension ReturnValueFromVoidFunctionRule {
         override func visit(_ statements: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
             guard let returnStmt = statements.last?.item.as(ReturnStmtSyntax.self),
                   let expr = returnStmt.expression,
-                  Syntax(statements).enclosingFunction()?.returnsVoid == true else {
+                  Syntax(statements).enclosingFunction()?.returnsVoid == true
+            else {
                 return super.visit(statements)
             }
             numberOfCorrections += 1
-            let newStmtList = Array(statements.dropLast()) + [
-                CodeBlockItemSyntax(item: .expr(expr))
-                    .with(\.leadingTrivia, returnStmt.leadingTrivia),
-                CodeBlockItemSyntax(item: .stmt(StmtSyntax(
-                    returnStmt
-                        .with(\.expression, nil)
-                        .with(
-                            \.leadingTrivia,
-                            .newline + (returnStmt.leadingTrivia.indentation(isOnNewline: false) ?? []))
-                        .with(\.trailingTrivia, returnStmt.trailingTrivia)
-                ))),
-            ]
+            let newStmtList =
+                Array(statements.dropLast()) + [
+                    CodeBlockItemSyntax(item: .expr(expr))
+                        .with(\.leadingTrivia, returnStmt.leadingTrivia),
+                    CodeBlockItemSyntax(
+                        item: .stmt(
+                            StmtSyntax(
+                                returnStmt
+                                    .with(\.expression, nil)
+                                    .with(
+                                        \.leadingTrivia,
+                                        .newline + (returnStmt.leadingTrivia.indentation(isOnNewline: false) ?? [])
+                                    )
+                                    .with(\.trailingTrivia, returnStmt.trailingTrivia)
+                            )
+                        )
+                    ),
+                ]
             return super.visit(CodeBlockItemListSyntax(newStmtList))
         }
     }
@@ -68,7 +77,9 @@ private extension Syntax {
             return node
         }
 
-        if `is`(ClosureExprSyntax.self) || `is`(VariableDeclSyntax.self) || `is`(InitializerDeclSyntax.self) {
+        if `is`(ClosureExprSyntax.self) || `is`(VariableDeclSyntax.self)
+            || `is`(InitializerDeclSyntax.self)
+        {
             return nil
         }
 

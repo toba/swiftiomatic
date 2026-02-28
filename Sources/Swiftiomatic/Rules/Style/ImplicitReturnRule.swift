@@ -24,12 +24,15 @@ extension ImplicitReturnRule: OptInRule {}
 
 private extension ImplicitReturnRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { [ProtocolDeclSyntax.self] }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
         override func visitPost(_ node: AccessorDeclSyntax) {
             if configuration.isKindIncluded(.getter),
                node.accessorSpecifier.tokenKind == .keyword(.get),
-               let body = node.body {
+               let body = node.body
+            {
                 collectViolation(in: body.statements)
             }
         }
@@ -42,28 +45,32 @@ private extension ImplicitReturnRule {
 
         override func visitPost(_ node: FunctionDeclSyntax) {
             if configuration.isKindIncluded(.function),
-               let body = node.body {
+               let body = node.body
+            {
                 collectViolation(in: body.statements)
             }
         }
 
         override func visitPost(_ node: InitializerDeclSyntax) {
             if configuration.isKindIncluded(.initializer),
-               let body = node.body {
+               let body = node.body
+            {
                 collectViolation(in: body.statements)
             }
         }
 
         override func visitPost(_ node: PatternBindingSyntax) {
             if configuration.isKindIncluded(.getter),
-               case let .getter(itemList) = node.accessorBlock?.accessors {
+               case let .getter(itemList) = node.accessorBlock?.accessors
+            {
                 collectViolation(in: itemList)
             }
         }
 
         override func visitPost(_ node: SubscriptDeclSyntax) {
             if configuration.isKindIncluded(.subscript),
-               case let .getter(itemList) = node.accessorBlock?.accessors {
+               case let .getter(itemList) = node.accessorBlock?.accessors
+            {
                 collectViolation(in: itemList)
             }
         }
@@ -78,7 +85,7 @@ private extension ImplicitReturnRule {
                 correction: .init(
                     start: returnKeyword.positionAfterSkippingLeadingTrivia,
                     end: returnKeyword.endPositionBeforeTrailingTrivia
-                            .advanced(by: returnStmt.expression == nil ? 0 : 1),
+                        .advanced(by: returnStmt.expression == nil ? 0 : 1),
                     replacement: ""
                 )
             )

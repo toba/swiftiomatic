@@ -7,33 +7,42 @@ struct ShorthandArgumentRule: Rule {
         identifier: "shorthand_argument",
         name: "Shorthand Argument",
         description: """
-            Shorthand arguments like `$0`, `$1`, etc. in closures can be confusing. Avoid using them too far \
-            away from the beginning of the closure. Optionally, while usage of a single shorthand argument is okay, \
-            more than one or complex ones with field accesses might increase the risk of obfuscation.
-            """,
+        Shorthand arguments like `$0`, `$1`, etc. in closures can be confusing. Avoid using them too far \
+        away from the beginning of the closure. Optionally, while usage of a single shorthand argument is okay, \
+        more than one or complex ones with field accesses might increase the risk of obfuscation.
+        """,
         kind: .style,
         nonTriggeringExamples: [
-            Example("""
+            Example(
+                """
                 f { $0 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 f {
                     $0
                   + $1
                   + $2
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 f { $0.a + $0.b }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 f {
                     $0
                   +  g { $0 }
-                """, configuration: ["allow_until_line_after_opening_brace": 1]),
+                """, configuration: ["allow_until_line_after_opening_brace": 1]
+            ),
         ],
         triggeringExamples: [
-            Example("""
+            Example(
+                """
                 f {
                     $0
                   + $1
@@ -41,8 +50,10 @@ struct ShorthandArgumentRule: Rule {
 
                   + ↓$0
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 f {
                     $0
                   + $1
@@ -51,18 +62,26 @@ struct ShorthandArgumentRule: Rule {
                   + $0
                   + ↓$1
                 }
-                """, configuration: ["allow_until_line_after_opening_brace": 5]),
-            Example("""
+                """, configuration: ["allow_until_line_after_opening_brace": 5]
+            ),
+            Example(
+                """
                 f { ↓$0 + ↓$1 }
-                """, configuration: ["always_disallow_more_than_one": true]),
-            Example("""
+                """, configuration: ["always_disallow_more_than_one": true]
+            ),
+            Example(
+                """
                 f {
                     ↓$0.a
                   + ↓$0.b
                   + $1
                   + ↓$2.c
                 }
-                """, configuration: ["always_disallow_member_access": true, "allow_until_line_after_opening_brace": 3]),
+                """,
+                configuration: [
+                    "always_disallow_member_access": true, "allow_until_line_after_opening_brace": 3,
+                ]
+            ),
         ]
     )
 }
@@ -81,13 +100,15 @@ private extension ShorthandArgumentRule {
             let arguments = ShorthandArgumentCollector().walk(tree: node.statements, handler: \.arguments)
             if configuration.alwaysDisallowMoreThanOne {
                 if arguments.map(\.name).unique.count > 1 {
-                    violations.append(contentsOf: arguments.map {
-                        ReasonedRuleViolation(
-                            position: $0.position,
-                            reason: "Multiple different shorthand arguments should be avoided",
-                            severity: configuration.severity
-                        )
-                    })
+                    violations.append(
+                        contentsOf: arguments.map {
+                            ReasonedRuleViolation(
+                                position: $0.position,
+                                reason: "Multiple different shorthand arguments should be avoided",
+                                severity: configuration.severity
+                            )
+                        }
+                    )
                     // In this case, the rule triggers on all shorthand arguments, thus exit here.
                     return
                 }
@@ -95,33 +116,39 @@ private extension ShorthandArgumentRule {
             let complexArguments = arguments.filter(\.isComplex)
             if configuration.alwaysDisallowMemberAccess {
                 if complexArguments.isNotEmpty {
-                    violations.append(contentsOf: complexArguments.map {
-                        ReasonedRuleViolation(
-                            position: $0.position,
-                            reason: "Accessing members of shorthand arguments should be avoided",
-                            severity: configuration.severity
-                        )
-                    })
+                    violations.append(
+                        contentsOf: complexArguments.map {
+                            ReasonedRuleViolation(
+                                position: $0.position,
+                                reason: "Accessing members of shorthand arguments should be avoided",
+                                severity: configuration.severity
+                            )
+                        }
+                    )
                 }
             }
-            let startLine = node.startLocation(converter: locationConverter, afterLeadingTrivia: true).line
-            violations.append(contentsOf: arguments.compactMap { argument -> ReasonedRuleViolation? in
-                if complexArguments.contains(argument) {
-                    nil
-                } else if locationConverter.location(for: argument.position).line
-                            <= startLine + configuration.allowUntilLineAfterOpeningBrace {
-                    nil
-                } else {
-                    ReasonedRuleViolation(
-                        position: argument.position,
-                        reason: """
+            let startLine = node.startLocation(converter: locationConverter, afterLeadingTrivia: true)
+                .line
+            violations.append(
+                contentsOf: arguments.compactMap { argument -> ReasonedRuleViolation? in
+                    if complexArguments.contains(argument) {
+                        nil
+                    } else if locationConverter.location(for: argument.position).line
+                        <= startLine + configuration.allowUntilLineAfterOpeningBrace
+                    {
+                        nil
+                    } else {
+                        ReasonedRuleViolation(
+                            position: argument.position,
+                            reason: """
                             References to shorthand arguments too far away from the closure's beginning should \
                             be avoided
                             """,
-                        severity: configuration.severity
-                    )
+                            severity: configuration.severity
+                        )
+                    }
                 }
-            })
+            )
         }
     }
 }

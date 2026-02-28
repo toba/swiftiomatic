@@ -4,7 +4,7 @@ import SourceKittenFramework
 
 // Adapted from https://gist.github.com/efirestone/ce01ae109e08772647eb061b3bb387c3
 
-struct Glob {
+enum Glob {
     static func resolveGlob(_ pattern: String) -> [String] {
         let globCharset = CharacterSet(charactersIn: "*?[]")
         guard pattern.rangeOfCharacter(from: globCharset) != nil else {
@@ -88,7 +88,8 @@ struct Glob {
         for directory in directories {
             let partiallyResolvedPattern: String
             if directory.isEmpty {
-                partiallyResolvedPattern = lastPart.starts(with: "/") ? String(lastPart.dropFirst()) : lastPart
+                partiallyResolvedPattern =
+                    lastPart.starts(with: "/") ? String(lastPart.dropFirst()) : lastPart
             } else {
                 partiallyResolvedPattern = directory.bridge().appendingPathComponent(lastPart)
             }
@@ -106,7 +107,7 @@ struct Glob {
 
     private static func populateFiles(globResult: glob_t) -> [String] {
         let matchCount = globResult.gl_matchc
-        return (0..<Int(matchCount)).compactMap { index in
+        return (0 ..< Int(matchCount)).compactMap { index in
             globResult.gl_pathv[index].flatMap { String(validatingUTF8: $0) }
         }
     }

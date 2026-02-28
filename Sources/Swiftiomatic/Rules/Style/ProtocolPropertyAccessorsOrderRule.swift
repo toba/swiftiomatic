@@ -6,7 +6,8 @@ struct ProtocolPropertyAccessorsOrderRule: Rule {
     static let description = RuleDescription(
         identifier: "protocol_property_accessors_order",
         name: "Protocol Property Accessors Order",
-        description: "When declaring properties in protocols, the order of accessors should be `get set`",
+        description:
+        "When declaring properties in protocols, the order of accessors should be `get set`",
         kind: .style,
         nonTriggeringExamples: [
             Example("protocol Foo {\n var bar: String { get set }\n }"),
@@ -14,7 +15,7 @@ struct ProtocolPropertyAccessorsOrderRule: Rule {
             Example("protocol Foo {\n var bar: String { set }\n }"),
         ],
         triggeringExamples: [
-            Example("protocol Foo {\n var bar: String { ↓set get }\n }")
+            Example("protocol Foo {\n var bar: String { ↓set get }\n }"),
         ],
         corrections: [
             Example("protocol Foo {\n var bar: String { ↓set get }\n }"):
@@ -27,6 +28,7 @@ extension ProtocolPropertyAccessorsOrderRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -63,7 +65,7 @@ private extension AccessorBlockSyntax {
     var hasViolation: Bool {
         let accessorsList = accessorsList
         return accessorsList.count == 2
-            && accessorsList.allSatisfy({ $0.body == nil })
+            && accessorsList.allSatisfy { $0.body == nil }
             && accessorsList.first?.accessorSpecifier.tokenKind == .keyword(.set)
     }
 }

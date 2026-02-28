@@ -51,7 +51,11 @@ extension FormatRule {
                 }
             }
 
-            guard let useDocComment = formatter.shouldBeDocComment(at: commentIndices, endOfComment: endOfComment) else {
+            guard
+                let useDocComment = formatter.shouldBeDocComment(
+                    at: commentIndices, endOfComment: endOfComment
+                )
+            else {
                 return
             }
 
@@ -66,15 +70,21 @@ extension FormatRule {
             // the entire group, so we preserve the existing formatting.
             var preserveRegularComments = false
             if useDocComment,
-               let declarationKeyword = formatter.index(after: endOfComment, where: \.isDeclarationTypeKeyword),
-               let endOfDeclaration = formatter._endOfDeclarationInTypeBody(atDeclarationKeyword: declarationKeyword),
+               let declarationKeyword = formatter.index(
+                   after: endOfComment, where: \.isDeclarationTypeKeyword
+               ),
+               let endOfDeclaration = formatter._endOfDeclarationInTypeBody(
+                   atDeclarationKeyword: declarationKeyword
+               ),
                let nextDeclarationKeyword = formatter.index(
                    after: endOfDeclaration,
                    where: \.isDeclarationTypeKeyword
                )
             {
-                let linebreaksBetweenDeclarations = formatter.tokens[declarationKeyword ... nextDeclarationKeyword]
-                    .filter(\.isLinebreak).count
+                let linebreaksBetweenDeclarations = formatter.tokens[
+                    declarationKeyword ... nextDeclarationKeyword
+                ]
+                .filter(\.isLinebreak).count
 
                 // If there is only a single line break between the start of this declaration and the subsequent declaration,
                 // then they are written sequentially in a block. In this case, don't convert regular comments to doc comments.
@@ -105,7 +115,9 @@ extension FormatRule {
                 if useDocComment, !isDocComment, !preserveRegularComments {
                     let updatedCommentBody = "\(startOfDocCommentBody)\(commentBody.string)"
                     formatter.replaceToken(at: index + 1, with: .commentBody(updatedCommentBody))
-                } else if !useDocComment || isTrailingComment, isDocComment, !formatter.options.preserveDocComments {
+                } else if !useDocComment || isTrailingComment, isDocComment,
+                          !formatter.options.preserveDocComments
+                {
                     let prefix = commentBody.string.prefix(while: { String($0) == startOfDocCommentBody })
 
                     // Do nothing if this is a unusual comment like `//////////////////`
@@ -181,7 +193,9 @@ extension Formatter {
 
         // If there are blank lines between comment and declaration, comment is not treated as doc comment
         let trailingTokens = tokens[(endOfComment - 1) ... nextDeclarationIndex]
-        let lines = trailingTokens.split(omittingEmptySubsequences: false, whereSeparator: \.isLinebreak)
+        let lines = trailingTokens.split(
+            omittingEmptySubsequences: false, whereSeparator: \.isLinebreak
+        )
         if lines.contains(where: { $0.allSatisfy(\.isSpace) }) {
             return false
         }

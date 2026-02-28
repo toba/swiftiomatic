@@ -10,7 +10,7 @@ struct FileLengthRule: Rule {
         description: "Files should not span too many lines.",
         kind: .metrics,
         nonTriggeringExamples: [
-            Example(repeatElement("print(\"swiftlint\")\n", count: 399).joined())
+            Example(repeatElement("print(\"swiftlint\")\n", count: 399).joined()),
         ],
         triggeringExamples: [
             Example(repeatElement("print(\"swiftlint\")\n", count: 401).joined()),
@@ -29,12 +29,14 @@ extension FileLengthRule: SwiftSyntaxRule {
 private extension FileLengthRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: SourceFileSyntax) {
-            let lineCount = configuration.ignoreCommentOnlyLines
-                ? CommentLinesVisitor(locationConverter: locationConverter)
+            let lineCount =
+                configuration.ignoreCommentOnlyLines
+                    ? CommentLinesVisitor(locationConverter: locationConverter)
                     .walk(tree: node, handler: \.linesWithCode).count
-                : file.lines.count
+                    : file.lines.count
 
-            let severity: ViolationSeverity, upperBound: Int
+            let severity: ViolationSeverity
+            let upperBound: Int
             if let error = configuration.severityConfiguration.error, lineCount > error {
                 severity = .error
                 upperBound = error
@@ -45,9 +47,10 @@ private extension FileLengthRule {
                 return
             }
 
-            let reason = "File should contain \(upperBound) lines or less" +
-                       (configuration.ignoreCommentOnlyLines ? " excluding comments and whitespaces" : "") +
-                       ": currently contains \(lineCount)"
+            let reason =
+                "File should contain \(upperBound) lines or less"
+                    + (configuration.ignoreCommentOnlyLines ? " excluding comments and whitespaces" : "")
+                    + ": currently contains \(lineCount)"
 
             // Position violation at the start of the last line to avoid boundary issues
             let lastLine = file.lines.last

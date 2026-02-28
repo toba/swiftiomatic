@@ -1,4 +1,3 @@
-
 struct LegacyNSGeometryFunctionsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -106,6 +105,7 @@ extension LegacyNSGeometryFunctionsRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -114,13 +114,19 @@ extension LegacyNSGeometryFunctionsRule: SwiftSyntaxCorrectableRule {
 private extension LegacyNSGeometryFunctionsRule {
     final class Visitor: LegacyFunctionVisitor<ConfigurationType> {
         init(configuration: ConfigurationType, file: SwiftLintFile) {
-            super.init(configuration: configuration, file: file, legacyFunctions: LegacyNSGeometryFunctionsRule.legacyFunctions)
+            super.init(
+                configuration: configuration, file: file,
+                legacyFunctions: LegacyNSGeometryFunctionsRule.legacyFunctions
+            )
         }
     }
 
     final class Rewriter: LegacyFunctionRewriter<ConfigurationType> {
         init(configuration: ConfigurationType, file: SwiftLintFile) {
-            super.init(configuration: configuration, file: file, legacyFunctions: LegacyNSGeometryFunctionsRule.legacyFunctions)
+            super.init(
+                configuration: configuration, file: file,
+                legacyFunctions: LegacyNSGeometryFunctionsRule.legacyFunctions
+            )
         }
     }
 }

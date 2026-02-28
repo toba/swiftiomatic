@@ -1,4 +1,3 @@
-
 struct LargeTupleConfiguration: RuleConfiguration {
     @ConfigurationElement(inline: true)
     private(set) var severityConfiguration = SeverityLevelsConfiguration<Parent>(warning: 2, error: 3)

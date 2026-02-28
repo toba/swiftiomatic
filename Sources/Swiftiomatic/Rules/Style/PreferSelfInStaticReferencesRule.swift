@@ -22,7 +22,7 @@ extension PreferSelfInStaticReferencesRule: SwiftSyntaxCorrectableRule {
 
 extension PreferSelfInStaticReferencesRule: OptInRule {}
 
-private extension PreferSelfInStaticReferencesRule {
+extension PreferSelfInStaticReferencesRule {
     private enum ParentDeclBehavior {
         case likeClass(name: String)
         case likeStruct(String)
@@ -42,7 +42,7 @@ private extension PreferSelfInStaticReferencesRule {
         case skipReferences
     }
 
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private var parentDeclScopes = Stack<ParentDeclBehavior>()
         private var variableDeclScopes = Stack<VariableDeclBehavior>()
 
@@ -109,7 +109,8 @@ private extension PreferSelfInStaticReferencesRule {
 
         override func visitPost(_ node: DeclReferenceExprSyntax) {
             guard let parent = node.parent, !parent.is(GenericSpecializationExprSyntax.self),
-                  node.keyPathInParent != \MemberAccessExprSyntax.declName else {
+                  node.keyPathInParent != \MemberAccessExprSyntax.declName
+            else {
                 return
             }
             if parent.is(FunctionCallExprSyntax.self), case .likeClass = parentDeclScopes.peek() {
@@ -139,7 +140,9 @@ private extension PreferSelfInStaticReferencesRule {
         }
 
         override func visit(_ node: MacroExpansionExprSyntax) -> SyntaxVisitorContinueKind {
-            if case .likeClass = parentDeclScopes.peek(), case .identifier("selector") = node.macroName.tokenKind {
+            if case .likeClass = parentDeclScopes.peek(),
+               case .identifier("selector") = node.macroName.tokenKind
+            {
                 return .visitChildren
             }
             return .skipChildren
@@ -210,9 +213,10 @@ private extension PreferSelfInStaticReferencesRule {
                 return .skipChildren
             }
             if let varDecl = node.parent?.parent?.parent?.as(VariableDeclSyntax.self) {
-                if varDecl.parent?.is(CodeBlockItemSyntax.self) == true    // Local variable declaration
-                   || varDecl.bindings.onlyElement?.accessorBlock != nil   // Computed property
-                   || !node.type.is(IdentifierTypeSyntax.self) {           // Complex or collection type
+                if varDecl.parent?.is(CodeBlockItemSyntax.self) == true // Local variable declaration
+                    || varDecl.bindings.onlyElement?.accessorBlock != nil // Computed property
+                    || !node.type.is(IdentifierTypeSyntax.self)
+                { // Complex or collection type
                     return .visitChildren
                 }
             }
@@ -220,7 +224,9 @@ private extension PreferSelfInStaticReferencesRule {
         }
 
         private func addViolation(on node: TokenSyntax) {
-            if let parentName = parentDeclScopes.peek()?.parentName, node.tokenKind == .identifier(parentName) {
+            if let parentName = parentDeclScopes.peek()?.parentName,
+               node.tokenKind == .identifier(parentName)
+            {
                 violations.append(
                     at: node.positionAfterSkippingLeadingTrivia,
                     correction: .init(

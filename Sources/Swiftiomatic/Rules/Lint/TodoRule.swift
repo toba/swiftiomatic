@@ -36,18 +36,24 @@ extension TodoRule: SwiftSyntaxRule {
 private extension TodoRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: TokenSyntax) {
-            let leadingViolations = node.leadingTrivia.violations(offset: node.position,
-                                                                  for: configuration.only)
-            let trailingViolations = node.trailingTrivia.violations(offset: node.endPositionBeforeTrailingTrivia,
-                                                                    for: configuration.only)
+            let leadingViolations = node.leadingTrivia.violations(
+                offset: node.position,
+                for: configuration.only
+            )
+            let trailingViolations = node.trailingTrivia.violations(
+                offset: node.endPositionBeforeTrailingTrivia,
+                for: configuration.only
+            )
             violations.append(contentsOf: leadingViolations + trailingViolations)
         }
     }
 }
 
 private extension Trivia {
-    func violations(offset: AbsolutePosition,
-                    for todoKeywords: [TodoConfiguration.TodoKeyword]) -> [ReasonedRuleViolation] {
+    func violations(
+        offset: AbsolutePosition,
+        for todoKeywords: [TodoConfiguration.TodoKeyword]
+    ) -> [ReasonedRuleViolation] {
         var position = offset
         var violations = [ReasonedRuleViolation]()
         for piece in self {
@@ -59,15 +65,15 @@ private extension Trivia {
 }
 
 private extension TriviaPiece {
-    func violations(offset: AbsolutePosition,
-                    for todoKeywords: [TodoConfiguration.TodoKeyword]) -> [ReasonedRuleViolation] {
+    func violations(
+        offset: AbsolutePosition,
+        for todoKeywords: [TodoConfiguration.TodoKeyword]
+    ) -> [ReasonedRuleViolation] {
         switch self {
-        case
-            .blockComment(let comment),
-            .lineComment(let comment),
-            .docBlockComment(let comment),
-            .docLineComment(let comment):
-
+        case let .blockComment(comment),
+             let .lineComment(comment),
+             let .docBlockComment(comment),
+             let .docLineComment(comment):
             // Construct a regex string considering only keywords.
             let searchKeywords = todoKeywords.map(\.rawValue).joined(separator: "|")
             let matches = regex(#"\b((?:\#(searchKeywords))(?::|\b))"#)

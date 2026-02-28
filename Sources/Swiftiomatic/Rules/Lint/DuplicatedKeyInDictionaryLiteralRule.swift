@@ -9,53 +9,68 @@ struct DuplicatedKeyInDictionaryLiteralRule: Rule {
         description: "Dictionary literals with duplicated keys will crash at runtime",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
+            Example(
+                """
                 [
                     1: "1",
                     2: "2"
                 ]
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 [
                     "1": 1,
                     "2": 2
                 ]
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 [
                     foo: "1",
                     bar: "2"
                 ]
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 [
                     UUID(): "1",
                     UUID(): "2"
                 ]
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 [
                     #line: "1",
                     #line: "2"
                 ]
-                """),
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
+            Example(
+                """
                 [
                     1: "1",
                     2: "2",
                     ↓1: "one"
                 ]
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 [
                     "1": 1,
                     "2": 2,
                     ↓"2": 2
                 ]
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 [
                     foo: "1",
                     bar: "2",
@@ -63,8 +78,10 @@ struct DuplicatedKeyInDictionaryLiteralRule: Rule {
                     ↓foo: "4",
                     zaz: "5"
                 ]
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 [
                     .one: "1",
                     .two: "2",
@@ -73,7 +90,8 @@ struct DuplicatedKeyInDictionaryLiteralRule: Rule {
                     .four: "4",
                     .five: "5"
                 ]
-                """),
+                """
+            ),
         ]
     )
 }
@@ -97,17 +115,18 @@ private extension DuplicatedKeyInDictionaryLiteralRule {
                 return
             }
 
-            let newViolations = keys
-                .reduce(into: [String: [DictionaryKey]]()) { result, key in
-                    result[key.content, default: []].append(key)
-                }
-                .flatMap { _, value -> [AbsolutePosition] in
-                    guard value.count > 1 else {
-                        return []
+            let newViolations =
+                keys
+                    .reduce(into: [String: [DictionaryKey]]()) { result, key in
+                        result[key.content, default: []].append(key)
                     }
+                    .flatMap { _, value -> [AbsolutePosition] in
+                        guard value.count > 1 else {
+                            return []
+                        }
 
-                    return value.dropFirst().map(\.position)
-                }
+                        return value.dropFirst().map(\.position)
+                    }
 
             violations.append(contentsOf: newViolations)
         }

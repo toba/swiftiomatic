@@ -6,8 +6,9 @@ struct CompilerProtocolInitRule: Rule {
     static let description = RuleDescription(
         identifier: "compiler_protocol_init",
         name: "Compiler Protocol Init",
-        description: "The initializers declared in compiler protocols such as `ExpressibleByArrayLiteral` " +
-                     "shouldn't be called directly.",
+        description:
+        "The initializers declared in compiler protocols such as `ExpressibleByArrayLiteral` "
+            + "shouldn't be called directly.",
         kind: .lint,
         nonTriggeringExamples: [
             Example("let set: Set<Int> = [1, 2]"),
@@ -47,15 +48,18 @@ private extension CompilerProtocolInitRule {
             let argumentsNames = arguments.map(\.text)
             for compilerProtocol in ExpressibleByCompiler.allProtocols {
                 guard compilerProtocol.initCallNames.contains(name),
-                      compilerProtocol.match(arguments: argumentsNames) else {
+                      compilerProtocol.match(arguments: argumentsNames)
+                else {
                     continue
                 }
 
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "Initializers declared in compiler protocol \(compilerProtocol.protocolName) " +
-                            "shouldn't be called directly"
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: "Initializers declared in compiler protocol \(compilerProtocol.protocolName) "
+                            + "shouldn't be called directly"
+                    )
+                )
                 return
             }
         }
@@ -63,13 +67,14 @@ private extension CompilerProtocolInitRule {
 }
 
 private extension FunctionCallExprSyntax {
-    // doing this instead of calling `.description` as it's faster
+    /// doing this instead of calling `.description` as it's faster
     var functionName: String? {
         if let expr = calledExpression.as(DeclReferenceExprSyntax.self) {
             return expr.baseName.text
         }
         if let expr = calledExpression.as(MemberAccessExprSyntax.self),
-           let base = expr.base?.as(DeclReferenceExprSyntax.self) {
+           let base = expr.base?.as(DeclReferenceExprSyntax.self)
+        {
             return base.baseName.text + "." + expr.declName.baseName.text
         }
 
@@ -97,17 +102,13 @@ private struct ExpressibleByCompiler {
         byStringInterpolation, byDictionaryLiteral,
     ]
 
-    static let possibleNumberOfArguments: Set<Int> = {
-        allProtocols.reduce(into: Set<Int>()) { partialResult, entry in
-            partialResult.insert(entry.arguments.count)
-        }
-    }()
+    static let possibleNumberOfArguments: Set<Int> = allProtocols.reduce(into: Set<Int>()) { partialResult, entry in
+        partialResult.insert(entry.arguments.count)
+    }
 
-    static let allInitNames: Set<String> = {
-        allProtocols.reduce(into: Set<String>()) { partialResult, entry in
-            partialResult.formUnion(entry.initCallNames)
-        }
-    }()
+    static let allInitNames: Set<String> = allProtocols.reduce(into: Set<String>()) { partialResult, entry in
+        partialResult.formUnion(entry.initCallNames)
+    }
 
     func match(arguments: [String]) -> Bool {
         self.arguments.contains(arguments)
@@ -130,7 +131,9 @@ private struct ExpressibleByCompiler {
             "Set",
             "IndexSet",
         ]
-        return Self(protocolName: "ExpressibleByArrayLiteral", types: types, arguments: [["arrayLiteral"]])
+        return Self(
+            protocolName: "ExpressibleByArrayLiteral", types: types, arguments: [["arrayLiteral"]]
+        )
     }()
 
     private static let byNilLiteral = Self(
@@ -171,7 +174,9 @@ private struct ExpressibleByCompiler {
 
     private static let byStringLiteral = Self(
         protocolName: "ExpressibleByStringLiteral",
-        types: ["CSLocalizedString", "NSMutableString", "NSString", "Selector", "StaticString", "String"],
+        types: [
+            "CSLocalizedString", "NSMutableString", "NSString", "Selector", "StaticString", "String",
+        ],
         arguments: [["stringLiteral"]]
     )
 

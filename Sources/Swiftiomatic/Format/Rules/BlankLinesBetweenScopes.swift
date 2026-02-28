@@ -43,10 +43,16 @@ extension FormatRule {
                     break
                 }
                 var i = i
-                if let nextTokenIndex = formatter.index(of: .nonSpace, after: i, if: {
-                    $0 == .startOfScope("(")
-                }), let closingParenIndex = formatter.index(of:
-                    .endOfScope(")"), after: nextTokenIndex)
+                if let nextTokenIndex = formatter.index(
+                    of: .nonSpace, after: i,
+                    if: {
+                        $0 == .startOfScope("(")
+                    }
+                ),
+                    let closingParenIndex = formatter.index(
+                        of:
+                        .endOfScope(")"), after: nextTokenIndex
+                    )
                 {
                     i = closingParenIndex
                 }
@@ -81,10 +87,10 @@ extension FormatRule {
                             break outer
                         }
                     default:
-                        if formatter.isLabel(at: nextNonCommentIndex), let colonIndex
-                            = formatter.index(of: .delimiter(":"), after: nextNonCommentIndex),
-                            formatter.next(.nonSpaceOrCommentOrLinebreak, after: colonIndex)
-                            == .startOfScope("{")
+                        if formatter.isLabel(at: nextNonCommentIndex),
+                           let colonIndex = formatter.index(of: .delimiter(":"), after: nextNonCommentIndex),
+                           formatter.next(.nonSpaceOrCommentOrLinebreak, after: colonIndex)
+                           == .startOfScope("{")
                         {
                             break outer
                         }

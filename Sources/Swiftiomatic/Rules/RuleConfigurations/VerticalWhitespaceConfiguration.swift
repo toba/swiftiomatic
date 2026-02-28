@@ -1,4 +1,3 @@
-
 struct VerticalWhitespaceConfiguration: SeverityBasedRuleConfiguration {
     static let defaultDescriptionReason = "Limit vertical whitespace to a single empty line"
 
@@ -13,6 +12,7 @@ struct VerticalWhitespaceConfiguration: SeverityBasedRuleConfiguration {
         }
         return Self.defaultDescriptionReason
     }
+
     typealias Parent = VerticalWhitespaceRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $maxEmptyLines.key.isEmpty {

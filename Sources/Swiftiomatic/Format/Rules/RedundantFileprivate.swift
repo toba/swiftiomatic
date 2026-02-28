@@ -33,11 +33,18 @@ extension FormatRule {
         formatter.forEach(.keyword("fileprivate")) { i, _ in
             // Check if definition is a member of a file-scope type
             guard formatter.options.swiftVersion >= "4",
-                  let scopeIndex = formatter.index(of: .startOfScope, before: i, if: {
-                      $0 == .startOfScope("{")
-                  }), let typeIndex = formatter.index(of: .keyword, before: scopeIndex, if: {
-                      ["class", "actor", "struct", "enum", "extension"].contains($0.string)
-                  }), let nameIndex = formatter.index(of: .identifier, in: typeIndex ..< scopeIndex),
+                  let scopeIndex = formatter.index(
+                      of: .startOfScope, before: i,
+                      if: {
+                          $0 == .startOfScope("{")
+                      }
+                  ),
+                  let typeIndex = formatter.index(
+                      of: .keyword, before: scopeIndex,
+                      if: {
+                          ["class", "actor", "struct", "enum", "extension"].contains($0.string)
+                      }
+                  ), let nameIndex = formatter.index(of: .identifier, in: typeIndex ..< scopeIndex),
                   formatter.next(.nonSpaceOrCommentOrLinebreak, after: nameIndex)?.isOperator(".") == false,
                   case let .identifier(typeName) = formatter.tokens[nameIndex],
                   let endIndex = formatter.index(of: .endOfScope, after: scopeIndex),
@@ -61,8 +68,11 @@ extension FormatRule {
             // Check for code outside of main type definition
             let startIndex = formatter.startOfModifiers(at: typeIndex, includingAttributes: true)
             if fileJustContainsOneType == nil {
-                fileJustContainsOneType = !formatter.ifCodeInRange(0 ..< startIndex, importRanges: importRanges) &&
-                    !formatter.ifCodeInRange(endIndex + 1 ..< formatter.tokens.count, importRanges: importRanges)
+                fileJustContainsOneType =
+                    !formatter.ifCodeInRange(0 ..< startIndex, importRanges: importRanges)
+                        && !formatter.ifCodeInRange(
+                            endIndex + 1 ..< formatter.tokens.count, importRanges: importRanges
+                        )
             }
             if fileJustContainsOneType == true {
                 formatter.replaceToken(at: i, with: .keyword("private"))
@@ -72,8 +82,8 @@ extension FormatRule {
             // change any fileprivate members in case we break memberwise initializer
             // TODO: check if struct contains an overridden init; if so we can skip this check
             if formatter.tokens[typeIndex] == .keyword("struct"),
-               formatter.isTypeInitialized(typeName, in: 0 ..< startIndex) ||
-               formatter.isTypeInitialized(typeName, in: endIndex + 1 ..< formatter.tokens.count)
+               formatter.isTypeInitialized(typeName, in: 0 ..< startIndex)
+               || formatter.isTypeInitialized(typeName, in: endIndex + 1 ..< formatter.tokens.count)
             {
                 return
             }
@@ -90,7 +100,9 @@ extension FormatRule {
             } else if let _names = formatter.namesInDeclaration(at: keywordIndex),
                       case let names = _names + _names.map({ "$\($0)" }),
                       !formatter.areMembers(names, of: typeName, referencedIn: 0 ..< startIndex),
-                      !formatter.areMembers(names, of: typeName, referencedIn: endIndex + 1 ..< formatter.tokens.count)
+                      !formatter.areMembers(
+                          names, of: typeName, referencedIn: endIndex + 1 ..< formatter.tokens.count
+                      )
             {
                 formatter.replaceToken(at: i, with: .keyword("private"))
             }
@@ -124,12 +136,15 @@ extension FormatRule {
 extension Formatter {
     func ifCodeInRange(_ range: CountableRange<Int>, importRanges: [[ImportRange]]) -> Bool {
         var index = range.lowerBound
-        while index < range.upperBound, let nextIndex =
-            self.index(of: .nonSpaceOrCommentOrLinebreak, in: index ..< range.upperBound)
+        while index < range.upperBound,
+              let nextIndex =
+              self.index(of: .nonSpaceOrCommentOrLinebreak, in: index ..< range.upperBound)
         {
-            guard let importRange = importRanges.first(where: {
-                $0.contains(where: { $0.range.contains(nextIndex) })
-            }) else {
+            guard
+                let importRange = importRanges.first(where: {
+                    $0.contains(where: { $0.range.contains(nextIndex) })
+                })
+            else {
                 return true
             }
             index = importRange.last!.range.upperBound + 1
@@ -172,9 +187,10 @@ extension Formatter {
     }
 
     // TODO: improve this logic to handle shadowing
-    func areMembers(_ names: [String], of type: String,
-                    referencedIn range: CountableRange<Int>) -> Bool
-    {
+    func areMembers(
+        _ names: [String], of type: String,
+        referencedIn range: CountableRange<Int>
+    ) -> Bool {
         var i = range.lowerBound
         while i < range.upperBound {
             switch tokens[i] {
@@ -198,9 +214,13 @@ extension Formatter {
                 }
                 i = endIndex
             case let .identifier(name) where names.contains(name):
-                if let dotIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: i, if: {
-                    $0 == .operator(".", .infix)
-                }), last(.nonSpaceOrCommentOrLinebreak, before: dotIndex)
+                if let dotIndex = index(
+                    of: .nonSpaceOrCommentOrLinebreak, before: i,
+                    if: {
+                        $0 == .operator(".", .infix)
+                    }
+                ),
+                    last(.nonSpaceOrCommentOrLinebreak, before: dotIndex)
                     != .identifier("self")
                 {
                     return true

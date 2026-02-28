@@ -27,23 +27,35 @@ extension FormatRule {
             else { return }
 
             // Traverse any nested if/switch branches until we find the first code branch
-            while let firstTokenInBranch = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: startOfFirstBranch),
-                  ["if", "switch"].contains(formatter.tokens[firstTokenInBranch].string),
-                  let nestedConditionalBranches = formatter.conditionalBranches(at: firstTokenInBranch),
-                  let startOfNestedBranch = nestedConditionalBranches.first?.startOfBranch
+            while let firstTokenInBranch = formatter.index(
+                of: .nonSpaceOrCommentOrLinebreak, after: startOfFirstBranch
+            ),
+                ["if", "switch"].contains(formatter.tokens[firstTokenInBranch].string),
+                let nestedConditionalBranches = formatter.conditionalBranches(at: firstTokenInBranch),
+                let startOfNestedBranch = nestedConditionalBranches.first?.startOfBranch
             {
                 startOfFirstBranch = startOfNestedBranch
             }
 
             // Check if the first branch starts with the pattern `lvalue =`.
-            guard let firstTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: startOfFirstBranch),
-                  let lvalueRange = formatter.parseExpressionRange(startingAt: firstTokenIndex),
-                  let equalsIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: lvalueRange.upperBound),
-                  formatter.tokens[equalsIndex] == .operator("=", .infix)
+            guard
+                let firstTokenIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: startOfFirstBranch
+                ),
+                let lvalueRange = formatter.parseExpressionRange(startingAt: firstTokenIndex),
+                let equalsIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: lvalueRange.upperBound
+                ),
+                formatter.tokens[equalsIndex] == .operator("=", .infix)
             else { return }
 
-            guard conditionalBranches.allSatisfy({ formatter.isExhaustiveSingleStatementAssignment($0, lvalueRange: lvalueRange) }),
-                  formatter.conditionalBranchesAreExhaustive(conditionKeywordIndex: startOfConditional, branches: conditionalBranches)
+            guard
+                conditionalBranches.allSatisfy({
+                    formatter.isExhaustiveSingleStatementAssignment($0, lvalueRange: lvalueRange)
+                }),
+                formatter.conditionalBranchesAreExhaustive(
+                    conditionKeywordIndex: startOfConditional, branches: conditionalBranches
+                )
             else {
                 return
             }
@@ -52,14 +64,18 @@ extension FormatRule {
             // have to insert an `=` between property and the conditional.
             //  - Find the introducer (let/var), parse the property, and verify that the identifier
             //    matches the identifier assigned on each conditional branch.
-            if let introducerIndex = formatter.indexOfLastSignificantKeyword(at: startOfConditional, excluding: ["if", "switch"]),
-               ["let", "var"].contains(formatter.tokens[introducerIndex].string),
-               let property = formatter.parsePropertyDeclaration(atIntroducerIndex: introducerIndex),
-               formatter.tokens[lvalueRange.lowerBound].string == property.identifier,
-               property.value == nil,
-               let typeRange = property.typeRange,
-               let nextTokenAfterProperty = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: typeRange.upperBound),
-               nextTokenAfterProperty == startOfConditional
+            if let introducerIndex = formatter.indexOfLastSignificantKeyword(
+                at: startOfConditional, excluding: ["if", "switch"]
+            ),
+                ["let", "var"].contains(formatter.tokens[introducerIndex].string),
+                let property = formatter.parsePropertyDeclaration(atIntroducerIndex: introducerIndex),
+                formatter.tokens[lvalueRange.lowerBound].string == property.identifier,
+                property.value == nil,
+                let typeRange = property.typeRange,
+                let nextTokenAfterProperty = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: typeRange.upperBound
+                ),
+                nextTokenAfterProperty == startOfConditional
             {
                 formatter.removeAssignmentFromAllBranches(of: conditionalBranches)
 
@@ -76,11 +92,14 @@ extension FormatRule {
                 // let foo: Foo = if condition {
                 //
                 if formatter.tokens[rangeBetweenTypeAndConditional].allSatisfy(\.isSpaceOrLinebreak) {
-                    formatter.replaceTokens(in: rangeBetweenTypeAndConditional, with: [
-                        .space(" "),
-                        .operator("=", .infix),
-                        .space(" "),
-                    ])
+                    formatter.replaceTokens(
+                        in: rangeBetweenTypeAndConditional,
+                        with: [
+                            .space(" "),
+                            .operator("=", .infix),
+                            .space(" "),
+                        ]
+                    )
                 }
 
                 // But if there are comments, then we shouldn't just delete them.
@@ -102,20 +121,26 @@ extension FormatRule {
                 // If we're inside a switch case, expand to look at the whole switch statement
                 while let currentStartOfParentScope = startOfParentScope,
                       formatter.tokens[currentStartOfParentScope] == .startOfScope(":"),
-                      let caseToken = formatter.index(of: .endOfScope("case"), before: currentStartOfParentScope)
+                      let caseToken = formatter.index(
+                          of: .endOfScope("case"), before: currentStartOfParentScope
+                      )
                 {
                     startOfParentScope = formatter.startOfScope(at: caseToken)
                 }
 
                 if let startOfParentScope,
-                   let mostRecentIfOrSwitch = formatter.index(of: .keyword, before: startOfParentScope, if: { ["if", "switch"].contains($0.string) }),
+                   let mostRecentIfOrSwitch = formatter.index(
+                       of: .keyword, before: startOfParentScope, if: { ["if", "switch"].contains($0.string) }
+                   ),
                    let conditionalBranches = formatter.conditionalBranches(at: mostRecentIfOrSwitch),
                    let startOfFirstParentBranch = conditionalBranches.first?.startOfBranch,
                    let endOfLastParentBranch = conditionalBranches.last?.endOfBranch,
                    // If this condition is contained within a parent condition, do nothing.
                    // We should only convert the entire set of nested conditions together as a unit.
                    (startOfFirstParentBranch ... endOfLastParentBranch).contains(startOfConditional)
-                { return }
+                {
+                    return
+                }
 
                 let lvalueTokens = formatter.tokens[lvalueRange]
 
@@ -123,11 +148,12 @@ extension FormatRule {
                 // and instead add it before the if / switch expression.
                 formatter.removeAssignmentFromAllBranches(of: conditionalBranches)
 
-                let identifierEqualsTokens = lvalueTokens + [
-                    .space(" "),
-                    .operator("=", .infix),
-                    .space(" "),
-                ]
+                let identifierEqualsTokens =
+                    lvalueTokens + [
+                        .space(" "),
+                        .operator("=", .infix),
+                        .space(" "),
+                    ]
 
                 formatter.insert(identifierEqualsTokens, at: startOfConditional)
             }
@@ -187,7 +213,9 @@ extension Formatter {
         // is `else` (not `else if`).
         else if tokens[conditionKeywordIndex] == .keyword("if"),
                 let lastCondition = branches.last,
-                let tokenBeforeLastCondition = index(of: .nonSpaceOrCommentOrLinebreak, before: lastCondition.startOfBranch)
+                let tokenBeforeLastCondition = index(
+                    of: .nonSpaceOrCommentOrLinebreak, before: lastCondition.startOfBranch
+                )
         {
             return tokens[tokenBeforeLastCondition] == .keyword("else")
         }
@@ -200,8 +228,12 @@ extension Formatter {
     ///  1. a single assignment to `lvalue =`
     ///  2. a single `if` or `switch` statement where each of the branches also qualify,
     ///     and the statement is exhaustive.
-    func isExhaustiveSingleStatementAssignment(_ branch: Formatter.ConditionalBranch, lvalueRange: ClosedRange<Int>) -> Bool {
-        guard let firstTokenIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch) else { return false }
+    func isExhaustiveSingleStatementAssignment(
+        _ branch: Formatter.ConditionalBranch, lvalueRange: ClosedRange<Int>
+    ) -> Bool {
+        guard
+            let firstTokenIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch)
+        else { return false }
 
         // If this is an if/switch statement, verify that all of the branches are also
         // single-statement assignments and that the statement is exhaustive.
@@ -212,7 +244,9 @@ extension Formatter {
                 isExhaustiveSingleStatementAssignment(branch, lvalueRange: lvalueRange)
             }
 
-            let isOnlyStatementInScope = next(.nonSpaceOrCommentOrLinebreak, after: lastConditionalStatement.endOfBranch)?.isEndOfScope == true
+            let isOnlyStatementInScope =
+                next(.nonSpaceOrCommentOrLinebreak, after: lastConditionalStatement.endOfBranch)?
+                    .isEndOfScope == true
 
             let isExhaustive = conditionalBranchesAreExhaustive(
                 conditionKeywordIndex: firstTokenIndex,
@@ -227,7 +261,9 @@ extension Formatter {
         // Otherwise we expect this to be of the pattern `lvalue = (statement)`
         else if let firstExpressionRange = parseExpressionRange(startingAt: firstTokenIndex),
                 tokens[firstExpressionRange] == tokens[lvalueRange],
-                let equalsIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: firstExpressionRange.upperBound),
+                let equalsIndex = index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: firstExpressionRange.upperBound
+                ),
                 tokens[equalsIndex] == .operator("=", .infix),
                 let valueStartIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex)
         {
@@ -241,11 +277,13 @@ extension Formatter {
             tempScopeTokens.append(.endOfScope("}"))
 
             let tempFormatter = Formatter(tempScopeTokens, options: options)
-            guard tempFormatter.blockBodyHasSingleStatement(
-                atStartOfScope: 0,
-                includingConditionalStatements: true,
-                includingReturnStatements: false
-            ) else {
+            guard
+                tempFormatter.blockBodyHasSingleStatement(
+                    atStartOfScope: 0,
+                    includingConditionalStatements: true,
+                    includingReturnStatements: false
+                )
+            else {
                 return false
             }
 
@@ -272,11 +310,14 @@ extension Formatter {
     /// Removes the `identifier =` from each conditional branch
     func removeAssignmentFromAllBranches(of conditionalBranches: [ConditionalBranch]) {
         forEachRecursiveConditionalBranch(in: conditionalBranches) { branch in
-            guard let firstTokenIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch),
-                  let firstExpressionRange = parseExpressionRange(startingAt: firstTokenIndex),
-                  let equalsIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: firstExpressionRange.upperBound),
-                  tokens[equalsIndex] == .operator("=", .infix),
-                  let valueStartIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex)
+            guard
+                let firstTokenIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch),
+                let firstExpressionRange = parseExpressionRange(startingAt: firstTokenIndex),
+                let equalsIndex = index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: firstExpressionRange.upperBound
+                ),
+                tokens[equalsIndex] == .operator("=", .infix),
+                let valueStartIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex)
             else { return }
 
             removeTokens(in: firstTokenIndex ..< valueStartIndex)

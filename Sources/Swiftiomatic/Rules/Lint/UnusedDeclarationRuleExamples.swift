@@ -1,328 +1,391 @@
-struct UnusedDeclarationRuleExamples {
-    static let nonTriggeringExamples = [
-        Example("""
-        let kConstant = 0
-        _ = kConstant
-        """),
-        Example("""
-        enum Change<T> {
-          case insert(T)
-          case delete(T)
-        }
-
-        extension Sequence {
-          func deletes<T>() -> [T] where Element == Change<T> {
-            return compactMap { operation in
-              if case .delete(let value) = operation {
-                return value
-              } else {
-                return nil
-              }
-            }
-          }
-        }
-
-        let changes = [Change.insert(0), .delete(0)]
-        _ = changes.deletes()
-        """),
-        Example("""
-        struct Item: Codable {}
-        struct ResponseModel: Codable {
-            let items: [Item]
-
-            enum CodingKeys: String, CodingKey {
-                case items = "ResponseItems"
-            }
-        }
-
-        _ = ResponseModel(items: [Item()]).items
-        """),
-        Example("""
-        class ResponseModel {
-            @objc func foo() {
-            }
-        }
-        _ = ResponseModel()
-        """),
-        Example("""
-        public func foo() {}
-        """),
-        Example("""
-        protocol Foo {}
-
-        extension Foo {
-            func bar() {}
-        }
-
-        struct MyStruct: Foo {}
-        MyStruct().bar()
-        """),
-        Example("""
-        import XCTest
-        class MyTests: XCTestCase {
-            func testExample() {}
-        }
-        """),
-        Example("""
-        import XCTest
-        open class BestTestCase: XCTestCase {}
-        class MyTests: BestTestCase {
-            func testExample() {}
-        }
-        """),
-        Example("""
-            struct S {
-                var i: Int? = nil
-                func f() {
-                    if let i { print(i) }
+enum UnusedDeclarationRuleExamples {
+    static let nonTriggeringExamples =
+        [
+            Example(
+                """
+                let kConstant = 0
+                _ = kConstant
+                """
+            ),
+            Example(
+                """
+                enum Change<T> {
+                  case insert(T)
+                  case delete(T)
                 }
-            }
-            S().f()
-        """),
-        Example("""
-        enum Component {
-          case string(StaticString)
-          indirect case array([Component])
-          indirect case optional(Component?)
-        }
 
-        @resultBuilder
-        struct ComponentBuilder {
-          static func buildBlock(_ components: Component...) -> Component {
-            return .array(components)
-          }
+                extension Sequence {
+                  func deletes<T>() -> [T] where Element == Change<T> {
+                    return compactMap { operation in
+                      if case .delete(let value) = operation {
+                        return value
+                      } else {
+                        return nil
+                      }
+                    }
+                  }
+                }
 
-          static func buildExpression(_ string: StaticString) -> Component {
-            return .string(string)
-          }
+                let changes = [Change.insert(0), .delete(0)]
+                _ = changes.deletes()
+                """
+            ),
+            Example(
+                """
+                struct Item: Codable {}
+                struct ResponseModel: Codable {
+                    let items: [Item]
 
-          static func buildOptional(_ component: Component?) -> Component {
-            return .optional(component)
-          }
+                    enum CodingKeys: String, CodingKey {
+                        case items = "ResponseItems"
+                    }
+                }
 
-          static func buildEither(first component: Component) -> Component {
-            return component
-          }
+                _ = ResponseModel(items: [Item()]).items
+                """
+            ),
+            Example(
+                """
+                class ResponseModel {
+                    @objc func foo() {
+                    }
+                }
+                _ = ResponseModel()
+                """
+            ),
+            Example(
+                """
+                public func foo() {}
+                """
+            ),
+            Example(
+                """
+                protocol Foo {}
 
-          static func buildEither(second component: Component) -> Component {
-            return component
-          }
+                extension Foo {
+                    func bar() {}
+                }
 
-          static func buildArray(_ components: [Component]) -> Component {
-            return .array(components)
-          }
+                struct MyStruct: Foo {}
+                MyStruct().bar()
+                """
+            ),
+            Example(
+                """
+                import XCTest
+                class MyTests: XCTestCase {
+                    func testExample() {}
+                }
+                """
+            ),
+            Example(
+                """
+                import XCTest
+                open class BestTestCase: XCTestCase {}
+                class MyTests: BestTestCase {
+                    func testExample() {}
+                }
+                """
+            ),
+            Example(
+                """
+                    struct S {
+                        var i: Int? = nil
+                        func f() {
+                            if let i { print(i) }
+                        }
+                    }
+                    S().f()
+                """
+            ),
+            Example(
+                """
+                enum Component {
+                  case string(StaticString)
+                  indirect case array([Component])
+                  indirect case optional(Component?)
+                }
 
-          static func buildLimitedAvailability(_ component: Component) -> Component {
-            return component
-          }
+                @resultBuilder
+                struct ComponentBuilder {
+                  static func buildBlock(_ components: Component...) -> Component {
+                    return .array(components)
+                  }
 
-          static func buildFinalResult(_ component: Component) -> Component {
-            return component
-          }
+                  static func buildExpression(_ string: StaticString) -> Component {
+                    return .string(string)
+                  }
 
-          static func buildPartialBlock(first component: Component) -> Component {
-            return component
-          }
+                  static func buildOptional(_ component: Component?) -> Component {
+                    return .optional(component)
+                  }
 
-          static func buildPartialBlock(accumulated component: Component, next: Component) -> Component {
-            return component
-          }
-        }
+                  static func buildEither(first component: Component) -> Component {
+                    return component
+                  }
 
-        func acceptComponentBuilder(@ComponentBuilder _ body: () -> Component) {
-          print(body())
-        }
+                  static func buildEither(second component: Component) -> Component {
+                    return component
+                  }
 
-        acceptComponentBuilder {
-          "hello"
-        }
-        """),
-    ] + platformSpecificNonTriggeringExamples
+                  static func buildArray(_ components: [Component]) -> Component {
+                    return .array(components)
+                  }
 
-    static let triggeringExamples = [
-        Example("""
-        let ↓kConstant = 0
-        """),
-        Example("""
-        struct Item {}
-        struct ↓ResponseModel: Codable {
-            let ↓items: [Item]
+                  static func buildLimitedAvailability(_ component: Component) -> Component {
+                    return component
+                  }
 
-            enum ↓CodingKeys: String {
-                case items = "ResponseItems"
-            }
-        }
-        """),
-        Example("""
-        class ↓ResponseModel {
-            func ↓foo() {
-            }
-        }
-        """),
-        Example("""
-        public func ↓foo() {}
-        """, configuration: ["include_public_and_open": true]),
-        Example("""
-        protocol Foo {
-            func ↓bar1()
-        }
+                  static func buildFinalResult(_ component: Component) -> Component {
+                    return component
+                  }
 
-        extension Foo {
-            func bar1() {}
-            func ↓bar2() {}
-        }
+                  static func buildPartialBlock(first component: Component) -> Component {
+                    return component
+                  }
 
-        struct MyStruct: Foo {}
-        _ = MyStruct()
-        """),
-        Example("""
-        import XCTest
-        class ↓MyTests: NSObject {
-            func ↓testExample() {}
-        }
-        """),
-        Example("""
-        enum Component {
-          case string(StaticString)
-          indirect case array([Component])
-          indirect case optional(Component?)
-        }
+                  static func buildPartialBlock(accumulated component: Component, next: Component) -> Component {
+                    return component
+                  }
+                }
 
-        struct ComponentBuilder {
-          func ↓buildExpression(_ string: StaticString) -> Component {
-            return .string(string)
-          }
+                func acceptComponentBuilder(@ComponentBuilder _ body: () -> Component) {
+                  print(body())
+                }
 
-          func ↓buildBlock(_ components: Component...) -> Component {
-            return .array(components)
-          }
+                acceptComponentBuilder {
+                  "hello"
+                }
+                """
+            ),
+        ] + platformSpecificNonTriggeringExamples
 
-          func ↓buildIf(_ value: Component?) -> Component {
-            return .optional(value)
-          }
+    static let triggeringExamples =
+        [
+            Example(
+                """
+                let ↓kConstant = 0
+                """
+            ),
+            Example(
+                """
+                struct Item {}
+                struct ↓ResponseModel: Codable {
+                    let ↓items: [Item]
 
-          static func ↓buildABear(_ components: Component...) -> Component {
-            return .array(components)
-          }
-        }
+                    enum ↓CodingKeys: String {
+                        case items = "ResponseItems"
+                    }
+                }
+                """
+            ),
+            Example(
+                """
+                class ↓ResponseModel {
+                    func ↓foo() {
+                    }
+                }
+                """
+            ),
+            Example(
+                """
+                public func ↓foo() {}
+                """, configuration: ["include_public_and_open": true]
+            ),
+            Example(
+                """
+                protocol Foo {
+                    func ↓bar1()
+                }
 
-        _ = ComponentBuilder()
-        """),
-        Example("""
-        protocol ↓Foo {}
-        extension Foo {}
-        """),
-        Example("""
-        class ↓C<T> {}
-        extension C<Int> {}
-        """),
-    ] + ["actor", "enum", "class", "struct"].map {
-        Example("""
-        protocol Foo {}
-        \($0) ↓FooImpl {}
-        extension FooImpl {}
-        extension FooImpl: Foo {}
-        """, excludeFromDocumentation: true)
-    } + platformSpecificTriggeringExamples
+                extension Foo {
+                    func bar1() {}
+                    func ↓bar2() {}
+                }
 
-#if os(macOS)
-    private static let platformSpecificNonTriggeringExamples = [
-        Example("""
-        import Cocoa
+                struct MyStruct: Foo {}
+                _ = MyStruct()
+                """
+            ),
+            Example(
+                """
+                import XCTest
+                class ↓MyTests: NSObject {
+                    func ↓testExample() {}
+                }
+                """
+            ),
+            Example(
+                """
+                enum Component {
+                  case string(StaticString)
+                  indirect case array([Component])
+                  indirect case optional(Component?)
+                }
 
-        @NSApplicationMain
-        final class AppDelegate: NSObject, NSApplicationDelegate {
-            func applicationWillFinishLaunching(_ notification: Notification) {}
-            func applicationWillBecomeActive(_ notification: Notification) {}
-        }
-        """),
-        Example("""
-        import Foundation
+                struct ComponentBuilder {
+                  func ↓buildExpression(_ string: StaticString) -> Component {
+                    return .string(string)
+                  }
 
-        public final class Foo: NSObject {
-            @IBAction private func foo() {}
-        }
-        """),
-        Example("""
-        import Foundation
+                  func ↓buildBlock(_ components: Component...) -> Component {
+                    return .array(components)
+                  }
 
-        public final class Foo: NSObject {
-            @objc func foo() {}
-        }
-        """),
-        Example("""
-        import Foundation
+                  func ↓buildIf(_ value: Component?) -> Component {
+                    return .optional(value)
+                  }
 
-        public final class Foo: NSObject {
-            @IBInspectable private var innerPaddingWidth: Int {
-                set { self.backgroundView.innerPaddingWidth = newValue }
-                get { return self.backgroundView.innerPaddingWidth }
-            }
-        }
-        """),
-        Example("""
-        import Foundation
+                  static func ↓buildABear(_ components: Component...) -> Component {
+                    return .array(components)
+                  }
+                }
 
-        public final class Foo: NSObject {
-            @IBOutlet private var bar: NSObject! {
-                set { fatalError() }
-                get { fatalError() }
-            }
+                _ = ComponentBuilder()
+                """
+            ),
+            Example(
+                """
+                protocol ↓Foo {}
+                extension Foo {}
+                """
+            ),
+            Example(
+                """
+                class ↓C<T> {}
+                extension C<Int> {}
+                """
+            ),
+        ]
+        + ["actor", "enum", "class", "struct"].map {
+            Example(
+                """
+                protocol Foo {}
+                \($0) ↓FooImpl {}
+                extension FooImpl {}
+                extension FooImpl: Foo {}
+                """, excludeFromDocumentation: true
+            )
+        } + platformSpecificTriggeringExamples
 
-            @IBOutlet private var baz: NSObject! {
-                willSet { print("willSet") }
-            }
+    #if os(macOS)
+        private static let platformSpecificNonTriggeringExamples = [
+            Example(
+                """
+                import Cocoa
 
-            @IBOutlet private var buzz: NSObject! {
-                didSet { print("didSet") }
-            }
-        }
-        """),
-    ]
+                @NSApplicationMain
+                final class AppDelegate: NSObject, NSApplicationDelegate {
+                    func applicationWillFinishLaunching(_ notification: Notification) {}
+                    func applicationWillBecomeActive(_ notification: Notification) {}
+                }
+                """
+            ),
+            Example(
+                """
+                import Foundation
 
-    private static let platformSpecificTriggeringExamples = [
-        Example("""
-        import Cocoa
+                public final class Foo: NSObject {
+                    @IBAction private func foo() {}
+                }
+                """
+            ),
+            Example(
+                """
+                import Foundation
 
-        @NSApplicationMain
-        final class AppDelegate: NSObject, NSApplicationDelegate {
-            func ↓appWillFinishLaunching(_ notification: Notification) {}
-            func applicationWillBecomeActive(_ notification: Notification) {}
-        }
-        """),
-        Example("""
-        import Cocoa
+                public final class Foo: NSObject {
+                    @objc func foo() {}
+                }
+                """
+            ),
+            Example(
+                """
+                import Foundation
 
-        final class ↓AppDelegate: NSObject, NSApplicationDelegate {
-            func applicationWillFinishLaunching(_ notification: Notification) {}
-            func applicationWillBecomeActive(_ notification: Notification) {}
-        }
-        """),
-        Example("""
-        import Foundation
+                public final class Foo: NSObject {
+                    @IBInspectable private var innerPaddingWidth: Int {
+                        set { self.backgroundView.innerPaddingWidth = newValue }
+                        get { return self.backgroundView.innerPaddingWidth }
+                    }
+                }
+                """
+            ),
+            Example(
+                """
+                import Foundation
 
-        public final class Foo: NSObject {
-            @IBOutlet var ↓bar: NSObject!
-        }
-        """),
-        Example("""
-        import Foundation
+                public final class Foo: NSObject {
+                    @IBOutlet private var bar: NSObject! {
+                        set { fatalError() }
+                        get { fatalError() }
+                    }
 
-        public final class Foo: NSObject {
-            @IBInspectable var ↓bar: String!
-        }
-        """),
-        Example("""
-        import Foundation
+                    @IBOutlet private var baz: NSObject! {
+                        willSet { print("willSet") }
+                    }
 
-        final class Foo: NSObject {}
-        final class ↓Bar {
-            var ↓foo = Foo()
-        }
-        """),
-    ]
-#else
-    private static let platformSpecificNonTriggeringExamples = [Example]()
-    private static let platformSpecificTriggeringExamples = [Example]()
-#endif
+                    @IBOutlet private var buzz: NSObject! {
+                        didSet { print("didSet") }
+                    }
+                }
+                """
+            ),
+        ]
+
+        private static let platformSpecificTriggeringExamples = [
+            Example(
+                """
+                import Cocoa
+
+                @NSApplicationMain
+                final class AppDelegate: NSObject, NSApplicationDelegate {
+                    func ↓appWillFinishLaunching(_ notification: Notification) {}
+                    func applicationWillBecomeActive(_ notification: Notification) {}
+                }
+                """
+            ),
+            Example(
+                """
+                import Cocoa
+
+                final class ↓AppDelegate: NSObject, NSApplicationDelegate {
+                    func applicationWillFinishLaunching(_ notification: Notification) {}
+                    func applicationWillBecomeActive(_ notification: Notification) {}
+                }
+                """
+            ),
+            Example(
+                """
+                import Foundation
+
+                public final class Foo: NSObject {
+                    @IBOutlet var ↓bar: NSObject!
+                }
+                """
+            ),
+            Example(
+                """
+                import Foundation
+
+                public final class Foo: NSObject {
+                    @IBInspectable var ↓bar: String!
+                }
+                """
+            ),
+            Example(
+                """
+                import Foundation
+
+                final class Foo: NSObject {}
+                final class ↓Bar {
+                    var ↓foo = Foo()
+                }
+                """
+            ),
+        ]
+    #else
+        private static let platformSpecificNonTriggeringExamples = [Example]()
+        private static let platformSpecificTriggeringExamples = [Example]()
+    #endif
 }

@@ -26,7 +26,8 @@ private extension NotificationCenterDetachmentRule {
                   let arg = node.arguments.first,
                   arg.label == nil,
                   let expr = arg.expression.as(DeclReferenceExprSyntax.self),
-                  expr.baseName.tokenKind == .keyword(.self) else {
+                  expr.baseName.tokenKind == .keyword(.self)
+            else {
                 return
             }
 
@@ -47,7 +48,8 @@ private extension FunctionCallExprSyntax {
               expr.declName.baseName.text == "removeObserver",
               let baseExpr = expr.base?.as(MemberAccessExprSyntax.self),
               baseExpr.declName.baseName.text == "default",
-              baseExpr.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "NotificationCenter" else {
+              baseExpr.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "NotificationCenter"
+        else {
             return false
         }
 

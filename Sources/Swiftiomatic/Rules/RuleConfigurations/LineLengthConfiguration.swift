@@ -1,4 +1,3 @@
-
 struct LineLengthConfiguration: RuleConfiguration {
     @ConfigurationElement(inline: true)
     private(set) var length = SeverityLevelsConfiguration<Parent>(warning: 120, error: 200)
@@ -20,6 +19,7 @@ struct LineLengthConfiguration: RuleConfiguration {
     var params: [RuleParameter<Int>] {
         length.params
     }
+
     typealias Parent = LineLengthRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $ignoresURLs.key.isEmpty {

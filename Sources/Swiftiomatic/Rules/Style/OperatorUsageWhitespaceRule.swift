@@ -17,9 +17,11 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
         violationRanges(file: file).map { range, _ in
-            StyleViolation(ruleDescription: Self.description,
-                           severity: configuration.severityConfiguration.severity,
-                           location: Location(file: file, byteOffset: range.location))
+            StyleViolation(
+                ruleDescription: Self.description,
+                severity: configuration.severityConfiguration.severity,
+                location: Location(file: file, byteOffset: range.location)
+            )
         }
     }
 
@@ -67,29 +69,34 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
         }
         let equalityOperatorRegex = regex("\\s+=\\s")
 
-        guard let match = equalityOperatorRegex.firstMatch(
+        guard
+            let match = equalityOperatorRegex.firstMatch(
                 in: matchedString,
                 options: [],
-                range: matchedString.fullNSRange),
-              match.range == matchedString.fullNSRange
+                range: matchedString.fullNSRange
+            ),
+            match.range == matchedString.fullNSRange
         else {
             return false
         }
 
-        guard let (lineNumber, _) = file.stringView.lineAndCharacter(forByteOffset: byteRange.upperBound),
-              case let lineIndex = lineNumber - 1, lineIndex >= 0 else {
+        guard
+            let (lineNumber, _) = file.stringView.lineAndCharacter(forByteOffset: byteRange.upperBound),
+            case let lineIndex = lineNumber - 1, lineIndex >= 0
+        else {
             return false
         }
 
         // Find lines above and below with the same location of =
         let currentLine = file.stringView.lines[lineIndex].content
         let index = currentLine.firstIndex(of: "=")
-        guard let offset = index.map({ currentLine.distance(from: currentLine.startIndex, to: $0) }) else {
+        guard let offset = index.map({ currentLine.distance(from: currentLine.startIndex, to: $0) })
+        else {
             return false
         }
 
         // Look around for assignment operator in lines around
-        let lineIndexesAround = (1...configuration.linesLookAround)
+        let lineIndexesAround = (1 ... configuration.linesLookAround)
             .flatMap { [lineIndex + $0, lineIndex - $0] }
 
         func isValidIndex(_ idx: Int) -> Bool {
@@ -99,9 +106,11 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
         for lineIndex in lineIndexesAround where isValidIndex(lineIndex) {
             let line = file.stringView.lines[lineIndex].content
             guard !line.isEmpty else { continue }
-            let index = line.index(line.startIndex,
-                                   offsetBy: offset,
-                                   limitedBy: line.index(line.endIndex, offsetBy: -1))
+            let index = line.index(
+                line.startIndex,
+                offsetBy: offset,
+                limitedBy: line.index(line.endIndex, offsetBy: -1)
+            )
             if index.map({ line[$0] }) == "=" {
                 return true
             }
@@ -166,11 +175,13 @@ private class OperatorUsageWhitespaceVisitor: SyntaxVisitor {
 
     private func violation(operatorToken: TokenSyntax) -> (ByteRange, String)? {
         guard let previousToken = operatorToken.previousToken(viewMode: .sourceAccurate),
-              let nextToken = operatorToken.nextToken(viewMode: .sourceAccurate) else {
+              let nextToken = operatorToken.nextToken(viewMode: .sourceAccurate)
+        else {
             return nil
         }
 
-        let noSpacingBefore = previousToken.trailingTrivia.isEmpty && operatorToken.leadingTrivia.isEmpty
+        let noSpacingBefore =
+            previousToken.trailingTrivia.isEmpty && operatorToken.leadingTrivia.isEmpty
         let noSpacingAfter = operatorToken.trailingTrivia.isEmpty && nextToken.leadingTrivia.isEmpty
         let noSpacing = noSpacingBefore || noSpacingAfter
 
@@ -179,15 +190,16 @@ private class OperatorUsageWhitespaceVisitor: SyntaxVisitor {
             return nil
         }
 
-        let tooMuchSpacingBefore = previousToken.trailingTrivia.containsTooMuchWhitespacing &&
-            !operatorToken.leadingTrivia.containsNewlines()
-        let tooMuchSpacingAfter = operatorToken.trailingTrivia.containsTooMuchWhitespacing &&
-            !operatorToken.trailingTrivia.containsNewlines()
+        let tooMuchSpacingBefore =
+            previousToken.trailingTrivia.containsTooMuchWhitespacing
+                && !operatorToken.leadingTrivia.containsNewlines()
+        let tooMuchSpacingAfter =
+            operatorToken.trailingTrivia.containsTooMuchWhitespacing
+                && !operatorToken.trailingTrivia.containsNewlines()
 
-        let tooMuchSpacing = (tooMuchSpacingBefore || tooMuchSpacingAfter) &&
-            !operatorToken.leadingTrivia.containsComments &&
-            !operatorToken.trailingTrivia.containsComments &&
-            !nextToken.leadingTrivia.containsComments
+        let tooMuchSpacing =
+            (tooMuchSpacingBefore || tooMuchSpacingAfter) && !operatorToken.leadingTrivia.containsComments
+                && !operatorToken.trailingTrivia.containsComments && !nextToken.leadingTrivia.containsComments
 
         guard noSpacing || tooMuchSpacing else {
             return nil
@@ -200,7 +212,8 @@ private class OperatorUsageWhitespaceVisitor: SyntaxVisitor {
             length: endPosition - location
         )
 
-        let correction = allowedNoSpaceOperators.contains(operatorText) ? operatorText : " \(operatorText) "
+        let correction =
+            allowedNoSpaceOperators.contains(operatorText) ? operatorText : " \(operatorText) "
         return (range, correction)
     }
 }

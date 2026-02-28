@@ -9,121 +9,145 @@ struct UnusedSetterValueRule: Rule {
         description: "Setter value is not used",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
-            var aValue: String {
-                get {
-                    return Persister.shared.aValue
+            Example(
+                """
+                var aValue: String {
+                    get {
+                        return Persister.shared.aValue
+                    }
+                    set {
+                        Persister.shared.aValue = newValue
+                    }
                 }
-                set {
-                    Persister.shared.aValue = newValue
+                """
+            ),
+            Example(
+                """
+                var aValue: String {
+                    set {
+                        Persister.shared.aValue = newValue
+                    }
+                    get {
+                        return Persister.shared.aValue
+                    }
                 }
-            }
-            """),
-            Example("""
-            var aValue: String {
-                set {
-                    Persister.shared.aValue = newValue
+                """
+            ),
+            Example(
+                """
+                var aValue: String {
+                    get {
+                        return Persister.shared.aValue
+                    }
+                    set(value) {
+                        Persister.shared.aValue = value
+                    }
                 }
-                get {
-                    return Persister.shared.aValue
+                """
+            ),
+            Example(
+                """
+                override var aValue: String {
+                 get {
+                     return Persister.shared.aValue
+                 }
+                 set { }
                 }
-            }
-            """),
-            Example("""
-            var aValue: String {
-                get {
-                    return Persister.shared.aValue
+                """
+            ),
+            Example(
+                """
+                protocol Foo {
+                    var bar: Bool { get set }
+                """, excludeFromDocumentation: true
+            ),
+            Example(
+                """
+                override var accessibilityValue: String? {
+                    get {
+                        let index = Int(self.value)
+                        guard steps.indices.contains(index) else { return "" }
+                        return ""
+                    }
+                    set {}
                 }
-                set(value) {
-                    Persister.shared.aValue = value
-                }
-            }
-            """),
-            Example("""
-            override var aValue: String {
-             get {
-                 return Persister.shared.aValue
-             }
-             set { }
-            }
-            """),
-            Example("""
-            protocol Foo {
-                var bar: Bool { get set }
-            """, excludeFromDocumentation: true),
-            Example("""
-            override var accessibilityValue: String? {
-                get {
-                    let index = Int(self.value)
-                    guard steps.indices.contains(index) else { return "" }
-                    return ""
-                }
-                set {}
-            }
-            """, excludeFromDocumentation: true),
+                """, excludeFromDocumentation: true
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            var aValue: String {
-                get {
-                    return Persister.shared.aValue
+            Example(
+                """
+                var aValue: String {
+                    get {
+                        return Persister.shared.aValue
+                    }
+                    ↓set {
+                        Persister.shared.aValue = aValue
+                    }
                 }
-                ↓set {
-                    Persister.shared.aValue = aValue
+                """
+            ),
+            Example(
+                """
+                var aValue: String {
+                    ↓set {
+                        Persister.shared.aValue = aValue
+                    }
+                    get {
+                        return Persister.shared.aValue
+                    }
                 }
-            }
-            """),
-            Example("""
-            var aValue: String {
-                ↓set {
-                    Persister.shared.aValue = aValue
+                """
+            ),
+            Example(
+                """
+                var aValue: String {
+                    get {
+                        return Persister.shared.aValue
+                    }
+                    ↓set {
+                        Persister.shared.aValue = aValue
+                    }
                 }
-                get {
-                    return Persister.shared.aValue
+                """
+            ),
+            Example(
+                """
+                var aValue: String {
+                    get {
+                        let newValue = Persister.shared.aValue
+                        return newValue
+                    }
+                    ↓set {
+                        Persister.shared.aValue = aValue
+                    }
                 }
-            }
-            """),
-            Example("""
-            var aValue: String {
-                get {
-                    return Persister.shared.aValue
+                """
+            ),
+            Example(
+                """
+                var aValue: String {
+                    get {
+                        return Persister.shared.aValue
+                    }
+                    ↓set(value) {
+                        Persister.shared.aValue = aValue
+                    }
                 }
-                ↓set {
-                    Persister.shared.aValue = aValue
+                """
+            ),
+            Example(
+                """
+                override var aValue: String {
+                    get {
+                        return Persister.shared.aValue
+                    }
+                    ↓set {
+                        Persister.shared.aValue = aValue
+                    }
                 }
-            }
-            """),
-            Example("""
-            var aValue: String {
-                get {
-                    let newValue = Persister.shared.aValue
-                    return newValue
-                }
-                ↓set {
-                    Persister.shared.aValue = aValue
-                }
-            }
-            """),
-            Example("""
-            var aValue: String {
-                get {
-                    return Persister.shared.aValue
-                }
-                ↓set(value) {
-                    Persister.shared.aValue = aValue
-                }
-            }
-            """),
-            Example("""
-            override var aValue: String {
-                get {
-                    return Persister.shared.aValue
-                }
-                ↓set {
-                    Persister.shared.aValue = aValue
-                }
-            }
-            """),
+                """
+            ),
         ]
     )
 }
@@ -136,7 +160,9 @@ extension UnusedSetterValueRule: SwiftSyntaxRule {
 
 private extension UnusedSetterValueRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { [ProtocolDeclSyntax.self] }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
         override func visitPost(_ node: AccessorDeclSyntax) {
             guard node.accessorSpecifier.tokenKind == .keyword(.set) else {
@@ -146,8 +172,10 @@ private extension UnusedSetterValueRule {
             let variableName = node.parameters?.name.text ?? "newValue"
             let visitor = NewValueUsageVisitor(variableName: variableName)
             if !visitor.walk(tree: node, handler: \.isVariableUsed) {
-                if Syntax(node).closestVariableOrSubscript()?.modifiers?.contains(keyword: .override) == true,
-                   let body = node.body, body.statements.isEmpty {
+                if Syntax(node).closestVariableOrSubscript()?.modifiers?.contains(keyword: .override)
+                    == true,
+                    let body = node.body, body.statements.isEmpty
+                {
                     return
                 }
 
@@ -194,9 +222,9 @@ private enum Either<L, R> {
 private extension Either<SubscriptDeclSyntax, VariableDeclSyntax> {
     var modifiers: DeclModifierListSyntax? {
         switch self {
-        case .left(let left):
+        case let .left(left):
             return left.modifiers
-        case .right(let right):
+        case let .right(right):
             return right.modifiers
         }
     }

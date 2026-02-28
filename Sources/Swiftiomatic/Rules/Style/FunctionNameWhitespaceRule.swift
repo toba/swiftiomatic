@@ -6,7 +6,8 @@ struct FunctionNameWhitespaceRule: Rule {
     static let description = RuleDescription(
         identifier: "function_name_whitespace",
         name: "Function Name Whitespace",
-        description: "There should be consistent whitespace before and after function names and generic parameters.",
+        description:
+        "There should be consistent whitespace before and after function names and generic parameters.",
         kind: .style,
         nonTriggeringExamples: FunctionNameWhitespaceRuleExamples.nonTriggeringExamples,
         triggeringExamples: FunctionNameWhitespaceRuleExamples.triggeringExamples,
@@ -89,7 +90,8 @@ private extension FunctionNameWhitespaceRule {
 
         private func validateGenericTrailingTrivia(node: GenericParameterClauseSyntax) {
             let genericTrailingTrivia = node.rightAngle.trailingTrivia
-            let replacement: String? = switch configuration.genericSpacing {
+            let replacement: String? =
+                switch configuration.genericSpacing {
                 case .noSpace where genericTrailingTrivia.isNotEmptyWithoutComments: ""
                 case .leadingSpace where genericTrailingTrivia.isNotEmptyWithoutComments: ""
                 case .trailingSpace where genericTrailingTrivia.isNotSingleSpaceWithoutComments: " "

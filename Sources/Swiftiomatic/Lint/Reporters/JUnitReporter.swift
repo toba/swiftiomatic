@@ -9,18 +9,18 @@ struct JUnitReporter: Reporter {
     static let description = "Reports violations as JUnit XML."
 
     static func generateReport(_ violations: [StyleViolation]) -> String {
-        let warningCount = violations.filter({ $0.severity == .warning }).count
-        let errorCount = violations.filter({ $0.severity == .error }).count
+        let warningCount = violations.filter { $0.severity == .warning }.count
+        let errorCount = violations.filter { $0.severity == .error }.count
         let testCount = warningCount + errorCount
 
         return """
-            <?xml version="1.0" encoding="utf-8"?>
-            <testsuites failures="\(warningCount)" errors="\(errorCount)" tests="\(testCount)">
-            \t<testsuite failures="\(warningCount)" errors="\(errorCount)" tests="\(testCount)">
-            \(violations.map(testCase(for:)).joined(separator: "\n"))
-            \t</testsuite>
-            </testsuites>
-            """
+        <?xml version="1.0" encoding="utf-8"?>
+        <testsuites failures="\(warningCount)" errors="\(errorCount)" tests="\(testCount)">
+        \t<testsuite failures="\(warningCount)" errors="\(errorCount)" tests="\(testCount)">
+        \(violations.map(testCase(for:)).joined(separator: "\n"))
+        \t</testsuite>
+        </testsuites>
+        """
     }
 
     private static func testCase(for violation: StyleViolation) -> String {
@@ -31,9 +31,9 @@ struct JUnitReporter: Reporter {
         let message = severity + ":" + "Line:" + lineNumber
 
         return """
-            \t\t<testcase classname='Formatting Test' name='\(fileName)'>
-            \t\t\t<failure message='\(reason)'>\(message)</failure>
-            \t\t</testcase>
-            """
+        \t\t<testcase classname='Formatting Test' name='\(fileName)'>
+        \t\t\t<failure message='\(reason)'>\(message)</failure>
+        \t\t</testcase>
+        """
     }
 }

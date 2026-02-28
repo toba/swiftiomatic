@@ -18,17 +18,20 @@ extension FormatRule {
             let hoist = formatter.options.hoistPatternLet
             // Check if pattern already starts with let/var
             guard let endIndex = formatter.index(of: .endOfScope(")"), after: i),
-                  let prevIndex = formatter.index(before: i, where: {
-                      switch $0 {
-                      case .operator(".", _), .keyword("let"), .keyword("var"),
-                           .endOfScope("*/"):
-                          return false
-                      case .endOfScope, .delimiter, .operator, .keyword:
-                          return true
-                      default:
-                          return false
+                  let prevIndex = formatter.index(
+                      before: i,
+                      where: {
+                          switch $0 {
+                          case .operator(".", _), .keyword("let"), .keyword("var"),
+                               .endOfScope("*/"):
+                              return false
+                          case .endOfScope, .delimiter, .operator, .keyword:
+                              return true
+                          default:
+                              return false
+                          }
                       }
-                  })
+                  )
             else {
                 return
             }
@@ -52,8 +55,9 @@ extension FormatRule {
             default:
                 return
             }
-            let startIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: prevIndex)
-                ?? (prevIndex + 1)
+            let startIndex =
+                formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: prevIndex)
+                    ?? (prevIndex + 1)
             if case let .keyword(keyword) = formatter.tokens[startIndex],
                ["let", "var"].contains(keyword)
             {
@@ -95,19 +99,21 @@ extension FormatRule {
                     formatter.insert([.keyword(keyword), .space(" ")], at: index)
                 }
                 // Remove keyword
-                let range = ((formatter.index(of: .nonSpace, before: startIndex) ??
-                        (prevIndex - 1)) + 1) ... startIndex
+                let range =
+                    ((formatter.index(of: .nonSpace, before: startIndex) ?? (prevIndex - 1)) + 1) ... startIndex
                 formatter.removeTokens(in: range)
             } else if hoist {
                 // Find let/var keyword indices
                 var keyword = "let"
-                guard let indices: [Int] = {
-                    guard let indices = formatter.indicesOf(keyword, in: i + 1 ..< endIndex) else {
-                        keyword = "var"
-                        return formatter.indicesOf(keyword, in: i + 1 ..< endIndex)
-                    }
-                    return indices
-                }() else {
+                guard
+                    let indices: [Int] = {
+                        guard let indices = formatter.indicesOf(keyword, in: i + 1 ..< endIndex) else {
+                            keyword = "var"
+                            return formatter.indicesOf(keyword, in: i + 1 ..< endIndex)
+                        }
+                        return indices
+                    }()
+                else {
                     return
                 }
                 // Remove keywords inside parens
@@ -152,7 +158,8 @@ extension FormatRule {
 extension Formatter {
     func indicesOf(_ keyword: String, in range: CountableRange<Int>) -> [Int]? {
         var indices = [Int]()
-        var keywordFound = false, identifierFound = false
+        var keywordFound = false
+        var identifierFound = false
         var count = 0
         for index in range {
             switch tokens[index] {

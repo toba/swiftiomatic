@@ -15,28 +15,34 @@ struct VerticalWhitespaceRule: Rule {
             Example("/* bcs \n\n\n\n*/"),
             Example("// bca \n\n"),
             Example("class CCCC {\n  \n}"),
-            Example("""
-            // comment
+            Example(
+                """
+                // comment
 
-            import Foundation
-            """),
-            Example("""
+                import Foundation
+                """
+            ),
+            Example(
+                """
 
-            // comment
+                // comment
 
-            import Foundation
-            """),
+                import Foundation
+                """
+            ),
         ],
         triggeringExamples: [
             Example("let aaaa = 0\n\n\n"),
             Example("struct AAAA {}\n\n\n\n"),
             Example("class BBBB {}\n\n\n"),
             Example("class CCCC {\n  \n  \n}"),
-            Example("""
+            Example(
+                """
 
 
-            import Foundation
-            """),
+                import Foundation
+                """
+            ),
         ],
         corrections: [
             Example("let b = 0\n\n\nclass AAA {}\n"): Example("let b = 0\n\nclass AAA {}\n"),
@@ -51,6 +57,7 @@ extension VerticalWhitespaceRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -77,7 +84,7 @@ private extension VerticalWhitespaceRule {
             var violationPosition: AbsolutePosition?
 
             func process(_ count: Int, _ offset: Int) {
-                for _ in 0..<(count + firstTokenAdditionalNewlines) {
+                for _ in 0 ..< (count + firstTokenAdditionalNewlines) {
                     if consecutiveNewlines > configuration.maxEmptyLines, violationPosition == nil {
                         violationPosition = currentPosition
                     }
@@ -88,9 +95,10 @@ private extension VerticalWhitespaceRule {
 
             for piece in token.leadingTrivia {
                 switch piece {
-                case .newlines(let count), .carriageReturns(let count), .formfeeds(let count), .verticalTabs(let count):
+                case let .newlines(count), let .carriageReturns(count), let .formfeeds(count),
+                     let .verticalTabs(count):
                     process(count, 1)
-                case .carriageReturnLineFeeds(let count):
+                case let .carriageReturnLineFeeds(count):
                     process(count, 2) // CRLF is 2 bytes
                 case .spaces, .tabs:
                     currentPosition += piece.sourceLength
@@ -113,10 +121,12 @@ private extension VerticalWhitespaceRule {
         }
 
         private func report(_ position: AbsolutePosition, _ newlines: Int) {
-            violations.append(ReasonedRuleViolation(
-                position: position,
-                reason: configuration.configuredDescriptionReason + "; currently \(newlines - 1)"
-            ))
+            violations.append(
+                ReasonedRuleViolation(
+                    position: position,
+                    reason: configuration.configuredDescriptionReason + "; currently \(newlines - 1)"
+                )
+            )
         }
     }
 
@@ -127,7 +137,9 @@ private extension VerticalWhitespaceRule {
             var consecutiveNewlines = 0
 
             func process(_ count: Int, _ create: (Int) -> TriviaPiece) {
-                let linesToPreserve = min(count, max(0, configuration.maxEmptyLines + 1 - consecutiveNewlines))
+                let linesToPreserve = min(
+                    count, max(0, configuration.maxEmptyLines + 1 - consecutiveNewlines)
+                )
                 consecutiveNewlines += count
 
                 if count > linesToPreserve {
@@ -148,15 +160,15 @@ private extension VerticalWhitespaceRule {
 
             for piece in token.leadingTrivia {
                 switch piece {
-                case .newlines(let count):
+                case let .newlines(count):
                     process(count, TriviaPiece.newlines)
-                case .carriageReturns(let count):
+                case let .carriageReturns(count):
                     process(count, TriviaPiece.carriageReturns)
-                case .carriageReturnLineFeeds(let count):
+                case let .carriageReturnLineFeeds(count):
                     process(count, TriviaPiece.carriageReturnLineFeeds)
-                case .formfeeds(let count):
+                case let .formfeeds(count):
                     process(count, TriviaPiece.formfeeds)
-                case .verticalTabs(let count):
+                case let .verticalTabs(count):
                     process(count, TriviaPiece.verticalTabs)
                 case .spaces, .tabs:
                     pendingWhitespace.append(piece)

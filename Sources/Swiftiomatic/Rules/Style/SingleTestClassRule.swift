@@ -14,38 +14,52 @@ struct SingleTestClassRule: SourceKitFreeRule, OptInRule {
             Example("class FooTests: XCTestCase {  }"),
         ],
         triggeringExamples: [
-            Example("""
-            ↓class FooTests: QuickSpec {  }
-            ↓class BarTests: QuickSpec {  }
-            """),
-            Example("""
-            ↓class FooTests: QuickSpec {  }
-            ↓class BarTests: QuickSpec {  }
-            ↓class TotoTests: QuickSpec {  }
-            """),
-            Example("""
-            ↓class FooTests: XCTestCase {  }
-            ↓class BarTests: XCTestCase {  }
-            """),
-            Example("""
-            ↓class FooTests: XCTestCase {  }
-            ↓class BarTests: XCTestCase {  }
-            ↓class TotoTests: XCTestCase {  }
-            """),
-            Example("""
-            ↓class FooTests: QuickSpec {  }
-            ↓class BarTests: XCTestCase {  }
-            """),
-            Example("""
-            ↓class FooTests: QuickSpec {  }
-            ↓class BarTests: XCTestCase {  }
-            class TotoTests {  }
-            """),
-            Example("""
-            final ↓class FooTests: QuickSpec {  }
-            ↓class BarTests: XCTestCase {  }
-            class TotoTests {  }
-            """),
+            Example(
+                """
+                ↓class FooTests: QuickSpec {  }
+                ↓class BarTests: QuickSpec {  }
+                """
+            ),
+            Example(
+                """
+                ↓class FooTests: QuickSpec {  }
+                ↓class BarTests: QuickSpec {  }
+                ↓class TotoTests: QuickSpec {  }
+                """
+            ),
+            Example(
+                """
+                ↓class FooTests: XCTestCase {  }
+                ↓class BarTests: XCTestCase {  }
+                """
+            ),
+            Example(
+                """
+                ↓class FooTests: XCTestCase {  }
+                ↓class BarTests: XCTestCase {  }
+                ↓class TotoTests: XCTestCase {  }
+                """
+            ),
+            Example(
+                """
+                ↓class FooTests: QuickSpec {  }
+                ↓class BarTests: XCTestCase {  }
+                """
+            ),
+            Example(
+                """
+                ↓class FooTests: QuickSpec {  }
+                ↓class BarTests: XCTestCase {  }
+                class TotoTests {  }
+                """
+            ),
+            Example(
+                """
+                final ↓class FooTests: QuickSpec {  }
+                ↓class BarTests: XCTestCase {  }
+                class TotoTests {  }
+                """
+            ),
         ]
     )
 
@@ -56,20 +70,28 @@ struct SingleTestClassRule: SourceKitFreeRule, OptInRule {
         guard classes.count > 1 else { return [] }
 
         return classes.map { position in
-            StyleViolation(ruleDescription: Self.description,
-                           severity: configuration.severity,
-                           location: Location(file: file, position: position.position),
-                           reason: "\(classes.count) test classes found in this file")
+            StyleViolation(
+                ruleDescription: Self.description,
+                severity: configuration.severity,
+                location: Location(file: file, position: position.position),
+                reason: "\(classes.count) test classes found in this file"
+            )
         }
     }
 }
 
 private extension SingleTestClassRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_ node: ClassDeclSyntax) {
-            guard node.inheritanceClause.containsInheritedType(inheritedTypes: configuration.testParentClasses) else {
+            guard
+                node.inheritanceClause.containsInheritedType(
+                    inheritedTypes: configuration.testParentClasses
+                )
+            else {
                 return
             }
             violations.append(node.classKeyword.positionAfterSkippingLeadingTrivia)

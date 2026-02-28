@@ -1,4 +1,3 @@
-
 struct NumberSeparatorConfiguration: SeverityBasedRuleConfiguration {
     struct ExcludeRange: AcceptableByConfigurationElement, Equatable {
         private let min: Double
@@ -11,7 +10,8 @@ struct NumberSeparatorConfiguration: SeverityBasedRuleConfiguration {
         init(fromAny value: Any, context ruleID: String) throws(Issue) {
             guard let values = value as? [String: Any],
                   let min = values["min"] as? Double,
-                  let max = values["max"] as? Double else {
+                  let max = values["max"] as? Double
+            else {
                 throw .invalidConfiguration(ruleID: ruleID)
             }
             self.min = min

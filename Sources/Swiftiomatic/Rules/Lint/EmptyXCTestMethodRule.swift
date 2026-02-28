@@ -23,7 +23,9 @@ extension EmptyXCTestMethodRule: OptInRule {}
 
 private extension EmptyXCTestMethodRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
             node.isXCTestCase(configuration.testParentClasses) ? .visitChildren : .skipChildren

@@ -17,20 +17,26 @@ struct PeriodSpacingRule: SourceKitFreeRule, OptInRule, SubstitutionCorrectableR
             Example("let pi = Double.  pi"),
             Example("// A. Single."),
             Example("///   - code: Identifier of the error. Integer."),
-            Example("""
-            // value: Multiline.
-            //        Comment.
-            """),
-            Example("""
-            /**
-            Sentence ended in period.
+            Example(
+                """
+                // value: Multiline.
+                //        Comment.
+                """
+            ),
+            Example(
+                """
+                /**
+                Sentence ended in period.
 
-            - Sentence 2 new line characters after.
-            **/
-            """),
+                - Sentence 2 new line characters after.
+                **/
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("/* Only god knows why. ↓ This symbol does nothing. */", testWrappingInComment: false),
+            Example(
+                "/* Only god knows why. ↓ This symbol does nothing. */", testWrappingInComment: false
+            ),
             Example("// Only god knows why. ↓ This symbol does nothing.", testWrappingInComment: false),
             Example("// Single. Double. ↓ End.", testWrappingInComment: false),
             Example("// Single. Double. ↓ Triple. ↓  End.", testWrappingInComment: false),
@@ -43,7 +49,9 @@ struct PeriodSpacingRule: SourceKitFreeRule, OptInRule, SubstitutionCorrectableR
             Example("// Single. Double. ↓ End."): Example("// Single. Double. End."),
             Example("// Single. Double. ↓ Triple. ↓  End."): Example("// Single. Double. Triple. End."),
             Example("// Triple. ↓  Quad. ↓   End."): Example("// Triple. Quad. End."),
-            Example("///   - code: Identifier. ↓ Integer."): Example("///   - code: Identifier. Integer."),
+            Example("///   - code: Identifier. ↓ Integer."): Example(
+                "///   - code: Identifier. Integer."
+            ),
         ]
     )
 

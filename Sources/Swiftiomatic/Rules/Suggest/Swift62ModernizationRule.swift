@@ -6,7 +6,8 @@ struct Swift62ModernizationRule: Rule {
     static let description = RuleDescription(
         identifier: "swift62_modernization",
         name: "Swift 6.2 Modernization",
-        description: "Code that can benefit from Swift 6.2 features like @concurrent, Observations, weak let, and Span",
+        description:
+        "Code that can benefit from Swift 6.2 features like @concurrent, Observations, weak let, and Span",
         kind: .suggest,
         nonTriggeringExamples: [
             Example("func work() async { }"),
@@ -32,23 +33,29 @@ private extension Swift62ModernizationRule {
             let callee = node.calledExpression.trimmedDescription
 
             if callee == "Task.detached" {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "Task.detached may be replaceable with @concurrent",
-                    severity: .warning,
-                    confidence: .low,
-                    suggestion: "Use @concurrent on an async function instead — but note @concurrent inherits @TaskLocal values while Task.detached drops them"
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: "Task.detached may be replaceable with @concurrent",
+                        severity: .warning,
+                        confidence: .low,
+                        suggestion:
+                        "Use @concurrent on an async function instead — but note @concurrent inherits @TaskLocal values while Task.detached drops them"
+                    )
+                )
             }
 
             if callee == "withObservationTracking" {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "withObservationTracking can be replaced with Observations AsyncSequence in Swift 6.2",
-                    severity: .warning,
-                    confidence: .medium,
-                    suggestion: "for await value in Observations { ... }"
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason:
+                        "withObservationTracking can be replaced with Observations AsyncSequence in Swift 6.2",
+                        severity: .warning,
+                        confidence: .medium,
+                        suggestion: "for await value in Observations { ... }"
+                    )
+                )
             }
         }
 
@@ -57,12 +64,15 @@ private extension Swift62ModernizationRule {
             guard hasWeak, node.bindingSpecifier.tokenKind == .keyword(.var) else { return }
 
             let bindingName = node.bindings.first?.pattern.trimmedDescription ?? "unknown"
-            violations.append(ReasonedRuleViolation(
-                position: node.positionAfterSkippingLeadingTrivia,
-                reason: "weak var '\(bindingName)' — if never reassigned after init, use weak let (SE-0481)",
-                severity: .warning,
-                confidence: .low
-            ))
+            violations.append(
+                ReasonedRuleViolation(
+                    position: node.positionAfterSkippingLeadingTrivia,
+                    reason:
+                    "weak var '\(bindingName)' — if never reassigned after init, use weak let (SE-0481)",
+                    severity: .warning,
+                    confidence: .low
+                )
+            )
         }
 
         override func visitPost(_ node: TypeAnnotationSyntax) {
@@ -72,13 +82,15 @@ private extension Swift62ModernizationRule {
                 || typeStr.contains("UnsafeMutableRawBufferPointer")
                 || typeStr.contains("UnsafeMutableBufferPointer")
             {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "Unsafe buffer pointer — consider Span/RawSpan (macOS 26.0+)",
-                    severity: .warning,
-                    confidence: .low,
-                    suggestion: "Use Span<T> or RawSpan for safe, non-owning buffer access"
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: "Unsafe buffer pointer — consider Span/RawSpan (macOS 26.0+)",
+                        severity: .warning,
+                        confidence: .low,
+                        suggestion: "Use Span<T> or RawSpan for safe, non-owning buffer access"
+                    )
+                )
             }
         }
 
@@ -88,12 +100,15 @@ private extension Swift62ModernizationRule {
                   let body = node.body, body.statements.count > 1
             else { return }
 
-            violations.append(ReasonedRuleViolation(
-                position: node.positionAfterSkippingLeadingTrivia,
-                reason: "\(accessorKind) with side-effect logic — consider Observations framework if on an @Observable type",
-                severity: .warning,
-                confidence: .low
-            ))
+            violations.append(
+                ReasonedRuleViolation(
+                    position: node.positionAfterSkippingLeadingTrivia,
+                    reason:
+                    "\(accessorKind) with side-effect logic — consider Observations framework if on an @Observable type",
+                    severity: .warning,
+                    confidence: .low
+                )
+            )
         }
     }
 }

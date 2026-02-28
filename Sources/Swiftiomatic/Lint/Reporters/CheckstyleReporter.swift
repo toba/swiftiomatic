@@ -20,7 +20,9 @@ struct CheckstyleReporter: Reporter {
 
     // MARK: - Private
 
-    private static func generateForViolationFile(_ file: String, violations: [StyleViolation]) -> String {
+    private static func generateForViolationFile(_ file: String, violations: [StyleViolation])
+        -> String
+    {
         [
             "\n\t<file name=\"", file, "\">\n",
             violations.map(generateForSingleViolation).joined(),
@@ -34,7 +36,7 @@ struct CheckstyleReporter: Reporter {
         let severity: String = violation.severity.rawValue
         let reason: String = violation.reason.escapedForXML()
         let identifier: String = violation.ruleIdentifier
-        let source: String = "swiftlint.rules.\(identifier)".escapedForXML()
+        let source = "swiftlint.rules.\(identifier)".escapedForXML()
         return [
             "\t\t<error line=\"\(line)\" ",
             "column=\"\(col)\" ",

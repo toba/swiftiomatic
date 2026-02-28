@@ -15,15 +15,17 @@ struct UnownedVariableCaptureRule: Rule {
             Example("foo { [weak bar] param in _ }"),
             Example("foo { bar in _ }"),
             Example("foo { $0 }"),
-            Example("""
-            final class First {}
-            final class Second {
-                unowned var value: First
-                init(value: First) {
-                    self.value = value
+            Example(
+                """
+                final class First {}
+                final class Second {
+                    unowned var value: First
+                    init(value: First) {
+                        self.value = value
+                    }
                 }
-            }
-            """),
+                """
+            ),
         ],
         triggeringExamples: [
             Example("foo { [↓unowned self] in _ }"),
@@ -44,7 +46,9 @@ extension UnownedVariableCaptureRule: OptInRule {}
 private extension UnownedVariableCaptureRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: TokenSyntax) {
-            if case .keyword(.unowned) = node.tokenKind, node.parent?.is(ClosureCaptureSpecifierSyntax.self) == true {
+            if case .keyword(.unowned) = node.tokenKind,
+               node.parent?.is(ClosureCaptureSpecifierSyntax.self) == true
+            {
                 violations.append(node.positionAfterSkippingLeadingTrivia)
             }
         }

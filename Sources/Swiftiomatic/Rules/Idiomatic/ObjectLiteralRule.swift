@@ -10,7 +10,9 @@ struct ObjectLiteralRule: Rule {
         kind: .idiomatic,
         nonTriggeringExamples: [
             Example("let image = #imageLiteral(resourceName: \"image.jpg\")"),
-            Example("let color = #colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)"),
+            Example(
+                "let color = #colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)"
+            ),
             Example("let image = UIImage(named: aVariable)"),
             Example("let image = UIImage(named: \"interpolated \\(variable)\")"),
             Example("let color = UIColor(red: value, green: value, blue: value, alpha: 1)"),
@@ -22,9 +24,13 @@ struct ObjectLiteralRule: Rule {
             ["UI", "NS"].flatMap { (prefix: String) -> [Example] in
                 [
                     Example("let image = ↓\(prefix)Image\(method)(named: \"foo\")"),
-                    Example("let color = ↓\(prefix)Color\(method)(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)"),
+                    Example(
+                        "let color = ↓\(prefix)Color\(method)(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)"
+                    ),
                     // swiftlint:disable:next line_length
-                    Example("let color = ↓\(prefix)Color\(method)(red: 100 / 255.0, green: 50 / 255.0, blue: 0, alpha: 1)"),
+                    Example(
+                        "let color = ↓\(prefix)Color\(method)(red: 100 / 255.0, green: 50 / 255.0, blue: 0, alpha: 1)"
+                    ),
                     Example("let color = ↓\(prefix)Color\(method)(white: 0.5, alpha: 1)"),
                 ]
             }
@@ -59,7 +65,8 @@ private extension ObjectLiteralRule {
             guard inits(forClasses: ["UIImage", "NSImage"]).contains(name),
                   node.arguments.compactMap(\.label?.text) == ["named"],
                   let argument = node.arguments.first?.expression.as(StringLiteralExprSyntax.self),
-                  argument.isConstantString else {
+                  argument.isConstantString
+            else {
                 return false
             }
 
@@ -69,7 +76,8 @@ private extension ObjectLiteralRule {
         private func isColorInit(node: FunctionCallExprSyntax, name: String) -> Bool {
             guard inits(forClasses: ["UIColor", "NSColor"]).contains(name),
                   case let argumentsNames = node.arguments.compactMap(\.label?.text),
-                  argumentsNames == ["red", "green", "blue", "alpha"] || argumentsNames == ["white", "alpha"] else {
+                  argumentsNames == ["red", "green", "blue", "alpha"] || argumentsNames == ["white", "alpha"]
+            else {
                 return false
             }
 
@@ -95,9 +103,9 @@ private extension StringLiteralExprSyntax {
 
 private extension ExprSyntax {
     var canBeExpressedAsColorLiteralParams: Bool {
-        if `is`(FloatLiteralExprSyntax.self) ||
-            `is`(IntegerLiteralExprSyntax.self) ||
-            `is`(BinaryOperatorExprSyntax.self) {
+        if `is`(FloatLiteralExprSyntax.self) || `is`(IntegerLiteralExprSyntax.self)
+            || `is`(BinaryOperatorExprSyntax.self)
+        {
             return true
         }
 

@@ -20,43 +20,55 @@ struct RedundantVoidReturnRule: Rule {
             Example("func foo() -> ()!"),
             Example("func foo() -> Void?"),
             Example("func foo() -> Void!"),
-            Example("""
-            struct A {
-                subscript(key: String) {
-                    print(key)
+            Example(
+                """
+                struct A {
+                    subscript(key: String) {
+                        print(key)
+                    }
                 }
-            }
-            """),
-            Example("""
-            doSomething { arg -> Void in
-                print(arg)
-            }
-            """, configuration: ["include_closures": false]),
+                """
+            ),
+            Example(
+                """
+                doSomething { arg -> Void in
+                    print(arg)
+                }
+                """, configuration: ["include_closures": false]
+            ),
         ],
         triggeringExamples: [
             Example("func foo()↓ -> Void {}"),
-            Example("""
-            protocol Foo {
-              func foo()↓ -> Void
-            }
-            """),
+            Example(
+                """
+                protocol Foo {
+                  func foo()↓ -> Void
+                }
+                """
+            ),
             Example("func foo()↓ -> () {}"),
             Example("func foo()↓ -> ( ) {}"),
-            Example("""
-            protocol Foo {
-              func foo()↓ -> ()
-            }
-            """),
-            Example("""
-            doSomething { arg↓ -> () in
-                print(arg)
-            }
-            """),
-            Example("""
-            doSomething { arg↓ -> Void in
-                print(arg)
-            }
-            """),
+            Example(
+                """
+                protocol Foo {
+                  func foo()↓ -> ()
+                }
+                """
+            ),
+            Example(
+                """
+                doSomething { arg↓ -> () in
+                    print(arg)
+                }
+                """
+            ),
+            Example(
+                """
+                doSomething { arg↓ -> Void in
+                    print(arg)
+                }
+                """
+            ),
         ],
         corrections: [
             Example("func foo()↓ -> Void {}"): Example("func foo() {}"),
@@ -73,6 +85,7 @@ extension RedundantVoidReturnRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -86,7 +99,8 @@ private extension RedundantVoidReturnRule {
             }
 
             if node.containsRedundantVoidViolation,
-               let tokenBeforeOutput = node.previousToken(viewMode: .sourceAccurate) {
+               let tokenBeforeOutput = node.previousToken(viewMode: .sourceAccurate)
+            {
                 violations.append(tokenBeforeOutput.endPositionBeforeTrailingTrivia)
             }
         }

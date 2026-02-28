@@ -19,9 +19,11 @@ extension FormatRule {
         options: ["blank-line-after-switch-case"]
     ) { formatter in
         formatter.forEach(.keyword("switch")) { switchIndex, _ in
-            guard let switchCases = formatter.switchStatementBranchesWithSpacingInfo(at: switchIndex) else { return }
+            guard let switchCases = formatter.switchStatementBranchesWithSpacingInfo(at: switchIndex)
+            else { return }
 
-            let shouldAlwaysInsertBlankLineAfterSwitchCase = formatter.options.blankLineAfterSwitchCase == .always
+            let shouldAlwaysInsertBlankLineAfterSwitchCase =
+                formatter.options.blankLineAfterSwitchCase == .always
             for switchCase in switchCases.reversed() {
                 // Any switch statement should be followed by a blank line, depending on the
                 // `blankLineAfterSwitchCase` option.

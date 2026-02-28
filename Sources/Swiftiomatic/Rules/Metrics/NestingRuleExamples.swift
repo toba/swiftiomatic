@@ -2,39 +2,45 @@
 
 private let detectingTypes = ["actor", "class", "struct", "enum"]
 
-internal struct NestingRuleExamples {
-    static let nonTriggeringExamples = nonTriggeringTypeExamples
-        + nonTriggeringFunctionExamples
-        + nonTriggeringClosureAndStatementExamples
-        + nonTriggeringProtocolExamples
-        + nonTriggeringMixedExamples
-        + nonTriggeringExamplesIgnoreCodingKeys
+enum NestingRuleExamples {
+    static let nonTriggeringExamples =
+        nonTriggeringTypeExamples
+            + nonTriggeringFunctionExamples
+            + nonTriggeringClosureAndStatementExamples
+            + nonTriggeringProtocolExamples
+            + nonTriggeringMixedExamples
+            + nonTriggeringExamplesIgnoreCodingKeys
 
     private static let nonTriggeringTypeExamples =
         detectingTypes.flatMap { type -> [Example] in
             [
                 // default maximum type nesting level
-                .init("""
+                .init(
+                    """
                     \(type) Example_0 {
                         \(type) Example_1 {}
                     }
-                    """),
+                    """
+                ),
 
                 /*
-                 all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
-                 are flattend in a file structure so limits do not change
-                */
-                .init("""
+                     all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
+                     are flattend in a file structure so limits do not change
+                    */
+                .init(
+                    """
                     var example: Int {
                         \(type) Example_0 {
                             \(type) Example_1 {}
                         }
                         return 5
                     }
-                    """),
+                    """
+                ),
 
                 // didSet is not present in file structure although there is such a swift declaration kind
-                .init("""
+                .init(
+                    """
                     var example: Int = 5 {
                         didSet {
                             \(type) Example_0 {
@@ -42,32 +48,38 @@ internal struct NestingRuleExamples {
                             }
                         }
                     }
-                    """),
+                    """
+                ),
 
                 // extensions are counted as a type level
-                .init("""
+                .init(
+                    """
                     extension Example_0 {
                         \(type) Example_1 {}
                     }
-                    """),
+                    """
+                ),
             ]
         }
 
     private static let nonTriggeringFunctionExamples: [Example] = [
         // default maximum function nesting level
-        .init("""
+        .init(
+            """
             func f_0() {
                 func f_1() {
                     func f_2() {}
                 }
             }
-            """),
+            """
+        ),
 
         /*
-         all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
-         are flattend in a file structure so level limits do not change
-        */
-        .init("""
+             all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
+             are flattend in a file structure so level limits do not change
+            */
+        .init(
+            """
             var example: Int {
                 func f_0() {
                     func f_1() {
@@ -76,10 +88,12 @@ internal struct NestingRuleExamples {
                 }
                 return 5
             }
-            """),
+            """
+        ),
 
         // didSet is not present in file structure although there is such a swift declaration kind
-        .init("""
+        .init(
+            """
             var example: Int = 5 {
                 didSet {
                     func f_0() {
@@ -89,10 +103,12 @@ internal struct NestingRuleExamples {
                     }
                 }
             }
-            """),
+            """
+        ),
 
         // extensions are counted as a type level
-        .init("""
+        .init(
+            """
             extension Example_0 {
                 func f_0() {
                     func f_1() {
@@ -100,26 +116,32 @@ internal struct NestingRuleExamples {
                     }
                 }
             }
-            """),
+            """
+        ),
     ]
 
     private static let nonTriggeringProtocolExamples =
         detectingTypes.flatMap { type in
             [
-                Example("""
+                Example(
+                    """
                     \(type) Example_0 {
                         protocol Example_1 {}
                     }
-                    """),
-                Example("""
+                    """
+                ),
+                Example(
+                    """
                     var example: Int {
                         \(type) Example_0 {
                             protocol Example_1 {}
                         }
                         return 5
                     }
-                    """),
-                Example("""
+                    """
+                ),
+                Example(
+                    """
                     var example: Int = 5 {
                         didSet {
                             \(type) Example_0 {
@@ -127,12 +149,15 @@ internal struct NestingRuleExamples {
                             }
                         }
                     }
-                    """),
-                Example("""
+                    """
+                ),
+                Example(
+                    """
                     extension Example_0 {
                         protocol Example_1 {}
                     }
-                    """),
+                    """
+                ),
             ]
         }
 
@@ -140,7 +165,8 @@ internal struct NestingRuleExamples {
         detectingTypes.flatMap { type -> [Example] in
             [
                 // swich statement example
-                .init("""
+                .init(
+                    """
                     switch example {
                     case .exampleCase:
                         \(type) Example_0 {
@@ -153,10 +179,12 @@ internal struct NestingRuleExamples {
                             }
                         }
                     }
-                    """),
+                    """
+                ),
 
                 // closure var example
-                .init("""
+                .init(
+                    """
                     var exampleClosure: () -> Void = {
                         \(type) Example_0 {
                             \(type) Example_1 {}
@@ -167,10 +195,12 @@ internal struct NestingRuleExamples {
                             }
                         }
                     }
-                    """),
+                    """
+                ),
 
                 // function closure parameter example
-                .init("""
+                .init(
+                    """
                     exampleFunc(closure: {
                         \(type) Example_0 {
                             \(type) Example_1 {}
@@ -181,7 +211,8 @@ internal struct NestingRuleExamples {
                             }
                         }
                     })
-                    """),
+                    """
+                ),
             ]
         }
 
@@ -189,7 +220,8 @@ internal struct NestingRuleExamples {
         detectingTypes.flatMap { type -> [Example] in
             [
                 // default maximum nesting level for both type and function (nesting order is arbitrary)
-                .init("""
+                .init(
+                    """
                     \(type) Example_0 {
                         func f_0() {
                             \(type) Example_1 {
@@ -200,10 +232,12 @@ internal struct NestingRuleExamples {
                             protocol P {}
                         }
                     }
-                    """),
+                    """
+                ),
 
                 // default maximum nesting level for both type and function within closures and statements
-                .init("""
+                .init(
+                    """
                     \(type) Example_0 {
                         func f_0() {
                             switch example {
@@ -226,7 +260,8 @@ internal struct NestingRuleExamples {
                             }
                         }
                     }
-                    """),
+                    """
+                ),
             ]
         }
 
@@ -247,31 +282,35 @@ internal struct NestingRuleExamples {
 }
 
 extension NestingRuleExamples {
-    static let triggeringExamples = triggeringTypeExamples
-        + triggeringFunctionExamples
-        + triggeringClosureAndStatementExamples
-        + triggeringProtocolExamples
-        + triggeringMixedExamples
-        + triggeringExamplesCodingKeys
-        + triggeringExamplesIgnoreCodingKeys
+    static let triggeringExamples =
+        triggeringTypeExamples
+            + triggeringFunctionExamples
+            + triggeringClosureAndStatementExamples
+            + triggeringProtocolExamples
+            + triggeringMixedExamples
+            + triggeringExamplesCodingKeys
+            + triggeringExamplesIgnoreCodingKeys
 
     private static let triggeringTypeExamples =
         detectingTypes.flatMap { type -> [Example] in
             [
                 // violation of default maximum type nesting level
-                .init("""
+                .init(
+                    """
                     \(type) Example_0 {
                         \(type) Example_1 {
                             ↓\(type) Example_2 {}
                         }
                     }
-                    """),
+                    """
+                ),
 
                 /*
-                 all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
-                 are flattend in a file structure so limits do not change
-                 */
-                .init("""
+                    all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
+                    are flattend in a file structure so limits do not change
+                    */
+                .init(
+                    """
                     var example: Int {
                         \(type) Example_0 {
                             \(type) Example_1 {
@@ -280,10 +319,12 @@ extension NestingRuleExamples {
                         }
                         return 5
                     }
-                    """),
+                    """
+                ),
 
                 // didSet is not present in file structure although there is such a swift declaration kind
-                .init("""
+                .init(
+                    """
                     var example: Int = 5 {
                         didSet {
                             \(type) Example_0 {
@@ -293,22 +334,26 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """),
+                    """
+                ),
 
                 // extensions are counted as a type level, violation of default maximum type nesting level
-                .init("""
+                .init(
+                    """
                     extension Example_0 {
                         \(type) Example_1 {
                             ↓\(type) Example_2 {}
                         }
                     }
-                    """),
+                    """
+                ),
             ]
         }
 
     private static let triggeringFunctionExamples: [Example] = [
         // violation of default maximum function nesting level
-        .init("""
+        .init(
+            """
             func f_0() {
                 func f_1() {
                     func f_2() {
@@ -316,13 +361,15 @@ extension NestingRuleExamples {
                     }
                 }
             }
-            """),
+            """
+        ),
 
         /*
-         all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
-         are flattend in a file structure so level limits do not change
-         */
-        .init("""
+            all variableKinds of SwiftDeclarationKind (except .varParameter which is a function parameter)
+            are flattend in a file structure so level limits do not change
+            */
+        .init(
+            """
             var example: Int {
                 func f_0() {
                     func f_1() {
@@ -333,10 +380,12 @@ extension NestingRuleExamples {
                 }
                 return 5
             }
-            """),
+            """
+        ),
 
         // didSet is not present in file structure although there is such a swift declaration kind
-        .init("""
+        .init(
+            """
             var example: Int = 5 {
                 didSet {
                     func f_0() {
@@ -348,10 +397,12 @@ extension NestingRuleExamples {
                     }
                 }
             }
-            """),
+            """
+        ),
 
         // extensions are counted as a type level, violation of default maximum function nesting level
-        .init("""
+        .init(
+            """
             extension Example_0 {
                 func f_0() {
                     func f_1() {
@@ -361,14 +412,16 @@ extension NestingRuleExamples {
                     }
                 }
             }
-            """),
+            """
+        ),
     ]
 
     private static let triggeringClosureAndStatementExamples =
         detectingTypes.flatMap { type -> [Example] in
             [
                 // swich statement example
-                .init("""
+                .init(
+                    """
                     switch example {
                     case .exampleCase:
                         \(type) Example_0 {
@@ -385,10 +438,12 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """),
+                    """
+                ),
 
                 // closure var example
-                .init("""
+                .init(
+                    """
                     var exampleClosure: () -> Void = {
                         \(type) Example_0 {
                             \(type) Example_1 {
@@ -403,10 +458,12 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """),
+                    """
+                ),
 
                 // function closure parameter example
-                .init("""
+                .init(
+                    """
                     exampleFunc(closure: {
                         \(type) Example_0 {
                             \(type) Example_1 {}
@@ -419,21 +476,25 @@ extension NestingRuleExamples {
                             }
                         }
                     })
-                    """),
+                    """
+                ),
             ]
         }
 
     private static let triggeringProtocolExamples =
         detectingTypes.flatMap { type in
             [
-                Example("""
+                Example(
+                    """
                     \(type) Example_0 {
                         \(type) Example_1 {
                             ↓protocol Example_2 {}
                         }
                     }
-                    """),
-                Example("""
+                    """
+                ),
+                Example(
+                    """
                     var example: Int {
                         \(type) Example_0 {
                             \(type) Example_1 {
@@ -442,8 +503,10 @@ extension NestingRuleExamples {
                         }
                         return 5
                     }
-                    """),
-                Example("""
+                    """
+                ),
+                Example(
+                    """
                     var example: Int = 5 {
                         didSet {
                             \(type) Example_0 {
@@ -453,14 +516,17 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """),
-                Example("""
+                    """
+                ),
+                Example(
+                    """
                     extension Example_0 {
                         \(type) Example_1 {
                             ↓protocol Example_2 {}
                         }
                     }
-                    """),
+                    """
+                ),
             ]
         }
 
@@ -468,7 +534,8 @@ extension NestingRuleExamples {
         detectingTypes.flatMap { type -> [Example] in
             [
                 // violation of default maximum nesting level for both type and function (nesting order is arbitrary)
-                .init("""
+                .init(
+                    """
                     \(type) Example_0 {
                         func f_0() {
                             \(type) Example_1 {
@@ -482,10 +549,12 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """),
+                    """
+                ),
 
                 // violation of default maximum nesting level for both type and function within closures and statements
-                .init("""
+                .init(
+                    """
                     \(type) Example_0 {
                         func f_0() {
                             switch example {
@@ -514,20 +583,23 @@ extension NestingRuleExamples {
                             }
                         }
                     }
-                    """),
+                    """
+                ),
             ]
         }
 
     private static let triggeringExamplesCodingKeys: [Example] = [
-        Example("""
-                struct Outer {
-                    struct Inner {
-                        ↓enum CodingKeys: String, CodingKey {
-                            case id
+        Example(
+            """
+                    struct Outer {
+                        struct Inner {
+                            ↓enum CodingKeys: String, CodingKey {
+                                case id
+                            }
                         }
                     }
-                }
-        """),
+            """
+        ),
     ]
 
     private static let triggeringExamplesIgnoreCodingKeys: [Example] = [

@@ -9,72 +9,91 @@ struct DuplicateConditionsRule: Rule {
         description: "Duplicate sets of conditions in the same branch instruction should be avoided",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
+            Example(
+                """
                 if x < 5 {
                     foo()
                 } else if y == "s" {
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if x < 5 {
                     foo()
                 }
                 if x < 5 {
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if x < 5, y == "s" {
                     foo()
                 } else if x < 5 {
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 switch x {
                 case \"a\":
                     foo()
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 switch x {
                 case \"a\" where y == "s":
                     foo()
                 case \"a\" where y == "t":
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if let x = maybeAbc {
                     foo()
                 } else if let x = maybePqr {
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if let x = maybeAbc, let z = x.maybeY {
                     foo()
                 } else if let x = maybePqr, let z = x.maybeY {
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if case .p = x {
                     foo()
                 } else if case .q = x {
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if true {
                     if true { foo() }
                 }
-                """),
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
+            Example(
+                """
                 if ↓x < 5 {
                     foo()
                 } else if y == "s" {
@@ -82,8 +101,10 @@ struct DuplicateConditionsRule: Rule {
                 } else if ↓x < 5 {
                     baz()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if z {
                     if ↓x < 5 {
                         foo()
@@ -93,8 +114,10 @@ struct DuplicateConditionsRule: Rule {
                         baz()
                     }
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if ↓x < 5, y == "s" {
                     foo()
                 } else if x < 10 {
@@ -102,56 +125,71 @@ struct DuplicateConditionsRule: Rule {
                 } else if ↓y == "s", x < 5 {
                     baz()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 switch x {
                 case ↓\"a\", \"b\":
                     foo()
                 case \"c\", ↓\"a\":
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 switch x {
                 case ↓\"a\" where y == "s":
                     foo()
                 case ↓\"a\" where y == "s":
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if ↓let xyz = maybeXyz {
                     foo()
                 } else if ↓let xyz = maybeXyz {
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if ↓let x = maybeAbc, let z = x.maybeY {
                     foo()
                 } else if ↓let x = maybeAbc, let z = x.maybeY {
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if ↓#available(macOS 10.15, *) {
                     foo()
                 } else if ↓#available(macOS 10.15, *) {
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if ↓case .p = x {
                     foo()
                 } else if ↓case .p = x {
                     bar()
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 if ↓x < 5 {}
                 else if ↓x < 5 {}
                 else if ↓x < 5 {}
-                """),
+                """
+            ),
         ]
     )
 }
@@ -165,7 +203,7 @@ extension DuplicateConditionsRule: SwiftSyntaxRule {
 private extension DuplicateConditionsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: IfExprSyntax) {
-            if  node.parent?.is(IfExprSyntax.self) == true {
+            if node.parent?.is(IfExprSyntax.self) == true {
                 // We can skip these cases - they will be picked up when we visit the top level `if`
                 return
             }
@@ -177,12 +215,13 @@ private extension DuplicateConditionsRule {
                 maybeCurr = curr.elseBody?.as(IfExprSyntax.self)
             }
 
-            let positionsByConditions = statementChain
-                .reduce(into: [Set<String>: [AbsolutePosition]]()) { acc, elt in
-                    let conditions = elt.conditions.map(\.condition.trimmedDescription)
-                    let location = elt.conditions.positionAfterSkippingLeadingTrivia
-                    acc[Set(conditions), default: []].append(location)
-                }
+            let positionsByConditions =
+                statementChain
+                    .reduce(into: [Set<String>: [AbsolutePosition]]()) { acc, elt in
+                        let conditions = elt.conditions.map(\.condition.trimmedDescription)
+                        let location = elt.conditions.positionAfterSkippingLeadingTrivia
+                        acc[Set(conditions), default: []].append(location)
+                    }
 
             addViolations(Array(positionsByConditions.values))
         }
@@ -190,30 +229,33 @@ private extension DuplicateConditionsRule {
         override func visitPost(_ node: SwitchCaseListSyntax) {
             let switchCases = node.compactMap { $0.as(SwitchCaseSyntax.self) }
 
-            let positionsByCondition = switchCases
-                .reduce(into: [String: [AbsolutePosition]]()) { acc, elt in
-                    // Defaults don't have a condition to worry about
-                    guard case let .case(caseLabel) = elt.label else { return }
-                    for caseItem in caseLabel.caseItems {
-                        let pattern = caseItem
-                            .pattern
-                            .trimmedDescription
-                        let whereClause = caseItem
-                            .whereClause?
-                            .trimmedDescription
-                            ?? ""
-                        let location = caseItem.positionAfterSkippingLeadingTrivia
-                        acc[pattern + whereClause, default: []].append(location)
+            let positionsByCondition =
+                switchCases
+                    .reduce(into: [String: [AbsolutePosition]]()) { acc, elt in
+                        // Defaults don't have a condition to worry about
+                        guard case let .case(caseLabel) = elt.label else { return }
+                        for caseItem in caseLabel.caseItems {
+                            let pattern = caseItem
+                                .pattern
+                                .trimmedDescription
+                            let whereClause =
+                                caseItem
+                                    .whereClause?
+                                    .trimmedDescription
+                                    ?? ""
+                            let location = caseItem.positionAfterSkippingLeadingTrivia
+                            acc[pattern + whereClause, default: []].append(location)
+                        }
                     }
-                }
 
             addViolations(Array(positionsByCondition.values))
         }
 
         private func addViolations(_ positionsByCondition: [[AbsolutePosition]]) {
-            let duplicatedPositions = positionsByCondition
-                .filter { $0.count > 1 }
-                .flatMap(\.self)
+            let duplicatedPositions =
+                positionsByCondition
+                    .filter { $0.count > 1 }
+                    .flatMap(\.self)
 
             violations.append(contentsOf: duplicatedPositions)
         }

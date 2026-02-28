@@ -51,7 +51,8 @@ private extension ContainsOverFirstNotNilRule {
                   node.rightOperand.is(NilLiteralExprSyntax.self),
                   let first = node.leftOperand.asFunctionCall,
                   let calledExpression = first.calledExpression.as(MemberAccessExprSyntax.self),
-                  ["first", "firstIndex"].contains(calledExpression.declName.baseName.text) else {
+                  ["first", "firstIndex"].contains(calledExpression.declName.baseName.text)
+            else {
                 return
             }
 

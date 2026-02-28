@@ -9,61 +9,79 @@ struct OrphanedDocCommentRule: Rule {
         description: "A doc comment should be attached to a declaration",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
-            /// My great property
-            var myGreatProperty: String!
-            """),
-            Example("""
-            //////////////////////////////////////
-            //
-            // Copyright header.
-            //
-            //////////////////////////////////////
-            """),
-            Example("""
-            /// Look here for more info: https://github.com.
-            var myGreatProperty: String!
-            """),
-            Example("""
-            /// Look here for more info:
-            /// https://github.com.
-            var myGreatProperty: String!
-            """),
+            Example(
+                """
+                /// My great property
+                var myGreatProperty: String!
+                """
+            ),
+            Example(
+                """
+                //////////////////////////////////////
+                //
+                // Copyright header.
+                //
+                //////////////////////////////////////
+                """
+            ),
+            Example(
+                """
+                /// Look here for more info: https://github.com.
+                var myGreatProperty: String!
+                """
+            ),
+            Example(
+                """
+                /// Look here for more info:
+                /// https://github.com.
+                var myGreatProperty: String!
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            ↓/// My great property
-            // Not a doc string
-            var myGreatProperty: String!
-            """),
-            Example("""
-            ↓/// Look here for more info: https://github.com.
-            // Not a doc string
-            var myGreatProperty: String!
-            """),
-            Example("""
-            ↓/// Look here for more info: https://github.com.
+            Example(
+                """
+                ↓/// My great property
+                // Not a doc string
+                var myGreatProperty: String!
+                """
+            ),
+            Example(
+                """
+                ↓/// Look here for more info: https://github.com.
+                // Not a doc string
+                var myGreatProperty: String!
+                """
+            ),
+            Example(
+                """
+                ↓/// Look here for more info: https://github.com.
 
-
-            // Not a doc string
-            var myGreatProperty: String!
-            """),
-            Example("""
-            ↓/// Look here for more info: https://github.com.
-            // Not a doc string
-            ↓/// My great property
-            // Not a doc string
-            var myGreatProperty: String!
-            """),
-            Example("""
-            extension Nested {
-                ↓///
-                /// Look here for more info: https://github.com.
 
                 // Not a doc string
                 var myGreatProperty: String!
-            }
-            """),
+                """
+            ),
+            Example(
+                """
+                ↓/// Look here for more info: https://github.com.
+                // Not a doc string
+                ↓/// My great property
+                // Not a doc string
+                var myGreatProperty: String!
+                """
+            ),
+            Example(
+                """
+                extension Nested {
+                    ↓///
+                    /// Look here for more info: https://github.com.
+
+                    // Not a doc string
+                    var myGreatProperty: String!
+                }
+                """
+            ),
         ]
     )
 }
@@ -81,7 +99,7 @@ private extension OrphanedDocCommentRule {
             var iterator = pieces.enumerated().makeIterator()
             while let (index, piece) = iterator.next() {
                 switch piece {
-                case .docLineComment(let comment), .docBlockComment(let comment):
+                case let .docLineComment(comment), let .docBlockComment(comment):
                     // These patterns are often used for "file header" style comments
                     if !comment.hasPrefix("////"), !comment.hasPrefix("/***") {
                         if isOrphanedDocComment(with: &iterator) {

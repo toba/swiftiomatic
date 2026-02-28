@@ -26,12 +26,16 @@ private extension PrivateSubjectRule {
         private let subjectTypes: Set<String> = ["PassthroughSubject", "CurrentValueSubject"]
 
         override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-            [FunctionDeclSyntax.self, VariableDeclSyntax.self, SubscriptDeclSyntax.self, InitializerDeclSyntax.self]
+            [
+                FunctionDeclSyntax.self, VariableDeclSyntax.self, SubscriptDeclSyntax.self,
+                InitializerDeclSyntax.self,
+            ]
         }
 
         override func visitPost(_ node: VariableDeclSyntax) {
             guard !node.modifiers.containsPrivateOrFileprivate(),
-                  !node.modifiers.containsStaticOrClass else {
+                  !node.modifiers.containsStaticOrClass
+            else {
                 return
             }
 
@@ -43,7 +47,8 @@ private extension PrivateSubjectRule {
                 // * `let subject: CurrentValueSubject<Bool, Never>`
                 // * `let subject: CurrentValueSubject<String, Never> = .init("toto")`
                 if let type = binding.typeAnnotation?.type.as(IdentifierTypeSyntax.self),
-                   subjectTypes.contains(type.name.text) {
+                   subjectTypes.contains(type.name.text)
+                {
                     violations.append(binding.pattern.positionAfterSkippingLeadingTrivia)
                     continue
                 }
@@ -53,9 +58,12 @@ private extension PrivateSubjectRule {
                 // * `let subject = PassthroughSubject<Bool, Never>()`
                 // * `let subject = CurrentValueSubject<String, Never>("toto")`
                 if let functionCall = binding.initializer?.value.as(FunctionCallExprSyntax.self),
-                   let specializeExpr = functionCall.calledExpression.as(GenericSpecializationExprSyntax.self),
+                   let specializeExpr = functionCall.calledExpression.as(
+                       GenericSpecializationExprSyntax.self
+                   ),
                    let identifierExpr = specializeExpr.expression.as(DeclReferenceExprSyntax.self),
-                   subjectTypes.contains(identifierExpr.baseName.text) {
+                   subjectTypes.contains(identifierExpr.baseName.text)
+                {
                     violations.append(binding.pattern.positionAfterSkippingLeadingTrivia)
                 }
             }

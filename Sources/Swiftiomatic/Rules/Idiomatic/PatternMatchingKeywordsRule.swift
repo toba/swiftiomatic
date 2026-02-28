@@ -38,11 +38,13 @@ struct PatternMatchingKeywordsRule: Rule {
     )
 
     private static func wrapInSwitch(_ example: Example) -> Example {
-        example.with(code: """
+        example.with(
+            code: """
             switch foo {
                 \(example.code): break
             }
-            """)
+            """
+        )
     }
 }
 
@@ -64,13 +66,17 @@ private extension PatternMatchingKeywordsRule {
     }
 }
 
-private final class TupleVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxVisitor<Configuration> {
+private final class TupleVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxVisitor<
+    Configuration
+> {
     override func visitPost(_ node: LabeledExprListSyntax) {
         let list = node.flatteningEnumPatterns().map(\.expression.categorized)
         if list.contains(where: \.isReference) {
             return
         }
-        let specifiers = list.compactMap { if case let .binding(specifier) = $0 { specifier } else { nil } }
+        let specifiers = list.compactMap {
+            if case let .binding(specifier) = $0 { specifier } else { nil }
+        }
         if specifiers.count > 1, specifiers.allSatisfy({ $0.tokenKind == specifiers.first?.tokenKind }) {
             violations.append(contentsOf: specifiers.map(\.positionAfterSkippingLeadingTrivia))
         }
@@ -81,7 +87,8 @@ private extension LabeledExprListSyntax {
     func flatteningEnumPatterns() -> [LabeledExprSyntax] {
         flatMap { elem in
             guard let pattern = elem.expression.as(FunctionCallExprSyntax.self),
-                  pattern.calledExpression.is(MemberAccessExprSyntax.self) else {
+                  pattern.calledExpression.is(MemberAccessExprSyntax.self)
+            else {
                 return [elem]
             }
 

@@ -10,170 +10,230 @@ struct ExplicitInitRule: Rule {
         description: "Explicitly calling .init() should be avoided",
         kind: .idiomatic,
         nonTriggeringExamples: [
-            Example("""
-            import Foundation
-            class C: NSObject {
-                override init() {
-                    super.init()
+            Example(
+                """
+                import Foundation
+                class C: NSObject {
+                    override init() {
+                        super.init()
+                    }
                 }
-            }
-            """), // super
-            Example("""
-            struct S {
-                let n: Int
-            }
-            extension S {
-                init() {
-                    self.init(n: 1)
+                """
+            ), // super
+            Example(
+                """
+                struct S {
+                    let n: Int
                 }
-            }
-            """), // self
-            Example("""
-            [1].flatMap(String.init)
-            """), // pass init as closure
-            Example("""
-            [String.self].map { $0.init(1) }
-            """), // initialize from a metatype value
-            Example("""
-            [String.self].map { type in type.init(1) }
-            """), // initialize from a metatype value
-            Example("""
-            Observable.zip(obs1, obs2, resultSelector: MyType.init).asMaybe()
-            """),
+                extension S {
+                    init() {
+                        self.init(n: 1)
+                    }
+                }
+                """
+            ), // self
+            Example(
+                """
+                [1].flatMap(String.init)
+                """
+            ), // pass init as closure
+            Example(
+                """
+                [String.self].map { $0.init(1) }
+                """
+            ), // initialize from a metatype value
+            Example(
+                """
+                [String.self].map { type in type.init(1) }
+                """
+            ), // initialize from a metatype value
+            Example(
+                """
+                Observable.zip(obs1, obs2, resultSelector: MyType.init).asMaybe()
+                """
+            ),
             Example("_ = GleanMetrics.Tabs.someType.init()"),
-            Example("""
-            Observable.zip(
-              obs1,
-              obs2,
-              resultSelector: MyType.init
-            ).asMaybe()
-            """),
+            Example(
+                """
+                Observable.zip(
+                  obs1,
+                  obs2,
+                  resultSelector: MyType.init
+                ).asMaybe()
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            [1].flatMap{String↓.init($0)}
-            """),
-            Example("""
-            [String.self].map { Type in Type↓.init(1) }
-            """),  // Starting with capital letter assumes a type
-            Example("""
-            func foo() -> [String] {
-                return [1].flatMap { String↓.init($0) }
-            }
-            """),
+            Example(
+                """
+                [1].flatMap{String↓.init($0)}
+                """
+            ),
+            Example(
+                """
+                [String.self].map { Type in Type↓.init(1) }
+                """
+            ), // Starting with capital letter assumes a type
+            Example(
+                """
+                func foo() -> [String] {
+                    return [1].flatMap { String↓.init($0) }
+                }
+                """
+            ),
             Example("_ = GleanMetrics.Tabs.GroupedTabExtra↓.init()"),
             Example("_ = Set<KsApi.Category>↓.init()"),
-            Example("""
-            Observable.zip(
-              obs1,
-              obs2,
-              resultSelector: { MyType↓.init($0, $1) }
-            ).asMaybe()
-            """),
-            Example("""
-            let int = In🤓t↓
-            .init(1.0)
-            """, excludeFromDocumentation: true),
-            Example("""
-            let int = Int↓
+            Example(
+                """
+                Observable.zip(
+                  obs1,
+                  obs2,
+                  resultSelector: { MyType↓.init($0, $1) }
+                ).asMaybe()
+                """
+            ),
+            Example(
+                """
+                let int = In🤓t↓
+                .init(1.0)
+                """, excludeFromDocumentation: true
+            ),
+            Example(
+                """
+                let int = Int↓
 
 
-            .init(1.0)
-            """, excludeFromDocumentation: true),
-            Example("""
-            let int = Int↓
+                .init(1.0)
+                """, excludeFromDocumentation: true
+            ),
+            Example(
+                """
+                let int = Int↓
 
 
-                  .init(1.0)
-            """, excludeFromDocumentation: true),
+                      .init(1.0)
+                """, excludeFromDocumentation: true
+            ),
         ],
         corrections: [
-            Example("""
-            [1].flatMap{String↓.init($0)}
-            """):
-                Example("""
-                [1].flatMap{String($0)}
-                """),
-            Example("""
-            func foo() -> [String] {
-                return [1].flatMap { String↓.init($0) }
-            }
-            """):
-                Example("""
+            Example(
+                """
+                [1].flatMap{String↓.init($0)}
+                """
+            ):
+                Example(
+                    """
+                    [1].flatMap{String($0)}
+                    """
+                ),
+            Example(
+                """
                 func foo() -> [String] {
-                    return [1].flatMap { String($0) }
+                    return [1].flatMap { String↓.init($0) }
                 }
-                """),
-            Example("""
-            class C {
-            #if true
-                func f() {
-                    [1].flatMap{String↓.init($0)}
-                }
-            #endif
-            }
-            """):
-                Example("""
+                """
+            ):
+                Example(
+                    """
+                    func foo() -> [String] {
+                        return [1].flatMap { String($0) }
+                    }
+                    """
+                ),
+            Example(
+                """
                 class C {
                 #if true
                     func f() {
-                        [1].flatMap{String($0)}
+                        [1].flatMap{String↓.init($0)}
                     }
                 #endif
                 }
-                """),
-            Example("""
-            let int = Int↓
-            .init(1.0)
-            """):
-                Example("""
-                let int = Int(1.0)
-                """),
-            Example("""
-            let int = Int↓
+                """
+            ):
+                Example(
+                    """
+                    class C {
+                    #if true
+                        func f() {
+                            [1].flatMap{String($0)}
+                        }
+                    #endif
+                    }
+                    """
+                ),
+            Example(
+                """
+                let int = Int↓
+                .init(1.0)
+                """
+            ):
+                Example(
+                    """
+                    let int = Int(1.0)
+                    """
+                ),
+            Example(
+                """
+                let int = Int↓
 
 
-            .init(1.0)
-            """):
-                Example("""
-                let int = Int(1.0)
-                """),
-            Example("""
-            let int = Int↓
+                .init(1.0)
+                """
+            ):
+                Example(
+                    """
+                    let int = Int(1.0)
+                    """
+                ),
+            Example(
+                """
+                let int = Int↓
 
 
-                  .init(1.0)
-            """):
-                Example("""
-                let int = Int(1.0)
-                """),
-            Example("""
-            let int = Int↓
+                      .init(1.0)
+                """
+            ):
+                Example(
+                    """
+                    let int = Int(1.0)
+                    """
+                ),
+            Example(
+                """
+                let int = Int↓
 
 
-                  .init(1.0)
-
-
-
-            """):
-                Example("""
-                let int = Int(1.0)
+                      .init(1.0)
 
 
 
-                """),
-            Example("""
-            f { e in
-                // comment
-                A↓.init(e: e)
-            }
-            """):
-                Example("""
+                """
+            ):
+                Example(
+                    """
+                    let int = Int(1.0)
+
+
+
+                    """
+                ),
+            Example(
+                """
                 f { e in
                     // comment
-                    A(e: e)
+                    A↓.init(e: e)
                 }
-                """),
+                """
+            ):
+                Example(
+                    """
+                    f { e in
+                        // comment
+                        A(e: e)
+                    }
+                    """
+                ),
             Example("_ = GleanMetrics.Tabs.GroupedTabExtra↓.init()"):
                 Example("_ = GleanMetrics.Tabs.GroupedTabExtra()"),
             Example("_ = Set<KsApi.Category>↓.init()"):
@@ -186,6 +246,7 @@ extension ExplicitInitRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -215,7 +276,8 @@ private extension ExplicitInitRule {
         override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
             guard let calledExpression = node.calledExpression.as(MemberAccessExprSyntax.self),
                   calledExpression.explicitInitPosition != nil,
-                  let calledBase = calledExpression.base else {
+                  let calledBase = calledExpression.base
+            else {
                 return super.visit(node)
             }
             numberOfCorrections += 1
@@ -248,11 +310,15 @@ private extension ExprSyntax {
             return true
         }
         if let expr = `as`(MemberAccessExprSyntax.self),
-           expr.description.split(separator: ".").allSatisfy(\.startsWithUppercase) {
+           expr.description.split(separator: ".").allSatisfy(\.startsWithUppercase)
+        {
             return true
         }
-        if let expr = `as`(GenericSpecializationExprSyntax.self)?.expression.as(DeclReferenceExprSyntax.self),
-           expr.baseName.text.startsWithUppercase {
+        if let expr = `as`(GenericSpecializationExprSyntax.self)?.expression.as(
+            DeclReferenceExprSyntax.self
+        ),
+            expr.baseName.text.startsWithUppercase
+        {
             return true
         }
         return false
@@ -260,5 +326,7 @@ private extension ExprSyntax {
 }
 
 private extension StringProtocol {
-    var startsWithUppercase: Bool { first?.isUppercase == true }
+    var startsWithUppercase: Bool {
+        first?.isUppercase == true
+    }
 }

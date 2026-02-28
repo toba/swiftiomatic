@@ -22,7 +22,9 @@ struct LargeTupleRule: Rule {
             Example("let foo: (Int, Int, Int) throws -> Void"),
             Example("func foo(bar: (Int, String, Float) -> Void)"),
             Example("func foo(bar: (Int, String, Float) throws -> Void)"),
-            Example("var completionHandler: ((_ data: Data?, _ resp: URLResponse?, _ e: NSError?) -> Void)!"),
+            Example(
+                "var completionHandler: ((_ data: Data?, _ resp: URLResponse?, _ e: NSError?) -> Void)!"
+            ),
             Example("func getDictionaryAndInt() -> (Dictionary<Int, String>, Int)?"),
             Example("func getGenericTypeAndInt() -> (Type<Int, String, Float>, Int)?"),
             Example("func foo() async -> (Int, Int)"),
@@ -74,7 +76,9 @@ struct LargeTupleRule: Rule {
                 configuration: ["ignore_regex": false]
             ),
             Example("func foo() async throws -> ↓(Int, ↓(String, String, String), Int) {}"),
-            Example("func getDictionaryAndInt() async -> (Dictionary<Int, ↓(String, String, String)>, Int)?"),
+            Example(
+                "func getDictionaryAndInt() async -> (Dictionary<Int, ↓(String, String, String)>, Int)?"
+            ),
         ]
     )
 }
@@ -93,12 +97,17 @@ private extension LargeTupleRule {
             }
 
             let memberCount = node.elements.count
-            for parameter in configuration.severityConfiguration.params where memberCount > parameter.value {
-                violations.append(.init(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "Tuples should have at most \(configuration.severityConfiguration.warning) members",
-                    severity: parameter.severity
-                ))
+            for parameter in configuration.severityConfiguration.params
+                where memberCount > parameter.value
+            {
+                violations.append(
+                    .init(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason:
+                        "Tuples should have at most \(configuration.severityConfiguration.warning) members",
+                        severity: parameter.severity
+                    )
+                )
                 return
             }
         }
@@ -118,7 +127,8 @@ private extension TupleTypeSyntax {
               let genericArgumentList = genericArgument.parent?.as(GenericArgumentListSyntax.self),
               let genericArgumentClause = genericArgumentList.parent?.as(GenericArgumentClauseSyntax.self),
               let identifierType = genericArgumentClause.parent?.as(IdentifierTypeSyntax.self),
-              identifierType.name.text == "Regex" else {
+              identifierType.name.text == "Regex"
+        else {
             return false
         }
         return true

@@ -9,13 +9,13 @@ struct ContrastedOpeningBraceRule: Rule {
         identifier: "contrasted_opening_brace",
         name: "Contrasted Opening Brace",
         description: """
-            The correct positioning of braces that introduce a block of code or member list is highly controversial. \
-            No matter which style is preferred, consistency is key. Apart from different tastes, \
-            the positioning of braces can also have a significant impact on the readability of the code, \
-            especially for visually impaired developers. This rule ensures that braces are on a separate line \
-            after the declaration to contrast the code block from the rest of the declaration. Comments between the \
-            declaration and the opening brace are respected. Check out the `opening_brace` rule for a different style.
-            """,
+        The correct positioning of braces that introduce a block of code or member list is highly controversial. \
+        No matter which style is preferred, consistency is key. Apart from different tastes, \
+        the positioning of braces can also have a significant impact on the readability of the code, \
+        especially for visually impaired developers. This rule ensures that braces are on a separate line \
+        after the declaration to contrast the code block from the rest of the declaration. Comments between the \
+        declaration and the opening brace are respected. Check out the `opening_brace` rule for a different style.
+        """,
         kind: .style,
         nonTriggeringExamples: ContrastedOpeningBraceRuleExamples.nonTriggeringExamples,
         triggeringExamples: ContrastedOpeningBraceRuleExamples.triggeringExamples,
@@ -45,7 +45,9 @@ private extension ContrastedOpeningBraceRule {
             }
         }
 
-        private func violationCorrection(_ node: some BracedSyntax) -> ReasonedRuleViolation.ViolationCorrection? {
+        private func violationCorrection(_ node: some BracedSyntax) -> ReasonedRuleViolation
+            .ViolationCorrection?
+        {
             let leftBrace = node.leftBrace
             guard let previousToken = leftBrace.previousToken(viewMode: .sourceAccurate) else {
                 return nil
@@ -54,14 +56,19 @@ private extension ContrastedOpeningBraceRule {
             let triviaBetween = previousToken.trailingTrivia + leftBrace.leadingTrivia
             let previousLocation = previousToken.endLocation(converter: locationConverter)
             let leftBraceLocation = leftBrace.startLocation(converter: locationConverter)
-            let parentStartColumn = node
-                .indentationDecidingParent?
-                .startLocation(converter: locationConverter)
-                .column ?? 1
-            if previousLocation.line + 1 == leftBraceLocation.line, leftBraceLocation.column == parentStartColumn {
+            let parentStartColumn =
+                node
+                    .indentationDecidingParent?
+                    .startLocation(converter: locationConverter)
+                    .column ?? 1
+            if previousLocation.line + 1 == leftBraceLocation.line,
+               leftBraceLocation.column == parentStartColumn
+            {
                 return nil
             }
-            let comment = triviaBetween.description.trimmingTrailingCharacters(in: .whitespacesAndNewlines)
+            let comment = triviaBetween.description.trimmingTrailingCharacters(
+                in: .whitespacesAndNewlines
+            )
             return .init(
                 start: previousToken.endPositionBeforeTrailingTrivia + SourceLength(of: comment),
                 end: openingPosition,
@@ -87,7 +94,8 @@ private extension BracedSyntax {
             return binding.parent?.as(PatternBindingListSyntax.self)?.parent?.as(VariableDeclSyntax.self)
         }
         if let closure = `as`(ClosureExprSyntax.self),
-           closure.keyPathInParent == \FunctionCallExprSyntax.trailingClosure {
+           closure.keyPathInParent == \FunctionCallExprSyntax.trailingClosure
+        {
             return closure.leftBrace.previousIndentationDecidingToken
         }
         if let closureLabel = parent?.as(MultipleTrailingClosureElementSyntax.self)?.label {

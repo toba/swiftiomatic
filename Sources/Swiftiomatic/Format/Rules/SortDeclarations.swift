@@ -16,7 +16,10 @@ extension FormatRule {
         // swiftformat:sort:end comments.
         """,
         options: ["sorted-patterns"],
-        sharedOptions: ["linebreaks", "organize-types", "struct-threshold", "class-threshold", "enum-threshold", "extension-threshold"]
+        sharedOptions: [
+            "linebreaks", "organize-types", "struct-threshold", "class-threshold", "enum-threshold",
+            "extension-threshold",
+        ]
     ) { formatter in
         formatter.forEachToken(
             where: {
@@ -32,21 +35,25 @@ extension FormatRule {
             let shouldBePartiallySorted = token.string.contains("swiftformat:sort:begin")
 
             let identifier = formatter.next(.identifier, after: index)
-            let shouldBeSortedByNamePattern = formatter.options.alphabeticallySortedDeclarationPatterns.contains {
-                identifier?.string.contains($0) ?? false
-            }
+            let shouldBeSortedByNamePattern = formatter.options.alphabeticallySortedDeclarationPatterns
+                .contains {
+                    identifier?.string.contains($0) ?? false
+                }
             let shouldBeSortedByMarkComment = token.isCommentBody && !token.string.contains(":sort:")
             // For `:sort` directives and types with matching name pattern, we sort the declarations
             // between the open and close brace of the following type
             let shouldBeFullySorted = shouldBeSortedByNamePattern || shouldBeSortedByMarkComment
 
             if shouldBePartiallySorted {
-                guard let endCommentIndex = formatter.tokens[index...].firstIndex(where: {
-                    $0.isComment && $0.string.contains("swiftformat:sort:end")
-                }),
+                guard
+                    let endCommentIndex = formatter.tokens[index...].firstIndex(where: {
+                        $0.isComment && $0.string.contains("swiftformat:sort:end")
+                    }),
                     let sortRangeStart = formatter.index(of: .nonSpaceOrComment, after: index),
                     let firstRangeToken = formatter.index(of: .nonLinebreak, after: sortRangeStart),
-                    let lastRangeToken = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: endCommentIndex - 2)
+                    let lastRangeToken = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak, before: endCommentIndex - 2
+                    )
                 else { return }
 
                 rangeToSort = sortRangeStart ... lastRangeToken
@@ -64,7 +71,9 @@ extension FormatRule {
                 // keyword if enabled for this declaration. In that case,
                 // defer to the sorting implementation in `organizeDeclarations`.
                 if formatter.options.enabledRules.contains(FormatRule.organizeDeclarations.name),
-                   formatter.options.organizeTypes.contains(formatter.tokens[declarationKeywordIndex].string),
+                   formatter.options.organizeTypes.contains(
+                       formatter.tokens[declarationKeywordIndex].string
+                   ),
                    formatter.typeLengthExceedsOrganizationThreshold(at: declarationKeywordIndex)
                 {
                     return
@@ -110,7 +119,9 @@ extension FormatRule {
                    nextDeclaration.tokens.first?.isLinebreak == false
                 {
                     let declarationNeedingLinebreak = declarations[i + 1]
-                    declarationNeedingLinebreak.formatter.insertLinebreak(at: declarationNeedingLinebreak.range.lowerBound)
+                    declarationNeedingLinebreak.formatter.insertLinebreak(
+                        at: declarationNeedingLinebreak.range.lowerBound
+                    )
                 }
             }
 
@@ -118,7 +129,9 @@ extension FormatRule {
 
             // Make sure the type has the same number of leading line breaks
             // as it did before sorting
-            if let currentLeadingLinebreakCount = sortedFormatter.tokens.firstIndex(where: { !$0.isLinebreak }) {
+            if let currentLeadingLinebreakCount = sortedFormatter.tokens.firstIndex(where: {
+                !$0.isLinebreak
+            }) {
                 if numberOfLeadingLinebreaks != currentLeadingLinebreakCount {
                     sortedFormatter.removeTokens(in: 0 ..< currentLeadingLinebreakCount)
 

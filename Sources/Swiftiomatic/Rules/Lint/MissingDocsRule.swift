@@ -222,7 +222,8 @@ private extension SyntaxProtocol {
         default:
             guard let item = parent?.as(CodeBlockItemSyntax.self),
                   let itemList = item.parent?.as(CodeBlockItemListSyntax.self),
-                  itemList.first == item else {
+                  itemList.first == item
+            else {
                 return false
             }
             let ifConfigDecl = itemList
@@ -306,7 +307,9 @@ private extension Stack<AccessControlBehavior> {
         }
     }
 
-    func computeAcl(givenExplicitAcl acl: AccessControlLevel?, evalEffectiveAcl: Bool) -> AccessControlLevel {
+    func computeAcl(givenExplicitAcl acl: AccessControlLevel?, evalEffectiveAcl: Bool)
+        -> AccessControlLevel
+    {
         if let parentBehavior = peek() {
             switch parentBehavior {
             case .local:

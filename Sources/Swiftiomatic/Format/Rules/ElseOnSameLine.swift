@@ -24,17 +24,23 @@ extension FormatRule {
         formatter.forEachToken { i, token in
             switch token {
             case .keyword("while"):
-                if let endIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i, if: {
-                    $0 == .endOfScope("}")
-                }), let startIndex = formatter.index(of: .startOfScope("{"), before: endIndex),
+                if let endIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, before: i,
+                    if: {
+                        $0 == .endOfScope("}")
+                    }
+                ), let startIndex = formatter.index(of: .startOfScope("{"), before: endIndex),
                 formatter.last(.nonSpaceOrCommentOrLinebreak, before: startIndex) == .keyword("repeat") {
                     fallthrough
                 }
             case .keyword("else"):
                 guard var prevIndex = formatter.index(of: .nonSpace, before: i),
-                      let nextIndex = formatter.index(of: .nonSpaceOrLinebreak, after: i, if: {
-                          !$0.isComment
-                      })
+                      let nextIndex = formatter.index(
+                          of: .nonSpaceOrLinebreak, after: i,
+                          if: {
+                              !$0.isComment
+                          }
+                      )
                 else {
                     return
                 }
@@ -45,21 +51,26 @@ extension FormatRule {
                 if formatter.tokens[prevIndex] == .endOfScope("}"), !formatter.isGuardElse(at: i) {
                     fallthrough
                 }
-                guard let guardIndex = formatter.indexOfLastSignificantKeyword(at: prevIndex + 1, excluding: [
-                    "var", "let", "case",
-                ]), formatter.tokens[guardIndex] == .keyword("guard") else {
+                guard
+                    let guardIndex = formatter.indexOfLastSignificantKeyword(
+                        at: prevIndex + 1,
+                        excluding: [
+                            "var", "let", "case",
+                        ]
+                    ), formatter.tokens[guardIndex] == .keyword("guard")
+                else {
                     return
                 }
                 let shouldWrap: Bool
                 switch formatter.options.guardElsePosition {
                 case .auto:
                     // Only wrap if else or following brace is on next line
-                    shouldWrap = isOnNewLine ||
-                        formatter.tokens[i + 1 ..< nextIndex].contains { $0.isLinebreak }
+                    shouldWrap =
+                        isOnNewLine || formatter.tokens[i + 1 ..< nextIndex].contains(where: \.isLinebreak)
                 case .nextLine:
                     // Only wrap if guard statement spans multiple lines
-                    shouldWrap = isOnNewLine ||
-                        formatter.tokens[guardIndex + 1 ..< nextIndex].contains { $0.isLinebreak }
+                    shouldWrap =
+                        isOnNewLine || formatter.tokens[guardIndex + 1 ..< nextIndex].contains(where: \.isLinebreak)
                 case .sameLine:
                     shouldWrap = false
                 }
@@ -68,8 +79,11 @@ extension FormatRule {
                         formatter.replaceTokens(in: i + 1 ..< nextIndex, with: .space(" "))
                     }
                     if !isOnNewLine {
-                        formatter.replaceTokens(in: prevIndex + 1 ..< i, with:
-                            formatter.linebreakToken(for: prevIndex + 1))
+                        formatter.replaceTokens(
+                            in: prevIndex + 1 ..< i,
+                            with:
+                            formatter.linebreakToken(for: prevIndex + 1)
+                        )
                         formatter.insertSpace(formatter.currentIndentForLine(at: guardIndex), at: prevIndex + 2)
                     }
                 } else if isOnNewLine {
@@ -80,29 +94,44 @@ extension FormatRule {
                     return
                 }
 
-                let precededByBlankLine = formatter.tokens[prevIndex].isLinebreak
-                    && formatter.lastToken(before: prevIndex, where: { !$0.isSpaceOrComment })?.isLinebreak == true
+                let precededByBlankLine =
+                    formatter.tokens[prevIndex].isLinebreak
+                        && formatter.lastToken(before: prevIndex, where: { !$0.isSpaceOrComment })?.isLinebreak
+                        == true
 
                 if precededByBlankLine {
                     return
                 }
 
-                let shouldWrap = formatter.options.allmanBraces || formatter.options.elsePosition == .nextLine
+                let shouldWrap =
+                    formatter.options.allmanBraces || formatter.options.elsePosition == .nextLine
                 if !shouldWrap, formatter.tokens[prevIndex].isLinebreak {
-                    if let prevBraceIndex = formatter.index(of: .nonSpaceOrLinebreak, before: prevIndex, if: {
-                        $0 == .endOfScope("}")
-                    }), formatter.bracesContainLinebreak(prevBraceIndex) {
+                    if let prevBraceIndex = formatter.index(
+                        of: .nonSpaceOrLinebreak, before: prevIndex,
+                        if: {
+                            $0 == .endOfScope("}")
+                        }
+                    ), formatter.bracesContainLinebreak(prevBraceIndex) {
                         formatter.replaceTokens(in: prevBraceIndex + 1 ..< i, with: .space(" "))
                     }
                 } else if shouldWrap, let token = formatter.token(at: prevIndex), !token.isLinebreak,
-                          let prevBraceIndex = (token == .endOfScope("}")) ? prevIndex :
-                          formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: prevIndex, if: {
-                              $0 == .endOfScope("}")
-                          }), formatter.bracesContainLinebreak(prevBraceIndex)
+                          let prevBraceIndex = (token == .endOfScope("}"))
+                          ? prevIndex
+                          : formatter.index(
+                              of: .nonSpaceOrCommentOrLinebreak, before: prevIndex,
+                              if: {
+                                  $0 == .endOfScope("}")
+                              }
+                          ), formatter.bracesContainLinebreak(prevBraceIndex)
                 {
-                    formatter.replaceTokens(in: prevIndex + 1 ..< i, with:
-                        formatter.linebreakToken(for: prevIndex + 1))
-                    formatter.insertSpace(formatter.currentIndentForLine(at: prevIndex + 1), at: prevIndex + 2)
+                    formatter.replaceTokens(
+                        in: prevIndex + 1 ..< i,
+                        with:
+                        formatter.linebreakToken(for: prevIndex + 1)
+                    )
+                    formatter.insertSpace(
+                        formatter.currentIndentForLine(at: prevIndex + 1), at: prevIndex + 2
+                    )
                 }
             default:
                 break

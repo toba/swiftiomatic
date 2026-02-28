@@ -1,4 +1,4 @@
-internal struct MarkRuleExamples {
+enum MarkRuleExamples {
     static let nonTriggeringExamples = [
         Example("// MARK: good"),
         Example("// MARK: - good"),
@@ -13,21 +13,25 @@ internal struct MarkRuleExamples {
         Example("// MARK: – This is dash separator"),
         Example("// Mark text"),
         Example("//  MarkdownText.swift"),
-        Example("""
-        // MARK: good
-        func foo() {
-            let bar = 0
-              // MARK: good
-        }
-        """),
-        Example("""
-        /// Comment
-        /// `xxx://marketingOptIn`
-        struct S {}
+        Example(
+            """
+            // MARK: good
+            func foo() {
+                let bar = 0
+                  // MARK: good
+            }
+            """
+        ),
+        Example(
+            """
+            /// Comment
+            /// `xxx://marketingOptIn`
+            struct S {}
 
-          ///  //marketingOptIn
-        struct T {}
-        """, excludeFromDocumentation: true),
+              ///  //marketingOptIn
+            struct T {}
+            """, excludeFromDocumentation: true
+        ),
         issue1749Example,
     ]
 
@@ -55,13 +59,15 @@ internal struct MarkRuleExamples {
         Example("↓// MARKK -"),
         Example("↓/// MARK:"),
         Example("↓/// MARK bad"),
-        Example("""
-        // MARK: good
-        func foo() {
-            let bar = 0
-              ↓//MARK: bad
-        }
-        """),
+        Example(
+            """
+            // MARK: good
+            func foo() {
+                let bar = 0
+                  ↓//MARK: bad
+            }
+            """
+        ),
         issue1029Example,
     ]
 
@@ -89,27 +95,31 @@ internal struct MarkRuleExamples {
     ]
 }
 
-// This example should not trigger changes
+/// This example should not trigger changes
 private let issue1749Correction = issue1749Example
 
-private let issue1029Example = Example("""
+private let issue1029Example = Example(
+    """
     ↓//MARK:- Top-Level bad mark
     ↓//MARK:- Another bad mark
     struct MarkTest {}
     ↓// MARK:- Bad mark
     extension MarkTest {}
-    """)
+    """
+)
 
-private let issue1029Correction = Example("""
+private let issue1029Correction = Example(
+    """
     // MARK: - Top-Level bad mark
     // MARK: - Another bad mark
     struct MarkTest {}
     // MARK: - Bad mark
     extension MarkTest {}
-    """)
+    """
+)
 
-// https://github.com/realm/SwiftLint/issues/1749
-// https://github.com/realm/SwiftLint/issues/3841
+/// https://github.com/realm/SwiftLint/issues/1749
+/// https://github.com/realm/SwiftLint/issues/3841
 private let issue1749Example = Example(
     """
     /*

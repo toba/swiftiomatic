@@ -18,9 +18,14 @@ extension FormatRule {
                 return
             }
             var removedSpace = false
-            if string.hasPrefix("/"), let scopeStart = formatter.index(of: .startOfScope, before: i, if: {
-                $0 == .startOfScope("//")
-            }) {
+            if string.hasPrefix("/"),
+               let scopeStart = formatter.index(
+                   of: .startOfScope, before: i,
+                   if: {
+                       $0 == .startOfScope("//")
+                   }
+               )
+            {
                 if let prevLinebreak = formatter.index(of: .linebreak, before: scopeStart),
                    case .commentBody? = formatter.last(.nonSpace, before: prevLinebreak)
                 {
@@ -60,7 +65,9 @@ extension FormatRule {
             if tag == "MARK", suffix.hasPrefix("-"), suffix != "-", !suffix.hasPrefix("- ") {
                 suffix = "- " + suffix.dropFirst()
             }
-            formatter.replaceToken(at: i, with: .commentBody(tag + ":" + (suffix.isEmpty ? "" : " \(suffix)")))
+            formatter.replaceToken(
+                at: i, with: .commentBody(tag + ":" + (suffix.isEmpty ? "" : " \(suffix)"))
+            )
             if removedSpace {
                 formatter.insertSpace(" ", at: i)
             }

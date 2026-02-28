@@ -7,28 +7,33 @@ import SourceKittenFramework
 ///     - JSON Validator: https://sarifweb.azurewebsites.net/Validation
 struct SARIFReporter: Reporter {
     // MARK: - Reporter Conformance
+
     static let identifier = "sarif"
     static let isRealtime = false
-    static let description = "Reports violations in the Static Analysis Results Interchange Format (SARIF)"
-    static let swiftlintVersion = "https://github.com/realm/SwiftLint/blob/\(LintVersion.current.value)/README.md"
+    static let description =
+        "Reports violations in the Static Analysis Results Interchange Format (SARIF)"
+    static let swiftlintVersion =
+        "https://github.com/realm/SwiftLint/blob/\(LintVersion.current.value)/README.md"
 
     static func generateReport(_ violations: [StyleViolation]) -> String {
-        let SARIFJson = [
-            "version": "2.1.0",
-            "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/cos02/schemas/sarif-schema-2.1.0.json",
-            "runs": [
-                [
-                    "tool": [
-                        "driver": [
-                            "name": "SwiftLint",
-                            "semanticVersion": LintVersion.current.value,
-                            "informationUri": swiftlintVersion,
+        let SARIFJson =
+            [
+                "version": "2.1.0",
+                "$schema":
+                    "https://docs.oasis-open.org/sarif/sarif/v2.1.0/cos02/schemas/sarif-schema-2.1.0.json",
+                "runs": [
+                    [
+                        "tool": [
+                            "driver": [
+                                "name": "SwiftLint",
+                                "semanticVersion": LintVersion.current.value,
+                                "informationUri": swiftlintVersion,
+                            ],
                         ],
+                        "results": violations.map(dictionary(for:)),
                     ],
-                    "results": violations.map(dictionary(for:)),
                 ],
-            ],
-        ] as [String: Any]
+            ] as [String: Any]
 
         return toJSON(SARIFJson, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
     }
@@ -40,10 +45,10 @@ struct SARIFReporter: Reporter {
             "level": violation.severity.rawValue,
             "ruleId": violation.ruleIdentifier,
             "message": [
-                "text": violation.reason
+                "text": violation.reason,
             ],
             "locations": [
-                dictionary(for: violation.location)
+                dictionary(for: violation.location),
             ],
         ]
     }
@@ -54,7 +59,7 @@ struct SARIFReporter: Reporter {
             return [
                 "physicalLocation": [
                     "artifactLocation": [
-                        "uri": location.relativeFile ?? ""
+                        "uri": location.relativeFile ?? "",
                     ],
                     "region": [
                         "startLine": line,
@@ -67,7 +72,7 @@ struct SARIFReporter: Reporter {
         return [
             "physicalLocation": [
                 "artifactLocation": [
-                    "uri": location.file ?? ""
+                    "uri": location.file ?? "",
                 ],
             ],
         ]

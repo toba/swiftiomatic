@@ -7,104 +7,136 @@ struct ValidIBInspectableRule: Rule {
         identifier: "valid_ibinspectable",
         name: "Valid IBInspectable",
         description: """
-            @IBInspectable should be applied to variables only, have its type explicit and be of a supported type
-            """,
+        @IBInspectable should be applied to variables only, have its type explicit and be of a supported type
+        """,
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
-            class Foo {
-              @IBInspectable private var x: Int
-            }
-            """),
-            Example("""
-            class Foo {
-              @IBInspectable private var x: String?
-            }
-            """),
-            Example("""
-            class Foo {
-              @IBInspectable private var x: String!
-            }
-            """),
-            Example("""
-            class Foo {
-              @IBInspectable private var count: Int = 0
-            }
-            """),
-            Example("""
-            class Foo {
-              private var notInspectable = 0
-            }
-            """),
-            Example("""
-            class Foo {
-              private let notInspectable: Int
-            }
-            """),
-            Example("""
-            class Foo {
-              private let notInspectable: UInt8
-            }
-            """),
-            Example("""
-            extension Foo {
-                @IBInspectable var color: UIColor {
-                    set {
-                        self.bar.textColor = newValue
-                    }
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private var x: Int
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private var x: String?
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private var x: String!
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private var count: Int = 0
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  private var notInspectable = 0
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  private let notInspectable: Int
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  private let notInspectable: UInt8
+                }
+                """
+            ),
+            Example(
+                """
+                extension Foo {
+                    @IBInspectable var color: UIColor {
+                        set {
+                            self.bar.textColor = newValue
+                        }
 
-                    get {
-                        return self.bar.textColor
+                        get {
+                            return self.bar.textColor
+                        }
                     }
                 }
-            }
-            """),
-            Example("""
-            class Foo {
-                @IBInspectable var borderColor: UIColor? = nil {
-                    didSet {
-                        updateAppearance()
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                    @IBInspectable var borderColor: UIColor? = nil {
+                        didSet {
+                            updateAppearance()
+                        }
                     }
                 }
-            }
-            """),
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            class Foo {
-              @IBInspectable private ↓let count: Int
-            }
-            """),
-            Example("""
-            class Foo {
-              @IBInspectable private ↓var insets: UIEdgeInsets
-            }
-            """),
-            Example("""
-            class Foo {
-              @IBInspectable private ↓var count = 0
-            }
-            """),
-            Example("""
-            class Foo {
-              @IBInspectable private ↓var count: Int?
-            }
-            """),
-            Example("""
-            class Foo {
-              @IBInspectable private ↓var count: Int!
-            }
-            """),
-            Example("""
-            class Foo {
-              @IBInspectable private ↓var count: Optional<Int>
-            }
-            """),
-            Example("""
-            class Foo {
-              @IBInspectable private ↓var x: Optional<String>
-            }
-            """),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓let count: Int
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var insets: UIEdgeInsets
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var count = 0
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var count: Int?
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var count: Int!
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var count: Optional<Int>
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var x: Optional<String>
+                }
+                """
+            ),
         ]
     )
 
@@ -158,7 +190,9 @@ extension ValidIBInspectableRule: SwiftSyntaxRule {
 
 private extension ValidIBInspectableRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { [FunctionDeclSyntax.self] }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [FunctionDeclSyntax.self]
+        }
 
         override func visitPost(_ node: VariableDeclSyntax) {
             if node.isInstanceVariable, node.isIBInspectable, node.hasViolation {

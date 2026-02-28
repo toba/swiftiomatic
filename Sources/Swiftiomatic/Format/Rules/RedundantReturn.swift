@@ -33,7 +33,8 @@ extension FormatRule {
             case .keyword("in"):
                 break
             case .startOfScope("{"):
-                guard var prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startIndex) else {
+                guard var prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startIndex)
+                else {
                     break
                 }
                 if formatter.options.swiftVersion < "5.1", formatter.isAccessorKeyword(at: prevIndex) {
@@ -44,7 +45,8 @@ extension FormatRule {
                 {
                     prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: j) ?? j
                     if formatter.tokens[prevIndex] == .operator("?", .postfix) {
-                        prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: prevIndex) ?? prevIndex
+                        prevIndex =
+                            formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: prevIndex) ?? prevIndex
                     }
                     let prevToken = formatter.tokens[prevIndex]
                     guard prevToken.isIdentifier || prevToken == .keyword("init") else {
@@ -61,8 +63,11 @@ extension FormatRule {
                 }
                 switch formatter.tokens[prevKeywordIndex].string {
                 case "let", "var":
-                    guard formatter.options.swiftVersion >= "5.1" || prevToken == .operator("=", .infix) ||
-                        formatter.lastIndex(of: .operator("=", .infix), in: prevKeywordIndex + 1 ..< prevIndex) != nil,
+                    guard
+                        formatter.options.swiftVersion >= "5.1" || prevToken == .operator("=", .infix)
+                        || formatter.lastIndex(
+                            of: .operator("=", .infix), in: prevKeywordIndex + 1 ..< prevIndex
+                        ) != nil,
                         !formatter.isConditionalStatement(at: prevKeywordIndex)
                     else {
                         return
@@ -77,13 +82,19 @@ extension FormatRule {
                     return
                 }
             default:
-                guard let endIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i, if: {
-                    $0 == .endOfScope("}")
-                }), let startIndex = formatter.index(of: .startOfScope("{"), before: endIndex) else {
+                guard
+                    let endIndex = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak, after: i,
+                        if: {
+                            $0 == .endOfScope("}")
+                        }
+                    ), let startIndex = formatter.index(of: .startOfScope("{"), before: endIndex)
+                else {
                     return
                 }
-                if !formatter.isStartOfClosure(at: startIndex), !["func", "throws", "rethrows"]
-                    .contains(formatter.lastSignificantKeyword(at: startIndex, excluding: ["where"]) ?? "")
+                if !formatter.isStartOfClosure(at: startIndex),
+                   !["func", "throws", "rethrows"]
+                   .contains(formatter.lastSignificantKeyword(at: startIndex, excluding: ["where"]) ?? "")
                 {
                     return
                 }
@@ -121,12 +132,16 @@ extension FormatRule {
             }
 
             // Make sure this is a type of scope that supports implicit returns
-            let lastKeyword = isClosure ? "" : formatter.lastSignificantKeyword(
-                at: startOfScopeIndex,
-                excluding: ["throws", "where"]
-            )
-            if !isClosure, formatter.isConditionalStatement(at: startOfScopeIndex, excluding: ["where"]) ||
-                ["do", "else", "catch"].contains(lastKeyword)
+            let lastKeyword =
+                isClosure
+                    ? ""
+                    : formatter.lastSignificantKeyword(
+                        at: startOfScopeIndex,
+                        excluding: ["throws", "where"]
+                    )
+            if !isClosure,
+               formatter.isConditionalStatement(at: startOfScopeIndex, excluding: ["where"])
+               || ["do", "else", "catch"].contains(lastKeyword)
             {
                 return
             }
@@ -145,20 +160,28 @@ extension FormatRule {
             }
 
             // Make sure the body only has a single statement
-            guard formatter.blockBodyHasSingleStatement(
-                atStartOfScope: startOfScopeIndex,
-                includingConditionalStatements: true,
-                includingReturnStatements: true,
-                includingReturnInConditionalStatements: stripConditionalReturn
-            ) else {
+            guard
+                formatter.blockBodyHasSingleStatement(
+                    atStartOfScope: startOfScopeIndex,
+                    includingConditionalStatements: true,
+                    includingReturnStatements: true,
+                    includingReturnInConditionalStatements: stripConditionalReturn
+                )
+            else {
                 return
             }
 
             // Make sure we aren't in a failable `init?`, where explicit return is required unless it's the only statement
-            if !isClosure, let lastSignificantKeywordIndex = formatter.indexOfLastSignificantKeyword(at: startOfScopeIndex),
-               formatter.next(.nonSpaceOrCommentOrLinebreak, after: startOfScopeIndex) != .keyword("return"),
+            if !isClosure,
+               let lastSignificantKeywordIndex = formatter.indexOfLastSignificantKeyword(
+                   at: startOfScopeIndex
+               ),
+               formatter.next(.nonSpaceOrCommentOrLinebreak, after: startOfScopeIndex)
+               != .keyword("return"),
                formatter.tokens[lastSignificantKeywordIndex] == .keyword("init"),
-               let nextToken = formatter.next(.nonSpaceOrCommentOrLinebreak, after: lastSignificantKeywordIndex),
+               let nextToken = formatter.next(
+                   .nonSpaceOrCommentOrLinebreak, after: lastSignificantKeywordIndex
+               ),
                nextToken == .operator("?", .postfix)
             {
                 return
@@ -166,9 +189,15 @@ extension FormatRule {
 
             // Find all of the return keywords to remove before we remove any of them,
             // so we can apply additional validation first.
-            guard let returnKeywordRangesToRemove = formatter.returnKeywordRangesToRemove(atStartOfScope: startOfScopeIndex, returnIndices: &returnIndices) else { return }
+            guard
+                let returnKeywordRangesToRemove = formatter.returnKeywordRangesToRemove(
+                    atStartOfScope: startOfScopeIndex, returnIndices: &returnIndices
+                )
+            else { return }
 
-            for returnKeywordRangeToRemove in returnKeywordRangesToRemove.sorted(by: { $0.startIndex > $1.startIndex }) {
+            for returnKeywordRangeToRemove in returnKeywordRangesToRemove.sorted(by: {
+                $0.startIndex > $1.startIndex
+            }) {
                 formatter.removeTokens(in: returnKeywordRangeToRemove)
             }
         }
@@ -200,7 +229,9 @@ extension FormatRule {
 }
 
 extension Formatter {
-    func returnKeywordRangesToRemove(atStartOfScope startOfScopeIndex: Int, returnIndices: inout [Int]) -> [Range<Int>]? {
+    func returnKeywordRangesToRemove(
+        atStartOfScope startOfScopeIndex: Int, returnIndices: inout [Int]
+    ) -> [Range<Int>]? {
         var returnKeywordRangesToRemove = [Range<Int>]()
 
         // If this scope is a single-statement if or switch statement then we have to recursively
@@ -227,7 +258,11 @@ extension Formatter {
                     return nil
                 }
 
-                returnKeywordRangesToRemove.append(contentsOf: self.returnKeywordRangesToRemove(atStartOfScope: branch.startOfBranch, returnIndices: &returnIndices) ?? [])
+                returnKeywordRangesToRemove.append(
+                    contentsOf: self.returnKeywordRangesToRemove(
+                        atStartOfScope: branch.startOfBranch, returnIndices: &returnIndices
+                    ) ?? []
+                )
             }
         }
 

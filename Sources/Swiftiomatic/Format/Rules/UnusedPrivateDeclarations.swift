@@ -22,13 +22,18 @@ extension FormatRule {
         //    and it's more difficult to track the usage of other declaration
         //    types like `init`, `subscript`, `operator`, etc.
         let allowlist = ["let", "var", "func", "typealias"]
-        let disallowedModifiers = ["override", "@objc", "@IBAction", "@IBSegueAction", "@IBOutlet", "@IBDesignable", "@IBInspectable", "@NSManaged", "@GKInspectable"]
+        let disallowedModifiers = [
+            "override", "@objc", "@IBAction", "@IBSegueAction", "@IBOutlet", "@IBDesignable",
+            "@IBInspectable", "@NSManaged", "@GKInspectable",
+        ]
 
         // Collect all of the `private` or `fileprivate` declarations in the file
         var privateDeclarations: [Declaration] = []
         formatter.parseDeclarations().forEachRecursiveDeclaration { declaration in
             let declarationModifiers = Set(declaration.modifiers)
-            let hasDisallowedModifiers = disallowedModifiers.contains(where: { declarationModifiers.contains($0) })
+            let hasDisallowedModifiers = disallowedModifiers.contains(where: {
+                declarationModifiers.contains($0)
+            })
 
             guard allowlist.contains(declaration.keyword),
                   let name = declaration.name,
@@ -57,7 +62,8 @@ extension FormatRule {
         // appears a single time in the source file
         for declaration in privateDeclarations {
             // Strip backticks from name for a normalized base name for cases like `default`
-            guard let name = declaration.name?.trimmingCharacters(in: CharacterSet(charactersIn: "`")) else { continue }
+            guard let name = declaration.name?.trimmingCharacters(in: CharacterSet(charactersIn: "`"))
+            else { continue }
             // Check for regular usage, common property wrapper prefixes, and protected names
             let variants = [name, "_\(name)", "$\(name)", "`\(name)`"]
             let count = variants.compactMap { usage[$0] }.reduce(0, +)

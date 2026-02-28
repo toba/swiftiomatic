@@ -1,9 +1,8 @@
-
 struct FileTypesOrderConfiguration: SeverityBasedRuleConfiguration {
     enum FileType: String, AcceptableByConfigurationElement {
         case supportingType = "supporting_type"
         case mainType = "main_type"
-        case `extension` = "extension"
+        case `extension`
         case previewProvider = "preview_provider"
         case libraryContentProvider = "library_content_provider"
     }

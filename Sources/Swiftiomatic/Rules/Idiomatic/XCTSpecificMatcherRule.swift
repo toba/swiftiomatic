@@ -36,17 +36,23 @@ private extension XCTSpecificMatcherRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionCallExprSyntax) {
             if configuration.matchers.contains(.twoArgumentAsserts),
-               let suggestion = TwoArgsXCTAssert.violations(in: node) {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "Prefer the specific matcher '\(suggestion)' instead"
-                ))
+               let suggestion = TwoArgsXCTAssert.violations(in: node)
+            {
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: "Prefer the specific matcher '\(suggestion)' instead"
+                    )
+                )
             } else if configuration.matchers.contains(.oneArgumentAsserts),
-                      let suggestion = OneArgXCTAssert.violations(in: node) {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "Prefer the specific matcher '\(suggestion)' instead"
-                ))
+                      let suggestion = OneArgXCTAssert.violations(in: node)
+            {
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: "Prefer the specific matcher '\(suggestion)' instead"
+                    )
+                )
             }
         }
     }
@@ -90,7 +96,8 @@ private enum OneArgXCTAssert: String {
               let operatorExpr = folded.as(InfixOperatorExprSyntax.self),
               let binOp = operatorExpr.operator.as(BinaryOperatorExprSyntax.self),
               let kind = Comparison(rawValue: binOp.operator.text),
-              accept(operand: operatorExpr.leftOperand), accept(operand: operatorExpr.rightOperand) else {
+              accept(operand: operatorExpr.leftOperand), accept(operand: operatorExpr.rightOperand)
+        else {
             return nil
         }
         return matcher.suggestion(for: kind)
@@ -114,7 +121,7 @@ private enum TwoArgsXCTAssert: String {
     case notEqual = "XCTAssertNotEqual"
 
     private static let protectedArguments: Set<String> = [
-        "false", "true", "nil"
+        "false", "true", "nil",
     ]
 
     private func suggestion(for protectedArgument: String, hasOptional: Bool) -> String? {
@@ -131,7 +138,8 @@ private enum TwoArgsXCTAssert: String {
 
     static func violations(in node: FunctionCallExprSyntax) -> String? {
         guard let name = node.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text,
-              let matcher = Self(rawValue: name) else {
+              let matcher = Self(rawValue: name)
+        else {
             return nil
         }
 
@@ -170,7 +178,8 @@ private enum TwoArgsXCTAssert: String {
         guard arguments.count == 2,
               let argument = arguments.first, protectedArguments.contains(argument),
               let hasOptional = arguments.last?.contains("?"),
-              let suggestedMatcher = matcher.suggestion(for: argument, hasOptional: hasOptional) else {
+              let suggestedMatcher = matcher.suggestion(for: argument, hasOptional: hasOptional)
+        else {
             return nil
         }
         return suggestedMatcher

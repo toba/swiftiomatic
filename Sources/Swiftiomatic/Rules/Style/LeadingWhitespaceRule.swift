@@ -10,19 +10,21 @@ struct LeadingWhitespaceRule: CorrectableRule, SourceKitFreeRule {
         description: "Files should not contain leading whitespace",
         kind: .style,
         nonTriggeringExamples: [
-            Example("//")
+            Example("//"),
         ],
         triggeringExamples: [
             Example("\n//"),
             Example(" //"),
         ].skipMultiByteOffsetTests().skipDisableCommandTests(),
         corrections: [
-            Example("\n //", testMultiByteOffsets: false): Example("//")
+            Example("\n //", testMultiByteOffsets: false): Example("//"),
         ]
     )
 
     func validate(file: SwiftLintFile) -> [StyleViolation] {
-        let countOfLeadingWhitespace = file.contents.countOfLeadingCharacters(in: .whitespacesAndNewlines)
+        let countOfLeadingWhitespace = file.contents.countOfLeadingCharacters(
+            in: .whitespacesAndNewlines
+        )
         if countOfLeadingWhitespace == 0 {
             return []
         }
@@ -41,14 +43,17 @@ struct LeadingWhitespaceRule: CorrectableRule, SourceKitFreeRule {
         let spaceCount = file.contents.countOfLeadingCharacters(in: whitespaceAndNewline)
         guard spaceCount > 0,
               let firstLineRange = file.lines.first?.range,
-              file.ruleEnabled(violatingRanges: [firstLineRange], for: self).isNotEmpty else {
+              file.ruleEnabled(violatingRanges: [firstLineRange], for: self).isNotEmpty
+        else {
             return 0
         }
 
-        let indexEnd = file.contents.index(
-            file.contents.startIndex,
-            offsetBy: spaceCount,
-            limitedBy: file.contents.endIndex) ?? file.contents.endIndex
+        let indexEnd =
+            file.contents.index(
+                file.contents.startIndex,
+                offsetBy: spaceCount,
+                limitedBy: file.contents.endIndex
+            ) ?? file.contents.endIndex
         file.write(String(file.contents[indexEnd...]))
         return 1
     }

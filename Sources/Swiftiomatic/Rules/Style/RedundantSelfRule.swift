@@ -1,7 +1,5 @@
-@_spi(Diagnostics)
-import SwiftParser
-@_spi(RawSyntax)
-import SwiftSyntax
+@_spi(Diagnostics) import SwiftParser
+@_spi(RawSyntax) import SwiftSyntax
 
 struct RedundantSelfRule: Rule {
     var configuration = RedundantSelfConfiguration()
@@ -44,7 +42,9 @@ private extension RedundantSelfRule {
         private var closureExprScopes = Stack<(ClosureExprType, SelfCaptureKind)>()
         private var initializerScopes = Stack<Bool>()
 
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { [ProtocolDeclSyntax.self] }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
         override func visit(_: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
             typeDeclarations.push(.likeClass)

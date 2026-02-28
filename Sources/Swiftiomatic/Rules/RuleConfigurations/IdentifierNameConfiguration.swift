@@ -1,15 +1,20 @@
-
 struct IdentifierNameConfiguration: RuleConfiguration {
-    private static let defaultOperators = ["/", "=", "-", "+", "!", "*", "|", "^", "~", "?", ".", "%", "<", ">", "&"]
+    private static let defaultOperators = [
+        "/", "=", "-", "+", "!", "*", "|", "^", "~", "?", ".", "%", "<", ">", "&",
+    ]
 
     @ConfigurationElement(inline: true)
-    private(set) var nameConfiguration = NameConfiguration<Parent>(minLengthWarning: 3,
-                                                                   minLengthError: 2,
-                                                                   maxLengthWarning: 40,
-                                                                   maxLengthError: 60,
-                                                                   excluded: ["id"])
+    private(set) var nameConfiguration = NameConfiguration<Parent>(
+        minLengthWarning: 3,
+        minLengthError: 2,
+        maxLengthWarning: 40,
+        maxLengthError: 60,
+        excluded: ["id"]
+    )
 
-    @ConfigurationElement(key: "additional_operators", postprocessor: { $0.formUnion(Self.defaultOperators) })
+    @ConfigurationElement(
+        key: "additional_operators", postprocessor: { $0.formUnion(Self.defaultOperators) }
+    )
     private(set) var additionalOperators = Set<String>()
     typealias Parent = IdentifierNameRule
     mutating func apply(configuration: Any) throws(Issue) {

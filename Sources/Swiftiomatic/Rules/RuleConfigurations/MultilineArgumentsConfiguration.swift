@@ -1,4 +1,3 @@
-
 struct MultilineArgumentsConfiguration: SeverityBasedRuleConfiguration {
     enum FirstArgumentLocation: String, AcceptableByConfigurationElement {
         case anyLine = "any_line"
@@ -18,7 +17,8 @@ struct MultilineArgumentsConfiguration: SeverityBasedRuleConfiguration {
             $firstArgumentLocation.key = "first_argument_location"
         }
         if $onlyEnforceAfterFirstClosureOnFirstLine.key.isEmpty {
-            $onlyEnforceAfterFirstClosureOnFirstLine.key = "only_enforce_after_first_closure_on_first_line"
+            $onlyEnforceAfterFirstClosureOnFirstLine.key =
+                "only_enforce_after_first_closure_on_first_line"
         }
         do {
             try severityConfiguration.apply(configuration, ruleID: Parent.identifier)

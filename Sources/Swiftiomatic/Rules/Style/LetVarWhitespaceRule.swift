@@ -9,106 +9,143 @@ struct LetVarWhitespaceRule: Rule {
         description: "Variable declarations should be separated from other statements by a blank line",
         kind: .style,
         nonTriggeringExamples: [
-            Example("""
+            Example(
+                """
                 let a = 0
                 var x = 1
 
                 var y = 2
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 let a = 5
 
                 var x = 1
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 var a = 0
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 let a = 1 +
                     2
                 let b = 5
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 var x: Int {
                     return 0
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 var x: Int {
                     let a = 0
 
                     return a
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 #if os(macOS)
                 let a = 0
 
                 func f() {}
                 #endif
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 #warning("TODO: remove it")
                 let a = 0
                 #warning("TODO: remove it")
                 let b = 0
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 #error("TODO: remove it")
                 let a = 0
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 @available(swift 4)
                 let a = 0
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 @objc
                 var s: String = ""
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 @objc
                 func a() {}
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 var x = 0
                 lazy
                 var y = 0
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 @available(OSX, introduced: 10.6)
                 @available(*, deprecated)
                 var x = 0
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 // swiftlint:disable superfluous_disable_command
                 // swiftlint:disable force_cast
 
                 let x = bar as! Bar
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 @available(swift 4)
                 @UserDefault("param", defaultValue: true)
                 var isEnabled = true
 
                 @Attribute
                 func f() {}
-                """),
+                """
+            ),
             // Don't trigger on local variable declarations.
-            Example("""
+            Example(
+                """
                 var x: Int {
                     let a = 0
                     return a
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 static var test: String { /* Comment block */
                     let s = "!"
                     return "Test" + s
                 }
 
                 func f() {}
-                """, excludeFromDocumentation: true),
-            Example(#"""
+                """, excludeFromDocumentation: true
+            ),
+            Example(
+                #"""
                 @Flag(name: "name", help: "help")
                 var fix = false
                 @Flag(help: """
@@ -118,33 +155,45 @@ struct LetVarWhitespaceRule: Rule {
                 var format = false
                 @Flag(help: "help")
                 var useAlternativeExcluding = false
-                """#, excludeFromDocumentation: true),
+                """#, excludeFromDocumentation: true
+            ),
         ].map(Self.wrapIntoClass) + [
-            Example("""
+            Example(
+                """
                 a = 2
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 a = 2
 
                 var b = 3
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 #warning("message")
                 let a = 2
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 #if os(macOS)
                 let a = 2
                 #endif
-                """),
+                """
+            ),
             // Don't trigger in closure bodies.
-            Example("""
+            Example(
+                """
                 f {
                     let a = 1
                     return a
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 func f() {
                     #if os(macOS)
                     let a = 2
@@ -153,47 +202,63 @@ struct LetVarWhitespaceRule: Rule {
                     return 1
                     #endif
                 }
-                """),
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
+            Example(
+                """
                 let a
                 ↓func x() {}
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 var x = 0
                 ↓@objc func f() {}
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 var x = 0
                 ↓@objc
                 func f() {}
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 @objc func f() {
                 }
                 ↓var x = 0
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 func f() {}
                 ↓@Wapper
                 let isNumber = false
                 @Wapper
                 var isEnabled = true
                 ↓func g() {}
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 #if os(macOS)
                 let a = 0
                 ↓func f() {}
                 #endif
-                """),
+                """
+            ),
         ].map(Self.wrapIntoClass) + [
-            Example("""
+            Example(
+                """
                 let a = 2
                 ↓b = 1
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 #if os(macOS)
                 let a = 0
                 ↓func f() {}
@@ -201,7 +266,8 @@ struct LetVarWhitespaceRule: Rule {
                 func f() {}
                 ↓let a = 1
                 #endif
-                """, excludeFromDocumentation: true),
+                """, excludeFromDocumentation: true
+            ),
         ]
     )
 
@@ -230,8 +296,10 @@ private extension LetVarWhitespaceRule {
             }
         }
 
-        private func collectViolations<List: SyntaxCollection>(from members: List,
-                                                               using unwrap: (List.Element) -> any SyntaxProtocol) {
+        private func collectViolations<List: SyntaxCollection>(
+            from members: List,
+            using unwrap: (List.Element) -> any SyntaxProtocol
+        ) {
             for member in members {
                 guard case let item = unwrap(member),
                       !item.is(MacroExpansionDeclSyntax.self),
@@ -241,11 +309,13 @@ private extension LetVarWhitespaceRule {
                       nextIndex != members.endIndex,
                       case let nextItem = unwrap(members[members.index(after: index)]),
                       !nextItem.is(MacroExpansionDeclSyntax.self),
-                      !nextItem.is(MacroExpansionExprSyntax.self) else {
+                      !nextItem.is(MacroExpansionExprSyntax.self)
+                else {
                     continue
                 }
                 if item.kind != nextItem.kind, item.kind == .variableDecl || nextItem.kind == .variableDecl,
-                   !(item.trailingTrivia + nextItem.leadingTrivia).containsAtLeastTwoNewlines {
+                   !(item.trailingTrivia + nextItem.leadingTrivia).containsAtLeastTwoNewlines
+                {
                     violations.append(nextItem.positionAfterSkippingLeadingTrivia)
                 }
             }

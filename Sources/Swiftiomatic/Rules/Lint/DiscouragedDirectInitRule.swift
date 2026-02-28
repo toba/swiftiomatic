@@ -31,7 +31,9 @@ struct DiscouragedDirectInitRule: Rule {
             Example("↓NSError.init()"),
             Example("let foo = ↓UIDevice.init()"),
             Example("let foo = ↓Bundle.init()"),
-            Example("let foo = bar(bundle: ↓Bundle.init(), device: ↓UIDevice.init(), error: ↓NSError.init())"),
+            Example(
+                "let foo = bar(bundle: ↓Bundle.init(), device: ↓UIDevice.init(), error: ↓NSError.init())"
+            ),
         ]
     )
 }
@@ -46,7 +48,8 @@ private extension DiscouragedDirectInitRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionCallExprSyntax) {
             guard node.arguments.isEmpty, node.trailingClosure == nil,
-                  configuration.discouragedInits.contains(node.calledExpression.trimmedDescription) else {
+                  configuration.discouragedInits.contains(node.calledExpression.trimmedDescription)
+            else {
                 return
             }
 

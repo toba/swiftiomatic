@@ -41,7 +41,9 @@ extension FormatRule {
                      .operator("?", .postfix), .operator("!", .postfix):
                     formatter.insertLinebreak(at: i)
                     if let breakIndex = formatter.index(of: .linebreak, after: i + 1),
-                       let nextIndex = formatter.index(of: .nonSpace, after: breakIndex, if: { $0.isLinebreak })
+                       let nextIndex = formatter.index(
+                           of: .nonSpace, after: breakIndex, if: { $0.isLinebreak }
+                       )
                     {
                         formatter.removeTokens(in: breakIndex ..< nextIndex)
                     }

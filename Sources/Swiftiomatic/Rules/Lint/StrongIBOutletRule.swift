@@ -32,6 +32,7 @@ extension StrongIBOutletRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -52,7 +53,8 @@ private extension StrongIBOutletRule {
         override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
             guard node.violationPosition != nil,
                   let weakOrUnownedModifier = node.weakOrUnownedModifier,
-                  case let modifiers = node.modifiers else {
+                  case let modifiers = node.modifiers
+            else {
                 return super.visit(node)
             }
             let newModifiers = modifiers.filter { $0 != weakOrUnownedModifier }
@@ -77,10 +79,14 @@ private extension VariableDeclSyntax {
     }
 }
 
-private func wrapExample(_ text: String, file: StaticString = #filePath, line: UInt = #line) -> Example {
-    Example("""
-    class ViewController: UIViewController {
-        \(text)
-    }
-    """, file: file, line: line)
+private func wrapExample(_ text: String, file: StaticString = #filePath, line: UInt = #line)
+    -> Example
+{
+    Example(
+        """
+        class ViewController: UIViewController {
+            \(text)
+        }
+        """, file: file, line: line
+    )
 }

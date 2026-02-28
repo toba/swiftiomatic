@@ -19,6 +19,7 @@ extension UnneededOverrideRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -59,9 +60,10 @@ private extension UnneededOverrideRule {
         private func visitUnneededOverride(_ node: some DeclSyntaxProtocol) -> DeclSyntax {
             numberOfCorrections += 1
             let expr: DeclSyntax = ""
-            return expr
-                .with(\.leadingTrivia, node.leadingTrivia)
-                .with(\.trailingTrivia, node.trailingTrivia)
+            return
+                expr
+                    .with(\.leadingTrivia, node.leadingTrivia)
+                    .with(\.trailingTrivia, node.trailingTrivia)
         }
     }
 }
@@ -94,7 +96,8 @@ private extension OverridableDecl {
     /// Perform checks common to all overridable types of declarations.
     /// Returns `true` if the `override` appears to be unneeded.
     func mayBeUnneededOverride(name: String) -> Bool {
-        guard modifiers.contains(keyword: .override), let statement = body?.statements.onlyElement else {
+        guard modifiers.contains(keyword: .override), let statement = body?.statements.onlyElement
+        else {
             return false
         }
 
@@ -106,7 +109,8 @@ private extension OverridableDecl {
         guard let call = extractFunctionCallSyntax(statement.item),
               let member = call.calledExpression.as(MemberAccessExprSyntax.self),
               member.base?.is(SuperExprSyntax.self) == true,
-              member.declName.baseName.text == name else {
+              member.declName.baseName.text == name
+        else {
             return false
         }
 

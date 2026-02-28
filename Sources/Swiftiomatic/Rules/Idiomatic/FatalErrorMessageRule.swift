@@ -9,28 +9,36 @@ struct FatalErrorMessageRule: Rule {
         description: "A fatalError call should have a message",
         kind: .idiomatic,
         nonTriggeringExamples: [
-            Example("""
-            func foo() {
-              fatalError("Foo")
-            }
-            """),
-            Example("""
-            func foo() {
-              fatalError(x)
-            }
-            """),
+            Example(
+                """
+                func foo() {
+                  fatalError("Foo")
+                }
+                """
+            ),
+            Example(
+                """
+                func foo() {
+                  fatalError(x)
+                }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            func foo() {
-              ↓fatalError("")
-            }
-            """),
-            Example("""
-            func foo() {
-              ↓fatalError()
-            }
-            """),
+            Example(
+                """
+                func foo() {
+                  ↓fatalError("")
+                }
+                """
+            ),
+            Example(
+                """
+                func foo() {
+                  ↓fatalError()
+                }
+                """
+            ),
         ]
     )
 }
@@ -48,7 +56,8 @@ private extension FatalErrorMessageRule {
         override func visitPost(_ node: FunctionCallExprSyntax) {
             guard let expression = node.calledExpression.as(DeclReferenceExprSyntax.self),
                   expression.baseName.text == "fatalError",
-                  node.arguments.isEmptyOrEmptyString else {
+                  node.arguments.isEmptyOrEmptyString
+            else {
                 return
             }
 

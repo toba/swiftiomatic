@@ -1,4 +1,3 @@
-
 struct PrivateOverFilePrivateConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")
     var severityConfiguration = SeverityConfiguration<Parent>(.warning)

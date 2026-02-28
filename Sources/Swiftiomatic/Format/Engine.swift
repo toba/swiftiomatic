@@ -45,7 +45,7 @@ struct FormatEngine: Sendable {
             let disabledRules = Set(FormatRules.named(disable))
             activeRules.removeAll { disabledRules.contains($0) }
         }
-        self.rules = activeRules
+        rules = activeRules
         self.options = options
     }
 }

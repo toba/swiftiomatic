@@ -7,10 +7,10 @@ struct AttributeNameSpacingRule: Rule {
         identifier: "attribute_name_spacing",
         name: "Attribute Name Spacing",
         description: """
-            This rule prevents trailing spaces after attribute names, ensuring compatibility \
-            with Swift 6 where a space between an attribute name and the opening parenthesis \
-            results in a compilation error (e.g. `@MyPropertyWrapper ()`, `private (set)`).
-            """,
+        This rule prevents trailing spaces after attribute names, ensuring compatibility \
+        with Swift 6 where a space between an attribute name and the opening parenthesis \
+        results in a compilation error (e.g. `@MyPropertyWrapper ()`, `private (set)`).
+        """,
         kind: .style,
         nonTriggeringExamples: [
             Example("private(set) var foo: Bool = false"),
@@ -22,23 +22,29 @@ struct AttributeNameSpacingRule: Rule {
             Example("nonisolated(unsafe) var _value: X?"),
             Example("@testable import SwiftLintCore"),
             Example("func func_type_attribute_with_space(x: @convention(c) () -> Int) {}"),
-            Example("""
-            @propertyWrapper
-            struct MyPropertyWrapper {
-                var wrappedValue: Int = 1
+            Example(
+                """
+                @propertyWrapper
+                struct MyPropertyWrapper {
+                    var wrappedValue: Int = 1
 
-                init(param: Int) {}
-            }
-            """),
-            Example("""
-            let closure2 = { @MainActor
-              (a: Int, b: Int) in
-            }
-            """),
-            Example("""
-            let closure1 = { @MainActor (a, b) in
-            }
-            """),
+                    init(param: Int) {}
+                }
+                """
+            ),
+            Example(
+                """
+                let closure2 = { @MainActor
+                  (a: Int, b: Int) in
+                }
+                """
+            ),
+            Example(
+                """
+                let closure1 = { @MainActor (a, b) in
+                }
+                """
+            ),
         ],
         triggeringExamples: [
             Example("private ↓(set) var foo: Bool = false"),
@@ -54,17 +60,31 @@ struct AttributeNameSpacingRule: Rule {
             Example("@MyProperty ↓() class Foo {}"),
         ],
         corrections: [
-            Example("private↓ (set) var foo: Bool = false"): Example("private(set) var foo: Bool = false"),
-            Example("fileprivate↓ (set) var foo: Bool = false"): Example("fileprivate(set) var foo: Bool = false"),
-            Example("internal↓ (set) var foo: Bool = false"): Example("internal(set) var foo: Bool = false"),
+            Example("private↓ (set) var foo: Bool = false"): Example(
+                "private(set) var foo: Bool = false"
+            ),
+            Example("fileprivate↓ (set) var foo: Bool = false"): Example(
+                "fileprivate(set) var foo: Bool = false"
+            ),
+            Example("internal↓ (set) var foo: Bool = false"): Example(
+                "internal(set) var foo: Bool = false"
+            ),
             Example("public↓ (set) var foo: Bool = false"): Example("public(set) var foo: Bool = false"),
             Example("public↓  (set) var foo: Bool = false"): Example("public(set) var foo: Bool = false"),
             Example("@↓ MainActor"): Example("@MainActor"),
-            Example("func test(_ x: @↓ escaping () -> Int) {}"): Example("func test(_ x: @escaping () -> Int) {}"),
-            Example("func test(_ x: @escaping↓() -> Int) {}"): Example("func test(_ x: @escaping () -> Int) {}"),
+            Example("func test(_ x: @↓ escaping () -> Int) {}"): Example(
+                "func test(_ x: @escaping () -> Int) {}"
+            ),
+            Example("func test(_ x: @escaping↓() -> Int) {}"): Example(
+                "func test(_ x: @escaping () -> Int) {}"
+            ),
             Example("@available↓ (*, deprecated)"): Example("@available(*, deprecated)"),
-            Example("@MyPropertyWrapper↓ (param: 2) let a = 1"): Example("@MyPropertyWrapper(param: 2) let a = 1"),
-            Example("nonisolated↓ (unsafe) var _value: X?"): Example("nonisolated(unsafe) var _value: X?"),
+            Example("@MyPropertyWrapper↓ (param: 2) let a = 1"): Example(
+                "@MyPropertyWrapper(param: 2) let a = 1"
+            ),
+            Example("nonisolated↓ (unsafe) var _value: X?"): Example(
+                "nonisolated(unsafe) var _value: X?"
+            ),
             Example("@MyProperty↓ () let a = 1"): Example("@MyProperty() let a = 1"),
         ]
     )

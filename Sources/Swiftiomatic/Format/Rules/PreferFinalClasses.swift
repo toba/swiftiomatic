@@ -22,7 +22,8 @@ extension FormatRule {
 
         declarations.forEachRecursiveDeclaration { declaration in
             guard declaration.keyword == "class",
-                  let typeDecl = declaration as? TypeDeclaration else { return }
+                  let typeDecl = declaration as? TypeDeclaration
+            else { return }
 
             let keywordIndex = declaration.keywordIndex
 
@@ -41,10 +42,14 @@ extension FormatRule {
             // Convert any open direct child declarations to public (since final classes can't have open members)
             if let classBody = declaration.body {
                 for childDeclaration in classBody {
-                    guard formatter.modifiersForDeclaration(at: childDeclaration.keywordIndex, contains: "open") else { continue }
+                    guard
+                        formatter.modifiersForDeclaration(at: childDeclaration.keywordIndex, contains: "open")
+                    else { continue }
 
                     // Replace "open" with "public" for direct child declarations
-                    if let openIndex = formatter.indexOfModifier("open", forDeclarationAt: childDeclaration.keywordIndex) {
+                    if let openIndex = formatter.indexOfModifier(
+                        "open", forDeclarationAt: childDeclaration.keywordIndex
+                    ) {
                         formatter.replaceToken(at: openIndex, with: .keyword("public"))
                     }
                 }

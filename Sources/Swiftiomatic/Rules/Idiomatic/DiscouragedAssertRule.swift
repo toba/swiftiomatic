@@ -39,7 +39,8 @@ private extension DiscouragedAssertRule {
                   let firstArg = node.arguments.first,
                   firstArg.label == nil,
                   let boolExpr = firstArg.expression.as(BooleanLiteralExprSyntax.self),
-                  boolExpr.literal.tokenKind == .keyword(.false) else {
+                  boolExpr.literal.tokenKind == .keyword(.false)
+            else {
                 return
             }
 

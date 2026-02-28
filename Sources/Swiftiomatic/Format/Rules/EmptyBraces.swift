@@ -16,9 +16,14 @@ extension FormatRule {
         sharedOptions: ["linebreaks"]
     ) { formatter in
         formatter.forEach(.startOfScope("{")) { i, _ in
-            guard let closingIndex = formatter.index(of: .nonSpaceOrLinebreak, after: i, if: {
-                $0 == .endOfScope("}")
-            }) else {
+            guard
+                let closingIndex = formatter.index(
+                    of: .nonSpaceOrLinebreak, after: i,
+                    if: {
+                        $0 == .endOfScope("}")
+                    }
+                )
+            else {
                 return
             }
             if let token = formatter.next(.nonSpaceOrComment, after: closingIndex),

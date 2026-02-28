@@ -22,12 +22,15 @@ struct TypeBodyLengthRule: Rule {
             Example("extension E {}", configuration: testConfigWithAllTypes),
             Example("protocol P {}", configuration: testConfigWithAllTypes),
             Example("struct S {}", configuration: testConfig),
-            Example("""
+            Example(
+                """
                 actor A {
                     let x = 0
                 }
-                """, configuration: testConfig),
-            Example("""
+                """, configuration: testConfig
+            ),
+            Example(
+                """
                 class C {
                     let x = 0
                     // comments
@@ -35,66 +38,83 @@ struct TypeBodyLengthRule: Rule {
                     // be
                     // ignored
                 }
-                """, configuration: testConfig),
-            Example("""
+                """, configuration: testConfig
+            ),
+            Example(
+                """
                 enum E {
                     let x = 0
                     // empty lines will be ignored
 
 
                 }
-                """, configuration: testConfig),
-            Example("""
+                """, configuration: testConfig
+            ),
+            Example(
+                """
                 protocol P {
                     let x = 0
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfig),
+                """, configuration: testConfig
+            ),
         ],
         triggeringExamples: [
-            Example("""
+            Example(
+                """
                 ↓actor A {
                     let x = 0
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfig),
-            Example("""
+                """, configuration: testConfig
+            ),
+            Example(
+                """
                 ↓class C {
                     let x = 0
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfig),
-            Example("""
+                """, configuration: testConfig
+            ),
+            Example(
+                """
                 ↓enum E {
                     let x = 0
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfig),
-            Example("""
+                """, configuration: testConfig
+            ),
+            Example(
+                """
                 ↓extension E {
                     let x = 0
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfigWithAllTypes),
-            Example("""
+                """, configuration: testConfigWithAllTypes
+            ),
+            Example(
+                """
                 ↓protocol P {
                     let x = 0
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfigWithAllTypes),
-            Example("""
+                """, configuration: testConfigWithAllTypes
+            ),
+            Example(
+                """
                 ↓struct S {
                     let x = 0
                     let y = 1
                     let z = 2
                 }
-                """, configuration: testConfig),
+                """, configuration: testConfig
+            ),
         ]
     )
 }

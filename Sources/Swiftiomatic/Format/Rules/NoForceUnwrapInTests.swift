@@ -50,26 +50,38 @@ extension FormatRule {
                 }
 
                 // Preserve `try!`s, this is handled separately by the `noForceTryInTests` rule
-                if let previousToken = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: forceUnwrapOperator),
-                   formatter.tokens[previousToken] == .keyword("try")
+                if let previousToken = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, before: forceUnwrapOperator
+                ),
+                    formatter.tokens[previousToken] == .keyword("try")
                 {
                     continue
                 }
 
                 // Skip if this is an implicitly unwrapped optional type annotation (e.g., let foo: Foo!)
                 // Look for the pattern: (let|var) identifier : Type !
-                if let colonIndex = formatter.lastIndex(of: .delimiter(":"), in: 0 ..< forceUnwrapOperator.index),
-                   let _ = formatter.lastIndex(of: .keyword, in: 0 ..< colonIndex, if: { ["let", "var"].contains($0.string) })
+                if let colonIndex = formatter.lastIndex(
+                    of: .delimiter(":"), in: 0 ..< forceUnwrapOperator.index
+                ),
+                    formatter.lastIndex(
+                        of: .keyword, in: 0 ..< colonIndex, if: { ["let", "var"].contains($0.string) }
+                    ) != nil
                 {
                     // Make sure there are no assignment operators between the colon and the !
                     // This distinguishes type annotations from variable assignments with IUO types
-                    let hasAssignment = formatter.index(of: .operator("=", .infix), in: colonIndex ..< forceUnwrapOperator.index) != nil
+                    let hasAssignment =
+                        formatter.index(of: .operator("=", .infix), in: colonIndex ..< forceUnwrapOperator.index)
+                            != nil
                     if !hasAssignment {
                         continue
                     }
                 }
 
-                guard let expressionRange = formatter.parseExpressionRangeContainingForceUnwrap(forceUnwrapOperator.index, in: functionDecl) else {
+                guard
+                    let expressionRange = formatter.parseExpressionRangeContainingForceUnwrap(
+                        forceUnwrapOperator.index, in: functionDecl
+                    )
+                else {
                     continue
                 }
 
@@ -90,9 +102,13 @@ extension FormatRule {
                         }
 
                         // Check if this is a function call or subscript call by looking at the token before the scope
-                        if let prevIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: scopeStart) {
+                        if let prevIndex = formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak, before: scopeStart
+                        ) {
                             let prevToken = formatter.tokens[prevIndex]
-                            if prevToken.isIdentifier || prevToken.isOperator(ofType: .postfix) || prevToken.isEndOfScope {
+                            if prevToken.isIdentifier || prevToken.isOperator(ofType: .postfix)
+                                || prevToken.isEndOfScope
+                            {
                                 // Skip this operator, and continue to the next one.
                                 continue convertForceUnwrapsInExpression
                             }
@@ -106,7 +122,9 @@ extension FormatRule {
                     // like `(foo as! Bar).baaz`, we have to add an extra `?` after the enclosing parens: `(foo as? Bar)?.baaz`.
                     if let previousToken = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i),
                        formatter.tokens[previousToken] == .keyword("as"),
-                       let tokenAfterAsParenScope = formatter.parseTokenAfterForceCastParenScope(asIndex: previousToken)
+                       let tokenAfterAsParenScope = formatter.parseTokenAfterForceCastParenScope(
+                           asIndex: previousToken
+                       )
                     {
                         formatter.insert(.operator("?", .postfix), at: tokenAfterAsParenScope)
                     }
@@ -115,7 +133,9 @@ extension FormatRule {
                     // rather than replacing it with a `?`.
                     var shouldRemoveForceUnwrap = false
                     if let nextToken = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i) {
-                        if ["is", "as"].contains(formatter.tokens[nextToken].string) || !expressionRange.range.contains(nextToken) {
+                        if ["is", "as"].contains(formatter.tokens[nextToken].string)
+                            || !expressionRange.range.contains(nextToken)
+                        {
                             shouldRemoveForceUnwrap = true
                         }
                     } else {
@@ -140,15 +160,19 @@ extension FormatRule {
                 var needsUnwrapMethod = true
 
                 // If this expression is the LHS of an assignment operator, changing `foo!.bar = baaz` to `foo?.bar = baaz` is a safe change as-is
-                if let tokenAfterExpression = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound),
-                   formatter.tokens[tokenAfterExpression] == .operator("=", .infix)
+                if let tokenAfterExpression = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound
+                ),
+                    formatter.tokens[tokenAfterExpression] == .operator("=", .infix)
                 {
                     needsUnwrapMethod = false
                 }
 
                 // If this expression is followed by ==, changing `foo!.bar == bar` to `foo?.bar == bar` is a safe change as-is
-                if let tokenAfterExpression = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound),
-                   formatter.tokens[tokenAfterExpression] == .operator("==", .infix)
+                if let tokenAfterExpression = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound
+                ),
+                    formatter.tokens[tokenAfterExpression] == .operator("==", .infix)
                 {
                     needsUnwrapMethod = false
                 }
@@ -157,9 +181,13 @@ extension FormatRule {
                 // as long as this isn't a subexpression within a parent operator expression.
                 if let containingParenScope = formatter.startOfScope(at: expressionRange.lowerBound),
                    formatter.tokens[containingParenScope] == .startOfScope("("),
-                   let functionNameIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: containingParenScope),
+                   let functionNameIndex = formatter.index(
+                       of: .nonSpaceOrCommentOrLinebreak, before: containingParenScope
+                   ),
                    formatter.tokens[functionNameIndex].isIdentifier,
-                   let tokenAfterExpression = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound),
+                   let tokenAfterExpression = formatter.index(
+                       of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound
+                   ),
                    !formatter.tokens[tokenAfterExpression].isOperator
                 {
                     let functionName = formatter.tokens[functionNameIndex].string
@@ -177,17 +205,23 @@ extension FormatRule {
                 // If this expression is a standalone method call like `foo!.bar()`, then `foo?.bar()` works perfectly well.
                 // Heuristic: If the scope containing this code is a code block, and the previous token is part of a completely
                 // separate expression (or, the start of the function body), then this is a standalone expression.
-                if let startOfScopeContainingExpression = formatter.startOfScope(at: expressionRange.lowerBound),
-                   formatter.tokens[startOfScopeContainingExpression] == .startOfScope("{"),
-                   let tokenBeforeExpression = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: expressionRange.lowerBound),
-                   !formatter.tokens[tokenBeforeExpression].isOperator
+                if let startOfScopeContainingExpression = formatter.startOfScope(
+                    at: expressionRange.lowerBound
+                ),
+                    formatter.tokens[startOfScopeContainingExpression] == .startOfScope("{"),
+                    let tokenBeforeExpression = formatter.index(
+                        of: .nonSpaceOrCommentOrLinebreak, before: expressionRange.lowerBound
+                    ),
+                    !formatter.tokens[tokenBeforeExpression].isOperator
                 {
                     if tokenBeforeExpression == functionDecl.bodyRange?.lowerBound {
                         needsUnwrapMethod = false
                     }
 
-                    if let previousExpressionRange = formatter.parseExpressionRange(endingAt: tokenBeforeExpression),
-                       !previousExpressionRange.overlaps(expressionRange.range)
+                    if let previousExpressionRange = formatter.parseExpressionRange(
+                        endingAt: tokenBeforeExpression
+                    ),
+                        !previousExpressionRange.overlaps(expressionRange.range)
                     {
                         needsUnwrapMethod = false
                     }
@@ -197,18 +231,25 @@ extension FormatRule {
                 if needsUnwrapMethod {
                     // If the expression starts with a prefix operator like !, we have to wrap the try expression in parens.
                     // `!try XCTUnwrap(...)` is not valid -- it needs to be `!(try XCTUnwrap(...))`.
-                    let startsWithPrefixOperator = formatter.tokens[expressionRange.lowerBound].isOperator(ofType: .prefix)
-                        && formatter.tokens[expressionRange.lowerBound] != .operator(".", .prefix)
+                    let startsWithPrefixOperator =
+                        formatter.tokens[expressionRange.lowerBound].isOperator(ofType: .prefix)
+                            && formatter.tokens[expressionRange.lowerBound] != .operator(".", .prefix)
 
                     let wrapperTokens: [Token]
                     switch testFramework {
                     case .xcTest:
-                        wrapperTokens = [.keyword("try"), .space(" "), .identifier("XCTUnwrap"), .startOfScope("(")]
+                        wrapperTokens = [
+                            .keyword("try"), .space(" "), .identifier("XCTUnwrap"), .startOfScope("("),
+                        ]
                     case .swiftTesting:
-                        wrapperTokens = [.keyword("try"), .space(" "), .operator("#", .prefix), .identifier("require"), .startOfScope("(")]
+                        wrapperTokens = [
+                            .keyword("try"), .space(" "), .operator("#", .prefix), .identifier("require"),
+                            .startOfScope("("),
+                        ]
                     }
 
-                    let insertionIndex = startsWithPrefixOperator ? expressionRange.lowerBound + 1 : expressionRange.lowerBound
+                    let insertionIndex =
+                        startsWithPrefixOperator ? expressionRange.lowerBound + 1 : expressionRange.lowerBound
 
                     // Since we're processing right to left, we can insert without worrying about shifting indices
                     formatter.insert(.endOfScope(")"), at: expressionRange.upperBound + 1)
@@ -274,16 +315,26 @@ extension Formatter {
         -> AutoUpdatingRange?
     {
         // Parse the expression containing this force unwrap operator
-        guard var expressionRange = parseExpressionRange(containing: forceUnwrapIndex)?.autoUpdating(in: self) else {
+        guard
+            var expressionRange = parseExpressionRange(containing: forceUnwrapIndex)?.autoUpdating(
+                in: self
+            )
+        else {
             return nil
         }
 
         while let asIndexNeedingExpansion = expressionRange.range.first(where: {
-            guard let tokenAfterForceCastParenScope = parseTokenAfterForceCastParenScope(asIndex: $0) else { return false }
+            guard let tokenAfterForceCastParenScope = parseTokenAfterForceCastParenScope(asIndex: $0)
+            else { return false }
             return !expressionRange.range.contains(tokenAfterForceCastParenScope)
         }) {
-            guard let tokenAfterForceCastParenScope = parseTokenAfterForceCastParenScope(asIndex: asIndexNeedingExpansion),
-                  let expandedExpressionRange = parseExpressionRange(containing: tokenAfterForceCastParenScope)?.autoUpdating(in: self)
+            guard
+                let tokenAfterForceCastParenScope = parseTokenAfterForceCastParenScope(
+                    asIndex: asIndexNeedingExpansion
+                ),
+                let expandedExpressionRange = parseExpressionRange(
+                    containing: tokenAfterForceCastParenScope
+                )?.autoUpdating(in: self)
             else { return nil }
 
             expressionRange = expandedExpressionRange
@@ -331,15 +382,22 @@ extension Formatter {
             let lhsFormatter = Formatter(lhsTokens)
             let lhsFormatterOffset = expressionRange.lowerBound
 
-            guard let lhsForceUnwrapIndex = expressionRange.range.first(where: { i in
-                tokens[i] == .operator("!", .postfix) && tryKeywordSupported(at: i, in: functionDecl) && i < infixIndex
-            }) else { return nil }
+            guard
+                let lhsForceUnwrapIndex = expressionRange.range.first(where: { i in
+                    tokens[i] == .operator("!", .postfix) && tryKeywordSupported(at: i, in: functionDecl)
+                        && i < infixIndex
+                })
+            else { return nil }
 
             // Convert the absolute index to the sub-formatter's relative index
             let relativeIndex = lhsForceUnwrapIndex - lhsFormatterOffset
 
             // Get the expression range in the sub-formatter
-            guard let subExpressionRange = lhsFormatter.parseExpressionRangeContainingForceUnwrap(relativeIndex, in: nil) else {
+            guard
+                let subExpressionRange = lhsFormatter.parseExpressionRangeContainingForceUnwrap(
+                    relativeIndex, in: nil
+                )
+            else {
                 return nil
             }
 

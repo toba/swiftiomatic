@@ -11,7 +11,10 @@ import Foundation
 extension FormatRule {
     static let wrapAttributes = FormatRule(
         help: "Wrap @attributes onto a separate line, or keep them on the same line.",
-        options: ["func-attributes", "type-attributes", "var-attributes", "stored-var-attributes", "computed-var-attributes", "complex-attributes", "non-complex-attributes"],
+        options: [
+            "func-attributes", "type-attributes", "var-attributes", "stored-var-attributes",
+            "computed-var-attributes", "complex-attributes", "non-complex-attributes",
+        ],
         sharedOptions: ["linebreaks", "max-width"]
     ) { formatter in
         formatter.forEach(.attribute) { i, _ in
@@ -59,8 +62,9 @@ extension FormatRule {
             // If the complexAttributes option is configured, it takes precedence over other options
             // if this is a complex attributes with arguments.
             let attributeName = formatter.tokens[i].string
-            let isComplexAttribute = formatter.isComplexAttribute(at: i)
-                && !formatter.options.complexAttributesExceptions.contains(attributeName)
+            let isComplexAttribute =
+                formatter.isComplexAttribute(at: i)
+                    && !formatter.options.complexAttributesExceptions.contains(attributeName)
 
             if isComplexAttribute, formatter.options.complexAttributes != .preserve {
                 attributeMode = formatter.options.complexAttributes
@@ -94,8 +98,9 @@ extension FormatRule {
                     let endOfLine = formatter.endOfLine(at: i)
                     let startOfNextLine = formatter.startOfLine(at: nextIndex, excludingIndent: true)
                     let endOfNextLine = formatter.endOfLine(at: nextIndex)
-                    let combinedLine = formatter.tokens[startOfLine ... endOfLine].map(\.string).joined()
-                        + formatter.tokens[startOfNextLine ..< endOfNextLine].map(\.string).joined()
+                    let combinedLine =
+                        formatter.tokens[startOfLine ... endOfLine].map(\.string).joined()
+                            + formatter.tokens[startOfNextLine ..< endOfNextLine].map(\.string).joined()
 
                     if formatter.options.maxWidth > 0, combinedLine.count > formatter.options.maxWidth {
                         return

@@ -1,147 +1,163 @@
-internal struct TestCaseAccessibilityRuleExamples {
+enum TestCaseAccessibilityRuleExamples {
     static let nonTriggeringExamples = [
         // Valid XCTestCase class
 
         Example("let foo: String?"),
-        Example("""
-        let foo: String?
+        Example(
+            """
+            let foo: String?
 
-        class FooTests: XCTestCase {
-            static let allTests: [String] = []
+            class FooTests: XCTestCase {
+                static let allTests: [String] = []
 
-            private let foo: String {
-                let nestedMember = "hi"
-                return nestedMember
+                private let foo: String {
+                    let nestedMember = "hi"
+                    return nestedMember
+                }
+
+                override static func setUp() {}
+
+                override func setUp() {}
+
+                override func setUpWithError() throws {}
+
+                override static func tearDown() {}
+
+                override func tearDown() {}
+
+                override func tearDownWithError() {}
+
+                override func someFutureXCTestFunction() {
+                    super.someFutureXCTestFunction()
+                }
+
+                func testFoo() {
+                    XCTAssertTrue(true)
+                }
+
+                func testBar() {
+                    func nestedFunc() {}
+                }
+
+                private someFunc(hasParam: Bool) {}
             }
+            """
+        ),
 
-            override static func setUp() {}
-
-            override func setUp() {}
-
-            override func setUpWithError() throws {}
-
-            override static func tearDown() {}
-
-            override func tearDown() {}
-
-            override func tearDownWithError() {}
-
-            override func someFutureXCTestFunction() {
-                super.someFutureXCTestFunction()
+        Example(
+            """
+            class FooTests: XCTestCase {
+                private struct MockSomething: Something {}
             }
+            """
+        ),
 
-            func testFoo() {
-                XCTAssertTrue(true)
+        Example(
+            """
+            class FooTests: XCTestCase {
+                override init() {
+                    super.init()
+                    let foo = 1
+                    var bar = 2
+                }
             }
+            """
+        ),
 
-            func testBar() {
-                func nestedFunc() {}
+        Example(
+            """
+            class FooTests: XCTestCase {
+                func allowedPrefixTestFoo() {}
             }
-
-            private someFunc(hasParam: Bool) {}
-        }
-        """),
-
-        Example("""
-        class FooTests: XCTestCase {
-            private struct MockSomething: Something {}
-        }
-        """),
-
-        Example("""
-        class FooTests: XCTestCase {
-            override init() {
-                super.init()
-                let foo = 1
-                var bar = 2
-            }
-        }
-        """),
-
-        Example("""
-        class FooTests: XCTestCase {
-            func allowedPrefixTestFoo() {}
-        }
-        """, configuration: ["allowed_prefixes": ["allowedPrefix"]]),
+            """, configuration: ["allowed_prefixes": ["allowedPrefix"]]
+        ),
 
         // Not an XCTestCase class
 
-        Example("""
-        class Foobar {
-            func setUp() {}
+        Example(
+            """
+            class Foobar {
+                func setUp() {}
 
-            func tearDown() {}
+                func tearDown() {}
 
-            func testFoo() {}
-        }
-        """),
+                func testFoo() {}
+            }
+            """
+        ),
     ]
 
     static let triggeringExamples = [
-        Example("""
-        class FooTests: XCTestCase {
-            ↓typealias Bar = Foo.Bar
+        Example(
+            """
+            class FooTests: XCTestCase {
+                ↓typealias Bar = Foo.Bar
 
-            ↓var foo: String?
-            ↓let bar: String?
+                ↓var foo: String?
+                ↓let bar: String?
 
-            ↓static func foo() {}
+                ↓static func foo() {}
 
-            ↓func setUp(withParam: String) {}
+                ↓func setUp(withParam: String) {}
 
-            ↓func foobar() {}
+                ↓func foobar() {}
 
-            ↓func not_testBar() {}
+                ↓func not_testBar() {}
 
-            ↓enum Nested {}
+                ↓enum Nested {}
 
-            ↓static func testFoo() {}
+                ↓static func testFoo() {}
 
-            ↓static func allTests() {}
+                ↓static func allTests() {}
 
-            ↓func testFoo(hasParam: Bool) {}
-        }
+                ↓func testFoo(hasParam: Bool) {}
+            }
 
-        final class BarTests: XCTestCase {
-            ↓class Nested {}
-        }
-        """),
+            final class BarTests: XCTestCase {
+                ↓class Nested {}
+            }
+            """
+        ),
     ]
 
     static let corrections = [
-        Example("""
-        class TotoTests: XCTestCase {
-            ↓var foo: Bar?
+        Example(
+            """
+            class TotoTests: XCTestCase {
+                ↓var foo: Bar?
 
-            ↓struct Baz {}
+                ↓struct Baz {}
 
-            override func setUp() {}
+                override func setUp() {}
 
-            override func tearDown() {}
+                override func tearDown() {}
 
-            func testFoo() {}
+                func testFoo() {}
 
-            func testBar() {}
+                func testBar() {}
 
-            ↓func helperFunction() {}
-        }
-        """):
-        Example("""
-        class TotoTests: XCTestCase {
-            private var foo: Bar?
+                ↓func helperFunction() {}
+            }
+            """
+        ):
+            Example(
+                """
+                class TotoTests: XCTestCase {
+                    private var foo: Bar?
 
-            private struct Baz {}
+                    private struct Baz {}
 
-            override func setUp() {}
+                    override func setUp() {}
 
-            override func tearDown() {}
+                    override func tearDown() {}
 
-            func testFoo() {}
+                    func testFoo() {}
 
-            func testBar() {}
+                    func testBar() {}
 
-            private func helperFunction() {}
-        }
-        """),
+                    private func helperFunction() {}
+                }
+                """
+            ),
     ]
 }

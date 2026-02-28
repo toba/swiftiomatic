@@ -1,4 +1,3 @@
-
 struct OpeningBraceConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.warning)
@@ -9,13 +8,18 @@ struct OpeningBraceConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "ignore_multiline_function_signatures")
     private(set) var ignoreMultilineFunctionSignatures = false
     // TODO: [08/23/2026] Remove deprecation warning after ~2 years.
-    @ConfigurationElement(key: "allow_multiline_func", deprecationNotice: .suggestAlternative(
-        ruleID: Parent.identifier, name: "ignore_multiline_function_signatures"))
+    @ConfigurationElement(
+        key: "allow_multiline_func",
+        deprecationNotice: .suggestAlternative(
+            ruleID: Parent.identifier, name: "ignore_multiline_function_signatures"
+        )
+    )
     private(set) var allowMultilineFunc = false
 
     var shouldIgnoreMultilineFunctionSignatures: Bool {
         ignoreMultilineFunctionSignatures || allowMultilineFunc
     }
+
     typealias Parent = OpeningBraceRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $ignoreMultilineTypeHeaders.key.isEmpty {

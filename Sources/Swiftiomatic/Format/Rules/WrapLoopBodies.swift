@@ -14,11 +14,13 @@ extension FormatRule {
         orderAfter: [.preferForLoop],
         sharedOptions: ["linebreaks", "indent"]
     ) { formatter in
-        formatter.forEachToken(where: { [
-            .keyword("for"),
-            .keyword("while"),
-            .keyword("repeat"),
-        ].contains($0) }) { i, token in
+        formatter.forEachToken(where: {
+            [
+                .keyword("for"),
+                .keyword("while"),
+                .keyword("repeat"),
+            ].contains($0)
+        }) { i, token in
             if let startIndex = formatter.index(of: .startOfScope("{"), after: i) {
                 formatter.wrapStatementBody(at: startIndex)
             } else if token == .keyword("for") {

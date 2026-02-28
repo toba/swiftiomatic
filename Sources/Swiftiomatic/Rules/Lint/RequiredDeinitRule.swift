@@ -15,54 +15,66 @@ struct RequiredDeinitRule: Rule {
         description: "Classes should have an explicit deinit method",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
-            class Apple {
-                deinit { }
-            }
-            """),
+            Example(
+                """
+                class Apple {
+                    deinit { }
+                }
+                """
+            ),
             Example("enum Banana { }"),
             Example("protocol Cherry { }"),
             Example("struct Damson { }"),
-            Example("""
-            class Outer {
-                deinit { print("Deinit Outer") }
-                class Inner {
-                    deinit { print("Deinit Inner") }
+            Example(
+                """
+                class Outer {
+                    deinit { print("Deinit Outer") }
+                    class Inner {
+                        deinit { print("Deinit Inner") }
+                    }
                 }
-            }
-            """),
+                """
+            ),
         ],
         triggeringExamples: [
             Example("↓class Apple { }"),
             Example("↓class Banana: NSObject, Equatable { }"),
-            Example("""
-            ↓class Cherry {
-                // deinit { }
-            }
-            """),
-            Example("""
-            ↓class Damson {
-                func deinitialize() { }
-            }
-            """),
-            Example("""
-            class Outer {
-                func hello() -> String { return "outer" }
-                deinit { }
-                ↓class Inner {
-                    func hello() -> String { return "inner" }
+            Example(
+                """
+                ↓class Cherry {
+                    // deinit { }
                 }
-            }
-            """),
-            Example("""
-            ↓class Outer {
-                func hello() -> String { return "outer" }
-                class Inner {
-                    func hello() -> String { return "inner" }
+                """
+            ),
+            Example(
+                """
+                ↓class Damson {
+                    func deinitialize() { }
+                }
+                """
+            ),
+            Example(
+                """
+                class Outer {
+                    func hello() -> String { return "outer" }
                     deinit { }
+                    ↓class Inner {
+                        func hello() -> String { return "inner" }
+                    }
                 }
-            }
-            """),
+                """
+            ),
+            Example(
+                """
+                ↓class Outer {
+                    func hello() -> String { return "outer" }
+                    class Inner {
+                        func hello() -> String { return "inner" }
+                        deinit { }
+                    }
+                }
+                """
+            ),
         ]
     )
 }
@@ -88,7 +100,9 @@ private extension RequiredDeinitRule {
     final class DeinitVisitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private(set) var hasDeinit = false
 
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_: DeinitializerDeclSyntax) {
             hasDeinit = true

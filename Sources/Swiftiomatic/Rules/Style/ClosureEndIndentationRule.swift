@@ -57,11 +57,12 @@ private extension ClosureEndIndentationRule {
             if actualIndentationColumn != expectedIndentationColumn {
                 // Check if there's leading trivia on the right brace that ends with a newline and only whitespace
                 // after it.
-                let leadingTriviaEndsWithNewline = node.rightBrace.leadingTrivia
-                    .reversed()
-                    .drop(while: \.isSpaceOrTab)
-                    .first
-                    .map(\.isNewline) ?? false
+                let leadingTriviaEndsWithNewline =
+                    node.rightBrace.leadingTrivia
+                        .reversed()
+                        .drop(while: \.isSpaceOrTab)
+                        .first
+                        .map(\.isNewline) ?? false
 
                 let (correctionStartPosition, correctionPartBeforeIndentation) =
                     if leadingTriviaEndsWithNewline {
@@ -105,7 +106,8 @@ private extension ClosureEndIndentationRule {
 
             // Case: Trailing closure. e.g., `list.map { ... }`
             if let functionCall = parent.as(FunctionCallExprSyntax.self),
-               closureNode.id == functionCall.trailingClosure?.id {
+               closureNode.id == functionCall.trailingClosure?.id
+            {
                 return anchor(for: ExprSyntax(functionCall))
             }
 
@@ -120,7 +122,8 @@ private extension ClosureEndIndentationRule {
                 if let argList = labeledExpr.parent?.as(LabeledExprListSyntax.self),
                    let functionCall = argList.parent?.as(FunctionCallExprSyntax.self),
                    let firstArg = argList.first,
-                   let leftParen = functionCall.leftParen {
+                   let leftParen = functionCall.leftParen
+                {
                     // Get the location of the opening paren and first argument
                     let leftParenLocation = locationConverter.location(
                         for: leftParen.positionAfterSkippingLeadingTrivia
@@ -151,7 +154,8 @@ private extension ClosureEndIndentationRule {
             // For closures on new lines after function calls
             if let exprList = parent.as(ExprListSyntax.self),
                exprList.count == 1,
-               exprList.parent?.as(FunctionCallExprSyntax.self) != nil {
+               exprList.parent?.as(FunctionCallExprSyntax.self) != nil
+            {
                 // This is a closure on its own line after a function call like:
                 // foo(abc, 123)
                 // { _ in }

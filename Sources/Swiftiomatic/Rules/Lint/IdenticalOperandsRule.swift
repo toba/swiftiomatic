@@ -25,22 +25,28 @@ struct IdenticalOperandsRule: Rule {
                 Example("$0 \(operation) 0"),
                 Example("keyValues?.count ?? 0 \(operation) 0"),
                 Example("string \(operation) string.lowercased()"),
-                Example("""
-                let num: Int? = 0
-                _ = num != nil && num \(operation) num?.byteSwapped
-                """),
+                Example(
+                    """
+                    let num: Int? = 0
+                    _ = num != nil && num \(operation) num?.byteSwapped
+                    """
+                ),
                 Example("num \(operation) num!.byteSwapped"),
                 Example("1    + 1 \(operation)   1     +    2"),
                 Example("f(  i :   2) \(operation)   f (i: 3 )"),
             ]
         } + [
-            Example("func evaluate(_ mode: CommandMode) -> Result<Options, CommandantError<CommandantError<()>>>"),
+            Example(
+                "func evaluate(_ mode: CommandMode) -> Result<Options, CommandantError<CommandantError<()>>>"
+            ),
             Example("let array = Array<Array<Int>>()"),
             Example("guard Set(identifiers).count != identifiers.count else { return }"),
             Example(#"expect("foo") == "foo""#),
             Example("type(of: model).cachePrefix == cachePrefix"),
             Example("histogram[156].0 == 0x003B8D96 && histogram[156].1 == 1"),
-            Example(#"[Wrapper(type: .three), Wrapper(type: .one)].sorted { "\($0.type)" > "\($1.type)"}"#),
+            Example(
+                #"[Wrapper(type: .three), Wrapper(type: .one)].sorted { "\($0.type)" > "\($1.type)"}"#
+            ),
             Example(#"array.sorted { "\($0)" < "\($1)" }"#),
         ],
         triggeringExamples: operators.flatMap { operation in
@@ -58,14 +64,18 @@ struct IdenticalOperandsRule: Rule {
                 Example(" ↓f(  i :   2) \(operation)   f (i: \n 2 )"),
             ]
         } + [
-            Example("""
-                return ↓lhs.foo == lhs.foo &&
-                       lhs.bar == rhs.bar
-            """),
-            Example("""
-                return lhs.foo == rhs.foo &&
-                       ↓lhs.bar == lhs.bar
-            """),
+            Example(
+                """
+                    return ↓lhs.foo == lhs.foo &&
+                           lhs.bar == rhs.bar
+                """
+            ),
+            Example(
+                """
+                    return lhs.foo == rhs.foo &&
+                           ↓lhs.bar == lhs.bar
+                """
+            ),
         ]
     )
 }
@@ -88,7 +98,8 @@ private extension IdenticalOperandsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: InfixOperatorExprSyntax) {
             guard let operatorNode = node.operator.as(BinaryOperatorExprSyntax.self),
-                  IdenticalOperandsRule.operators.contains(operatorNode.operator.text) else {
+                  IdenticalOperandsRule.operators.contains(operatorNode.operator.text)
+            else {
                 return
             }
 

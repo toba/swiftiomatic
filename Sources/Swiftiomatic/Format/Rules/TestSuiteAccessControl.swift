@@ -10,7 +10,8 @@ import Foundation
 
 extension FormatRule {
     static let testSuiteAccessControl = FormatRule(
-        help: "Test methods should be internal, and other properties / functions in a test suite should be private.",
+        help:
+        "Test methods should be internal, and other properties / functions in a test suite should be private.",
         disabledByDefault: true
     ) { formatter in
         guard let testFramework = formatter.detectTestingFramework() else {
@@ -117,8 +118,9 @@ extension Formatter {
               case let .identifier(name) = tokens[nameIndex]
         else { return }
 
-        let treatAsTestCase = isTestCase(at: function.keywordIndex, in: functionDecl, for: framework)
-            || hasDisabledPrefix(name)
+        let treatAsTestCase =
+            isTestCase(at: function.keywordIndex, in: functionDecl, for: framework)
+                || hasDisabledPrefix(name)
 
         if treatAsTestCase {
             // Test methods should be internal
@@ -166,7 +168,9 @@ extension Formatter {
     /// Removes ACL modifiers from a declaration, except for the specified exceptions.
     func removeACLModifiers(from declaration: Declaration, except exceptions: [String]) {
         for aclModifier in _FormatRules.aclModifiers where !exceptions.contains(aclModifier) {
-            if let modifierIndex = indexOfModifier(aclModifier, forDeclarationAt: declaration.keywordIndex) {
+            if let modifierIndex = indexOfModifier(
+                aclModifier, forDeclarationAt: declaration.keywordIndex
+            ) {
                 // Remove the modifier and its trailing space
                 if let nextIndex = index(of: .nonSpace, after: modifierIndex), nextIndex > modifierIndex + 1 {
                     removeTokens(in: modifierIndex ... (modifierIndex + 1))
@@ -188,7 +192,9 @@ extension Formatter {
 
         // Remove any existing ACL modifier
         for aclModifier in _FormatRules.aclModifiers {
-            if let modifierIndex = indexOfModifier(aclModifier, forDeclarationAt: declaration.keywordIndex) {
+            if let modifierIndex = indexOfModifier(
+                aclModifier, forDeclarationAt: declaration.keywordIndex
+            ) {
                 // Replace the modifier with "private"
                 replaceToken(at: modifierIndex, with: .keyword("private"))
                 return

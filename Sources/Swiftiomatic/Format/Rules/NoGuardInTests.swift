@@ -43,7 +43,9 @@ extension FormatRule {
 
                 // Find the else block
                 guard let elseBraceIndex = formatter.index(of: .startOfScope("{"), after: guardIndex),
-                      let prevTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: elseBraceIndex),
+                      let prevTokenIndex = formatter.index(
+                          of: .nonSpaceOrCommentOrLinebreak, before: elseBraceIndex
+                      ),
                       formatter.tokens[prevTokenIndex] == .keyword("else"),
                       let endOfElseScope = formatter.endOfScope(at: elseBraceIndex)
                 else {
@@ -90,28 +92,31 @@ extension FormatRule {
                 let scopeStart = bodyRange.lowerBound
                 let searchRange = scopeStart ..< guardIndex
 
-                let shadowedIdentifiers = Set<String>(searchRange.compactMap { i in
-                    let token = formatter.tokens[i]
+                let shadowedIdentifiers = Set<String>(
+                    searchRange.compactMap { i in
+                        let token = formatter.tokens[i]
 
-                    // Check for let/var declarations
-                    if token == .keyword("let") || token == .keyword("var"),
-                       let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
-                       case let .identifier(name) = formatter.tokens[nextIndex]
-                    {
-                        return name
+                        // Check for let/var declarations
+                        if token == .keyword("let") || token == .keyword("var"),
+                           let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
+                           case let .identifier(name) = formatter.tokens[nextIndex]
+                        {
+                            return name
+                        }
+
+                        // Check for function parameters
+                        if case let .identifier(name) = token,
+                           i > 0,
+                           let prevNonSpace = formatter.index(of: .nonSpaceOrLinebreak, before: i),
+                           formatter.tokens[prevNonSpace] == .delimiter(",")
+                           || formatter.tokens[prevNonSpace] == .startOfScope("(")
+                        {
+                            return name
+                        }
+
+                        return nil
                     }
-
-                    // Check for function parameters
-                    if case let .identifier(name) = token,
-                       i > 0,
-                       let prevNonSpace = formatter.index(of: .nonSpaceOrLinebreak, before: i),
-                       formatter.tokens[prevNonSpace] == .delimiter(",") || formatter.tokens[prevNonSpace] == .startOfScope("(")
-                    {
-                        return name
-                    }
-
-                    return nil
-                })
+                )
 
                 // Check if we should skip this guard due to cases that can't be
                 // represented with #require or #expect

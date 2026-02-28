@@ -44,7 +44,8 @@ extension FormatRule {
             }
         }
 
-        guard let headerRange = formatter.headerCommentTokenRange(includingDirectives: directives) else {
+        guard let headerRange = formatter.headerCommentTokenRange(includingDirectives: directives)
+        else {
             return
         }
 
@@ -55,9 +56,14 @@ extension FormatRule {
 
         var lastHeaderTokenIndex = headerRange.endIndex - 1
         let endIndex = lastHeaderTokenIndex + headerTokens.count
-        if formatter.tokens.endIndex > endIndex, headerTokens == Array(formatter.tokens[
-            lastHeaderTokenIndex + 1 ... endIndex
-        ]) {
+        if formatter.tokens.endIndex > endIndex,
+           headerTokens
+           == Array(
+               formatter.tokens[
+                   lastHeaderTokenIndex + 1 ... endIndex
+               ]
+           )
+        {
             lastHeaderTokenIndex += headerTokens.count
         }
         let headerLinebreaks = headerTokens.reduce(0) { result, token -> Int in
@@ -66,17 +72,24 @@ extension FormatRule {
         if lastHeaderTokenIndex < formatter.tokens.count - 1 {
             headerTokens.append(.linebreak(formatter.options.linebreak, headerLinebreaks + 1))
             if lastHeaderTokenIndex < formatter.tokens.count - 2,
-               !formatter.tokens[lastHeaderTokenIndex + 1 ... lastHeaderTokenIndex + 2].allSatisfy(\.isLinebreak)
+               !formatter.tokens[lastHeaderTokenIndex + 1 ... lastHeaderTokenIndex + 2].allSatisfy(
+                   \.isLinebreak
+               )
             {
                 headerTokens.append(.linebreak(formatter.options.linebreak, headerLinebreaks + 2))
             }
         }
-        if let index = formatter.index(of: .nonSpace, after: lastHeaderTokenIndex, if: {
-            $0.isLinebreak
-        }) {
+        if let index = formatter.index(
+            of: .nonSpace, after: lastHeaderTokenIndex,
+            if: {
+                $0.isLinebreak
+            }
+        ) {
             lastHeaderTokenIndex = index
         }
-        formatter.replaceTokens(in: headerRange.startIndex ..< lastHeaderTokenIndex + 1, with: headerTokens)
+        formatter.replaceTokens(
+            in: headerRange.startIndex ..< lastHeaderTokenIndex + 1, with: headerTokens
+        )
     } examples: {
         """
         You can use the following tokens in the text:

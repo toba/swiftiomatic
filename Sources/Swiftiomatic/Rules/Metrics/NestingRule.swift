@@ -7,7 +7,7 @@ struct NestingRule: Rule {
         identifier: "nesting",
         name: "Nesting",
         description:
-            "Types should be nested at most 1 level deep, and functions should be nested at most 2 levels deep.",
+        "Types should be nested at most 1 level deep, and functions should be nested at most 2 levels deep.",
         kind: .metrics,
         nonTriggeringExamples: NestingRuleExamples.nonTriggeringExamples,
         triggeringExamples: NestingRuleExamples.triggeringExamples
@@ -21,7 +21,9 @@ extension NestingRule: SwiftSyntaxRule {
 }
 
 private struct Levels {
-    var lastIsFunction: Bool { functionOrNotStack.peek() == true }
+    var lastIsFunction: Bool {
+        functionOrNotStack.peek() == true
+    }
 
     private(set) var typeLevel: Int = -1
     private(set) var functionLevel: Int = -1
@@ -121,6 +123,7 @@ private extension NestingRule {
         }
 
         // MARK: - configuration for ignoreTypealiasesAndAssociatedtypes
+
         override func visitPost(_ node: TypeAliasDeclSyntax) {
             if configuration.ignoreTypealiasesAndAssociatedtypes {
                 return
@@ -138,6 +141,7 @@ private extension NestingRule {
         }
 
         // MARK: - configuration for checkNestingInClosuresAndStatements
+
         override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
             guard configuration.checkNestingInClosuresAndStatements else {
                 return .skipChildren
@@ -153,6 +157,7 @@ private extension NestingRule {
         }
 
         // MARK: -
+
         private func validate(forFunction: Bool, triggeringToken: TokenSyntax) {
             let inFunction = levels.lastIsFunction
             levels.push(forFunction)
@@ -170,11 +175,13 @@ private extension NestingRule {
             let targetName = forFunction ? "Functions" : "Types"
             let threshold = configuration.threshold(with: targetLevel, for: severity)
             let pluralSuffix = threshold > 1 ? "s" : ""
-            violations.append(ReasonedRuleViolation(
-                position: triggeringToken.positionAfterSkippingLeadingTrivia,
-                reason: "\(targetName) should be nested at most \(threshold) level\(pluralSuffix) deep",
-                severity: severity
-            ))
+            violations.append(
+                ReasonedRuleViolation(
+                    position: triggeringToken.positionAfterSkippingLeadingTrivia,
+                    reason: "\(targetName) should be nested at most \(threshold) level\(pluralSuffix) deep",
+                    severity: severity
+                )
+            )
         }
     }
 }

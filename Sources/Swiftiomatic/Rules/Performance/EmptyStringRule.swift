@@ -43,7 +43,6 @@ private extension EmptyStringRule {
     }
 }
 
-
 extension EmptyStringRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)

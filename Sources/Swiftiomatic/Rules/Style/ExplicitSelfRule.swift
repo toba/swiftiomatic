@@ -17,9 +17,11 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
 
     func validate(file: SwiftLintFile, compilerArguments: [String]) -> [StyleViolation] {
         violationRanges(in: file, compilerArguments: compilerArguments).map {
-            StyleViolation(ruleDescription: Self.description,
-                           severity: configuration.severity,
-                           location: Location(file: file, characterOffset: $0.location))
+            StyleViolation(
+                ruleDescription: Self.description,
+                severity: configuration.severity,
+                location: Location(file: file, characterOffset: $0.location)
+            )
         }
     }
 
@@ -46,8 +48,10 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
         let allCursorInfo: [[String: any SourceKitRepresentable]]
         do {
             let byteOffsets = try binaryOffsets(file: file, compilerArguments: compilerArguments)
-            allCursorInfo = try file.allCursorInfo(compilerArguments: compilerArguments,
-                                                   atByteOffsets: byteOffsets)
+            allCursorInfo = try file.allCursorInfo(
+                compilerArguments: compilerArguments,
+                atByteOffsets: byteOffsets
+            )
         } catch {
             queuedPrintError(String(describing: error))
             return []
@@ -65,7 +69,8 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
         let contents = file.stringView
 
         return cursorsMissingExplicitSelf.compactMap { cursorInfo in
-            guard let byteOffset = (cursorInfo["swiftlint.offset"] as? Int64).flatMap(ByteCount.init) else {
+            guard let byteOffset = (cursorInfo["swiftlint.offset"] as? Int64).flatMap(ByteCount.init)
+            else {
                 Issue.genericWarning("Cannot convert offsets in '\(Self.identifier)' rule.").print()
                 return nil
             }
@@ -80,9 +85,12 @@ private let kindsToFind: Set = [
     "source.lang.swift.ref.var.instance",
 ]
 
-private extension SwiftLintFile {
-    func allCursorInfo(compilerArguments: [String], atByteOffsets byteOffsets: [ByteCount]) throws
-        -> [[String: any SourceKitRepresentable]] {
+extension SwiftLintFile {
+    fileprivate func allCursorInfo(
+        compilerArguments: [String], atByteOffsets byteOffsets: [ByteCount]
+    ) throws
+        -> [[String: any SourceKitRepresentable]]
+    {
         try byteOffsets.compactMap { offset in
             if isExplicitAccess(at: offset) { return nil }
             let cursorInfoRequest = Request.cursorInfoWithoutSymbolGraph(
@@ -98,7 +106,8 @@ private extension SwiftLintFile {
             let sourceKittenDictionary = SourceKittenDictionary(cursorInfo)
             if sourceKittenDictionary.kind == "source.lang.swift.ref.var.instance",
                let name = sourceKittenDictionary.name,
-               let length = sourceKittenDictionary.length {
+               let length = sourceKittenDictionary.length
+            {
                 prefixLength = Int64(name.count - length.value)
                 if prefixLength > 0, isExplicitAccess(at: offset - ByteCount(prefixLength)) {
                     return nil
@@ -122,7 +131,8 @@ private extension StringView {
            let column = dict["key.column"] as? Int64,
            let kindString = dict["key.kind"] as? String,
            kindsToFind.contains(kindString),
-           let offset = byteOffset(forLine: line, bytePosition: column) {
+           let offset = byteOffset(forLine: line, bytePosition: column)
+        {
             cur = [offset]
         } else {
             cur = []
@@ -136,7 +146,8 @@ private extension StringView {
 
 private func binaryOffsets(file: SwiftLintFile, compilerArguments: [String]) throws -> [ByteCount] {
     let absoluteFile = file.path!.bridge().absolutePathRepresentation()
-    let index = try Request.index(file: absoluteFile, arguments: compilerArguments).sendIfNotDisabled()
+    let index = try Request.index(file: absoluteFile, arguments: compilerArguments)
+        .sendIfNotDisabled()
     let binaryOffsets = file.stringView.recursiveByteOffsets(index)
     return binaryOffsets.sorted()
 }

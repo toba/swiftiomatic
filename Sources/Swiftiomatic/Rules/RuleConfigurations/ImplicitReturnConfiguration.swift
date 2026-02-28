@@ -1,4 +1,3 @@
-
 struct ImplicitReturnConfiguration: SeverityBasedRuleConfiguration {
     enum ReturnKind: String, AcceptableByConfigurationElement, CaseIterable, Comparable {
         case closure
@@ -26,6 +25,7 @@ struct ImplicitReturnConfiguration: SeverityBasedRuleConfiguration {
     func isKindIncluded(_ kind: ReturnKind) -> Bool {
         includedKinds.contains(kind)
     }
+
     typealias Parent = ImplicitReturnRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $includedKinds.key.isEmpty {

@@ -6,66 +6,83 @@ struct UnavailableConditionRule: Rule {
     static let description = RuleDescription(
         identifier: "unavailable_condition",
         name: "Unavailable Condition",
-        description: "Use #unavailable/#available instead of #available/#unavailable with an empty body.",
+        description:
+        "Use #unavailable/#available instead of #available/#unavailable with an empty body.",
         kind: .idiomatic,
         minSwiftVersion: .fiveDotSix,
         nonTriggeringExamples: [
-            Example("""
-            if #unavailable(iOS 13) {
-              loadMainWindow()
-            }
-            """),
-            Example("""
-            if #available(iOS 9.0, *) {
-              doSomething()
-            } else {
-              legacyDoSomething()
-            }
-            """),
-            Example("""
-            if #available(macOS 11.0, *) {
-               // Do nothing
-            } else if #available(macOS 10.15, *) {
-               print("do some stuff")
-            }
-            """),
-            Example("""
-            if #available(macOS 11.0, *) {
-               // Do nothing
-            } else if i > 7 {
-               print("do some stuff")
-            } else if i < 2, #available(macOS 11.0, *) {
-              print("something else")
-            }
-            """, excludeFromDocumentation: true),
+            Example(
+                """
+                if #unavailable(iOS 13) {
+                  loadMainWindow()
+                }
+                """
+            ),
+            Example(
+                """
+                if #available(iOS 9.0, *) {
+                  doSomething()
+                } else {
+                  legacyDoSomething()
+                }
+                """
+            ),
+            Example(
+                """
+                if #available(macOS 11.0, *) {
+                   // Do nothing
+                } else if #available(macOS 10.15, *) {
+                   print("do some stuff")
+                }
+                """
+            ),
+            Example(
+                """
+                if #available(macOS 11.0, *) {
+                   // Do nothing
+                } else if i > 7 {
+                   print("do some stuff")
+                } else if i < 2, #available(macOS 11.0, *) {
+                  print("something else")
+                }
+                """, excludeFromDocumentation: true
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            if ↓#available(iOS 14.0) {
+            Example(
+                """
+                if ↓#available(iOS 14.0) {
 
-            } else {
-              oldIos13TrackingLogic(isEnabled: ASIdentifierManager.shared().isAdvertisingTrackingEnabled)
-            }
-            """),
-            Example("""
-            if ↓#available(iOS 14.0) {
-              // we don't need to do anything here
-            } else {
-              oldIos13TrackingLogic(isEnabled: ASIdentifierManager.shared().isAdvertisingTrackingEnabled)
-            }
-            """),
-            Example("""
-            if ↓#available(iOS 13, *) {} else {
-              loadMainWindow()
-            }
-            """),
-            Example("""
-            if ↓#unavailable(iOS 13) {
-              // Do nothing
-            } else if i < 2 {
-              loadMainWindow()
-            }
-            """),
+                } else {
+                  oldIos13TrackingLogic(isEnabled: ASIdentifierManager.shared().isAdvertisingTrackingEnabled)
+                }
+                """
+            ),
+            Example(
+                """
+                if ↓#available(iOS 14.0) {
+                  // we don't need to do anything here
+                } else {
+                  oldIos13TrackingLogic(isEnabled: ASIdentifierManager.shared().isAdvertisingTrackingEnabled)
+                }
+                """
+            ),
+            Example(
+                """
+                if ↓#available(iOS 13, *) {} else {
+                  loadMainWindow()
+                }
+                """
+            ),
+            Example(
+                """
+                if ↓#unavailable(iOS 13) {
+                  // Do nothing
+                } else if i < 2 {
+                  loadMainWindow()
+                }
+                """
+            ),
         ]
     )
 }
@@ -84,7 +101,8 @@ private extension UnavailableConditionRule {
             }
 
             guard let condition = node.conditions.onlyElement,
-                  let availability = asAvailabilityCondition(condition.condition) else {
+                  let availability = asAvailabilityCondition(condition.condition)
+            else {
                 return
             }
 
@@ -103,13 +121,16 @@ private extension UnavailableConditionRule {
         }
 
         private func asAvailabilityCondition(_ condition: ConditionElementSyntax.Condition)
-        -> AvailabilityConditionSyntax? {
+            -> AvailabilityConditionSyntax?
+        {
             condition.as(AvailabilityConditionSyntax.self)
         }
 
         private func otherAvailabilityCheckInvolved(ifStmt: IfExprSyntax) -> Bool {
             if let elseBody = ifStmt.elseBody, let nestedIfStatement = elseBody.as(IfExprSyntax.self) {
-                if nestedIfStatement.conditions.map(\.condition).compactMap(asAvailabilityCondition).isNotEmpty {
+                if nestedIfStatement.conditions.map(\.condition).compactMap(asAvailabilityCondition)
+                    .isNotEmpty
+                {
                     return true
                 }
                 return otherAvailabilityCheckInvolved(ifStmt: nestedIfStatement)

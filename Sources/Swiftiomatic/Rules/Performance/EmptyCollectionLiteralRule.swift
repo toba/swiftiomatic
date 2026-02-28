@@ -6,7 +6,8 @@ struct EmptyCollectionLiteralRule: Rule {
     static let description = RuleDescription(
         identifier: "empty_collection_literal",
         name: "Empty Collection Literal",
-        description: "Prefer checking `isEmpty` over comparing collection to an empty array or dictionary literal",
+        description:
+        "Prefer checking `isEmpty` over comparing collection to an empty array or dictionary literal",
         kind: .performance,
         nonTriggeringExamples: [
             Example("myArray = []"),
@@ -40,10 +41,13 @@ private extension EmptyCollectionLiteralRule {
         override func visitPost(_ node: TokenSyntax) {
             guard
                 node.tokenKind.isEqualityComparison,
-                let violationPosition = node.previousToken(viewMode: .sourceAccurate)?.endPositionBeforeTrailingTrivia,
+                let violationPosition = node.previousToken(viewMode: .sourceAccurate)?
+                .endPositionBeforeTrailingTrivia,
                 let expectedLeftSquareBracketToken = node.nextToken(viewMode: .sourceAccurate),
                 expectedLeftSquareBracketToken.tokenKind == .leftSquare,
-                let expectedColonToken = expectedLeftSquareBracketToken.nextToken(viewMode: .sourceAccurate),
+                let expectedColonToken = expectedLeftSquareBracketToken.nextToken(
+                    viewMode: .sourceAccurate
+                ),
                 expectedColonToken.tokenKind == .colon || expectedColonToken.tokenKind == .rightSquare
             else {
                 return

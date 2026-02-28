@@ -1,4 +1,3 @@
-
 struct NoEmptyBlockConfiguration: SeverityBasedRuleConfiguration {
     enum CodeBlockType: String, AcceptableByConfigurationElement, CaseIterable {
         case functionBodies = "function_bodies"
@@ -18,6 +17,7 @@ struct NoEmptyBlockConfiguration: SeverityBasedRuleConfiguration {
     var enabledBlockTypes: Set<CodeBlockType> {
         CodeBlockType.all.subtracting(disabledBlockTypes)
     }
+
     typealias Parent = NoEmptyBlockRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $disabledBlockTypes.key.isEmpty {

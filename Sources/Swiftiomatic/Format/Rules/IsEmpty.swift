@@ -15,13 +15,26 @@ extension FormatRule {
         disabledByDefault: true
     ) { formatter in
         formatter.forEach(.identifier("count")) { i, _ in
-            guard let dotIndex = formatter.index(of: .nonSpaceOrLinebreak, before: i, if: {
-                $0.isOperator(".")
-            }), let opIndex = formatter.index(of: .nonSpaceOrLinebreak, after: i, if: {
-                $0.isOperator
-            }), let endIndex = formatter.index(of: .nonSpaceOrLinebreak, after: opIndex, if: {
-                $0 == .number("0", .integer)
-            }) else {
+            guard
+                let dotIndex = formatter.index(
+                    of: .nonSpaceOrLinebreak, before: i,
+                    if: {
+                        $0.isOperator(".")
+                    }
+                ),
+                let opIndex = formatter.index(
+                    of: .nonSpaceOrLinebreak, after: i,
+                    if: {
+                        $0.isOperator
+                    }
+                ),
+                let endIndex = formatter.index(
+                    of: .nonSpaceOrLinebreak, after: opIndex,
+                    if: {
+                        $0 == .number("0", .integer)
+                    }
+                )
+            else {
                 return
             }
             var isOptional = false
@@ -74,17 +87,25 @@ extension FormatRule {
             }
             if isEmpty {
                 if isOptional {
-                    formatter.replaceTokens(in: i ... endIndex, with: [
-                        .identifier("isEmpty"), .space(" "), .operator("==", .infix), .space(" "), .identifier("true"),
-                    ])
+                    formatter.replaceTokens(
+                        in: i ... endIndex,
+                        with: [
+                            .identifier("isEmpty"), .space(" "), .operator("==", .infix), .space(" "),
+                            .identifier("true"),
+                        ]
+                    )
                 } else {
                     formatter.replaceTokens(in: i ... endIndex, with: .identifier("isEmpty"))
                 }
             } else {
                 if isOptional {
-                    formatter.replaceTokens(in: i ... endIndex, with: [
-                        .identifier("isEmpty"), .space(" "), .operator("!=", .infix), .space(" "), .identifier("true"),
-                    ])
+                    formatter.replaceTokens(
+                        in: i ... endIndex,
+                        with: [
+                            .identifier("isEmpty"), .space(" "), .operator("!=", .infix), .space(" "),
+                            .identifier("true"),
+                        ]
+                    )
                 } else {
                     formatter.replaceTokens(in: i ... endIndex, with: .identifier("isEmpty"))
                     formatter.insert(.operator("!", .prefix), at: index)

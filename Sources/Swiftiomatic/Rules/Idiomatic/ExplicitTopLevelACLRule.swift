@@ -11,11 +11,13 @@ struct ExplicitTopLevelACLRule: Rule {
         nonTriggeringExamples: [
             Example("internal enum A {}"),
             Example("public final class B {}"),
-            Example("""
+            Example(
+                """
                 private struct S1 {
                     struct S2 {}
                 }
-                """),
+                """
+            ),
             Example("internal enum A { enum B {} }"),
             Example("internal final actor Foo {}"),
             Example("internal typealias Foo = Bar"),
@@ -45,7 +47,9 @@ extension ExplicitTopLevelACLRule: OptInRule {}
 
 private extension ExplicitTopLevelACLRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_ node: ClassDeclSyntax) {
             collectViolations(decl: node, token: node.classKeyword)

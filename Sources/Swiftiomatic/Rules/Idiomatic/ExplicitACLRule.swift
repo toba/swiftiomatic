@@ -14,67 +14,83 @@ struct ExplicitACLRule: Rule {
             Example("private struct C {}"),
             Example("internal enum A { internal enum B {} }"),
             Example("internal final class Foo {}"),
-            Example("""
-            internal
-            class Foo {
-              private let bar = 5
-            }
-            """),
+            Example(
+                """
+                internal
+                class Foo {
+                  private let bar = 5
+                }
+                """
+            ),
             Example("internal func a() { let a =  }"),
             Example("private func a() { func innerFunction() { } }"),
             Example("private enum Foo { enum Bar { } }"),
             Example("private struct C { let d = 5 }"),
-            Example("""
-            internal protocol A {
-              func b()
-            }
-            """),
-            Example("""
-            internal protocol A {
-              var b: Int
-            }
-            """),
+            Example(
+                """
+                internal protocol A {
+                  func b()
+                }
+                """
+            ),
+            Example(
+                """
+                internal protocol A {
+                  var b: Int
+                }
+                """
+            ),
             Example("internal class A { deinit {} }"),
             Example("extension A: Equatable {}"),
             Example("extension A {}"),
-            Example("""
-            extension Foo {
-                internal func bar() {}
-            }
-            """),
-            Example("""
-            internal enum Foo {
-                case bar
-            }
-            """),
-            Example("""
-            extension Foo {
-                public var isValid: Bool {
-                    let result = true
-                    return result
+            Example(
+                """
+                extension Foo {
+                    internal func bar() {}
                 }
-            }
-            """),
-            Example("""
-            extension Foo {
-                private var isValid: Bool {
-                    get {
-                        return true
-                    }
-                    set(newValue) {
-                        print(newValue)
+                """
+            ),
+            Example(
+                """
+                internal enum Foo {
+                    case bar
+                }
+                """
+            ),
+            Example(
+                """
+                extension Foo {
+                    public var isValid: Bool {
+                        let result = true
+                        return result
                     }
                 }
-            }
-            """),
-            Example("""
-            private extension Foo {
-                var isValid: Bool { true }
-                struct S {
-                    let b = 2
+                """
+            ),
+            Example(
+                """
+                extension Foo {
+                    private var isValid: Bool {
+                        get {
+                            return true
+                        }
+                        set(newValue) {
+                            print(newValue)
+                        }
+                    }
                 }
-            }
-            """),
+                """
+            ),
+            Example(
+                """
+                private extension Foo {
+                    var isValid: Bool { true }
+                    struct S {
+                        let b = 2
+                    }
+                }
+                """
+            ),
         ],
         triggeringExamples: [
             Example("↓enum A {}"),
@@ -86,20 +102,24 @@ struct ExplicitACLRule: Rule {
             Example("public struct C { ↓init() }"),
             Example("static ↓func a() {}"),
             Example("internal let a = 0\n↓func b() {}"),
-            Example("""
-            extension Foo {
-                ↓func bar() {}
-                static ↓func baz() {}
-            }
-            """),
-            Example("""
-            public extension E {
-                let a = 1
-                struct S {
-                    ↓let b = 2
+            Example(
+                """
+                extension Foo {
+                    ↓func bar() {}
+                    static ↓func baz() {}
                 }
-            }
-            """),
+                """
+            ),
+            Example(
+                """
+                public extension E {
+                    let a = 1
+                    struct S {
+                        ↓let b = 2
+                    }
+                }
+                """
+            ),
         ]
     )
 }
@@ -214,7 +234,9 @@ private extension ExplicitACLRule {
 
         private func collectViolations(decl: some WithModifiersSyntax, token: TokenSyntax) {
             let aclModifiers = decl.modifiers.filter { $0.asAccessLevelModifier != nil }
-            if declScope.peek() != .no, aclModifiers.isEmpty || aclModifiers.allSatisfy({ $0.detail != nil }) {
+            if declScope.peek() != .no,
+               aclModifiers.isEmpty || aclModifiers.allSatisfy({ $0.detail != nil })
+            {
                 violations.append(token.positionAfterSkippingLeadingTrivia)
             }
         }

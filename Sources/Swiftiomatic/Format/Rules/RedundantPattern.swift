@@ -36,9 +36,12 @@ extension FormatRule {
                     before: prevIndex,
                     where: { tkn in tkn == .endOfScope("case") || tkn == .keyword("case") }
                 ),
-                    let varOrLetIndex = formatter.index(after: endOfScopeIndex, where: { tkn in
-                        tkn == .keyword("let") || tkn == .keyword("var")
-                    }),
+                    let varOrLetIndex = formatter.index(
+                        after: endOfScopeIndex,
+                        where: { tkn in
+                            tkn == .keyword("let") || tkn == .keyword("var")
+                        }
+                    ),
                     let operatorIndex = formatter.index(of: .operator, before: prevIndex),
                     varOrLetIndex < operatorIndex
                 {

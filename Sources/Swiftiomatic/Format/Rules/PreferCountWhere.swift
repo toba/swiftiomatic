@@ -16,7 +16,8 @@ extension FormatRule {
         guard formatter.options.swiftVersion >= "6.0" else { return }
 
         formatter.forEach(.identifier("filter")) { filterIndex, _ in
-            guard let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: filterIndex) else { return }
+            guard let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: filterIndex)
+            else { return }
 
             // Parse the `filter` call, which takes exactly one closure
             // and is either `filter { ... }` or `filter({ ... })`
@@ -26,10 +27,14 @@ extension FormatRule {
             let closeParen: Int?
 
             if formatter.tokens[nextIndex] == .startOfScope("("),
-               let startOfClosureIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: nextIndex),
+               let startOfClosureIndex = formatter.index(
+                   of: .nonSpaceOrCommentOrLinebreak, after: nextIndex
+               ),
                formatter.tokens[startOfClosureIndex] == .startOfScope("{"),
                let endOfClosureIndex = formatter.endOfScope(at: startOfClosureIndex),
-               let tokenAfterClosure = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: endOfClosureIndex),
+               let tokenAfterClosure = formatter.index(
+                   of: .nonSpaceOrCommentOrLinebreak, after: endOfClosureIndex
+               ),
                formatter.tokens[tokenAfterClosure] == .endOfScope(")")
             {
                 openParen = nextIndex
@@ -52,16 +57,23 @@ extension FormatRule {
             }
 
             // Check if there's a `.count` property access after the filter call
-            guard let dotIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: closeParen ?? endOfClosure),
-                  formatter.tokens[dotIndex] == .operator(".", .infix),
-                  let countIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: dotIndex),
-                  formatter.tokens[countIndex] == .identifier("count")
+            guard
+                let dotIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: closeParen ?? endOfClosure
+                ),
+                formatter.tokens[dotIndex] == .operator(".", .infix),
+                let countIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: dotIndex),
+                formatter.tokens[countIndex] == .identifier("count")
             else { return }
 
             // Ensure the `.count` is a property access, not a method call.
-            if let tokenAfterCount = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: countIndex),
-               formatter.tokens[tokenAfterCount].isStartOfScope
-            { return }
+            if let tokenAfterCount = formatter.index(
+                of: .nonSpaceOrCommentOrLinebreak, after: countIndex
+            ),
+                formatter.tokens[tokenAfterCount].isStartOfScope
+            {
+                return
+            }
 
             // Remove the `.count` property access.
             formatter.removeToken(at: countIndex)

@@ -9,7 +9,7 @@ enum ExecutableInfo {
             var offset: UInt64 = 0
             let header = pointer.bindMemory(to: mach_header_64.self, capacity: 1)
             offset += UInt64(MemoryLayout<mach_header_64>.size)
-            for _ in 0..<header.pointee.ncmds {
+            for _ in 0 ..< header.pointee.ncmds {
                 let loadCommand = pointer.load(fromByteOffset: Int(offset), as: load_command.self)
                 if loadCommand.cmd == LC_UUID {
                     let uuidCommand = pointer.load(fromByteOffset: Int(offset), as: uuid_command.self)

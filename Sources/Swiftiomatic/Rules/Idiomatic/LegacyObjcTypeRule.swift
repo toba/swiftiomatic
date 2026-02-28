@@ -43,32 +43,38 @@ struct LegacyObjcTypeRule: Rule {
             Example("var className: String = NSStringFromClass(MyClass.self)"),
             Example("_ = URLRequest.CachePolicy.reloadIgnoringLocalCacheData"),
             Example(#"_ = Notification.Name("com.apple.Music.playerInfo")"#),
-            Example(#"""
-            class SLURLRequest: NSURLRequest {
-                let data = NSData()
-                let number: NSNumber
-            }
-            """#, configuration: ["allowed_types": ["NSData", "NSNumber", "NSURLRequest"]]),
+            Example(
+                #"""
+                class SLURLRequest: NSURLRequest {
+                    let data = NSData()
+                    let number: NSNumber
+                }
+                """#, configuration: ["allowed_types": ["NSData", "NSNumber", "NSURLRequest"]]
+            ),
         ],
         triggeringExamples: [
             Example("var array = ↓NSArray()"),
             Example("var calendar: ↓NSCalendar? = nil"),
             Example("_ = ↓NSURLRequest.CachePolicy.reloadIgnoringLocalCacheData"),
             Example(#"_ = ↓NSNotification.Name("com.apple.Music.playerInfo")"#),
-            Example(#"""
-            let keyValuePair: (Int) -> (↓NSString, ↓NSString) = {
-              let n = "\($0)" as ↓NSString; return (n, n)
-            }
-            dictionary = [↓NSString: ↓NSString](uniqueKeysWithValues:
-              (1...10_000).lazy.map(keyValuePair))
-            """#),
-            Example("""
-            extension Foundation.Notification.Name {
-                static var reachabilityChanged: Foundation.↓NSNotification.Name {
-                    return Foundation.Notification.Name("org.wordpress.reachability.changed")
+            Example(
+                #"""
+                let keyValuePair: (Int) -> (↓NSString, ↓NSString) = {
+                  let n = "\($0)" as ↓NSString; return (n, n)
                 }
-            }
-            """),
+                dictionary = [↓NSString: ↓NSString](uniqueKeysWithValues:
+                  (1...10_000).lazy.map(keyValuePair))
+                """#
+            ),
+            Example(
+                """
+                extension Foundation.Notification.Name {
+                    static var reachabilityChanged: Foundation.↓NSNotification.Name {
+                        return Foundation.Notification.Name("org.wordpress.reachability.changed")
+                    }
+                }
+                """
+            ),
         ]
     )
 }
@@ -96,7 +102,9 @@ private extension LegacyObjcTypeRule {
         }
 
         override func visitPost(_ node: MemberTypeSyntax) {
-            if node.baseType.as(IdentifierTypeSyntax.self)?.typeName == "Foundation", isViolatingType(node.name.text) {
+            if node.baseType.as(IdentifierTypeSyntax.self)?.typeName == "Foundation",
+               isViolatingType(node.name.text)
+            {
                 violations.append(node.name.positionAfterSkippingLeadingTrivia)
             }
         }

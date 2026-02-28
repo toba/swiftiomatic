@@ -23,9 +23,10 @@ extension FormatRule {
 
         let declarations = formatter.parseDeclarations()
 
-        let xcTestSuites = declarations
-            .compactMap(\.asTypeDeclaration)
-            .filter { $0.conformances.contains(where: { $0.conformance.string == "XCTestCase" }) }
+        let xcTestSuites =
+            declarations
+                .compactMap(\.asTypeDeclaration)
+                .filter { $0.conformances.contains(where: { $0.conformance.string == "XCTestCase" }) }
 
         guard !xcTestSuites.isEmpty,
               !xcTestSuites.contains(where: { $0.hasUnsupportedXCTestFunctionality() })
@@ -137,7 +138,9 @@ extension TypeDeclaration {
             // async / throws `tearDown` can't be converted to a `deinit`
             if methodName == "tearDown",
                overriddenMethod.keyword == "func",
-               let startOfArguments = formatter.index(of: .startOfScope("("), after: overriddenMethod.keywordIndex),
+               let startOfArguments = formatter.index(
+                   of: .startOfScope("("), after: overriddenMethod.keywordIndex
+               ),
                let endOfArguments = formatter.endOfScope(at: startOfArguments),
                let effect = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: endOfArguments),
                ["async", "throws"].contains(tokens[effect].string)
@@ -152,7 +155,9 @@ extension TypeDeclaration {
     /// Converts this XCTestCase implementation to a Swift Testing test suite
     func convertXCTestCaseToSwiftTestingSuite() {
         // Remove the XCTestCase conformance
-        if let xcTestCaseConformance = conformances.first(where: { $0.conformance.string == "XCTestCase" }) {
+        if let xcTestCaseConformance = conformances.first(where: {
+            $0.conformance.string == "XCTestCase"
+        }) {
             formatter.removeConformance(at: xcTestCaseConformance.index)
         }
 
@@ -169,7 +174,9 @@ extension TypeDeclaration {
 
         for instanceMethod in instanceMethods {
             guard let methodName = instanceMethod.name,
-                  let startOfParameters = formatter.index(of: .startOfScope("("), after: instanceMethod.keywordIndex),
+                  let startOfParameters = formatter.index(
+                      of: .startOfScope("("), after: instanceMethod.keywordIndex
+                  ),
                   let endOfParameters = formatter.endOfScope(at: startOfParameters),
                   let startOfFunctionBody = formatter.index(of: .startOfScope("{"), after: endOfParameters),
                   let endOfFunctionBody = formatter.endOfScope(at: startOfFunctionBody)
@@ -204,13 +211,20 @@ extension TypeDeclaration {
                 // but has any `try`s in the method body, we have to add `throws`.
                 if !tokens[endOfParameters ..< startOfFunctionBody].contains(.keyword("throws")),
                    tokens[startOfFunctionBody ... endOfFunctionBody].contains(.keyword("try")),
-                   let indexBeforeStartOfFunctionBody = formatter.index(of: .nonSpaceOrComment, before: startOfFunctionBody)
+                   let indexBeforeStartOfFunctionBody = formatter.index(
+                       of: .nonSpaceOrComment, before: startOfFunctionBody
+                   )
                 {
-                    formatter.insert([.space(" "), .keyword("throws")], at: indexBeforeStartOfFunctionBody + 1)
+                    formatter.insert(
+                        [.space(" "), .keyword("throws")], at: indexBeforeStartOfFunctionBody + 1
+                    )
                 }
 
                 // Add the @Test macro
-                formatter.insert(tokenize("@Test "), at: formatter.startOfModifiers(at: instanceMethod.keywordIndex, includingAttributes: true))
+                formatter.insert(
+                    tokenize("@Test "),
+                    at: formatter.startOfModifiers(at: instanceMethod.keywordIndex, includingAttributes: true)
+                )
             }
         }
     }
@@ -223,8 +237,14 @@ extension Formatter {
     /// isn't supported by the preferSwiftTesting rule.
     func hasUnsupportedXCTestHelper() -> Bool {
         // https://developer.apple.com/documentation/xctest/xctestcase
-        let xcTestCaseInstanceMethods = Set(["expectation", "wait", "measure", "measureMetrics", "addTeardownBlock", "runsForEachTargetApplicationUIConfiguration", "continueAfterFailure", "executionTimeAllowance", "startMeasuring", "stopMeasuring", "defaultPerformanceMetrics", "defaultMetrics", "defaultMeasureOptions", "fulfillment", "addUIInterruptionMonitor", "keyValueObservingExpectation", "removeUIInterruptionMonitor"])
-            .union(options.additionalXCTestSymbols)
+        let xcTestCaseInstanceMethods = Set([
+            "expectation", "wait", "measure", "measureMetrics", "addTeardownBlock",
+            "runsForEachTargetApplicationUIConfiguration", "continueAfterFailure",
+            "executionTimeAllowance", "startMeasuring", "stopMeasuring", "defaultPerformanceMetrics",
+            "defaultMetrics", "defaultMeasureOptions", "fulfillment", "addUIInterruptionMonitor",
+            "keyValueObservingExpectation", "removeUIInterruptionMonitor",
+        ])
+        .union(options.additionalXCTestSymbols)
 
         for index in tokens.indices where tokens[index].isIdentifier {
             let identifier = tokens[index].string
@@ -368,7 +388,9 @@ extension Formatter {
             )
 
         case "XCTFail":
-            let functionParams = parseFunctionCallArguments(startOfScope: startOfFunctionCall, preserveWhitespace: true)
+            let functionParams = parseFunctionCallArguments(
+                startOfScope: startOfFunctionCall, preserveWhitespace: true
+            )
             switch functionParams.count {
             case 0:
                 return tokenize("Issue.record()")
@@ -379,41 +401,57 @@ extension Formatter {
             }
 
         case "XCTUnwrap":
-            let functionParams = parseFunctionCallArguments(startOfScope: startOfFunctionCall, preserveWhitespace: true)
+            let functionParams = parseFunctionCallArguments(
+                startOfScope: startOfFunctionCall, preserveWhitespace: true
+            )
             switch functionParams.count {
             case 1:
                 return tokenize("#require(\(functionParams[0].value))")
             case 2:
-                return tokenize("#require(\(functionParams[0].value),\(functionParams[1].value.asSwiftTestingComment()))")
+                return tokenize(
+                    "#require(\(functionParams[0].value),\(functionParams[1].value.asSwiftTestingComment()))"
+                )
             default:
                 return nil
             }
 
         case "XCTAssertNoThrow":
-            let functionParams = parseFunctionCallArguments(startOfScope: startOfFunctionCall, preserveWhitespace: true)
+            let functionParams = parseFunctionCallArguments(
+                startOfScope: startOfFunctionCall, preserveWhitespace: true
+            )
             switch functionParams.count {
             case 1:
                 return tokenize("#expect(throws: Never.self) { \(functionParams[0].value) }")
             case 2:
-                return tokenize("#expect(throws: Never.self,\(functionParams[1].value.asSwiftTestingComment())) { \(functionParams[0].value) }")
+                return tokenize(
+                    "#expect(throws: Never.self,\(functionParams[1].value.asSwiftTestingComment())) { \(functionParams[0].value) }"
+                )
             default:
                 return nil
             }
 
         case "XCTAssertThrowsError":
-            let functionParams = parseFunctionCallArguments(startOfScope: startOfFunctionCall, preserveWhitespace: true)
+            let functionParams = parseFunctionCallArguments(
+                startOfScope: startOfFunctionCall, preserveWhitespace: true
+            )
 
             // Trailing closure variant is unsupported for now
             if let endOfFunctionCall = endOfScope(at: startOfFunctionCall),
-               let startOfTrailingClosure = index(of: .nonSpaceOrCommentOrLinebreak, after: endOfFunctionCall),
+               let startOfTrailingClosure = index(
+                   of: .nonSpaceOrCommentOrLinebreak, after: endOfFunctionCall
+               ),
                tokens[startOfTrailingClosure] == .startOfScope("{")
-            { return nil }
+            {
+                return nil
+            }
 
             switch functionParams.count {
             case 1:
                 return tokenize("#expect(throws: Error.self) { \(functionParams[0].value) }")
             case 2:
-                return tokenize("#expect(throws: Error.self,\(functionParams[1].value.asSwiftTestingComment())) { \(functionParams[0].value) }")
+                return tokenize(
+                    "#expect(throws: Error.self,\(functionParams[1].value.asSwiftTestingComment())) { \(functionParams[0].value) }"
+                )
             default:
                 return nil
             }
@@ -429,8 +467,12 @@ extension Formatter {
         at identifierIndex: Int,
         makeAssertion: (_ value: String) -> String
     ) -> [Token]? {
-        guard let startOfFunctionCall = index(of: .nonSpaceOrComment, after: identifierIndex) else { return nil }
-        let functionParams = parseFunctionCallArguments(startOfScope: startOfFunctionCall, preserveWhitespace: true)
+        guard let startOfFunctionCall = index(of: .nonSpaceOrComment, after: identifierIndex) else {
+            return nil
+        }
+        let functionParams = parseFunctionCallArguments(
+            startOfScope: startOfFunctionCall, preserveWhitespace: true
+        )
 
         // All of the function params should be unlabeled
         guard functionParams.allSatisfy({ $0.label == nil }) else { return nil }
@@ -461,8 +503,12 @@ extension Formatter {
         at identifierIndex: Int,
         operator operatorToken: String
     ) -> [Token]? {
-        guard let startOfFunctionCall = index(of: .nonSpaceOrComment, after: identifierIndex) else { return nil }
-        let functionParams = parseFunctionCallArguments(startOfScope: startOfFunctionCall, preserveWhitespace: true)
+        guard let startOfFunctionCall = index(of: .nonSpaceOrComment, after: identifierIndex) else {
+            return nil
+        }
+        let functionParams = parseFunctionCallArguments(
+            startOfScope: startOfFunctionCall, preserveWhitespace: true
+        )
 
         // All of the function params should be unlabeled
         guard functionParams.allSatisfy({ $0.label == nil }) else { return nil }
@@ -500,14 +546,16 @@ extension Formatter {
         else { return }
 
         // Remove `super.setUp()` / `super.tearDown()` if present
-        if let superCall = index(of: .identifier("super"), in: startOfFunctionBody + 1 ..< endOfFunctionBody),
-           let dotIndex = index(of: .nonSpaceOrLinebreak, after: superCall),
-           tokens[dotIndex] == .operator(".", .infix),
-           let methodName = index(of: .nonSpaceOrCommentOrLinebreak, after: dotIndex),
-           tokens[methodName] == tokens[nameIndex],
-           let startOfCall = index(of: .nonSpaceOrCommentOrLinebreak, after: methodName),
-           tokens[startOfCall] == .startOfScope("("),
-           let endOfCall = endOfScope(at: startOfCall)
+        if let superCall = index(
+            of: .identifier("super"), in: startOfFunctionBody + 1 ..< endOfFunctionBody
+        ),
+            let dotIndex = index(of: .nonSpaceOrLinebreak, after: superCall),
+            tokens[dotIndex] == .operator(".", .infix),
+            let methodName = index(of: .nonSpaceOrCommentOrLinebreak, after: dotIndex),
+            tokens[methodName] == tokens[nameIndex],
+            let startOfCall = index(of: .nonSpaceOrCommentOrLinebreak, after: methodName),
+            tokens[startOfCall] == .startOfScope("("),
+            let endOfCall = endOfScope(at: startOfCall)
         {
             removeTokens(in: startOfLine(at: superCall) ... endOfCall + 1)
         }
@@ -556,7 +604,9 @@ extension String {
         let formatter = Formatter(tokenize(self))
 
         guard let firstTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: -1),
-              let lastTokenIndex = formatter.lastIndex(of: .nonSpaceOrCommentOrLinebreak, in: formatter.tokens.indices)
+              let lastTokenIndex = formatter.lastIndex(
+                  of: .nonSpaceOrCommentOrLinebreak, in: formatter.tokens.indices
+              )
         else { return formatter.tokens.string }
 
         // If the operator if nested in parens or a closure, then we don't need extra parens.

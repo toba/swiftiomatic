@@ -1,4 +1,3 @@
-
 struct FunctionDefaultParameterAtEndConfiguration: SeverityBasedRuleConfiguration {
     // swiftlint:disable:previous type_name
 

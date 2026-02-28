@@ -15,13 +15,25 @@ extension FormatRule {
 
     ) { formatter in
         formatter.forEach(.keyword("catch")) { i, _ in
-            if let letIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i, if: {
-                $0 == .keyword("let")
-            }), let errorIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: letIndex, if: {
-                $0 == .identifier("error")
-            }), let scopeIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: errorIndex, if: {
-                $0 == .startOfScope("{")
-            }) {
+            if let letIndex = formatter.index(
+                of: .nonSpaceOrCommentOrLinebreak, after: i,
+                if: {
+                    $0 == .keyword("let")
+                }
+            ),
+                let errorIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: letIndex,
+                    if: {
+                        $0 == .identifier("error")
+                    }
+                ),
+                let scopeIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: errorIndex,
+                    if: {
+                        $0 == .startOfScope("{")
+                    }
+                )
+            {
                 formatter.removeTokens(in: letIndex ..< scopeIndex)
             }
         }

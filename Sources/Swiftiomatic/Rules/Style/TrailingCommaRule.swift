@@ -53,6 +53,7 @@ extension TrailingCommaRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -91,9 +92,10 @@ private extension TrailingCommaRule {
         }
 
         private func violation(for position: AbsolutePosition) -> ReasonedRuleViolation {
-            let reason = configuration.mandatoryComma
-                ? "Multi-line collection literals should have trailing commas"
-                : "Collection literals should not have trailing commas"
+            let reason =
+                configuration.mandatoryComma
+                    ? "Multi-line collection literals should have trailing commas"
+                    : "Collection literals should not have trailing commas"
             return ReasonedRuleViolation(position: position, reason: reason)
         }
     }
@@ -110,24 +112,26 @@ private extension TrailingCommaRule {
                 let newTrailingTrivia = (lastElement.value.trailingTrivia)
                     .appending(trivia: commaToken.leadingTrivia)
                     .appending(trivia: commaToken.trailingTrivia)
-                let newNode = node
-                    .with(
-                        \.[index],
-                        lastElement
-                            .with(\.trailingComma, nil)
-                            .with(\.trailingTrivia, newTrailingTrivia)
-                    )
+                let newNode =
+                    node
+                        .with(
+                            \.[index],
+                            lastElement
+                                .with(\.trailingComma, nil)
+                                .with(\.trailingTrivia, newTrailingTrivia)
+                        )
                 return super.visit(newNode)
             case (nil, true) where !locationConverter.isSingleLine(node: node):
                 numberOfCorrections += 1
-                let newNode = node
-                    .with(
-                        \.[index],
-                        lastElement
-                            .with(\.trailingTrivia, [])
-                            .with(\.trailingComma, .commaToken())
-                            .with(\.trailingTrivia, lastElement.trailingTrivia)
-                    )
+                let newNode =
+                    node
+                        .with(
+                            \.[index],
+                            lastElement
+                                .with(\.trailingTrivia, [])
+                                .with(\.trailingComma, .commaToken())
+                                .with(\.trailingTrivia, lastElement.trailingTrivia)
+                        )
                 return super.visit(newNode)
             case (_, true), (nil, false):
                 return super.visit(node)
@@ -142,28 +146,31 @@ private extension TrailingCommaRule {
             switch (lastElement.trailingComma, configuration.mandatoryComma) {
             case (let commaToken?, false):
                 numberOfCorrections += 1
-                let newNode = node
-                    .with(
-                        \.[index],
-                        lastElement
-                            .with(\.trailingComma, nil)
-                            .with(\.trailingTrivia,
-                                  (lastElement.expression.trailingTrivia)
+                let newNode =
+                    node
+                        .with(
+                            \.[index],
+                            lastElement
+                                .with(\.trailingComma, nil)
+                                .with(
+                                    \.trailingTrivia,
+                                    (lastElement.expression.trailingTrivia)
                                         .appending(trivia: commaToken.leadingTrivia)
                                         .appending(trivia: commaToken.trailingTrivia)
-                            )
-                    )
+                                )
+                        )
                 return super.visit(newNode)
             case (nil, true) where !locationConverter.isSingleLine(node: node):
                 numberOfCorrections += 1
-                let newNode = node
-                    .with(
-                        \.[index],
-                        lastElement
-                            .with(\.expression, lastElement.expression.with(\.trailingTrivia, []))
-                            .with(\.trailingComma, .commaToken())
-                            .with(\.trailingTrivia, lastElement.expression.trailingTrivia)
-                    )
+                let newNode =
+                    node
+                        .with(
+                            \.[index],
+                            lastElement
+                                .with(\.expression, lastElement.expression.with(\.trailingTrivia, []))
+                                .with(\.trailingComma, .commaToken())
+                                .with(\.trailingTrivia, lastElement.expression.trailingTrivia)
+                        )
                 return super.visit(newNode)
             case (_, true), (nil, false):
                 return super.visit(node)
@@ -174,8 +181,8 @@ private extension TrailingCommaRule {
 
 private extension SourceLocationConverter {
     func isSingleLine(node: some SyntaxProtocol) -> Bool {
-        location(for: node.positionAfterSkippingLeadingTrivia).line ==
-            location(for: node.endPositionBeforeTrailingTrivia).line
+        location(for: node.positionAfterSkippingLeadingTrivia).line
+            == location(for: node.endPositionBeforeTrailingTrivia).line
     }
 }
 

@@ -30,19 +30,23 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOptionType {
         CharacterSet(charactersIn: allowedSymbols.joined()).union(.alphanumerics)
     }
 
-    init(minLengthWarning: Int,
-         minLengthError: Int,
-         maxLengthWarning: Int,
-         maxLengthError: Int,
-         excluded: [String] = [],
-         allowedSymbols: [String] = [],
-         unallowedSymbolsSeverity: Severity = .error,
-         validatesStartWithLowercase: StartWithLowercaseConfiguration = .error) {
+    init(
+        minLengthWarning: Int,
+        minLengthError: Int,
+        maxLengthWarning: Int,
+        maxLengthError: Int,
+        excluded: [String] = [],
+        allowedSymbols: [String] = [],
+        unallowedSymbolsSeverity: Severity = .error,
+        validatesStartWithLowercase: StartWithLowercaseConfiguration = .error
+    ) {
         minLength = SeverityLevels(warning: minLengthWarning, error: minLengthError)
         maxLength = SeverityLevels(warning: maxLengthWarning, error: maxLengthError)
-        self.excludedRegularExpressions = Set(excluded.compactMap {
-            try? RegularExpression(pattern: "^\($0)$")
-        })
+        excludedRegularExpressions = Set(
+            excluded.compactMap {
+                try? RegularExpression(pattern: "^\($0)$")
+            }
+        )
         self.allowedSymbols = Set(allowedSymbols)
         self.unallowedSymbolsSeverity = unallowedSymbolsSeverity
         self.validatesStartWithLowercase = validatesStartWithLowercase
@@ -60,9 +64,11 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOptionType {
             try maxLength.apply(configuration: maxLengthConfiguration)
         }
         if let excluded = [String].array(of: configurationDict[$excludedRegularExpressions.key]) {
-            excludedRegularExpressions = Set(excluded.compactMap {
-                try? RegularExpression(pattern: "^\($0)$")
-            })
+            excludedRegularExpressions = Set(
+                excluded.compactMap {
+                    try? RegularExpression(pattern: "^\($0)$")
+                }
+            )
         }
         if let allowedSymbols = [String].array(of: configurationDict[$allowedSymbols.key]) {
             self.allowedSymbols = Set(allowedSymbols)
@@ -70,7 +76,9 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOptionType {
         if let unallowedSymbolsSeverity = configurationDict[$unallowedSymbolsSeverity.key] {
             try self.unallowedSymbolsSeverity.apply(configuration: unallowedSymbolsSeverity)
         }
-        if let validatesStartWithLowercase = configurationDict[$validatesStartWithLowercase.key] as? String {
+        if let validatesStartWithLowercase = configurationDict[$validatesStartWithLowercase.key]
+            as? String
+        {
             try self.validatesStartWithLowercase.apply(configuration: validatesStartWithLowercase)
         }
     }

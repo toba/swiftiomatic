@@ -34,69 +34,83 @@ private extension AgentReviewRule {
 
             // Fire-and-forget Task {}
             if callee == "Task" || callee == "Task.detached" {
-                let isAssigned = node.parent?.is(InitializerClauseSyntax.self) == true
-                    || node.parent?.is(AssignmentExprSyntax.self) == true
-                    || node.parent?.is(PatternBindingSyntax.self) == true
+                let isAssigned =
+                    node.parent?.is(InitializerClauseSyntax.self) == true
+                        || node.parent?.is(AssignmentExprSyntax.self) == true
+                        || node.parent?.is(PatternBindingSyntax.self) == true
                 let isReturned = node.parent?.is(ReturnStmtSyntax.self) == true
 
-                if !isAssigned && !isReturned {
-                    violations.append(ReasonedRuleViolation(
-                        position: node.positionAfterSkippingLeadingTrivia,
-                        reason: "Fire-and-forget Task — result not captured, cancellation not possible",
-                        severity: .warning,
-                        confidence: .low,
-                        suggestion: "Assign to a variable if cancellation matters: `let task = Task { ... }`"
-                    ))
+                if !isAssigned, !isReturned {
+                    violations.append(
+                        ReasonedRuleViolation(
+                            position: node.positionAfterSkippingLeadingTrivia,
+                            reason: "Fire-and-forget Task — result not captured, cancellation not possible",
+                            severity: .warning,
+                            confidence: .low,
+                            suggestion: "Assign to a variable if cancellation matters: `let task = Task { ... }`"
+                        )
+                    )
                 }
             }
 
             // .absoluteString usage
             if callee.hasSuffix(".absoluteString") {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: ".absoluteString used — verify this isn't a file URL (use .path for file URLs)",
-                    severity: .warning,
-                    confidence: .low
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: ".absoluteString used — verify this isn't a file URL (use .path for file URLs)",
+                        severity: .warning,
+                        confidence: .low
+                    )
+                )
             }
         }
 
         override func visitPost(_ node: MemberAccessExprSyntax) {
             if node.declName.baseName.text == "absoluteString",
-               node.parent?.is(FunctionCallExprSyntax.self) != true {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: ".absoluteString used — verify this isn't a file URL (use .path for file URLs)",
-                    severity: .warning,
-                    confidence: .low
-                ))
+               node.parent?.is(FunctionCallExprSyntax.self) != true
+            {
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason: ".absoluteString used — verify this isn't a file URL (use .path for file URLs)",
+                        severity: .warning,
+                        confidence: .low
+                    )
+                )
             }
         }
 
         override func visitPost(_ node: EnumDeclSyntax) {
             guard let inheritance = node.inheritanceClause else { return }
-            let inheritedTypes = inheritance.inheritedTypes.map { $0.type.trimmedDescription }
-            if inheritedTypes.contains("Error") && !inheritedTypes.contains("LocalizedError") {
-                violations.append(ReasonedRuleViolation(
-                    position: node.name.positionAfterSkippingLeadingTrivia,
-                    reason: "Error enum '\(node.name.text)' doesn't conform to LocalizedError — verify if user-facing",
-                    severity: .warning,
-                    confidence: .low,
-                    suggestion: "Add LocalizedError conformance with errorDescription"
-                ))
+            let inheritedTypes = inheritance.inheritedTypes.map(\.type.trimmedDescription)
+            if inheritedTypes.contains("Error"), !inheritedTypes.contains("LocalizedError") {
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.name.positionAfterSkippingLeadingTrivia,
+                        reason:
+                        "Error enum '\(node.name.text)' doesn't conform to LocalizedError — verify if user-facing",
+                        severity: .warning,
+                        confidence: .low,
+                        suggestion: "Add LocalizedError conformance with errorDescription"
+                    )
+                )
             }
         }
 
         override func visitPost(_ node: VariableDeclSyntax) {
-            let modifiers = node.modifiers.map { $0.trimmedDescription }
+            let modifiers = node.modifiers.map(\.trimmedDescription)
             if modifiers.contains("nonisolated(unsafe)") {
                 let bindingName = node.bindings.first?.pattern.trimmedDescription ?? "unknown"
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "nonisolated(unsafe) on '\(bindingName)' — verify the value is actually Sendable in Swift 6.2",
-                    severity: .warning,
-                    confidence: .low
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason:
+                        "nonisolated(unsafe) on '\(bindingName)' — verify the value is actually Sendable in Swift 6.2",
+                        severity: .warning,
+                        confidence: .low
+                    )
+                )
             }
         }
     }

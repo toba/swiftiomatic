@@ -1,4 +1,3 @@
-
 struct FunctionParameterCountConfiguration: RuleConfiguration {
     @ConfigurationElement(inline: true)
     private(set) var severityConfiguration = SeverityLevelsConfiguration<Parent>(warning: 5, error: 8)

@@ -1,4 +1,4 @@
-internal struct HashableConfigurationRuleWrapperWrapper: Hashable {
+struct HashableConfigurationRuleWrapperWrapper: Hashable {
     let configurationRuleWrapper: ConfigurationRuleWrapper
 
     static func == (

@@ -7,124 +7,168 @@ struct UnusedParameterRule: Rule {
         identifier: "unused_parameter",
         name: "Unused Parameter",
         description: """
-            Other than unused local variable declarations, unused function/initializer/subscript parameters are not \
-            marked by the Swift compiler. Since unused parameters are code smells, they should either be removed \
-            or replaced/shadowed by a wildcard '_' to indicate that they are being deliberately disregarded.
-            """,
+        Other than unused local variable declarations, unused function/initializer/subscript parameters are not \
+        marked by the Swift compiler. Since unused parameters are code smells, they should either be removed \
+        or replaced/shadowed by a wildcard '_' to indicate that they are being deliberately disregarded.
+        """,
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
-            func f(a: Int) {
-                _ = a
-            }
-            """),
-            Example("""
-            func f(case: Int) {
-                _ = `case`
-            }
-            """),
-            Example("""
-            func f(a _: Int) {}
-            """),
-            Example("""
-            func f(_: Int) {}
-            """),
-            Example("""
-            func f(a: Int, b c: String) {
-                func g() {
+            Example(
+                """
+                func f(a: Int) {
                     _ = a
-                    _ = c
                 }
-            }
-            """),
-            Example("""
-            func f(a: Int, c: Int) -> Int {
-                struct S {
-                    let b = 1
-                    func f(a: Int, b: Int = 2) -> Int { a + b }
+                """
+            ),
+            Example(
+                """
+                func f(case: Int) {
+                    _ = `case`
                 }
-                return a + c
-            }
-            """),
-            Example("""
-            func f(a: Int?) {
-                if let a {}
-            }
-            """),
-            Example("""
-            func f(a: Int) {
-                let a = a
-                return a
-            }
-            """),
-            Example("""
-            func f(`operator`: Int) -> Int { `operator` }
-            """),
+                """
+            ),
+            Example(
+                """
+                func f(a _: Int) {}
+                """
+            ),
+            Example(
+                """
+                func f(_: Int) {}
+                """
+            ),
+            Example(
+                """
+                func f(a: Int, b c: String) {
+                    func g() {
+                        _ = a
+                        _ = c
+                    }
+                }
+                """
+            ),
+            Example(
+                """
+                func f(a: Int, c: Int) -> Int {
+                    struct S {
+                        let b = 1
+                        func f(a: Int, b: Int = 2) -> Int { a + b }
+                    }
+                    return a + c
+                }
+                """
+            ),
+            Example(
+                """
+                func f(a: Int?) {
+                    if let a {}
+                }
+                """
+            ),
+            Example(
+                """
+                func f(a: Int) {
+                    let a = a
+                    return a
+                }
+                """
+            ),
+            Example(
+                """
+                func f(`operator`: Int) -> Int { `operator` }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            func f(↓a: Int) {}
-            """),
-            Example("""
-            func f(↓a: Int, b ↓c: String) {}
-            """),
-            Example("""
-            func f(↓a: Int, b ↓c: String) {
-                func g(a: Int, ↓b: Double) {
-                    _ = a
+            Example(
+                """
+                func f(↓a: Int) {}
+                """
+            ),
+            Example(
+                """
+                func f(↓a: Int, b ↓c: String) {}
+                """
+            ),
+            Example(
+                """
+                func f(↓a: Int, b ↓c: String) {
+                    func g(a: Int, ↓b: Double) {
+                        _ = a
+                    }
                 }
-            }
-            """),
-            Example("""
-            struct S {
-                let a: Int
-
-                init(a: Int, ↓b: Int) {
-                    func f(↓a: Int, b: Int) -> Int { b }
-                    self.a = f(a: a, b: 0)
-                }
-            }
-            """),
-            Example("""
-            struct S {
-                subscript(a: Int, ↓b: Int) {
-                    func f(↓a: Int, b: Int) -> Int { b }
-                    return f(a: a, b: 0)
-                }
-            }
-            """),
-            Example("""
-            func f(↓a: Int, ↓b: Int, c: Int) -> Int {
+                """
+            ),
+            Example(
+                """
                 struct S {
-                    let b = 1
-                    func f(a: Int, ↓c: Int = 2) -> Int { a + b }
+                    let a: Int
+
+                    init(a: Int, ↓b: Int) {
+                        func f(↓a: Int, b: Int) -> Int { b }
+                        self.a = f(a: a, b: 0)
+                    }
                 }
-                return S().f(a: c)
-            }
-            """),
-            Example("""
-            func f(↓a: Int, c: String) {
-                let a = 1
-                return a + c
-            }
-            """),
+                """
+            ),
+            Example(
+                """
+                struct S {
+                    subscript(a: Int, ↓b: Int) {
+                        func f(↓a: Int, b: Int) -> Int { b }
+                        return f(a: a, b: 0)
+                    }
+                }
+                """
+            ),
+            Example(
+                """
+                func f(↓a: Int, ↓b: Int, c: Int) -> Int {
+                    struct S {
+                        let b = 1
+                        func f(a: Int, ↓c: Int = 2) -> Int { a + b }
+                    }
+                    return S().f(a: c)
+                }
+                """
+            ),
+            Example(
+                """
+                func f(↓a: Int, c: String) {
+                    let a = 1
+                    return a + c
+                }
+                """
+            ),
         ],
         corrections: [
-            Example("""
-            func f(a: Int) {}
-            """): Example("""
-            func f(a _: Int) {}
-            """),
-            Example("""
-            func f(a b: Int) {}
-            """): Example("""
-            func f(a _: Int) {}
-            """),
-            Example("""
-            func f(_ a: Int) {}
-            """): Example("""
-            func f(_: Int) {}
-            """),
+            Example(
+                """
+                func f(a: Int) {}
+                """
+            ): Example(
+                """
+                func f(a _: Int) {}
+                """
+            ),
+            Example(
+                """
+                func f(a b: Int) {}
+                """
+            ): Example(
+                """
+                func f(a _: Int) {}
+                """
+            ),
+            Example(
+                """
+                func f(_ a: Int) {}
+                """
+            ): Example(
+                """
+                func f(_: Int) {}
+                """
+            ),
         ]
     )
 }
@@ -143,7 +187,9 @@ private extension UnusedParameterRule {
     final class Visitor: DeclaredIdentifiersTrackingVisitor<ConfigurationType> {
         private var referencedDeclarations = Set<IdentifierDeclaration>()
 
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { [ProtocolDeclSyntax.self] }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
         // MARK: Violation checking
 
@@ -151,7 +197,8 @@ private extension UnusedParameterRule {
             let declarations = scope.peek() ?? []
             for declaration in declarations.reversed() where !referencedDeclarations.contains(declaration) {
                 guard case let .parameter(name) = declaration,
-                      let previousToken = name.previousToken(viewMode: .sourceAccurate) else {
+                      let previousToken = name.previousToken(viewMode: .sourceAccurate)
+                else {
                     continue
                 }
                 let startPosReplacement =
@@ -162,16 +209,19 @@ private extension UnusedParameterRule {
                     } else {
                         (name.positionAfterSkippingLeadingTrivia, name.text + " _")
                     }
-                violations.append(.init(
-                    position: name.positionAfterSkippingLeadingTrivia,
-                    reason: "Parameter '\(name.text)' is unused; consider removing or replacing it with '_'",
-                    severity: configuration.severity,
-                    correction: .init(
-                        start: startPosReplacement.0,
-                        end: name.endPositionBeforeTrailingTrivia,
-                        replacement: startPosReplacement.1
+                violations.append(
+                    .init(
+                        position: name.positionAfterSkippingLeadingTrivia,
+                        reason:
+                        "Parameter '\(name.text)' is unused; consider removing or replacing it with '_'",
+                        severity: configuration.severity,
+                        correction: .init(
+                            start: startPosReplacement.0,
+                            end: name.endPositionBeforeTrailingTrivia,
+                            replacement: startPosReplacement.1
+                        )
                     )
-                ))
+                )
             }
             super.visitPost(node)
         }
@@ -185,7 +235,9 @@ private extension UnusedParameterRule {
         }
 
         override func visitPost(_ node: OptionalBindingConditionSyntax) {
-            if node.initializer == nil, let id = node.pattern.as(IdentifierPatternSyntax.self)?.identifier.text {
+            if node.initializer == nil,
+               let id = node.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
+            {
                 addReference(id)
             }
         }

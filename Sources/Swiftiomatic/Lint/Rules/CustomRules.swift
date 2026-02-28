@@ -5,18 +5,23 @@ import Foundation
 struct CustomRulesConfiguration: RuleConfiguration, CacheDescriptionProvider {
     typealias Parent = CustomRules
 
-    var parameterDescription: RuleConfigurationDescription? { RuleConfigurationOption.noOptions }
+    var parameterDescription: RuleConfigurationDescription? {
+        RuleConfigurationOption.noOptions
+    }
+
     var cacheDescription: String {
-        let configsDescription = customRuleConfigurations
-            .sorted { $0.identifier < $1.identifier }
-            .map(\.cacheDescription)
-            .joined(separator: "\n")
+        let configsDescription =
+            customRuleConfigurations
+                .sorted { $0.identifier < $1.identifier }
+                .map(\.cacheDescription)
+                .joined(separator: "\n")
 
         if let defaultMode = defaultExecutionMode {
             return "default_execution_mode:\(defaultMode.rawValue)\n\(configsDescription)"
         }
         return configsDescription
     }
+
     var customRuleConfigurations = [RegexConfiguration<Parent>]()
     var defaultExecutionMode: RegexConfiguration<Parent>.ExecutionMode?
 
@@ -68,20 +73,22 @@ struct CustomRules: Rule, CacheDescriptionProvider, ConditionallySourceKitFree {
         identifier: "custom_rules",
         name: "Custom Rules",
         description: """
-            Create custom rules by providing a regex string. Optionally specify what syntax kinds to match against, \
-            the severity level, and what message to display. Rules default to SwiftSyntax mode for improved \
-            performance. Use `execution_mode: sourcekit` or `default_execution_mode: sourcekit` for SourceKit mode.
-            """,
-        kind: .style)
+        Create custom rules by providing a regex string. Optionally specify what syntax kinds to match against, \
+        the severity level, and what message to display. Rules default to SwiftSyntax mode for improved \
+        performance. Use `execution_mode: sourcekit` or `default_execution_mode: sourcekit` for SourceKit mode.
+        """,
+        kind: .style
+    )
 
     var configuration = CustomRulesConfiguration()
 
     /// Returns true if all configured custom rules use SwiftSyntax mode, making this rule effectively SourceKit-free.
     var isEffectivelySourceKitFree: Bool {
         configuration.customRuleConfigurations.allSatisfy { config in
-            let effectiveMode = config.executionMode == .default
-                ? (configuration.defaultExecutionMode ?? .sourcekit)
-                : config.executionMode
+            let effectiveMode =
+                config.executionMode == .default
+                    ? (configuration.defaultExecutionMode ?? .sourcekit)
+                    : config.executionMode
             return effectiveMode == .swiftsyntax
         }
     }
@@ -102,18 +109,24 @@ struct CustomRules: Rule, CacheDescriptionProvider, ConditionallySourceKitFree {
         return configurations.flatMap { configuration -> [StyleViolation] in
             let start = Date()
             defer {
-                CustomRuleTimer.shared.register(time: -start.timeIntervalSinceNow, forRuleID: configuration.identifier)
+                CustomRuleTimer.shared.register(
+                    time: -start.timeIntervalSinceNow, forRuleID: configuration.identifier
+                )
             }
 
             let pattern = configuration.regex.pattern
             let captureGroup = configuration.captureGroup
             let excludingKinds = configuration.excludedMatchKinds
-            return file.match(pattern: pattern, excludingSyntaxKinds: excludingKinds, captureGroup: captureGroup).map({
-                StyleViolation(ruleDescription: configuration.description,
-                               severity: configuration.severity,
-                               location: Location(file: file, characterOffset: $0.location),
-                               reason: configuration.message)
-            })
+            return file.match(
+                pattern: pattern, excludingSyntaxKinds: excludingKinds, captureGroup: captureGroup
+            ).map {
+                StyleViolation(
+                    ruleDescription: configuration.description,
+                    severity: configuration.severity,
+                    location: Location(file: file, characterOffset: $0.location),
+                    reason: configuration.message
+                )
+            }
         }
     }
 
@@ -131,7 +144,8 @@ struct CustomRules: Rule, CacheDescriptionProvider, ConditionallySourceKitFree {
     func isEnabled(in region: Region, for ruleID: String) -> Bool {
         if !Self.description.allIdentifiers.contains(ruleID),
            !customRuleIdentifiers.contains(ruleID),
-           Self.identifier != ruleID {
+           Self.identifier != ruleID
+        {
             return true
         }
         return !region.disabledRuleIdentifiers.contains(RuleIdentifier(Self.identifier))
@@ -146,5 +160,8 @@ extension CustomRules {
             "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
         ).print()
     }()
-    func notifyRuleDisabledOnce() { _ = Self._postMessage }
+
+    func notifyRuleDisabledOnce() {
+        _ = Self._postMessage
+    }
 }

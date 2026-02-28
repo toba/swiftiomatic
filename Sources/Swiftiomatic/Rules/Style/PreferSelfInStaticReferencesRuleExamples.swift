@@ -1,11 +1,14 @@
 enum PreferSelfInStaticReferencesRuleExamples {
     static let nonTriggeringExamples = [
-        Example("""
+        Example(
+            """
             class C {
                 static let primes = [2, 3, 5, 7]
                 func isPrime(i: Int) -> Bool { Self.primes.contains(i) }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             struct T {
                 static let i = 0
             }
@@ -16,14 +19,18 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 static let j = S.i + T.i
                 static let k = { T.j }()
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             class `Self` {
                 static let i = 0
                 func f() -> Int { Self.i }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             class C {
                 static private(set) var i = 0, j = C.i
                 static let k = { C.i }()
@@ -31,8 +38,10 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 var n: Int = C.k { didSet { m += 1 } }
                 @GreaterThan(C.j) var m: Int
             }
-            """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             struct S {
                 struct T {
                     struct R {
@@ -45,8 +54,10 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 static let j = Self.T.R.i + Self.R.j
                 let h = Self.T.R.i + Self.R.j
             }
-            """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             class C {
                 static let s = 2
                 func f(i: Int = C.s) -> Int {
@@ -55,44 +66,58 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 }
                 func g() -> Any { C.self }
             }
-            """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             struct Record<T> {
                 static func get() -> Record<T> { Record<T>() }
             }
-            """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             @objc class C: NSObject {
                 @objc var s = ""
                 @objc func f() { _ = #keyPath(C.s) }
             }
-            """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             class C<T> {
                 let i = 1
                 let c: C = C()
                 func f(c: C) -> KeyPath<C, Int> { \\Self.i }
             }
-            """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             class C1<T> {}
             class C2: C1<C2> {}
-            """, excludeFromDocumentation: true),
-        Example("""
-                class C1<T> {}
-                class C2: C1<C2.C3> {
-                    class C3 {}
-                }
-                """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
+            class C1<T> {}
+            class C2: C1<C2.C3> {
+                class C3 {}
+            }
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             class C1<T> {}
             class C2: C1<C2.C3.C4> {
                 class C3 {
                     class C4 {}
                 }
             }
-            """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             class S1<T> {
                 class S2 {}
                 func f() {
@@ -100,11 +125,13 @@ enum PreferSelfInStaticReferencesRuleExamples {
                     let s2 = S1<S1>()
                 }
             }
-            """, excludeFromDocumentation: true),
+            """, excludeFromDocumentation: true
+        ),
     ]
 
     static let triggeringExamples = [
-        Example("""
+        Example(
+            """
             final class CheckCellView: NSTableCellView {
                 @IBOutlet var checkButton: NSButton!
 
@@ -114,8 +141,10 @@ enum PreferSelfInStaticReferencesRuleExamples {
 
                 @objc func check(_ button: AnyObject?) {}
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             class C {
                 static let i = 1
                 var j: Int {
@@ -123,16 +152,20 @@ enum PreferSelfInStaticReferencesRuleExamples {
                     return ii
                 }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             class C {
                 func f() {
                     _ = [↓C]()
                     _ = [Int: ↓C]()
                 }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             struct S {
                 let j: Int
                 static let i = 1
@@ -142,8 +175,10 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 func i() -> KeyPath<↓S, Int> { \\↓S.j }
                 func j(@Wrap(-↓S.i, ↓S.i) n: Int = ↓S.i) {}
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             struct S {
                 struct T {
                     static let i = 3
@@ -153,15 +188,19 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 }
                 static let h = ↓S.T.i + ↓S.R.j
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             enum E {
                 case A
                 static func f() -> ↓E { ↓E.A }
                 static func g() -> ↓E { ↓E.f() }
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             extension E {
                 class C {
                     static var i = 2
@@ -176,8 +215,10 @@ enum PreferSelfInStaticReferencesRuleExamples {
                     }
                 }
             }
-            """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             class C {
                 typealias A = C
                 let d: C? = nil
@@ -214,19 +255,23 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 }
                 func g(a: [↓S]) -> [↓S] { a }
             }
-            """, excludeFromDocumentation: true),
-        Example("""
+            """, excludeFromDocumentation: true
+        ),
+        Example(
+            """
             class T {
                 let child: T
                 init(input: Any) {
                     child = (input as! T).child
                 }
             }
-            """, excludeFromDocumentation: true),
+            """, excludeFromDocumentation: true
+        ),
     ]
 
     static let corrections = [
-        Example("""
+        Example(
+            """
             final class CheckCellView: NSTableCellView {
                 @IBOutlet var checkButton: NSButton!
 
@@ -236,8 +281,10 @@ enum PreferSelfInStaticReferencesRuleExamples {
 
                 @objc func check(_ button: AnyObject?) {}
             }
-            """):
-            Example("""
+            """
+        ):
+            Example(
+                """
                 final class CheckCellView: NSTableCellView {
                     @IBOutlet var checkButton: NSButton!
 
@@ -247,8 +294,10 @@ enum PreferSelfInStaticReferencesRuleExamples {
 
                     @objc func check(_ button: AnyObject?) {}
                 }
-                """),
-        Example("""
+                """
+            ),
+        Example(
+            """
             struct S {
                 static let i = 1
                 static let j = ↓S.i
@@ -256,14 +305,17 @@ enum PreferSelfInStaticReferencesRuleExamples {
                 static func f(_ l: Int = ↓S.i) -> Int { l*↓S.j }
                 func g() { ↓S.i + ↓S.f() + k }
             }
-            """): Example("""
-                struct S {
-                    static let i = 1
-                    static let j = Self.i
-                    let k = Self  . j
-                    static func f(_ l: Int = Self.i) -> Int { l*Self.j }
-                    func g() { Self.i + Self.f() + k }
-                }
-                """),
+            """
+        ): Example(
+            """
+            struct S {
+                static let i = 1
+                static let j = Self.i
+                let k = Self  . j
+                static func f(_ l: Int = Self.i) -> Int { l*Self.j }
+                func g() { Self.i + Self.f() + k }
+            }
+            """
+        ),
     ]
 }

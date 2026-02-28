@@ -51,9 +51,10 @@ extension FormatRule {
                 }
             }
 
-            guard let propertyDeclaration = formatter.parsePropertyDeclaration(atIntroducerIndex: varIndex),
-                  let type = propertyDeclaration.type,
-                  type.isOptionalType
+            guard
+                let propertyDeclaration = formatter.parsePropertyDeclaration(atIntroducerIndex: varIndex),
+                let type = propertyDeclaration.type,
+                type.isOptionalType
             else { return }
 
             switch formatter.options.nilInit {
@@ -63,14 +64,20 @@ extension FormatRule {
                    formatter.tokens[valueInfo.expressionRange] == [.identifier("nil")]
                 {
                     // Remove from the space before = to the end of the value
-                    let startIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: valueInfo.assignmentIndex, if: { !$0.isSpaceOrCommentOrLinebreak }) ?? valueInfo.assignmentIndex - 1
+                    let startIndex =
+                        formatter.index(
+                            of: .nonSpaceOrCommentOrLinebreak, before: valueInfo.assignmentIndex,
+                            if: { !$0.isSpaceOrCommentOrLinebreak }
+                        ) ?? valueInfo.assignmentIndex - 1
                     formatter.removeTokens(in: startIndex + 1 ... valueInfo.expressionRange.upperBound)
                 }
 
             case .insert:
                 // Insert `= nil` if it doesn't exist and this is a stored property
                 if propertyDeclaration.value == nil, declaration.isStoredProperty {
-                    let tokens: [Token] = [.space(" "), .operator("=", .infix), .space(" "), .identifier("nil")]
+                    let tokens: [Token] = [
+                        .space(" "), .operator("=", .infix), .space(" "), .identifier("nil"),
+                    ]
                     formatter.insert(tokens, at: type.range.upperBound + 1)
                 }
             }

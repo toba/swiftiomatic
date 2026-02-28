@@ -1,4 +1,3 @@
-
 struct SortedImportsConfiguration: SeverityBasedRuleConfiguration {
     enum Grouping: String, AcceptableByConfigurationElement {
         /// Sorts import lines based on any import attributes (e.g. `@testable`, `@_exported`, etc.), followed by a case

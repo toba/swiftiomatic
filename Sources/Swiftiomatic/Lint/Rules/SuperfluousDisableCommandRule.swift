@@ -1,31 +1,33 @@
 struct SuperfluousDisableCommandRule: SourceKitFreeRule, Sendable {
     var configuration = SeverityConfiguration<Self>(.warning)
 
-    init() { /* Make initializer as accessible as its type. */ }
-
     static let description = RuleDescription(
         identifier: "superfluous_disable_command",
         name: "Superfluous Disable Command",
         description: """
-            SwiftLint 'disable' commands are superfluous when the disabled rule would not have triggered a violation \
-            in the disabled region. Use " - " if you wish to document a command.
-            """,
+        SwiftLint 'disable' commands are superfluous when the disabled rule would not have triggered a violation \
+        in the disabled region. Use " - " if you wish to document a command.
+        """,
         kind: .lint,
         nonTriggeringExamples: [
             Example("let abc:Void // swiftlint:disable:this colon"),
-            Example("""
+            Example(
+                """
                 // swiftlint:disable colon
                 let abc:Void
                 // swiftlint:enable colon
-                """),
+                """
+            ),
         ],
         triggeringExamples: [
             Example("let abc: Void // swiftlint:disable:this colon"),
-            Example("""
+            Example(
+                """
                 // swiftlint:disable colon
                 let abc: Void
                 // swiftlint:enable colon
-                """),
+                """
+            ),
         ]
     )
 

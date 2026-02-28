@@ -9,22 +9,26 @@ struct FallthroughRule: Rule {
         description: "Fallthrough should be avoided",
         kind: .idiomatic,
         nonTriggeringExamples: [
-            Example("""
-            switch foo {
-            case .bar, .bar2, .bar3:
-              something()
-            }
-            """),
+            Example(
+                """
+                switch foo {
+                case .bar, .bar2, .bar3:
+                  something()
+                }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            switch foo {
-            case .bar:
-              ↓fallthrough
-            case .bar2:
-              something()
-            }
-            """),
+            Example(
+                """
+                switch foo {
+                case .bar:
+                  ↓fallthrough
+                case .bar2:
+                  something()
+                }
+                """
+            ),
         ]
     )
 }

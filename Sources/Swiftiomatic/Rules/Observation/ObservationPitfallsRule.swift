@@ -29,13 +29,16 @@ private extension ObservationPitfallsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionCallExprSyntax) {
             if node.calledExpression.trimmedDescription == "withObservationTracking" {
-                violations.append(ReasonedRuleViolation(
-                    position: node.positionAfterSkippingLeadingTrivia,
-                    reason: "withObservationTracking with recursive onChange — consider Observations AsyncSequence",
-                    severity: .warning,
-                    confidence: .medium,
-                    suggestion: "Replace with `for await value in Observations { ... }`"
-                ))
+                violations.append(
+                    ReasonedRuleViolation(
+                        position: node.positionAfterSkippingLeadingTrivia,
+                        reason:
+                        "withObservationTracking with recursive onChange — consider Observations AsyncSequence",
+                        severity: .warning,
+                        confidence: .medium,
+                        suggestion: "Replace with `for await value in Observations { ... }`"
+                    )
+                )
             }
         }
 
@@ -45,18 +48,21 @@ private extension ObservationPitfallsRule {
             else { return }
 
             if let trailingClosure = callExpr.trailingClosure {
-                let hasWeakSelf = trailingClosure.signature?.capture?.items.contains { item in
-                    item.trimmedDescription.contains("weak self")
-                } ?? false
+                let hasWeakSelf =
+                    trailingClosure.signature?.capture?.items.contains { item in
+                        item.trimmedDescription.contains("weak self")
+                    } ?? false
 
                 if !hasWeakSelf {
-                    violations.append(ReasonedRuleViolation(
-                        position: callExpr.positionAfterSkippingLeadingTrivia,
-                        reason: "Observations closure missing [weak self] — may cause retain cycle",
-                        severity: .error,
-                        confidence: .medium,
-                        suggestion: "Add [weak self] to the Observations closure"
-                    ))
+                    violations.append(
+                        ReasonedRuleViolation(
+                            position: callExpr.positionAfterSkippingLeadingTrivia,
+                            reason: "Observations closure missing [weak self] — may cause retain cycle",
+                            severity: .error,
+                            confidence: .medium,
+                            suggestion: "Add [weak self] to the Observations closure"
+                        )
+                    )
                 }
             }
         }

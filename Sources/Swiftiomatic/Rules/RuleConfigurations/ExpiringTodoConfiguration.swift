@@ -1,4 +1,3 @@
-
 struct ExpiringTodoConfiguration: RuleConfiguration {
     typealias Severity = SeverityConfiguration<Parent>
 
@@ -11,7 +10,8 @@ struct ExpiringTodoConfiguration: RuleConfiguration {
         init(fromAny value: Any, context ruleID: String) throws(Issue) {
             guard let dateDelimiters = value as? [String: String],
                   let openingDelimiter = dateDelimiters["opening"],
-                  let closingDelimiter = dateDelimiters["closing"] else {
+                  let closingDelimiter = dateDelimiters["closing"]
+            else {
                 throw .invalidConfiguration(ruleID: ruleID)
             }
             self.init(opening: openingDelimiter, closing: closingDelimiter)

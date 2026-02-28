@@ -1,4 +1,3 @@
-
 struct InclusiveLanguageConfiguration: SeverityBasedRuleConfiguration {
     private static let defaultTerms: Set<String> = [
         "whitelist",
@@ -8,7 +7,7 @@ struct InclusiveLanguageConfiguration: SeverityBasedRuleConfiguration {
     ]
 
     private static let defaultAllowedTerms: Set<String> = [
-        "mastercard"
+        "mastercard",
     ]
 
     @ConfigurationElement(key: "severity")
@@ -31,6 +30,7 @@ struct InclusiveLanguageConfiguration: SeverityBasedRuleConfiguration {
     var allAllowedTerms: Set<String> {
         Set((overrideAllowedTerms ?? Self.defaultAllowedTerms).map { $0.lowercased() })
     }
+
     typealias Parent = InclusiveLanguageRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $additionalTerms.key.isEmpty {

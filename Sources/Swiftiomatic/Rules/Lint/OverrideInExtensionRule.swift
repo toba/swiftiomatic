@@ -12,27 +12,33 @@ struct OverrideInExtensionRule: OptInRule, SwiftSyntaxRule {
             Example("extension Person {\n  var age: Int { return 42 }\n}"),
             Example("extension Person {\n  func celebrateBirthday() {}\n}"),
             Example("class Employee: Person {\n  override func celebrateBirthday() {}\n}"),
-            Example("""
-            class Foo: NSObject {}
-            extension Foo {
-                override var description: String { return "" }
-            }
-            """),
-            Example("""
-            struct Foo {
-                class Bar: NSObject {}
-            }
-            extension Foo.Bar {
-                override var description: String { return "" }
-            }
-            """),
-            Example("""
-            @objc
-            @implementation
-            extension Person {
-                override func celebrateBirthday() {}
-            }
-            """),
+            Example(
+                """
+                class Foo: NSObject {}
+                extension Foo {
+                    override var description: String { return "" }
+                }
+                """
+            ),
+            Example(
+                """
+                struct Foo {
+                    class Bar: NSObject {}
+                }
+                extension Foo.Bar {
+                    override var description: String { return "" }
+                }
+                """
+            ),
+            Example(
+                """
+                @objc
+                @implementation
+                extension Person {
+                    override func celebrateBirthday() {}
+                }
+                """
+            ),
         ],
         triggeringExamples: [
             Example("extension Person {\n  override ↓var age: Int { return 42 }\n}"),
@@ -57,14 +63,18 @@ private extension OverrideInExtensionRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private let allowedExtensions: Set<String>
 
-        init(configuration: ConfigurationType,
-             file: SwiftLintFile,
-             allowedExtensions: Set<String>) {
+        init(
+            configuration: ConfigurationType,
+            file: SwiftLintFile,
+            allowedExtensions: Set<String>
+        ) {
             self.allowedExtensions = allowedExtensions
             super.init(configuration: configuration, file: file)
         }
 
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .allExcept(ExtensionDeclSyntax.self) }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .allExcept(ExtensionDeclSyntax.self)
+        }
 
         override func visitPost(_ node: FunctionDeclSyntax) {
             if node.modifiers.contains(keyword: .override) {
@@ -80,7 +90,8 @@ private extension OverrideInExtensionRule {
 
         override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
             guard let type = node.extendedType.as(IdentifierTypeSyntax.self),
-                  !allowedExtensions.contains(type.name.text) else {
+                  !allowedExtensions.contains(type.name.text)
+            else {
                 return .skipChildren
             }
 
@@ -96,7 +107,9 @@ private extension OverrideInExtensionRule {
     final class ClassNameCollectingVisitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private(set) var classNames: Set<String> = []
 
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_ node: ClassDeclSyntax) {
             classNames.insert(node.name.text)

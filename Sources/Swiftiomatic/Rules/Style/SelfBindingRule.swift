@@ -42,7 +42,9 @@ struct SelfBindingRule: Rule {
             Example("if let ↓self { return }", configuration: ["bind_identifier": "this"]):
                 Example("if let this = self { return }", configuration: ["bind_identifier": "this"]),
             Example("guard let ↓self else { return }", configuration: ["bind_identifier": "this"]):
-                Example("guard let this = self else { return }", configuration: ["bind_identifier": "this"]),
+                Example(
+                    "guard let this = self else { return }", configuration: ["bind_identifier": "this"]
+                ),
         ]
     )
 }
@@ -51,6 +53,7 @@ extension SelfBindingRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -62,12 +65,14 @@ private extension SelfBindingRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: OptionalBindingConditionSyntax) {
             if let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
-               identifierPattern.identifier.text != configuration.bindIdentifier {
+               identifierPattern.identifier.text != configuration.bindIdentifier
+            {
                 var hasViolation = false
                 if let initializerIdentifier = node.initializer?.value.as(DeclReferenceExprSyntax.self) {
                     hasViolation = initializerIdentifier.baseName.text == "self"
                 } else if node.initializer == nil {
-                    hasViolation = identifierPattern.identifier.text == "self" && configuration.bindIdentifier != "self"
+                    hasViolation =
+                        identifierPattern.identifier.text == "self" && configuration.bindIdentifier != "self"
                 }
 
                 if hasViolation {
@@ -85,29 +90,38 @@ private extension SelfBindingRule {
     final class Rewriter: ViolationsSyntaxRewriter<ConfigurationType> {
         override func visit(_ node: OptionalBindingConditionSyntax) -> OptionalBindingConditionSyntax {
             guard let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
-                  identifierPattern.identifier.text != configuration.bindIdentifier else {
+                  identifierPattern.identifier.text != configuration.bindIdentifier
+            else {
                 return super.visit(node)
             }
 
             if let initializerIdentifier = node.initializer?.value.as(DeclReferenceExprSyntax.self),
-               initializerIdentifier.baseName.text == "self" {
+               initializerIdentifier.baseName.text == "self"
+            {
                 numberOfCorrections += 1
                 let newPattern = PatternSyntax(
                     identifierPattern
-                        .with(\.identifier, identifierPattern.identifier
-                            .with(\.tokenKind, .identifier(configuration.bindIdentifier)))
+                        .with(
+                            \.identifier,
+                            identifierPattern.identifier
+                                .with(\.tokenKind, .identifier(configuration.bindIdentifier))
+                        )
                 )
 
                 return super.visit(node.with(\.pattern, newPattern))
             }
             if node.initializer == nil,
                identifierPattern.identifier.text == "self",
-               configuration.bindIdentifier != "self" {
+               configuration.bindIdentifier != "self"
+            {
                 numberOfCorrections += 1
                 let newPattern = PatternSyntax(
                     identifierPattern
-                        .with(\.identifier, identifierPattern.identifier
-                            .with(\.tokenKind, .identifier(configuration.bindIdentifier)))
+                        .with(
+                            \.identifier,
+                            identifierPattern.identifier
+                                .with(\.tokenKind, .identifier(configuration.bindIdentifier))
+                        )
                 )
 
                 let newInitializer = InitializerClauseSyntax(
@@ -120,9 +134,10 @@ private extension SelfBindingRule {
                     )
                 )
 
-                let newNode = node
-                    .with(\.pattern, newPattern)
-                    .with(\.initializer, newInitializer)
+                let newNode =
+                    node
+                        .with(\.pattern, newPattern)
+                        .with(\.initializer, newInitializer)
                 return super.visit(newNode)
             }
             return super.visit(node)

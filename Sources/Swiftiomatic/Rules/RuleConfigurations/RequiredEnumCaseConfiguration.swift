@@ -15,17 +15,19 @@ struct RequiredEnumCaseConfiguration: RuleConfiguration {
 
     var parameterDescription: RuleConfigurationDescription? {
         if protocols.isEmpty {
-            "{Protocol Name}" => .nest {
-                "{Case Name 1}" => .symbol("{warning|error}")
-                "{Case Name 2}" => .symbol("{warning|error}")
-            }
+            "{Protocol Name}"
+                => .nest {
+                    "{Case Name 1}" => .symbol("{warning|error}")
+                    "{Case Name 2}" => .symbol("{warning|error}")
+                }
         } else {
             for (protocolName, requiredCases) in protocols.sorted(by: { $0.key < $1.key }) {
-                protocolName => .nest {
-                    for requiredCase in requiredCases.sorted(by: { $0.name < $1.name }) {
-                        requiredCase.name => .symbol(requiredCase.severity.rawValue)
+                protocolName
+                    => .nest {
+                        for requiredCase in requiredCases.sorted(by: { $0.name < $1.name }) {
+                            requiredCase.name => .symbol(requiredCase.severity.rawValue)
+                        }
                     }
-                }
             }
         }
     }

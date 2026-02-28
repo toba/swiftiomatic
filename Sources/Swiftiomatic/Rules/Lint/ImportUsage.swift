@@ -10,7 +10,7 @@ enum ImportUsage {
     /// The range where the violation for this import usage should be reported.
     var violationRange: NSRange? {
         switch self {
-        case .unused(_, let range):
+        case let .unused(_, range):
             return range
         case .missing:
             return nil
@@ -22,7 +22,7 @@ enum ImportUsage {
         switch self {
         case .unused:
             return nil
-        case .missing(let module):
+        case let .missing(module):
             return "Missing import for referenced module '\(module)'"
         }
     }

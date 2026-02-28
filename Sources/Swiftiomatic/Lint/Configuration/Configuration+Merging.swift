@@ -1,11 +1,12 @@
 import Foundation
 import SourceKittenFramework
 
-/// GENERAL NOTE ON MERGING: The child configuration is added on top of the parent configuration
-/// and is preferred in case of conflicts!
+// GENERAL NOTE ON MERGING: The child configuration is added on top of the parent configuration
+// and is preferred in case of conflicts!
 
 extension Configuration {
     // MARK: - Methods: Merging
+
     func merged(
         withChild childConfiguration: Configuration,
         rootDirectory: String = ""
@@ -55,8 +56,10 @@ extension Configuration {
         }
 
         // Prefer child configuration over parent configuration
-        let includedPaths = parentConfigIncluded.filter { !childConfigExcluded.contains($0) } + childConfigIncluded
-        let excludedPaths = parentConfigExcluded.filter { !childConfigIncluded.contains($0) } + childConfigExcluded
+        let includedPaths =
+            parentConfigIncluded.filter { !childConfigExcluded.contains($0) } + childConfigIncluded
+        let excludedPaths =
+            parentConfigExcluded.filter { !childConfigIncluded.contains($0) } + childConfigExcluded
 
         // Return paths relative to the provided root directory
         return (
@@ -78,6 +81,7 @@ extension Configuration {
     }
 
     // MARK: Accessing File Configurations
+
     /// Returns a new configuration that applies to the specified file by merging the current configuration with any
     /// nested configurations in the directory inheritance graph present until the level of the specified file.
     ///
@@ -107,9 +111,9 @@ extension Configuration {
         if directory == rootDirectory {
             // Use self if at level self
             config = self
-        } else if
-            FileManager.default.fileExists(atPath: configurationSearchPath),
-            !fileGraph.includesFile(atPath: configurationSearchPath) {
+        } else if FileManager.default.fileExists(atPath: configurationSearchPath),
+                  !fileGraph.includesFile(atPath: configurationSearchPath)
+        {
             // Use self merged with the nested config that was found
             // iff that nested config has not already been used to build the main config
 

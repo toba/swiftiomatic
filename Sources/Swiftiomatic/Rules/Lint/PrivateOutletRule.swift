@@ -42,37 +42,39 @@ struct PrivateOutletRule: Rule {
             Example("class Foo { @IBOutlet ↓var label: UILabel! }"),
             Example("class Foo { @IBOutlet private(set) ↓var label: UILabel? }"),
             Example("class Foo { @IBOutlet fileprivate(set) ↓var label: UILabel? }"),
-            Example("""
-            import Gridicons
+            Example(
+                """
+                import Gridicons
 
-            class BlogDetailsSectionHeaderView: UITableViewHeaderFooterView {
-                typealias EllipsisCallback = (BlogDetailsSectionHeaderView) -> Void
-                @IBOutlet private var titleLabel: UILabel?
+                class BlogDetailsSectionHeaderView: UITableViewHeaderFooterView {
+                    typealias EllipsisCallback = (BlogDetailsSectionHeaderView) -> Void
+                    @IBOutlet private var titleLabel: UILabel?
 
-                @objc @IBOutlet private(set) ↓var ellipsisButton: UIButton? {
-                    didSet {
-                        ellipsisButton?.setImage(UIImage.gridicon(.ellipsis), for: .normal)
+                    @objc @IBOutlet private(set) ↓var ellipsisButton: UIButton? {
+                        didSet {
+                            ellipsisButton?.setImage(UIImage.gridicon(.ellipsis), for: .normal)
+                        }
+                    }
+
+                    @objc var title: String = "" {
+                        didSet {
+                            titleLabel?.text = title.uppercased()
+                        }
+                    }
+
+                    @objc var ellipsisButtonDidTouch: EllipsisCallback?
+
+                    override func awakeFromNib() {
+                        super.awakeFromNib()
+                        titleLabel?.textColor = .textSubtle
+                    }
+
+                    @IBAction func ellipsisTapped() {
+                        ellipsisButtonDidTouch?(self)
                     }
                 }
-
-                @objc var title: String = "" {
-                    didSet {
-                        titleLabel?.text = title.uppercased()
-                    }
-                }
-
-                @objc var ellipsisButtonDidTouch: EllipsisCallback?
-
-                override func awakeFromNib() {
-                    super.awakeFromNib()
-                    titleLabel?.textColor = .textSubtle
-                }
-
-                @IBAction func ellipsisTapped() {
-                    ellipsisButtonDidTouch?(self)
-                }
-            }
-            """, configuration: ["allow_private_set": false], excludeFromDocumentation: true),
+                """, configuration: ["allow_private_set": false], excludeFromDocumentation: true
+            ),
         ]
     )
 }

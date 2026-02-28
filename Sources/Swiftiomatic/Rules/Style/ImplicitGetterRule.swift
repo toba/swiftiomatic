@@ -40,11 +40,13 @@ private extension ImplicitGetterRule {
                   getAccessor.effectSpecifiers == nil,
                   getAccessor.modifiers.isEmpty,
                   getAccessor.attributes.isEmpty,
-                  getAccessor.body != nil else {
+                  getAccessor.body != nil
+            else {
                 return
             }
 
-            let kind: ViolationKind = node.parent?.as(SubscriptDeclSyntax.self) == nil ? .property : .subscript
+            let kind: ViolationKind =
+                node.parent?.as(SubscriptDeclSyntax.self) == nil ? .property : .subscript
             violations.append(
                 ReasonedRuleViolation(
                     position: getAccessor.positionAfterSkippingLeadingTrivia,

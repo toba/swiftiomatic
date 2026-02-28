@@ -11,7 +11,8 @@ import Foundation
 extension FormatRule {
     /// Convert force-unwrapped URL initializers to use the #URL(...) macro
     static let urlMacro = FormatRule(
-        help: "Replace force-unwrapped `URL(string:)` initializers with the configured `#URL(_:)` macro.",
+        help:
+        "Replace force-unwrapped `URL(string:)` initializers with the configured `#URL(_:)` macro.",
         disabledByDefault: true,
         options: ["url-macro"]
     ) { formatter in
@@ -26,16 +27,24 @@ extension FormatRule {
             // Look for `URL(string: "...")!` pattern
             guard let openParenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
                   formatter.tokens[openParenIndex] == .startOfScope("("),
-                  let firstArgIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: openParenIndex),
+                  let firstArgIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, after: openParenIndex
+                  ),
                   formatter.tokens[firstArgIndex] == .identifier("string"),
                   let colonIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: firstArgIndex),
                   formatter.tokens[colonIndex] == .delimiter(":"),
-                  let stringStartIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: colonIndex),
+                  let stringStartIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, after: colonIndex
+                  ),
                   formatter.tokens[stringStartIndex] == .startOfScope("\""),
                   let stringEndIndex = formatter.index(of: .endOfScope("\""), after: stringStartIndex),
-                  let closeParenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: stringEndIndex),
+                  let closeParenIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, after: stringEndIndex
+                  ),
                   formatter.tokens[closeParenIndex] == .endOfScope(")"),
-                  let unwrapIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: closeParenIndex),
+                  let unwrapIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, after: closeParenIndex
+                  ),
                   formatter.tokens[unwrapIndex] == .operator("!", .postfix)
             else { return }
 

@@ -18,6 +18,7 @@ extension ModifierOrderRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -32,27 +33,31 @@ private extension ModifierOrderRule {
                 return
             }
 
-            let introducer: TokenSyntax? = parent.asProtocol((any DeclGroupSyntax).self)?.introducer
-                ?? parent.as(FunctionDeclSyntax.self)?.funcKeyword
-                ?? parent.as(InitializerDeclSyntax.self)?.initKeyword
-                ?? parent.as(SubscriptDeclSyntax.self)?.subscriptKeyword
-                ?? parent.as(VariableDeclSyntax.self)?.bindingSpecifier
+            let introducer: TokenSyntax? =
+                parent.asProtocol((any DeclGroupSyntax).self)?.introducer
+                    ?? parent.as(FunctionDeclSyntax.self)?.funcKeyword
+                    ?? parent.as(InitializerDeclSyntax.self)?.initKeyword
+                    ?? parent.as(SubscriptDeclSyntax.self)?.subscriptKeyword
+                    ?? parent.as(VariableDeclSyntax.self)?.bindingSpecifier
 
             guard let introducer else {
                 return
             }
 
             let descriptions = node.modifierDescriptions
-            let differences = descriptions
-                .bubbleSort(by: configuration.preferredModifierOrder)
-                .difference(from: descriptions)
+            let differences =
+                descriptions
+                    .bubbleSort(by: configuration.preferredModifierOrder)
+                    .difference(from: descriptions)
             let orderedDescriptions = descriptions.applying(differences) ?? descriptions
 
             if let diff = zip(orderedDescriptions, descriptions).first(where: { $0.keyword != $1.keyword }) {
-                violations.append(.init(
-                    position: introducer.positionAfterSkippingLeadingTrivia,
-                    reason: "\(diff.0.keyword) modifier should come before \(diff.1.keyword)"
-                ))
+                violations.append(
+                    .init(
+                        position: introducer.positionAfterSkippingLeadingTrivia,
+                        reason: "\(diff.0.keyword) modifier should come before \(diff.1.keyword)"
+                    )
+                )
             }
         }
     }
@@ -61,10 +66,11 @@ private extension ModifierOrderRule {
         override func visit(_ node: DeclModifierListSyntax) -> DeclModifierListSyntax {
             let modifierDescriptions = node.modifierDescriptions
             let prevModifiers = modifierDescriptions.map(\.modifier)
-            let differences = modifierDescriptions
-                .bubbleSort(by: configuration.preferredModifierOrder)
-                .map(\.modifier)
-                .difference(from: prevModifiers)
+            let differences =
+                modifierDescriptions
+                    .bubbleSort(by: configuration.preferredModifierOrder)
+                    .map(\.modifier)
+                    .difference(from: prevModifiers)
             if differences.isEmpty {
                 return super.visit(node)
             }
@@ -103,24 +109,29 @@ private extension DeclModifierListSyntax {
 
             // Handle setter access modifiers like `private(set)``.
             if let detail = modifier.detail?.detail.tokenKind,
-               case .identifier(let detailText) = detail, detailText == "set" {
+               case let .identifier(detailText) = detail, detailText == "set"
+            {
                 if case .acl = group {
-                    descriptions.append(.init(
-                        keyword: "\(keyword)(set)",
-                        modifier: modifier,
-                        group: .setterACL,
-                        position: position
-                    ))
+                    descriptions.append(
+                        .init(
+                            keyword: "\(keyword)(set)",
+                            modifier: modifier,
+                            group: .setterACL,
+                            position: position
+                        )
+                    )
                 }
                 continue
             }
 
-            descriptions.append(.init(
-                keyword: keyword,
-                modifier: modifier,
-                group: group,
-                position: position
-            ))
+            descriptions.append(
+                .init(
+                    keyword: keyword,
+                    modifier: modifier,
+                    group: group,
+                    position: position
+                )
+            )
         }
 
         return descriptions
@@ -168,7 +179,9 @@ private struct ModifierDescription: Equatable {
 }
 
 private extension [ModifierDescription] {
-    func bubbleSort(by preferredOrder: [SwiftDeclarationAttributeKind.ModifierGroup]) -> [ModifierDescription] {
+    func bubbleSort(by preferredOrder: [SwiftDeclarationAttributeKind.ModifierGroup])
+        -> [ModifierDescription]
+    {
         var sorted = Self()
         for element in self {
             var inserted = false

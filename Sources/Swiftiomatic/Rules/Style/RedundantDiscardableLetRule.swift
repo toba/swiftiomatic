@@ -15,7 +15,8 @@ struct RedundantDiscardableLetRule: Rule {
             Example("let _: ExplicitType = foo()"),
             Example("while let _ = SplashStyle(rawValue: maxValue) { maxValue += 1 }"),
             Example("async let _ = await foo()"),
-            Example("""
+            Example(
+                """
                 var body: some View {
                     let _ = foo()
                     if cond {
@@ -23,21 +24,27 @@ struct RedundantDiscardableLetRule: Rule {
                     }
                     return Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true]),
-            Example("""
+                """, configuration: ["ignore_swiftui_view_bodies": true]
+            ),
+            Example(
+                """
                 @ViewBuilder
                 func bar() -> some View {
                     let _ = foo()
                     Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true]),
-            Example("""
+                """, configuration: ["ignore_swiftui_view_bodies": true]
+            ),
+            Example(
+                """
                 #Preview {
                     let _ = foo()
                     Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true]),
-            Example("""
+                """, configuration: ["ignore_swiftui_view_bodies": true]
+            ),
+            Example(
+                """
                 static var previews: some View {
                     let _ = foo()
                     #if DEBUG
@@ -47,12 +54,14 @@ struct RedundantDiscardableLetRule: Rule {
                     #endif
                     Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true]),
+                """, configuration: ["ignore_swiftui_view_bodies": true]
+            ),
         ],
         triggeringExamples: [
             Example("↓let _ = foo()"),
             Example("if _ = foo() { ↓let _ = bar() }"),
-            Example("""
+            Example(
+                """
                 var body: some View {
                     ↓let _ = foo()
                     if cond {
@@ -60,33 +69,43 @@ struct RedundantDiscardableLetRule: Rule {
                     }
                     Text("Hello, World!")
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 @ViewBuilder
                 func bar() -> some View {
                     ↓let _ = foo()
                     return Text("Hello, World!")
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 #Preview {
                     ↓let _ = foo()
                     return Text("Hello, World!")
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 static var previews: some View {
                     ↓let _ = foo()
                     Text("Hello, World!")
                 }
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 var notBody: some View {
                     ↓let _ = foo()
                     Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true], excludeFromDocumentation: true),
-            Example("""
+                """, configuration: ["ignore_swiftui_view_bodies": true], excludeFromDocumentation: true
+            ),
+            Example(
+                """
                 var body: some NotView {
                     ↓let _ = foo()
                     if cond {
@@ -94,12 +113,14 @@ struct RedundantDiscardableLetRule: Rule {
                     }
                     Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true], excludeFromDocumentation: true),
+                """, configuration: ["ignore_swiftui_view_bodies": true], excludeFromDocumentation: true
+            ),
         ],
         corrections: [
             Example("↓let _ = foo()"): Example("_ = foo()"),
             Example("if _ = foo() { ↓let _ = bar() }"): Example("if _ = foo() { _ = bar() }"),
-            Example("""
+            Example(
+                """
                 var body: some View {
                     ↓let _ = foo()
                     #if DEBUG
@@ -109,39 +130,50 @@ struct RedundantDiscardableLetRule: Rule {
                     #endif
                     Text("Hello, World!")
                 }
-                """): Example("""
-                    var body: some View {
-                        _ = foo()
-                        #if DEBUG
-                        _ = bar()
-                        #else
-                        _ = baz()
-                        #endif
-                        Text("Hello, World!")
-                    }
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                var body: some View {
+                    _ = foo()
+                    #if DEBUG
+                    _ = bar()
+                    #else
+                    _ = baz()
+                    #endif
+                    Text("Hello, World!")
+                }
+                """
+            ),
+            Example(
+                """
                 #Preview {
                     ↓let _ = foo()
                     return Text("Hello, World!")
                 }
-                """): Example("""
-                    #Preview {
-                        _ = foo()
-                        return Text("Hello, World!")
-                    }
-                    """),
-            Example("""
+                """
+            ): Example(
+                """
+                #Preview {
+                    _ = foo()
+                    return Text("Hello, World!")
+                }
+                """
+            ),
+            Example(
+                """
                 var body: some View {
                     let _ = foo()
                     return Text("Hello, World!")
                 }
-                """, configuration: ["ignore_swiftui_view_bodies": true]): Example("""
-                    var body: some View {
-                        let _ = foo()
-                        return Text("Hello, World!")
-                    }
-                    """),
+                """, configuration: ["ignore_swiftui_view_bodies": true]
+            ): Example(
+                """
+                var body: some View {
+                    let _ = foo()
+                    return Text("Hello, World!")
+                }
+                """
+            ),
         ]
     )
 }
@@ -152,13 +184,13 @@ extension RedundantDiscardableLetRule: SwiftSyntaxCorrectableRule {
     }
 }
 
-private extension RedundantDiscardableLetRule {
+extension RedundantDiscardableLetRule {
     private enum CodeBlockKind {
         case normal
         case view
     }
 
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private var codeBlockScopes = Stack<CodeBlockKind>()
 
         override func visit(_ node: AccessorBlockSyntax) -> SyntaxVisitorContinueKind {
@@ -171,7 +203,9 @@ private extension RedundantDiscardableLetRule {
         }
 
         override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
-            codeBlockScopes.push(node.isViewBuilderFunctionBody || codeBlockScopes.peek() == .view ? .view : .normal)
+            codeBlockScopes.push(
+                node.isViewBuilderFunctionBody || codeBlockScopes.peek() == .view ? .view : .normal
+            )
             return .visitChildren
         }
 
@@ -203,7 +237,8 @@ private extension RedundantDiscardableLetRule {
                let binding = node.bindings.onlyElement,
                binding.pattern.is(WildcardPatternSyntax.self),
                binding.typeAnnotation == nil,
-               !node.modifiers.contains(where: { $0.name.text == "async" }) {
+               !node.modifiers.contains(where: { $0.name.text == "async" })
+            {
                 violations.append(
                     ReasonedRuleViolation(
                         position: node.bindingSpecifier.positionAfterSkippingLeadingTrivia,
@@ -223,7 +258,8 @@ private extension AccessorBlockSyntax {
     var isViewBody: Bool {
         if let binding = parent?.as(PatternBindingSyntax.self),
            binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text == "body",
-           let type = binding.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self) {
+           let type = binding.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)
+        {
             return type.isView && binding.parent?.parent?.is(VariableDeclSyntax.self) == true
         }
         return false
@@ -236,7 +272,8 @@ private extension AccessorBlockSyntax {
               let variableDecl = bindingList.parent?.as(VariableDeclSyntax.self),
               variableDecl.modifiers.contains(keyword: .static),
               variableDecl.bindingSpecifier.tokenKind == .keyword(.var),
-              let type = binding.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self) else {
+              let type = binding.typeAnnotation?.type.as(SomeOrAnyTypeSyntax.self)
+        else {
             return false
         }
 
@@ -247,7 +284,8 @@ private extension AccessorBlockSyntax {
 private extension CodeBlockSyntax {
     var isViewBuilderFunctionBody: Bool {
         guard let functionDecl = parent?.as(FunctionDeclSyntax.self),
-              functionDecl.attributes.contains(attributeNamed: "ViewBuilder") else {
+              functionDecl.attributes.contains(attributeNamed: "ViewBuilder")
+        else {
             return false
         }
         return functionDecl.signature.returnClause?.type.as(SomeOrAnyTypeSyntax.self)?.isView ?? false
@@ -262,7 +300,7 @@ private extension ClosureExprSyntax {
 
 private extension SomeOrAnyTypeSyntax {
     var isView: Bool {
-        someOrAnySpecifier.text == "some" &&
-            constraint.as(IdentifierTypeSyntax.self)?.name.text == "View"
+        someOrAnySpecifier.text == "some"
+            && constraint.as(IdentifierTypeSyntax.self)?.name.text == "View"
     }
 }

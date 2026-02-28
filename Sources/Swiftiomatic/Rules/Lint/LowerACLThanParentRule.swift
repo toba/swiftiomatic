@@ -6,7 +6,8 @@ struct LowerACLThanParentRule: Rule {
     static let description = RuleDescription(
         identifier: "lower_acl_than_parent",
         name: "Lower ACL than Parent",
-        description: "Ensure declarations have a lower access control level than their enclosing parent",
+        description:
+        "Ensure declarations have a lower access control level than their enclosing parent",
         kind: .lint,
         nonTriggeringExamples: [
             Example("public struct Foo { public func bar() {} }"),
@@ -67,16 +68,20 @@ struct LowerACLThanParentRule: Rule {
                 Example("class Foo { func bar() {} }"),
             Example("actor Foo { ↓public func bar() {} }"):
                 Example("actor Foo { func bar() {} }"),
-            Example("""
+            Example(
+                """
                 struct Foo {
                     ↓public func bar() {}
                 }
-                """):
-                Example("""
-                struct Foo {
-                    func bar() {}
-                }
-                """),
+                """
+            ):
+                Example(
+                    """
+                    struct Foo {
+                        func bar() {}
+                    }
+                    """
+                ),
         ]
     )
 }
@@ -85,6 +90,7 @@ extension LowerACLThanParentRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -133,15 +139,17 @@ private extension DeclModifierSyntax {
         }
 
         switch name.tokenKind {
-        case .keyword(.internal) where nearestNominalParent.modifiers?.containsPrivateOrFileprivate() == true:
+        case .keyword(.internal)
+            where nearestNominalParent.modifiers?.containsPrivateOrFileprivate() == true:
             return true
         case .keyword(.internal) where nearestNominalParent.modifiers?.accessLevelModifier == nil:
             guard let nominalExtension = nearestNominalParent.nearestNominalExtensionDeclParent() else {
                 return false
             }
             return nominalExtension.modifiers?.containsPrivateOrFileprivate() == true
-        case .keyword(.public) where nearestNominalParent.modifiers?.containsPrivateOrFileprivate() == true ||
-                                     nearestNominalParent.modifiers?.contains(keyword: .internal) == true:
+        case .keyword(.public)
+            where nearestNominalParent.modifiers?.containsPrivateOrFileprivate() == true
+            || nearestNominalParent.modifiers?.contains(keyword: .internal) == true:
             return true
         case .keyword(.public) where nearestNominalParent.modifiers?.accessLevelModifier == nil:
             guard let nominalExtension = nearestNominalParent.nearestNominalExtensionDeclParent() else {
@@ -176,10 +184,8 @@ private extension SyntaxProtocol {
 
 private extension Syntax {
     var isNominalTypeDecl: Bool {
-        `is`(StructDeclSyntax.self) ||
-            `is`(ClassDeclSyntax.self) ||
-            `is`(ActorDeclSyntax.self) ||
-            `is`(EnumDeclSyntax.self)
+        `is`(StructDeclSyntax.self) || `is`(ClassDeclSyntax.self) || `is`(ActorDeclSyntax.self)
+            || `is`(EnumDeclSyntax.self)
     }
 
     var isExtensionDecl: Bool {

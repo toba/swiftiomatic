@@ -12,142 +12,160 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
     static let description = RuleDescription(
         identifier: "capture_variable",
         name: "Capture Variable",
-        description: "Non-constant variables should not be listed in a closure's capture list" +
-            " to avoid confusion about closures capturing variables at creation time",
+        description: "Non-constant variables should not be listed in a closure's capture list"
+            + " to avoid confusion about closures capturing variables at creation time",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
-            class C {
-                let i: Int
-                init(_ i: Int) { self.i = i }
-            }
+            Example(
+                """
+                class C {
+                    let i: Int
+                    init(_ i: Int) { self.i = i }
+                }
 
-            let j: Int = 0
-            let c = C(1)
+                let j: Int = 0
+                let c = C(1)
 
-            let closure: () -> Void = { [j, c] in
-                print(c.i, j)
-            }
+                let closure: () -> Void = { [j, c] in
+                    print(c.i, j)
+                }
 
-            closure()
-            """),
-            Example("""
-            let iGlobal: Int = 0
+                closure()
+                """
+            ),
+            Example(
+                """
+                let iGlobal: Int = 0
 
-            class C {
-                class var iClass: Int { 0 }
-                static let iStatic: Int = 0
-                let iInstance: Int = 0
+                class C {
+                    class var iClass: Int { 0 }
+                    static let iStatic: Int = 0
+                    let iInstance: Int = 0
 
-                func callTest() {
-                    var iLocal: Int = 0
-                    test { [unowned self, iGlobal, iInstance, iLocal, iClass=C.iClass, iStatic=C.iStatic] j in
-                        print(iGlobal, iClass, iStatic, iInstance, iLocal, j)
+                    func callTest() {
+                        var iLocal: Int = 0
+                        test { [unowned self, iGlobal, iInstance, iLocal, iClass=C.iClass, iStatic=C.iStatic] j in
+                            print(iGlobal, iClass, iStatic, iInstance, iLocal, j)
+                        }
+                    }
+
+                    func test(_ completionHandler: @escaping (Int) -> Void) {
                     }
                 }
+                """
+            ),
+            Example(
+                """
+                var j: Int!
+                j = 0
 
-                func test(_ completionHandler: @escaping (Int) -> Void) {
+                let closure: () -> Void = { [j] in
+                    print(j)
                 }
-            }
-            """),
-            Example("""
-            var j: Int!
-            j = 0
 
-            let closure: () -> Void = { [j] in
-                print(j)
-            }
+                closure()
+                j = 1
+                closure()
+                """
+            ),
+            Example(
+                """
+                lazy var j: Int = { 0 }()
 
-            closure()
-            j = 1
-            closure()
-            """),
-            Example("""
-            lazy var j: Int = { 0 }()
+                let closure: () -> Void = { [j] in
+                    print(j)
+                }
 
-            let closure: () -> Void = { [j] in
-                print(j)
-            }
-
-            closure()
-            j = 1
-            closure()
-            """),
+                closure()
+                j = 1
+                closure()
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            var j: Int = 0
+            Example(
+                """
+                var j: Int = 0
 
-            let closure: () -> Void = { [j] in
-                print(j)
-            }
+                let closure: () -> Void = { [j] in
+                    print(j)
+                }
 
-            closure()
-            j = 1
-            closure()
-            """),
-            Example("""
-            class C {
-                let i: Int
-                init(_ i: Int) { self.i = i }
-            }
+                closure()
+                j = 1
+                closure()
+                """
+            ),
+            Example(
+                """
+                class C {
+                    let i: Int
+                    init(_ i: Int) { self.i = i }
+                }
 
-            var c = C(0)
-            let closure: () -> Void = { [c] in
-                print(c.i)
-            }
+                var c = C(0)
+                let closure: () -> Void = { [c] in
+                    print(c.i)
+                }
 
-            closure()
-            c = C(1)
-            closure()
-            """),
-            Example("""
-            var iGlobal: Int = 0
+                closure()
+                c = C(1)
+                closure()
+                """
+            ),
+            Example(
+                """
+                var iGlobal: Int = 0
 
-            class C {
-                func callTest() {
-                    test { [iGlobal] j in
-                        print(iGlobal, j)
+                class C {
+                    func callTest() {
+                        test { [iGlobal] j in
+                            print(iGlobal, j)
+                        }
+                    }
+
+                    func test(_ completionHandler: @escaping (Int) -> Void) {
+                    }
+                }
+                """
+            ),
+            Example(
+                """
+                class C {
+                    static var iStatic: Int = 0
+
+                    static func callTest() {
+                        test { [↓iStatic] j in
+                            print(iStatic, j)
+                        }
+                    }
+
+                    static func test(_ completionHandler: @escaping (Int) -> Void) {
+                        completionHandler(2)
+                        C.iStatic = 1
+                        completionHandler(3)
                     }
                 }
 
-                func test(_ completionHandler: @escaping (Int) -> Void) {
-                }
-            }
-            """),
-            Example("""
-            class C {
-                static var iStatic: Int = 0
+                C.callTest()
+                """
+            ),
+            Example(
+                """
+                class C {
+                    var iInstance: Int = 0
 
-                static func callTest() {
-                    test { [↓iStatic] j in
-                        print(iStatic, j)
+                    func callTest() {
+                        test { [iInstance] j in
+                            print(iInstance, j)
+                        }
+                    }
+
+                    func test(_ completionHandler: @escaping (Int) -> Void) {
                     }
                 }
-
-                static func test(_ completionHandler: @escaping (Int) -> Void) {
-                    completionHandler(2)
-                    C.iStatic = 1
-                    completionHandler(3)
-                }
-            }
-
-            C.callTest()
-            """),
-            Example("""
-            class C {
-                var iInstance: Int = 0
-
-                func callTest() {
-                    test { [iInstance] j in
-                        print(iInstance, j)
-                    }
-                }
-
-                func test(_ completionHandler: @escaping (Int) -> Void) {
-                }
-            }
-            """),
+                """
+            ),
         ],
         requiresFileOnDisk: true
     )
@@ -158,15 +176,21 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
         file.declaredVariables(compilerArguments: compilerArguments)
     }
 
-    func validate(file: SwiftLintFile,
-                  collectedInfo: [SwiftLintFile: Self.FileInfo],
-                  compilerArguments: [String]) -> [StyleViolation] {
+    func validate(
+        file: SwiftLintFile,
+        collectedInfo: [SwiftLintFile: Self.FileInfo],
+        compilerArguments: [String]
+    ) -> [StyleViolation] {
         file.captureListVariables(compilerArguments: compilerArguments)
-            .filter { capturedVariable in collectedInfo.values.contains { $0.contains(capturedVariable.usr) } }
+            .filter { capturedVariable in
+                collectedInfo.values.contains { $0.contains(capturedVariable.usr) }
+            }
             .map {
-                StyleViolation(ruleDescription: Self.description,
-                               severity: configuration.severity,
-                               location: Location(file: file, byteOffset: $0.offset))
+                StyleViolation(
+                    ruleDescription: Self.description,
+                    severity: configuration.severity,
+                    location: Location(file: file, byteOffset: $0.offset)
+                )
             }
     }
 }
@@ -180,10 +204,13 @@ private extension SwiftLintFile {
         Self.captureListVariableOffsets(parentEntity: structureDictionary)
     }
 
-    static func captureListVariableOffsets(parentEntity: SourceKittenDictionary) -> Set<ByteCount> {
+    static func captureListVariableOffsets(parentEntity: SourceKittenDictionary) -> Set<
+        ByteCount
+    > {
         parentEntity.substructure
             .reversed()
-            .reduce(into: (foundOffsets: Set<ByteCount>(), afterClosure: nil as ByteCount?)) { acc, entity in
+            .reduce(into: (foundOffsets: Set<ByteCount>(), afterClosure: nil as ByteCount?)) {
+                acc, entity in
                 guard let offset = entity.offset else { return }
 
                 if entity.expressionKind == .closure {
@@ -192,7 +219,8 @@ private extension SwiftLintFile {
                           closureOffset < offset,
                           let length = entity.length,
                           let nameLength = entity.nameLength,
-                          entity.declarationKind == .varLocal {
+                          entity.declarationKind == .varLocal
+                {
                     acc.foundOffsets.insert(offset + length - nameLength)
                 } else {
                     acc.afterClosure = nil
@@ -203,28 +231,37 @@ private extension SwiftLintFile {
             .foundOffsets
     }
 
-    func captureListVariables(compilerArguments: [String]) -> Set<CaptureVariableRule.Variable> {
+    func captureListVariables(compilerArguments: [String]) -> Set<
+        CaptureVariableRule.Variable
+    > {
         let offsets = captureListVariableOffsets()
-        guard !offsets.isEmpty, let indexEntities = index(compilerArguments: compilerArguments) else { return Set() }
+        guard !offsets.isEmpty, let indexEntities = index(compilerArguments: compilerArguments) else {
+            return Set()
+        }
 
-        return Set(indexEntities.traverseEntitiesDepthFirst { _, entity in
-            guard
-                let kind = entity.kind,
-                kind.hasPrefix("source.lang.swift.ref.var."),
-                let usr = entity.usr,
-                let line = entity.line,
-                let column = entity.column,
-                let offset = stringView.byteOffset(forLine: line, bytePosition: column)
-            else { return nil }
-            return offsets.contains(offset) ? CaptureVariableRule.Variable(usr: usr, offset: offset) : nil
-        })
+        return Set(
+            indexEntities.traverseEntitiesDepthFirst { _, entity in
+                guard
+                    let kind = entity.kind,
+                    kind.hasPrefix("source.lang.swift.ref.var."),
+                    let usr = entity.usr,
+                    let line = entity.line,
+                    let column = entity.column,
+                    let offset = stringView.byteOffset(forLine: line, bytePosition: column)
+                else { return nil }
+                return offsets.contains(offset)
+                    ? CaptureVariableRule.Variable(usr: usr, offset: offset) : nil
+            }
+        )
     }
 
     func declaredVariableOffsets() -> Set<ByteCount> {
         Self.declaredVariableOffsets(parentStructure: structureDictionary)
     }
 
-    static func declaredVariableOffsets(parentStructure: SourceKittenDictionary) -> Set<ByteCount> {
+    static func declaredVariableOffsets(parentStructure: SourceKittenDictionary) -> Set<
+        ByteCount
+    > {
         Set(
             parentStructure.traverseDepthFirst {
                 let hasSetter = $0.setterAccessibility != nil
@@ -244,25 +281,30 @@ private extension SwiftLintFile {
 
     func declaredVariables(compilerArguments: [String]) -> Set<CaptureVariableRule.USR> {
         let offsets = declaredVariableOffsets()
-        guard !offsets.isEmpty, let indexEntities = index(compilerArguments: compilerArguments) else { return Set() }
+        guard !offsets.isEmpty, let indexEntities = index(compilerArguments: compilerArguments) else {
+            return Set()
+        }
 
-        return Set(indexEntities.traverseEntitiesDepthFirst { _, entity in
-            guard
-                let declarationKind = entity.declarationKind,
-                Self.checkedDeclarationKinds.contains(declarationKind),
-                let line = entity.line,
-                let column = entity.column,
-                let offset = stringView.byteOffset(forLine: line, bytePosition: column),
-                offsets.contains(offset)
-            else { return nil }
-            return entity.usr
-        })
+        return Set(
+            indexEntities.traverseEntitiesDepthFirst { _, entity in
+                guard
+                    let declarationKind = entity.declarationKind,
+                    Self.checkedDeclarationKinds.contains(declarationKind),
+                    let line = entity.line,
+                    let column = entity.column,
+                    let offset = stringView.byteOffset(forLine: line, bytePosition: column),
+                    offsets.contains(offset)
+                else { return nil }
+                return entity.usr
+            }
+        )
     }
 
     func index(compilerArguments: [String]) -> SourceKittenDictionary? {
         guard
             let path,
-            let response = try? Request.index(file: path, arguments: compilerArguments).sendIfNotDisabled()
+            let response = try? Request.index(file: path, arguments: compilerArguments)
+            .sendIfNotDisabled()
         else {
             Issue.indexingError(path: path, ruleID: CaptureVariableRule.identifier).print()
             return nil
@@ -273,5 +315,7 @@ private extension SwiftLintFile {
 }
 
 private extension SourceKittenDictionary {
-    var usr: String? { value["key.usr"] as? String }
+    var usr: String? {
+        value["key.usr"] as? String
+    }
 }

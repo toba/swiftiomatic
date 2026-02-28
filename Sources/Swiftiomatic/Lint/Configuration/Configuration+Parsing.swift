@@ -1,22 +1,23 @@
 extension Configuration {
     // MARK: - Subtypes
-    internal enum Key: String, CaseIterable {
+
+    enum Key: String, CaseIterable {
         case cachePath = "cache_path"
         case disabledRules = "disabled_rules"
         case enabledRules = "enabled_rules" // deprecated in favor of optInRules
-        case excluded = "excluded"
-        case included = "included"
+        case excluded
+        case included
         case optInRules = "opt_in_rules"
-        case reporter = "reporter"
+        case reporter
         case swiftlintVersion = "swiftlint_version"
         case warningThreshold = "warning_threshold"
         case onlyRules = "only_rules"
-        case indentation = "indentation"
+        case indentation
         case analyzerRules = "analyzer_rules"
         case allowZeroLintableFiles = "allow_zero_lintable_files"
-        case strict = "strict"
-        case lenient = "lenient"
-        case baseline = "baseline"
+        case strict
+        case lenient
+        case baseline
         case writeBaseline = "write_baseline"
         case checkForUpdates = "check_for_updates"
         case childConfig = "child_config"
@@ -26,9 +27,11 @@ extension Configuration {
     }
 
     // MARK: - Properties
+
     private static let validGlobalKeys: Set<String> = Set(Key.allCases.map(\.rawValue))
 
     // MARK: - Initializers
+
     /// Creates a Configuration value based on the specified parameters.
     ///
     /// - parameter parentConfiguration:    The parent configuration, if any.
@@ -46,10 +49,14 @@ extension Configuration {
         onlyRule: [String] = [],
         cachePath: String? = nil
     ) throws {
-        func defaultStringArray(_ object: Any?) -> [String] { [String].array(of: object) ?? [] }
+        func defaultStringArray(_ object: Any?) -> [String] {
+            [String].array(of: object) ?? []
+        }
 
         // Use either the new 'opt_in_rules' or fallback to the deprecated 'enabled_rules'
-        let optInRules = defaultStringArray(dict[Key.optInRules.rawValue] ?? dict[Key.enabledRules.rawValue])
+        let optInRules = defaultStringArray(
+            dict[Key.optInRules.rawValue] ?? dict[Key.enabledRules.rawValue]
+        )
         let disabledRules = defaultStringArray(dict[Key.disabledRules.rawValue])
 
         let onlyRules = defaultStringArray(dict[Key.onlyRules.rawValue])
@@ -102,7 +109,9 @@ extension Configuration {
             warningThreshold: dict[Key.warningThreshold.rawValue] as? Int,
             reporter: dict[Key.reporter.rawValue] as? String ?? XcodeReporter.identifier,
             cachePath: cachePath ?? dict[Key.cachePath.rawValue] as? String,
-            pinnedVersion: dict[Key.swiftlintVersion.rawValue].map { ($0 as? String) ?? String(describing: $0) },
+            pinnedVersion: dict[Key.swiftlintVersion.rawValue].map {
+                ($0 as? String) ?? String(describing: $0)
+            },
             allowZeroLintableFiles: dict[Key.allowZeroLintableFiles.rawValue] as? Bool ?? false,
             strict: dict[Key.strict.rawValue] as? Bool ?? false,
             lenient: dict[Key.lenient.rawValue] as? Bool ?? false,
@@ -113,13 +122,14 @@ extension Configuration {
     }
 
     // MARK: - Methods: Validations
+
     private static func validKeys(ruleList: RuleList) -> Set<String> {
         validGlobalKeys.union(ruleList.allValidIdentifiers())
     }
 
     private static func getIndentationLogIfInvalid(from dict: [String: Any]) -> IndentationStyle {
         if let rawIndentation = dict[Key.indentation.rawValue] {
-            if let indentationStyle = Self.IndentationStyle(rawIndentation) {
+            if let indentationStyle = IndentationStyle(rawIndentation) {
                 return indentationStyle
             }
             Issue.invalidConfiguration(ruleID: Key.indentation.rawValue).print()
@@ -142,7 +152,8 @@ extension Configuration {
         }
 
         // Deprecation warning for rules
-        let deprecatedRulesIdentifiers = ruleList.list.flatMap { identifier, rule -> [(String, String)] in
+        let deprecatedRulesIdentifiers = ruleList.list.flatMap {
+            identifier, rule -> [(String, String)] in
             rule.description.deprecatedAliases.map { ($0, identifier) }
         }
 
@@ -156,7 +167,9 @@ extension Configuration {
         }
     }
 
-    private static func warnAboutInvalidKeys(configurationDictionary dict: [String: Any], ruleList: RuleList) {
+    private static func warnAboutInvalidKeys(
+        configurationDictionary dict: [String: Any], ruleList: RuleList
+    ) {
         // Log an error when supplying invalid keys in the configuration dictionary
         let invalidKeys = Set(dict.keys).subtracting(validKeys(ruleList: ruleList))
         if invalidKeys.isNotEmpty {
@@ -173,14 +186,15 @@ extension Configuration {
     ) {
         for key in dict.keys where !validGlobalKeys.contains(key) {
             guard let identifier = ruleList.identifier(for: key),
-                  let ruleType = ruleList.list[identifier] else {
+                  let ruleType = ruleList.list[identifier]
+            else {
                 continue
             }
 
             switch rulesMode {
             case .allCommandLine, .onlyCommandLine:
                 return
-            case .onlyConfiguration(let onlyRules):
+            case let .onlyConfiguration(onlyRules):
                 let issue = validateConfiguredRuleIsEnabled(
                     onlyRules: onlyRules,
                     ruleType: ruleType,
@@ -209,18 +223,19 @@ extension Configuration {
         var disabledInParentRules: Set<String> = []
         var allEnabledRules: Set<String> = []
 
-        if case .onlyConfiguration(let onlyRules) = parentConfiguration?.rulesMode {
+        if case let .onlyConfiguration(onlyRules) = parentConfiguration?.rulesMode {
             enabledInParentRules = onlyRules
-        } else if case .defaultConfiguration(
-            let parentDisabledRules, let parentOptInRules
+        } else if case let .defaultConfiguration(
+            parentDisabledRules, parentOptInRules
         ) = parentConfiguration?.rulesMode {
             enabledInParentRules = parentOptInRules
             disabledInParentRules = parentDisabledRules
         }
-        allEnabledRules = enabledInParentRules
-            .subtracting(disabledInParentRules)
-            .union(optInRules)
-            .subtracting(disabledRules)
+        allEnabledRules =
+            enabledInParentRules
+                .subtracting(disabledInParentRules)
+                .union(optInRules)
+                .subtracting(disabledRules)
 
         return validateConfiguredRuleIsEnabled(
             parentConfiguration: parentConfiguration,
@@ -278,8 +293,9 @@ extension Configuration {
                 if enabledInParentRules.union(optInRules).isDisjoint(with: allIdentifiers) {
                     return Issue.ruleNotEnabledInOptInRules(ruleID: ruleType.identifier)
                 }
-            } else if case .onlyConfiguration(let enabledInParentRules) = parentConfiguration?.rulesMode,
-                      enabledInParentRules.isDisjoint(with: allIdentifiers) {
+            } else if case let .onlyConfiguration(enabledInParentRules) = parentConfiguration?.rulesMode,
+                      enabledInParentRules.isDisjoint(with: allIdentifiers)
+            {
                 return Issue.ruleNotEnabledInParentOnlyRules(ruleID: ruleType.identifier)
             }
         }

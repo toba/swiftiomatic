@@ -20,7 +20,9 @@ extension FormatRule {
         }
         formatter.forEach(.endOfScope("*/")) { i, _ in
             guard let startIndex = formatter.index(of: .startOfScope("/*"), before: i),
-                  case let .commentBody(commentStart)? = formatter.next(.nonSpaceOrLinebreak, after: startIndex),
+                  case let .commentBody(commentStart)? = formatter.next(
+                      .nonSpaceOrLinebreak, after: startIndex
+                  ),
                   case let .commentBody(commentEnd)? = formatter.last(.nonSpaceOrLinebreak, before: i),
                   !commentStart.hasPrefix("@"), !commentEnd.hasSuffix("@")
             else {

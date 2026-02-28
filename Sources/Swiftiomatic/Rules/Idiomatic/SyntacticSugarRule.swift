@@ -20,14 +20,18 @@ struct SyntacticSugarRule: CorrectableRule, SourceKitFreeRule {
         return visitor.walk(file: file) { visitor in
             flattenViolations(visitor.violations)
         }.map { violation in
-            StyleViolation(ruleDescription: Self.description,
-                           severity: configuration.severity,
-                           location: Location(file: file, byteOffset: ByteCount(violation.position)),
-                           reason: violation.type.violationReason)
+            StyleViolation(
+                ruleDescription: Self.description,
+                severity: configuration.severity,
+                location: Location(file: file, byteOffset: ByteCount(violation.position)),
+                reason: violation.type.violationReason
+            )
         }
     }
 
-    private func flattenViolations(_ violations: [SyntacticSugarRuleViolation]) -> [SyntacticSugarRuleViolation] {
+    private func flattenViolations(_ violations: [SyntacticSugarRuleViolation])
+        -> [SyntacticSugarRuleViolation]
+    {
         violations.flatMap { [$0] + flattenViolations($0.children) }
     }
 
@@ -94,6 +98,7 @@ private struct SyntacticSugarRuleViolation {
         let rightStart: AbsolutePosition
         let rightEnd: AbsolutePosition
     }
+
     enum CorrectionType {
         case optional
         case dictionary(commaStart: AbsolutePosition, commaEnd: AbsolutePosition)
@@ -162,7 +167,10 @@ private final class SyntacticSugarRuleVisitor: SyntaxVisitor {
         // Skip checks for 'self' or \T Dictionary<Key, Value>.self
         if let parent = node.parent?.as(MemberAccessExprSyntax.self),
            let lastToken = Array(parent.tokens(viewMode: .sourceAccurate)).last?.tokenKind,
-           [.keyword(.self), .identifier("Type"), .identifier("none"), .identifier("Index")].contains(lastToken) {
+           [.keyword(.self), .identifier("Type"), .identifier("none"), .identifier("Index")].contains(
+               lastToken
+           )
+        {
             return
         }
 
@@ -201,21 +209,26 @@ private final class SyntacticSugarRuleVisitor: SyntaxVisitor {
 
             // If there's no type, check all inner generics like in the case of 'Box<Array<T>>'
             guard let genericArguments = simpleType.genericArgumentClause else { return nil }
-            let innerTypes = genericArguments.arguments.compactMap { violation(in: $0.argument.as(TypeSyntax.self)) }
+            let innerTypes = genericArguments.arguments.compactMap {
+                violation(in: $0.argument.as(TypeSyntax.self))
+            }
             return innerTypes.first
         }
 
         // Base class is "Swift" for cases like "Swift.Array"
         if let memberType = typeSyntax?.as(MemberTypeSyntax.self),
            let baseType = memberType.baseType.as(IdentifierTypeSyntax.self),
-           baseType.name.text == "Swift" {
+           baseType.name.text == "Swift"
+        {
             guard SugaredType(typeName: memberType.name.text) != nil else { return nil }
             return violation(from: memberType)
         }
         return nil
     }
 
-    private func violation(from node: some SyntaxProtocol & SyntaxWithGenericClause) -> SyntacticSugarRuleViolation? {
+    private func violation(from node: some SyntaxProtocol & SyntaxWithGenericClause)
+        -> SyntacticSugarRuleViolation?
+    {
         guard
             let generic = node.genericArguments,
             let firstGenericType = generic.arguments.first,
@@ -237,19 +250,22 @@ private final class SyntacticSugarRuleVisitor: SyntaxVisitor {
         }
 
         let firstInnerViolation = violation(in: firstGenericType.argument.as(TypeSyntax.self))
-        let secondInnerViolation = generic.arguments.count > 1
-            ? violation(in: lastGenericType.argument.as(TypeSyntax.self))
-            : nil
+        let secondInnerViolation =
+            generic.arguments.count > 1
+                ? violation(in: lastGenericType.argument.as(TypeSyntax.self))
+                : nil
 
         return SyntacticSugarRuleViolation(
             position: node.positionAfterSkippingLeadingTrivia,
             type: type,
-            correction: .init(typeStart: node.position,
-                              correction: correctionType,
-                              leftStart: generic.leftAngle.position,
-                              leftEnd: generic.leftAngle.endPosition,
-                              rightStart: lastGenericType.endPositionBeforeTrailingTrivia,
-                              rightEnd: generic.rightAngle.endPositionBeforeTrailingTrivia),
+            correction: .init(
+                typeStart: node.position,
+                correction: correctionType,
+                leftStart: generic.leftAngle.position,
+                leftEnd: generic.leftAngle.endPosition,
+                rightStart: lastGenericType.endPositionBeforeTrailingTrivia,
+                rightEnd: generic.rightAngle.endPositionBeforeTrailingTrivia
+            ),
             children: [firstInnerViolation, secondInnerViolation].compactMap(\.self)
         )
     }
@@ -262,7 +278,9 @@ private struct CorrectingContext<R: Rule> {
     var numberOfCorrections = 0
 
     mutating func correctViolations(_ violations: [SyntacticSugarRuleViolation]) {
-        let sortedVolations = violations.sorted(by: { $0.correction.typeStart > $1.correction.typeStart })
+        let sortedVolations = violations.sorted(by: {
+            $0.correction.typeStart > $1.correction.typeStart
+        })
         for violation in sortedVolations {
             correctViolation(violation)
         }
@@ -272,11 +290,17 @@ private struct CorrectingContext<R: Rule> {
         let stringView = file.stringView
         let correction = violation.correction
 
-        guard let violationNSRange = stringView.NSRange(start: correction.leftStart, end: correction.rightEnd),
-              file.ruleEnabled(violatingRange: violationNSRange, for: rule) != nil else { return }
+        guard
+            let violationNSRange = stringView.NSRange(
+                start: correction.leftStart, end: correction.rightEnd
+            ),
+            file.ruleEnabled(violatingRange: violationNSRange, for: rule) != nil
+        else { return }
 
-        guard let rightRange = stringView.NSRange(start: correction.rightStart, end: correction.rightEnd),
-              let leftRange = stringView.NSRange(start: correction.typeStart, end: correction.leftEnd) else {
+        guard
+            let rightRange = stringView.NSRange(start: correction.rightStart, end: correction.rightEnd),
+            let leftRange = stringView.NSRange(start: correction.typeStart, end: correction.leftEnd)
+        else {
             return
         }
 
@@ -287,7 +311,6 @@ private struct CorrectingContext<R: Rule> {
             replaceCharacters(in: leftRange, with: "[")
 
         case let .dictionary(commaStart, commaEnd):
-
             replaceCharacters(in: rightRange, with: "]")
             guard let commaRange = stringView.NSRange(start: commaStart, end: commaEnd) else { return }
 
@@ -304,6 +327,7 @@ private struct CorrectingContext<R: Rule> {
             replaceCharacters(in: rightRange, with: ")?")
             correctViolations(violation.children)
             replaceCharacters(in: leftRange, with: "(")
+
         case .optional:
             replaceCharacters(in: rightRange, with: "?")
             correctViolations(violation.children)
@@ -313,7 +337,9 @@ private struct CorrectingContext<R: Rule> {
     }
 
     private func typeIsOpaqueOrExistential(correction: SyntacticSugarRuleViolation.Correction) -> Bool {
-        if let innerTypeRange = file.stringView.NSRange(start: correction.leftEnd, end: correction.rightStart) {
+        if let innerTypeRange = file.stringView.NSRange(
+            start: correction.leftEnd, end: correction.rightStart
+        ) {
             let innerTypeString = file.stringView.substring(with: innerTypeRange)
             return innerTypeString.contains("any ") || innerTypeString.contains("some ")
         }
@@ -331,19 +357,32 @@ private protocol SyntaxWithGenericClause {
 }
 
 extension MemberTypeSyntax: SyntaxWithGenericClause {
-    var typeName: String? { name.text }
-    var genericArguments: GenericArgumentClauseSyntax? { genericArgumentClause }
+    var typeName: String? {
+        name.text
+    }
+
+    var genericArguments: GenericArgumentClauseSyntax? {
+        genericArgumentClause
+    }
 }
 
 extension IdentifierTypeSyntax: SyntaxWithGenericClause {
-    var typeName: String? { name.text }
-    var genericArguments: GenericArgumentClauseSyntax? { genericArgumentClause }
+    var typeName: String? {
+        name.text
+    }
+
+    var genericArguments: GenericArgumentClauseSyntax? {
+        genericArgumentClause
+    }
 }
 
 extension GenericSpecializationExprSyntax: SyntaxWithGenericClause {
     var typeName: String? {
-        expression.as(DeclReferenceExprSyntax.self)?.firstToken(viewMode: .sourceAccurate)?.text ??
-        expression.as(MemberAccessExprSyntax.self)?.declName.baseName.text
+        expression.as(DeclReferenceExprSyntax.self)?.firstToken(viewMode: .sourceAccurate)?.text
+            ?? expression.as(MemberAccessExprSyntax.self)?.declName.baseName.text
     }
-    var genericArguments: GenericArgumentClauseSyntax? { genericArgumentClause }
+
+    var genericArguments: GenericArgumentClauseSyntax? {
+        genericArgumentClause
+    }
 }

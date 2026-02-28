@@ -6,8 +6,8 @@ struct ReturnArrowWhitespaceRule: Rule {
     static let description = RuleDescription(
         identifier: "return_arrow_whitespace",
         name: "Returning Whitespace",
-        description: "Return arrow and return type should be separated by a single space or on a " +
-                     "separate line",
+        description: "Return arrow and return type should be separated by a single space or on a "
+            + "separate line",
         kind: .style,
         nonTriggeringExamples: [
             Example("func abc() -> Int {}"),
@@ -16,12 +16,14 @@ struct ReturnArrowWhitespaceRule: Rule {
             Example("var abc = {(param: Int) -> Void in }"),
             Example("func abc() ->\n    Int {}"),
             Example("func abc()\n    -> Int {}"),
-            Example("""
-            func reallyLongFunctionMethods<T>(withParam1: Int, param2: String, param3: Bool) where T: AGenericConstraint
-                -> Int {
-                return 1
-            }
-            """),
+            Example(
+                """
+                func reallyLongFunctionMethods<T>(withParam1: Int, param2: String, param3: Bool) where T: AGenericConstraint
+                    -> Int {
+                    return 1
+                }
+                """
+            ),
             Example("typealias SuccessBlock = ((Data) -> Void)"),
         ],
         triggeringExamples: [
@@ -84,7 +86,8 @@ private extension ReturnArrowWhitespaceRule {
 private extension TokenSyntax {
     var arrowViolation: ReasonedRuleViolation? {
         guard let previousToken = previousToken(viewMode: .sourceAccurate),
-              let nextToken = nextToken(viewMode: .sourceAccurate) else {
+              let nextToken = nextToken(viewMode: .sourceAccurate)
+        else {
             return nil
         }
 
@@ -115,6 +118,8 @@ private extension TokenSyntax {
             return nil
         }
 
-        return .init(position: start, correction: .init(start: start, end: end, replacement: correction))
+        return .init(
+            position: start, correction: .init(start: start, end: end, replacement: correction)
+        )
     }
 }

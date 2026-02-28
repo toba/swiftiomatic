@@ -1,4 +1,3 @@
-
 struct FunctionNameWhitespaceConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.warning)
@@ -29,6 +28,7 @@ struct FunctionNameWhitespaceConfiguration: SeverityBasedRuleConfiguration {
             }
         }
     }
+
     typealias Parent = FunctionNameWhitespaceRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $genericSpacing.key.isEmpty {

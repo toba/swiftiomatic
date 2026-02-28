@@ -46,11 +46,15 @@ enum Excluder: @unchecked Sendable {
 }
 
 extension FileManager: LintableFileManager, @unchecked @retroactive Sendable {
-    func filesToLint(inPath path: String,
-                            rootDirectory: String? = nil,
-                            excluder: Excluder) -> [String] {
+    func filesToLint(
+        inPath path: String,
+        rootDirectory: String? = nil,
+        excluder: Excluder
+    ) -> [String] {
         let absolutePath = URL(
-            fileURLWithPath: path.absolutePathRepresentation(rootDirectory: rootDirectory ?? currentDirectoryPath)
+            fileURLWithPath: path.absolutePathRepresentation(
+                rootDirectory: rootDirectory ?? currentDirectoryPath
+            )
         )
 
         // If path is a file, filter and return it directly.
@@ -80,12 +84,14 @@ extension FileManager: LintableFileManager, @unchecked @retroactive Sendable {
 
         while let element = enumerator.nextObject() as? String {
             let absoluteElementPath = URL(fileURLWithPath: element, relativeTo: absolutePath)
-            guard let absoluteStandardizedElementPath = absoluteElementPath.standardized.filepathGuarded else {
+            guard let absoluteStandardizedElementPath = absoluteElementPath.standardized.filepathGuarded
+            else {
                 continue
             }
             if absoluteElementPath.path.isFile {
                 if absoluteElementPath.pathExtension == "swift",
-                   !excluder.excludes(path: absoluteStandardizedElementPath) {
+                   !excluder.excludes(path: absoluteStandardizedElementPath)
+                {
                     files.append(absoluteStandardizedElementPath)
                 }
             } else {
@@ -96,9 +102,10 @@ extension FileManager: LintableFileManager, @unchecked @retroactive Sendable {
             }
         }
 
-        return files + directoriesToWalk.parallelFlatMap {
-            collectFiles(atPath: URL(fileURLWithPath: $0, isDirectory: true), excluder: excluder)
-        }
+        return files
+            + directoriesToWalk.parallelFlatMap {
+                collectFiles(atPath: URL(fileURLWithPath: $0, isDirectory: true), excluder: excluder)
+            }
     }
 
     func modificationDate(forFileAtPath path: String) -> Date? {

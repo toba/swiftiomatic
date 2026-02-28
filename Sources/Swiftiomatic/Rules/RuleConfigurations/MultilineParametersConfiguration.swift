@@ -1,4 +1,3 @@
-
 struct MultilineParametersConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.warning)
@@ -24,12 +23,13 @@ struct MultilineParametersConfiguration: SeverityBasedRuleConfiguration {
             Issue.inconsistentConfiguration(
                 ruleID: Parent.identifier,
                 message: """
-                         Option '\($maxNumberOfSingleLineParameters.key)' has no effect when \
-                         '\($allowsSingleLine.key)' is false.
-                         """
+                Option '\($maxNumberOfSingleLineParameters.key)' has no effect when \
+                '\($allowsSingleLine.key)' is false.
+                """
             ).print()
         }
     }
+
     typealias Parent = MultilineParametersRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $allowsSingleLine.key.isEmpty {

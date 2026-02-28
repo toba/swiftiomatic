@@ -28,6 +28,7 @@ extension PrivateSwiftUIStatePropertyRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -111,9 +112,9 @@ private extension PrivateSwiftUIStatePropertyRule {
         }
 
         override func visitPost(_ node: Syntax) {
-            if node.is(ClassDeclSyntax.self) ||
-                node.is(StructDeclSyntax.self) ||
-                node.is(ActorDeclSyntax.self) {
+            if node.is(ClassDeclSyntax.self) || node.is(StructDeclSyntax.self)
+                || node.is(ActorDeclSyntax.self)
+            {
                 swiftUITypeScopes.pop()
             }
         }
@@ -141,9 +142,10 @@ private extension PrivateSwiftUIStatePropertyRule {
                 )
 
                 let bindingSpecifier = node.bindingSpecifier.with(\.leadingTrivia, [])
-                let newNode = node
-                    .with(\.modifiers, [privateModifier])
-                    .with(\.bindingSpecifier, bindingSpecifier)
+                let newNode =
+                    node
+                        .with(\.modifiers, [privateModifier])
+                        .with(\.bindingSpecifier, bindingSpecifier)
                 return DeclSyntax(newNode)
             }
 
@@ -153,17 +155,19 @@ private extension PrivateSwiftUIStatePropertyRule {
             let existingAccessLevelModifiers = node.modifiers.filter { $0.asAccessLevelModifier != nil }
             // Remove any existing access control modifiers, but preserve any of their leading and trailing trivia
             // Existing trivia will be appended to the rewritten access modifier
-            let previousAccessModifierLeadingTrivia = existingAccessLevelModifiers
-                .map(\.leadingTrivia)
-                .reduce(Trivia(pieces: [])) { partialResult, trivia in
-                    partialResult.merging(trivia)
-                }
+            let previousAccessModifierLeadingTrivia =
+                existingAccessLevelModifiers
+                    .map(\.leadingTrivia)
+                    .reduce(Trivia(pieces: [])) { partialResult, trivia in
+                        partialResult.merging(trivia)
+                    }
 
-            let previousAccessModifierTrailingTrivia = existingAccessLevelModifiers
-                .map(\.trailingTrivia)
-                .reduce(Trivia(pieces: [])) { partialResult, trivia in
-                    partialResult.merging(trivia)
-                }
+            let previousAccessModifierTrailingTrivia =
+                existingAccessLevelModifiers
+                    .map(\.trailingTrivia)
+                    .reduce(Trivia(pieces: [])) { partialResult, trivia in
+                        partialResult.merging(trivia)
+                    }
 
             let filteredModifiers = node.modifiers.filter { $0.asAccessLevelModifier == nil }
             // Extract the leading trivia from the binding specifier and apply it to the private modifier
@@ -187,10 +191,13 @@ private extension VariableDeclSyntax {
 }
 
 private extension InheritanceClauseSyntax? {
-    static let applicableSwiftUIProtocols: Set<String> = ["View", "ViewModifier", "App", "Scene"]
+    static let applicableSwiftUIProtocols: Set<String> = [
+        "View", "ViewModifier", "App", "Scene",
+    ]
 
     var conformsToApplicableSwiftUIProtocol: Bool {
-        self?.inheritedTypes.containsInheritedType(inheritedTypes: Self.applicableSwiftUIProtocols) ?? false
+        self?.inheritedTypes.containsInheritedType(inheritedTypes: Self.applicableSwiftUIProtocols)
+            ?? false
     }
 }
 
@@ -209,7 +216,8 @@ private extension AttributeListSyntax {
     var hasStateAttribute: Bool {
         contains { attr in
             guard let stateAttr = attr.as(AttributeSyntax.self),
-                  let identifier = stateAttr.attributeName.as(IdentifierTypeSyntax.self) else {
+                  let identifier = stateAttr.attributeName.as(IdentifierTypeSyntax.self)
+            else {
                 return false
             }
 

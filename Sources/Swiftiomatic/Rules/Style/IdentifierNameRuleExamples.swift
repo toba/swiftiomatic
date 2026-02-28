@@ -1,4 +1,4 @@
-internal struct IdentifierNameRuleExamples {
+enum IdentifierNameRuleExamples {
     static let nonTriggeringExamples = [
         Example("let myLet = 0"),
         Example("var myVar = 0"),
@@ -19,16 +19,20 @@ internal struct IdentifierNameRuleExamples {
         Example("enum Foo { case `private` }"),
         Example("enum Foo { case value(String) }"),
         Example("f { $abc in }"),
-        Example("""
-                class Foo {
-                   static let Bar = 0
-                }
-                """),
-        Example("""
-                class Foo {
-                   static var Bar = 0
-                }
-                """),
+        Example(
+            """
+            class Foo {
+               static let Bar = 0
+            }
+            """
+        ),
+        Example(
+            """
+            class Foo {
+               static var Bar = 0
+            }
+            """
+        ),
         Example("func √ (arg: Double) -> Double { arg }", configuration: ["additional_operators": "√"]),
         Example("struct Foo<let count: Int> {}"),
         Example("struct Foo<let maxSize: Int, Element> {}"),
@@ -59,7 +63,8 @@ internal struct IdentifierNameRuleExamples {
         ),
         Example("if let ↓_x {}"),
         Example("guard var ↓x = x else {}"),
-        Example("""
+        Example(
+            """
             func myFunc(
                 _ ↓s: String,
                 i ↓j: Int,
@@ -70,29 +75,34 @@ internal struct IdentifierNameRuleExamples {
                 _: Double,
                 last _: Double
             ) {}
-            """),
+            """
+        ),
         Example("let (↓a, abc) = (1, 1)"),
         Example("if let ↓i {}"),
         Example("for ↓i in [] {}"),
         Example("f { ↓x in }"),
         Example("f { ↓$x in }"),
         Example("f { (x abc: Int, _ ↓x: Int) in }"),
-        Example("""
+        Example(
+            """
             enum E {
                 case ↓c
                 case case1(Int)
                 case case2(↓a: Int)
                 case case3(_ ↓a: Int)
             }
-            """),
-        Example("""
+            """
+        ),
+        Example(
+            """
             class C {
                 var ↓x: Int {
                     get { 1 }
                     set(↓y) { x = y }
                 }
             }
-            """),
+            """
+        ),
         Example("func ↓√ (arg: Double) -> Double { arg }"),
         Example("class Foo<let ↓max_count: Int> {}"),
         Example("struct Foo<let ↓c: Int> {}"),

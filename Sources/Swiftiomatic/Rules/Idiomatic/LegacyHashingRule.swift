@@ -9,67 +9,81 @@ struct LegacyHashingRule: Rule {
         description: "Prefer using the `hash(into:)` function instead of overriding `hashValue`",
         kind: .idiomatic,
         nonTriggeringExamples: [
-            Example("""
-            struct Foo: Hashable {
-              let bar: Int = 10
+            Example(
+                """
+                struct Foo: Hashable {
+                  let bar: Int = 10
 
-              func hash(into hasher: inout Hasher) {
-                hasher.combine(bar)
-              }
-            }
-            """),
-            Example("""
-            class Foo: Hashable {
-              let bar: Int = 10
+                  func hash(into hasher: inout Hasher) {
+                    hasher.combine(bar)
+                  }
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo: Hashable {
+                  let bar: Int = 10
 
-              func hash(into hasher: inout Hasher) {
-                hasher.combine(bar)
-              }
-            }
-            """),
-            Example("""
-            var hashValue: Int { return 1 }
-            class Foo: Hashable { \n }
-            """),
-            Example("""
-            class Foo: Hashable {
-              let bar: String = "Foo"
+                  func hash(into hasher: inout Hasher) {
+                    hasher.combine(bar)
+                  }
+                }
+                """
+            ),
+            Example(
+                """
+                var hashValue: Int { return 1 }
+                class Foo: Hashable { \n }
+                """
+            ),
+            Example(
+                """
+                class Foo: Hashable {
+                  let bar: String = "Foo"
 
-              public var hashValue: String {
-                return bar
-              }
-            }
-            """),
-            Example("""
-            class Foo: Hashable {
-              let bar: String = "Foo"
+                  public var hashValue: String {
+                    return bar
+                  }
+                }
+                """
+            ),
+            Example(
+                """
+                class Foo: Hashable {
+                  let bar: String = "Foo"
 
-              public var hashValue: String {
-                get { return bar }
-                set { bar = newValue }
-              }
-            }
-            """),
+                  public var hashValue: String {
+                    get { return bar }
+                    set { bar = newValue }
+                  }
+                }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            struct Foo: Hashable {
-                let bar: Int = 10
+            Example(
+                """
+                struct Foo: Hashable {
+                    let bar: Int = 10
 
-                public ↓var hashValue: Int {
-                    return bar
+                    public ↓var hashValue: Int {
+                        return bar
+                    }
                 }
-            }
-            """),
-            Example("""
-            class Foo: Hashable {
-                let bar: Int = 10
+                """
+            ),
+            Example(
+                """
+                class Foo: Hashable {
+                    let bar: Int = 10
 
-                public ↓var hashValue: Int {
-                    return bar
+                    public ↓var hashValue: Int {
+                        return bar
+                    }
                 }
-            }
-            """),
+                """
+            ),
         ]
     )
 }

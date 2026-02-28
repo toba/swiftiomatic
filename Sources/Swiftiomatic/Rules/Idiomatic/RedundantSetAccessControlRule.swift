@@ -6,55 +6,69 @@ struct RedundantSetAccessControlRule: Rule {
     static let description = RuleDescription(
         identifier: "redundant_set_access_control",
         name: "Redundant Access Control for Setter",
-        description: "Property setter access level shouldn't be explicit if " +
-                     "it's the same as the variable access level",
+        description: "Property setter access level shouldn't be explicit if "
+            + "it's the same as the variable access level",
         kind: .idiomatic,
         nonTriggeringExamples: [
             Example("private(set) public var foo: Int"),
             Example("public let foo: Int"),
             Example("public var foo: Int"),
             Example("var foo: Int"),
-            Example("""
-            private final class A {
-              private(set) var value: Int
-            }
-            """),
-            Example("""
-            fileprivate class A {
-              public fileprivate(set) var value: Int
-            }
-            """, excludeFromDocumentation: true),
-            Example("""
-            extension Color {
-                public internal(set) static var someColor = Color.anotherColor
-            }
-            """),
+            Example(
+                """
+                private final class A {
+                  private(set) var value: Int
+                }
+                """
+            ),
+            Example(
+                """
+                fileprivate class A {
+                  public fileprivate(set) var value: Int
+                }
+                """, excludeFromDocumentation: true
+            ),
+            Example(
+                """
+                extension Color {
+                    public internal(set) static var someColor = Color.anotherColor
+                }
+                """
+            ),
         ],
         triggeringExamples: [
             Example("↓private(set) private var foo: Int"),
             Example("↓fileprivate(set) fileprivate var foo: Int"),
             Example("↓internal(set) internal var foo: Int"),
             Example("↓public(set) public var foo: Int"),
-            Example("""
-            open class Foo {
-              ↓open(set) open var bar: Int
-            }
-            """),
-            Example("""
-            class A {
-              ↓internal(set) var value: Int
-            }
-            """),
-            Example("""
-            internal class A {
-              ↓internal(set) var value: Int
-            }
-            """),
-            Example("""
-            fileprivate class A {
-              ↓fileprivate(set) var value: Int
-            }
-            """),
+            Example(
+                """
+                open class Foo {
+                  ↓open(set) open var bar: Int
+                }
+                """
+            ),
+            Example(
+                """
+                class A {
+                  ↓internal(set) var value: Int
+                }
+                """
+            ),
+            Example(
+                """
+                internal class A {
+                  ↓internal(set) var value: Int
+                }
+                """
+            ),
+            Example(
+                """
+                fileprivate class A {
+                  ↓fileprivate(set) var value: Int
+                }
+                """
+            ),
         ]
     )
 }
@@ -85,7 +99,8 @@ private extension RedundantSetAccessControlRule {
 
             if setAccessor.name.tokenKind == .keyword(.fileprivate),
                modifiers.getAccessor == nil,
-               let closestDeclModifiers = node.closestDecl()?.modifiers {
+               let closestDeclModifiers = node.closestDecl()?.modifiers
+            {
                 let closestDeclIsFilePrivate = closestDeclModifiers.contains {
                     $0.name.tokenKind == .keyword(.fileprivate)
                 }
@@ -99,10 +114,13 @@ private extension RedundantSetAccessControlRule {
             if setAccessor.name.tokenKind == .keyword(.internal),
                modifiers.getAccessor == nil,
                let closesDecl = node.closestDecl(),
-               let closestDeclModifiers = closesDecl.modifiers {
-                let closestDeclIsInternal = closestDeclModifiers.isEmpty || closestDeclModifiers.contains {
-                    $0.name.tokenKind == .keyword(.internal)
-                }
+               let closestDeclModifiers = closesDecl.modifiers
+            {
+                let closestDeclIsInternal =
+                    closestDeclModifiers.isEmpty
+                        || closestDeclModifiers.contains {
+                            $0.name.tokenKind == .keyword(.internal)
+                        }
 
                 if closestDeclIsInternal {
                     violations.append(modifiers.positionAfterSkippingLeadingTrivia)

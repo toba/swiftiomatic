@@ -9,6 +9,7 @@ struct CyclomaticComplexityConfiguration: RuleConfiguration {
     var params: [RuleParameter<Int>] {
         length.params
     }
+
     typealias Parent = CyclomaticComplexityRule
     mutating func apply(configuration: Any) throws(Issue) {
         if $ignoresCaseStatements.key.isEmpty {

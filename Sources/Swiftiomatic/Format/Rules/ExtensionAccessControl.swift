@@ -35,7 +35,8 @@ extension FormatRule {
                 }
 
                 var visibilityOfBodyDeclarations = [Visibility]()
-                extensionDeclaration.body.forEachRecursiveDeclarationExcludingTypeBodies { childDeclaration in
+                extensionDeclaration.body.forEachRecursiveDeclarationExcludingTypeBodies {
+                    childDeclaration in
                     let visibility = childDeclaration.visibility() ?? extensionVisibility ?? .internal
                     visibilityOfBodyDeclarations.append(visibility)
                 }
@@ -75,7 +76,8 @@ extension FormatRule {
                     extensionDeclaration.addVisibility(memberVisibility)
                 }
 
-                extensionDeclaration.body.forEachRecursiveDeclarationExcludingTypeBodies { bodyDeclaration in
+                extensionDeclaration.body.forEachRecursiveDeclarationExcludingTypeBodies {
+                    bodyDeclaration in
                     let visibility = bodyDeclaration.visibility()
                     if memberVisibility > visibility ?? extensionVisibility ?? .internal {
                         if visibility == nil {
@@ -96,7 +98,8 @@ extension FormatRule {
 
                 // And apply the extension's visibility to each of its child declarations
                 // that don't have an explicit visibility keyword
-                extensionDeclaration.body.forEachRecursiveDeclarationExcludingTypeBodies { bodyDeclaration in
+                extensionDeclaration.body.forEachRecursiveDeclarationExcludingTypeBodies {
+                    bodyDeclaration in
                     if bodyDeclaration.visibility() == nil {
                         // If there was no explicit visibility keyword, then this declaration
                         // was using the visibility of the extension itself.

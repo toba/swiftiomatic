@@ -10,33 +10,43 @@ struct LocalDocCommentRule: SwiftSyntaxRule, OptInRule {
         description: "Prefer regular comments over doc comments in local scopes",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
-            func foo() {
-              // Local scope documentation should use normal comments.
-              print("foo")
-            }
-            """),
-            Example("""
-            /// My great property
-            var myGreatProperty: String!
-            """),
-            Example("""
-            /// Look here for more info: https://github.com.
-            var myGreatProperty: String!
-            """),
-            Example("""
-            /// Look here for more info:
-            /// https://github.com.
-            var myGreatProperty: String!
-            """),
+            Example(
+                """
+                func foo() {
+                  // Local scope documentation should use normal comments.
+                  print("foo")
+                }
+                """
+            ),
+            Example(
+                """
+                /// My great property
+                var myGreatProperty: String!
+                """
+            ),
+            Example(
+                """
+                /// Look here for more info: https://github.com.
+                var myGreatProperty: String!
+                """
+            ),
+            Example(
+                """
+                /// Look here for more info:
+                /// https://github.com.
+                var myGreatProperty: String!
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            func foo() {
-              ↓/// Docstring inside a function declaration
-              print("foo")
-            }
-            """),
+            Example(
+                """
+                func foo() {
+                  ↓/// Docstring inside a function declaration
+                  print("foo")
+                }
+                """
+            ),
         ]
     )
 
@@ -53,12 +63,15 @@ private extension LocalDocCommentRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private let docCommentRanges: [Range<AbsolutePosition>]
 
-        init(configuration: ConfigurationType,
-             file: SwiftLintFile,
-             classifications: [SyntaxClassifiedRange]) {
-            self.docCommentRanges = classifications
-                .filter { $0.kind == .docLineComment || $0.kind == .docBlockComment }
-                .map(\.range)
+        init(
+            configuration: ConfigurationType,
+            file: SwiftLintFile,
+            classifications: [SyntaxClassifiedRange]
+        ) {
+            docCommentRanges =
+                classifications
+                    .filter { $0.kind == .docLineComment || $0.kind == .docBlockComment }
+                    .map(\.range)
             super.init(configuration: configuration, file: file)
         }
 

@@ -8,7 +8,8 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
     static let description = RuleDescription(
         identifier: "structural_duplication",
         name: "Structural Duplication",
-        description: "Functions with identical AST structure are likely duplicated code that should be consolidated",
+        description:
+        "Functions with identical AST structure are likely duplicated code that should be consolidated",
         kind: .lint,
         nonTriggeringExamples: [
             Example("func unique1() { print(1) }\nfunc unique2() { return 2 }"),
@@ -23,7 +24,9 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
         return collector.fingerprints
     }
 
-    func validate(file: SwiftLintFile, collectedInfo: [SwiftLintFile: [FunctionFingerprint]]) -> [StyleViolation] {
+    func validate(file: SwiftLintFile, collectedInfo: [SwiftLintFile: [FunctionFingerprint]])
+        -> [StyleViolation]
+    {
         guard let filePath = file.path else { return [] }
 
         // Group all fingerprints by their structural hash
@@ -45,14 +48,16 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
                     .map { "'\($0.element.name)' (\($0.element.file):\($0.element.line))" }
                     .joined(separator: ", ")
 
-                violations.append(StyleViolation(
-                    ruleDescription: Self.description,
-                    severity: configuration.severity,
-                    location: Location(file: filePath, line: member.line, character: 1),
-                    reason: "Function '\(member.name)' is structurally identical to \(peers)",
-                    confidence: confidence,
-                    suggestion: "Consider extracting shared logic into a common function"
-                ))
+                violations.append(
+                    StyleViolation(
+                        ruleDescription: Self.description,
+                        severity: configuration.severity,
+                        location: Location(file: filePath, line: member.line, character: 1),
+                        reason: "Function '\(member.name)' is structurally identical to \(peers)",
+                        confidence: confidence,
+                        suggestion: "Consider extracting shared logic into a common function"
+                    )
+                )
             }
         }
 
@@ -83,12 +88,14 @@ private final class FingerprintCollector: SyntaxVisitor {
         guard nodes.count >= 5 else { return .visitChildren }
 
         let loc = node.startLocation(converter: .init(fileName: filePath, tree: node.root))
-        fingerprints.append(FunctionFingerprint(
-            name: node.name.text,
-            file: filePath,
-            line: loc.line,
-            fingerprint: nodes.joined(separator: ",")
-        ))
+        fingerprints.append(
+            FunctionFingerprint(
+                name: node.name.text,
+                file: filePath,
+                line: loc.line,
+                fingerprint: nodes.joined(separator: ",")
+            )
+        )
 
         return .visitChildren
     }

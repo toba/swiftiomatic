@@ -6,7 +6,8 @@ struct ClosingBraceRule: Rule {
     static let description = RuleDescription(
         identifier: "closing_brace",
         name: "Closing Brace Spacing",
-        description: "Closing brace with closing parenthesis should not have any whitespaces in the middle",
+        description:
+        "Closing brace with closing parenthesis should not have any whitespaces in the middle",
         kind: .style,
         nonTriggeringExamples: [
             Example("[].map({ })"),
@@ -17,7 +18,7 @@ struct ClosingBraceRule: Rule {
             Example("[].map({ ↓}\t)"),
         ],
         corrections: [
-            Example("[].map({ ↓} )"): Example("[].map({ })")
+            Example("[].map({ ↓} )"): Example("[].map({ })"),
         ]
     )
 }
@@ -26,6 +27,7 @@ extension ClosingBraceRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -51,8 +53,8 @@ private extension ClosingBraceRule {
     }
 }
 
-private extension TokenSyntax {
-    var hasClosingBraceViolation: Bool {
+extension TokenSyntax {
+    fileprivate var hasClosingBraceViolation: Bool {
         guard
             tokenKind == .rightBrace,
             let nextToken = nextToken(viewMode: .sourceAccurate),
@@ -61,8 +63,9 @@ private extension TokenSyntax {
             return false
         }
 
-        let isImmediatelyNext = positionAfterSkippingLeadingTrivia
-            == nextToken.positionAfterSkippingLeadingTrivia - SourceLength(utf8Length: 1)
+        let isImmediatelyNext =
+            positionAfterSkippingLeadingTrivia
+                == nextToken.positionAfterSkippingLeadingTrivia - SourceLength(utf8Length: 1)
         if isImmediatelyNext || nextToken.hasLeadingNewline {
             return false
         }

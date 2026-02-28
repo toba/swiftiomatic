@@ -3,12 +3,15 @@
 
 extension FormatRule {
     static let redundantEquatable = FormatRule(
-        help: "Omit a hand-written Equatable implementation when the compiler-synthesized conformance would be equivalent.",
+        help:
+        "Omit a hand-written Equatable implementation when the compiler-synthesized conformance would be equivalent.",
         options: ["equatable-macro"]
     ) { formatter in
         // Find all of the types with an `Equatable` conformance and a manually-implemented `static func ==` implementation.
         let declarations = formatter.parseDeclarations()
-        let typesManuallyImplementingEquatableConformance = formatter.manuallyImplementedEquatableTypes(in: declarations)
+        let typesManuallyImplementingEquatableConformance = formatter.manuallyImplementedEquatableTypes(
+            in: declarations
+        )
 
         for equatableType in typesManuallyImplementingEquatableConformance {
             let isEligibleForAutoEquatableConformance: Bool
@@ -34,7 +37,9 @@ extension FormatRule {
             let storedInstancePropertyNames = Set(storedInstanceProperties.map(\.name))
 
             // Find all of the properties compared using `lhs.{property} == rhs.{property}`
-            let comparedProperties = formatter.parseComparedProperties(inEquatableImplementation: equatableType.equatableFunction)
+            let comparedProperties = formatter.parseComparedProperties(
+                inEquatableImplementation: equatableType.equatableFunction
+            )
 
             // If the set of compared properties match the set of stored instance properties,
             // then the manually implemented `==` function is redundant and can be removed.
@@ -52,7 +57,9 @@ extension FormatRule {
             // as long as all of the properties are themselves Equatable. This is usually true
             //
             if equatableType.typeDeclaration.keyword == "struct",
-               !storedInstanceProperties.contains(where: { $0.parsePropertyDeclaration()?.type?.isKnownNonEquatableType == true })
+               !storedInstanceProperties.contains(where: {
+                   $0.parsePropertyDeclaration()?.type?.isKnownNonEquatableType == true
+               })
             {
                 equatableType.equatableFunction.remove()
             }
@@ -62,13 +69,22 @@ extension FormatRule {
             else if case let .macro(macro, module: module) = formatter.options.equatableMacro {
                 let declarationWithEquatableConformance = equatableType.declarationWithEquatableConformance
 
-                guard let equatableConformance = formatter.parseConformancesOfType(atKeywordIndex: declarationWithEquatableConformance.keywordIndex).first(where: { $0.conformance.string == "Equatable" || $0.conformance.string == "Hashable" })
+                guard
+                    let equatableConformance = formatter.parseConformancesOfType(
+                        atKeywordIndex: declarationWithEquatableConformance.keywordIndex
+                    ).first(where: {
+                        $0.conformance.string == "Equatable" || $0.conformance.string == "Hashable"
+                    })
                 else { continue }
 
                 // Exclude cases where the Equatable conformance is defined in an extension with a where clause,
                 // since this wouldn't usually be captured in the generated conformance.
-                if let startOfExtensionTypeBody = formatter.index(of: .startOfScope("{"), after: equatableConformance.index),
-                   formatter.index(of: .keyword("where"), in: equatableConformance.index ..< startOfExtensionTypeBody) != nil
+                if let startOfExtensionTypeBody = formatter.index(
+                    of: .startOfScope("{"), after: equatableConformance.index
+                ),
+                    formatter.index(
+                        of: .keyword("where"), in: equatableConformance.index ..< startOfExtensionTypeBody
+                    ) != nil
                 {
                     continue
                 }
@@ -152,7 +168,8 @@ extension Formatter {
     /// which also have a manually-implemented `static func ==` method.
     func manuallyImplementedEquatableTypes(in declarations: [Declaration]) -> [EquatableType] {
         var typeDeclarationsByFullyQualifiedName: [String: Declaration] = [:]
-        var typesWithEquatableConformances: [(fullyQualifiedTypeName: String, declarationWithEquatableConformance: Declaration)] = []
+        var typesWithEquatableConformances:
+            [(fullyQualifiedTypeName: String, declarationWithEquatableConformance: Declaration)] = []
         var equatableImplementationsByFullyQualifiedName: [String: Declaration] = [:]
 
         declarations.forEachRecursiveDeclaration { declaration in
@@ -173,10 +190,12 @@ extension Formatter {
                 if conformances.contains(where: {
                     $0.conformance.string == "Equatable" || $0.conformance.string == "Hashable"
                 }) {
-                    typesWithEquatableConformances.append((
-                        fullyQualifiedTypeName: fullyQualifiedName,
-                        declarationWithEquatableConformance: declaration
-                    ))
+                    typesWithEquatableConformances.append(
+                        (
+                            fullyQualifiedTypeName: fullyQualifiedName,
+                            declarationWithEquatableConformance: declaration
+                        )
+                    )
                 }
             }
 
@@ -228,7 +247,8 @@ extension Formatter {
             }
         }
 
-        return typesWithEquatableConformances.compactMap { typeName, declarationWithEquatableConformance in
+        return typesWithEquatableConformances.compactMap {
+            typeName, declarationWithEquatableConformance in
             guard let typeDeclaration = typeDeclarationsByFullyQualifiedName[typeName],
                   let equatableImplementation = equatableImplementationsByFullyQualifiedName[typeName]
             else { return nil }
@@ -244,7 +264,9 @@ extension Formatter {
     /// Finds the set of properties that are compared in the given Equatable `func`,
     /// following the pattern `lhs.{property} == rhs.{property}`.
     ///  - Returns `nil` if there are any comparisons that don't match this pattern.
-    func parseComparedProperties(inEquatableImplementation equatableImplementation: Declaration) -> Set<String>? {
+    func parseComparedProperties(inEquatableImplementation equatableImplementation: Declaration)
+        -> Set<String>?
+    {
         let funcIndex = equatableImplementation.keywordIndex
 
         guard let startOfBody = index(of: .startOfScope("{"), after: funcIndex),
@@ -287,7 +309,9 @@ extension Formatter {
 
             // Skip over any `&&` operators connecting two comparisons
             if tokens[indexAfterComparison] == .operator("&&", .infix),
-               let indexAfterAndOperator = index(of: .nonSpaceOrCommentOrLinebreak, after: indexAfterComparison)
+               let indexAfterAndOperator = index(
+                   of: .nonSpaceOrCommentOrLinebreak, after: indexAfterComparison
+               )
             {
                 currentIndex = indexAfterAndOperator
             }

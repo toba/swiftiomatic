@@ -23,13 +23,13 @@ extension FormatRule {
             switch token {
             case .operator(_, .none):
                 switch formatter.token(at: i + 1) {
-                case nil, .linebreak?, .endOfScope?, .operator?, .delimiter?,
-                     .startOfScope("(")? where formatter.options.spaceAroundOperatorDeclarations != .insert:
+                case nil, .linebreak, .endOfScope, .operator, .delimiter,
+                     .startOfScope("(") where formatter.options.spaceAroundOperatorDeclarations != .insert:
                     break
-                case .space?:
+                case .space:
                     switch formatter.next(.nonSpaceOrLinebreak, after: i) {
-                    case nil, .linebreak?, .endOfScope?, .delimiter?,
-                         .startOfScope("(")? where formatter.options.spaceAroundOperatorDeclarations == .remove:
+                    case nil, .linebreak, .endOfScope, .delimiter,
+                         .startOfScope("(") where formatter.options.spaceAroundOperatorDeclarations == .remove:
                         formatter.removeToken(at: i + 1)
                     default:
                         break
@@ -78,8 +78,9 @@ extension FormatRule {
                 }
             case .operator("?", .infix):
                 break // Spacing around ternary ? is not optional
-            case let .operator(name, .infix) where formatter.options.noSpaceOperators.contains(name) ||
-                (formatter.options.spaceAroundRangeOperators == .remove && token.isRangeOperator):
+            case let .operator(name, .infix)
+                where formatter.options.noSpaceOperators.contains(name)
+                || (formatter.options.spaceAroundRangeOperators == .remove && token.isRangeOperator):
                 if formatter.token(at: i + 1)?.isSpace == true,
                    formatter.token(at: i - 1)?.isSpace == true,
                    let nextToken = formatter.next(.nonSpace, after: i),
@@ -101,9 +102,12 @@ extension FormatRule {
                     formatter.insert(.space(" "), at: i)
                 }
             case .operator(_, .prefix):
-                if let prevIndex = formatter.index(of: .nonSpace, before: i, if: {
-                    [.startOfScope("["), .startOfScope("("), .startOfScope("<")].contains($0)
-                }) {
+                if let prevIndex = formatter.index(
+                    of: .nonSpace, before: i,
+                    if: {
+                        [.startOfScope("["), .startOfScope("("), .startOfScope("<")].contains($0)
+                    }
+                ) {
                     formatter.removeTokens(in: prevIndex + 1 ..< i)
                 } else if let prevToken = formatter.token(at: i - 1),
                           !prevToken.isSpaceOrLinebreak, !prevToken.isOperator
@@ -121,15 +125,16 @@ extension FormatRule {
                 fallthrough
             case .operator(_, .postfix), .delimiter(","), .delimiter(";"), .startOfScope(":"):
                 switch formatter.token(at: i + 1) {
-                case nil, .space?, .linebreak?, .endOfScope?, .operator?, .delimiter?:
+                case nil, .space, .linebreak, .endOfScope, .operator, .delimiter:
                     break
                 default:
                     // Ensure there is a space after the token
                     formatter.insert(.space(" "), at: i + 1)
                 }
 
-                let spaceBeforeToken = formatter.token(at: i - 1)?.isSpace == true
-                    && formatter.token(at: i - 2)?.isLinebreak == false
+                let spaceBeforeToken =
+                    formatter.token(at: i - 1)?.isSpace == true
+                        && formatter.token(at: i - 2)?.isLinebreak == false
 
                 if spaceBeforeToken, formatter.options.typeDelimiterSpacing == .spaceAfter {
                     // Remove space before the token

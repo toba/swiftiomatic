@@ -3,7 +3,9 @@ import SwiftSyntax
 struct ClosureBodyLengthRule: Rule {
     private static let defaultWarningThreshold = 30
 
-    var configuration = SeverityLevelsConfiguration<Self>(warning: Self.defaultWarningThreshold, error: 100)
+    var configuration = SeverityLevelsConfiguration<Self>(
+        warning: Self.defaultWarningThreshold, error: 100
+    )
 
     static let description = RuleDescription(
         identifier: "closure_body_length",

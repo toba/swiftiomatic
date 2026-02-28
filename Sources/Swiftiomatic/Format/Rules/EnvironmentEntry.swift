@@ -17,7 +17,9 @@ extension FormatRule {
         let environmentKeys = formatter.findAllEnvironmentKeys(declarations)
 
         // Find all `EnvironmentValues` properties
-        let environmentValuesProperties = formatter.findAllEnvironmentValuesProperties(declarations, referencing: environmentKeys)
+        let environmentValuesProperties = formatter.findAllEnvironmentValuesProperties(
+            declarations, referencing: environmentKeys
+        )
 
         // Modify `EnvironmentValues` properties by removing its body and adding the @Entry macro
         formatter.modifyEnvironmentValuesProperties(environmentValuesProperties)
@@ -116,7 +118,8 @@ extension Formatter {
             .filter {
                 $0.keyword == "extension" && $0.name == "EnvironmentValues"
             }.compactMap { environmentValuesDeclaration -> [EnvironmentValueProperty]? in
-                environmentValuesDeclaration.body?.compactMap { propertyDeclaration -> (EnvironmentValueProperty)? in
+                environmentValuesDeclaration.body?.compactMap {
+                    propertyDeclaration -> (EnvironmentValueProperty)? in
                     guard propertyDeclaration.keyword == "var",
                           let key = propertyDeclaration.tokens.first(where: { environmentKeys[$0.string] != nil })?.string,
                           let environmentKey = environmentKeys[key]
@@ -135,17 +138,23 @@ extension Formatter {
                         declaration: propertyDeclaration
                     )
                 }
-            }.flatMap { $0 }
+            }.flatMap(\.self)
     }
 
-    func modifyEnvironmentValuesProperties(_ environmentValuesPropertiesDeclarations: [EnvironmentValueProperty]) {
+    func modifyEnvironmentValuesProperties(
+        _ environmentValuesPropertiesDeclarations: [EnvironmentValueProperty]
+    ) {
         for envProperty in environmentValuesPropertiesDeclarations {
             guard let propertyDeclaration = envProperty.declaration.parsePropertyDeclaration(),
                   let bodyScopeRange = propertyDeclaration.body?.scopeRange
             else { continue }
 
             // Remove `EnvironmentValues.property` getter and setters
-            if let nonSpaceTokenIndexBeforeBody = index(of: .nonSpaceOrLinebreak, before: bodyScopeRange.lowerBound), nonSpaceTokenIndexBeforeBody != bodyScopeRange.lowerBound {
+            if let nonSpaceTokenIndexBeforeBody = index(
+                of: .nonSpaceOrLinebreak, before: bodyScopeRange.lowerBound
+            ),
+                nonSpaceTokenIndexBeforeBody != bodyScopeRange.lowerBound
+            {
                 // There are some spaces between the property body and the property type definition, we should remove the extra spaces.
                 removeTokens(in: nonSpaceTokenIndexBeforeBody + 1 ... bodyScopeRange.upperBound)
             } else {
@@ -153,7 +162,8 @@ extension Formatter {
             }
             // Add `EnvironmentKey.defaultValue` to `EnvironmentValues property`
             if let defaultValueTokens = envProperty.associatedEnvironmentKey.defaultValueTokens {
-                let defaultValueTokens = [.space(" "), .operator("=", .infix), .space(" ")] + defaultValueTokens
+                let defaultValueTokens =
+                    [.space(" "), .operator("=", .infix), .space(" ")] + defaultValueTokens
                 insert(defaultValueTokens, at: endOfLine(at: propertyDeclaration.range.lowerBound))
             }
             // Add @Entry Macro

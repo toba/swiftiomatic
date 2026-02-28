@@ -19,6 +19,7 @@ extension ImplicitOptionalInitializationRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -71,8 +72,8 @@ private extension ImplicitOptionalInitializationRule {
                     .with(
                         \.trailingTrivia,
                         node.accessorBlock == nil
-                        ? node.initializer?.trailingTrivia ?? Trivia()
-                        : node.trailingTrivia
+                            ? node.initializer?.trailingTrivia ?? Trivia()
+                            : node.trailingTrivia
                     )
             }
         }
@@ -97,10 +98,10 @@ private extension PatternBindingSyntax {
                 if accessors.contains(where: {
                     $0.accessorSpecifier.tokenKind != .keyword(.willSet)
                         && $0.accessorSpecifier.tokenKind != .keyword(.didSet)
-                }) {  // we have more than willSet or didSet
+                }) { // we have more than willSet or didSet
                     return nil
                 }
-            } else {  // code block, i.e. getter
+            } else { // code block, i.e. getter
                 return nil
             }
         }
@@ -124,7 +125,8 @@ private extension TypeAnnotationSyntax {
         if type.is(OptionalTypeSyntax.self) { return true }
 
         if let type = type.as(IdentifierTypeSyntax.self),
-            let genericClause = type.genericArgumentClause {
+           let genericClause = type.genericArgumentClause
+        {
             return genericClause.arguments.count == 1 && type.name.text == "Optional"
         }
 

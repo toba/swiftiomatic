@@ -9,49 +9,59 @@ struct DuplicateEnumCasesRule: Rule {
         description: "Enum shouldn't contain multiple cases with the same name",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("""
-            enum PictureImport {
-                case addImage(image: UIImage)
-                case addData(data: Data)
-            }
-            """),
-            Example("""
-            enum A {
-                case add(image: UIImage)
-            }
-            enum B {
-                case add(image: UIImage)
-            }
-            """),
-            Example("""
-            enum Tag: String {
-            #if CONFIG_A
-                case value = "CONFIG_A"
-            #elseif CONFIG_B
-                case value = "CONFIG_B"
-            #else
-                case value = "CONFIG_DEFAULT"
-            #endif
-            }
-            """),
-            Example("""
-            enum Target {
-            #if os(iOS)
-              case file
-            #else
-              case file(URL)
-            #endif
-            }
-            """),
+            Example(
+                """
+                enum PictureImport {
+                    case addImage(image: UIImage)
+                    case addData(data: Data)
+                }
+                """
+            ),
+            Example(
+                """
+                enum A {
+                    case add(image: UIImage)
+                }
+                enum B {
+                    case add(image: UIImage)
+                }
+                """
+            ),
+            Example(
+                """
+                enum Tag: String {
+                #if CONFIG_A
+                    case value = "CONFIG_A"
+                #elseif CONFIG_B
+                    case value = "CONFIG_B"
+                #else
+                    case value = "CONFIG_DEFAULT"
+                #endif
+                }
+                """
+            ),
+            Example(
+                """
+                enum Target {
+                #if os(iOS)
+                  case file
+                #else
+                  case file(URL)
+                #endif
+                }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            enum PictureImport {
-                case ↓add(image: UIImage)
-                case addURL(url: URL)
-                case ↓add(data: Data)
-            }
-            """),
+            Example(
+                """
+                enum PictureImport {
+                    case ↓add(image: UIImage)
+                    case addURL(url: URL)
+                    case ↓add(data: Data)
+                }
+                """
+            ),
         ]
     )
 }
@@ -74,14 +84,16 @@ private extension DuplicateEnumCasesRule {
                     return enumCaseDecl.elements
                 }
 
-            let elementsByName = enumElements.reduce(into: [String: [AbsolutePosition]]()) { elements, element in
+            let elementsByName = enumElements.reduce(into: [String: [AbsolutePosition]]()) {
+                elements, element in
                 let name = String(element.name.text)
                 elements[name, default: []].append(element.positionAfterSkippingLeadingTrivia)
             }
 
-            let duplicatedElementPositions = elementsByName
-                .filter { $0.value.count > 1 }
-                .flatMap(\.value)
+            let duplicatedElementPositions =
+                elementsByName
+                    .filter { $0.value.count > 1 }
+                    .flatMap(\.value)
 
             violations.append(contentsOf: duplicatedElementPositions)
         }

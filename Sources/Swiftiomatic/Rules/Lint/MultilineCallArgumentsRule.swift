@@ -9,57 +9,72 @@ struct MultilineCallArgumentsRule: Rule {
         description: "Call should have each parameter on a separate line",
         kind: .style,
         nonTriggeringExamples: [
-            Example("""
+            Example(
+                """
                 foo(
                 param1: "param1",
                     param2: false,
                     param3: []
                 )
                 """,
-                configuration: ["max_number_of_single_line_parameters": 2]),
-            Example("""
+                configuration: ["max_number_of_single_line_parameters": 2]
+            ),
+            Example(
+                """
                 foo(param1: 1,
                     param2: false,
                     param3: [])
                 """,
-                configuration: ["max_number_of_single_line_parameters": 1]),
+                configuration: ["max_number_of_single_line_parameters": 1]
+            ),
             Example(
                 "foo(param1: 1, param2: false)",
-                configuration: ["max_number_of_single_line_parameters": 2]),
+                configuration: ["max_number_of_single_line_parameters": 2]
+            ),
             Example(
                 "Enum.foo(param1: 1, param2: false)",
-                configuration: ["max_number_of_single_line_parameters": 2]),
+                configuration: ["max_number_of_single_line_parameters": 2]
+            ),
             Example("foo(param1: 1)", configuration: ["allows_single_line": false]),
             Example("Enum.foo(param1: 1)", configuration: ["allows_single_line": false]),
             Example(
                 "Enum.foo(param1: 1, param2: 2, param3: 3)",
-                configuration: ["allows_single_line": true]),
-            Example("""
+                configuration: ["allows_single_line": true]
+            ),
+            Example(
+                """
                 foo(
                     param1: 1,
                     param2: 2,
                     param3: 3
                 )
                 """,
-                configuration: ["allows_single_line": false]),
+                configuration: ["allows_single_line": false]
+            ),
         ],
         triggeringExamples: [
             Example(
                 "↓foo(param1: 1, param2: false, param3: [])",
-                configuration: ["max_number_of_single_line_parameters": 2]),
+                configuration: ["max_number_of_single_line_parameters": 2]
+            ),
             Example(
                 "↓Enum.foo(param1: 1, param2: false, param3: [])",
-                configuration: ["max_number_of_single_line_parameters": 2]),
-            Example("""
+                configuration: ["max_number_of_single_line_parameters": 2]
+            ),
+            Example(
+                """
                 ↓foo(param1: 1, param2: false,
                         param3: [])
                 """,
-                configuration: ["max_number_of_single_line_parameters": 3]),
-            Example("""
+                configuration: ["max_number_of_single_line_parameters": 3]
+            ),
+            Example(
+                """
                 ↓Enum.foo(param1: 1, param2: false,
                         param3: [])
                 """,
-                configuration: ["max_number_of_single_line_parameters": 3]),
+                configuration: ["max_number_of_single_line_parameters": 3]
+            ),
             Example("↓foo(param1: 1, param2: false)", configuration: ["allows_single_line": false]),
             Example("↓Enum.foo(param1: 1, param2: false)", configuration: ["allows_single_line": false]),
         ]
@@ -77,7 +92,9 @@ extension MultilineCallArgumentsRule: OptInRule {}
 private extension MultilineCallArgumentsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionCallExprSyntax) {
-            if containsViolation(parameterPositions: node.arguments.map(\.positionAfterSkippingLeadingTrivia)) {
+            if containsViolation(
+                parameterPositions: node.arguments.map(\.positionAfterSkippingLeadingTrivia)
+            ) {
                 violations.append(node.calledExpression.positionAfterSkippingLeadingTrivia)
             }
         }

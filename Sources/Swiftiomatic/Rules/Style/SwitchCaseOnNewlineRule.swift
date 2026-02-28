@@ -1,11 +1,15 @@
 import SwiftSyntax
 
-private func wrapInSwitch(_ str: String, file: StaticString = #filePath, line: UInt = #line) -> Example {
-    Example("""
-    switch foo {
-        \(str)
-    }
-    """, file: file, line: line)
+private func wrapInSwitch(_ str: String, file: StaticString = #filePath, line: UInt = #line)
+    -> Example
+{
+    Example(
+        """
+        switch foo {
+            \(str)
+        }
+        """, file: file, line: line
+    )
 }
 
 struct SwitchCaseOnNewlineRule: Rule {
@@ -34,18 +38,22 @@ struct SwitchCaseOnNewlineRule: Rule {
             wrapInSwitch("case .myCase: // error from network\n return true"),
             wrapInSwitch("case let .myCase(value) where value > 10:\n return false"),
             wrapInSwitch("case let .myCase(value)\n where value > 10:\n return false"),
-            wrapInSwitch("""
-            case let .myCase(code: lhsErrorCode, description: _)
-             where lhsErrorCode > 10:
-            return false
-            """),
+            wrapInSwitch(
+                """
+                case let .myCase(code: lhsErrorCode, description: _)
+                 where lhsErrorCode > 10:
+                return false
+                """
+            ),
             wrapInSwitch("case #selector(aFunction(_:)):\n return false"),
-            Example("""
-            do {
-              let loadedToken = try tokenManager.decodeToken(from: response)
-              return loadedToken
-            } catch { throw error }
-            """),
+            Example(
+                """
+                do {
+                  let loadedToken = try tokenManager.decodeToken(from: response)
+                  return loadedToken
+                } catch { throw error }
+                """
+            ),
         ],
         triggeringExamples: [
             wrapInSwitch("↓case 1: return true"),
@@ -72,7 +80,8 @@ extension SwitchCaseOnNewlineRule: OptInRule {}
 private extension SwitchCaseOnNewlineRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: SwitchCaseSyntax) {
-            let caseEndLine = locationConverter.location(for: node.label.endPositionBeforeTrailingTrivia).line
+            let caseEndLine = locationConverter.location(for: node.label.endPositionBeforeTrailingTrivia)
+                .line
             let statementsPosition = node.statements.positionAfterSkippingLeadingTrivia
             let statementStartLine = locationConverter.location(for: statementsPosition).line
             if statementStartLine == caseEndLine {

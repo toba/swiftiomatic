@@ -20,7 +20,9 @@ protocol Reporter: CustomStringConvertible {
 
 extension Reporter {
     /// For CustomStringConvertible conformance.
-    var description: String { Self.description }
+    var description: String {
+        Self.description
+    }
 }
 
 /// Returns the reporter with the specified identifier. Traps if the specified identifier doesn't correspond to any

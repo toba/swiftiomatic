@@ -10,33 +10,40 @@ struct MultilineLiteralBracketsRule: Rule {
         description: "Multiline literals should have their surrounding brackets in a new line",
         kind: .style,
         nonTriggeringExamples: [
-            Example("""
-            let trio = ["harry", "ronald", "hermione"]
-            let houseCup = ["gryffindor": 460, "hufflepuff": 370, "ravenclaw": 410, "slytherin": 450]
-            """),
-            Example("""
-            let trio = [
-                "harry",
-                "ronald",
-                "hermione"
-            ]
-            let houseCup = [
-                "gryffindor": 460,
-                "hufflepuff": 370,
-                "ravenclaw": 410,
-                "slytherin": 450
-            ]
-            """),
-            Example("""
-            let trio = [
-                "harry", "ronald", "hermione"
-            ]
-            let houseCup = [
-                "gryffindor": 460, "hufflepuff": 370,
-                "ravenclaw": 410, "slytherin": 450
-            ]
-            """),
-            Example("""
+            Example(
+                """
+                let trio = ["harry", "ronald", "hermione"]
+                let houseCup = ["gryffindor": 460, "hufflepuff": 370, "ravenclaw": 410, "slytherin": 450]
+                """
+            ),
+            Example(
+                """
+                let trio = [
+                    "harry",
+                    "ronald",
+                    "hermione"
+                ]
+                let houseCup = [
+                    "gryffindor": 460,
+                    "hufflepuff": 370,
+                    "ravenclaw": 410,
+                    "slytherin": 450
+                ]
+                """
+            ),
+            Example(
+                """
+                let trio = [
+                    "harry", "ronald", "hermione"
+                ]
+                let houseCup = [
+                    "gryffindor": 460, "hufflepuff": 370,
+                    "ravenclaw": 410, "slytherin": 450
+                ]
+                """
+            ),
+            Example(
+                """
                 _ = [
                     1,
                     2,
@@ -45,45 +52,59 @@ struct MultilineLiteralBracketsRule: Rule {
                     5, 6,
                     7, 8, 9
                 ]
-                """),
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            let trio = [↓"harry",
-                        "ronald",
-                        "hermione"
-            ]
-            """),
-            Example("""
-            let houseCup = [↓"gryffindor": 460, "hufflepuff": 370,
-                            "ravenclaw": 410, "slytherin": 450
-            ]
-            """),
-            Example("""
-            let houseCup = [↓"gryffindor": 460,
-                            "hufflepuff": 370,
-                            "ravenclaw": 410,
-                            "slytherin": 450↓]
-            """),
-            Example("""
-            let trio = [
-                "harry",
-                "ronald",
-                "hermione"↓]
-            """),
-            Example("""
-            let houseCup = [
-                "gryffindor": 460, "hufflepuff": 370,
-                "ravenclaw": 410, "slytherin": 450↓]
-            """),
-            Example("""
-            class Hogwarts {
+            Example(
+                """
+                let trio = [↓"harry",
+                            "ronald",
+                            "hermione"
+                ]
+                """
+            ),
+            Example(
+                """
+                let houseCup = [↓"gryffindor": 460, "hufflepuff": 370,
+                                "ravenclaw": 410, "slytherin": 450
+                ]
+                """
+            ),
+            Example(
+                """
+                let houseCup = [↓"gryffindor": 460,
+                                "hufflepuff": 370,
+                                "ravenclaw": 410,
+                                "slytherin": 450↓]
+                """
+            ),
+            Example(
+                """
+                let trio = [
+                    "harry",
+                    "ronald",
+                    "hermione"↓]
+                """
+            ),
+            Example(
+                """
                 let houseCup = [
                     "gryffindor": 460, "hufflepuff": 370,
                     "ravenclaw": 410, "slytherin": 450↓]
-            }
-            """),
-            Example("""
+                """
+            ),
+            Example(
+                """
+                class Hogwarts {
+                    let houseCup = [
+                        "gryffindor": 460, "hufflepuff": 370,
+                        "ravenclaw": 410, "slytherin": 450↓]
+                }
+                """
+            ),
+            Example(
+                """
                 _ = [
                     1,
                     2,
@@ -91,22 +112,27 @@ struct MultilineLiteralBracketsRule: Rule {
                     4,
                     5, 6,
                     7, 8, 9↓]
-                """),
-            Example("""
+                """
+            ),
+            Example(
+                """
                 _ = [↓1, 2, 3,
                      4, 5, 6,
                      7, 8, 9
                 ]
-                """),
-            Example("""
-            class Hogwarts {
-                let houseCup = [
-                    "gryffindor": 460, "hufflepuff": 370,
-                    "ravenclaw": 410, "slytherin": slytherinPoints.filter {
-                        $0.isValid
-                    }.sum()↓]
-            }
-            """),
+                """
+            ),
+            Example(
+                """
+                class Hogwarts {
+                    let houseCup = [
+                        "gryffindor": 460, "hufflepuff": 370,
+                        "ravenclaw": 410, "slytherin": slytherinPoints.filter {
+                            $0.isValid
+                        }.sum()↓]
+                }
+                """
+            ),
         ]
     )
 }
@@ -135,7 +161,7 @@ private extension MultilineLiteralBracketsRule {
             switch node.content {
             case .colon:
                 break
-            case .elements(let elements):
+            case let .elements(elements):
                 validate(
                     node,
                     openingToken: node.leftSquare,
@@ -146,13 +172,16 @@ private extension MultilineLiteralBracketsRule {
             }
         }
 
-        private func validate(_ node: some ExprSyntaxProtocol,
-                              openingToken: TokenSyntax,
-                              closingToken: TokenSyntax,
-                              firstElement: (some ExprSyntaxProtocol)?,
-                              lastElement: (some ExprSyntaxProtocol)?) {
+        private func validate(
+            _ node: some ExprSyntaxProtocol,
+            openingToken: TokenSyntax,
+            closingToken: TokenSyntax,
+            firstElement: (some ExprSyntaxProtocol)?,
+            lastElement: (some ExprSyntaxProtocol)?
+        ) {
             guard let firstElement, let lastElement,
-                  isMultiline(node) else {
+                  isMultiline(node)
+            else {
                 return
             }
 
@@ -173,9 +202,13 @@ private extension MultilineLiteralBracketsRule {
             return endLocation.line > startLocation.line
         }
 
-        private func areOnTheSameLine(_ first: some SyntaxProtocol, _ second: some SyntaxProtocol) -> Bool {
+        private func areOnTheSameLine(_ first: some SyntaxProtocol, _ second: some SyntaxProtocol)
+            -> Bool
+        {
             let firstLocation = locationConverter.location(for: first.endPositionBeforeTrailingTrivia)
-            let secondLocation = locationConverter.location(for: second.positionAfterSkippingLeadingTrivia)
+            let secondLocation = locationConverter.location(
+                for: second.positionAfterSkippingLeadingTrivia
+            )
 
             return firstLocation.line == secondLocation.line
         }

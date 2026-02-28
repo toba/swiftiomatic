@@ -6,7 +6,8 @@ struct ShorthandOperatorRule: Rule {
     static let description = RuleDescription(
         identifier: "shorthand_operator",
         name: "Shorthand Operator",
-        description: "Prefer shorthand operators (+=, -=, *=, /=) over doing the operation and assigning",
+        description:
+        "Prefer shorthand operators (+=, -=, *=, /=) over doing the operation and assigning",
         kind: .style,
         nonTriggeringExamples: [
             Example("foo -= 1"),
@@ -17,11 +18,13 @@ struct ShorthandOperatorRule: Rule {
             Example("page = ceilf(currentOffset * pageWidth)"),
             Example("foo = aMethod(foo / bar)"),
             Example("foo = aMethod(bar + foo)"),
-            Example("""
-            public func -= (lhs: inout Foo, rhs: Int) {
-                lhs = lhs - rhs
-            }
-            """),
+            Example(
+                """
+                public func -= (lhs: inout Foo, rhs: Int) {
+                    lhs = lhs - rhs
+                }
+                """
+            ),
             Example("var helloWorld = \"world!\"\n helloWorld = \"Hello, \" + helloWorld"),
             Example("angle = someCheck ? angle : -angle"),
             Example("seconds = seconds * 60 + value"),
@@ -70,7 +73,8 @@ private extension ShorthandOperatorRule {
         override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
             if let binaryOperator = node.name.binaryOperator,
                case let shorthandOperators = ShorthandOperatorRule.allOperators.map({ $0 + "=" }),
-               shorthandOperators.contains(binaryOperator) {
+               shorthandOperators.contains(binaryOperator)
+            {
                 return .skipChildren
             }
 
@@ -82,7 +86,7 @@ private extension ShorthandOperatorRule {
 private extension TokenSyntax {
     var binaryOperator: String? {
         switch tokenKind {
-        case .binaryOperator(let str):
+        case let .binaryOperator(str):
             return str
         default:
             return nil

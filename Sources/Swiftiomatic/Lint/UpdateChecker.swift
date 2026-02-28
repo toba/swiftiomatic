@@ -16,7 +16,8 @@ enum UpdateChecker {
     static func checkForUpdates() async {
         guard let url = URL(string: "https://api.github.com/repos/realm/SwiftLint/releases/latest"),
               let data = try? await sendRequest(to: url),
-              let latestVersionNumber = parseVersionNumber(data) else {
+              let latestVersionNumber = parseVersionNumber(data)
+        else {
             print("Could not check latest SwiftLint version")
             return
         }
@@ -30,7 +31,10 @@ enum UpdateChecker {
     }
 
     private static func parseVersionNumber(_ data: Data) -> String? {
-        guard let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []) as? [AnyHashable: Any] else {
+        guard
+            let jsonObject = try? JSONSerialization.jsonObject(with: data, options: [])
+            as? [AnyHashable: Any]
+        else {
             return nil
         }
         return jsonObject["tag_name"] as? String

@@ -2,23 +2,26 @@ import Foundation
 
 extension Configuration {
     // MARK: Caching Configurations By Identifier (In-Memory)
-    nonisolated(unsafe) private static var cachedConfigurationsByIdentifier = [String: Configuration]()
+
+    private nonisolated(unsafe) static var cachedConfigurationsByIdentifier = [
+        String: Configuration
+    ]()
     private static let cachedConfigurationsByIdentifierLock = NSLock()
 
     /// Since the cache is stored in a static var, this function is used to reset the cache during tests
-    internal static func resetCache() {
-        Self.cachedConfigurationsByIdentifierLock.lock()
-        Self.cachedConfigurationsByIdentifier = [:]
-        Self.cachedConfigurationsByIdentifierLock.unlock()
+    static func resetCache() {
+        cachedConfigurationsByIdentifierLock.lock()
+        cachedConfigurationsByIdentifier = [:]
+        cachedConfigurationsByIdentifierLock.unlock()
     }
 
-    internal func setCached(forIdentifier identifier: String) {
+    func setCached(forIdentifier identifier: String) {
         Self.cachedConfigurationsByIdentifierLock.lock()
         Self.cachedConfigurationsByIdentifier[identifier] = self
         Self.cachedConfigurationsByIdentifierLock.unlock()
     }
 
-    internal static func getCached(forIdentifier identifier: String) -> Configuration? {
+    static func getCached(forIdentifier identifier: String) -> Configuration? {
         cachedConfigurationsByIdentifierLock.lock()
         defer { cachedConfigurationsByIdentifierLock.unlock() }
         return cachedConfigurationsByIdentifier[identifier]
@@ -35,30 +38,33 @@ extension Configuration {
     }
 
     // MARK: Nested Config Is Self Cache
-    nonisolated(unsafe) private static var nestedConfigIsSelfByIdentifier = [String: Bool]()
+
+    private nonisolated(unsafe) static var nestedConfigIsSelfByIdentifier = [String: Bool]()
     private static let nestedConfigIsSelfByIdentifierLock = NSLock()
 
-    internal static func setIsNestedConfigurationSelf(forIdentifier identifier: String, value: Bool) {
-        Self.nestedConfigIsSelfByIdentifierLock.lock()
-        Self.nestedConfigIsSelfByIdentifier[identifier] = value
-        Self.nestedConfigIsSelfByIdentifierLock.unlock()
+    static func setIsNestedConfigurationSelf(forIdentifier identifier: String, value: Bool) {
+        nestedConfigIsSelfByIdentifierLock.lock()
+        nestedConfigIsSelfByIdentifier[identifier] = value
+        nestedConfigIsSelfByIdentifierLock.unlock()
     }
 
-    internal static func getIsNestedConfigurationSelf(forIdentifier identifier: String) -> Bool {
-        Self.nestedConfigIsSelfByIdentifierLock.lock()
+    static func getIsNestedConfigurationSelf(forIdentifier identifier: String) -> Bool {
+        nestedConfigIsSelfByIdentifierLock.lock()
         defer { Self.nestedConfigIsSelfByIdentifierLock.unlock() }
-        return Self.nestedConfigIsSelfByIdentifier[identifier] ?? false
+        return nestedConfigIsSelfByIdentifier[identifier] ?? false
     }
 
     // MARK: SwiftLint Cache (On-Disk)
-    internal var cacheDescription: String {
+
+    var cacheDescription: String {
         if let computedCacheDescription {
             return computedCacheDescription
         }
 
-        let cacheRulesDescriptions = rules
-            .map { rule in [type(of: rule).identifier, rule.cacheDescription] }
-            .sorted { $0[0] < $1[0] }
+        let cacheRulesDescriptions =
+            rules
+                .map { rule in [type(of: rule).identifier, rule.cacheDescription] }
+                .sorted { $0[0] < $1[0] }
         let jsonObject: [Any] = [rootDirectory, cacheRulesDescriptions]
         if let jsonData = try? JSONSerialization.data(withJSONObject: jsonObject) {
             return jsonData.sha256().toHexString()
@@ -66,7 +72,7 @@ extension Configuration {
         queuedFatalError("Could not serialize configuration for cache")
     }
 
-    internal var cacheURL: URL {
+    var cacheURL: URL {
         let baseURL: URL
         if let path = cachePath {
             baseURL = URL(fileURLWithPath: path, isDirectory: true)
@@ -83,7 +89,9 @@ extension Configuration {
         let folder = baseURL.appendingPathComponent(versionedDirectory)
 
         do {
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true, attributes: nil)
+            try FileManager.default.createDirectory(
+                at: folder, withIntermediateDirectories: true, attributes: nil
+            )
         } catch {
             Issue.genericWarning("Cannot create cache: " + error.localizedDescription).print()
         }

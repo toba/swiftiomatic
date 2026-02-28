@@ -1,4 +1,3 @@
-
 struct MissingDocsConfiguration: RuleConfiguration {
     typealias Parent = MissingDocsRule
 
@@ -47,7 +46,9 @@ struct MissingDocsConfiguration: RuleConfiguration {
             self.excludesTrivialInit = excludesTrivialInit
         }
 
-        if let evaluateEffectiveAccessControlLevel = dict[$evaluateEffectiveAccessControlLevel.key] as? Bool {
+        if let evaluateEffectiveAccessControlLevel = dict[$evaluateEffectiveAccessControlLevel.key]
+            as? Bool
+        {
             self.evaluateEffectiveAccessControlLevel = evaluateEffectiveAccessControlLevel
         }
 
@@ -56,7 +57,9 @@ struct MissingDocsConfiguration: RuleConfiguration {
         }
     }
 
-    private func parameters(from dict: [String: Any]) throws(Issue) -> [RuleParameter<AccessControlLevel>]? {
+    private func parameters(from dict: [String: Any]) throws(Issue) -> [RuleParameter<
+        AccessControlLevel
+    >]? {
         var parameters: [RuleParameter<AccessControlLevel>] = []
 
         for (key, value) in dict {
@@ -65,13 +68,14 @@ struct MissingDocsConfiguration: RuleConfiguration {
             }
 
             if let array = [String].array(of: value) {
-                let rules: [RuleParameter<AccessControlLevel>] = try array
-                    .map { val throws(Issue) -> RuleParameter<AccessControlLevel> in
-                        guard let acl = AccessControlLevel(description: val) else {
-                            throw .invalidConfiguration(ruleID: Parent.identifier)
+                let rules: [RuleParameter<AccessControlLevel>] =
+                    try array
+                        .map { val throws(Issue) -> RuleParameter<AccessControlLevel> in
+                            guard let acl = AccessControlLevel(description: val) else {
+                                throw .invalidConfiguration(ruleID: Parent.identifier)
+                            }
+                            return RuleParameter<AccessControlLevel>(severity: severity, value: acl)
                         }
-                        return RuleParameter<AccessControlLevel>(severity: severity, value: acl)
-                    }
 
                 parameters.append(contentsOf: rules)
             } else if let string = value as? String, let acl = AccessControlLevel(description: string) {

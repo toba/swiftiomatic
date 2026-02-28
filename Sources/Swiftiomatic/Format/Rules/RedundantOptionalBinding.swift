@@ -25,13 +25,19 @@ extension FormatRule {
                let identiferIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
                let identifier = formatter.token(at: identiferIndex),
 
-               let equalsIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: identiferIndex, if: {
-                   $0 == .operator("=", .infix)
-               }),
+               let equalsIndex = formatter.index(
+                   of: .nonSpaceOrCommentOrLinebreak, after: identiferIndex,
+                   if: {
+                       $0 == .operator("=", .infix)
+                   }
+               ),
 
-               let nextIdentifierIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex, if: {
-                   $0 == identifier
-               }),
+               let nextIdentifierIndex = formatter.index(
+                   of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex,
+                   if: {
+                       $0 == identifier
+                   }
+               ),
 
                let nextToken = formatter.next(.nonSpaceOrCommentOrLinebreak, after: nextIdentifierIndex),
                [.startOfScope("{"), .delimiter(","), .keyword("else")].contains(nextToken)

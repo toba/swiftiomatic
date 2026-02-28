@@ -30,14 +30,18 @@ extension FormatRule {
                 return
             }
 
-            guard let nextToken = formatter.next(.nonSpaceOrCommentOrLinebreak, after: endIndex) else { return }
+            guard let nextToken = formatter.next(.nonSpaceOrCommentOrLinebreak, after: endIndex) else {
+                return
+            }
 
             // Ensure that `-> ()` isn't actually a closure, like `-> () -> Void`.
             guard !formatter.isStartOfClosureType(at: startIndex) else {
                 return
             }
 
-            let isInProtocol = nextToken == .endOfScope("}") || (nextToken.isKeywordOrAttribute && nextToken != .keyword("in"))
+            let isInProtocol =
+                nextToken == .endOfScope("}")
+                    || (nextToken.isKeywordOrAttribute && nextToken != .keyword("in"))
 
             // After a `Void` we could see the start of a function's body, or if the function is inside a protocol declaration
             // we can find a keyword related to other declarations or the end scope of the protocol definition.
@@ -57,7 +61,9 @@ extension FormatRule {
             } else {
                 startRemoveIndex = i
             }
-            formatter.removeTokens(in: startRemoveIndex ..< formatter.index(of: .nonSpace, after: endIndex)!)
+            formatter.removeTokens(
+                in: startRemoveIndex ..< formatter.index(of: .nonSpace, after: endIndex)!
+            )
         }
     } examples: {
         """

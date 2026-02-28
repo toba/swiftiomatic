@@ -13,9 +13,11 @@ extension Configuration {
     /// - parameter excludeByPrefix: Whether or not it uses the exclude-by-prefix algorithm.
     ///
     /// - returns: Files to lint.
-    func lintableFiles(inPath path: String,
-                              forceExclude: Bool,
-                              excludeByPrefix: Bool) -> [SwiftLintFile] {
+    func lintableFiles(
+        inPath path: String,
+        forceExclude: Bool,
+        excludeByPrefix: Bool
+    ) -> [SwiftLintFile] {
         lintablePaths(inPath: path, forceExclude: forceExclude, excludeByPrefix: excludeByPrefix)
             .parallelCompactMap {
                 SwiftLintFile(pathDeferringReading: $0)
@@ -73,10 +75,10 @@ extension Configuration {
 
     private func makeUnique(paths: [String]) -> [String] {
         #if os(Linux)
-        let result = NSMutableOrderedSet(capacity: paths.count)
-        result.addObjects(from: paths)
+            let result = NSMutableOrderedSet(capacity: paths.count)
+            result.addObjects(from: paths)
         #else
-        let result = NSOrderedSet(array: paths)
+            let result = NSOrderedSet(array: paths)
         #endif
         return result.array as! [String] // swiftlint:disable:this force_cast
     }
@@ -92,10 +94,11 @@ extension Configuration {
         }
         if excludeByPrefix {
             return .byPrefix(
-                prefixes: excludedPaths
+                prefixes:
+                excludedPaths
                     .flatMap { Glob.resolveGlob($0) }
                     .map { $0.absolutePathStandardized() }
-              )
+            )
         }
         return .matching(
             matchers: excludedPaths.flatMap {

@@ -15,9 +15,13 @@ extension FormatRule {
     ) { formatter in
         formatter.forEach(.identifier("`self`")) { i, _ in
             guard formatter.options.swiftVersion >= "4.2",
-                  let equalIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i, if: {
-                      $0 == .operator("=", .infix)
-                  }), formatter.next(.nonSpaceOrCommentOrLinebreak, after: equalIndex) == .identifier("self"),
+                  let equalIndex = formatter.index(
+                      of: .nonSpaceOrCommentOrLinebreak, after: i,
+                      if: {
+                          $0 == .operator("=", .infix)
+                      }
+                  ),
+                  formatter.next(.nonSpaceOrCommentOrLinebreak, after: equalIndex) == .identifier("self"),
                   formatter.isConditionalStatement(at: i)
             else {
                 return

@@ -1,6 +1,6 @@
 import Foundation
-import Synchronization
 @preconcurrency import SourceKittenFramework
+import Synchronization
 
 /// SourceKit-backed type resolver using SourceKitten.
 ///
@@ -10,8 +10,9 @@ final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
     private let compilerArgs: [String]
     private let indexCache = Mutex<[String: FileIndex]>([:])
 
-
-    var isAvailable: Bool { true }
+    var isAvailable: Bool {
+        true
+    }
 
     /// Create a resolver with explicit compiler arguments.
     init(compilerArgs: [String]) {
@@ -23,12 +24,12 @@ final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
         guard let module = Module(spmArguments: [], inPath: projectRoot) else {
             return nil
         }
-        self.compilerArgs = module.compilerArguments
+        compilerArgs = module.compilerArguments
     }
 
     // MARK: - TypeResolver
 
-    func resolveType(inFile file: String, offset: Int) async -> ResolvedType? {
+    func resolveType(inFile file: String, offset: Int) -> ResolvedType? {
         let request = Request.cursorInfo(
             file: file,
             offset: ByteCount(offset),
@@ -43,7 +44,7 @@ final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
         return ResolvedType(typeName: typeName, usr: usr, moduleName: moduleName)
     }
 
-    func indexFile(_ file: String) async -> FileIndex? {
+    func indexFile(_ file: String) -> FileIndex? {
         if let cached = indexCache.withLock({ $0[file] }) {
             return cached
         }
@@ -62,7 +63,7 @@ final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
         return index
     }
 
-    func expressionTypes(inFile file: String) async -> [ExpressionTypeInfo] {
+    func expressionTypes(inFile file: String) -> [ExpressionTypeInfo] {
         guard let source = try? String(contentsOfFile: file, encoding: .utf8) else { return [] }
 
         let request = Request.customRequest(request: [
@@ -102,10 +103,12 @@ final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
             let offset = (entity["key.offset"] as? Int64).map(Int.init) ?? 0
 
             let symbolKind: IndexSymbol.Kind = kindUID.contains(".ref.") ? .reference : .declaration
-            symbols.append(IndexSymbol(
-                name: name, usr: usr, kind: symbolKind,
-                offset: offset, line: line, column: column
-            ))
+            symbols.append(
+                IndexSymbol(
+                    name: name, usr: usr, kind: symbolKind,
+                    offset: offset, line: line, column: column
+                )
+            )
 
             // Recurse into child entities
             if let children = entity["key.entities"] as? [[String: Any]] {

@@ -24,7 +24,9 @@ extension TestCaseAccessibilityRule: OptInRule {}
 
 private extension TestCaseAccessibilityRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_ node: ClassDeclSyntax) {
             guard !configuration.testParentClasses.isDisjoint(with: node.inheritedTypes) else {
@@ -45,18 +47,22 @@ private extension TestCaseAccessibilityRule {
     }
 
     final class XCTestClassVisitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_ node: VariableDeclSyntax) {
             guard !node.modifiers.containsPrivateOrFileprivate(),
-                  !XCTestHelpers.isXCTestVariable(node) else {
+                  !XCTestHelpers.isXCTestVariable(node)
+            else {
                 return
             }
 
             for binding in node.bindings {
                 guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
                       case let name = pattern.identifier.text,
-                      !configuration.allowedPrefixes.contains(where: name.hasPrefix) else {
+                      !configuration.allowedPrefixes.contains(where: name.hasPrefix)
+                else {
                     continue
                 }
 
@@ -67,7 +73,8 @@ private extension TestCaseAccessibilityRule {
 
         override func visitPost(_ node: FunctionDeclSyntax) {
             guard hasViolation(modifiers: node.modifiers, identifierToken: node.name),
-                  !XCTestHelpers.isXCTestFunction(node) else {
+                  !XCTestHelpers.isXCTestFunction(node)
+            else {
                 return
             }
 
@@ -104,9 +111,11 @@ private extension TestCaseAccessibilityRule {
             }
         }
 
-        private func hasViolation(modifiers: DeclModifierListSyntax, identifierToken: TokenSyntax) -> Bool {
-               !modifiers.containsPrivateOrFileprivate()
-            && !configuration.allowedPrefixes.contains(where: identifierToken.text.hasPrefix)
+        private func hasViolation(modifiers: DeclModifierListSyntax, identifierToken: TokenSyntax)
+            -> Bool
+        {
+            !modifiers.containsPrivateOrFileprivate()
+                && !configuration.allowedPrefixes.contains(where: identifierToken.text.hasPrefix)
         }
     }
 }
@@ -121,7 +130,7 @@ private extension ClassDeclSyntax {
 
 private enum XCTestHelpers {
     private static let testVariableNames: Set = [
-        "allTests"
+        "allTests",
     ]
 
     static func isXCTestFunction(_ function: FunctionDeclSyntax) -> Bool {
@@ -129,9 +138,8 @@ private enum XCTestHelpers {
             return true
         }
 
-        return !function.modifiers.containsStaticOrClass &&
-        function.name.text.hasPrefix("test") &&
-        function.signature.parameterClause.parameters.isEmpty
+        return !function.modifiers.containsStaticOrClass && function.name.text.hasPrefix("test")
+            && function.signature.parameterClause.parameters.isEmpty
     }
 
     static func isXCTestVariable(_ variable: VariableDeclSyntax) -> Bool {
@@ -140,8 +148,8 @@ private enum XCTestHelpers {
         }
 
         return
-            variable.modifiers.containsStaticOrClass &&
-            variable.bindings
+            variable.modifiers.containsStaticOrClass
+                && variable.bindings
                 .compactMap { $0.pattern.as(IdentifierPatternSyntax.self)?.identifier.text }
                 .allSatisfy(testVariableNames.contains)
     }

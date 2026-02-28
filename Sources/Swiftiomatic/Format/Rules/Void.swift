@@ -17,9 +17,13 @@ extension FormatRule {
         let hasLocalVoid = formatter.hasLocalVoid()
 
         formatter.forEach(.identifier("Void")) { i, _ in
-            if let nextIndex = formatter.index(of: .nonSpaceOrLinebreak, after: i, if: {
-                $0 == .endOfScope(")")
-            }), var prevIndex = formatter.index(of: .nonSpaceOrLinebreak, before: i), {
+            if let nextIndex = formatter.index(
+                of: .nonSpaceOrLinebreak, after: i,
+                if: {
+                    $0 == .endOfScope(")")
+                }
+            ), var prevIndex = formatter.index(of: .nonSpaceOrLinebreak, before: i),
+            {
                 let token = formatter.tokens[prevIndex]
                 if token == .delimiter(":"),
                    let prevPrevIndex = formatter.index(of: .nonSpaceOrLinebreak, before: prevIndex),
@@ -32,10 +36,12 @@ extension FormatRule {
                 }
                 return token == .startOfScope("(")
             }() {
-                if formatter.isArgumentToken(at: nextIndex) || formatter.last(
-                    .nonSpaceOrLinebreak,
-                    before: prevIndex
-                )?.isIdentifier == true {
+                if formatter.isArgumentToken(at: nextIndex)
+                    || formatter.last(
+                        .nonSpaceOrLinebreak,
+                        before: prevIndex
+                    )?.isIdentifier == true
+                {
                     if !formatter.options.useVoid, !hasLocalVoid {
                         // Convert to parens
                         formatter.replaceToken(at: i, with: .endOfScope(")"))
@@ -50,13 +56,13 @@ extension FormatRule {
                     formatter.removeTokens(in: prevIndex + 1 ..< nextIndex)
                 }
             } else if let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: i),
-                      [.operator(".", .prefix), .operator(".", .infix),
-                       .keyword("typealias")].contains(prevToken)
+                      [
+                          .operator(".", .prefix), .operator(".", .infix),
+                          .keyword("typealias"),
+                      ].contains(prevToken)
             {
                 return
-            } else if formatter.next(.nonSpaceOrCommentOrLinebreak, after: i) ==
-                .operator(".", .infix)
-            {
+            } else if formatter.next(.nonSpaceOrCommentOrLinebreak, after: i) == .operator(".", .infix) {
                 return
             } else if formatter.next(.nonSpace, after: i) == .startOfScope("(") {
                 if !hasLocalVoid {
@@ -71,18 +77,23 @@ extension FormatRule {
             guard formatter.options.useVoid else {
                 return
             }
-            guard let endIndex = formatter.index(of: .nonSpaceOrLinebreak, after: i, if: {
-                $0 == .endOfScope(")")
-            }), let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: i),
-            !formatter.isArgumentToken(at: endIndex) else {
+            guard
+                let endIndex = formatter.index(
+                    of: .nonSpaceOrLinebreak, after: i,
+                    if: {
+                        $0 == .endOfScope(")")
+                    }
+                ), let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: i),
+                !formatter.isArgumentToken(at: endIndex)
+            else {
                 return
             }
             if formatter.last(.nonSpaceOrCommentOrLinebreak, before: i) == .operator("->", .infix) {
                 if !hasLocalVoid {
                     formatter.replaceTokens(in: i ... endIndex, with: .identifier("Void"))
                 }
-            } else if prevToken == .startOfScope("<") ||
-                (prevToken == .delimiter(",") && formatter.currentScope(at: i) == .startOfScope("<")),
+            } else if prevToken == .startOfScope("<")
+                || (prevToken == .delimiter(",") && formatter.currentScope(at: i) == .startOfScope("<")),
                 !hasLocalVoid
             {
                 formatter.replaceTokens(in: i ... endIndex, with: .identifier("Void"))
@@ -139,9 +150,12 @@ extension Formatter {
         case .startOfScope("{"):
             if tokens[index] == .endOfScope(")"),
                let index = self.index(of: .startOfScope("("), before: index),
-               let nameIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, before: index, if: {
-                   $0.isIdentifier
-               }), last(.nonSpaceOrCommentOrLinebreak, before: nameIndex) == .keyword("func")
+               let nameIndex = self.index(
+                   of: .nonSpaceOrCommentOrLinebreak, before: index,
+                   if: {
+                       $0.isIdentifier
+                   }
+               ), last(.nonSpaceOrCommentOrLinebreak, before: nameIndex) == .keyword("func")
             {
                 return true
             }

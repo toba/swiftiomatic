@@ -7,7 +7,7 @@ struct SwiftiomaticCLI: AsyncParsableCommand {
         abstract: "AST-based Swift code analysis and formatting",
         version: "0.1.0",
         subcommands: [Scan.self, FormatCommand.self, Lint.self, ListChecks.self],
-        defaultSubcommand: Scan.self,
+        defaultSubcommand: Scan.self
     )
 }
 
@@ -15,7 +15,7 @@ struct SwiftiomaticCLI: AsyncParsableCommand {
 
 struct Scan: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Run analysis checks on Swift source files",
+        abstract: "Run analysis checks on Swift source files"
     )
 
     @Argument(help: "Paths to scan (files or directories)")
@@ -45,19 +45,22 @@ struct Scan: AsyncParsableCommand {
     @Option(name: .long, help: "SPM project root for compiler arg discovery (with --sourcekit)")
     var projectRoot: String?
 
-    @Option(name: .long, parsing: .upToNextOption, help: "Explicit compiler arguments (with --sourcekit)")
+    @Option(
+        name: .long, parsing: .upToNextOption, help: "Explicit compiler arguments (with --sourcekit)"
+    )
     var compilerArgs: [String] = []
 
     mutating func run() async throws {
-        let categories: Set<Category> = if category.isEmpty {
-            []
-        } else {
-            Set(
-                category.compactMap { name in
-                    Category.allCases.first { $0.rawValue == name }
-                },
-            )
-        }
+        let categories: Set<Category> =
+            if category.isEmpty {
+                []
+            } else {
+                Set(
+                    category.compactMap { name in
+                        Category.allCases.first { $0.rawValue == name }
+                    }
+                )
+            }
 
         // Create SourceKit resolver if requested
         var resolver: (any TypeResolver)?
@@ -70,8 +73,10 @@ struct Scan: AsyncParsableCommand {
                     resolver = spmResolver
                 } else {
                     FileHandle.standardError.write(
-                        Data("warning: --sourcekit: failed to discover compiler args from '\(root)'; falling back to syntax-only analysis\n"
-                            .utf8),
+                        Data(
+                            "warning: --sourcekit: failed to discover compiler args from '\(root)'; falling back to syntax-only analysis\n"
+                                .utf8
+                        )
                     )
                 }
             }
@@ -81,7 +86,7 @@ struct Scan: AsyncParsableCommand {
             categories: categories,
             minConfidence: minConfidence,
             minSeverity: minSeverity,
-            typeResolver: resolver,
+            typeResolver: resolver
         )
 
         let findings = await analyzer.analyze(paths: paths)
@@ -115,7 +120,7 @@ struct Scan: AsyncParsableCommand {
 struct ListChecks: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "list-checks",
-        abstract: "List available analysis categories",
+        abstract: "List available analysis categories"
     )
 
     func run() {

@@ -1,11 +1,10 @@
-
 enum TypeBodyLengthCheckType: String, AcceptableByConfigurationElement, CaseIterable, Comparable {
-    case `actor` = "actor"
-    case `class` = "class"
-    case `enum` = "enum"
-    case `extension` = "extension"
-    case `protocol` = "protocol"
-    case `struct` = "struct"
+    case `actor`
+    case `class`
+    case `enum`
+    case `extension`
+    case `protocol`
+    case `struct`
 
     static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.rawValue < rhs.rawValue
@@ -14,7 +13,9 @@ enum TypeBodyLengthCheckType: String, AcceptableByConfigurationElement, CaseIter
 
 struct TypeBodyLengthConfiguration: SeverityLevelsBasedRuleConfiguration {
     @ConfigurationElement(inline: true)
-    private(set) var severityConfiguration = SeverityLevelsConfiguration<Parent>(warning: 250, error: 350)
+    private(set) var severityConfiguration = SeverityLevelsConfiguration<Parent>(
+        warning: 250, error: 350
+    )
     @ConfigurationElement(key: "excluded_types")
     private(set) var excludedTypes = Set<TypeBodyLengthCheckType>([.extension, .protocol])
     typealias Parent = TypeBodyLengthRule

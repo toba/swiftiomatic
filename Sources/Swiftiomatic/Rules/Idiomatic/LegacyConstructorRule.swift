@@ -62,7 +62,9 @@ struct LegacyConstructorRule: Rule {
             Example("↓CGPointMake(10,  10)"): Example("CGPoint(x: 10,  y: 10)"),
             Example("↓CGPointMake(xPos,  yPos)"): Example("CGPoint(x: xPos,  y: yPos)"),
             Example("↓CGSizeMake(10, 10)"): Example("CGSize(width: 10, height: 10)"),
-            Example("↓CGSizeMake( aWidth, aHeight )"): Example("CGSize( width: aWidth, height: aHeight )"),
+            Example("↓CGSizeMake( aWidth, aHeight )"): Example(
+                "CGSize( width: aWidth, height: aHeight )"
+            ),
             Example("↓CGRectMake(0, 0, 10, 10)"): Example("CGRect(x: 0, y: 0, width: 10, height: 10)"),
             Example("↓CGRectMake(xPos, yPos , width, height)"):
                 Example("CGRect(x: xPos, y: yPos , width: width, height: height)"),
@@ -71,7 +73,9 @@ struct LegacyConstructorRule: Rule {
             Example("↓NSMakePoint(10,  10   )"): Example("NSPoint(x: 10,  y: 10   )"),
             Example("↓NSMakePoint(xPos,  yPos   )"): Example("NSPoint(x: xPos,  y: yPos   )"),
             Example("↓NSMakeSize(10, 10)"): Example("NSSize(width: 10, height: 10)"),
-            Example("↓NSMakeSize( aWidth, aHeight )"): Example("NSSize( width: aWidth, height: aHeight )"),
+            Example("↓NSMakeSize( aWidth, aHeight )"): Example(
+                "NSSize( width: aWidth, height: aHeight )"
+            ),
             Example("↓NSMakeRect(0, 0, 10, 10)"): Example("NSRect(x: 0, y: 0, width: 10, height: 10)"),
             Example("↓NSMakeRect(xPos, yPos , width, height)"):
                 Example("NSRect(x: xPos, y: yPos , width: width, height: height)"),
@@ -131,6 +135,7 @@ extension LegacyConstructorRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -140,7 +145,8 @@ private extension LegacyConstructorRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionCallExprSyntax) {
             if let identifierExpr = node.calledExpression.as(DeclReferenceExprSyntax.self),
-               constructorsToCorrectedNames[identifierExpr.baseName.text] != nil {
+               constructorsToCorrectedNames[identifierExpr.baseName.text] != nil
+            {
                 violations.append(node.positionAfterSkippingLeadingTrivia)
             }
         }
@@ -151,15 +157,18 @@ private extension LegacyConstructorRule {
             guard let identifierExpr = node.calledExpression.as(DeclReferenceExprSyntax.self),
                   case let identifier = identifierExpr.baseName.text,
                   let correctedName = constructorsToCorrectedNames[identifier],
-                  let args = constructorsToArguments[identifier] else {
+                  let args = constructorsToArguments[identifier]
+            else {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let arguments = LabeledExprListSyntax(node.arguments.enumerated().map { index, elem in
-                elem
-                    .with(\.label, .identifier(args[index]))
-                    .with(\.colon, .colonToken(trailingTrivia: .space))
-            })
+            let arguments = LabeledExprListSyntax(
+                node.arguments.enumerated().map { index, elem in
+                    elem
+                        .with(\.label, .identifier(args[index]))
+                        .with(\.colon, .colonToken(trailingTrivia: .space))
+                }
+            )
             let newExpression = identifierExpr.with(
                 \.baseName,
                 .identifier(
@@ -168,9 +177,10 @@ private extension LegacyConstructorRule {
                     trailingTrivia: identifierExpr.baseName.trailingTrivia
                 )
             )
-            let newNode = node
-                .with(\.calledExpression, ExprSyntax(newExpression))
-                .with(\.arguments, arguments)
+            let newNode =
+                node
+                    .with(\.calledExpression, ExprSyntax(newExpression))
+                    .with(\.arguments, arguments)
             return super.visit(newNode)
         }
     }

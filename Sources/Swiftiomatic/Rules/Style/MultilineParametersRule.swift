@@ -6,7 +6,8 @@ struct MultilineParametersRule: Rule {
     static let description = RuleDescription(
         identifier: "multiline_parameters",
         name: "Multiline Parameters",
-        description: "Functions and methods parameters should be either on the same line, or one per line",
+        description:
+        "Functions and methods parameters should be either on the same line, or one per line",
         kind: .style,
         nonTriggeringExamples: MultilineParametersRuleExamples.nonTriggeringExamples,
         triggeringExamples: MultilineParametersRuleExamples.triggeringExamples
@@ -36,7 +37,9 @@ private extension MultilineParametersRule {
         }
 
         private func containsViolation(for signature: FunctionSignatureSyntax) -> Bool {
-            let parameterPositions = signature.parameterClause.parameters.map(\.positionAfterSkippingLeadingTrivia)
+            let parameterPositions = signature.parameterClause.parameters.map(
+                \.positionAfterSkippingLeadingTrivia
+            )
             guard parameterPositions.isNotEmpty else {
                 return false
             }

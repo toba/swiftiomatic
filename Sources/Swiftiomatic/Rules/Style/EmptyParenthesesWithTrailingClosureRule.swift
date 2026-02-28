@@ -6,8 +6,8 @@ struct EmptyParenthesesWithTrailingClosureRule: Rule {
     static let description = RuleDescription(
         identifier: "empty_parentheses_with_trailing_closure",
         name: "Empty Parentheses with Trailing Closure",
-        description: "When using trailing closures, empty parentheses should be avoided " +
-                     "after the method call",
+        description: "When using trailing closures, empty parentheses should be avoided "
+            + "after the method call",
         kind: .style,
         nonTriggeringExamples: [
             Example("[1, 2].map { $0 + 1 }"),
@@ -15,13 +15,15 @@ struct EmptyParenthesesWithTrailingClosureRule: Rule {
             Example("[1, 2].reduce(0) { $0 + $1 }"),
             Example("[1, 2].map { number in\n number + 1 \n}"),
             Example("let isEmpty = [1, 2].isEmpty()"),
-            Example("""
-            UIView.animateWithDuration(0.3, animations: {
-               self.disableInteractionRightView.alpha = 0
-            }, completion: { _ in
-               ()
-            })
-            """),
+            Example(
+                """
+                UIView.animateWithDuration(0.3, animations: {
+                   self.disableInteractionRightView.alpha = 0
+                }, completion: { _ in
+                   ()
+                })
+                """
+            ),
         ],
         triggeringExamples: [
             Example("[1, 2].map↓() { $0 + 1 }"),
@@ -49,6 +51,7 @@ extension EmptyParenthesesWithTrailingClosureRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -71,10 +74,11 @@ private extension EmptyParenthesesWithTrailingClosureRule {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let newNode = node
-                .with(\.leftParen, nil)
-                .with(\.rightParen, nil)
-                .with(\.trailingClosure, node.trailingClosure?.with(\.leadingTrivia, .spaces(1)))
+            let newNode =
+                node
+                    .with(\.leftParen, nil)
+                    .with(\.rightParen, nil)
+                    .with(\.trailingClosure, node.trailingClosure?.with(\.leadingTrivia, .spaces(1)))
             return super.visit(newNode)
         }
     }
@@ -84,7 +88,8 @@ private extension FunctionCallExprSyntax {
     var violationPosition: AbsolutePosition? {
         guard trailingClosure != nil,
               let leftParen,
-              arguments.isEmpty else {
+              arguments.isEmpty
+        else {
             return nil
         }
         return leftParen.positionAfterSkippingLeadingTrivia

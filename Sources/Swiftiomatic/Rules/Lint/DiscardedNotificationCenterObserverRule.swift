@@ -6,88 +6,122 @@ struct DiscardedNotificationCenterObserverRule: Rule {
     static let description = RuleDescription(
         identifier: "discarded_notification_center_observer",
         name: "Discarded Notification Center Observer",
-        description: "When registering for a notification using a block, the opaque observer that is " +
-                     "returned should be stored so it can be removed later",
+        description: "When registering for a notification using a block, the opaque observer that is "
+            + "returned should be stored so it can be removed later",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("let foo = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }"),
-            Example("""
-            let foo = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
-            """),
-            Example("""
-            func foo() -> Any {
-                return nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
-            }
-            """),
-            Example("""
-            func foo() -> Any {
-                nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
-            }
-            """),
-            Example("""
-            var obs: [Any?] = []
-            obs.append(nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }))
-            """),
-            Example("""
-            var obs: [String: Any?] = []
-            obs["foo"] = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
-            """),
-            Example("""
-            var obs: [Any?] = []
-            obs.append(nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }))
-            """),
-            Example("""
-            func foo(_ notify: Any) {
-               obs.append(notify)
-            }
-            foo(nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }))
-            """),
-            Example("""
-            var obs: [NSObjectProtocol] = [
-               nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }),
-               nc.addObserver(forName: .CKAccountChanged, object: nil, queue: nil, using: { })
-            ]
-            """),
-            Example("""
-            names.map { self.notificationCenter.addObserver(forName: $0, object: object, queue: queue, using: block) }
-            """),
-            Example("""
-            f { return nc.addObserver(forName: $0, object: object, queue: queue, using: block) }
-            """),
+            Example(
+                "let foo = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }"
+            ),
+            Example(
+                """
+                let foo = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
+                """
+            ),
+            Example(
+                """
+                func foo() -> Any {
+                    return nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
+                }
+                """
+            ),
+            Example(
+                """
+                func foo() -> Any {
+                    nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
+                }
+                """
+            ),
+            Example(
+                """
+                var obs: [Any?] = []
+                obs.append(nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }))
+                """
+            ),
+            Example(
+                """
+                var obs: [String: Any?] = []
+                obs["foo"] = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
+                """
+            ),
+            Example(
+                """
+                var obs: [Any?] = []
+                obs.append(nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }))
+                """
+            ),
+            Example(
+                """
+                func foo(_ notify: Any) {
+                   obs.append(notify)
+                }
+                foo(nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }))
+                """
+            ),
+            Example(
+                """
+                var obs: [NSObjectProtocol] = [
+                   nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { }),
+                   nc.addObserver(forName: .CKAccountChanged, object: nil, queue: nil, using: { })
+                ]
+                """
+            ),
+            Example(
+                """
+                names.map { self.notificationCenter.addObserver(forName: $0, object: object, queue: queue, using: block) }
+                """
+            ),
+            Example(
+                """
+                f { return nc.addObserver(forName: $0, object: object, queue: queue, using: block) }
+                """
+            ),
         ],
         triggeringExamples: [
             Example("↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }"),
-            Example("_ = ↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }"),
-            Example("↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })"),
-            Example("""
-            @discardableResult func foo() -> Any {
-               return ↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
-            }
-            """),
-            Example("""
-            class C {
-                var i: Int {
-                    set { ↓notificationCenter.addObserver(forName: $0, object: object, queue: queue, using: block) }
-                    get {
-                        ↓notificationCenter.addObserver(forName: $0, object: object, queue: queue, using: block)
-                        return 2
+            Example(
+                "_ = ↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }"
+            ),
+            Example(
+                "↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })"
+            ),
+            Example(
+                """
+                @discardableResult func foo() -> Any {
+                   return ↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
+                }
+                """
+            ),
+            Example(
+                """
+                class C {
+                    var i: Int {
+                        set { ↓notificationCenter.addObserver(forName: $0, object: object, queue: queue, using: block) }
+                        get {
+                            ↓notificationCenter.addObserver(forName: $0, object: object, queue: queue, using: block)
+                            return 2
+                        }
                     }
                 }
-            }
-            """),
-            Example("""
-            f {
-                ↓nc.addObserver(forName: $0, object: object, queue: queue) {}
-                return 2
-            }
-            """),
-            Example("""
-            func foo() -> Any {
-                if cond {
-                    ↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
+                """
+            ),
+            Example(
+                """
+                f {
+                    ↓nc.addObserver(forName: $0, object: object, queue: queue) {}
+                    return 2
                 }
-            }
-            """),
+                """
+            ),
+            Example(
+                """
+                func foo() -> Any {
+                    if cond {
+                        ↓nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil, using: { })
+                    }
+                }
+                """
+            ),
         ]
     )
 }
@@ -169,33 +203,38 @@ private extension DiscardedNotificationCenterObserverRule {
                   case .identifier("addObserver") = calledExpression.declName.baseName.tokenKind,
                   case let argumentLabels = node.arguments.map({ $0.label?.text }),
                   argumentLabels.starts(with: ["forName", "object", "queue"]),
-                  let parent = node.parent else {
+                  let parent = node.parent
+            else {
                 return
             }
-            if let funcBlock = parent.as(CodeBlockItemSyntax.self)?.parent?.as(CodeBlockItemListSyntax.self) {
+            if let funcBlock = parent.as(CodeBlockItemSyntax.self)?.parent?.as(
+                CodeBlockItemListSyntax.self
+            ) {
                 switch scopes.peek() {
                 case let .closure(block) where funcBlock.count == 1 && block == funcBlock: return
                 case let .getter(block) where funcBlock.count == 1 && block == funcBlock: return
-                case let .function(functionDecl) where funcBlock.count == 1 &&
-                                                       functionDecl.body?.statements == funcBlock &&
-                                                       functionDecl.signature.returnClause != nil &&
-                                                       !functionDecl.hasDiscardableResultAttribute: return
+                case let .function(functionDecl)
+                    where funcBlock.count == 1 && functionDecl.body?.statements == funcBlock
+                    && functionDecl.signature.returnClause != nil
+                    && !functionDecl.hasDiscardableResultAttribute:
+                    return
                 default: break
                 }
             } else if parent.is(ReturnStmtSyntax.self) {
                 switch scopes.peek() {
                 case .closure, .getter: return
-                case let .function(decl: functionDecl) where !functionDecl.hasDiscardableResultAttribute: return
+                case let .function(decl: functionDecl) where !functionDecl.hasDiscardableResultAttribute:
+                    return
                 default: break
                 }
             } else if parent.is(LabeledExprSyntax.self) {
                 return // result is passed as an argument to a function
             } else if parent.is(ArrayElementSyntax.self) {
                 return // result is an array literal element
-            } else if
-                let previousToken = node.previousToken(viewMode: .sourceAccurate),
-                case .equal = previousToken.tokenKind,
-                previousToken.previousToken(viewMode: .sourceAccurate)?.tokenKind != .wildcard {
+            } else if let previousToken = node.previousToken(viewMode: .sourceAccurate),
+                      case .equal = previousToken.tokenKind,
+                      previousToken.previousToken(viewMode: .sourceAccurate)?.tokenKind != .wildcard
+            {
                 return // result is assigned to something other than the wildcard keyword (`_`)
             }
             violations.append(node.positionAfterSkippingLeadingTrivia)

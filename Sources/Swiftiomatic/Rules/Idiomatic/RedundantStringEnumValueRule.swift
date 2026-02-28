@@ -9,53 +9,69 @@ struct RedundantStringEnumValueRule: Rule {
         description: "String enum values can be omitted when they are equal to the enumcase name",
         kind: .idiomatic,
         nonTriggeringExamples: [
-            Example("""
-            enum Numbers: String {
-              case one
-              case two
-            }
-            """),
-            Example("""
-            enum Numbers: Int {
-              case one = 1
-              case two = 2
-            }
-            """),
-            Example("""
-            enum Numbers: String {
-              case one = "ONE"
-              case two = "TWO"
-            }
-            """),
-            Example("""
-            enum Numbers: String {
-              case one = "ONE"
-              case two = "two"
-            }
-            """),
-            Example("""
-            enum Numbers: String {
-              case one, two
-            }
-            """),
+            Example(
+                """
+                enum Numbers: String {
+                  case one
+                  case two
+                }
+                """
+            ),
+            Example(
+                """
+                enum Numbers: Int {
+                  case one = 1
+                  case two = 2
+                }
+                """
+            ),
+            Example(
+                """
+                enum Numbers: String {
+                  case one = "ONE"
+                  case two = "TWO"
+                }
+                """
+            ),
+            Example(
+                """
+                enum Numbers: String {
+                  case one = "ONE"
+                  case two = "two"
+                }
+                """
+            ),
+            Example(
+                """
+                enum Numbers: String {
+                  case one, two
+                }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            enum Numbers: String {
-              case one = ↓"one"
-              case two = ↓"two"
-            }
-            """),
-            Example("""
-            enum Numbers: String {
-              case one = ↓"one", two = ↓"two"
-            }
-            """),
-            Example("""
-            enum Numbers: String {
-              case one, two = ↓"two"
-            }
-            """),
+            Example(
+                """
+                enum Numbers: String {
+                  case one = ↓"one"
+                  case two = ↓"two"
+                }
+                """
+            ),
+            Example(
+                """
+                enum Numbers: String {
+                  case one = ↓"one", two = ↓"two"
+                }
+                """
+            ),
+            Example(
+                """
+                enum Numbers: String {
+                  case one, two = ↓"two"
+                }
+                """
+            ),
         ]
     )
 }
@@ -83,16 +99,18 @@ private extension RedundantStringEnumValueRule {
                 }
                 .filter { $0.rawValue != nil }
 
-            let redundantMembersPositions = enumsWithExplicitValues
-                .compactMap { element -> AbsolutePosition? in
-                    guard let stringExpr = element.rawValue?.value.as(StringLiteralExprSyntax.self),
-                          let segment = stringExpr.segments.onlyElement?.as(StringSegmentSyntax.self),
-                          segment.content.text == element.name.text else {
-                        return nil
-                    }
+            let redundantMembersPositions =
+                enumsWithExplicitValues
+                    .compactMap { element -> AbsolutePosition? in
+                        guard let stringExpr = element.rawValue?.value.as(StringLiteralExprSyntax.self),
+                              let segment = stringExpr.segments.onlyElement?.as(StringSegmentSyntax.self),
+                              segment.content.text == element.name.text
+                        else {
+                            return nil
+                        }
 
-                    return stringExpr.positionAfterSkippingLeadingTrivia
-                }
+                        return stringExpr.positionAfterSkippingLeadingTrivia
+                    }
 
             if redundantMembersPositions.count == enumsWithExplicitValues.count {
                 violations.append(contentsOf: redundantMembersPositions)

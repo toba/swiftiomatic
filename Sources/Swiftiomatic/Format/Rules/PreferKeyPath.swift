@@ -35,9 +35,12 @@ extension FormatRule {
             }
             guard case let .identifier(name) = prevToken,
                   ["map", "flatMap", "compactMap", "allSatisfy", "filter", "contains"].contains(name),
-                  let nextIndex = formatter.index(of: .nonSpaceOrLinebreak, after: i, if: {
-                      $0 == .identifier("$0")
-                  }),
+                  let nextIndex = formatter.index(
+                      of: .nonSpaceOrLinebreak, after: i,
+                      if: {
+                          $0 == .identifier("$0")
+                      }
+                  ),
                   let endIndex = formatter.endOfScope(at: i),
                   let lastIndex = formatter.index(of: .nonSpaceOrLinebreak, before: endIndex)
             else {

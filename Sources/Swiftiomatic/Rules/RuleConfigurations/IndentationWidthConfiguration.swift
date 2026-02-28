@@ -1,4 +1,3 @@
-
 struct IndentationWidthConfiguration: SeverityBasedRuleConfiguration {
     private static let defaultIndentationWidth = 4
 

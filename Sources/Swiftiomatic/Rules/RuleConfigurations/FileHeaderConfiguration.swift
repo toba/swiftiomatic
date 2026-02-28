@@ -70,19 +70,25 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
         }
     }
 
-    private func makeRegex(for file: SwiftLintFile,
-                           using pattern: String,
-                           options: NSRegularExpression.Options,
-                           escapeFileName: Bool) -> NSRegularExpression? {
+    private func makeRegex(
+        for file: SwiftLintFile,
+        using pattern: String,
+        options: NSRegularExpression.Options,
+        escapeFileName: Bool
+    ) -> NSRegularExpression? {
         // Recompile the regex for this file...
-        let replacedPattern = file.path.map { path in
-            let fileName = path.bridge().lastPathComponent
+        let replacedPattern =
+            file.path.map { path in
+                let fileName = path.bridge().lastPathComponent
 
-            // Replace SWIFTLINT_CURRENT_FILENAME with the filename.
-            let escapedName = escapeFileName ? NSRegularExpression.escapedPattern(for: fileName) : fileName
-            return pattern.replacingOccurrences(of: Self.fileNamePlaceholder,
-                                                with: escapedName)
-        } ?? pattern
+                // Replace SWIFTLINT_CURRENT_FILENAME with the filename.
+                let escapedName =
+                    escapeFileName ? NSRegularExpression.escapedPattern(for: fileName) : fileName
+                return pattern.replacingOccurrences(
+                    of: Self.fileNamePlaceholder,
+                    with: escapedName
+                )
+            } ?? pattern
 
         do {
             return try NSRegularExpression(pattern: replacedPattern, options: options)
@@ -91,11 +97,15 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
         }
     }
 
-    private func regexFromString(for file: SwiftLintFile, using pattern: String) -> NSRegularExpression? {
+    private func regexFromString(for file: SwiftLintFile, using pattern: String)
+        -> NSRegularExpression?
+    {
         makeRegex(for: file, using: pattern, options: Self.stringRegexOptions, escapeFileName: false)
     }
 
-    private func regexFromPattern(for file: SwiftLintFile, using pattern: String) -> NSRegularExpression? {
+    private func regexFromPattern(for file: SwiftLintFile, using pattern: String)
+        -> NSRegularExpression?
+    {
         makeRegex(for: file, using: pattern, options: Self.patternRegexOptions, escapeFileName: true)
     }
 

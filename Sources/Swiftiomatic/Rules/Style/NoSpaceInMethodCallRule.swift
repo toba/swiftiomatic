@@ -16,13 +16,15 @@ struct NoSpaceInMethodCallRule: Rule {
             Example("object.foo { print($0 }"),
             Example("list.sorted { $0.0 < $1.0 }.map { $0.value }"),
             Example("self.init(rgb: (Int) (colorInt))"),
-            Example("""
-            Button {
-                print("Button tapped")
-            } label: {
-                Text("Button")
-            }
-            """),
+            Example(
+                """
+                Button {
+                    print("Button tapped")
+                } label: {
+                    Text("Button")
+                }
+                """
+            ),
         ],
         triggeringExamples: [
             Example("foo↓ ()"),
@@ -48,6 +50,7 @@ extension NoSpaceInMethodCallRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -70,8 +73,9 @@ private extension NoSpaceInMethodCallRule {
                 return super.visit(node)
             }
             numberOfCorrections += 1
-            let newNode = node
-                .with(\.calledExpression, node.calledExpression.with(\.trailingTrivia, []))
+            let newNode =
+                node
+                    .with(\.calledExpression, node.calledExpression.with(\.trailingTrivia, []))
             return super.visit(newNode)
         }
     }
@@ -79,8 +83,7 @@ private extension NoSpaceInMethodCallRule {
 
 private extension FunctionCallExprSyntax {
     var hasNoSpaceInMethodCallViolation: Bool {
-        leftParen != nil &&
-            !calledExpression.is(TupleExprSyntax.self) &&
-            calledExpression.trailingTrivia.isNotEmpty
+        leftParen != nil && !calledExpression.is(TupleExprSyntax.self)
+            && calledExpression.trailingTrivia.isNotEmpty
     }
 }

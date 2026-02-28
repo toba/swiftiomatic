@@ -7,8 +7,8 @@ struct GitLabJUnitReporter: Reporter {
     static let description = "Reports violations as JUnit XML supported by GitLab."
 
     static func generateReport(_ violations: [StyleViolation]) -> String {
-        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<testsuites><testsuite>" +
-            violations.map({ violation -> String in
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<testsuites><testsuite>"
+            + violations.map { violation -> String in
                 let fileName = (violation.location.relativeFile ?? "<nopath>").escapedForXML()
                 let line = violation.location.line.map(String.init)
                 let column = violation.location.character.map(String.init)
@@ -33,6 +33,6 @@ struct GitLabJUnitReporter: Reporter {
                     "\t\t<failure>\(body)\n\t\t</failure>\n",
                     "\t</testcase>",
                 ].joined()
-            }).joined() + "\n</testsuite></testsuites>\n"
+            }.joined() + "\n</testsuite></testsuites>\n"
     }
 }

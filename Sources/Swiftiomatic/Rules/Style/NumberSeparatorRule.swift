@@ -8,10 +8,10 @@ struct NumberSeparatorRule: Rule {
         identifier: "number_separator",
         name: "Number Separator",
         description: """
-            Underscores should be used as thousand separator in large numbers with a configurable number of digits. In \
-            other words, there should be an underscore after every 3 digits in the integral as well as the fractional \
-            part of a number.
-            """,
+        Underscores should be used as thousand separator in large numbers with a configurable number of digits. In \
+        other words, there should be an underscore after every 3 digits in the integral as well as the fractional \
+        part of a number.
+        """,
         kind: .style,
         nonTriggeringExamples: NumberSeparatorRuleExamples.nonTriggeringExamples,
         triggeringExamples: NumberSeparatorRuleExamples.triggeringExamples,
@@ -19,17 +19,18 @@ struct NumberSeparatorRule: Rule {
     )
 
     static let missingSeparatorsReason = """
-        Underscores should be used as thousand separators
-        """
+    Underscores should be used as thousand separators
+    """
     static let misplacedSeparatorsReason = """
-        Underscore(s) used as thousand separator(s) should be added after every 3 digits only
-        """
+    Underscore(s) used as thousand separator(s) should be added after every 3 digits only
+    """
 }
 
 extension NumberSeparatorRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -38,21 +39,29 @@ extension NumberSeparatorRule: SwiftSyntaxCorrectableRule {
 extension NumberSeparatorRule: OptInRule {}
 
 private extension NumberSeparatorRule {
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType>, NumberSeparatorValidator {
+    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType>,
+        NumberSeparatorValidator
+    {
         override func visitPost(_ node: FloatLiteralExprSyntax) {
             if let violation = violation(token: node.literal) {
-                violations.append(ReasonedRuleViolation(position: violation.position, reason: violation.reason))
+                violations.append(
+                    ReasonedRuleViolation(position: violation.position, reason: violation.reason)
+                )
             }
         }
 
         override func visitPost(_ node: IntegerLiteralExprSyntax) {
             if let violation = violation(token: node.literal) {
-                violations.append(ReasonedRuleViolation(position: violation.position, reason: violation.reason))
+                violations.append(
+                    ReasonedRuleViolation(position: violation.position, reason: violation.reason)
+                )
             }
         }
     }
 
-    final class Rewriter: ViolationsSyntaxRewriter<ConfigurationType>, NumberSeparatorValidator {
+    final class Rewriter: ViolationsSyntaxRewriter<ConfigurationType>,
+        NumberSeparatorValidator
+    {
         override func visit(_ node: FloatLiteralExprSyntax) -> ExprSyntax {
             guard let violation = violation(token: node.literal) else {
                 return super.visit(node)
@@ -73,7 +82,9 @@ private extension NumberSeparatorRule {
             guard let violation = violation(token: node.literal) else {
                 return super.visit(node)
             }
-            let newNode = node.with(\.literal, node.literal.with(\.tokenKind, .integerLiteral(violation.correction)))
+            let newNode = node.with(
+                \.literal, node.literal.with(\.tokenKind, .integerLiteral(violation.correction))
+            )
             numberOfCorrections += 1
             return super.visit(newNode)
         }
@@ -110,8 +121,8 @@ private enum NumberSeparatorViolation {
     }
 }
 
-private extension NumberSeparatorValidator {
-    func violation(token: TokenSyntax) -> NumberSeparatorViolation? {
+extension NumberSeparatorValidator {
+    fileprivate func violation(token: TokenSyntax) -> NumberSeparatorViolation? {
         let content = token.text
         guard isDecimal(number: content),
               !isInValidRanges(number: content)
@@ -121,7 +132,8 @@ private extension NumberSeparatorValidator {
 
         let exponential = CharacterSet(charactersIn: "eE")
         guard case let exponentialComponents = content.components(separatedBy: exponential),
-              let nonExponential = exponentialComponents.first else {
+              let nonExponential = exponentialComponents.first
+        else {
             return nil
         }
 
@@ -151,9 +163,13 @@ private extension NumberSeparatorValidator {
         }
 
         if content.contains("_") {
-            return .misplacedSeparator(position: token.positionAfterSkippingLeadingTrivia, correction: corrected)
+            return .misplacedSeparator(
+                position: token.positionAfterSkippingLeadingTrivia, correction: corrected
+            )
         }
-        return .missingSeparator(position: token.positionAfterSkippingLeadingTrivia, correction: corrected)
+        return .missingSeparator(
+            position: token.positionAfterSkippingLeadingTrivia, correction: corrected
+        )
     }
 
     private func isDecimal(number: String) -> Bool {
@@ -200,7 +216,7 @@ private extension NumberSeparatorValidator {
         return (expected == number, expected)
     }
 
-    private func reversedIfNeeded<T>(_ collection: T, reversed: Bool) -> [T.Element] where T: Collection {
+    private func reversedIfNeeded<T: Collection>(_ collection: T, reversed: Bool) -> [T.Element] {
         if reversed {
             return collection.reversed()
         }

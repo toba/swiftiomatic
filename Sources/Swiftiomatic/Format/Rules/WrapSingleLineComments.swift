@@ -40,9 +40,9 @@ extension FormatRule {
             let prefixLength = formatter.lineLength(upTo: startIndex)
             var length = prefixLength + comment.count
             while length <= maxWidth, let next = words.first,
-                  length + next.count < maxWidth ||
+                  length + next.count < maxWidth
                   // Don't wrap if next word won't fit on a line by itself anyway
-                  prefixLength + commentPrefix.count + next.count > maxWidth
+                  || prefixLength + commentPrefix.count + next.count > maxWidth
             {
                 comment += " \(next)"
                 length += next.count + 1
@@ -55,11 +55,14 @@ extension FormatRule {
             if let token = formatter.token(at: startOfLine), case .space = token {
                 prefix.insert(token, at: prefix.startIndex)
             }
-            formatter.replaceTokens(in: startIndex ..< endOfLine, with: [
-                .commentBody(comment), formatter.linebreakToken(for: startIndex),
-            ] + prefix + [
-                .commentBody(commentPrefix + words.joined(separator: " ")),
-            ])
+            formatter.replaceTokens(
+                in: startIndex ..< endOfLine,
+                with: [
+                    .commentBody(comment), formatter.linebreakToken(for: startIndex),
+                ] + prefix + [
+                    .commentBody(commentPrefix + words.joined(separator: " ")),
+                ]
+            )
         }
     } examples: {
         nil

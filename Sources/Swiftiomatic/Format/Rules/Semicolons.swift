@@ -16,20 +16,23 @@ extension FormatRule {
         sharedOptions: ["linebreaks"]
     ) { formatter in
         formatter.forEach(.delimiter(";")) { i, _ in
-            if let nextToken = formatter
-                .next(.nonSpaceOrCommentOrLinebreak, after: i, if: { $0 != .endOfScope("}") }),
-                let prevTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i)
+            if let nextToken =
+                formatter
+                    .next(.nonSpaceOrCommentOrLinebreak, after: i, if: { $0 != .endOfScope("}") }),
+                    let prevTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i)
             {
                 let prevToken = formatter.tokens[prevTokenIndex]
-                if prevToken == .keyword("return") || (
-                    formatter.options.swiftVersion < "3" &&
+                if prevToken == .keyword("return")
+                    || (formatter.options.swiftVersion < "3"
                         // Might be a traditional for loop (not supported in Swift 3 and above)
-                        formatter.currentScope(at: i) == .startOfScope("(")
-                ) {
+                        && formatter.currentScope(at: i) == .startOfScope("("))
+                {
                     // Not safe to remove or replace
-                } else if case .identifier = prevToken, formatter.last(
-                    .nonSpaceOrCommentOrLinebreak, before: prevTokenIndex
-                ) == .keyword("var") {
+                } else if case .identifier = prevToken,
+                          formatter.last(
+                              .nonSpaceOrCommentOrLinebreak, before: prevTokenIndex
+                          ) == .keyword("var")
+                {
                     // Not safe to remove or replace
                 } else if formatter.next(.nonSpaceOrComment, after: i)?.isLinebreak == true {
                     // Safe to remove

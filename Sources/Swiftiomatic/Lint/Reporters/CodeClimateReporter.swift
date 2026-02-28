@@ -1,8 +1,9 @@
-#if canImport(CryptoSwift)
-import CryptoSwift
-#endif
 import Foundation
 import SourceKittenFramework
+
+#if canImport(CryptoSwift)
+    import CryptoSwift
+#endif
 
 /// Reports violations as a JSON array in Code Climate format.
 struct CodeClimateReporter: Reporter {
@@ -37,7 +38,7 @@ struct CodeClimateReporter: Reporter {
         ]
     }
 
-    internal static func generateFingerprint(_ violation: StyleViolation) -> String {
+    static func generateFingerprint(_ violation: StyleViolation) -> String {
         let fingerprintLocation = Location(
             file: violation.location.relativeFile,
             line: violation.location.line,

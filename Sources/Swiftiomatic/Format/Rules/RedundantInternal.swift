@@ -20,7 +20,9 @@ extension FormatRule {
 
             // If we're inside an extension, then `internal` is only redundant if the extension itself is `internal`.
             if let startOfScope = formatter.startOfScope(at: internalKeywordIndex),
-               let typeKeywordIndex = formatter.indexOfLastSignificantKeyword(at: startOfScope, excluding: ["where"]),
+               let typeKeywordIndex = formatter.indexOfLastSignificantKeyword(
+                   at: startOfScope, excluding: ["where"]
+               ),
                formatter.tokens[typeKeywordIndex] == .keyword("extension"),
                // In the language grammar, the ACL level always directly precedes the
                // `extension` keyword if present.

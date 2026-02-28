@@ -21,14 +21,16 @@ extension FormatRule {
                 return
             }
             var keyword: Token = formatter.tokens[nextIndex]
-            while keyword == .startOfScope("#if") || formatter.isModifier(at: nextIndex) || keyword.isAttribute,
-                  let index = formatter.index(of: .keyword, after: nextIndex)
+            while keyword == .startOfScope("#if") || formatter.isModifier(at: nextIndex)
+                || keyword.isAttribute,
+                let index = formatter.index(of: .keyword, after: nextIndex)
             {
                 nextIndex = index
                 keyword = formatter.tokens[nextIndex]
             }
             switch formatter.tokens[nextIndex] {
-            case .linebreak, .keyword("import"), .keyword("#else"), .keyword("#elseif"), .endOfScope("#endif"):
+            case .linebreak, .keyword("import"), .keyword("#else"), .keyword("#elseif"),
+                 .endOfScope("#endif"):
                 break
             default:
                 formatter.insertLinebreak(at: endOfLine)

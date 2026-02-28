@@ -35,13 +35,17 @@ extension FormatRule {
             guard ["struct", "class", "enum", "actor"].contains(keyword.string) else { return }
 
             // Find the type name
-            guard let typeNameIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: keywordIndex)
+            guard
+                let typeNameIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: keywordIndex)
             else { return }
 
             // Check for generic parameters
-            guard let genericStartIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: typeNameIndex),
-                  formatter.tokens[genericStartIndex] == .startOfScope("<"),
-                  let genericEndIndex = formatter.endOfScope(at: genericStartIndex)
+            guard
+                let genericStartIndex = formatter.index(
+                    of: .nonSpaceOrCommentOrLinebreak, after: typeNameIndex
+                ),
+                formatter.tokens[genericStartIndex] == .startOfScope("<"),
+                let genericEndIndex = formatter.endOfScope(at: genericStartIndex)
             else { return }
 
             // Find the where clause
@@ -94,7 +98,9 @@ extension Formatter {
 
         // Find constraints that can be moved inline
         // Only simple protocol conformances (T: Protocol) can be moved
-        var constraintsToMove: [(genericType: Formatter.GenericType, conformance: Formatter.GenericType.GenericConformance)] = []
+        var constraintsToMove:
+            [(genericType: Formatter.GenericType, conformance: Formatter.GenericType.GenericConformance)] =
+            []
 
         for genericType in genericTypes {
             // Check if this generic type is declared in the current function's generic parameter list
@@ -116,7 +122,11 @@ extension Formatter {
                 // Skip constraints that have linebreaks within the protocol composition itself
                 // (e.g., "ModuleName.\nProtocolA" or "ProviderA &\nProviderB")
                 // Find the last non-space/comment/linebreak token in the constraint
-                guard let lastSignificantIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: conformance.sourceRange.upperBound + 1, if: { _ in true })
+                guard
+                    let lastSignificantIndex = index(
+                        of: .nonSpaceOrCommentOrLinebreak, before: conformance.sourceRange.upperBound + 1,
+                        if: { _ in true }
+                    )
                 else { continue }
 
                 // Check if the constraint spans multiple lines
@@ -162,9 +172,10 @@ extension Formatter {
                 // Where clause followed by linebreak or closing brace - means it's empty
                 // Remove the where keyword and any whitespace/linebreaks after it
                 // Also remove the space before where if present
-                let startIndex = (whereClauseIndex.index > 0 && tokens[whereClauseIndex.index - 1].isSpace)
-                    ? whereClauseIndex.index - 1
-                    : whereClauseIndex.index
+                let startIndex =
+                    (whereClauseIndex.index > 0 && tokens[whereClauseIndex.index - 1].isSpace)
+                        ? whereClauseIndex.index - 1
+                        : whereClauseIndex.index
 
                 if let linebreakIndex = index(of: .linebreak, after: whereClauseIndex) {
                     removeTokens(in: startIndex ..< linebreakIndex)
@@ -173,9 +184,10 @@ extension Formatter {
         } else {
             // No non-whitespace token after where at all - remove where and trailing content
             // Also remove the space before where if present
-            let startIndex = (whereClauseIndex.index > 0 && tokens[whereClauseIndex.index - 1].isSpace)
-                ? whereClauseIndex.index - 1
-                : whereClauseIndex.index
+            let startIndex =
+                (whereClauseIndex.index > 0 && tokens[whereClauseIndex.index - 1].isSpace)
+                    ? whereClauseIndex.index - 1
+                    : whereClauseIndex.index
 
             var endIndex = whereClauseIndex.index + 1
             while endIndex < tokens.count, !tokens[endIndex].isLinebreak {
@@ -220,8 +232,9 @@ extension Formatter {
 
                 if tokens[typeIndex].string == typeName {
                     // Check if this generic parameter already has inline constraints
-                    let hasInlineConstraints = index(of: .nonSpaceOrCommentOrLinebreak, after: typeIndex)
-                        .map { tokens[$0] == .delimiter(":") } ?? false
+                    let hasInlineConstraints =
+                        index(of: .nonSpaceOrCommentOrLinebreak, after: typeIndex)
+                            .map { tokens[$0] == .delimiter(":") } ?? false
 
                     // Find the end of this generic parameter declaration
                     // It ends at a comma or the closing >

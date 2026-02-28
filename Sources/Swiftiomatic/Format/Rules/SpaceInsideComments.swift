@@ -16,7 +16,8 @@ extension FormatRule {
     ) { formatter in
         formatter.forEach(.startOfScope("//")) { i, _ in
             guard case let .commentBody(string)? = formatter.token(at: i + 1),
-                  let first = string.first else { return }
+                  let first = string.first
+            else { return }
             if "/!:".contains(first) {
                 let nextIndex = string.index(after: string.startIndex)
                 if nextIndex < string.endIndex, case let next = string[nextIndex], !" \t/".contains(next) {
@@ -29,7 +30,8 @@ extension FormatRule {
         }
         formatter.forEach(.startOfScope("/*")) { i, _ in
             guard case let .commentBody(string)? = formatter.token(at: i + 1),
-                  !string.hasPrefix("---"), !string.hasPrefix("@"), !string.hasSuffix("---"), !string.hasSuffix("@")
+                  !string.hasPrefix("---"), !string.hasPrefix("@"), !string.hasSuffix("---"),
+                  !string.hasSuffix("@")
             else {
                 return
             }
@@ -44,7 +46,9 @@ extension FormatRule {
             } else {
                 formatter.insert(.space(" "), at: i + 1)
             }
-            if let i = formatter.index(of: .endOfScope("*/"), after: i), let prevToken = formatter.token(at: i - 1) {
+            if let i = formatter.index(of: .endOfScope("*/"), after: i),
+               let prevToken = formatter.token(at: i - 1)
+            {
                 if !prevToken.isSpaceOrLinebreak, !prevToken.string.hasSuffix("*"),
                    !prevToken.string.trimmingCharacters(in: .whitespaces).isEmpty
                 {

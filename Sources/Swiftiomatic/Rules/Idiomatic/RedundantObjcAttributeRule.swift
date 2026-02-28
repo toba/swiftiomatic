@@ -3,7 +3,7 @@ import SourceKittenFramework
 import SwiftSyntax
 
 private let attributeNamesImplyingObjc: Set<String> = [
-    "IBAction", "IBOutlet", "IBInspectable", "GKInspectable", "IBDesignable", "NSManaged"
+    "IBAction", "IBOutlet", "IBInspectable", "GKInspectable", "IBDesignable", "NSManaged",
 ]
 
 struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule {
@@ -64,7 +64,8 @@ private extension Syntax {
             return true
         }
         if let variableDecl = `as`(VariableDeclSyntax.self),
-           variableDecl.bindings.allSatisfy({ $0.accessorBlock == nil }) {
+           variableDecl.bindings.allSatisfy({ $0.accessorBlock == nil })
+        {
             return true
         }
         return false
@@ -95,11 +96,16 @@ private extension AttributeListSyntax {
         }
         if parent?.isFunctionOrStoredProperty == true,
            let parentClassDecl = parent?.parent?.parent?.parent?.parent?.as(ClassDeclSyntax.self),
-           parentClassDecl.attributes.contains(attributeNamed: "objcMembers") {
-            return parent?.functionOrVariableModifiers?.containsPrivateOrFileprivate() == true ? nil : objcAttribute
+           parentClassDecl.attributes.contains(attributeNamed: "objcMembers")
+        {
+            return parent?.functionOrVariableModifiers?.containsPrivateOrFileprivate() == true
+                ? nil : objcAttribute
         }
-        if let parentExtensionDecl = parent?.parent?.parent?.parent?.parent?.as(ExtensionDeclSyntax.self),
-           parentExtensionDecl.attributes.objCAttribute != nil {
+        if let parentExtensionDecl = parent?.parent?.parent?.parent?.parent?.as(
+            ExtensionDeclSyntax.self
+        ),
+            parentExtensionDecl.attributes.objCAttribute != nil
+        {
             return objcAttribute
         }
         return nil
@@ -112,12 +118,17 @@ extension RedundantObjcAttributeRule {
         let nsCharSet = CharacterSet.whitespacesAndNewlines.bridge()
         let nsContent = file.contents.bridge()
         while nsCharSet
-                .characterIsMember(nsContent.character(at: violationRange.upperBound + whitespaceAndNewlineOffset)) {
+            .characterIsMember(
+                nsContent.character(at: violationRange.upperBound + whitespaceAndNewlineOffset)
+            )
+        {
             whitespaceAndNewlineOffset += 1
         }
 
-        let withTrailingWhitespaceAndNewlineRange = NSRange(location: violationRange.location,
-                                                            length: violationRange.length + whitespaceAndNewlineOffset)
+        let withTrailingWhitespaceAndNewlineRange = NSRange(
+            location: violationRange.location,
+            length: violationRange.length + whitespaceAndNewlineOffset
+        )
         return (withTrailingWhitespaceAndNewlineRange, "")
     }
 }

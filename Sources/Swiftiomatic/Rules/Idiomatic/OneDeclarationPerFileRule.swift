@@ -9,32 +9,44 @@ struct OneDeclarationPerFileRule: Rule {
         description: "Only a single declaration is allowed in a file",
         kind: .idiomatic,
         nonTriggeringExamples: [
-            Example("""
-                    actor Foo {}
-                    """),
-            Example("""
-                    class Foo {}
-                    extension Foo {}
-                    """),
-            Example("""
-                    struct S {
-                        struct N {}
-                    }
-                    """),
+            Example(
+                """
+                actor Foo {}
+                """
+            ),
+            Example(
+                """
+                class Foo {}
+                extension Foo {}
+                """
+            ),
+            Example(
+                """
+                struct S {
+                    struct N {}
+                }
+                """
+            ),
         ],
         triggeringExamples: [
-            Example("""
-                    class Foo {}
-                    ↓class Bar {}
-                    """),
-            Example("""
-                    protocol Foo {}
-                    ↓enum Bar {}
-                    """),
-            Example("""
-                    struct Foo {}
-                    ↓struct Bar {}
-                    """),
+            Example(
+                """
+                class Foo {}
+                ↓class Bar {}
+                """
+            ),
+            Example(
+                """
+                protocol Foo {}
+                ↓enum Bar {}
+                """
+            ),
+            Example(
+                """
+                struct Foo {}
+                ↓struct Bar {}
+                """
+            ),
         ]
     )
 }
@@ -50,7 +62,9 @@ extension OneDeclarationPerFileRule: OptInRule {}
 private extension OneDeclarationPerFileRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private var declarationVisited = false
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] { .all }
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
         override func visitPost(_ node: ActorDeclSyntax) {
             appendViolationIfNeeded(node: node.actorKeyword)

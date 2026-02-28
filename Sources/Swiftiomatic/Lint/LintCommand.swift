@@ -3,7 +3,7 @@ import Foundation
 
 struct Lint: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        abstract: "Lint Swift source files using SwiftLint rules",
+        abstract: "Lint Swift source files using SwiftLint rules"
     )
 
     @Argument(help: "Paths to lint (files or directories)")
@@ -12,7 +12,11 @@ struct Lint: AsyncParsableCommand {
     @Option(name: .long, parsing: .upToNextOption, help: "Configuration files (.swiftlint.yml)")
     var config: [String] = []
 
-    @Option(name: .long, help: "Reporter: xcode, json, csv, checkstyle, codeclimate, emoji, github-actions-logging, gitlabJUnit, html, junit, markdown, relative-path, sonarqube, summary")
+    @Option(
+        name: .long,
+        help:
+        "Reporter: xcode, json, csv, checkstyle, codeclimate, emoji, github-actions-logging, gitlabJUnit, html, junit, markdown, relative-path, sonarqube, summary"
+    )
     var reporter: String?
 
     @Flag(name: .long, help: "Treat warnings as errors")

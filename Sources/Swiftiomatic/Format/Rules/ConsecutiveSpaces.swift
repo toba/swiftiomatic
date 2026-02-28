@@ -30,8 +30,9 @@ extension FormatRule {
                 switch prevToken {
                 case .linebreak, .startOfScope("/*"), .startOfScope("//"), .commentBody:
                     return
-                case .endOfScope("*/") where nextToken == .startOfScope("/*") &&
-                    formatter.currentScope(at: i) == .startOfScope("/*"):
+                case .endOfScope("*/")
+                    where nextToken == .startOfScope("/*")
+                    && formatter.currentScope(at: i) == .startOfScope("/*"):
                     return
                 default:
                     break

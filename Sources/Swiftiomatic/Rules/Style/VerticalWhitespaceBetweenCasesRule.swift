@@ -9,10 +9,13 @@ struct VerticalWhitespaceBetweenCasesRule: Rule {
         name: "Vertical Whitespace Between Cases",
         description: "Include a single empty line between switch cases",
         kind: .style,
-        nonTriggeringExamples: VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples.values.sorted() +
-                               VerticalWhitespaceBetweenCasesRuleExamples.nonTriggeringExamples,
-        triggeringExamples: Array(VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples.keys.sorted()),
-        corrections: VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples.removingViolationMarkers()
+        nonTriggeringExamples: VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
+            .values.sorted() + VerticalWhitespaceBetweenCasesRuleExamples.nonTriggeringExamples,
+        triggeringExamples: Array(
+            VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples.keys.sorted()
+        ),
+        corrections: VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
+            .removingViolationMarkers()
     )
 }
 
@@ -37,7 +40,8 @@ private extension VerticalWhitespaceBetweenCasesRule {
 
                 if let currentCase = element.as(SwitchCaseSyntax.self),
                    let nextCase = nextElement.as(SwitchCaseSyntax.self),
-                   shouldSkipCasePair(currentCase, nextCase) {
+                   shouldSkipCasePair(currentCase, nextCase)
+                {
                     continue
                 }
 
@@ -45,14 +49,19 @@ private extension VerticalWhitespaceBetweenCasesRule {
                 let startLineOfNextCase = locationConverter.location(
                     for: nextElement.positionAfterSkippingLeadingTrivia
                 ).line
-                let emptyLinesAfter = countConsecutiveEmptyLines(startingFrom: endLineOfCurrentCase + 1, by: 1)
-                let emptyLinesBefore = countConsecutiveEmptyLines(startingFrom: startLineOfNextCase - 1, by: -1)
+                let emptyLinesAfter = countConsecutiveEmptyLines(
+                    startingFrom: endLineOfCurrentCase + 1, by: 1
+                )
+                let emptyLinesBefore = countConsecutiveEmptyLines(
+                    startingFrom: startLineOfNextCase - 1, by: -1
+                )
 
                 switch configuration.separation {
                 case .always:
                     guard emptyLinesAfter == 0, emptyLinesBefore == 0,
-                        let commentIndentation = nextElement.leadingTrivia.indentation(isOnNewline: true),
-                        let caseIndentation = nextElement.indentation.indentation(isOnNewline: true) else {
+                          let commentIndentation = nextElement.leadingTrivia.indentation(isOnNewline: true),
+                          let caseIndentation = nextElement.indentation.indentation(isOnNewline: true)
+                    else {
                         continue
                     }
 
@@ -66,41 +75,53 @@ private extension VerticalWhitespaceBetweenCasesRule {
                                 by: -caseIndentation.sourceLength.utf8Length
                             )
                         }
-                    violations.append(.init(
-                        position: nextElement.positionAfterSkippingLeadingTrivia,
-                        correction: .init(
-                            start: correctionPosition,
-                            end: correctionPosition,
-                            replacement: "\n"
+                    violations.append(
+                        .init(
+                            position: nextElement.positionAfterSkippingLeadingTrivia,
+                            correction: .init(
+                                start: correctionPosition,
+                                end: correctionPosition,
+                                replacement: "\n"
+                            )
                         )
-                    ))
+                    )
                 case .never:
                     if emptyLinesAfter > 0 {
-                        violations.append(.init(
-                            position: nextElement.positionAfterSkippingLeadingTrivia,
-                            correction: .init(
-                                start: locationConverter
-                                    .position(ofLine: endLineOfCurrentCase + 1, column: 1)
-                                    .advanced(by: -1),
-                                end: locationConverter
-                                    .position(ofLine: endLineOfCurrentCase + 1, column: 1)
-                                    .advanced(by: emptyLinesAfter - 1),
-                                replacement: ""
+                        violations.append(
+                            .init(
+                                position: nextElement.positionAfterSkippingLeadingTrivia,
+                                correction: .init(
+                                    start:
+                                    locationConverter
+                                        .position(ofLine: endLineOfCurrentCase + 1, column: 1)
+                                        .advanced(by: -1),
+                                    end:
+                                    locationConverter
+                                        .position(ofLine: endLineOfCurrentCase + 1, column: 1)
+                                        .advanced(by: emptyLinesAfter - 1),
+                                    replacement: ""
+                                )
                             )
-                        ))
+                        )
                     }
-                    if emptyLinesBefore > 0, emptyLinesAfter == 0 || nextElement.leadingTrivia.containsComments {
-                        violations.append(.init(
-                            position: nextElement.positionAfterSkippingLeadingTrivia,
-                            correction: .init(
-                                start: locationConverter
-                                    .position(ofLine: startLineOfNextCase - 1, column: 1)
-                                    .advanced(by: -emptyLinesBefore),
-                                end: locationConverter
-                                    .position(ofLine: startLineOfNextCase - 1, column: 1),
-                                replacement: ""
+                    if emptyLinesBefore > 0,
+                       emptyLinesAfter == 0 || nextElement.leadingTrivia.containsComments
+                    {
+                        violations.append(
+                            .init(
+                                position: nextElement.positionAfterSkippingLeadingTrivia,
+                                correction: .init(
+                                    start:
+                                    locationConverter
+                                        .position(ofLine: startLineOfNextCase - 1, column: 1)
+                                        .advanced(by: -emptyLinesBefore),
+                                    end:
+                                    locationConverter
+                                        .position(ofLine: startLineOfNextCase - 1, column: 1),
+                                    replacement: ""
+                                )
                             )
-                        ))
+                        )
                     }
                 }
             }
@@ -116,7 +137,9 @@ private extension VerticalWhitespaceBetweenCasesRule {
             return count
         }
 
-        private func shouldSkipCasePair(_ currentCase: SwitchCaseSyntax, _ nextCase: SwitchCaseSyntax) -> Bool {
+        private func shouldSkipCasePair(_ currentCase: SwitchCaseSyntax, _ nextCase: SwitchCaseSyntax)
+            -> Bool
+        {
             let currentCaseStartLine = locationConverter.location(
                 for: currentCase.positionAfterSkippingLeadingTrivia
             ).line

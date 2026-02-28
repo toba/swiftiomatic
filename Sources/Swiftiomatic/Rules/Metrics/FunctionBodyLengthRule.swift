@@ -12,18 +12,23 @@ struct FunctionBodyLengthRule: Rule {
         kind: .metrics,
         nonTriggeringExamples: [
             Example("func f() {}", configuration: Self.testConfig),
-            Example("""
+            Example(
+                """
                 func f() {
                     let x = 0
                 }
-                """, configuration: Self.testConfig),
-            Example("""
+                """, configuration: Self.testConfig
+            ),
+            Example(
+                """
                 func f() {
                     let x = 0
                     let y = 1
                 }
-                """, configuration: Self.testConfig),
-            Example("""
+                """, configuration: Self.testConfig
+            ),
+            Example(
+                """
                 func f() {
                     let x = 0
                     // comments
@@ -31,73 +36,86 @@ struct FunctionBodyLengthRule: Rule {
                     // be
                     // ignored
                 }
-                """, configuration: Self.testConfig),
-            Example("""
-                func f() {
-                    let x = 0
-                    // empty lines will be ignored
+                """, configuration: Self.testConfig
+            ),
+            Example(
+                """
+                    func f() {
+                        let x = 0
+                        // empty lines will be ignored
 
 
-                }
-            """, configuration: Self.testConfig),
+                    }
+                """, configuration: Self.testConfig
+            ),
         ],
 
         triggeringExamples: [
-            Example("""
+            Example(
+                """
                 ↓func f() {
                     let x = 0
                     let y = 1
                     let z = 2
                 }
-                """, configuration: Self.testConfig),
-            Example("""
-            class C {
-                ↓deinit {
-                    let x = 0
-                    let y = 1
-                    let z = 2
+                """, configuration: Self.testConfig
+            ),
+            Example(
+                """
+                class C {
+                    ↓deinit {
+                        let x = 0
+                        let y = 1
+                        let z = 2
+                    }
                 }
-            }
-            """, configuration: Self.testConfig),
-            Example("""
-            class C {
-                ↓init() {
-                    let x = 0
-                    let y = 1
-                    let z = 2
+                """, configuration: Self.testConfig
+            ),
+            Example(
+                """
+                class C {
+                    ↓init() {
+                        let x = 0
+                        let y = 1
+                        let z = 2
+                    }
                 }
-            }
-            """, configuration: Self.testConfig),
-            Example("""
-            class C {
-                ↓subscript() -> Int {
-                    let x = 0
-                    let y = 1
-                    return x + y
-                }
-            }
-            """, configuration: Self.testConfig),
-            Example("""
-            struct S {
-                subscript() -> Int {
-                    ↓get {
+                """, configuration: Self.testConfig
+            ),
+            Example(
+                """
+                class C {
+                    ↓subscript() -> Int {
                         let x = 0
                         let y = 1
                         return x + y
                     }
-                    ↓set {
-                        let x = 0
-                        let y = 1
-                        let z = 2
-                    }
-                    ↓willSet {
-                        let x = 0
-                        let y = 1
-                        let z = 2
+                }
+                """, configuration: Self.testConfig
+            ),
+            Example(
+                """
+                struct S {
+                    subscript() -> Int {
+                        ↓get {
+                            let x = 0
+                            let y = 1
+                            return x + y
+                        }
+                        ↓set {
+                            let x = 0
+                            let y = 1
+                            let z = 2
+                        }
+                        ↓willSet {
+                            let x = 0
+                            let y = 1
+                            let z = 2
+                        }
                     }
                 }
-            }
-            """, configuration: Self.testConfig),
+                """, configuration: Self.testConfig
+            ),
         ]
     )
 }

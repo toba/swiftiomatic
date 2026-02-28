@@ -1,18 +1,23 @@
 import Foundation // swiftlint:disable:this file_name
 import SourceKittenFramework
 
-internal extension Configuration.FileGraph {
+extension Configuration.FileGraph {
     // MARK: - FilePath
+
     enum FilePath: Hashable {
         case promised(urlString: String)
         case existing(path: String)
     }
 
     // MARK: - Vertex
+
     class Vertex: Hashable {
-        internal let originalRemoteString: String?
-        internal var originatesFromRemote: Bool { originalRemoteString != nil }
-        internal var rootDirectory: String {
+        let originalRemoteString: String?
+        var originatesFromRemote: Bool {
+            originalRemoteString != nil
+        }
+
+        var rootDirectory: String {
             if !originatesFromRemote, case let .existing(path) = filePath {
                 // This is a local file, so its root directory is its containing directory
                 return path.bridge().deletingLastPathComponent
@@ -40,14 +45,17 @@ internal extension Configuration.FileGraph {
             self.isInitialVertex = isInitialVertex
         }
 
-        init(originalRemoteString: String?, originalRootDirectory: String, filePath: FilePath, isInitialVertex: Bool) {
+        init(
+            originalRemoteString: String?, originalRootDirectory: String, filePath: FilePath,
+            isInitialVertex: Bool
+        ) {
             self.originalRemoteString = originalRemoteString
             self.originalRootDirectory = originalRootDirectory
             self.filePath = filePath
             self.isInitialVertex = isInitialVertex
         }
 
-        internal func copy(withNewRootDirectory rootDirectory: String) -> Vertex {
+        func copy(withNewRootDirectory rootDirectory: String) -> Vertex {
             let vertex = Vertex(
                 originalRemoteString: originalRemoteString,
                 originalRootDirectory: rootDirectory,
@@ -58,7 +66,7 @@ internal extension Configuration.FileGraph {
             return vertex
         }
 
-        internal func build(
+        func build(
             remoteConfigTimeout: TimeInterval,
             remoteConfigTimeoutIfCached: TimeInterval
         ) throws {
@@ -81,13 +89,13 @@ internal extension Configuration.FileGraph {
             return try String(contentsOfFile: path, encoding: .utf8)
         }
 
-        internal static func == (lhs: Vertex, rhs: Vertex) -> Bool {
+        static func == (lhs: Vertex, rhs: Vertex) -> Bool {
             lhs.filePath == rhs.filePath
                 && lhs.originalRemoteString == rhs.originalRemoteString
                 && lhs.rootDirectory == rhs.rootDirectory
         }
 
-        internal func hash(into hasher: inout Hasher) {
+        func hash(into hasher: inout Hasher) {
             hasher.combine(filePath)
             hasher.combine(originalRemoteString)
             hasher.combine(originalRootDirectory)
@@ -95,6 +103,7 @@ internal extension Configuration.FileGraph {
     }
 
     // MARK: - Edge
+
     struct Edge: Hashable {
         // swiftlint:disable implicitly_unwrapped_optional
         var parent: Vertex!
@@ -103,6 +112,7 @@ internal extension Configuration.FileGraph {
     }
 
     // MARK: - EdgeType
+
     enum EdgeType: Hashable {
         case childConfig
         case parentConfig

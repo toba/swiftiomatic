@@ -6,7 +6,8 @@ struct ComputedAccessorsOrderRule: Rule {
     static let description = RuleDescription(
         identifier: "computed_accessors_order",
         name: "Computed Accessors Order",
-        description: "Getter and setters in computed properties and subscripts should be in a consistent order.",
+        description:
+        "Getter and setters in computed properties and subscripts should be in a consistent order.",
         kind: .style,
         nonTriggeringExamples: ComputedAccessorsOrderRuleExamples.nonTriggeringExamples,
         triggeringExamples: ComputedAccessorsOrderRuleExamples.triggeringExamples
@@ -19,20 +20,22 @@ extension ComputedAccessorsOrderRule: SwiftSyntaxRule {
     }
 }
 
-private extension ComputedAccessorsOrderRule {
+extension ComputedAccessorsOrderRule {
     private enum ViolationKind {
         case `subscript`, property
     }
 
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: AccessorBlockSyntax) {
             guard let firstAccessor = node.accessorsList.first,
                   let order = node.order,
-                  order != configuration.order else {
+                  order != configuration.order
+            else {
                 return
             }
 
-            let kind: ViolationKind = node.parent?.as(SubscriptDeclSyntax.self) == nil ? .property : .subscript
+            let kind: ViolationKind =
+                node.parent?.as(SubscriptDeclSyntax.self) == nil ? .property : .subscript
             violations.append(
                 ReasonedRuleViolation(
                     position: firstAccessor.positionAfterSkippingLeadingTrivia,

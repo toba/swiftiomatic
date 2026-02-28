@@ -20,6 +20,7 @@ extension UnusedClosureParameterRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -46,7 +47,8 @@ private extension UnusedClosureParameterRule {
         override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
             guard node.namedParameters.isNotEmpty,
                   let signature = node.signature,
-                  let input = signature.parameterClause else {
+                  let input = signature.parameterClause
+            else {
                 return super.visit(node)
             }
 
@@ -62,7 +64,8 @@ private extension UnusedClosureParameterRule {
                     let name = param.firstName
                     guard name.tokenKind != .wildcard,
                           !referencedIdentifiers.contains(name.text.removingDollarsAndBackticks),
-                          let index = params.parameters.index(of: param) else {
+                          let index = params.parameters.index(of: param)
+                    else {
                         continue
                     }
                     numberOfCorrections += 1
@@ -80,7 +83,8 @@ private extension UnusedClosureParameterRule {
             for param in params {
                 guard param.name.tokenKind != .wildcard,
                       !referencedIdentifiers.contains(param.name.text.removingDollarsAndBackticks),
-                      let index = params.index(of: param) else {
+                      let index = params.index(of: param)
+                else {
                     continue
                 }
                 numberOfCorrections += 1

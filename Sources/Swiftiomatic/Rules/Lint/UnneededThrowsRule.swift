@@ -6,7 +6,8 @@ struct UnneededThrowsRule: Rule {
     static let description = RuleDescription(
         identifier: "unneeded_throws_rethrows",
         name: "Unneeded (Re)Throws Keyword",
-        description: "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`.",
+        description:
+        "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`.",
         kind: .lint,
         nonTriggeringExamples: UnneededThrowsRuleExamples.nonTriggeringExamples,
         triggeringExamples: UnneededThrowsRuleExamples.triggeringExamples,
@@ -109,7 +110,9 @@ private extension UnneededThrowsRule {
         }
 
         override func visitPost(_ node: ClosureExprSyntax) {
-            if node.signature?.effectSpecifiers?.throwsClause != nil, let closedScope = scopes.closeScope() {
+            if node.signature?.effectSpecifiers?.throwsClause != nil,
+               let closedScope = scopes.closeScope()
+            {
                 validate(
                     scope: closedScope,
                     construct: "body of this closure"
@@ -206,9 +209,11 @@ private extension FunctionCallExprSyntax {
     }
 }
 
-private extension PatternBindingSyntax {
+extension PatternBindingSyntax {
     private var hasNonReferenceInitializer: Bool {
-        ![.declReferenceExpr, .memberAccessExpr, .functionCallExpr, nil].contains(initializer?.value.kind)
+        ![.declReferenceExpr, .memberAccessExpr, .functionCallExpr, nil].contains(
+            initializer?.value.kind
+        )
     }
 
     private var isLetBinding: Bool {
@@ -217,7 +222,7 @@ private extension PatternBindingSyntax {
             .bindingSpecifier.tokenKind == .keyword(.let)
     }
 
-    var lintableFunctionType: FunctionTypeSyntax? {
+    fileprivate var lintableFunctionType: FunctionTypeSyntax? {
         guard isLetBinding, hasNonReferenceInitializer else {
             return nil
         }
@@ -228,13 +233,13 @@ private extension PatternBindingSyntax {
 private extension TypeSyntax {
     var baseFunctionTypeSyntax: FunctionTypeSyntax? {
         switch Syntax(self).as(SyntaxEnum.self) {
-        case .functionType(let function):
+        case let .functionType(function):
             function
-        case .optionalType(let optional):
+        case let .optionalType(optional):
             optional.wrappedType.baseFunctionTypeSyntax
-        case .attributedType(let attributed):
+        case let .attributedType(attributed):
             attributed.baseType.baseFunctionTypeSyntax
-        case .tupleType(let tuple):
+        case let .tupleType(tuple):
             // It's hard to check for the necessity of throws keyword in multi-element tuples.
             if tuple.elements.count == 1 {
                 tuple.elements.first?.type.baseFunctionTypeSyntax

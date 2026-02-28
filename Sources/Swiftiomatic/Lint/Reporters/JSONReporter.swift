@@ -10,7 +10,10 @@ struct JSONReporter: Reporter {
     static let description = "Reports violations as a JSON array."
 
     static func generateReport(_ violations: [StyleViolation]) -> String {
-        toJSON(violations.map(dictionary(for:)), options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+        toJSON(
+            violations.map(dictionary(for:)),
+            options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        )
     }
 
     // MARK: - Private

@@ -6,165 +6,208 @@ struct OptionalEnumCaseMatchingRule: Rule {
     static let description = RuleDescription(
         identifier: "optional_enum_case_matching",
         name: "Optional Enum Case Match",
-        description: "Matching an enum case against an optional enum without '?' is supported on Swift 5.1 and above",
+        description:
+        "Matching an enum case against an optional enum without '?' is supported on Swift 5.1 and above",
         kind: .style,
         minSwiftVersion: .fiveDotOne,
         nonTriggeringExamples: [
-            Example("""
-            switch foo {
-             case .bar: break
-             case .baz: break
-             default: break
-            }
-            """),
-            Example("""
-            switch foo {
-             case (.bar, .baz): break
-             case (.bar, _): break
-             case (_, .baz): break
-             default: break
-            }
-            """),
-            Example("""
-            switch (x, y) {
-            case (.c, _?):
-                break
-            case (.c, nil):
-                break
-            case (_, _):
-                break
-            }
-            """),
+            Example(
+                """
+                switch foo {
+                 case .bar: break
+                 case .baz: break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch foo {
+                 case (.bar, .baz): break
+                 case (.bar, _): break
+                 case (_, .baz): break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch (x, y) {
+                case (.c, _?):
+                    break
+                case (.c, nil):
+                    break
+                case (_, _):
+                    break
+                }
+                """
+            ),
             // https://github.com/apple/swift/issues/61817
-            Example("""
-            switch bool {
-            case true?:
-              break
-            case false?:
-              break
-            case .none:
-              break
-            }
-            """, excludeFromDocumentation: true),
+            Example(
+                """
+                switch bool {
+                case true?:
+                  break
+                case false?:
+                  break
+                case .none:
+                  break
+                }
+                """, excludeFromDocumentation: true
+            ),
         ],
         triggeringExamples: [
-            Example("""
-            switch foo {
-             case .bar↓?: break
-             case .baz: break
-             default: break
-            }
-            """),
-            Example("""
-            switch foo {
-             case Foo.bar↓?: break
-             case .baz: break
-             default: break
-            }
-            """),
-            Example("""
-            switch foo {
-             case .bar↓?, .baz↓?: break
-             default: break
-            }
-            """),
-            Example("""
-            switch foo {
-             case .bar↓? where x > 1: break
-             case .baz: break
-             default: break
-            }
-            """),
-            Example("""
-            switch foo {
-             case (.bar↓?, .baz↓?): break
-             case (.bar↓?, _): break
-             case (_, .bar↓?): break
-             default: break
-            }
-            """),
+            Example(
+                """
+                switch foo {
+                 case .bar↓?: break
+                 case .baz: break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch foo {
+                 case Foo.bar↓?: break
+                 case .baz: break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch foo {
+                 case .bar↓?, .baz↓?: break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch foo {
+                 case .bar↓? where x > 1: break
+                 case .baz: break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch foo {
+                 case (.bar↓?, .baz↓?): break
+                 case (.bar↓?, _): break
+                 case (_, .bar↓?): break
+                 default: break
+                }
+                """
+            ),
         ],
         corrections: [
-            Example("""
-            switch foo {
-             case .bar↓?: break
-             case .baz: break
-             default: break
-            }
-            """): Example("""
-            switch foo {
-             case .bar: break
-             case .baz: break
-             default: break
-            }
-            """),
-            Example("""
-            switch foo {
-             case Foo.bar↓?: break
-             case .baz: break
-             default: break
-            }
-            """): Example("""
-            switch foo {
-             case Foo.bar: break
-             case .baz: break
-             default: break
-            }
-            """),
-            Example("""
-            switch foo {
-             case .bar↓?, .baz↓?: break
-             default: break
-            }
-            """): Example("""
-            switch foo {
-             case .bar, .baz: break
-             default: break
-            }
-            """),
-            Example("""
-            switch foo {
-             case .bar↓? where x > 1: break
-             case .baz: break
-             default: break
-            }
-            """): Example("""
-            switch foo {
-             case .bar where x > 1: break
-             case .baz: break
-             default: break
-            }
-            """),
-            Example("""
-            switch foo {
-             case (.bar↓?, .baz↓?): break
-             case (.bar↓?, _): break
-             case (_, .bar↓?): break
-             default: break
-            }
-            """): Example("""
-            switch foo {
-             case (.bar, .baz): break
-             case (.bar, _): break
-             case (_, .bar): break
-             default: break
-            }
-            """),
-            Example("""
-            switch foo {
-             case (true?, false?): break
-             case (true?, _): break
-             case (_, false?): break
-             default: break
-            }
-            """): Example("""
-            switch foo {
-             case (true?, false?): break
-             case (true?, _): break
-             case (_, false?): break
-             default: break
-            }
-            """),
+            Example(
+                """
+                switch foo {
+                 case .bar↓?: break
+                 case .baz: break
+                 default: break
+                }
+                """
+            ): Example(
+                """
+                switch foo {
+                 case .bar: break
+                 case .baz: break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch foo {
+                 case Foo.bar↓?: break
+                 case .baz: break
+                 default: break
+                }
+                """
+            ): Example(
+                """
+                switch foo {
+                 case Foo.bar: break
+                 case .baz: break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch foo {
+                 case .bar↓?, .baz↓?: break
+                 default: break
+                }
+                """
+            ): Example(
+                """
+                switch foo {
+                 case .bar, .baz: break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch foo {
+                 case .bar↓? where x > 1: break
+                 case .baz: break
+                 default: break
+                }
+                """
+            ): Example(
+                """
+                switch foo {
+                 case .bar where x > 1: break
+                 case .baz: break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch foo {
+                 case (.bar↓?, .baz↓?): break
+                 case (.bar↓?, _): break
+                 case (_, .bar↓?): break
+                 default: break
+                }
+                """
+            ): Example(
+                """
+                switch foo {
+                 case (.bar, .baz): break
+                 case (.bar, _): break
+                 case (_, .bar): break
+                 default: break
+                }
+                """
+            ),
+            Example(
+                """
+                switch foo {
+                 case (true?, false?): break
+                 case (true?, _): break
+                 case (_, false?): break
+                 default: break
+                }
+                """
+            ): Example(
+                """
+                switch foo {
+                 case (true?, false?): break
+                 case (true?, _): break
+                 case (_, false?): break
+                 default: break
+                }
+                """
+            ),
         ]
     )
 }
@@ -173,6 +216,7 @@ extension OptionalEnumCaseMatchingRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
+
     func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
@@ -188,12 +232,15 @@ private extension OptionalEnumCaseMatchingRule {
             }
 
             if let expression = pattern.expression.as(OptionalChainingExprSyntax.self),
-               !expression.expression.isDiscardAssignmentOrBoolLiteral {
+               !expression.expression.isDiscardAssignmentOrBoolLiteral
+            {
                 violations.append(expression.questionMark.positionAfterSkippingLeadingTrivia)
             } else if let expression = pattern.expression.as(TupleExprSyntax.self) {
                 let optionalChainingExpressions = expression.optionalChainingExpressions()
                 for optionalChainingExpression in optionalChainingExpressions {
-                    violations.append(optionalChainingExpression.questionMark.positionAfterSkippingLeadingTrivia)
+                    violations.append(
+                        optionalChainingExpression.questionMark.positionAfterSkippingLeadingTrivia
+                    )
                 }
             }
         }
@@ -203,19 +250,24 @@ private extension OptionalEnumCaseMatchingRule {
         override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
             guard
                 let pattern = node.pattern.as(ExpressionPatternSyntax.self),
-                pattern.expression.is(OptionalChainingExprSyntax.self) || pattern.expression.is(TupleExprSyntax.self)
+                pattern.expression.is(OptionalChainingExprSyntax.self)
+                || pattern.expression.is(TupleExprSyntax.self)
             else {
                 return super.visit(node)
             }
 
             if let expression = pattern.expression.as(OptionalChainingExprSyntax.self),
-               !expression.expression.isDiscardAssignmentOrBoolLiteral {
+               !expression.expression.isDiscardAssignmentOrBoolLiteral
+            {
                 numberOfCorrections += 1
                 let newPattern = PatternSyntax(pattern.with(\.expression, expression.expression))
-                let newNode = node
-                    .with(\.pattern, newPattern)
-                    .with(\.whereClause,
-                          node.whereClause?.with(\.leadingTrivia, expression.questionMark.trailingTrivia))
+                let newNode =
+                    node
+                        .with(\.pattern, newPattern)
+                        .with(
+                            \.whereClause,
+                            node.whereClause?.with(\.leadingTrivia, expression.questionMark.trailingTrivia)
+                        )
                 return super.visit(newNode)
             }
             if let expression = pattern.expression.as(TupleExprSyntax.self) {

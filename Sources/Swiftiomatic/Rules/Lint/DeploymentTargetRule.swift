@@ -8,8 +8,8 @@ struct DeploymentTargetRule: Rule {
     static let description = RuleDescription(
         identifier: "deployment_target",
         name: "Deployment Target",
-        description: "Availability checks or attributes shouldn't be using older versions " +
-                     "that are satisfied by the deployment target.",
+        description: "Availability checks or attributes shouldn't be using older versions "
+            + "that are satisfied by the deployment target.",
         kind: .lint,
         nonTriggeringExamples: DeploymentTargetRuleExamples.nonTriggeringExamples,
         triggeringExamples: DeploymentTargetRuleExamples.triggeringExamples
@@ -64,7 +64,8 @@ private extension DeploymentTargetRule {
                 guard let entry = arg.argument.as(PlatformVersionSyntax.self),
                       let versionString = entry.version?.description,
                       case let platform = entry.platform,
-                      let reason = reason(platform: platform, version: versionString, violationType: .attribute) else {
+                      let reason = reason(platform: platform, version: versionString, violationType: .attribute)
+                else {
                     continue
                 }
 
@@ -91,8 +92,11 @@ private extension DeploymentTargetRule {
             for elem in node.availabilityArguments {
                 guard let restriction = elem.argument.as(PlatformVersionSyntax.self),
                       let versionString = restriction.version?.description,
-                      let reason = reason(platform: restriction.platform, version: versionString,
-                                          violationType: violationType) else {
+                      let reason = reason(
+                          platform: restriction.platform, version: versionString,
+                          violationType: violationType
+                      )
+                else {
                     continue
                 }
 
@@ -105,16 +109,20 @@ private extension DeploymentTargetRule {
             }
         }
 
-        private func reason(platform: TokenSyntax,
-                            version versionString: String,
-                            violationType: AvailabilityType) -> String? {
+        private func reason(
+            platform: TokenSyntax,
+            version versionString: String,
+            violationType: AvailabilityType
+        ) -> String? {
             guard let platform = DeploymentTargetConfiguration.Platform(rawValue: platform.text),
-                  let minVersion = platformToConfiguredMinVersion[platform.rawValue] else {
+                  let minVersion = platformToConfiguredMinVersion[platform.rawValue]
+            else {
                 return nil
             }
 
             guard let version = try? Version(platform: platform, value: versionString),
-                  version <= minVersion else {
+                  version <= minVersion
+            else {
                 return nil
             }
 
