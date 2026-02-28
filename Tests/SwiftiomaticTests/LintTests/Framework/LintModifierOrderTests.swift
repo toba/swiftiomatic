@@ -1,7 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ModifierOrderTests {
+@Suite struct LintModifierOrderTests {
     init() { RuleRegistry.registerAllRulesOnce() }
 
     @Test func attributeTypeMethod() {

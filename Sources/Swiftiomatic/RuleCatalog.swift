@@ -1,34 +1,41 @@
-/// Unified read-only facade that queries both Lint and Format rule registries.
+/// Unified read-only facade that queries Suggest, Lint, and Format rule registries.
 enum RuleCatalog {
     struct Entry: Codable, Sendable {
         let id: String
         let name: String
-        let subsystem: Subsystem
-        let kind: String
+        let engine: RuleEngine
+        let category: String
+        let description: String
         let isEnabled: Bool
         let isDeprecated: Bool
+        let canAutoFix: Bool
+        let isCrossFile: Bool
+        let requiresSourceKit: Bool
     }
 
-    enum Subsystem: String, Codable, Sendable {
-        case suggest
-        case lint
-        case format
-    }
-
-    /// All rules across all subsystems, sorted by subsystem then id.
+    /// All rules across all engines, sorted by engine then id.
     static func allRules() -> [Entry] {
         var entries: [Entry] = []
 
         // Suggest categories (deep analysis via Analyzer + TypeResolver)
         for category in Category.allCases {
+            let crossFile = category == .agentReview // dead symbols + structural duplication
+            let needsSourceKit = [
+                Category.typedThrows, .concurrencyModernization,
+                .namingHeuristics, .anyElimination,
+            ].contains(category)
             entries.append(
                 Entry(
                     id: category.rawValue,
                     name: category.displayName,
-                    subsystem: .suggest,
-                    kind: "suggest",
+                    engine: .suggest,
+                    category: category.rawValue,
+                    description: category.displayName,
                     isEnabled: true,
-                    isDeprecated: false
+                    isDeprecated: false,
+                    canAutoFix: false,
+                    isCrossFile: crossFile,
+                    requiresSourceKit: needsSourceKit
                 )
             )
         }
@@ -39,15 +46,21 @@ enum RuleCatalog {
         for (identifier, ruleType) in ruleList.list {
             let desc = ruleType.description
             let isOptIn = ruleType is any OptInRule.Type
+            let isCorrectableType = ruleType is any CorrectableRule.Type
+            let isAnalyzer = ruleType is any AnalyzerRule.Type
             entries.append(
                 Entry(
                     id: identifier,
                     name: desc.name,
-                    subsystem: .lint,
-                    kind: desc.kind.rawValue,
+                    engine: .lint,
+                    category: desc.kind.rawValue,
+                    description: desc.description,
                     isEnabled: !isOptIn,
                     isDeprecated: !desc.deprecatedAliases.isEmpty
-                        && desc.deprecatedAliases.contains(identifier)
+                        && desc.deprecatedAliases.contains(identifier),
+                    canAutoFix: isCorrectableType,
+                    isCrossFile: false,
+                    requiresSourceKit: isAnalyzer
                 )
             )
         }
@@ -59,14 +72,28 @@ enum RuleCatalog {
                 Entry(
                     id: rule.name,
                     name: rule.name,
-                    subsystem: .format,
-                    kind: "format",
+                    engine: .format,
+                    category: "format",
+                    description: stripMarkdown(rule.help),
                     isEnabled: defaultRuleNames.contains(rule.name),
-                    isDeprecated: rule.isDeprecated
+                    isDeprecated: rule.isDeprecated,
+                    canAutoFix: true,
+                    isCrossFile: false,
+                    requiresSourceKit: false
                 )
             )
         }
 
-        return entries.sorted { ($0.subsystem.rawValue, $0.id) < ($1.subsystem.rawValue, $1.id) }
+        return entries.sorted { ($0.engine.rawValue, $0.id) < ($1.engine.rawValue, $1.id) }
+    }
+
+    /// Look up a single rule by ID across all engines.
+    static func rule(id: String) -> Entry? {
+        allRules().first { $0.id == id }
+    }
+
+    /// All rules for a specific engine.
+    static func rules(for engine: RuleEngine) -> [Entry] {
+        allRules().filter { $0.engine == engine }
     }
 }

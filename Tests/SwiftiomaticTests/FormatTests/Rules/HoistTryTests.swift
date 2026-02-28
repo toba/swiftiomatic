@@ -116,21 +116,21 @@ import Testing
         testFormatting(for: input, output, rule: .hoistTry, exclude: [.hoistAwait])
     }
 
-    @Test func noHoistTryInside#expect() {
+    @Test func noHoistTryInsideExpect() {
         let input = """
         #expect(!(try foo()))
         """
         testFormatting(for: input, rule: .hoistTry)
     }
 
-    @Test func noHoistTryInsidetry #require() {
+    @Test func noHoistTryInsideRequire() {
         let input = """
         let foo = try #require(try expression() as? Bar, message, file: file, line: line)
         """
         testFormatting(for: input, rule: .hoistTry)
     }
 
-    @Test func noMergeTrysInside#expect() {
+    @Test func noMergeTrysInsideExpect() {
         let input = """
         #expect(try foo() == try bar())
         """

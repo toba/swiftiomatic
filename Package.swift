@@ -48,14 +48,26 @@ let package = Package(
     ),
     .target(
       name: "DyldWarningWorkaround",
-      path: "Sources/Lint/DyldWarningWorkaround"
+      path: "Sources/DyldWarningWorkaround"
     ),
     .testTarget(
       name: "SwiftiomaticTests",
-      dependencies: ["Swiftiomatic"],
-      resources: [.copy("Fixtures")],
+      dependencies: [
+        "Swiftiomatic",
+        .product(name: "SourceKittenFramework", package: "SourceKitten"),
+        .product(name: "SwiftParser", package: "swift-syntax"),
+        .product(name: "SwiftSyntax", package: "swift-syntax"),
+      ],
+      resources: [
+        .copy("Fixtures"),
+        .copy("LintTests/BuiltInRules/BuiltInRulesResources"),
+        .copy("LintTests/Core/CoreResources"),
+        .copy("LintTests/Framework/FrameworkResources"),
+        .copy("FormatTests/BadConfig"),
+      ],
       swiftSettings: [
-        .swiftLanguageMode(.v6)
+        .swiftLanguageMode(.v6),
+        .enableExperimentalFeature("ApproachableConcurrency"),
       ]
     ),
   ]

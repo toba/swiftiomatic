@@ -6,7 +6,7 @@ struct SwiftiomaticCLI: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "AST-based Swift code analysis and formatting",
         version: "0.1.0",
-        subcommands: [Scan.self, FormatCommand.self, Lint.self, ListChecks.self],
+        subcommands: [Scan.self, FormatCommand.self, Lint.self, ListRules.self],
         defaultSubcommand: Scan.self
     )
 }
@@ -105,7 +105,8 @@ struct Scan: AsyncParsableCommand {
             case .text:
                 print(TextFormatter.format(findings))
             case .json:
-                try print(JSONFormatter.format(findings))
+                let diagnostics = findings.map { $0.toDiagnostic() }
+                try print(DiagnosticFormatter.formatJSON(diagnostics))
             }
         }
 
@@ -115,17 +116,50 @@ struct Scan: AsyncParsableCommand {
     }
 }
 
-// MARK: - List Checks
+// MARK: - List Rules
 
-struct ListChecks: ParsableCommand {
+struct ListRules: ParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "list-checks",
-        abstract: "List available analysis categories"
+        commandName: "list-rules",
+        abstract: "List available rules across all engines",
+        aliases: ["list-checks"]
     )
 
+    @Option(name: .long, help: "Filter by engine: suggest, lint, or format")
+    var engine: RuleEngine?
+
+    @Option(name: .long, help: "Output format: text or json")
+    var format: OutputFormat = .text
+
     func run() {
-        for category in Category.allCases {
-            print("§\(category.sectionNumber) \(category.rawValue) — \(category.displayName)")
+        let entries: [RuleCatalog.Entry]
+        if let engine {
+            entries = RuleCatalog.rules(for: engine)
+        } else {
+            entries = RuleCatalog.allRules()
+        }
+
+        switch format {
+        case .text:
+            for entry in entries {
+                var flags: [String] = []
+                if entry.isDeprecated { flags.append("deprecated") }
+                if !entry.isEnabled { flags.append("disabled") }
+                if entry.canAutoFix { flags.append("autofix") }
+                if entry.isCrossFile { flags.append("cross-file") }
+                if entry.requiresSourceKit { flags.append("sourcekit") }
+                let suffix = flags.isEmpty ? "" : " (\(flags.joined(separator: ", ")))"
+                print("[\(entry.engine.rawValue)] \(entry.id) — \(entry.name)\(suffix)")
+            }
+            print("\nTotal: \(entries.count) rules")
+        case .json:
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            if let data = try? encoder.encode(entries),
+               let json = String(data: data, encoding: .utf8)
+            {
+                print(json)
+            }
         }
     }
 }
@@ -139,3 +173,4 @@ enum OutputFormat: String, ExpressibleByArgument {
 
 extension Confidence: ExpressibleByArgument {}
 extension Severity: ExpressibleByArgument {}
+extension RuleEngine: ExpressibleByArgument {}

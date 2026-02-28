@@ -1,10 +1,11 @@
 ---
 # jks-pj3
 title: Unify all rule definitions under Sources/Swiftiomatic/Rules/
-status: ready
+status: scrapped
 type: feature
+priority: normal
 created_at: 2026-02-28T02:24:12Z
-updated_at: 2026-02-28T02:24:12Z
+updated_at: 2026-02-28T02:53:54Z
 ---
 
 Move ALL rule definitions into `Sources/Swiftiomatic/Rules/`. The Format/, Lint/, and Suggest/ directories become pure orchestration — they decide what to do with rule output (JSON for agents, Xcode format, auto-fix files), but don't define rules.

@@ -62,6 +62,6 @@ import Testing
 
     private func violations(_ example: Example, configuration: Any? = nil) -> [StyleViolation] {
         let config = makeConfig(configuration, FunctionBodyLengthRule.identifier)!
-        return violations(example, config: config)
+        return SwiftiomaticTests.violations(example, config: config)
     }
 }

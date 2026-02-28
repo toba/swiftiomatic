@@ -699,7 +699,7 @@ import Testing
         #expect(formatter.isAccessorKeyword(at: 34))
     }
 
-    @Test func init() {
+    @Test func initAccessor() {
         let formatter = Formatter(tokenize("""
         var foo: Int {
             init {}
@@ -3137,4 +3137,3 @@ import Testing
         #expect(properties.count == 3, "Should find 3 properties: sizeClass, actionBar, title")
     }
 }
-)

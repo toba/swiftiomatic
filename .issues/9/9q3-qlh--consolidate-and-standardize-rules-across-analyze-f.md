@@ -1,11 +1,11 @@
 ---
 # 9q3-qlh
 title: Consolidate and standardize rules across analyze, format, and lint
-status: draft
+status: scrapped
 type: epic
 priority: normal
 created_at: 2026-02-27T23:31:20Z
-updated_at: 2026-02-28T00:05:23Z
+updated_at: 2026-02-28T02:54:02Z
 ---
 
 Three subsystems (analyze/scan, format, lint) have grown independently with overlapping rules, separate config systems, and no deduplication. This epic covers unifying them into a coherent whole.

@@ -35,4 +35,21 @@ struct Finding: Codable, Sendable, Comparable {
         if lhs.line != rhs.line { return lhs.line < rhs.line }
         return lhs.column < rhs.column
     }
+
+    /// Convert to the unified Diagnostic output type.
+    func toDiagnostic() -> Diagnostic {
+        Diagnostic(
+            ruleID: category.rawValue,
+            engine: .suggest,
+            category: category.rawValue,
+            severity: severity == .high ? .error : .warning,
+            confidence: confidence,
+            file: file,
+            line: line,
+            column: column,
+            message: message,
+            suggestion: suggestion,
+            canAutoFix: false
+        )
+    }
 }

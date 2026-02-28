@@ -28,6 +28,14 @@ struct FormatEngine: Sendable {
         return try applyRules(rules, to: tokens, with: options, trackChanges: true, range: nil).changes
     }
 
+    /// Lint Swift source code with a file path for diagnostic output.
+    func lint(_ source: String, filePath: String) throws -> [Formatter.Change] {
+        var opts = options
+        opts.fileInfo = FileInfo(filePath: filePath)
+        let tokens = tokenize(source)
+        return try applyRules(rules, to: tokens, with: opts, trackChanges: true, range: nil).changes
+    }
+
     /// Build an engine with specific rule overrides.
     init(
         enable: [String] = [],

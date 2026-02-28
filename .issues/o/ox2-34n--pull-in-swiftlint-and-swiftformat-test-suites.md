@@ -1,10 +1,11 @@
 ---
 # ox2-34n
 title: Pull in SwiftLint and SwiftFormat test suites
-status: in-progress
+status: completed
 type: task
+priority: normal
 created_at: 2026-02-28T02:21:42Z
-updated_at: 2026-02-28T02:21:42Z
+updated_at: 2026-02-28T02:53:40Z
 ---
 
 ## Tasks

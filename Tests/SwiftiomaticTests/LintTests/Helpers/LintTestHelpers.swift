@@ -225,7 +225,7 @@ private func render(locations: [Location], in contents: String) -> String {
 // MARK: - Correction Assertion
 
 private func assertCorrection(_ before: Example, expected: Example, config: Configuration,
-                              sourceLocation: SourceLocation = #_sourceLocation) {
+                              sourceLocation: Testing.SourceLocation = #_sourceLocation) {
     let (cleanedBefore, _) = cleanedContentsAndMarkerOffsets(from: before.code)
     let file = SwiftLintFile.testFile(withContents: cleanedBefore, persistToDisk: true)
     let includeCompilerArguments = config.rules.contains(where: { $0 is any AnalyzerRule })
@@ -339,7 +339,7 @@ func verifyRule(_ ruleDescription: RuleDescription,
                 skipDisableCommandTests: Bool = false,
                 testMultiByteOffsets: Bool = true,
                 testShebang: Bool = true,
-                sourceLocation: SourceLocation = #_sourceLocation) {
+                sourceLocation: Testing.SourceLocation = #_sourceLocation) {
     _ = _ensureRegistered
 
     guard ruleDescription.minSwiftVersion <= .current else {
@@ -392,7 +392,7 @@ func verifyLint(_ ruleDescription: RuleDescription,
                 disableCommands: [String] = [],
                 testMultiByteOffsets: Bool = true,
                 testShebang: Bool = true,
-                sourceLocation: SourceLocation = #_sourceLocation) {
+                sourceLocation: Testing.SourceLocation = #_sourceLocation) {
     func verify(triggers: [Example], nonTriggers: [Example]) {
         verifyExamples(triggers: triggers, nonTriggers: nonTriggers, configuration: config,
                        requiresFileOnDisk: ruleDescription.requiresFileOnDisk)
@@ -564,7 +564,7 @@ private func verifyExamples(triggers: [Example],
 
 func checkError<T: Error & Equatable>(
     _ error: T,
-    sourceLocation: SourceLocation = #_sourceLocation,
+    sourceLocation: Testing.SourceLocation = #_sourceLocation,
     closure: () throws -> Void
 ) {
     do {

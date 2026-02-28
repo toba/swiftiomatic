@@ -95,4 +95,24 @@ struct StyleViolation: CustomStringConvertible, Codable, Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(description)
     }
+
+    /// Convert to the unified Diagnostic output type.
+    func toDiagnostic() -> Diagnostic {
+        let ruleType = RuleRegistry.shared.rule(forID: ruleIdentifier)
+        let ruleKind = ruleType?.description.kind.rawValue ?? "lint"
+        let isCorrectableType = ruleType.map { $0 is any CorrectableRule.Type } ?? false
+        return Diagnostic(
+            ruleID: ruleIdentifier,
+            engine: .lint,
+            category: ruleKind,
+            severity: severity == .error ? .error : .warning,
+            confidence: confidence ?? .high,
+            file: location.file ?? "<unknown>",
+            line: location.line ?? 0,
+            column: location.character ?? 0,
+            message: reason,
+            suggestion: suggestion,
+            canAutoFix: isCorrectableType
+        )
+    }
 }

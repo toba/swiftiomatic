@@ -1385,7 +1385,7 @@ import Testing
         testFormatting(for: input, rule: .unusedArguments)
     }
 
-    @Test func 1850() {
+    @Test func issue1850() {
         let input = """
         init(a3: A42.ID) {
             a15.a22
