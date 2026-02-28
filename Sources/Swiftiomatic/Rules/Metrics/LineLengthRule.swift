@@ -37,7 +37,7 @@ struct LineLengthRule: Rule {
 }
 
 extension LineLengthRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -148,7 +148,7 @@ private extension LineLengthRule {
                             + "currently it has \(length) characters"
                     // Position the violation at the start of the line, consistent with original behavior
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: locationConverter
                                 .position(ofLine: line.index, column: 1), // Start of the line
                             reason: reason,
@@ -276,18 +276,6 @@ private final class RegexLiteralVisitor: SyntaxVisitor {
 private extension String {
     var strippingURLs: String {
         let range = fullNSRange
-        // Workaround for Linux until NSDataDetector is available
-        #if os(Linux) || os(Windows)
-        // Regex pattern from http://daringfireball.net/2010/07/improved_regex_for_matching_urls
-        let pattern =
-            "(?i)\\b((?:[a-z][\\w-]+:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)"
-                + "(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*"
-                + "\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"
-        let urlRegex = regex(pattern)
-        return urlRegex.stringByReplacingMatches(
-            in: self, options: [], range: range, withTemplate: "",
-        )
-        #else
         let types = NSTextCheckingResult.CheckingType.link.rawValue
         guard let urlDetector = try? NSDataDetector(types: types) else {
             return self
@@ -295,6 +283,5 @@ private extension String {
         return urlDetector.stringByReplacingMatches(
             in: self, options: [], range: range, withTemplate: "",
         )
-        #endif
     }
 }

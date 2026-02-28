@@ -16,11 +16,11 @@ struct ImplicitOptionalInitializationRule: Rule {
 }
 
 extension ImplicitOptionalInitializationRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
@@ -38,7 +38,7 @@ private extension ImplicitOptionalInitializationRule {
             guard let violationPosition = node.violationPosition(for: configuration.style)
             else { return }
 
-            violations.append(ReasonedRuleViolation(position: violationPosition, reason: reason))
+            violations.append(SyntaxViolation(position: violationPosition, reason: reason))
         }
     }
 }

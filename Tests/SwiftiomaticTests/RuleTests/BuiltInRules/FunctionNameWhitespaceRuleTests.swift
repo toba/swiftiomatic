@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct FunctionNameWhitespaceRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct FunctionNameWhitespaceRuleTests {
     private typealias GenericSpacingType = FunctionNameWhitespaceConfiguration.GenericSpacingType
 
     private static let operatorWhitespaceViolationReason =
@@ -17,31 +15,31 @@ import Testing
         _ source: String,
         configuration: [String: String]? = nil,
         expected: String,
-    ) {
+    ) async {
         let example =
             configuration == nil
                 ? Example(source)
                 : Example(source, configuration: configuration!)
 
-        let violations = ruleViolations(example)
+        let violations = await ruleViolations(example)
         #expect(violations.first?.reason == expected)
     }
 
     private func ruleViolations(
         _ example: Example,
         ruleConfiguration: Any? = nil,
-    ) -> [StyleViolation] {
+    ) async -> [RuleViolation] {
         guard let config = makeConfig(ruleConfiguration, FunctionNameWhitespaceRule.identifier)
         else {
             return []
         }
-        return violations(example, config: config)
+        return await violations(example, config: config)
     }
 
     // MARK: - func keyword spacing
 
-    @Test func spaceBetweenFuncKeywordAndName_ShouldReportReason() {
-        assertReason(
+    @Test func spaceBetweenFuncKeywordAndName_ShouldReportReason() async {
+        await assertReason(
             "func  abc(lhs: Int, rhs: Int) -> Int {}",
             expected: Self.funcKeywordSpacingViolationReason,
         )
@@ -49,37 +47,37 @@ import Testing
 
     // MARK: - operator functions
 
-    @Test func operatorFunctionSpacing_WhenNoSpaceAfterOperator_ShouldReportOperatorMessage() {
-        assertReason(
+    @Test func operatorFunctionSpacing_WhenNoSpaceAfterOperator_ShouldReportOperatorMessage() async {
+        await assertReason(
             "func <|(lhs: Int, rhs: Int) -> Int {}",
             expected: Self.operatorWhitespaceViolationReason,
         )
     }
 
-    @Test func operatorFunctionSpacing_WhenTooManySpacesAfterOperator_ShouldReportOperatorMessage() {
-        assertReason(
+    @Test func operatorFunctionSpacing_WhenTooManySpacesAfterOperator_ShouldReportOperatorMessage() async {
+        await assertReason(
             "func <|  (lhs: Int, rhs: Int) -> Int {}",
             expected: Self.operatorWhitespaceViolationReason,
         )
     }
 
-    @Test func operatorFunctionWithGenerics_WhenNoSpaceAfterOperator_ShouldReportOperatorMessage() {
-        assertReason(
+    @Test func operatorFunctionWithGenerics_WhenNoSpaceAfterOperator_ShouldReportOperatorMessage() async {
+        await assertReason(
             "func <|<<A>(lhs: A, rhs: A) -> A {}",
             expected: Self.operatorWhitespaceViolationReason,
         )
     }
 
-    @Test func operatorFunctionSpacing_WhenMultipleViolations_ShouldReportOperatorMessage() {
-        assertReason(
+    @Test func operatorFunctionSpacing_WhenMultipleViolations_ShouldReportOperatorMessage() async {
+        await assertReason(
             "func  <| (lhs: Int, rhs: Int) -> Int {}",
             expected: Self.operatorWhitespaceViolationReason,
         )
     }
 
     @Test func operatorFunctionSpacing_WhenTooManySpacesBeforeAndAfter_ShouldReportOperatorMessage(
-    ) {
-        assertReason(
+    ) async {
+        await assertReason(
             "func  <|  (lhs: Int, rhs: Int) -> Int {}",
             expected: Self.operatorWhitespaceViolationReason,
         )
@@ -87,16 +85,16 @@ import Testing
 
     // MARK: - generic_spacing = no_space
 
-    @Test func spaceAfterFuncName_WhenNoSpaceConfigured_ShouldReport() {
-        assertReason(
+    @Test func spaceAfterFuncName_WhenNoSpaceConfigured_ShouldReport() async {
+        await assertReason(
             "func abc (lhs: Int) {}",
             configuration: ["generic_spacing": "no_space"],
             expected: GenericSpacingType.noSpace.beforeGenericViolationReason,
         )
     }
 
-    @Test func spaceAfterGeneric_WhenNoSpaceConfigured_ShouldReport() {
-        assertReason(
+    @Test func spaceAfterGeneric_WhenNoSpaceConfigured_ShouldReport() async {
+        await assertReason(
             "func abc<T> (lhs: Int) {}",
             configuration: ["generic_spacing": "no_space"],
             expected: GenericSpacingType.noSpace.afterGenericViolationReason,
@@ -105,16 +103,16 @@ import Testing
 
     // MARK: - generic_spacing = leading_space
 
-    @Test func spaceAfterFuncName_WhenLeadingSpaceConfigured_ShouldReport() {
-        assertReason(
+    @Test func spaceAfterFuncName_WhenLeadingSpaceConfigured_ShouldReport() async {
+        await assertReason(
             "func abc(lhs: Int) {}",
             configuration: ["generic_spacing": "leading_space"],
             expected: GenericSpacingType.leadingSpace.beforeGenericViolationReason,
         )
     }
 
-    @Test func spaceBeforeGeneric_WhenLeadingSpaceConfigured_ShouldReport() {
-        assertReason(
+    @Test func spaceBeforeGeneric_WhenLeadingSpaceConfigured_ShouldReport() async {
+        await assertReason(
             "func abc<T>(lhs: Int) {}",
             configuration: ["generic_spacing": "leading_space"],
             expected: GenericSpacingType.leadingSpace.beforeGenericViolationReason,
@@ -123,16 +121,16 @@ import Testing
 
     // MARK: - generic_spacing = trailing_space
 
-    @Test func spaceAfterFuncName_WhenTrailingSpaceConfigured_ShouldReport() {
-        assertReason(
+    @Test func spaceAfterFuncName_WhenTrailingSpaceConfigured_ShouldReport() async {
+        await assertReason(
             "func abc (lhs: Int) {}",
             configuration: ["generic_spacing": "trailing_space"],
             expected: GenericSpacingType.trailingSpace.beforeGenericViolationReason,
         )
     }
 
-    @Test func spaceAfterGeneric_WhenTrailingSpaceConfigured_ShouldReport() {
-        assertReason(
+    @Test func spaceAfterGeneric_WhenTrailingSpaceConfigured_ShouldReport() async {
+        await assertReason(
             "func abc<T>(lhs: Int) {}",
             configuration: ["generic_spacing": "trailing_space"],
             expected: GenericSpacingType.trailingSpace.afterGenericViolationReason,
@@ -141,24 +139,24 @@ import Testing
 
     // MARK: - generic_spacing = leading_trailing_space
 
-    @Test func spaceAfterFuncName_WhenLeadingTrailingSpaceConfigured_ShouldReport() {
-        assertReason(
+    @Test func spaceAfterFuncName_WhenLeadingTrailingSpaceConfigured_ShouldReport() async {
+        await assertReason(
             "func abc(lhs: Int) {}",
             configuration: ["generic_spacing": "leading_trailing_space"],
             expected: GenericSpacingType.leadingTrailingSpace.beforeGenericViolationReason,
         )
     }
 
-    @Test func spaceBeforeGeneric_WhenLeadingTrailingSpaceConfigured_ShouldReport() {
-        assertReason(
+    @Test func spaceBeforeGeneric_WhenLeadingTrailingSpaceConfigured_ShouldReport() async {
+        await assertReason(
             "func abc<T>(lhs: Int) {}",
             configuration: ["generic_spacing": "leading_trailing_space"],
             expected: GenericSpacingType.leadingTrailingSpace.beforeGenericViolationReason,
         )
     }
 
-    @Test func spaceAfterGeneric_WhenLeadingTrailingSpaceConfigured_ShouldReport() {
-        assertReason(
+    @Test func spaceAfterGeneric_WhenLeadingTrailingSpaceConfigured_ShouldReport() async {
+        await assertReason(
             "func abc <T>(lhs: Int) {}",
             configuration: ["generic_spacing": "leading_trailing_space"],
             expected: GenericSpacingType.leadingTrailingSpace.afterGenericViolationReason,

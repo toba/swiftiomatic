@@ -102,7 +102,7 @@ struct UnusedEnumeratedRule: Rule {
 }
 
 extension UnusedEnumeratedRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -257,7 +257,7 @@ extension UnusedEnumeratedRule {
             }
 
             if let position, let reason {
-                violations.append(ReasonedRuleViolation(position: position, reason: reason))
+                violations.append(SyntaxViolation(position: position, reason: reason))
             }
         }
     }

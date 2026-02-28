@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct LintOrAnalyzeOptionsTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct LintOrAnalyzeOptionsTests {
     private typealias Leniency = LintOrAnalyzeOptions.Leniency
 
     @Test func leniency() {

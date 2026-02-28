@@ -3,20 +3,18 @@ import Testing
 
 private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
 
-@Suite struct FileHeaderRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    private func validate(fileName: String, using configuration: Any) throws -> [StyleViolation] {
-        let file = SwiftLintFile(path: fixturesDirectory.stringByAppendingPathComponent(fileName))!
+@Suite(.rulesRegistered) struct FileHeaderRuleTests {
+    private func validate(fileName: String, using configuration: Any) throws -> [RuleViolation] {
+        let file = SwiftSource(path: fixturesDirectory.stringByAppendingPathComponent(fileName))!
         let rule = try FileHeaderRule(configuration: configuration)
         return rule.validate(file: file)
     }
 
-    @Test func fileHeaderWithDefaultConfiguration() {
-        verifyRule(FileHeaderRule.description, skipCommentTests: true)
+    @Test func fileHeaderWithDefaultConfiguration() async {
+        await verifyRule(FileHeaderRule.description, skipCommentTests: true)
     }
 
-    @Test func fileHeaderWithRequiredString() {
+    @Test func fileHeaderWithRequiredString() async {
         let nonTriggeringExamples = [
             Example("// **Header"),
             Example("//\n// **Header"),
@@ -32,7 +30,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["required_string": "**Header"],
             stringDoesNotViolate: false, skipCommentTests: true,
             skipDisableCommandTests: true, testMultiByteOffsets: false,
@@ -40,7 +38,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
         )
     }
 
-    @Test func fileHeaderWithRequiredPattern() {
+    @Test func fileHeaderWithRequiredPattern() async {
         let nonTriggeringExamples = [
             Example("// Copyright © 2016 Realm"),
             Example("//\n// Copyright © 2016 Realm)"),
@@ -54,14 +52,14 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["required_pattern": "\\d{4} Realm"],
             stringDoesNotViolate: false, skipCommentTests: true,
             testMultiByteOffsets: false,
         )
     }
 
-    @Test func fileHeaderWithRequiredStringAndURLComment() {
+    @Test func fileHeaderWithRequiredStringAndURLComment() async {
         let nonTriggeringExamples = [
             Example("/* Check this url: https://github.com/realm/SwiftLint */"),
         ]
@@ -73,14 +71,14 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
             .with(triggeringExamples: triggeringExamples)
 
         let config = ["required_string": "/* Check this url: https://github.com/realm/SwiftLint */"]
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: config,
             stringDoesNotViolate: false, skipCommentTests: true,
             testMultiByteOffsets: false,
         )
     }
 
-    @Test func fileHeaderWithForbiddenString() {
+    @Test func fileHeaderWithForbiddenString() async {
         let nonTriggeringExamples = [
             Example("// Copyright\n"),
             Example("let foo = \"**All rights reserved.\""),
@@ -96,13 +94,13 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["forbidden_string": "**All rights reserved."],
             skipCommentTests: true,
         )
     }
 
-    @Test func fileHeaderWithForbiddenPattern() {
+    @Test func fileHeaderWithForbiddenPattern() async {
         let nonTriggeringExamples = [
             Example("// Copyright\n"),
             Example("// FileHeaderRuleTests.m\n"),
@@ -118,13 +116,13 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["forbidden_pattern": "\\s\\w+\\.swift"],
             skipCommentTests: true,
         )
     }
 
-    @Test func fileHeaderWithForbiddenPatternAndDocComment() {
+    @Test func fileHeaderWithForbiddenPatternAndDocComment() async {
         let nonTriggeringExamples = [
             Example("/// This is great tool with tests.\nclass GreatTool {}"),
             Example("class GreatTool {}"),
@@ -137,7 +135,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["forbidden_pattern": "[tT]ests"],
             skipCommentTests: true, testMultiByteOffsets: false,
         )
@@ -228,7 +226,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
         #expect(try validate(fileName: "FileNameMissing.swift", using: configuration).count == 1)
     }
 
-    @Test func simplePattern() {
+    @Test func simplePattern() async {
         let description = FileHeaderRule.description
             .with(nonTriggeringExamples: [
                 Example(
@@ -252,7 +250,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
             ])
             .with(triggeringExamples: [])
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: [
                 "required_pattern": #"""
@@ -265,7 +263,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
         )
     }
 
-    @Test func pattern() {
+    @Test func pattern() async {
         let description = FileHeaderRule.description
             .with(nonTriggeringExamples: [
                 Example(
@@ -284,7 +282,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
             ])
             .with(triggeringExamples: [])
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: [
                 "required_pattern": #"""

@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct SwiftVersionTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct SwiftVersionTests {
     @Test func detectSwiftVersion() {
         #if compiler(>=6.3.0)
         let version = "6.3.0"

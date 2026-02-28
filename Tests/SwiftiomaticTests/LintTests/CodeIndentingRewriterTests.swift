@@ -3,9 +3,7 @@ import SwiftParser
 import SwiftSyntax
 @testable import Swiftiomatic
 
-@Suite struct CodeIndentingRewriterTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct CodeIndentingRewriterTests {
     @Test func indentDefaultStyle() {
         assertIndent(
             source: """

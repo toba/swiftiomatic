@@ -88,7 +88,7 @@ struct UnavailableConditionRule: Rule {
 }
 
 extension UnavailableConditionRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -113,7 +113,7 @@ private extension UnavailableConditionRule {
             }
 
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: availability.positionAfterSkippingLeadingTrivia,
                     reason: reason(for: availability),
                 ),

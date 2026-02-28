@@ -12,14 +12,12 @@ private struct MockSeverityLevelsRule: Rule {
 
     var configuration = SeverityLevelsConfiguration<Self>(warning: 12, error: nil)
 
-    func validate(file _: SwiftLintFile) -> [StyleViolation] {
+    func validate(file _: SwiftSource) -> [RuleViolation] {
         []
     }
 }
 
-@Suite struct SeverityLevelsConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct SeverityLevelsConfigurationTests {
     @Test func initializationWithWarningOnly() {
         let config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 10)
         #expect(config.warning == 10)

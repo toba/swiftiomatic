@@ -3,13 +3,11 @@ import Testing
 
 private let fixturesDirectory = "\(TestResources.path())/FileNameNoSpaceRuleFixtures"
 
-@Suite struct FileNameNoSpaceRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct FileNameNoSpaceRuleTests {
     private func validate(fileName: String, excludedOverride: [String]? = nil) throws
-        -> [StyleViolation]
+        -> [RuleViolation]
     {
-        let file = SwiftLintFile(path: fixturesDirectory.stringByAppendingPathComponent(fileName))!
+        let file = SwiftSource(path: fixturesDirectory.stringByAppendingPathComponent(fileName))!
         let rule: FileNameNoSpaceRule
         if let excluded = excludedOverride {
             rule = try FileNameNoSpaceRule(configuration: ["excluded": excluded])

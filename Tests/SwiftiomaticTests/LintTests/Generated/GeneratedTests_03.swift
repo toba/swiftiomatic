@@ -1,202 +1,152 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct EmptyParametersRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(EmptyParametersRule.description)
+@Suite(.rulesRegistered) struct EmptyParametersRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(EmptyParametersRule.description)
     }
 }
 
-@Suite struct EmptyParenthesesWithTrailingClosureRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(EmptyParenthesesWithTrailingClosureRule.description)
+@Suite(.rulesRegistered) struct EmptyParenthesesWithTrailingClosureRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(EmptyParenthesesWithTrailingClosureRule.description)
     }
 }
 
-@Suite struct EmptyStringRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(EmptyStringRule.description)
+@Suite(.rulesRegistered) struct EmptyStringRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(EmptyStringRule.description)
     }
 }
 
-@Suite struct EmptyXCTestMethodRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(EmptyXCTestMethodRule.description)
+@Suite(.rulesRegistered) struct EmptyXCTestMethodRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(EmptyXCTestMethodRule.description)
     }
 }
 
-@Suite struct EnumCaseAssociatedValuesLengthRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(EnumCaseAssociatedValuesLengthRule.description)
+@Suite(.rulesRegistered) struct EnumCaseAssociatedValuesLengthRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(EnumCaseAssociatedValuesLengthRule.description)
     }
 }
 
-@Suite struct ExpiringTodoRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ExpiringTodoRule.description)
+@Suite(.rulesRegistered) struct ExpiringTodoRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ExpiringTodoRule.description)
     }
 }
 
-@Suite struct ExplicitACLRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ExplicitACLRule.description)
+@Suite(.rulesRegistered) struct ExplicitACLRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ExplicitACLRule.description)
     }
 }
 
-@Suite struct ExplicitEnumRawValueRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ExplicitEnumRawValueRule.description)
+@Suite(.rulesRegistered) struct ExplicitEnumRawValueRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ExplicitEnumRawValueRule.description)
     }
 }
 
-@Suite struct ExplicitInitRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ExplicitInitRule.description)
+@Suite(.rulesRegistered) struct ExplicitInitRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ExplicitInitRule.description)
     }
 }
 
-@Suite struct ExplicitSelfRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ExplicitSelfRule.description)
+@Suite(.rulesRegistered) struct ExplicitSelfRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ExplicitSelfRule.description)
     }
 }
 
-@Suite struct ExplicitTopLevelACLRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ExplicitTopLevelACLRule.description)
+@Suite(.rulesRegistered) struct ExplicitTopLevelACLRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ExplicitTopLevelACLRule.description)
     }
 }
 
-@Suite struct ExplicitTypeInterfaceRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ExplicitTypeInterfaceRule.description)
+@Suite(.rulesRegistered) struct ExplicitTypeInterfaceRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ExplicitTypeInterfaceRule.description)
     }
 }
 
-@Suite struct ExtensionAccessModifierRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ExtensionAccessModifierRule.description)
+@Suite(.rulesRegistered) struct ExtensionAccessModifierRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ExtensionAccessModifierRule.description)
     }
 }
 
-@Suite struct FallthroughRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FallthroughRule.description)
+@Suite(.rulesRegistered) struct FallthroughRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FallthroughRule.description)
     }
 }
 
-@Suite struct FatalErrorMessageRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FatalErrorMessageRule.description)
+@Suite(.rulesRegistered) struct FatalErrorMessageRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FatalErrorMessageRule.description)
     }
 }
 
-@Suite struct FileHeaderRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FileHeaderRule.description)
+@Suite(.rulesRegistered) struct FileHeaderRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FileHeaderRule.description)
     }
 }
 
-@Suite struct FileLengthRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FileLengthRule.description)
+@Suite(.rulesRegistered) struct FileLengthRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FileLengthRule.description)
     }
 }
 
-@Suite struct FileNameNoSpaceRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FileNameNoSpaceRule.description)
+@Suite(.rulesRegistered) struct FileNameNoSpaceRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FileNameNoSpaceRule.description)
     }
 }
 
-@Suite struct FileNameRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FileNameRule.description)
+@Suite(.rulesRegistered) struct FileNameRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FileNameRule.description)
     }
 }
 
-@Suite struct FileTypesOrderRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FileTypesOrderRule.description)
+@Suite(.rulesRegistered) struct FileTypesOrderRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FileTypesOrderRule.description)
     }
 }
 
-@Suite struct FinalTestCaseRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FinalTestCaseRule.description)
+@Suite(.rulesRegistered) struct FinalTestCaseRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FinalTestCaseRule.description)
     }
 }
 
-@Suite struct FirstWhereRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FirstWhereRule.description)
+@Suite(.rulesRegistered) struct FirstWhereRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FirstWhereRule.description)
     }
 }
 
-@Suite struct FlatMapOverMapReduceRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FlatMapOverMapReduceRule.description)
+@Suite(.rulesRegistered) struct FlatMapOverMapReduceRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FlatMapOverMapReduceRule.description)
     }
 }
 
-@Suite struct ForWhereRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ForWhereRule.description)
+@Suite(.rulesRegistered) struct ForWhereRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ForWhereRule.description)
     }
 }
 
-@Suite struct ForceCastRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ForceCastRule.description)
+@Suite(.rulesRegistered) struct ForceCastRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ForceCastRule.description)
     }
 }

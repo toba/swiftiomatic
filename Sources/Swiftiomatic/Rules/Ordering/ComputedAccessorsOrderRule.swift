@@ -15,7 +15,7 @@ struct ComputedAccessorsOrderRule: Rule {
 }
 
 extension ComputedAccessorsOrderRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -37,7 +37,7 @@ extension ComputedAccessorsOrderRule {
             let kind: ViolationKind =
                 node.parent?.as(SubscriptDeclSyntax.self) == nil ? .property : .subscript
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: firstAccessor.positionAfterSkippingLeadingTrivia,
                     reason: reason(for: kind),
                 ),

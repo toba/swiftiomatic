@@ -48,7 +48,7 @@ struct ExpiringTodoRule: Rule {
 }
 
 extension ExpiringTodoRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -57,7 +57,7 @@ extension ExpiringTodoRule: OptInRule {}
 
 private extension ExpiringTodoRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        private lazy var regex: NSRegularExpression = {
+        private lazy var expiryRegex: RegularExpression = {
             let pattern = #"""
             \b(?:TODO|FIXME)(?::|\b)(?:(?!\b(?:TODO|FIXME)(?::|\b)).)*?\#
             \\#(configuration.dateDelimiters.opening)\#
@@ -121,30 +121,23 @@ private extension ExpiringTodoRule {
         }
 
         private func processComment(_ commentText: String, offset: Int) {
-            let matches = regex.matches(
-                in: commentText,
-                options: [],
-                range: commentText.fullNSRange,
-            )
-            let nsStringComment = commentText.bridge()
+            let matches = expiryRegex.matches(in: commentText, range: commentText.fullNSRange)
 
             for match in matches {
-                guard match.numberOfRanges > 1 else { continue }
+                // Get the date capture group (group 1)
+                guard let dateSub = match.output[1].substring else { continue }
 
-                // Get the date capture group (second capture group, index 1)
-                let dateRange = match.range(at: 1)
-                guard dateRange.location != NSNotFound else { continue }
-
-                let matchOffset = offset + dateRange.location
+                let dateNSRange = NSRange(dateSub.startIndex ..< dateSub.endIndex, in: commentText)
+                let matchOffset = offset + dateNSRange.location
                 let matchPosition = AbsolutePosition(utf8Offset: matchOffset)
 
-                let dateString = nsStringComment.substring(with: dateRange)
+                let dateString = String(dateSub)
                     .trimmingCharacters(in: .whitespacesAndNewlines)
 
                 if let violationLevel = getViolationLevel(for: parseDate(dateString: dateString)),
                    let severity = getSeverity(for: violationLevel)
                 {
-                    let violation = ReasonedRuleViolation(
+                    let violation = SyntaxViolation(
                         position: matchPosition,
                         reason: violationLevel.reason,
                         severity: severity,

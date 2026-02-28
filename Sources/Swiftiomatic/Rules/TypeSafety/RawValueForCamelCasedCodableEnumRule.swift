@@ -117,7 +117,7 @@ struct RawValueForCamelCasedCodableEnumRule: Rule {
 }
 
 extension RawValueForCamelCasedCodableEnumRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -142,8 +142,8 @@ private extension RawValueForCamelCasedCodableEnumRule {
         override func visitPost(_ node: EnumCaseElementSyntax) {
             guard node.rawValue == nil,
                   case let name = node.name.text,
-                  !name.isUppercase(),
-                  !name.isLowercase()
+                  !name.isUppercase,
+                  !name.isLowercase
             else {
                 return
             }

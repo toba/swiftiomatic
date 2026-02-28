@@ -17,15 +17,15 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
         triggeringExamples: [],
     )
 
-    func collectInfo(for file: SwiftLintFile) -> [FunctionFingerprint] {
+    func collectInfo(for file: SwiftSource) -> [FunctionFingerprint] {
         guard let path = file.path else { return [] }
         let collector = FingerprintCollector(filePath: path, viewMode: .sourceAccurate)
         collector.walk(file.syntaxTree)
         return collector.fingerprints
     }
 
-    func validate(file: SwiftLintFile, collectedInfo: [SwiftLintFile: [FunctionFingerprint]])
-        -> [StyleViolation]
+    func validate(file: SwiftSource, collectedInfo: [SwiftSource: [FunctionFingerprint]])
+        -> [RuleViolation]
     {
         guard let filePath = file.path else { return [] }
 
@@ -37,7 +37,7 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
             }
         }
 
-        var violations: [StyleViolation] = []
+        var violations: [RuleViolation] = []
 
         for (_, members) in groups where members.count >= 2 {
             let confidence: Confidence = members.count >= 3 ? .high : .medium
@@ -49,7 +49,7 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
                     .joined(separator: ", ")
 
                 violations.append(
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         severity: configuration.severity,
                         location: Location(file: filePath, line: member.line, character: 1),

@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ExplicitInitRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func includeBareInit() {
+@Suite(.rulesRegistered) struct ExplicitInitRuleTests {
+    @Test func includeBareInit() async {
         let nonTriggeringExamples =
             [
                 Example("let foo = Foo()"),
@@ -21,6 +19,6 @@ import Testing
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["include_bare_init": true])
+        await verifyRule(description, ruleConfiguration: ["include_bare_init": true])
     }
 }

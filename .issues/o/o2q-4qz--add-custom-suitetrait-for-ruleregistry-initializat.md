@@ -1,10 +1,11 @@
 ---
 # o2q-4qz
 title: Add custom SuiteTrait for RuleRegistry initialization
-status: ready
+status: in-progress
 type: task
+priority: normal
 created_at: 2026-02-28T16:29:47Z
-updated_at: 2026-02-28T16:29:47Z
+updated_at: 2026-02-28T19:53:23Z
 parent: uac-wbq
 ---
 
@@ -36,3 +37,29 @@ Create a `RulesRegistered` SuiteTrait using `TestScoping` that replaces the iden
 ## Verification
 - `swift test` passes with no regressions
 - No remaining `init() { RuleRegistry.registerAllRulesOnce() }` patterns
+
+
+## Progress & Learnings
+
+### Completed
+- [x] Created `Tests/SwiftiomaticTests/Support/TestTraits.swift` with `RulesRegistered` SuiteTrait + TestScoping
+- [x] Replaced `init() { RuleRegistry.registerAllRulesOnce() }` with `@Suite(.rulesRegistered)` in 110 test files
+- [x] Handled `SwiftLintFileTests` (renamed to `SwiftSourceTests`) which had additional init logic
+- [x] Renamed `SwiftLintFile` → `SwiftSource` references across 24 test files (pre-existing source rename)
+- [x] Propagated `async` through `LintTestHelpers.swift` (6 functions: `violations`, `verifyRule`, `verifyLint`, `verifyCorrections`, `verifyExamples`, `assertCorrection`, `testCorrection`)
+- [x] Fixed 68+ test files with Python script to add `async`/`await` to @Test functions calling async helpers
+- [x] Manually fixed edge cases: `PreferKeyPathRuleTests`, `CollectingRuleTests`, wrapper functions in `TodoRuleTests`, `DeploymentTargetRuleTests`, etc.
+- [x] Fixed pre-existing source issues: duplicate `RuleRegistry.swift`, `ResolvedSyntaxMap` rename, `SwiftSource+Cache` errors
+
+### Key Learnings
+1. **Pre-existing refactoring in working tree**: `Linter.collect(into:)` was made `async`, `SwiftLintFile` renamed to `SwiftSource`, `StyleViolation` renamed to `RuleViolation`. These changes were unstaged but present.
+2. **Async cascade**: Making `collect(into:)` async cascaded through ALL test helpers and into 68+ test files. Any function calling `violations()` or `verifyRule()` must be `async`.
+3. **`#expect` macro limitation**: Cannot use `await` inside `#expect(...)`. Must extract async calls to local variables first.
+4. **`withKnownIssue` limitation**: Its closure isn't async-compatible. Must restructure to guard-return pattern.
+5. **Wrapper functions**: Some test files (TodoRuleTests, DeploymentTargetRuleTests, ExpiringTodoRuleTests, etc.) have private `violations()` wrapper functions that also need `async`.
+6. **`flatMap` with async closures**: `[Example].flatMap { violations($0) }` doesn't work when `violations` is async. Must rewrite as `for` loops.
+
+### Still Needed
+- [ ] Run full test suite to verify no regressions (suite is ~100k lines, needs >10 min)
+- [ ] Consider `FormatGlobalsInitialized` trait (deferred — `_initFormatGlobals` already works fine inside `testFormatting()`)
+- [ ] Verify no `SwiftLintFile` references remain in test files

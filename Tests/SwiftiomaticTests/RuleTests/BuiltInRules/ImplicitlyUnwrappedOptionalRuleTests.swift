@@ -1,16 +1,14 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ImplicitlyUnwrappedOptionalRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ImplicitlyUnwrappedOptionalRuleTests {
     @Test func implicitlyUnwrappedOptionalRuleDefaultConfiguration() {
         let rule = ImplicitlyUnwrappedOptionalRule()
         #expect(rule.configuration.mode == .allExceptIBOutlets)
         #expect(rule.configuration.severity == .warning)
     }
 
-    @Test func implicitlyUnwrappedOptionalRuleWarnsOnOutletsInAllMode() {
+    @Test func implicitlyUnwrappedOptionalRuleWarnsOnOutletsInAllMode() async {
         let baseDescription = ImplicitlyUnwrappedOptionalRule.description
         let triggeringExamples = [
             Example("@IBOutlet private var label: UILabel!"),
@@ -22,13 +20,13 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["mode": "all"],
             commentDoesNotViolate: true, stringDoesNotViolate: true,
         )
     }
 
-    @Test func implicitlyUnwrappedOptionalRuleWarnsOnOutletsInWeakMode() {
+    @Test func implicitlyUnwrappedOptionalRuleWarnsOnOutletsInWeakMode() async {
         let baseDescription = ImplicitlyUnwrappedOptionalRule.description
         let triggeringExamples = [
             Example("private weak var label: ↓UILabel!"),
@@ -47,6 +45,6 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["mode": "weak_except_iboutlets"])
+        await verifyRule(description, ruleConfiguration: ["mode": "weak_except_iboutlets"])
     }
 }

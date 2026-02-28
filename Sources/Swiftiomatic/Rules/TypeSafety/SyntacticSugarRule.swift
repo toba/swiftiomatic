@@ -14,12 +14,12 @@ struct SyntacticSugarRule: CorrectableRule, SourceKitFreeRule {
         corrections: SyntacticSugarRuleExamples.corrections,
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         let visitor = SyntacticSugarRuleVisitor(viewMode: .sourceAccurate)
         return visitor.walk(file: file) { visitor in
             flattenViolations(visitor.violations)
         }.map { violation in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: file, byteOffset: ByteCount(violation.position)),
@@ -34,7 +34,7 @@ struct SyntacticSugarRule: CorrectableRule, SourceKitFreeRule {
         violations.flatMap { [$0] + flattenViolations($0.children) }
     }
 
-    func correct(file: SwiftLintFile) -> Int {
+    func correct(file: SwiftSource) -> Int {
         let visitor = SyntacticSugarRuleVisitor(viewMode: .sourceAccurate)
         return visitor.walk(file: file) { visitor in
             var context = CorrectingContext(rule: self, file: file, contents: file.contents)
@@ -276,7 +276,7 @@ private final class SyntacticSugarRuleVisitor: SyntaxVisitor {
 
 private struct CorrectingContext<R: Rule> {
     let rule: R
-    let file: SwiftLintFile
+    let file: SwiftSource
     var contents: String
     var numberOfCorrections = 0
 

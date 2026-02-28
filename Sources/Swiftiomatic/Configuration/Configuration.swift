@@ -254,9 +254,6 @@ struct Configuration {
     ///                                         is empty, the default `.swiftiomatic.yaml` file will be used.
     /// - parameter enableAllRules:             Enable all available rules.
     /// - parameter cachePath:                  The location of the persisted cache to use whith this configuration.
-    /// - parameter ignoreParentAndChildConfigs:If `true`, child and parent config references will be ignored.
-    /// - parameter mockedNetworkResults:       For testing purposes only. Instead of loading the specified urls,
-    ///                                         the mocked value will be used. Example: ["http://mock.com": "content"]
     /// - parameter useDefaultConfigOnFailure:  If this value is specified, it will override the normal behavior.
     ///                                         This is only intended for tests checking whether invalid configs fail.
     init(
@@ -264,19 +261,9 @@ struct Configuration {
         enableAllRules: Bool = false,
         onlyRule: [String] = [],
         cachePath: String? = nil,
-        ignoreParentAndChildConfigs: Bool = false,
-        mockedNetworkResults: [String: String] = [:],
         useDefaultConfigOnFailure: Bool? =
             nil, // sm:disable:this discouraged_optional_boolean
     ) {
-        // Handle mocked network results if needed
-        Self.FileGraph.FilePath.mockedNetworkResults = mockedNetworkResults
-        defer {
-            if !mockedNetworkResults.isEmpty {
-                Self.FileGraph.FilePath.deleteGitignoreAndSwiftlintCache()
-            }
-        }
-
         // Store whether there are custom configuration files; use default config file name if there are none
         let hasCustomConfigurationFiles: Bool = configurationFiles.isNotEmpty
         let configurationFiles =
@@ -301,21 +288,21 @@ struct Configuration {
             return
         }
 
-        // Try building configuration via the file graph
+        // Try building configuration from config files
         do {
-            var fileGraph = FileGraph(
-                commandLineChildConfigs: configurationFiles,
+            let (resultingConfiguration, loadedFiles) = try FileGraph.resultingConfiguration(
+                configFiles: configurationFiles,
                 rootDirectory: currentWorkingDirectory,
-                ignoreParentAndChildConfigs: ignoreParentAndChildConfigs,
-            )
-            let resultingConfiguration = try fileGraph.resultingConfiguration(
                 enableAllRules: enableAllRules,
                 onlyRule: onlyRule,
                 cachePath: cachePath,
             )
 
             self.init(copying: resultingConfiguration)
-            self.fileGraph = fileGraph
+            self.fileGraph = FileGraph(
+                rootDirectory: currentWorkingDirectory,
+                loadedConfigFiles: loadedFiles,
+            )
             setCached(forIdentifier: cacheIdentifier)
         } catch {
             if case Issue.initialFileNotFound = error, !hasCustomConfigurationFiles {
@@ -439,13 +426,13 @@ struct Configuration {
         relativeTo newBasePath: String, previousBasePath: String,
     ) {
         includedPaths = includedPaths.map {
-            $0.bridge().absolutePathRepresentation(rootDirectory: previousBasePath).path(
+            $0.absolutePathRepresentation(rootDirectory: previousBasePath).path(
                 relativeTo: newBasePath,
             )
         }
 
         excludedPaths = excludedPaths.map {
-            $0.bridge().absolutePathRepresentation(rootDirectory: previousBasePath).path(
+            $0.absolutePathRepresentation(rootDirectory: previousBasePath).path(
                 relativeTo: newBasePath,
             )
         }

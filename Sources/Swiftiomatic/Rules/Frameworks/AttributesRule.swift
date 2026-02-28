@@ -33,7 +33,7 @@ struct AttributesRule: Rule {
 }
 
 extension AttributesRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -67,7 +67,7 @@ private extension AttributesRule {
                     """
 
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: helper.violationPosition,
                             reason: reason,
                             severity: configuration.severityConfiguration.severity,

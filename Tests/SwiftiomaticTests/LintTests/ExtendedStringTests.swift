@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ExtendedStringTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ExtendedStringTests {
     @Test func countOccurrences() {
         #expect("aabbabaaba".countOccurrences(of: "a") == 6)
         #expect("".countOccurrences(of: "a") == 0)

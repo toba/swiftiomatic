@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ObjectLiteralRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ObjectLiteralRuleTests {
     // MARK: - Instance Properties
 
     private let imageLiteralTriggeringExamples = ["", ".init"].flatMap {
@@ -36,7 +34,7 @@ import Testing
 
     // MARK: - Test Methods
 
-    @Test func objectLiteralWithImageLiteral() {
+    @Test func objectLiteralWithImageLiteral() async {
         // Verify ObjectLiteral rule for when image_literal is true.
         let baseDescription = ObjectLiteralRule.description
         let nonTriggeringColorLiteralExamples =
@@ -47,10 +45,10 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: imageLiteralTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["image_literal": true, "color_literal": false])
+        await verifyRule(description, ruleConfiguration: ["image_literal": true, "color_literal": false])
     }
 
-    @Test func objectLiteralWithColorLiteral() {
+    @Test func objectLiteralWithColorLiteral() async {
         // Verify ObjectLiteral rule for when color_literal is true.
         let baseDescription = ObjectLiteralRule.description
         let nonTriggeringImageLiteralExamples =
@@ -61,13 +59,13 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: colorLiteralTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["image_literal": false, "color_literal": true])
+        await verifyRule(description, ruleConfiguration: ["image_literal": false, "color_literal": true])
     }
 
-    @Test func objectLiteralWithImageAndColorLiteral() {
+    @Test func objectLiteralWithImageAndColorLiteral() async {
         // Verify ObjectLiteral rule for when image_literal & color_literal are true.
         let description = ObjectLiteralRule.description
             .with(triggeringExamples: allTriggeringExamples)
-        verifyRule(description, ruleConfiguration: ["image_literal": true, "color_literal": true])
+        await verifyRule(description, ruleConfiguration: ["image_literal": true, "color_literal": true])
     }
 }

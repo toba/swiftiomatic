@@ -35,7 +35,7 @@ struct FileHeaderRule: Rule {
 }
 
 extension FileHeaderRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -58,7 +58,7 @@ private extension FileHeaderRule {
                 if requiredRegex != nil {
                     let violationPosition = node.shebang?.endPosition ?? node.position
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: violationPosition,
                             reason: requiredReason(),
                         ),
@@ -195,7 +195,7 @@ private extension FileHeaderRule {
             )
 
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: violationPosition,
                     reason: forbiddenReason(),
                 ),
@@ -215,7 +215,7 @@ private extension FileHeaderRule {
             }
 
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: headerStart,
                     reason: requiredReason(),
                 ),

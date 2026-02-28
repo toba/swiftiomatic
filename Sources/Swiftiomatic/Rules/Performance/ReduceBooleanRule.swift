@@ -29,7 +29,7 @@ struct ReduceBooleanRule: Rule {
 }
 
 extension ReduceBooleanRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -49,7 +49,7 @@ private extension ReduceBooleanRule {
 
             let suggestedFunction = bool.literal.tokenKind == .keyword(.true) ? "allSatisfy" : "contains"
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: calledExpression.declName.baseName.positionAfterSkippingLeadingTrivia,
                     reason: "Use `\(suggestedFunction)` instead",
                 ),

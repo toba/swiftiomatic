@@ -111,9 +111,9 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
         ],
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         violationRanges(in: file).map {
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: file, byteOffset: $0.0.location),
@@ -121,7 +121,7 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
         }
     }
 
-    private func violationRanges(in file: SwiftLintFile) -> [(ByteRange, shouldAddSpace: Bool)] {
+    private func violationRanges(in file: SwiftSource) -> [(ByteRange, shouldAddSpace: Bool)] {
         let syntaxTree = file.syntaxTree
 
         return
@@ -156,18 +156,18 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
                 }
     }
 
-    func correct(file: SwiftLintFile) -> Int {
-        let initialNSRanges = Dictionary(
+    func correct(file: SwiftSource) -> Int {
+        let initialRanges = Dictionary(
             uniqueKeysWithValues: violationRanges(in: file)
                 .compactMap { byteRange, shouldAddSpace in
                     file.stringView
-                        .byteRangeToNSRange(byteRange)
+                        .byteRangeToStringRange(byteRange)
                         .flatMap { ($0, shouldAddSpace) }
                 },
         )
 
         let violatingRanges = file.ruleEnabled(
-            violatingRanges: Array(initialNSRanges.keys),
+            violatingRanges: Array(initialRanges.keys),
             for: self,
         )
         guard violatingRanges.isNotEmpty else {
@@ -175,12 +175,9 @@ struct CommaRule: CorrectableRule, SourceKitFreeRule {
         }
 
         var contents = file.contents
-        for range in violatingRanges.sorted(by: { $0.location > $1.location }) {
-            let contentsNSString = contents.bridge()
-            let shouldAddSpace = initialNSRanges[range] ?? true
-            contents = contentsNSString.replacingCharacters(
-                in: range, with: ",\(shouldAddSpace ? " " : "")",
-            )
+        for range in violatingRanges.sorted(by: { $0.lowerBound > $1.lowerBound }) {
+            let shouldAddSpace = initialRanges[range] ?? true
+            contents.replaceSubrange(range, with: ",\(shouldAddSpace ? " " : "")")
         }
         file.write(contents)
         return violatingRanges.count

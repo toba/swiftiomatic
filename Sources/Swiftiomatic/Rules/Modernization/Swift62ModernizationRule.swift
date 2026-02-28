@@ -20,7 +20,7 @@ struct Swift62ModernizationRule: Rule {
 }
 
 extension Swift62ModernizationRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -34,7 +34,7 @@ private extension Swift62ModernizationRule {
 
             if callee == "Task.detached" {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Task.detached may be replaceable with @concurrent",
                         severity: .warning,
@@ -47,7 +47,7 @@ private extension Swift62ModernizationRule {
 
             if callee == "withObservationTracking" {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason:
                         "withObservationTracking can be replaced with Observations AsyncSequence in Swift 6.2",
@@ -65,7 +65,7 @@ private extension Swift62ModernizationRule {
 
             let bindingName = node.bindings.first?.pattern.trimmedDescription ?? "unknown"
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason:
                     "weak var '\(bindingName)' — if never reassigned after init, use weak let (SE-0481)",
@@ -83,7 +83,7 @@ private extension Swift62ModernizationRule {
                 || typeStr.contains("UnsafeMutableBufferPointer")
             {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Unsafe buffer pointer — consider Span/RawSpan (macOS 26.0+)",
                         severity: .warning,
@@ -101,7 +101,7 @@ private extension Swift62ModernizationRule {
             else { return }
 
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason:
                     "\(accessorKind) with side-effect logic — consider Observations framework if on an @Observable type",

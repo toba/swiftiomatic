@@ -187,9 +187,9 @@ extension Configuration {
 
         private func mergedAllRulesWrapped(with child: RulesWrapper) -> [ConfigurationRuleWrapper] {
             let mainConfigSet = Set(allRulesWrapped
-                .map(HashableConfigurationRuleWrapperWrapper.init))
+                .map(RuleIdentityWrapper.init))
             let childConfigSet = Set(
-                child.allRulesWrapped.map(HashableConfigurationRuleWrapperWrapper.init),
+                child.allRulesWrapped.map(RuleIdentityWrapper.init),
             )
             let childConfigRulesWithConfig =
                 childConfigSet

@@ -1,26 +1,24 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct RegionTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct RegionTests {
     // MARK: Regions From Files
 
     @Test func noRegionsInEmptyFile() {
-        let file = SwiftLintFile(contents: "")
+        let file = SwiftSource(contents: "")
         #expect(file.regions() == [])
     }
 
     @Test func noRegionsInFileWithNoCommands() {
-        let file = SwiftLintFile(contents: String(repeating: "\n", count: 100))
+        let file = SwiftSource(contents: String(repeating: "\n", count: 100))
         #expect(file.regions() == [])
     }
 
     @Test func regionsFromSingleCommand() {
         // disable
         do {
-            let file = SwiftLintFile(contents: "// sm:disable rule_id\n")
-            let start = Location(file: nil, line: 1, character: 29)
+            let file = SwiftSource(contents: "// sm:disable rule_id\n")
+            let start = Location(file: nil, line: 1, character: 22)
             let end = Location(file: nil, line: .max, character: .max)
             #expect(
                 file.regions() == [Region(
@@ -32,8 +30,8 @@ import Testing
         }
         // enable
         do {
-            let file = SwiftLintFile(contents: "// sm:enable rule_id\n")
-            let start = Location(file: nil, line: 1, character: 28)
+            let file = SwiftSource(contents: "// sm:enable rule_id\n")
+            let start = Location(file: nil, line: 1, character: 21)
             let end = Location(file: nil, line: .max, character: .max)
             #expect(file.regions() == [Region(start: start, end: end, disabledRuleIdentifiers: [])])
         }
@@ -42,18 +40,18 @@ import Testing
     @Test func regionsFromMatchingPairCommands() {
         // disable/enable
         do {
-            let file = SwiftLintFile(
+            let file = SwiftSource(
                 contents: "// sm:disable rule_id\n// sm:enable rule_id\n",
             )
             #expect(
                 file.regions() == [
                     Region(
-                        start: Location(file: nil, line: 1, character: 29),
-                        end: Location(file: nil, line: 2, character: 27),
+                        start: Location(file: nil, line: 1, character: 22),
+                        end: Location(file: nil, line: 2, character: 20),
                         disabledRuleIdentifiers: ["rule_id"],
                     ),
                     Region(
-                        start: Location(file: nil, line: 2, character: 28),
+                        start: Location(file: nil, line: 2, character: 21),
                         end: Location(file: nil, line: .max, character: .max),
                         disabledRuleIdentifiers: [],
                     ),
@@ -62,18 +60,18 @@ import Testing
         }
         // enable/disable
         do {
-            let file = SwiftLintFile(
+            let file = SwiftSource(
                 contents: "// sm:enable rule_id\n// sm:disable rule_id\n",
             )
             #expect(
                 file.regions() == [
                     Region(
-                        start: Location(file: nil, line: 1, character: 28),
-                        end: Location(file: nil, line: 2, character: 28),
+                        start: Location(file: nil, line: 1, character: 21),
+                        end: Location(file: nil, line: 2, character: 21),
                         disabledRuleIdentifiers: [],
                     ),
                     Region(
-                        start: Location(file: nil, line: 2, character: 29),
+                        start: Location(file: nil, line: 2, character: 22),
                         end: Location(file: nil, line: .max, character: .max),
                         disabledRuleIdentifiers: ["rule_id"],
                     ),
@@ -83,7 +81,7 @@ import Testing
     }
 
     @Test func regionsFromThreeCommandForSingleLine() {
-        let file = SwiftLintFile(
+        let file = SwiftSource(
             contents: "// sm:disable:next 1\n" + "// sm:disable:this 2\n"
                 + "// sm:disable:previous 3\n",
         )
@@ -104,7 +102,7 @@ import Testing
     }
 
     @Test func severalRegionsFromSeveralCommands() {
-        let file = SwiftLintFile(
+        let file = SwiftSource(
             contents: """
             // sm:disable 1
             // sm:disable 2
@@ -117,32 +115,32 @@ import Testing
         #expect(
             file.regions() == [
                 Region(
-                    start: Location(file: nil, line: 1, character: 23),
-                    end: Location(file: nil, line: 2, character: 22),
+                    start: Location(file: nil, line: 1, character: 16),
+                    end: Location(file: nil, line: 2, character: 15),
                     disabledRuleIdentifiers: ["1"],
                 ),
                 Region(
-                    start: Location(file: nil, line: 2, character: 23),
-                    end: Location(file: nil, line: 3, character: 22),
+                    start: Location(file: nil, line: 2, character: 16),
+                    end: Location(file: nil, line: 3, character: 15),
                     disabledRuleIdentifiers: ["1", "2"],
                 ),
                 Region(
-                    start: Location(file: nil, line: 3, character: 23),
-                    end: Location(file: nil, line: 4, character: 21),
+                    start: Location(file: nil, line: 3, character: 16),
+                    end: Location(file: nil, line: 4, character: 14),
                     disabledRuleIdentifiers: ["1", "2", "3"],
                 ),
                 Region(
-                    start: Location(file: nil, line: 4, character: 22),
-                    end: Location(file: nil, line: 5, character: 21),
+                    start: Location(file: nil, line: 4, character: 15),
+                    end: Location(file: nil, line: 5, character: 14),
                     disabledRuleIdentifiers: ["2", "3"],
                 ),
                 Region(
-                    start: Location(file: nil, line: 5, character: 22),
-                    end: Location(file: nil, line: 6, character: 21),
+                    start: Location(file: nil, line: 5, character: 15),
+                    end: Location(file: nil, line: 6, character: 14),
                     disabledRuleIdentifiers: ["3"],
                 ),
                 Region(
-                    start: Location(file: nil, line: 6, character: 22),
+                    start: Location(file: nil, line: 6, character: 15),
                     end: Location(file: nil, line: .max, character: .max),
                     disabledRuleIdentifiers: [],
                 ),

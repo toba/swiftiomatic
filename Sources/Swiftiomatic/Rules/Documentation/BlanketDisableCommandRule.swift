@@ -75,8 +75,8 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
         ].skipWrappingInCommentTests().skipDisableCommandTests(),
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
-        var violations: [StyleViolation] = []
+    func validate(file: SwiftSource) -> [RuleViolation] {
+        var violations: [RuleViolation] = []
         var ruleIdentifierToCommandMap: [RuleIdentifier: Command] = [:]
         var disabledRuleIdentifiers: Set<RuleIdentifier> = []
 
@@ -125,9 +125,9 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
     private func violation(
         for command: Command,
         ruleIdentifier: RuleIdentifier,
-        in file: SwiftLintFile,
+        in file: SwiftSource,
         reason: String,
-    ) -> StyleViolation {
+    ) -> RuleViolation {
         violation(
             for: command, ruleIdentifier: ruleIdentifier.stringRepresentation, in: file,
             reason: reason,
@@ -137,10 +137,10 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
     private func violation(
         for command: Command,
         ruleIdentifier: String,
-        in file: SwiftLintFile,
+        in file: SwiftSource,
         reason: String,
-    ) -> StyleViolation {
-        StyleViolation(
+    ) -> RuleViolation {
+        RuleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
             location: command.location(of: ruleIdentifier, in: file),
@@ -150,9 +150,9 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
 
     private func validateAlreadyDisabledRules(
         for command: Command,
-        in file: SwiftLintFile,
+        in file: SwiftSource,
         disabledRuleIdentifiers: Set<RuleIdentifier>,
-    ) -> [StyleViolation] {
+    ) -> [RuleViolation] {
         let alreadyDisabledRuleIdentifiers = command.ruleIdentifiers.intersection(
             disabledRuleIdentifiers,
         )
@@ -164,9 +164,9 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
 
     private func validateAlreadyEnabledRules(
         for command: Command,
-        in file: SwiftLintFile,
+        in file: SwiftSource,
         disabledRuleIdentifiers: Set<RuleIdentifier>,
-    ) -> [StyleViolation] {
+    ) -> [RuleViolation] {
         let notDisabledRuleIdentifiers = command.ruleIdentifiers
             .subtracting(disabledRuleIdentifiers)
         return notDisabledRuleIdentifiers.map {
@@ -176,10 +176,10 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
     }
 
     private func validateBlanketDisables(
-        in file: SwiftLintFile,
+        in file: SwiftSource,
         disabledRuleIdentifiers: Set<RuleIdentifier>,
         ruleIdentifierToCommandMap: [RuleIdentifier: Command],
-    ) -> [StyleViolation] {
+    ) -> [RuleViolation] {
         let allowedRuleIdentifiers = configuration.allowedRuleIdentifiers.union(
             configuration.alwaysBlanketDisableRuleIdentifiers,
         )
@@ -202,8 +202,8 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
         }
     }
 
-    private func validateAlwaysBlanketDisable(file: SwiftLintFile) -> [StyleViolation] {
-        var violations: [StyleViolation] = []
+    private func validateAlwaysBlanketDisable(file: SwiftSource) -> [RuleViolation] {
+        var violations: [RuleViolation] = []
 
         guard configuration.alwaysBlanketDisableRuleIdentifiers.isEmpty == false else {
             return []
@@ -240,7 +240,7 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
 }
 
 private extension Command {
-    func location(of ruleIdentifier: String, in file: SwiftLintFile) -> Location {
+    func location(of ruleIdentifier: String, in file: SwiftSource) -> Location {
         var location = range?.upperBound
         if line > 0, line <= file.lines.count {
             let line = file.lines[line - 1].content

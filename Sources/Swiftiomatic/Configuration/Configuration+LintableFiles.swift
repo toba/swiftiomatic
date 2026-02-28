@@ -16,10 +16,10 @@ extension Configuration {
         inPath path: String,
         forceExclude: Bool,
         excludeByPrefix: Bool,
-    ) -> [SwiftLintFile] {
+    ) -> [SwiftSource] {
         lintablePaths(inPath: path, forceExclude: forceExclude, excludeByPrefix: excludeByPrefix)
             .parallelCompactMap {
-                SwiftLintFile(pathDeferringReading: $0)
+                SwiftSource(pathDeferringReading: $0)
             }
     }
 
@@ -37,7 +37,7 @@ extension Configuration {
         inPath path: String,
         forceExclude: Bool,
         excludeByPrefix: Bool,
-        fileManager: some LintableFileManager = FileManager.default,
+        fileManager: some LintableFileDiscovering = FileManager.default,
     ) -> [String] {
         let excluder = createExcluder(excludeByPrefix: excludeByPrefix)
 

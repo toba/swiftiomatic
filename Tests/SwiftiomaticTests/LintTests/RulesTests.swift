@@ -1,34 +1,32 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct RulesTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func leadingWhitespace() {
-        verifyRule(
+@Suite(.rulesRegistered) struct RulesTests {
+    @Test func leadingWhitespace() async {
+        await verifyRule(
             LeadingWhitespaceRule.description, skipDisableCommandTests: true,
             testMultiByteOffsets: false, testShebang: false,
         )
     }
 
-    @Test func mark() {
-        verifyRule(MarkRule.description, skipCommentTests: true)
+    @Test func mark() async {
+        await verifyRule(MarkRule.description, skipCommentTests: true)
     }
 
-    @Test func requiredEnumCase() {
+    @Test func requiredEnumCase() async {
         let configuration = ["NetworkResponsable": ["notConnected": "error"]]
-        verifyRule(RequiredEnumCaseRule.description, ruleConfiguration: configuration)
+        await verifyRule(RequiredEnumCaseRule.description, ruleConfiguration: configuration)
     }
 
-    @Test func trailingNewline() {
-        verifyRule(
+    @Test func trailingNewline() async {
+        await verifyRule(
             TrailingNewlineRule.description, commentDoesNotViolate: false,
             stringDoesNotViolate: false,
         )
     }
 
-    @Test func orphanedDocComment() {
-        verifyRule(
+    @Test func orphanedDocComment() async {
+        await verifyRule(
             OrphanedDocCommentRule.description, commentDoesNotViolate: false, skipCommentTests: true,
         )
     }

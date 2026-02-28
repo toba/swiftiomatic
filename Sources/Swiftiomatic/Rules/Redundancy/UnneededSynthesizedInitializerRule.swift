@@ -31,11 +31,11 @@ struct UnneededSynthesizedInitializerRule: Rule {
 }
 
 extension UnneededSynthesizedInitializerRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
@@ -52,7 +52,7 @@ private extension UnneededSynthesizedInitializerRule {
                 let reason =
                     "This \(initializerType) initializer would be synthesized automatically - "
                         + "you do not need to define it"
-                return ReasonedRuleViolation(
+                return SyntaxViolation(
                     position: $0.positionAfterSkippingLeadingTrivia, reason: reason,
                 )
             }

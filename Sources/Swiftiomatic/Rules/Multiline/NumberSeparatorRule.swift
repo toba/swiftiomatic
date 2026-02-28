@@ -27,11 +27,11 @@ struct NumberSeparatorRule: Rule {
 }
 
 extension NumberSeparatorRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
@@ -45,7 +45,7 @@ private extension NumberSeparatorRule {
         override func visitPost(_ node: FloatLiteralExprSyntax) {
             if let violation = violation(token: node.literal) {
                 violations.append(
-                    ReasonedRuleViolation(position: violation.position, reason: violation.reason),
+                    SyntaxViolation(position: violation.position, reason: violation.reason),
                 )
             }
         }
@@ -53,7 +53,7 @@ private extension NumberSeparatorRule {
         override func visitPost(_ node: IntegerLiteralExprSyntax) {
             if let violation = violation(token: node.literal) {
                 violations.append(
-                    ReasonedRuleViolation(position: violation.position, reason: violation.reason),
+                    SyntaxViolation(position: violation.position, reason: violation.reason),
                 )
             }
         }

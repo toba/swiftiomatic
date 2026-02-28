@@ -118,7 +118,7 @@ struct LintableFilesVisitor: @unchecked Sendable {
         }
     }
 
-    func linter(forFile file: SwiftLintFile, configuration: Configuration) -> Linter {
+    func linter(forFile file: SwiftSource, configuration: Configuration) -> Linter {
         switch mode {
             case .lint:
                 return Linter(file: file, configuration: configuration, cache: cache)

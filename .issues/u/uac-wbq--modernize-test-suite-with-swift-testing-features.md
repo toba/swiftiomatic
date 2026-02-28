@@ -1,10 +1,11 @@
 ---
 # uac-wbq
 title: Modernize test suite with Swift Testing features
-status: ready
+status: in-progress
 type: epic
+priority: normal
 created_at: 2026-02-28T16:29:06Z
-updated_at: 2026-02-28T16:29:06Z
+updated_at: 2026-02-28T18:26:09Z
 ---
 
 Modernize the ~100k-line test suite to use advanced Swift Testing features. Already migrated from XCTest to basic `@Suite`/`@Test`, but no parameterization, custom traits, or TestScoping is used.

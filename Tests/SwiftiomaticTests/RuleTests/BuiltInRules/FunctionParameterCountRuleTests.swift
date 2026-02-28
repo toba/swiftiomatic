@@ -10,10 +10,8 @@ private func funcWithParameters(
     return Example("func \(marker)abc(\(parameters)) {}\n")
 }
 
-@Suite struct FunctionParameterCountRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func functionParameterCount() {
+@Suite(.rulesRegistered) struct FunctionParameterCountRuleTests {
+    @Test func functionParameterCount() async {
         let baseDescription = FunctionParameterCountRule.description
         let nonTriggeringExamples = [
             funcWithParameters(repeatElement("x: Int, ", count: 3).joined() + "x: Int"),
@@ -26,10 +24,10 @@ private func funcWithParameters(
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(description)
+        await verifyRule(description)
     }
 
-    @Test func defaultFunctionParameterCount() {
+    @Test func defaultFunctionParameterCount() async {
         let baseDescription = FunctionParameterCountRule.description
         let nonTriggeringExamples = [
             funcWithParameters(repeatElement("x: Int, ", count: 3).joined() + "x: Int"),
@@ -43,6 +41,6 @@ private func funcWithParameters(
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["ignores_default_parameters": false])
+        await verifyRule(description, ruleConfiguration: ["ignores_default_parameters": false])
     }
 }

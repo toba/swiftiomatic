@@ -3,9 +3,7 @@ import Testing
 
 private let fixturesDirectory = "\(TestResources.path())/FileNameRuleFixtures"
 
-@Suite struct FileNameRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct FileNameRuleTests {
     private func validate(
         fileName: String,
         excluded: [String]? = nil,
@@ -14,8 +12,8 @@ private let fixturesDirectory = "\(TestResources.path())/FileNameRuleFixtures"
         suffixPattern: String? = nil,
         nestedTypeSeparator: String? = nil,
         requireFullyQualifiedNames: Bool = false,
-    ) throws -> [StyleViolation] {
-        let file = SwiftLintFile(path: fixturesDirectory.stringByAppendingPathComponent(fileName))!
+    ) throws -> [RuleViolation] {
+        let file = SwiftSource(path: fixturesDirectory.stringByAppendingPathComponent(fileName))!
 
         var configuration = [String: Any]()
 

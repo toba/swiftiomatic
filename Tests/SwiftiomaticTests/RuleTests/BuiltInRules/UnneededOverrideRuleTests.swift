@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct UnneededOverrideRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func includeAffectInits() {
+@Suite(.rulesRegistered) struct UnneededOverrideRuleTests {
+    @Test func includeAffectInits() async {
         let nonTriggeringExamples =
             [
                 Example(
@@ -80,6 +78,6 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(corrections: corrections)
 
-        verifyRule(description, ruleConfiguration: ["affect_initializers": true])
+        await verifyRule(description, ruleConfiguration: ["affect_initializers": true])
     }
 }

@@ -11,7 +11,7 @@ struct NamingTests {
     }()
 
     @Test func detectsBoolNotReadingAsAssertion() throws {
-        let file = SwiftLintFile(path: fixturePath)!
+        let file = SwiftSource(path: fixturePath)!
         let rule = NamingHeuristicsRule()
         let violations = rule.validate(file: file)
 
@@ -22,7 +22,7 @@ struct NamingTests {
     }
 
     @Test func detectsFactoryMethodWithoutMakePrefix() throws {
-        let file = SwiftLintFile(path: fixturePath)!
+        let file = SwiftSource(path: fixturePath)!
         let rule = NamingHeuristicsRule()
         let violations = rule.validate(file: file)
 

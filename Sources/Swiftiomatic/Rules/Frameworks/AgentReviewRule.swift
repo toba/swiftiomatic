@@ -20,7 +20,7 @@ struct AgentReviewRule: Rule {
 }
 
 extension AgentReviewRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -42,7 +42,7 @@ private extension AgentReviewRule {
 
                 if !isAssigned, !isReturned {
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason: "Fire-and-forget Task — result not captured, cancellation not possible",
                             severity: .warning,
@@ -56,7 +56,7 @@ private extension AgentReviewRule {
             // .absoluteString usage
             if callee.hasSuffix(".absoluteString") {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: ".absoluteString used — verify this isn't a file URL (use .path for file URLs)",
                         severity: .warning,
@@ -71,7 +71,7 @@ private extension AgentReviewRule {
                node.parent?.is(FunctionCallExprSyntax.self) != true
             {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: ".absoluteString used — verify this isn't a file URL (use .path for file URLs)",
                         severity: .warning,
@@ -86,7 +86,7 @@ private extension AgentReviewRule {
             let inheritedTypes = inheritance.inheritedTypes.map(\.type.trimmedDescription)
             if inheritedTypes.contains("Error"), !inheritedTypes.contains("LocalizedError") {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.name.positionAfterSkippingLeadingTrivia,
                         reason:
                         "Error enum '\(node.name.text)' doesn't conform to LocalizedError — verify if user-facing",
@@ -103,7 +103,7 @@ private extension AgentReviewRule {
             if modifiers.contains("nonisolated(unsafe)") {
                 let bindingName = node.bindings.first?.pattern.trimmedDescription ?? "unknown"
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason:
                         "nonisolated(unsafe) on '\(bindingName)' — verify the value is actually Sendable in Swift 6.2",

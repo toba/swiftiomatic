@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct PrefixedTopLevelConstantRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func privateOnly() {
+@Suite(.rulesRegistered) struct PrefixedTopLevelConstantRuleTests {
+    @Test func privateOnly() async {
         let triggeringExamples = [
             Example("private let ↓Foo = 20.0"),
             Example("fileprivate let ↓foo = 20.0"),
@@ -19,6 +17,6 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["only_private": true])
+        await verifyRule(description, ruleConfiguration: ["only_private": true])
     }
 }

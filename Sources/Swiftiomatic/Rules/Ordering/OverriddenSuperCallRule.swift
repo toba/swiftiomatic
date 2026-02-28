@@ -92,7 +92,7 @@ struct OverriddenSuperCallRule: Rule {
 }
 
 extension OverriddenSuperCallRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -118,14 +118,14 @@ private extension OverriddenSuperCallRule {
             let superCallsCount = node.numberOfCallsToSuper()
             if superCallsCount == 0 {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: body.leftBrace.endPositionBeforeTrailingTrivia,
                         reason: "Method '\(name)' should call to super function",
                     ),
                 )
             } else if superCallsCount > 1 {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: body.leftBrace.endPositionBeforeTrailingTrivia,
                         reason: "Method '\(name)' should call to super only once",
                     ),

@@ -11,7 +11,7 @@ updated_at: 2026-02-28T16:19:43Z
 ## Plan
 
 ### Phase 1: Replace legacy locks with Mutex (Sources/)
-- [x] 1a. SwiftLintFile+Cache.swift — PlatformLock → Mutex
+- [x] 1a. SwiftSource+Cache.swift — PlatformLock → Mutex
 - [x] 1b. RuleStorage.swift — DispatchQueue → Mutex
 - [x] 1c. LinterCache.swift — NSLock → Mutex
 - [x] 1d. Configuration+Cache.swift — NSLock → Mutex

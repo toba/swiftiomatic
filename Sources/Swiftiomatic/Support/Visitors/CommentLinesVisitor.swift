@@ -26,7 +26,7 @@ final class CommentLinesVisitor: SyntaxVisitor {
     ///
     /// - Parameter file: The SwiftLint file to analyze.
     /// - Returns: A set of line numbers that contain only comments.
-    static func commentLines(in file: SwiftLintFile) -> Set<Int> {
+    static func commentLines(in file: SwiftSource) -> Set<Int> {
         CommentLinesVisitor(locationConverter: file.locationConverter)
             .walk(tree: file.syntaxTree, handler: \.commentOnlyLines)
     }

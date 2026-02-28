@@ -26,7 +26,7 @@ final class EmptyLinesVisitor: SyntaxVisitor {
     ///
     /// - Parameter file: The SwiftLint file to analyze.
     /// - Returns: A set of line numbers that are empty.
-    static func emptyLines(in file: SwiftLintFile) -> Set<Int> {
+    static func emptyLines(in file: SwiftSource) -> Set<Int> {
         EmptyLinesVisitor(locationConverter: file.locationConverter)
             .walk(tree: file.syntaxTree, handler: \.emptyLines)
     }

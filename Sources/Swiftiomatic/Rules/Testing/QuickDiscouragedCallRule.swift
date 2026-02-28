@@ -14,13 +14,13 @@ struct QuickDiscouragedCallRule: Rule {
 }
 
 extension QuickDiscouragedCallRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
 
 extension QuickDiscouragedCallRule {
-    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+    func preprocess(file: SwiftSource) -> SourceFileSyntax? {
         file.foldedSyntaxTree
     }
 }
@@ -172,7 +172,7 @@ private extension Stack where Element == ScopeElement {
     }
 }
 
-private extension ReasonedRuleViolation {
+private extension SyntaxViolation {
     static func violation(at position: AbsolutePosition, kind: QuickCallKind) -> Self {
         .init(position: position, reason: "Discouraged call inside a '\(kind)' block")
     }

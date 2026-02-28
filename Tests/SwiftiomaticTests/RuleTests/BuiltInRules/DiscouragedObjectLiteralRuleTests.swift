@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct DiscouragedObjectLiteralRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withImageLiteral() {
+@Suite(.rulesRegistered) struct DiscouragedObjectLiteralRuleTests {
+    @Test func withImageLiteral() async {
         let baseDescription = DiscouragedObjectLiteralRule.description
         let nonTriggeringExamples =
             baseDescription.nonTriggeringExamples + [
@@ -21,10 +19,10 @@ import Testing
             triggeringExamples: triggeringExamples,
         )
 
-        verifyRule(description, ruleConfiguration: ["image_literal": true, "color_literal": false])
+        await verifyRule(description, ruleConfiguration: ["image_literal": true, "color_literal": false])
     }
 
-    @Test func withColorLiteral() {
+    @Test func withColorLiteral() async {
         let baseDescription = DiscouragedObjectLiteralRule.description
         let nonTriggeringExamples =
             baseDescription.nonTriggeringExamples + [
@@ -41,6 +39,6 @@ import Testing
             triggeringExamples: triggeringExamples,
         )
 
-        verifyRule(description, ruleConfiguration: ["image_literal": false, "color_literal": true])
+        await verifyRule(description, ruleConfiguration: ["image_literal": false, "color_literal": true])
     }
 }

@@ -17,7 +17,7 @@ struct DeploymentTargetRule: Rule {
 }
 
 extension DeploymentTargetRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -74,7 +74,7 @@ private extension DeploymentTargetRule {
                 }
 
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.atSign.positionAfterSkippingLeadingTrivia,
                         reason: reason,
                     ),
@@ -105,7 +105,7 @@ private extension DeploymentTargetRule {
                 }
 
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.availabilityKeyword.positionAfterSkippingLeadingTrivia,
                         reason: reason,
                     ),

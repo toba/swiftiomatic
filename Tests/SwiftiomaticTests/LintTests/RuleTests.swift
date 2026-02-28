@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct RuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct RuleTests {
     fileprivate struct RuleMock1: Rule {
         var configuration = SeverityConfiguration<Self>(.warning)
         var configurationDescription: some Documentable { RuleConfigurationOption.noOptions }
@@ -15,7 +13,7 @@ import Testing
         init() { /* conformance for test */ }
         init(configuration _: Any) { self.init() }
 
-        func validate(file _: SwiftLintFile) -> [StyleViolation] {
+        func validate(file _: SwiftSource) -> [RuleViolation] {
             []
         }
     }
@@ -31,7 +29,7 @@ import Testing
         init() { /* conformance for test */ }
         init(configuration _: Any) { self.init() }
 
-        func validate(file _: SwiftLintFile) -> [StyleViolation] {
+        func validate(file _: SwiftSource) -> [RuleViolation] {
             []
         }
     }
@@ -51,7 +49,7 @@ import Testing
             try self.configuration.apply(configuration: configuration)
         }
 
-        func validate(file _: SwiftLintFile) -> [StyleViolation] { [] }
+        func validate(file _: SwiftSource) -> [RuleViolation] { [] }
     }
 
     @Test func ruleIsEqualTo() {

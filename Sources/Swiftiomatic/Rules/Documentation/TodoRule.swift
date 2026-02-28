@@ -27,7 +27,7 @@ struct TodoRule: Rule {
 }
 
 extension TodoRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -52,9 +52,9 @@ private extension Trivia {
     func violations(
         offset: AbsolutePosition,
         for todoKeywords: [TodoConfiguration.TodoKeyword],
-    ) -> [ReasonedRuleViolation] {
+    ) -> [SyntaxViolation] {
         var position = offset
-        var violations = [ReasonedRuleViolation]()
+        var violations = [SyntaxViolation]()
         for piece in self {
             violations.append(contentsOf: piece.violations(offset: position, for: todoKeywords))
             position += piece.sourceLength
@@ -67,7 +67,7 @@ private extension TriviaPiece {
     func violations(
         offset: AbsolutePosition,
         for todoKeywords: [TodoConfiguration.TodoKeyword],
-    ) -> [ReasonedRuleViolation] {
+    ) -> [SyntaxViolation] {
         switch self {
             case let .blockComment(comment),
                  let .lineComment(comment),
@@ -78,9 +78,8 @@ private extension TriviaPiece {
                 let matches = regex(#"\b((?:\#(searchKeywords))(?::|\b))"#)
                     .matches(in: comment, range: comment.bridge().fullNSRange)
                 return matches.reduce(into: []) { violations, match in
-                    guard let annotationRange = Range(match.range(at: 1), in: comment) else {
-                        return
-                    }
+                    guard let sub = match.output[1].substring else { return }
+                    let annotationRange = sub.startIndex ..< sub.endIndex
 
                     let maxLengthOfMessage = 30
 
@@ -98,7 +97,7 @@ private extension TriviaPiece {
                         reason = "\(kind) should be resolved (\(message))"
                     }
 
-                    let violation = ReasonedRuleViolation(
+                    let violation = SyntaxViolation(
                         position: offset
                             .advanced(by: comment[..<annotationRange.lowerBound].utf8.count),
                         reason: reason,

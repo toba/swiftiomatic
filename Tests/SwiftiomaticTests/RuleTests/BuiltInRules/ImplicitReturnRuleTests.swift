@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ImplicitReturnRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func onlyClosureKindIncluded() {
+@Suite(.rulesRegistered) struct ImplicitReturnRuleTests {
+    @Test func onlyClosureKindIncluded() async {
         var nonTriggeringExamples =
             ImplicitReturnRuleExamples.nonTriggeringExamples
                 + ImplicitReturnRuleExamples.triggeringExamples
@@ -12,7 +10,7 @@ import Testing
             where: ImplicitReturnRuleExamples.ClosureExamples.triggeringExamples.contains,
         )
 
-        verifySubset(
+        await verifySubset(
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: ImplicitReturnRuleExamples.ClosureExamples.triggeringExamples,
             corrections: ImplicitReturnRuleExamples.ClosureExamples.corrections,
@@ -20,7 +18,7 @@ import Testing
         )
     }
 
-    @Test func onlyFunctionKindIncluded() {
+    @Test func onlyFunctionKindIncluded() async {
         var nonTriggeringExamples =
             ImplicitReturnRuleExamples.nonTriggeringExamples
                 + ImplicitReturnRuleExamples.triggeringExamples
@@ -28,7 +26,7 @@ import Testing
             where: ImplicitReturnRuleExamples.FunctionExamples.triggeringExamples.contains,
         )
 
-        verifySubset(
+        await verifySubset(
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: ImplicitReturnRuleExamples.FunctionExamples.triggeringExamples,
             corrections: ImplicitReturnRuleExamples.FunctionExamples.corrections,
@@ -36,7 +34,7 @@ import Testing
         )
     }
 
-    @Test func onlyGetterKindIncluded() {
+    @Test func onlyGetterKindIncluded() async {
         var nonTriggeringExamples =
             ImplicitReturnRuleExamples.nonTriggeringExamples
                 + ImplicitReturnRuleExamples.triggeringExamples
@@ -44,7 +42,7 @@ import Testing
             where: ImplicitReturnRuleExamples.GetterExamples.triggeringExamples.contains,
         )
 
-        verifySubset(
+        await verifySubset(
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: ImplicitReturnRuleExamples.GetterExamples.triggeringExamples,
             corrections: ImplicitReturnRuleExamples.GetterExamples.corrections,
@@ -52,7 +50,7 @@ import Testing
         )
     }
 
-    @Test func onlyInitializerKindIncluded() {
+    @Test func onlyInitializerKindIncluded() async {
         var nonTriggeringExamples =
             ImplicitReturnRuleExamples.nonTriggeringExamples
                 + ImplicitReturnRuleExamples.triggeringExamples
@@ -60,7 +58,7 @@ import Testing
             where: ImplicitReturnRuleExamples.InitializerExamples.triggeringExamples.contains,
         )
 
-        verifySubset(
+        await verifySubset(
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: ImplicitReturnRuleExamples.InitializerExamples.triggeringExamples,
             corrections: ImplicitReturnRuleExamples.InitializerExamples.corrections,
@@ -68,7 +66,7 @@ import Testing
         )
     }
 
-    @Test func onlySubscriptKindIncluded() {
+    @Test func onlySubscriptKindIncluded() async {
         var nonTriggeringExamples =
             ImplicitReturnRuleExamples.nonTriggeringExamples
                 + ImplicitReturnRuleExamples.triggeringExamples
@@ -76,7 +74,7 @@ import Testing
             where: ImplicitReturnRuleExamples.SubscriptExamples.triggeringExamples.contains,
         )
 
-        verifySubset(
+        await verifySubset(
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: ImplicitReturnRuleExamples.SubscriptExamples.triggeringExamples,
             corrections: ImplicitReturnRuleExamples.SubscriptExamples.corrections,
@@ -89,12 +87,12 @@ import Testing
         triggeringExamples: [Example],
         corrections: [Example: Example],
         kind: ImplicitReturnConfiguration.ReturnKind,
-    ) {
+    ) async {
         let description = ImplicitReturnRule.description
             .with(nonTriggeringExamples: nonTriggeringExamples.removingViolationMarker())
             .with(triggeringExamples: triggeringExamples)
             .with(corrections: corrections)
 
-        verifyRule(description, ruleConfiguration: ["included": [kind.rawValue]])
+        await verifyRule(description, ruleConfiguration: ["included": [kind.rawValue]])
     }
 }

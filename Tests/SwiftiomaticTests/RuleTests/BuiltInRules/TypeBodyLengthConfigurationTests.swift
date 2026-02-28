@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct TypeBodyLengthConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct TypeBodyLengthConfigurationTests {
     @Test func defaultConfiguration() {
         let config = TypeBodyLengthConfiguration()
         #expect(config.severityConfiguration.warning == 250)

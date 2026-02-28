@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct CollectionAlignmentRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func collectionAlignmentWithAlignLeft() {
+@Suite(.rulesRegistered) struct CollectionAlignmentRuleTests {
+    @Test func collectionAlignmentWithAlignLeft() async {
         let baseDescription = CollectionAlignmentRule.description
         let examples = CollectionAlignmentRule.Examples(alignColons: false)
 
@@ -13,10 +11,10 @@ import Testing
             triggeringExamples: examples.triggeringExamples,
         )
 
-        verifyRule(description)
+        await verifyRule(description)
     }
 
-    @Test func collectionAlignmentWithAlignColons() {
+    @Test func collectionAlignmentWithAlignColons() async {
         let baseDescription = CollectionAlignmentRule.description
         let examples = CollectionAlignmentRule.Examples(alignColons: true)
 
@@ -25,6 +23,6 @@ import Testing
             triggeringExamples: examples.triggeringExamples,
         )
 
-        verifyRule(description, ruleConfiguration: ["align_colons": true])
+        await verifyRule(description, ruleConfiguration: ["align_colons": true])
     }
 }

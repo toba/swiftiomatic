@@ -6,9 +6,9 @@ import Synchronization
 /// Wraps cursorinfo, index, and expression-type requests.
 /// Caches compiler args and file indexes for the lifetime of the scan.
 ///
-/// `@unchecked Sendable` is required because `Request.send()` uses `DispatchSemaphore`
-/// internally and touches global C state via the sourcekitd XPC service. All mutable state
-/// is protected by `Mutex`, and the C FFI calls are serialized by `sourceKitRequestGate`.
+/// `@unchecked Sendable` because the underlying sourcekitd XPC calls touch global C state.
+/// All mutable state is protected by `Mutex`, and the C FFI calls are serialized by
+/// `sourceKitRequestGate` (also a `Mutex`).
 final class SourceKitResolver: TypeResolver, @unchecked Sendable {
     private let compilerArgs: [String]
     private let indexCache = Mutex<[String: FileIndex]>([:])

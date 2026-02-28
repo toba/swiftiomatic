@@ -18,7 +18,7 @@ struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule 
         corrections: RedundantObjcAttributeRuleExamples.corrections,
     )
 
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
             override func visitPost(_ node: AttributeListSyntax) {
                 if let objcAttribute = node.violatingObjCAttribute {
@@ -29,13 +29,13 @@ struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule 
         return Visitor(configuration: configuration, file: file)
     }
 
-    func violationRanges(in file: SwiftLintFile) -> [NSRange] {
+    func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
         makeVisitor(file: file)
             .walk(tree: file.syntaxTree, handler: \.violations)
             .compactMap { violation in
                 let end = AbsolutePosition(utf8Offset: violation.position.utf8Offset + "@objc"
                     .count)
-                return file.stringView.NSRange(start: violation.position, end: end)
+                return file.stringView.stringRange(start: violation.position, end: end)
             }
     }
 }
@@ -113,22 +113,16 @@ private extension AttributeListSyntax {
 }
 
 extension RedundantObjcAttributeRule {
-    func substitution(for violationRange: NSRange, in file: SwiftLintFile) -> (NSRange, String)? {
-        var whitespaceAndNewlineOffset = 0
-        let nsCharSet = CharacterSet.whitespacesAndNewlines.bridge()
-        let nsContent = file.contents.bridge()
-        while nsCharSet
-            .characterIsMember(
-                nsContent.character(at: violationRange.upperBound + whitespaceAndNewlineOffset),
-            )
+    func substitution(for violationRange: Range<String.Index>, in file: SwiftSource)
+        -> (Range<String.Index>, String)?
+    {
+        let contents = file.contents
+        var endIndex = violationRange.upperBound
+        while endIndex < contents.endIndex,
+              contents[endIndex].isWhitespace || contents[endIndex].isNewline
         {
-            whitespaceAndNewlineOffset += 1
+            endIndex = contents.index(after: endIndex)
         }
-
-        let withTrailingWhitespaceAndNewlineRange = NSRange(
-            location: violationRange.location,
-            length: violationRange.length + whitespaceAndNewlineOffset,
-        )
-        return (withTrailingWhitespaceAndNewlineRange, "")
+        return (violationRange.lowerBound..<endIndex, "")
     }
 }

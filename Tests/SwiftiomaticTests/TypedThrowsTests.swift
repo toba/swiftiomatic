@@ -11,7 +11,7 @@ struct TypedThrowsTests {
     }()
 
     @Test func detectsUntypedThrowsWithSingleErrorType() throws {
-        let file = SwiftLintFile(path: fixturePath)!
+        let file = SwiftSource(path: fixturePath)!
         let rule = TypedThrowsRule()
         let violations = rule.validate(file: file)
 
@@ -22,7 +22,7 @@ struct TypedThrowsTests {
     }
 
     @Test func ignoresAlreadyTypedThrows() throws {
-        let file = SwiftLintFile(path: fixturePath)!
+        let file = SwiftSource(path: fixturePath)!
         let rule = TypedThrowsRule()
         let violations = rule.validate(file: file)
 
@@ -31,7 +31,7 @@ struct TypedThrowsTests {
     }
 
     @Test func ignoresMultipleErrorTypes() throws {
-        let file = SwiftLintFile(path: fixturePath)!
+        let file = SwiftSource(path: fixturePath)!
         let rule = TypedThrowsRule()
         let violations = rule.validate(file: file)
 

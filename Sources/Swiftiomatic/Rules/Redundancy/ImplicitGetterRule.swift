@@ -14,7 +14,7 @@ struct ImplicitGetterRule: Rule {
 }
 
 extension ImplicitGetterRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -48,7 +48,7 @@ private extension ImplicitGetterRule {
             let kind: ViolationKind =
                 node.parent?.as(SubscriptDeclSyntax.self) == nil ? .property : .subscript
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: getAccessor.positionAfterSkippingLeadingTrivia,
                     reason: kind.violationDescription,
                 ),

@@ -1,16 +1,14 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct DuplicateImportsRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct DuplicateImportsRuleTests {
     @Test func disableCommand() {
         let content = """
         import InspireAPI
         // sm:disable:next duplicate_imports
         import class InspireAPI.Response
         """
-        let file = SwiftLintFile(contents: content)
+        let file = SwiftSource(contents: content)
 
         _ = DuplicateImportsRule().correct(file: file)
 

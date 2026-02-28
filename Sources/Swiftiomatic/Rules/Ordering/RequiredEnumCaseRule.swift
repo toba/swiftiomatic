@@ -149,7 +149,7 @@ struct RequiredEnumCaseRule: Rule {
 }
 
 extension RequiredEnumCaseRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -165,7 +165,7 @@ private extension RequiredEnumCaseRule {
 
             let enumCases = node.enumCasesNames
             let violations = configuration.protocols
-                .flatMap { type, requiredCases -> [ReasonedRuleViolation] in
+                .flatMap { type, requiredCases -> [SyntaxViolation] in
                     guard node.inheritanceClause.containsInheritedType(inheritedTypes: [type])
                     else {
                         return []
@@ -176,7 +176,7 @@ private extension RequiredEnumCaseRule {
                             return nil
                         }
 
-                        return ReasonedRuleViolation(
+                        return SyntaxViolation(
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason: "Enums conforming to \"\(type)\" must have a \"\(requiredCase.name)\" case",
                             severity: requiredCase.severity,

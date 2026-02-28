@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct TypeContentsOrderRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func typeContentsOrderReversedOrder() {
+@Suite(.rulesRegistered) struct TypeContentsOrderRuleTests {
+    @Test func typeContentsOrderReversedOrder() async {
         // Test with reversed `order` entries
         let nonTriggeringExamples = [
             Example(
@@ -163,7 +161,7 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             reversedOrderDescription,
             ruleConfiguration: [
                 "order": [
@@ -186,7 +184,7 @@ import Testing
         )
     }
 
-    @Test func typeContentsOrderGroupedOrder() {
+    @Test func typeContentsOrderGroupedOrder() async {
         // Test with grouped `order` entries
         let nonTriggeringExamples = [
             Example(
@@ -383,7 +381,7 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             groupedOrderDescription,
             ruleConfiguration: [
                 "order": [

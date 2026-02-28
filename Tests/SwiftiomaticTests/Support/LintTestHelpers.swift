@@ -6,19 +6,19 @@ import Foundation
 
 private let violationMarker = "↓"
 
-extension SwiftLintFile {
+extension SwiftSource {
     static func testFile(
         withContents contents: String,
         persistToDisk: Bool = false,
-    ) -> SwiftLintFile {
+    ) -> SwiftSource {
         if persistToDisk {
             let url = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
                 .appendingPathComponent(UUID().uuidString)
                 .appendingPathExtension("swift")
             _ = try? contents.data(using: .utf8)!.write(to: url)
-            return SwiftLintFile(path: url.path, isTestFile: true)!
+            return SwiftSource(path: url.path, isTestFile: true)!
         }
-        return SwiftLintFile(contents: contents, isTestFile: true)
+        return SwiftSource(contents: contents, isTestFile: true)
     }
 
     func makeCompilerArguments() -> [String] {
@@ -81,7 +81,7 @@ extension Configuration {
 }
 
 // Global caches are now internally thread-safe via Mutex (Synchronization framework).
-// Each test creates independent SwiftLintFile instances with unique UUID cache keys,
+// Each test creates independent SwiftSource instances with unique UUID cache keys,
 // so no global serialization lock is needed.
 
 // MARK: - Violation Helpers
@@ -90,17 +90,17 @@ func violations(
     _ example: Example,
     config inputConfig: Configuration = Configuration.default,
     requiresFileOnDisk: Bool = false,
-) -> [StyleViolation] {
+) async -> [RuleViolation] {
     let config = inputConfig.applyingConfiguration(from: example)
     let stringStrippingMarkers = example.removingViolationMarkers()
     guard requiresFileOnDisk else {
-        let file = SwiftLintFile.testFile(withContents: stringStrippingMarkers.code)
+        let file = SwiftSource.testFile(withContents: stringStrippingMarkers.code)
         let storage = RuleStorage()
-        let linter = Linter(file: file, configuration: config).collect(into: storage)
-        return linter.styleViolations(using: storage)
+        let linter = await Linter(file: file, configuration: config).collect(into: storage)
+        return linter.ruleViolations(using: storage)
     }
 
-    let file = SwiftLintFile.testFile(
+    let file = SwiftSource.testFile(
         withContents: stringStrippingMarkers.code,
         persistToDisk: true,
     )
@@ -110,41 +110,40 @@ func violations(
         configuration: config,
         compilerArguments: file.makeCompilerArguments(),
     )
-    let linter = collector.collect(into: storage)
-    return linter.styleViolations(using: storage).withoutFiles()
+    let linter = await collector.collect(into: storage)
+    return linter.ruleViolations(using: storage).withoutFiles()
 }
 
 extension Collection<String> {
     func violations(config: Configuration = Configuration.default, requiresFileOnDisk: Bool = false)
-        -> [StyleViolation]
+        async -> [RuleViolation]
     {
-        map { SwiftLintFile.testFile(withContents: $0, persistToDisk: requiresFileOnDisk) }
+        await map { SwiftSource.testFile(withContents: $0, persistToDisk: requiresFileOnDisk) }
             .violations(config: config, requiresFileOnDisk: requiresFileOnDisk)
     }
 
     func corrections(
         config: Configuration = Configuration.default,
         requiresFileOnDisk: Bool = false,
-    ) -> [String: Int] {
-        map { SwiftLintFile.testFile(withContents: $0, persistToDisk: requiresFileOnDisk) }
+    ) async -> [String: Int] {
+        await map { SwiftSource.testFile(withContents: $0, persistToDisk: requiresFileOnDisk) }
             .corrections(config: config, requiresFileOnDisk: requiresFileOnDisk)
     }
 }
 
-extension Collection where Element: SwiftLintFile {
+extension Collection where Element: SwiftSource {
     func violations(config: Configuration = Configuration.default, requiresFileOnDisk: Bool = false)
-        -> [StyleViolation]
+        async -> [RuleViolation]
     {
         let storage = RuleStorage()
-        let violations = map { file in
-            Linter(
+        var violations = [RuleViolation]()
+        for file in self {
+            let linter = Linter(
                 file: file, configuration: config,
                 compilerArguments: requiresFileOnDisk ? file.makeCompilerArguments() : [],
             )
-        }.map { linter in
-            linter.collect(into: storage)
-        }.flatMap { linter in
-            linter.styleViolations(using: storage)
+            let collected = await linter.collect(into: storage)
+            violations.append(contentsOf: collected.ruleViolations(using: storage))
         }
         return requiresFileOnDisk ? violations.withoutFiles() : violations
     }
@@ -152,7 +151,7 @@ extension Collection where Element: SwiftLintFile {
     func corrections(
         config: Configuration = Configuration.default,
         requiresFileOnDisk: Bool = false,
-    ) -> [String: Int] {
+    ) async -> [String: Int] {
         let storage = RuleStorage()
         var corrections = [String: Int]()
         for file in self {
@@ -161,7 +160,7 @@ extension Collection where Element: SwiftLintFile {
                 configuration: config,
                 compilerArguments: requiresFileOnDisk ? file.makeCompilerArguments() : [],
             )
-            let collectedLinter = linter.collect(into: storage)
+            let collectedLinter = await linter.collect(into: storage)
             for (ruleName, numberOfCorrections) in collectedLinter.correct(using: storage) {
                 corrections[ruleName] = numberOfCorrections
             }
@@ -170,8 +169,8 @@ extension Collection where Element: SwiftLintFile {
     }
 }
 
-extension Collection<StyleViolation> {
-    fileprivate func withoutFiles() -> [StyleViolation] {
+extension Collection<RuleViolation> {
+    fileprivate func withoutFiles() -> [RuleViolation] {
         map { violation in
             let locationWithoutFile = Location(
                 file: nil, line: violation.location.line,
@@ -233,7 +232,7 @@ private func cleanedContentsAndMarkerOffsets(from contents: String) -> (String, 
     return (contents.bridge(), markerOffsets.sorted())
 }
 
-private func render(violations: [StyleViolation], in contents: String) -> String {
+private func render(violations: [RuleViolation], in contents: String) -> String {
     var contents = StringView(contents).lines.map(\.content)
     for violation in violations.sorted(by: { $0.location > $1.location }) {
         guard let line = violation.location.line,
@@ -281,14 +280,14 @@ private func render(locations: [Location], in contents: String) -> String {
 private func assertCorrection(
     _ before: Example, expected: Example, config: Configuration,
     sourceLocation: Testing.SourceLocation = #_sourceLocation,
-) {
+) async {
     let (cleanedBefore, _) = cleanedContentsAndMarkerOffsets(from: before.code)
-    let file = SwiftLintFile.testFile(withContents: cleanedBefore, persistToDisk: true)
+    let file = SwiftSource.testFile(withContents: cleanedBefore, persistToDisk: true)
     let includeCompilerArguments = config.rules.contains(where: { $0 is any AnalyzerRule })
     let compilerArguments = includeCompilerArguments ? file.makeCompilerArguments() : []
     let storage = RuleStorage()
     let collector = Linter(file: file, configuration: config, compilerArguments: compilerArguments)
-    let linter = collector.collect(into: storage)
+    let linter = await collector.collect(into: storage)
     let corrections = linter.correct(using: storage)
     #expect(
         corrections.count >= (before.code != expected.code ? 1 : 0),
@@ -328,7 +327,7 @@ private func testCorrection(
     _ correction: (Example, Example),
     configuration: Configuration,
     testMultiByteOffsets: Bool,
-) {
+) async {
     var config = configuration
     if let correctionConfiguration = correction.0.configuration,
        case let .onlyConfiguration(onlyRules) = configuration.rulesMode,
@@ -345,9 +344,9 @@ private func testCorrection(
         )
     }
 
-    assertCorrection(correction.0, expected: correction.1, config: config)
+    await assertCorrection(correction.0, expected: correction.1, config: config)
     if testMultiByteOffsets, correction.0.testMultiByteOffsets {
-        assertCorrection(addEmoji(correction.0), expected: addEmoji(correction.1), config: config)
+        await assertCorrection(addEmoji(correction.0), expected: addEmoji(correction.1), config: config)
     }
 }
 
@@ -408,7 +407,7 @@ func verifyRule(
     testMultiByteOffsets: Bool = true,
     testShebang: Bool = true,
     sourceLocation: Testing.SourceLocation = #_sourceLocation,
-) {
+) async {
     _ = _ensureRegistered
 
     guard ruleDescription.minSwiftVersion <= .current else { return }
@@ -431,7 +430,7 @@ func verifyRule(
         disableCommands = ruleDescription.allIdentifiers.map { "// sm:disable \($0)\n" }
     }
 
-    verifyLint(
+    await verifyLint(
         ruleDescription,
         config: config,
         commentDoesNotViolate: commentDoesNotViolate,
@@ -443,7 +442,7 @@ func verifyRule(
         testShebang: testShebang,
         sourceLocation: sourceLocation,
     )
-    verifyCorrections(
+    await verifyCorrections(
         ruleDescription,
         config: config,
         disableCommands: disableCommands,
@@ -464,15 +463,15 @@ func verifyLint(
     testMultiByteOffsets: Bool = true,
     testShebang: Bool = true,
     sourceLocation: Testing.SourceLocation = #_sourceLocation,
-) {
-    func verify(triggers: [Example], nonTriggers: [Example]) {
-        verifyExamples(
+) async {
+    func verify(triggers: [Example], nonTriggers: [Example]) async {
+        await verifyExamples(
             triggers: triggers, nonTriggers: nonTriggers, configuration: config,
             requiresFileOnDisk: ruleDescription.requiresFileOnDisk,
         )
     }
-    func makeViolations(_ example: Example) -> [StyleViolation] {
-        violations(example, config: config, requiresFileOnDisk: ruleDescription.requiresFileOnDisk)
+    func makeViolations(_ example: Example) async -> [RuleViolation] {
+        await violations(example, config: config, requiresFileOnDisk: ruleDescription.requiresFileOnDisk)
     }
 
     let focusedRuleDescription = ruleDescription.focused()
@@ -480,17 +479,17 @@ func verifyLint(
         focusedRuleDescription.triggeringExamples,
         focusedRuleDescription.nonTriggeringExamples,
     )
-    verify(triggers: triggers, nonTriggers: nonTriggers)
+    await verify(triggers: triggers, nonTriggers: nonTriggers)
 
     if testMultiByteOffsets {
-        verify(
+        await verify(
             triggers: triggers.filter(\.testMultiByteOffsets).map(addEmoji),
             nonTriggers: nonTriggers.filter(\.testMultiByteOffsets).map(addEmoji),
         )
     }
 
     if testShebang {
-        verify(
+        await verify(
             triggers: triggers.filter(\.testMultiByteOffsets).map(addShebang),
             nonTriggers: nonTriggers.filter(\.testMultiByteOffsets).map(addShebang),
         )
@@ -499,10 +498,12 @@ func verifyLint(
     // Comment doesn't violate
     if !skipCommentTests {
         let triggersToCheck = triggers.filter(\.testWrappingInComment)
+        var commentViolationCount = 0
+        for trigger in triggersToCheck {
+            commentViolationCount += await makeViolations(trigger.with(code: "/*\n  " + trigger.code + "\n */")).count
+        }
         #expect(
-            triggersToCheck.flatMap { makeViolations($0.with(code: "/*\n  " + $0.code + "\n */")) }
-                .count
-                == (commentDoesNotViolate ? 0 : triggersToCheck.count),
+            commentViolationCount == (commentDoesNotViolate ? 0 : triggersToCheck.count),
             "Violation(s) still triggered when code was nested inside a comment",
             sourceLocation: sourceLocation,
         )
@@ -511,10 +512,12 @@ func verifyLint(
     // String doesn't violate
     if !skipStringTests {
         let triggersToCheck = triggers.filter(\.testWrappingInString)
+        var stringViolationCount = 0
+        for trigger in triggersToCheck {
+            stringViolationCount += await makeViolations(trigger.with(code: trigger.code.toStringLiteral())).count
+        }
         #expect(
-            triggersToCheck.flatMap { makeViolations($0.with(code: $0.code.toStringLiteral())) }
-                .count
-                == (stringDoesNotViolate ? 0 : triggersToCheck.count),
+            stringViolationCount == (stringDoesNotViolate ? 0 : triggersToCheck.count),
             "Violation(s) still triggered when code was nested inside a string literal",
             sourceLocation: sourceLocation,
         )
@@ -528,7 +531,7 @@ func verifyLint(
                 .map { $0.with(code: command + $0.code) }
 
         for trigger in disabledTriggers {
-            let violationsPartitionedByType = makeViolations(trigger)
+            let violationsPartitionedByType = await makeViolations(trigger)
                 .partitioned { $0.ruleIdentifier == SuperfluousDisableCommandRule.identifier }
 
             #expect(
@@ -548,14 +551,16 @@ func verifyLint(
        let example = triggers.first(where: { $0.configuration == nil })
     {
         let withWarning = Example(example.code, configuration: ["severity": "warning"])
+        let warningViolations = await violations(withWarning, config: config)
         #expect(
-            violations(withWarning, config: config).allSatisfy { $0.severity == .warning },
+            warningViolations.allSatisfy { $0.severity == .warning },
             "Violation severity cannot be changed to warning",
         )
 
         let withError = Example(example.code, configuration: ["severity": "error"])
+        let errorViolations = await violations(withError, config: config)
         #expect(
-            violations(withError, config: config).allSatisfy { $0.severity == .error },
+            errorViolations.allSatisfy { $0.severity == .error },
             "Violation severity cannot be changed to error",
         )
     }
@@ -569,13 +574,13 @@ func verifyCorrections(
     disableCommands: [String],
     testMultiByteOffsets: Bool,
     parserDiagnosticsDisabledForTests: Bool = true,
-) {
+) async {
     let ruleDescription = ruleDescription.focused()
 
-    $parserDiagnosticsDisabledForTests.withValue(parserDiagnosticsDisabledForTests) {
+    await $parserDiagnosticsDisabledForTests.withValue(parserDiagnosticsDisabledForTests) {
         // corrections
         for correction in ruleDescription.corrections {
-            testCorrection(
+            await testCorrection(
                 correction,
                 configuration: config,
                 testMultiByteOffsets: testMultiByteOffsets,
@@ -583,7 +588,7 @@ func verifyCorrections(
         }
         // make sure strings that don't trigger aren't corrected
         for nonTriggeringExample in ruleDescription.nonTriggeringExamples {
-            testCorrection(
+            await testCorrection(
                 (nonTriggeringExample, nonTriggeringExample),
                 configuration: config,
                 testMultiByteOffsets: testMultiByteOffsets,
@@ -597,7 +602,7 @@ func verifyCorrections(
                 let expectedCleaned =
                     before
                         .with(code: cleanedContentsAndMarkerOffsets(from: beforeDisabled).0)
-                assertCorrection(expectedCleaned, expected: expectedCleaned, config: config)
+                await assertCorrection(expectedCleaned, expected: expectedCleaned, config: config)
             }
         }
     }
@@ -610,10 +615,10 @@ private func verifyExamples(
     nonTriggers: [Example],
     configuration config: Configuration,
     requiresFileOnDisk: Bool,
-) {
+) async {
     // Non-triggering examples don't violate
     for nonTrigger in nonTriggers {
-        let unexpectedViolations = violations(
+        let unexpectedViolations = await violations(
             nonTrigger, config: config,
             requiresFileOnDisk: requiresFileOnDisk,
         )
@@ -624,7 +629,7 @@ private func verifyExamples(
 
     // Triggering examples violate
     for trigger in triggers {
-        let triggerViolations = violations(
+        let triggerViolations = await violations(
             trigger, config: config,
             requiresFileOnDisk: requiresFileOnDisk,
         )
@@ -637,7 +642,7 @@ private func verifyExamples(
             }
             continue
         }
-        let file = SwiftLintFile.testFile(withContents: cleanTrigger)
+        let file = SwiftSource.testFile(withContents: cleanTrigger)
         let expectedLocations = markerOffsets.map { Location(file: file, characterOffset: $0) }
 
         let violationsAtUnexpectedLocation =

@@ -181,7 +181,7 @@ struct RedundantDiscardableLetRule: Rule {
 }
 
 extension RedundantDiscardableLetRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -242,7 +242,7 @@ extension RedundantDiscardableLetRule {
                !node.modifiers.contains(where: { $0.name.text == "async" })
             {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.bindingSpecifier.positionAfterSkippingLeadingTrivia,
                         correction: .init(
                             start: node.bindingSpecifier.positionAfterSkippingLeadingTrivia,

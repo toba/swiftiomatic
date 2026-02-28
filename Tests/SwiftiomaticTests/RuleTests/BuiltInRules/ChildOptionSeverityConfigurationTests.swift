@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ChildOptionSeverityConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ChildOptionSeverityConfigurationTests {
     typealias TesteeType = ChildOptionSeverityConfiguration<MockRule>
 
     @Test func severity() {

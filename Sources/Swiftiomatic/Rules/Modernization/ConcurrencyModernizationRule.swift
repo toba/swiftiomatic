@@ -22,7 +22,7 @@ struct ConcurrencyModernizationRule: Rule {
 }
 
 extension ConcurrencyModernizationRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -30,17 +30,17 @@ extension ConcurrencyModernizationRule: SwiftSyntaxRule {
 extension ConcurrencyModernizationRule: OptInRule {}
 
 extension ConcurrencyModernizationRule: AsyncEnrichableRule {
-    func enrichAsync(
-        file: SwiftLintFile,
+    func enrich(
+        file: SwiftSource,
         typeResolver: any TypeResolver,
-    ) async -> [StyleViolation] {
+    ) async -> [RuleViolation] {
         guard let filePath = file.path else { return [] }
 
         // Find DispatchQueue.*.async calls and verify via SourceKit
         let collector = DispatchQueueCallCollector(viewMode: .sourceAccurate)
         collector.walk(file.syntaxTree)
 
-        var violations: [StyleViolation] = []
+        var violations: [RuleViolation] = []
 
         for query in collector.queries {
             guard let resolved = await typeResolver.resolveType(
@@ -53,7 +53,7 @@ extension ConcurrencyModernizationRule: AsyncEnrichableRule {
             {
                 // Confirmed DispatchQueue — emit with high confidence
                 violations.append(
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         severity: configuration.severity,
                         location: Location(file: filePath, line: query.line, character: query.column),
@@ -81,7 +81,7 @@ private extension ConcurrencyModernizationRule {
 
         override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
             let callee = node.calledExpression.trimmedDescription
-            if ConcurrencyDetectionHelpers.isDispatchQueueAsync(callee) {
+            if ConcurrencyPatternDetector.isDispatchQueueAsync(callee) {
                 let loc = node.startLocation(
                     converter: .init(fileName: "", tree: node.root),
                 )
@@ -100,9 +100,9 @@ private extension ConcurrencyModernizationRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         override func visitPost(_ node: FunctionDeclSyntax) {
             for param in node.signature.parameterClause.parameters {
-                if ConcurrencyDetectionHelpers.isCompletionHandlerParam(param) {
+                if ConcurrencyPatternDetector.isCompletionHandlerParam(param) {
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason: "Function '\(node.name.text)' uses completion handler pattern",
                             severity: .warning,
@@ -118,9 +118,9 @@ private extension ConcurrencyModernizationRule {
         override func visitPost(_ node: FunctionCallExprSyntax) {
             let callee = node.calledExpression.trimmedDescription
 
-            if ConcurrencyDetectionHelpers.isDispatchQueueAsync(callee) {
+            if ConcurrencyPatternDetector.isDispatchQueueAsync(callee) {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "DispatchQueue.async can be replaced with structured concurrency",
                         severity: .warning,
@@ -132,7 +132,7 @@ private extension ConcurrencyModernizationRule {
 
             if callee.contains("DispatchGroup") {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "DispatchGroup can be replaced with TaskGroup",
                         severity: .warning,
@@ -144,7 +144,7 @@ private extension ConcurrencyModernizationRule {
 
             if callee.contains("NSLock()") || callee.contains("os_unfair_lock") {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Lock-based synchronization can be replaced with Mutex",
                         severity: .warning,
@@ -156,9 +156,9 @@ private extension ConcurrencyModernizationRule {
         }
 
         override func visitPost(_ node: ClassDeclSyntax) {
-            if ConcurrencyDetectionHelpers.hasUncheckedSendable(node.inheritanceClause) {
+            if ConcurrencyPatternDetector.hasUncheckedSendable(node.inheritanceClause) {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason:
                         "Class '\(node.name.text)' uses @unchecked Sendable — check if Mutex would enable proper Sendable",

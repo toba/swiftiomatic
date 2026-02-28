@@ -49,19 +49,19 @@ extension Configuration {
     ) -> (includedPaths: [String], excludedPaths: [String]) {
         // Render paths relative to their respective root paths → makes them comparable
         let childConfigIncluded = childConfiguration.includedPaths.map {
-            $0.bridge().absolutePathRepresentation(rootDirectory: childConfiguration.rootDirectory)
+            $0.absolutePathRepresentation(rootDirectory: childConfiguration.rootDirectory)
         }
 
         let childConfigExcluded = childConfiguration.excludedPaths.map {
-            $0.bridge().absolutePathRepresentation(rootDirectory: childConfiguration.rootDirectory)
+            $0.absolutePathRepresentation(rootDirectory: childConfiguration.rootDirectory)
         }
 
         let parentConfigIncluded = includedPaths.map {
-            $0.bridge().absolutePathRepresentation(rootDirectory: self.rootDirectory)
+            $0.absolutePathRepresentation(rootDirectory: self.rootDirectory)
         }
 
         let parentConfigExcluded = excludedPaths.map {
-            $0.bridge().absolutePathRepresentation(rootDirectory: self.rootDirectory)
+            $0.absolutePathRepresentation(rootDirectory: self.rootDirectory)
         }
 
         // Prefer child configuration over parent configuration
@@ -97,7 +97,7 @@ extension Configuration {
     /// - parameter file: The file for which to obtain a configuration value.
     ///
     /// - returns: A new configuration.
-    func configuration(for file: SwiftLintFile) -> Configuration {
+    func configuration(for file: SwiftSource) -> Configuration {
         (file.path?.bridge().deletingLastPathComponent).map(configuration(forDirectory:)) ?? self
     }
 
@@ -126,10 +126,8 @@ extension Configuration {
             // Use self merged with the nested config that was found
             // iff that nested config has not already been used to build the main config
 
-            // Ignore parent_config / child_config specifications of nested configs
             var childConfiguration = Configuration(
                 configurationFiles: [configurationSearchPath],
-                ignoreParentAndChildConfigs: true,
             )
             childConfiguration.fileGraph = FileGraph(rootDirectory: directory)
             config = merged(withChild: childConfiguration, rootDirectory: rootDirectory)

@@ -16,7 +16,7 @@ Rename InvalidSwiftLintCommandRule → InvalidCommandRule, update AllRules.swift
 Update Configuration.defaultFileName to `.swiftiomatic.yaml`.
 Recalculate CommandTests ranges (7 chars shorter).
 
-- [x] Core parsing (CommandVisitor, Command, SwiftLintFile+Cache)
+- [x] Core parsing (CommandVisitor, Command, SwiftSource+Cache)
 - [x] Format engine (Formatter.swift)
 - [x] Format rules with directive matching
 - [x] Lint rules with hardcoded prefix (InvalidCommand rename, BlanketDisable, Superfluous)

@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct LineLengthConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct LineLengthConfigurationTests {
     private let severityLevels = SeverityLevelsConfiguration<LineLengthRule>(
         warning: 100,
         error: 150,

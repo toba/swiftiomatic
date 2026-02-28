@@ -63,14 +63,14 @@ struct SingleTestClassRule: SourceKitFreeRule, OptInRule {
         ],
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         let classes = Visitor(configuration: configuration, file: file)
             .walk(tree: file.syntaxTree, handler: \.violations)
 
         guard classes.count > 1 else { return [] }
 
         return classes.map { position in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: file, position: position.position),

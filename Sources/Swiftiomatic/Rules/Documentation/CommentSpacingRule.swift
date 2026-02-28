@@ -166,52 +166,43 @@ struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
         ],
     )
 
-    func violationRanges(in file: SwiftLintFile) -> [NSRange] {
+    func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
         // Find all comment tokens in the file and regex search them for violations
-        file.syntaxClassifications
+        let str = file.stringView.string
+        return file.syntaxClassifications
             .filter(\.kind.isComment)
             .map { $0.range.toSourceKitByteRange() }
-            .compactMap { (range: ByteRange) -> [NSRange]? in
-                file.stringView
-                    .substringWithByteRange(range)
-                    .map(StringView.init)
-                    .map { commentBody in
-                        // Look for 2+ slash characters followed immediately by
-                        // a non-colon, non-whitespace character or by a colon
-                        // followed by a non-whitespace character other than #
-                        regex(#"^(?:\/){2,}+(?:[^\s:]|:[^\s#])"#).matches(
-                            in: commentBody,
-                            options: .anchored,
-                        )
-                        .compactMap { result in
-                            // Set the location to be directly before the first non-slash,
-                            // non-whitespace character which was matched
-                            file.stringView.byteRangeToNSRange(
-                                ByteRange(
-                                    // Safe to mix NSRange offsets with byte offsets here because the regex can't
-                                    // contain multi-byte characters
-                                    location: ByteCount(range.lowerBound.value + result.range
-                                        .upperBound - 1),
-                                    length: 0,
-                                ),
-                            )
-                        }
+            .compactMap { (range: ByteRange) -> [Range<String.Index>]? in
+                guard let searchRange = file.stringView.byteRangeToStringRange(range)
+                else { return nil }
+                // Look for 2+ slash characters followed immediately by
+                // a non-colon, non-whitespace character or by a colon
+                // followed by a non-whitespace character other than #
+                return regex(#"^(?:\/){2,}+(?:[^\s:]|:[^\s#])"#)
+                    .matches(in: str, range: searchRange)
+                    .map { result in
+                        // Zero-length range at the last character of the match
+                        // (directly before the first non-slash, non-whitespace character)
+                        let violationIndex = str.index(before: result.range.upperBound)
+                        return violationIndex..<violationIndex
                     }
             }
             .flatMap(\.self)
     }
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         violationRanges(in: file).map { range in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: range.location),
+                location: Location(file: file, stringIndex: range.lowerBound),
             )
         }
     }
 
-    func substitution(for violationRange: NSRange, in _: SwiftLintFile) -> (NSRange, String)? {
+    func substitution(for violationRange: Range<String.Index>, in _: SwiftSource)
+        -> (Range<String.Index>, String)?
+    {
         (violationRange, " ")
     }
 }

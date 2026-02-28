@@ -10,7 +10,7 @@ struct FileNameNoSpaceRule: OptInRule, SourceKitFreeRule {
         kind: .idiomatic,
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         guard let filePath = file.path,
               case let fileName = filePath.bridge().lastPathComponent,
               !configuration.excluded.contains(fileName),
@@ -20,7 +20,7 @@ struct FileNameNoSpaceRule: OptInRule, SourceKitFreeRule {
         }
 
         return [
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: filePath, line: 1),

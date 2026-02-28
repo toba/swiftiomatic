@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct YamlParserTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct YamlParserTests {
     @Test func parseEmptyString() throws {
         #expect(
             try (YamlParser.parse("", env: [:])).isEmpty,

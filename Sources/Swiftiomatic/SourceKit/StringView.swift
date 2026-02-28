@@ -115,6 +115,27 @@ struct StringView {
         return Foundation.NSRange(location: utf16Start, length: utf16End - utf16Start)
     }
 
+    func byteRangeToStringRange(_ byteRange: ByteRange) -> Range<String.Index>? {
+        guard !string.isEmpty else { return nil }
+        let utf8 = string.utf8
+        guard let start = utf8.index(
+            utf8.startIndex, offsetBy: byteRange.location.value, limitedBy: utf8.endIndex
+        ) else { return nil }
+        if byteRange.length == 0 {
+            return start..<start
+        }
+        guard let end = utf8.index(
+            start, offsetBy: byteRange.length.value, limitedBy: utf8.endIndex
+        ) else { return nil }
+        return start..<end
+    }
+
+    func stringRangeToByteRange(_ range: Range<String.Index>) -> ByteRange {
+        let byteStart = string.utf8.distance(from: string.utf8.startIndex, to: range.lowerBound)
+        let byteLength = string.utf8.distance(from: range.lowerBound, to: range.upperBound)
+        return ByteRange(location: ByteCount(byteStart), length: ByteCount(byteLength))
+    }
+
     func byteOffset(fromLocation location: Int) -> ByteCount {
         if lines.isEmpty { return 0 }
         let index = lines.indexAssumingSorted { line in

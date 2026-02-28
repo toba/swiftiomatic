@@ -10,7 +10,7 @@ private let newlinesCharacterSetForString = CharacterSet(charactersIn: "\u{000A}
 
 extension String {
     var isObjectiveCHeaderFile: Bool {
-        ["h", "hpp", "hh"].contains(bridge().pathExtension)
+        ["h", "hpp", "hh"].contains(URL(fileURLWithPath: self).pathExtension)
     }
 
     var unescaped: String {
@@ -26,31 +26,31 @@ extension String {
     }
 
     var isSwiftFile: Bool {
-        bridge().pathExtension == "swift"
+        URL(fileURLWithPath: self).pathExtension == "swift"
     }
 
     func commentBody(range: NSRange? = nil) -> String? {
         let nsString = bridge()
         let patterns: [(pattern: String, options: NSRegularExpression.Options)] = [
             ("^\\s*\\/\\*\\*\\s*(.*?)\\*\\/", [.anchorsMatchLines, .dotMatchesLineSeparators]),
-            ("^\\s*\\/\\/\\/(.+)?", .anchorsMatchLines),
+            ("^\\s*\\/\\/\\/(.+)?", [.anchorsMatchLines]),
         ]
-        let range = range ?? NSRange(location: 0, length: nsString.length)
-        for pattern in patterns {
-            let regex = try! NSRegularExpression(
-                pattern: pattern.pattern,
-                options: pattern.options,
-            ) // sm:disable:this force_try
-            let matches = regex.matches(in: self, options: [], range: range)
+        let searchRange = range ?? NSRange(location: 0, length: nsString.length)
+        for patternDef in patterns {
+            // sm:disable:next force_try
+            let compiledRegex = try! RegularExpression.cached(
+                pattern: patternDef.pattern, options: patternDef.options,
+            )
+            let matches = compiledRegex.matches(in: self, range: searchRange)
             let bodyParts = matches.flatMap { match -> [String] in
-                let numberOfRanges = match.numberOfRanges
-                if numberOfRanges < 1 { return [] }
-                return (1 ..< numberOfRanges).map { rangeIndex in
-                    let range = match.range(at: rangeIndex)
-                    if range.location == NSNotFound { return "" }
+                let groupCount = compiledRegex.numberOfCaptureGroups
+                if groupCount < 1 { return [] }
+                return (1 ... groupCount).map { groupIndex in
+                    guard let sub = match.output[groupIndex].substring else { return "" }
+                    let subRange = NSRange(sub.startIndex ..< sub.endIndex, in: self)
                     var lineStart = 0
                     var lineEnd = nsString.length
-                    let indexRange = NSRange(location: range.location, length: 0)
+                    let indexRange = NSRange(location: subRange.location, length: 0)
                     nsString.getLineStart(
                         &lineStart,
                         end: &lineEnd,
@@ -65,13 +65,13 @@ extension String {
                         repeating: " ",
                         count: leadingWhitespaceCountToAdd,
                     )
-                    let bodySubstring = nsString.substring(with: range)
+                    let bodySubstring = String(sub)
                     if bodySubstring.contains("@name") { return "" }
                     return leadingWhitespaceToAdd + bodySubstring
                 }
             }
             if !bodyParts.isEmpty {
-                return bodyParts.joined(separator: "\n").bridge()
+                return bodyParts.joined(separator: "\n")
                     .trimmingTrailingCharacters(in: .whitespacesAndNewlines)
                     .removingCommonLeadingWhitespaceFromLines()
             }
@@ -91,7 +91,7 @@ extension String {
 
     func trimmingTrailingCharacters(in characterSet: CharacterSet) -> String {
         guard !isEmpty else { return "" }
-        var unicodeScalars = bridge().unicodeScalars
+        var unicodeScalars = self.unicodeScalars
         while let scalar = unicodeScalars.last {
             if !characterSet.contains(scalar) {
                 return String(unicodeScalars)
@@ -125,13 +125,16 @@ extension String {
     }
 }
 
-extension NSString {
+extension String {
     func absolutePathRepresentation(rootDirectory: String = FileManager.default
         .currentDirectoryPath)
         -> String
     {
-        if isAbsolutePath { return expandingTildeInPath }
-        return NSString.path(withComponents: [rootDirectory, bridge()]).bridge().standardizingPath
+        if hasPrefix("/") { return self }
+        if hasPrefix("~") { return (self as NSString).expandingTildeInPath }
+        return URL(fileURLWithPath: rootDirectory)
+            .appendingPathComponent(self)
+            .standardizedFileURL.path
     }
 }
 

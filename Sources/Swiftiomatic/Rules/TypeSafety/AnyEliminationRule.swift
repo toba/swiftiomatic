@@ -22,7 +22,7 @@ struct AnyEliminationRule: Rule {
 }
 
 extension AnyEliminationRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -30,17 +30,17 @@ extension AnyEliminationRule: SwiftSyntaxRule {
 extension AnyEliminationRule: OptInRule {}
 
 extension AnyEliminationRule: AsyncEnrichableRule {
-    func enrichAsync(
-        file: SwiftLintFile,
+    func enrich(
+        file: SwiftSource,
         typeResolver: any TypeResolver,
-    ) async -> [StyleViolation] {
+    ) async -> [RuleViolation] {
         guard let filePath = file.path else { return [] }
 
         // Find type annotations that aren't literally Any but might alias to it
         let collector = TypeAliasCollector(viewMode: .sourceAccurate)
         collector.walk(file.syntaxTree)
 
-        var violations: [StyleViolation] = []
+        var violations: [RuleViolation] = []
 
         for query in collector.queries {
             guard let resolved = await typeResolver.resolveType(
@@ -49,7 +49,7 @@ extension AnyEliminationRule: AsyncEnrichableRule {
 
             if resolved.typeName == "Any" || resolved.typeName == "Swift.Any" {
                 violations.append(
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         severity: configuration.severity,
                         location: Location(file: filePath, line: query.line, character: query.column),
@@ -89,7 +89,7 @@ private extension AnyEliminationRule {
 
         private func collectIfNotLiteralAny(_ type: TypeSyntax, at node: some SyntaxProtocol) {
             let typeStr = type.trimmedDescription
-            guard AnyTypeHelpers.classifyAnyType(typeStr) == nil else { return }
+            guard AnyTypeClassifier.classifyAnyType(typeStr) == nil else { return }
             let loc = node.startLocation(
                 converter: .init(fileName: "", tree: node.root),
             )
@@ -118,7 +118,7 @@ private extension AnyEliminationRule {
             let value = node.value.trimmedDescription
             if key == "String", value == "Any" || value == "any Sendable" {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "[String: \(value)] dictionary should be a Codable struct",
                         severity: .warning,
@@ -132,7 +132,7 @@ private extension AnyEliminationRule {
         override func visitPost(_ node: AsExprSyntax) {
             if node.questionOrExclamationMark?.tokenKind == .exclamationMark {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Force cast 'as!' — trace back to where the type was erased",
                         severity: .warning,
@@ -144,10 +144,10 @@ private extension AnyEliminationRule {
         }
 
         private func checkForAny(in type: TypeSyntax) {
-            guard let match = AnyTypeHelpers.classifyAnyType(type.trimmedDescription)
+            guard let match = AnyTypeClassifier.classifyAnyType(type.trimmedDescription)
             else { return }
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: type.positionAfterSkippingLeadingTrivia,
                     reason: match.message,
                     severity: .warning,

@@ -88,7 +88,7 @@ struct ShorthandArgumentRule: Rule {
 }
 
 extension ShorthandArgumentRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -106,7 +106,7 @@ private extension ShorthandArgumentRule {
                 if arguments.map(\.name).unique.count > 1 {
                     violations.append(
                         contentsOf: arguments.map {
-                            ReasonedRuleViolation(
+                            SyntaxViolation(
                                 position: $0.position,
                                 reason: "Multiple different shorthand arguments should be avoided",
                                 severity: configuration.severity,
@@ -122,7 +122,7 @@ private extension ShorthandArgumentRule {
                 if complexArguments.isNotEmpty {
                     violations.append(
                         contentsOf: complexArguments.map {
-                            ReasonedRuleViolation(
+                            SyntaxViolation(
                                 position: $0.position,
                                 reason: "Accessing members of shorthand arguments should be avoided",
                                 severity: configuration.severity,
@@ -137,7 +137,7 @@ private extension ShorthandArgumentRule {
             )
             .line
             violations.append(
-                contentsOf: arguments.compactMap { argument -> ReasonedRuleViolation? in
+                contentsOf: arguments.compactMap { argument -> SyntaxViolation? in
                     if complexArguments.contains(argument) {
                         nil
                     } else if locationConverter.location(for: argument.position).line
@@ -145,7 +145,7 @@ private extension ShorthandArgumentRule {
                     {
                         nil
                     } else {
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: argument.position,
                             reason: """
                             References to shorthand arguments too far away from the closure's beginning should \

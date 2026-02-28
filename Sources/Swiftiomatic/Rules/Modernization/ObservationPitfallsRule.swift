@@ -18,7 +18,7 @@ struct ObservationPitfallsRule: Rule {
 }
 
 extension ObservationPitfallsRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -30,7 +30,7 @@ private extension ObservationPitfallsRule {
         override func visitPost(_ node: FunctionCallExprSyntax) {
             if node.calledExpression.trimmedDescription == "withObservationTracking" {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason:
                         "withObservationTracking with recursive onChange — consider Observations AsyncSequence",
@@ -55,7 +55,7 @@ private extension ObservationPitfallsRule {
 
                 if !hasWeakSelf {
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: callExpr.positionAfterSkippingLeadingTrivia,
                             reason: "Observations closure missing [weak self] — may cause retain cycle",
                             severity: .error,

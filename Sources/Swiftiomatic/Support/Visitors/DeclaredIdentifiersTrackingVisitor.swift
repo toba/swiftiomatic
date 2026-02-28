@@ -61,7 +61,7 @@ class DeclaredIdentifiersTrackingVisitor<Configuration: RuleConfiguration>:
     ///   - file: File from which the syntax tree stems from.
     ///   - scope: A (potentially already pre-filled) scope to collect identifiers into.
     @inlinable
-    init(configuration: Configuration, file: SwiftLintFile, scope: Scope = Scope()) {
+    init(configuration: Configuration, file: SwiftSource, scope: Scope = Scope()) {
         self.scope = scope
         super.init(configuration: configuration, file: file)
     }

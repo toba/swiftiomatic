@@ -1,23 +1,21 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct TrailingWhitespaceRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withIgnoresEmptyLinesEnabled() {
+@Suite(.rulesRegistered) struct TrailingWhitespaceRuleTests {
+    @Test func withIgnoresEmptyLinesEnabled() async {
         // Perform additional tests with the ignores_empty_lines setting enabled.
         // The set of non-triggering examples is extended by a whitespace-indented empty line
         let baseDescription = TrailingWhitespaceRule.description
         let nonTriggeringExamples = baseDescription.nonTriggeringExamples + [Example(" \n")]
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: ["ignores_empty_lines": true, "ignores_comments": true],
         )
     }
 
-    @Test func withIgnoresCommentsDisabled() {
+    @Test func withIgnoresCommentsDisabled() async {
         // Perform additional tests with the ignores_comments settings disabled.
         let baseDescription = TrailingWhitespaceRule.description
         let triggeringComments = [
@@ -29,14 +27,14 @@ import Testing
         let triggeringExamples = baseDescription.triggeringExamples + triggeringComments
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: ["ignores_empty_lines": false, "ignores_comments": false],
             commentDoesNotViolate: false,
         )
     }
 
-    @Test func withIgnoresLiteralsEnabled() {
+    @Test func withIgnoresLiteralsEnabled() async {
         // Perform additional tests with the ignores_literals setting enabled.
         // This setting only ignores trailing whitespace inside multiline string literals.
         let baseDescription = TrailingWhitespaceRule.description
@@ -52,7 +50,7 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: ["ignores_literals": true],
         )

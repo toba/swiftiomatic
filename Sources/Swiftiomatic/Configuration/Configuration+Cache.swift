@@ -54,7 +54,7 @@ extension Configuration {
                 .sorted { $0[0] < $1[0] }
         let jsonObject: [Any] = [rootDirectory, cacheRulesDescriptions]
         if let jsonData = try? JSONSerialization.data(withJSONObject: jsonObject) {
-            return jsonData.sha256().toHexString()
+            return jsonData.sha256().hexString
         }
         queuedFatalError("Could not serialize configuration for cache")
     }

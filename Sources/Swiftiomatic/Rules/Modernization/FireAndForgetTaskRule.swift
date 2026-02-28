@@ -26,7 +26,7 @@ struct FireAndForgetTaskRule: Rule {
 }
 
 extension FireAndForgetTaskRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -84,13 +84,13 @@ private extension FireAndForgetTaskRule {
         }
 
         private func checkFireAndForgetTask(_ node: FunctionCallExprSyntax) {
-            if TaskDetectionHelpers.isReturned(node) || TaskDetectionHelpers
+            if TaskPatternDetector.isReturned(node) || TaskPatternDetector
                 .isAssigned(node) { return }
 
             if insideViewBody || insideInit {
                 let location = insideViewBody ? "body" : "init"
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason:
                         "Task created in SwiftUI View \(location) — runs on every evaluation, not tied to view lifecycle",
@@ -102,11 +102,11 @@ private extension FireAndForgetTaskRule {
                 return
             }
 
-            let scope = TaskDetectionHelpers.enclosingScope(of: node)
+            let scope = TaskPatternDetector.enclosingScope(of: node)
             switch scope {
                 case .deinit, .viewDidDisappear:
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason:
                             "Fire-and-forget Task in \(scope.description) — work continues after teardown with no cancellation handle",
@@ -117,7 +117,7 @@ private extension FireAndForgetTaskRule {
                     )
                 case .general:
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason: "Fire-and-forget Task — result not captured, cancellation not possible",
                             severity: .warning,
@@ -130,10 +130,10 @@ private extension FireAndForgetTaskRule {
 
         private func checkOnAppearTask(_ node: FunctionCallExprSyntax) {
             if let trailingClosure = node.trailingClosure,
-               TaskDetectionHelpers.closureContainsTask(trailingClosure)
+               TaskPatternDetector.closureContainsTask(trailingClosure)
             {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason:
                         ".onAppear contains Task { } — use .task modifier instead for automatic cancellation",
@@ -146,10 +146,10 @@ private extension FireAndForgetTaskRule {
             }
             for argument in node.arguments {
                 if let closureExpr = argument.expression.as(ClosureExprSyntax.self),
-                   TaskDetectionHelpers.closureContainsTask(closureExpr)
+                   TaskPatternDetector.closureContainsTask(closureExpr)
                 {
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason:
                             ".onAppear contains Task { } — use .task modifier instead for automatic cancellation",

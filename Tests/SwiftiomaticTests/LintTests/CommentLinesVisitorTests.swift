@@ -2,9 +2,7 @@ import Testing
 import SwiftSyntax
 @testable import Swiftiomatic
 
-@Suite struct CommentLinesVisitorTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct CommentLinesVisitorTests {
     @Test func emptyFile() {
         #expect(commentOnlyLines(in: "") == [])
     }
@@ -139,6 +137,6 @@ import SwiftSyntax
     }
 
     private func commentOnlyLines(in contents: String) -> [Int] {
-        CommentLinesVisitor.commentLines(in: SwiftLintFile(contents: contents)).sorted()
+        CommentLinesVisitor.commentLines(in: SwiftSource(contents: contents)).sorted()
     }
 }

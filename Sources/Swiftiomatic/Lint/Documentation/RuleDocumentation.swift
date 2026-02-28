@@ -18,11 +18,8 @@ struct RuleDocumentation {
     }
 
     /// If this rule uses SourceKit.
-    /// Note: For ConditionallySourceKitFree rules, this returns true since we can't
-    /// determine at the type level if they're effectively SourceKit-free.
     var usesSourceKit: Bool {
-        !(ruleType is any SourceKitFreeRule.Type) ||
-            (ruleType is any ConditionallySourceKitFree.Type)
+        !(ruleType is any SourceKitFreeRule.Type)
     }
 
     /// If this rule is disabled by default.

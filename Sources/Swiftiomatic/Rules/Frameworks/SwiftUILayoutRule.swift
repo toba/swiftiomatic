@@ -19,7 +19,7 @@ struct SwiftUILayoutRule: Rule {
 }
 
 extension SwiftUILayoutRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -32,21 +32,21 @@ private extension SwiftUILayoutRule {
 
         override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
             let callee = node.calledExpression.trimmedDescription
-            guard SwiftUIContainerHelpers.trackedContainers.contains(callee) else {
+            guard SwiftUILayoutDetector.trackedContainers.contains(callee) else {
                 return .visitChildren
             }
 
-            if let issue = SwiftUIContainerHelpers.checkNestedNavigationStack(
+            if let issue = SwiftUILayoutDetector.checkNestedNavigationStack(
                 callee: callee, containerStack: containerStack,
             ) {
                 emitIssue(issue, at: node)
             }
-            if let issue = SwiftUIContainerHelpers.checkListInsideScrollView(
+            if let issue = SwiftUILayoutDetector.checkListInsideScrollView(
                 callee: callee, containerStack: containerStack,
             ) {
                 emitIssue(issue, at: node)
             }
-            if let issue = SwiftUIContainerHelpers.checkGeometryReaderInsideScrollView(
+            if let issue = SwiftUILayoutDetector.checkGeometryReaderInsideScrollView(
                 callee: callee, containerStack: containerStack,
             ) {
                 emitIssue(issue, at: node)
@@ -54,7 +54,7 @@ private extension SwiftUILayoutRule {
 
             containerStack.append(callee)
 
-            if let issue = SwiftUIContainerHelpers.checkMultipleUnboundedContainers(
+            if let issue = SwiftUILayoutDetector.checkMultipleUnboundedContainers(
                 containerStack: containerStack,
             ) {
                 emitIssue(issue, at: node)
@@ -65,18 +65,18 @@ private extension SwiftUILayoutRule {
 
         override func visitPost(_ node: FunctionCallExprSyntax) {
             let callee = node.calledExpression.trimmedDescription
-            guard SwiftUIContainerHelpers.trackedContainers.contains(callee) else { return }
+            guard SwiftUILayoutDetector.trackedContainers.contains(callee) else { return }
             if let index = containerStack.lastIndex(of: callee) {
                 containerStack.remove(at: index)
             }
         }
 
         private func emitIssue(
-            _ issue: SwiftUIContainerHelpers.LayoutIssue,
+            _ issue: SwiftUILayoutDetector.LayoutIssue,
             at node: FunctionCallExprSyntax,
         ) {
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason: issue.reason,
                     severity: issue.isHighSeverity ? .error : .warning,

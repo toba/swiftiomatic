@@ -1,7 +1,7 @@
 import Foundation
 
-private extension SwiftLintFile {
-    func violatingRanges(for pattern: String) -> [NSRange] {
+private extension SwiftSource {
+    func violatingRanges(for pattern: String) -> [Range<String.Index>] {
         match(pattern: pattern, excludingSyntaxKinds: SourceKitSyntaxKind.commentAndStringKinds)
     }
 }
@@ -188,33 +188,27 @@ extension VerticalWhitespaceOpeningBracesRule: OptInRule {
         corrections: violatingToValidExamples.removingViolationMarkers(),
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
-        let patternRegex: NSRegularExpression = regex(pattern)
+    func validate(file: SwiftSource) -> [RuleViolation] {
+        let patternRegex = regex(pattern)
 
         return file.violatingRanges(for: pattern).map { violationRange in
-            let substring = file.contents.substring(
-                from: violationRange.location, length: violationRange.length,
-            )
-            let substringRange = NSRange(location: 0, length: substring.count)
             let matchResult = patternRegex.firstMatch(
-                in: substring,
-                options: [],
-                range: substringRange,
+                in: file.contents, range: violationRange,
             )!
-            let violatingSubrange = matchResult.range(at: 2)
-            let characterOffset = violationRange.location + violatingSubrange.location + 1
+            let group2Sub = matchResult.output[2].substring!
+            let violationIndex = file.contents.index(after: group2Sub.startIndex)
 
-            return StyleViolation(
+            return RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: characterOffset),
+                location: Location(file: file, stringIndex: violationIndex),
             )
         }
     }
 }
 
 extension VerticalWhitespaceOpeningBracesRule: CorrectableRule {
-    func correct(file: SwiftLintFile) -> Int {
+    func correct(file: SwiftSource) -> Int {
         let violatingRanges = file.ruleEnabled(
             violatingRanges: file.violatingRanges(for: pattern), for: self,
         )
@@ -224,26 +218,14 @@ extension VerticalWhitespaceOpeningBracesRule: CorrectableRule {
         let patternRegex = regex(pattern)
         var fileContents = file.contents
         for violationRange in violatingRanges.reversed() {
-            fileContents = patternRegex.stringByReplacingMatches(
-                in: fileContents,
-                options: [],
-                range: violationRange,
-                withTemplate: "$1$3",
-            )
+            fileContents = patternRegex.replacing(in: fileContents, range: violationRange) { match in
+                let g1 = match.output[1].substring.map(String.init) ?? ""
+                let g3 = match.output[3].substring.map(String.init) ?? ""
+                return g1 + g3
+            }
         }
         file.write(fileContents)
         return violatingRanges.count
     }
 }
 
-extension VerticalWhitespaceOpeningBracesRule {
-    private static let _postMessage: Void = {
-        Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
-        ).print()
-    }()
-
-    func notifyRuleDisabledOnce() {
-        _ = Self._postMessage
-    }
-}

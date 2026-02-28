@@ -44,13 +44,13 @@ struct ShorthandOperatorRule: Rule {
 }
 
 extension ShorthandOperatorRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
 
 extension ShorthandOperatorRule {
-    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+    func preprocess(file: SwiftSource) -> SourceFileSyntax? {
         file.foldedSyntaxTree
     }
 }

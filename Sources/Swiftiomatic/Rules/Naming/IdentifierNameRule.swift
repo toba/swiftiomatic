@@ -20,7 +20,7 @@ struct IdentifierNameRule: Rule {
 }
 
 extension IdentifierNameRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -122,7 +122,7 @@ private extension IdentifierNameRule {
         private func collectViolations(from type: NamedDeclType, on token: TokenSyntax) {
             if let violation = violates(type) {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: token.positionAfterSkippingLeadingTrivia,
                         reason: violation.reason,
                         severity: violation.severity,
@@ -241,14 +241,14 @@ private enum NamedDeclType: CustomStringConvertible {
 private extension String {
     var isViolatingCase: Bool {
         let firstCharacter = String(self[startIndex])
-        guard firstCharacter.isUppercase() else {
+        guard firstCharacter.isUppercase else {
             return false
         }
         guard count > 1 else {
             return true
         }
         let secondCharacter = String(self[index(after: startIndex)])
-        return secondCharacter.isLowercase()
+        return secondCharacter.isLowercase
     }
 
     func strippingLeadingUnderscore(if isPrivate: Bool) -> Self {

@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct AttributesRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func attributesWithAlwaysOnSameLine() {
+@Suite(.rulesRegistered) struct AttributesRuleTests {
+    @Test func attributesWithAlwaysOnSameLine() async {
         // Test with custom `always_on_same_line`
         let nonTriggeringExamples = [
             Example("@objc var x: String"),
@@ -34,13 +32,13 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             alwaysOnSameLineDescription,
             ruleConfiguration: ["always_on_same_line": ["@objc"]],
         )
     }
 
-    @Test func attributesWithAlwaysOnLineAbove() {
+    @Test func attributesWithAlwaysOnLineAbove() async {
         // Test with custom `always_on_line_above`
         let nonTriggeringExamples = [
             Example("@objc\n var x: String"),
@@ -57,13 +55,13 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             alwaysOnNewLineDescription,
             ruleConfiguration: ["always_on_line_above": ["@objc"]],
         )
     }
 
-    @Test func attributesWithAttributesOnLineAboveButOnOtherDeclaration() {
+    @Test func attributesWithAttributesOnLineAboveButOnOtherDeclaration() async {
         let nonTriggeringExamples = [
             Example(
                 """
@@ -110,7 +108,7 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             alwaysOnNewLineDescription,
             ruleConfiguration: [
                 "always_on_same_line": [
@@ -120,7 +118,7 @@ import Testing
         )
     }
 
-    @Test func attributesWithArgumentsAlwaysOnLineAboveFalse() {
+    @Test func attributesWithArgumentsAlwaysOnLineAboveFalse() async {
         let nonTriggeringExamples = [
             Example("@Environment(\\.presentationMode) private var presentationMode"),
         ]
@@ -137,13 +135,13 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             argumentsAlwaysOnLineDescription,
             ruleConfiguration: ["attributes_with_arguments_always_on_line_above": false],
         )
     }
 
-    @Test func attributesWithArgumentsAlwaysOnLineAboveTrue() {
+    @Test func attributesWithArgumentsAlwaysOnLineAboveTrue() async {
         let nonTriggeringExamples = [
             Example("@Environment(\\.presentationMode)\nprivate var presentationMode"),
         ]
@@ -155,7 +153,7 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             argumentsAlwaysOnLineDescription,
             ruleConfiguration: ["attributes_with_arguments_always_on_line_above": true],
         )

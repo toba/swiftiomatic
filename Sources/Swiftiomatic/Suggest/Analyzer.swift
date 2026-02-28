@@ -5,7 +5,7 @@ import SwiftSyntax
 /// Orchestrates analysis of Swift source files through a single Rule-based pipeline.
 ///
 /// All analysis — suggest, lint, and async enrichment — flows through `Rule.validate()`.
-/// Rules conforming to `AsyncEnrichableRule` get a second pass with SourceKit resolution.
+/// Rules conforming to `AsyncEnrichableRule` get a second pass via `enrich()` with SourceKit resolution.
 struct Analyzer: Sendable {
     /// Categories to analyze. Empty means all.
     let categories: Set<Category>
@@ -52,10 +52,10 @@ struct Analyzer: Sendable {
         if let resolver = typeResolver, resolver.isAvailable {
             let enrichableRules = lintRules.compactMap { $0 as? any AsyncEnrichableRule }
             if !enrichableRules.isEmpty {
-                let lintFiles = files.compactMap { SwiftLintFile(path: $0) }
+                let lintFiles = files.compactMap { SwiftSource(path: $0) }
                 for file in lintFiles {
                     for rule in enrichableRules {
-                        let extra = await rule.enrichAsync(file: file, typeResolver: resolver)
+                        let extra = await rule.enrich(file: file, typeResolver: resolver)
                         diagnostics += extra.map { $0.toDiagnostic() }
                     }
                 }
@@ -82,8 +82,8 @@ struct Analyzer: Sendable {
         let collectingRules = lintRules.filter { $0 is any AnyCollectingRule }
         let singlePassRules = lintRules.filter { !($0 is any AnyCollectingRule) }
 
-        // Build SwiftLintFiles
-        let lintFiles = files.compactMap { SwiftLintFile(path: $0) }
+        // Build SwiftSources
+        let lintFiles = files.compactMap { SwiftSource(path: $0) }
 
         // Pass 1: collect cross-file info for CollectingRules
         for file in lintFiles {

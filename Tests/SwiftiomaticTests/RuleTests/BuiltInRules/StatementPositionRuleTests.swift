@@ -1,11 +1,9 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct StatementPositionRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func statementPositionUncuddled() {
+@Suite(.rulesRegistered) struct StatementPositionRuleTests {
+    @Test func statementPositionUncuddled() async {
         let configuration = ["statement_mode": "uncuddled_else"]
-        verifyRule(StatementPositionRule.uncuddledDescription, ruleConfiguration: configuration)
+        await verifyRule(StatementPositionRule.uncuddledDescription, ruleConfiguration: configuration)
     }
 }

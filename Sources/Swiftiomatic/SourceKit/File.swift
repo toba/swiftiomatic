@@ -71,7 +71,7 @@ final class File: Sendable {
     }
 
     init?(path: String) {
-        self.path = path.bridge().absolutePathRepresentation()
+        self.path = path.absolutePathRepresentation()
         do {
             let contents = try String(contentsOfFile: path, encoding: .utf8)
             state = Mutex(FileState(contents: contents))
@@ -82,7 +82,7 @@ final class File: Sendable {
     }
 
     init(pathDeferringReading path: String) {
-        self.path = path.bridge().absolutePathRepresentation()
+        self.path = path.absolutePathRepresentation()
         state = Mutex(FileState())
     }
 

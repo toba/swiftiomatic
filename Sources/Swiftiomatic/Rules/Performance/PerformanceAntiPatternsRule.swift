@@ -26,7 +26,7 @@ struct PerformanceAntiPatternsRule: Rule {
 }
 
 extension PerformanceAntiPatternsRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -45,7 +45,7 @@ private extension PerformanceAntiPatternsRule {
                    || parent.trimmedDescription.contains("duration")
                 {
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason: "Date() used for timing — can go backwards due to NTP adjustments",
                             severity: .warning,
@@ -69,7 +69,7 @@ private extension PerformanceAntiPatternsRule {
 
             if mutationFinder.foundMutation {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason:
                         "Collection '\(collectionName)' is mutated during iteration — may crash or skip elements",
@@ -87,7 +87,7 @@ private extension PerformanceAntiPatternsRule {
 
             let label = elementCount == 0 ? "EmptyCollection()" : "CollectionOfOne(...)"
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason: elementCount == 0
                         ? "Empty array literal may heap-allocate when passed to generic Collection/Sequence parameter"

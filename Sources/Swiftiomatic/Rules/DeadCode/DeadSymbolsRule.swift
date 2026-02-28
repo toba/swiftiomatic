@@ -28,7 +28,7 @@ struct DeadSymbolsRule: CollectingRule, OptInRule {
         ],
     )
 
-    func collectInfo(for file: SwiftLintFile) -> SymbolContribution {
+    func collectInfo(for file: SwiftSource) -> SymbolContribution {
         let filePath = file.path ?? ""
         let collector = DeclarationReferenceCollector(filePath: filePath, viewMode: .sourceAccurate)
         collector.walk(file.syntaxTree)
@@ -37,8 +37,8 @@ struct DeadSymbolsRule: CollectingRule, OptInRule {
         )
     }
 
-    func validate(file: SwiftLintFile, collectedInfo: [SwiftLintFile: SymbolContribution])
-        -> [StyleViolation]
+    func validate(file: SwiftSource, collectedInfo: [SwiftSource: SymbolContribution])
+        -> [RuleViolation]
     {
         // Merge all contributions
         var allDeclarations: [SymbolDeclaration] = []
@@ -56,7 +56,7 @@ struct DeadSymbolsRule: CollectingRule, OptInRule {
             allDeclarations
                 .filter { $0.file == filePath && !allReferences.contains($0.name) }
                 .map { decl in
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         severity: configuration.severity,
                         location: Location(file: filePath, line: decl.line, character: decl.column),

@@ -19,10 +19,6 @@ extension Configuration {
         case baseline
         case writeBaseline = "write_baseline"
         case checkForUpdates = "check_for_updates"
-        case childConfig = "child_config"
-        case parentConfig = "parent_config"
-        case remoteConfigTimeout = "remote_timeout"
-        case remoteConfigTimeoutIfCached = "remote_timeout_if_cached"
     }
 
     // MARK: - Properties

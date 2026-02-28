@@ -31,7 +31,7 @@ updated_at: 2026-02-28T05:47:08Z
 ### Root cause of crashes: concurrent suite execution
 Swift Testing's `.serialized` trait only serializes tests **within** a single suite. Multiple `@Suite` types run concurrently in the same process. The lint engine has extensive shared mutable global state:
 
-- `SwiftLintFile.clearCaches()` clears ~12 global caches (called at start of every `violations()` call)
+- `SwiftSource.clearCaches()` clears ~12 global caches (called at start of every `violations()` call)
 - `RuleRegistry` shared singleton
 - `RuleStorage` instances created per-test but interact with shared `Configuration`
 - `LinterCache` shared state
@@ -40,8 +40,8 @@ Swift Testing's `.serialized` trait only serializes tests **within** a single su
 Added `lintTestLock` (NSRecursiveLock) wrapping:
 - `violations()` (standalone function, line ~74)
 - `verifyRule()` (line ~347)
-- `Collection<SwiftLintFile>.violations()` (line ~117)
-- `Collection<SwiftLintFile>.corrections()` (line ~132)
+- `Collection<SwiftSource>.violations()` (line ~117)
+- `Collection<SwiftSource>.corrections()` (line ~132)
 
 Recursive lock is needed because `verifyRule` → `verifyLint` → `violations` chains.
 

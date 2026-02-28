@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ColonRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func colonWithFlexibleRightSpace() {
+@Suite(.rulesRegistered) struct ColonRuleTests {
+    @Test func colonWithFlexibleRightSpace() async {
         // Verify Colon rule with test values for when flexible_right_spacing
         // is true.
         let nonTriggeringExamples =
@@ -74,10 +72,10 @@ import Testing
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(corrections: corrections)
 
-        verifyRule(description, ruleConfiguration: ["flexible_right_spacing": true])
+        await verifyRule(description, ruleConfiguration: ["flexible_right_spacing": true])
     }
 
-    @Test func colonWithoutApplyToDictionaries() {
+    @Test func colonWithoutApplyToDictionaries() async {
         let nonTriggeringExamples =
             ColonRule.description.nonTriggeringExamples + [
                 Example("let abc = [Void:Void]()\n"),
@@ -150,6 +148,6 @@ import Testing
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(corrections: corrections)
 
-        verifyRule(description, ruleConfiguration: ["apply_to_dictionaries": false])
+        await verifyRule(description, ruleConfiguration: ["apply_to_dictionaries": false])
     }
 }

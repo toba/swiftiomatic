@@ -14,7 +14,7 @@ struct MissingDocsRule: Rule {
 }
 
 extension MissingDocsRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -80,7 +80,7 @@ private extension MissingDocsRule {
             let acl = enumAcl ?? .internal
             if let parameter = configuration.parameters.first(where: { $0.value == acl }) {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.caseKeyword.positionAfterSkippingLeadingTrivia,
                         reason: "\(acl) declarations should be documented",
                         severity: parameter.severity,
@@ -196,7 +196,7 @@ private extension MissingDocsRule {
             )
             if let parameter = configuration.parameters.first(where: { $0.value == acl }) {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: token.positionAfterSkippingLeadingTrivia,
                         reason: "\(acl) declarations should be documented",
                         severity: parameter.severity,

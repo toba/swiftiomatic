@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ConfigurationAliasesTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ConfigurationAliasesTests {
     private let testRuleList = RuleList(rules: RuleWithLevelsMock.self)
 
     @Test func configuresCorrectlyFromDeprecatedAlias() throws {

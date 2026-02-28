@@ -36,7 +36,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
             self.requiredString = requiredString
             if !requiredString.contains(Self.fileNamePlaceholder) {
                 _requiredRegex = try .from(
-                    pattern: NSRegularExpression.escapedPattern(for: requiredString),
+                    pattern: RegularExpression.escapedPattern(for: requiredString),
                     for: Parent.identifier,
                 )
             }
@@ -51,7 +51,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
             self.forbiddenString = forbiddenString
             if !forbiddenString.contains(Self.fileNamePlaceholder) {
                 _forbiddenRegex = try .from(
-                    pattern: NSRegularExpression.escapedPattern(for: forbiddenString),
+                    pattern: RegularExpression.escapedPattern(for: forbiddenString),
                     for: Parent.identifier,
                 )
             }
@@ -68,7 +68,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
     }
 
     private func makeRegex(
-        for file: SwiftLintFile,
+        for file: SwiftSource,
         using pattern: String,
         escapeFileName: Bool,
     ) -> RegularExpression? {
@@ -76,7 +76,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
             file.path.map { path in
                 let fileName = path.bridge().lastPathComponent
                 let escapedName =
-                    escapeFileName ? NSRegularExpression.escapedPattern(for: fileName) : fileName
+                    escapeFileName ? RegularExpression.escapedPattern(for: fileName) : fileName
                 return pattern.replacingOccurrences(
                     of: Self.fileNamePlaceholder,
                     with: escapedName,
@@ -85,21 +85,21 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
         return try? RegularExpression(pattern: replacedPattern)
     }
 
-    private func regexFromString(for file: SwiftLintFile, using string: String)
+    private func regexFromString(for file: SwiftSource, using string: String)
         -> RegularExpression?
     {
         // For string matching, escape the pattern so it matches literally
-        let escapedPattern = NSRegularExpression.escapedPattern(for: string)
+        let escapedPattern = RegularExpression.escapedPattern(for: string)
         return makeRegex(for: file, using: escapedPattern, escapeFileName: false)
     }
 
-    private func regexFromPattern(for file: SwiftLintFile, using pattern: String)
+    private func regexFromPattern(for file: SwiftSource, using pattern: String)
         -> RegularExpression?
     {
         makeRegex(for: file, using: pattern, escapeFileName: true)
     }
 
-    func forbiddenRegex(for file: SwiftLintFile) -> RegularExpression? {
+    func forbiddenRegex(for file: SwiftSource) -> RegularExpression? {
         if let cached = _forbiddenRegex {
             return cached
         }
@@ -119,7 +119,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
         return nil
     }
 
-    func requiredRegex(for file: SwiftLintFile) -> RegularExpression? {
+    func requiredRegex(for file: SwiftSource) -> RegularExpression? {
         if let cached = _requiredRegex {
             return cached
         }

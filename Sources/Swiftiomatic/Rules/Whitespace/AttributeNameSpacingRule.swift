@@ -95,7 +95,7 @@ struct AttributeNameSpacingRule: Rule {
 }
 
 extension AttributeNameSpacingRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -155,13 +155,13 @@ private extension AttributeNameSpacingRule {
             replacement: String,
             reason: String,
         ) {
-            let correction = ReasonedRuleViolation.ViolationCorrection(
+            let correction = SyntaxViolation.ViolationCorrection(
                 start: startPosition,
                 end: endPosition,
                 replacement: replacement,
             )
 
-            let violation = ReasonedRuleViolation(
+            let violation = SyntaxViolation(
                 position: endPosition,
                 reason: reason,
                 severity: configuration.severity,

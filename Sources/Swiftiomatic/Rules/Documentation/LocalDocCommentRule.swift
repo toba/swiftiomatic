@@ -50,7 +50,7 @@ struct LocalDocCommentRule: SwiftSyntaxRule, OptInRule {
         ],
     )
 
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(
             configuration: configuration,
             file: file,
@@ -65,7 +65,7 @@ private extension LocalDocCommentRule {
 
         init(
             configuration: ConfigurationType,
-            file: SwiftLintFile,
+            file: SwiftSource,
             classifications: [SyntaxClassifiedRange],
         ) {
             docCommentRanges =

@@ -44,10 +44,10 @@ struct IndentationWidthRule: OptInRule {
 
     // MARK: - Methods: Validation
 
-    func validate(file: SwiftLintFile)
-        -> [StyleViolation]
+    func validate(file: SwiftSource)
+        -> [RuleViolation]
     { // sm:disable:this function_body_length
-        var violations: [StyleViolation] = []
+        var violations: [RuleViolation] = []
         var previousLineIndentations: [Indentation] = []
 
         for line in file.lines {
@@ -73,7 +73,7 @@ struct IndentationWidthRule: OptInRule {
             if tabCount != 0, spaceCount != 0 {
                 // Catch mixed indentation
                 violations.append(
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         severity: configuration.severityConfiguration.severity,
                         location: Location(file: file, characterOffset: line.range.location),
@@ -98,7 +98,7 @@ struct IndentationWidthRule: OptInRule {
                 if indentation != .spaces(0) {
                     // There's an indentation although this is the first line!
                     violations.append(
-                        StyleViolation(
+                        RuleViolation(
                             ruleDescription: Self.description,
                             severity: configuration.severityConfiguration.severity,
                             location: Location(file: file, characterOffset: line.range.location),
@@ -125,7 +125,7 @@ struct IndentationWidthRule: OptInRule {
 
                 let indentWidth = configuration.indentationWidth
                 violations.append(
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         severity: configuration.severityConfiguration.severity,
                         location: Location(file: file, characterOffset: line.range.location),
@@ -153,7 +153,7 @@ struct IndentationWidthRule: OptInRule {
         return violations
     }
 
-    private func ignoreCompilerDirective(line: Line, in file: SwiftLintFile) -> Bool {
+    private func ignoreCompilerDirective(line: Line, in file: SwiftSource) -> Bool {
         if configuration.includeCompilerDirectives {
             return false
         }
@@ -163,7 +163,7 @@ struct IndentationWidthRule: OptInRule {
         return false
     }
 
-    private func ignoreComment(line: Line, in file: SwiftLintFile) -> Bool {
+    private func ignoreComment(line: Line, in file: SwiftSource) -> Bool {
         if configuration.includeComments {
             return false
         }
@@ -174,7 +174,7 @@ struct IndentationWidthRule: OptInRule {
         return false
     }
 
-    private func ignoreMultilineStrings(line: Line, in file: SwiftLintFile) -> Bool {
+    private func ignoreMultilineStrings(line: Line, in file: SwiftSource) -> Bool {
         if configuration.includeMultilineStrings {
             return false
         }
@@ -222,14 +222,3 @@ struct IndentationWidthRule: OptInRule {
     }
 }
 
-extension IndentationWidthRule {
-    private static let _postMessage: Void = {
-        Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
-        ).print()
-    }()
-
-    func notifyRuleDisabledOnce() {
-        _ = Self._postMessage
-    }
-}

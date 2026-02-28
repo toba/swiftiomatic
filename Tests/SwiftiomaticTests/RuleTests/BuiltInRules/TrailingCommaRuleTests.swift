@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct TrailingCommaRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func trailingCommaRuleWithDefaultConfiguration() {
+@Suite(.rulesRegistered) struct TrailingCommaRuleTests {
+    @Test func trailingCommaRuleWithDefaultConfiguration() async {
         // Verify TrailingCommaRule with test values for when mandatory_comma is false (default).
         let triggeringExamples =
             TrailingCommaRule.description.triggeringExamples + [
@@ -12,12 +10,12 @@ import Testing
                     "class C {\n #if true\n func f() {\n let foo = [1, 2, 3↓,]\n }\n #endif\n}",
                 ),
             ]
-        verifyRule(TrailingCommaRule.description.with(triggeringExamples: triggeringExamples))
+        await verifyRule(TrailingCommaRule.description.with(triggeringExamples: triggeringExamples))
 
         // Ensure the rule produces the correct reason string.
         let failingCase = Example("let array = [\n\t1,\n\t2,\n]\n")
         #expect(
-            trailingCommaViolations(failingCase).first?.reason
+            await trailingCommaViolations(failingCase).first?.reason
                 == "Collection literals should not have trailing commas",
         )
     }
@@ -65,25 +63,25 @@ import Testing
         .with(triggeringExamples: TrailingCommaRuleTests.triggeringExamples)
         .with(corrections: TrailingCommaRuleTests.corrections)
 
-    @Test func trailingCommaRuleWithMandatoryComma() {
+    @Test func trailingCommaRuleWithMandatoryComma() async {
         // Verify TrailingCommaRule with test values for when mandatory_comma is true.
         let ruleDescription = mandatoryCommaRuleDescription
         let ruleConfiguration = ["mandatory_comma": true]
 
-        verifyRule(ruleDescription, ruleConfiguration: ruleConfiguration)
+        await verifyRule(ruleDescription, ruleConfiguration: ruleConfiguration)
 
         // Ensure the rule produces the correct reason string.
         let failingCase = Example("let array = [\n\t1,\n\t2\n]\n")
         #expect(
-            trailingCommaViolations(failingCase, ruleConfiguration: ruleConfiguration).first?.reason
+            await trailingCommaViolations(failingCase, ruleConfiguration: ruleConfiguration).first?.reason
                 == "Multi-line collection literals should have trailing commas",
         )
     }
 
     private func trailingCommaViolations(_ example: Example, ruleConfiguration: Any? = nil)
-        -> [StyleViolation]
+        async -> [RuleViolation]
     {
         let config = makeConfig(ruleConfiguration, TrailingCommaRule.identifier)!
-        return violations(example, config: config)
+        return await violations(example, config: config)
     }
 }

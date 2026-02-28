@@ -56,7 +56,7 @@ struct ReturnArrowWhitespaceRule: Rule {
 }
 
 extension ReturnArrowWhitespaceRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -84,7 +84,7 @@ private extension ReturnArrowWhitespaceRule {
 }
 
 private extension TokenSyntax {
-    var arrowViolation: ReasonedRuleViolation? {
+    var arrowViolation: SyntaxViolation? {
         guard let previousToken = previousToken(viewMode: .sourceAccurate),
               let nextToken = nextToken(viewMode: .sourceAccurate)
         else {

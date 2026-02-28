@@ -14,9 +14,9 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
         requiresFileOnDisk: true,
     )
 
-    func validate(file: SwiftLintFile, compilerArguments: [String]) -> [StyleViolation] {
+    func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {
         violationRanges(in: file, compilerArguments: compilerArguments).map {
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: file, characterOffset: $0.location),
@@ -24,7 +24,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
         }
     }
 
-    func correct(file: SwiftLintFile, compilerArguments: [String]) -> Int {
+    func correct(file: SwiftSource, compilerArguments: [String]) -> Int {
         let violations = violationRanges(in: file, compilerArguments: compilerArguments)
         let matches = file.ruleEnabled(violatingRanges: violations, for: self)
         if matches.isEmpty {
@@ -38,7 +38,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
         return matches.count
     }
 
-    private func violationRanges(in file: SwiftLintFile, compilerArguments: [String]) -> [NSRange] {
+    private func violationRanges(in file: SwiftSource, compilerArguments: [String]) -> [NSRange] {
         guard compilerArguments.isNotEmpty else {
             Issue.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
             return []
@@ -85,7 +85,7 @@ private let kindsToFind: Set = [
     "source.lang.swift.ref.var.instance",
 ]
 
-extension SwiftLintFile {
+extension SwiftSource {
     fileprivate func allCursorInfo(
         compilerArguments: [String], atByteOffsets byteOffsets: [ByteCount],
     ) throws
@@ -144,8 +144,8 @@ private extension StringView {
     }
 }
 
-private func binaryOffsets(file: SwiftLintFile, compilerArguments: [String]) throws -> [ByteCount] {
-    let absoluteFile = file.path!.bridge().absolutePathRepresentation()
+private func binaryOffsets(file: SwiftSource, compilerArguments: [String]) throws -> [ByteCount] {
+    let absoluteFile = file.path!.absolutePathRepresentation()
     let index = try Request.index(file: absoluteFile, arguments: compilerArguments)
         .sendIfNotDisabled()
     let binaryOffsets = file.stringView.recursiveByteOffsets(index)

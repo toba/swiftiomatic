@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ImplicitReturnConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ImplicitReturnConfigurationTests {
     @Test func implicitReturnConfigurationFromDictionary() throws {
         var configuration = ImplicitReturnConfiguration(
             includedKinds: Set<ImplicitReturnConfiguration.ReturnKind>(),

@@ -1,14 +1,12 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct CompilerProtocolInitRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct CompilerProtocolInitRuleTests {
     private let ruleID = CompilerProtocolInitRule.identifier
 
-    @Test func violationMessageForExpressibleByIntegerLiteral() throws {
+    @Test func violationMessageForExpressibleByIntegerLiteral() async throws {
         let config = try #require(makeConfig(nil, ruleID))
-        let allViolations = violations(
+        let allViolations = await violations(
             Example("let a = NSNumber(integerLiteral: 1)"),
             config: config,
         )

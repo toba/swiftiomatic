@@ -120,12 +120,12 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     )
 
     func validate(
-        file: SwiftLintFile,
-        kind: SwiftExpressionKind,
+        file: SwiftSource,
+        kind: ExpressionKind,
         dictionary: SourceKitDictionary,
-    ) -> [StyleViolation] {
+    ) -> [RuleViolation] {
         violatingOffsets(file: file, kind: kind, dictionary: dictionary).map { offset in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: file, characterOffset: offset),
@@ -134,8 +134,8 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     }
 
     private func violatingOffsets(
-        file: SwiftLintFile,
-        kind: SwiftExpressionKind,
+        file: SwiftSource,
+        kind: ExpressionKind,
         dictionary: SourceKitDictionary,
     ) -> [Int] {
         let ranges = callRanges(file: file, kind: kind, dictionary: dictionary)
@@ -168,33 +168,30 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
         return noLeadingNewlineViolations.map(\.dotOffset)
     }
 
-    private static let whitespaceDotRegex = regex("\\s*\\.")
+    private static let whitespaceDotRegex: RegularExpression = "\\s*\\."
 
-    private func callDotOffset(file: SwiftLintFile, callRange: ByteRange) -> Int? {
+    private func callDotOffset(file: SwiftSource, callRange: ByteRange) -> Int? {
         guard let range = file.stringView.byteRangeToNSRange(callRange),
-              case let regex = Self.whitespaceDotRegex,
-              let match = regex.matches(in: file.contents, options: [], range: range).last?.range
+              let match = Self.whitespaceDotRegex.matches(in: file.contents, range: range).last
         else {
             return nil
         }
-        return match.location + match.length - 1
+        let matchNSRange = NSRange(match.range, in: file.contents)
+        return matchNSRange.location + matchNSRange.length - 1
     }
 
-    private static let newlineWhitespaceDotRegex = regex("\\n\\s*\\.")
+    private static let newlineWhitespaceDotRegex: RegularExpression = "\\n\\s*\\."
 
-    private func callHasLeadingNewline(file: SwiftLintFile, callRange: ByteRange) -> Bool {
-        guard let range = file.stringView.byteRangeToNSRange(callRange),
-              case let regex = Self.newlineWhitespaceDotRegex,
-              regex.firstMatch(in: file.contents, options: [], range: range) != nil
-        else {
+    private func callHasLeadingNewline(file: SwiftSource, callRange: ByteRange) -> Bool {
+        guard let range = file.stringView.byteRangeToNSRange(callRange) else {
             return false
         }
-        return true
+        return Self.newlineWhitespaceDotRegex.firstMatch(in: file.contents, range: range) != nil
     }
 
     private func callRanges(
-        file: SwiftLintFile,
-        kind: SwiftExpressionKind,
+        file: SwiftSource,
+        kind: ExpressionKind,
         dictionary: SourceKitDictionary,
         parentCallName: String? = nil,
     ) -> [ByteRange] {
@@ -238,7 +235,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     }
 
     private func subcallRange(
-        file: SwiftLintFile,
+        file: SwiftSource,
         call: SourceKitDictionary,
         parentName: String,
         parentNameOffset: ByteCount,
@@ -278,14 +275,3 @@ private extension SourceKitDictionary {
     }
 }
 
-extension MultilineFunctionChainsRule {
-    private static let _postMessage: Void = {
-        Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
-        ).print()
-    }()
-
-    func notifyRuleDisabledOnce() {
-        _ = Self._postMessage
-    }
-}

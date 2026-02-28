@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct RuleConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct RuleConfigurationTests {
     private let defaultNestingConfiguration = NestingConfiguration(
         typeLevel: SeverityLevelsConfiguration(warning: 0),
         functionLevel: SeverityLevelsConfiguration(warning: 0),

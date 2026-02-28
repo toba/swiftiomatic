@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct EmptyFileTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct EmptyFileTests {
     var collectedLinter: CollectedLinter!
     var ruleStorage: RuleStorage!
 
@@ -11,9 +9,9 @@ import Testing
         .disabled("setUp() not converted from XCTest — collectedLinter/ruleStorage uninitialized"),
     )
     func shouldLintEmptyFileRespectedDuringLint() {
-        let styleViolations = collectedLinter.styleViolations(using: ruleStorage)
-        #expect(styleViolations.count == 1)
-        #expect(styleViolations.first?.ruleIdentifier == "rule_mock<LintEmptyFiles>")
+        let ruleViolations = collectedLinter.ruleViolations(using: ruleStorage)
+        #expect(ruleViolations.count == 1)
+        #expect(ruleViolations.first?.ruleIdentifier == "rule_mock<LintEmptyFiles>")
     }
 
     @Test(
@@ -56,11 +54,11 @@ private struct RuleMock<ShouldLintEmptyFiles: ShouldLintEmptyFilesProtocol>: Cor
         ShouldLintEmptyFiles.shouldLintEmptyFiles
     }
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
-        [StyleViolation(ruleDescription: Self.description, location: Location(file: file.path))]
+    func validate(file: SwiftSource) -> [RuleViolation] {
+        [RuleViolation(ruleDescription: Self.description, location: Location(file: file.path))]
     }
 
-    func correct(file _: SwiftLintFile) -> Int {
+    func correct(file _: SwiftSource) -> Int {
         1
     }
 }

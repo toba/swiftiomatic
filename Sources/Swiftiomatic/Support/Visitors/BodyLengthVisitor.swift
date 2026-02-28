@@ -19,7 +19,7 @@ class BodyLengthVisitor<
     LevelConfig,
 > {
     @inlinable
-    override init(configuration: LevelConfig, file: SwiftLintFile) {
+    override init(configuration: LevelConfig, file: SwiftSource) {
         super.init(configuration: configuration, file: file)
     }
 

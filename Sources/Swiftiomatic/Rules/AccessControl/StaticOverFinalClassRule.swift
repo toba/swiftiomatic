@@ -99,7 +99,7 @@ struct StaticOverFinalClassRule: Rule {
 }
 
 extension StaticOverFinalClassRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -145,7 +145,7 @@ private extension StaticOverFinalClassRule {
                 }
             if let reason {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: position,
                         reason: reason,
                         severity: configuration.severity,

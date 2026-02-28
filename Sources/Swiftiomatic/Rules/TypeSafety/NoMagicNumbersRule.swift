@@ -248,13 +248,13 @@ struct NoMagicNumbersRule: Rule {
 }
 
 extension NoMagicNumbersRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
 
 extension NoMagicNumbersRule {
-    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+    func preprocess(file: SwiftSource) -> SourceFileSyntax? {
         file.foldedSyntaxTree
     }
 }
@@ -354,7 +354,7 @@ private extension NoMagicNumbersRule {
                 return
             }
             let violationsToRemove = Set(
-                possibleViolationsForClass.map { ReasonedRuleViolation(position: $0) },
+                possibleViolationsForClass.map { SyntaxViolation(position: $0) },
             )
             violations.removeAll { violationsToRemove.contains($0) }
             possibleViolations.removeValue(forKey: className)

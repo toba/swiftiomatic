@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct DisableAllTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct DisableAllTests {
     /// Example violations. Could be replaced with other single violations.
     private let violatingPhrases = [
         Example("let r = 0"), // Violates identifier_name
@@ -14,10 +12,10 @@ import Testing
     // MARK: Violating Phrase
 
     /// Tests whether example violating phrases trigger when not applying disable rule
-    @Test func violatingPhrase() {
+    @Test func violatingPhrase() async {
         for violatingPhrase in violatingPhrases {
             #expect(
-                violations(violatingPhrase.with(code: violatingPhrase.code + "\n")).count == 1,
+                await violations(violatingPhrase.with(code: violatingPhrase.code + "\n")).count == 1,
             )
         }
     }
@@ -25,18 +23,18 @@ import Testing
     // MARK: Enable / Disable Base
 
     /// Tests whether sm:disable all protects properly
-    @Test func disableAll() {
+    @Test func disableAll() async {
         for violatingPhrase in violatingPhrases {
             let code = "// sm:disable all\n" + violatingPhrase.code + "\n// sm:enable all\n"
             let protectedPhrase = violatingPhrase.with(code: code)
             #expect(
-                violations(protectedPhrase).isEmpty,
+                await violations(protectedPhrase).isEmpty,
             )
         }
     }
 
     /// Tests whether sm:enable all unprotects properly
-    @Test func enableAll() {
+    @Test func enableAll() async {
         for violatingPhrase in violatingPhrases {
             let unprotectedPhrase = violatingPhrase.with(
                 code: """
@@ -47,7 +45,7 @@ import Testing
                 """,
             )
             #expect(
-                violations(unprotectedPhrase).count == 1,
+                await violations(unprotectedPhrase).count == 1,
             )
         }
     }
@@ -55,7 +53,7 @@ import Testing
     // MARK: Enable / Disable Previous
 
     /// Tests whether sm:disable:previous all protects properly
-    @Test func disableAllPrevious() {
+    @Test func disableAllPrevious() async {
         for violatingPhrase in violatingPhrases {
             let protectedPhrase =
                 violatingPhrase
@@ -66,13 +64,13 @@ import Testing
                         """,
                     )
             #expect(
-                violations(protectedPhrase).isEmpty,
+                await violations(protectedPhrase).isEmpty,
             )
         }
     }
 
     /// Tests whether sm:enable:previous all unprotects properly
-    @Test func enableAllPrevious() {
+    @Test func enableAllPrevious() async {
         for violatingPhrase in violatingPhrases {
             let unprotectedPhrase = violatingPhrase.with(
                 code: """
@@ -84,7 +82,7 @@ import Testing
                 """,
             )
             #expect(
-                violations(unprotectedPhrase).count == 1,
+                await violations(unprotectedPhrase).count == 1,
             )
         }
     }
@@ -92,19 +90,19 @@ import Testing
     // MARK: Enable / Disable Next
 
     /// Tests whether sm:disable:next all protects properly
-    @Test func disableAllNext() {
+    @Test func disableAllNext() async {
         for violatingPhrase in violatingPhrases {
             let protectedPhrase = violatingPhrase.with(
                 code: "// sm:disable:next all\n" + violatingPhrase.code,
             )
             #expect(
-                violations(protectedPhrase).isEmpty,
+                await violations(protectedPhrase).isEmpty,
             )
         }
     }
 
     /// Tests whether sm:enable:next all unprotects properly
-    @Test func enableAllNext() {
+    @Test func enableAllNext() async {
         for violatingPhrase in violatingPhrases {
             let unprotectedPhrase = violatingPhrase.with(
                 code: """
@@ -116,7 +114,7 @@ import Testing
                 """,
             )
             #expect(
-                violations(unprotectedPhrase).count == 1,
+                await violations(unprotectedPhrase).count == 1,
             )
         }
     }
@@ -124,20 +122,20 @@ import Testing
     // MARK: Enable / Disable This
 
     /// Tests whether sm:disable:this all protects properly
-    @Test func disableAllThis() {
+    @Test func disableAllThis() async {
         for violatingPhrase in violatingPhrases {
             let rawViolatingPhrase = violatingPhrase.code.replacingOccurrences(of: "\n", with: "")
             let protectedPhrase = violatingPhrase.with(
                 code: rawViolatingPhrase + "// sm:disable:this all\n",
             )
             #expect(
-                violations(protectedPhrase).isEmpty,
+                await violations(protectedPhrase).isEmpty,
             )
         }
     }
 
     /// Tests whether sm:enable:next all unprotects properly
-    @Test func enableAllThis() {
+    @Test func enableAllThis() async {
         for violatingPhrase in violatingPhrases {
             let rawViolatingPhrase = violatingPhrase.code.replacingOccurrences(of: "\n", with: "")
             let unprotectedPhrase = violatingPhrase.with(
@@ -149,7 +147,7 @@ import Testing
                 """,
             )
             #expect(
-                violations(unprotectedPhrase).count == 1,
+                await violations(unprotectedPhrase).count == 1,
             )
         }
     }

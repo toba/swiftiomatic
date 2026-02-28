@@ -32,13 +32,13 @@ struct ContainsOverFirstNotNilRule: Rule {
 }
 
 extension ContainsOverFirstNotNilRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
 
 extension ContainsOverFirstNotNilRule {
-    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+    func preprocess(file: SwiftSource) -> SourceFileSyntax? {
         file.foldedSyntaxTree
     }
 }
@@ -58,7 +58,7 @@ private extension ContainsOverFirstNotNilRule {
                 return
             }
 
-            let violation = ReasonedRuleViolation(
+            let violation = SyntaxViolation(
                 position: first.positionAfterSkippingLeadingTrivia,
                 reason: "Prefer `contains` over `\(calledExpression.declName.baseName.text)(where:) != nil`",
             )

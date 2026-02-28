@@ -50,11 +50,11 @@ struct TrailingCommaRule: Rule {
 }
 
 extension TrailingCommaRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
@@ -91,12 +91,12 @@ private extension TrailingCommaRule {
             }
         }
 
-        private func violation(for position: AbsolutePosition) -> ReasonedRuleViolation {
+        private func violation(for position: AbsolutePosition) -> SyntaxViolation {
             let reason =
                 configuration.mandatoryComma
                     ? "Multi-line collection literals should have trailing commas"
                     : "Collection literals should not have trailing commas"
-            return ReasonedRuleViolation(position: position, reason: reason)
+            return SyntaxViolation(position: position, reason: reason)
         }
     }
 

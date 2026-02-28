@@ -5,7 +5,7 @@ class CodeBlockVisitor<Configuration: RuleConfiguration>: ViolationsSyntaxVisito
     Configuration,
 > {
     @inlinable
-    override init(configuration: Configuration, file: SwiftLintFile) {
+    override init(configuration: Configuration, file: SwiftSource) {
         super.init(configuration: configuration, file: file)
     }
 

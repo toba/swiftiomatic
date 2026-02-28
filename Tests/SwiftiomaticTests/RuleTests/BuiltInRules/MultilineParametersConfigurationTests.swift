@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct MultilineParametersConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct MultilineParametersConfigurationTests {
     @Test func invalidMaxNumberOfSingleLineParameters() async throws {
         for maxNumberOfSingleLineParameters in [0, -1] {
             let console = try await Issue.captureConsole {

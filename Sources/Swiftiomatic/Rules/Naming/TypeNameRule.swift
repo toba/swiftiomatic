@@ -19,7 +19,7 @@ struct TypeNameRule: Rule {
 }
 
 extension TypeNameRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -94,7 +94,7 @@ private extension TypeNameRule {
             identifier: TokenSyntax,
             modifiers: DeclModifierListSyntax,
             inheritedTypes: InheritedTypeListSyntax?,
-        ) -> ReasonedRuleViolation? {
+        ) -> SyntaxViolation? {
             let originalName = identifier.text
             let nameConfiguration = configuration.nameConfiguration
 
@@ -106,7 +106,7 @@ private extension TypeNameRule {
                     .strippingLeadingUnderscoreIfPrivate(modifiers: modifiers)
                     .strippingTrailingSwiftUIPreviewProvider(inheritedTypes: inheritedTypes)
             if !nameConfiguration.containsOnlyAllowedCharacters(name: name) {
-                return ReasonedRuleViolation(
+                return SyntaxViolation(
                     position: identifier.positionAfterSkippingLeadingTrivia,
                     reason:
                     "Type name '\(name)' should only contain alphanumeric and other allowed characters",
@@ -116,14 +116,14 @@ private extension TypeNameRule {
             if let caseCheckSeverity = nameConfiguration.validatesStartWithLowercase.severity,
                name.first?.isLowercase == true
             {
-                return ReasonedRuleViolation(
+                return SyntaxViolation(
                     position: identifier.positionAfterSkippingLeadingTrivia,
                     reason: "Type name '\(name)' should start with an uppercase character",
                     severity: caseCheckSeverity,
                 )
             }
             if let severity = nameConfiguration.severity(forLength: name.count) {
-                return ReasonedRuleViolation(
+                return SyntaxViolation(
                     position: identifier.positionAfterSkippingLeadingTrivia,
                     reason:
                     "Type name '\(name)' should be between \(nameConfiguration.minLengthThreshold) and "

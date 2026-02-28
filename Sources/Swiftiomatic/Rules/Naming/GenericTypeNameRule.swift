@@ -57,7 +57,7 @@ struct GenericTypeNameRule: Rule {
 }
 
 extension GenericTypeNameRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -75,7 +75,7 @@ private extension GenericTypeNameRule {
 
             if !configuration.containsOnlyAllowedCharacters(name: name) {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: """
                         Generic type name '\(
@@ -86,10 +86,10 @@ private extension GenericTypeNameRule {
                     ),
                 )
             } else if let caseCheckSeverity = configuration.validatesStartWithLowercase.severity,
-                      !String(name[name.startIndex]).isUppercase()
+                      !String(name[name.startIndex]).isUppercase
             {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Generic type name '\(name)' should start with an uppercase character",
                         severity: caseCheckSeverity,
@@ -100,7 +100,7 @@ private extension GenericTypeNameRule {
                     "Generic type name '\(name)' should be between \(configuration.minLengthThreshold) and "
                         + "\(configuration.maxLengthThreshold) characters long"
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: reason,
                         severity: severity,

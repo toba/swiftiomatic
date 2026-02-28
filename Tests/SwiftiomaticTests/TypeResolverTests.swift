@@ -52,7 +52,7 @@ struct TypeResolverTests {
             DispatchQueue.main.async { print("hi") }
         }
         """
-        let file = SwiftLintFile(contents: source)
+        let file = SwiftSource(contents: source)
         let rule = ConcurrencyModernizationRule()
         let violations = rule.validate(file: file)
 
@@ -67,7 +67,7 @@ struct TypeResolverTests {
         let source = """
         var data: Any = 42
         """
-        let file = SwiftLintFile(contents: source)
+        let file = SwiftSource(contents: source)
         let rule = AnyEliminationRule()
         let violations = rule.validate(file: file)
 

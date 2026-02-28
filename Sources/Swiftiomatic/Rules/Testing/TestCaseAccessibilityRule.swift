@@ -15,7 +15,7 @@ struct TestCaseAccessibilityRule: Rule {
 }
 
 extension TestCaseAccessibilityRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -37,7 +37,7 @@ private extension TestCaseAccessibilityRule {
                 .forEach { violation in
                     let position = violation.position
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: position,
                             correction: .init(
                                 start: position,

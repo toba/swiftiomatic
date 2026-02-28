@@ -1,6 +1,6 @@
-import Dispatch
 import Foundation
 import SourceKitC
+import Synchronization
 
 // MARK: - SourceKitValue
 
@@ -131,18 +131,30 @@ private let initializeSourceKitFailable: Void = {
         if !sourcekitd_response_is_error(response!) {
             fflush(stdout)
             fputs("swiftiomatic: connection to SourceKitService restored!\n", stderr)
-            sourceKitWaitingRestoredSemaphore.signal()
+            sourceKitRestored.withLock { $0 = true }
         }
         sourcekitd_response_dispose(response!)
     }
 }()
 
-private nonisolated(unsafe) var sourceKitWaitingRestoredSemaphore = DispatchSemaphore(value: 0)
+/// Set to `true` by the notification handler when SourceKitService reconnects after a crash.
+/// `send()` polls this with a short sleep on connection-interrupted errors.
+private let sourceKitRestored = Mutex(false)
 
 /// Serializes sourcekitd requests to avoid SIGSEGV crashes under parallel load.
 /// sourcekitd runs as a single XPC service process and is not resilient to
 /// unbounded concurrent requests (especially index/cursorinfo).
-private let sourceKitRequestGate = DispatchSemaphore(value: 1)
+private let sourceKitRequestGate = Mutex(())
+
+/// Block until the SourceKitService restore notification fires, or 10 seconds elapse.
+private func waitForSourceKitRestore() {
+    sourceKitRestored.withLock { $0 = false }
+    let deadline = ContinuousClock.now.advanced(by: .seconds(10))
+    while ContinuousClock.now < deadline {
+        if sourceKitRestored.withLock({ $0 }) { return }
+        Thread.sleep(forTimeInterval: 0.05)
+    }
+}
 
 extension String {
     fileprivate init?(sourceKitUID: sourcekitd_uid_t) {
@@ -230,60 +242,26 @@ enum Request {
         return try? Request.customRequest(request: cursorInfoRequest).send()
     }
 
-    func asyncSend() async throws(Request.Error) -> [String: SourceKitValue] {
-        initializeSourceKitFailable
-        let obj = sourcekitObject
-        do {
-            return try await withCheckedThrowingContinuation { continuation in
-                DispatchQueue.global().async {
-                    sourceKitRequestGate.wait()
-                    let response = obj.sendSync()
-                    defer {
-                        sourcekitd_response_dispose(response!)
-                        sourceKitRequestGate.signal()
-                    }
-                    if sourcekitd_response_is_error(response!) {
-                        let error = Request.Error(response: response!)
-                        continuation.resume(throwing: error)
-                    } else {
-                        guard let value = fromSourceKit(sourcekitd_response_get_value(response!)),
-                              let dict = value.dictionaryValue
-                        else {
-                            continuation
-                                .resume(throwing: Request.Error
-                                    .failed("Response was not a dictionary"))
-                            return
-                        }
-                        continuation.resume(returning: dict)
-                    }
-                }
-            }
-        } catch let error as Request.Error {
-            throw error
-        } catch {
-            throw .unknown(error.localizedDescription)
-        }
-    }
-
     func send() throws(Request.Error) -> [String: SourceKitValue] {
         initializeSourceKitFailable
-        sourceKitRequestGate.wait()
-        defer { sourceKitRequestGate.signal() }
-        let response = sourcekitObject.sendSync()
-        defer { sourcekitd_response_dispose(response!) }
-        if sourcekitd_response_is_error(response!) {
-            let error = Request.Error(response: response!)
-            if case .connectionInterrupted = error {
-                _ = sourceKitWaitingRestoredSemaphore.wait(timeout: DispatchTime.now() + 10)
+        let result: Result<[String: SourceKitValue], Request.Error> = sourceKitRequestGate.withLock { _ in
+            let response = sourcekitObject.sendSync()
+            defer { sourcekitd_response_dispose(response!) }
+            if sourcekitd_response_is_error(response!) {
+                let error = Request.Error(response: response!)
+                if case .connectionInterrupted = error {
+                    waitForSourceKitRestore()
+                }
+                return .failure(error)
             }
-            throw error
+            guard let value = fromSourceKit(sourcekitd_response_get_value(response!)),
+                  let dict = value.dictionaryValue
+            else {
+                return .failure(.failed("Response was not a dictionary"))
+            }
+            return .success(dict)
         }
-        guard let value = fromSourceKit(sourcekitd_response_get_value(response!)),
-              let dict = value.dictionaryValue
-        else {
-            throw Request.Error.failed("Response was not a dictionary")
-        }
-        return dict
+        return try result.get()
     }
 
     /// A enum representation of SOURCEKITD_ERROR_*
@@ -314,7 +292,7 @@ enum Request {
 
         fileprivate init(response: sourcekitd_response_t) {
             let description =
-                String(validatingUTF8: sourcekitd_response_error_get_description(response)!)
+                String(validatingCString: sourcekitd_response_error_get_description(response)!)
             switch sourcekitd_response_error_get_kind(response) {
                 case SOURCEKITD_ERROR_CONNECTION_INTERRUPTED: self =
                 .connectionInterrupted(description)

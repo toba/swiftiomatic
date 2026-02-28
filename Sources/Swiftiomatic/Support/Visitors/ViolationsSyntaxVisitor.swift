@@ -5,7 +5,7 @@ class ViolationsSyntaxVisitor<Configuration: RuleConfiguration>: SyntaxVisitor {
     /// A rule's configuration.
     let configuration: Configuration
     /// The file from which the traversed syntax tree stems from.
-    let file: SwiftLintFile
+    let file: SwiftSource
 
     /// A source location converter associated with the syntax tree being traversed.
     lazy var locationConverter = file.locationConverter
@@ -16,14 +16,14 @@ class ViolationsSyntaxVisitor<Configuration: RuleConfiguration>: SyntaxVisitor {
     ///   - configuration: Configuration of a rule.
     ///   - file: File from which the syntax tree stems from.
     @inlinable
-    init(configuration: Configuration, file: SwiftLintFile) {
+    init(configuration: Configuration, file: SwiftSource) {
         self.configuration = configuration
         self.file = file
         super.init(viewMode: .sourceAccurate)
     }
 
     /// Positions in a source file where violations should be reported.
-    var violations: [ReasonedRuleViolation] = []
+    var violations: [SyntaxViolation] = []
 
     /// List of declaration types that shall be skipped while traversing the AST.
     var skippableDeclarations: [any DeclSyntaxProtocol.Type] {

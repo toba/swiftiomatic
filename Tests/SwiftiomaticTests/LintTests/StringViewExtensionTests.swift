@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct StringViewExtensionTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct StringViewExtensionTests {
     @Test func byteOffsetInvalidCases() {
         let view = StringView("")
 

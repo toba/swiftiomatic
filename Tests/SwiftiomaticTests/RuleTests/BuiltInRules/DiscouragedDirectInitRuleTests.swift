@@ -1,16 +1,14 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct DiscouragedDirectInitRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct DiscouragedDirectInitRuleTests {
     private let baseDescription = DiscouragedDirectInitRule.description
 
-    @Test func discouragedDirectInitWithConfiguredSeverity() {
-        verifyRule(baseDescription, ruleConfiguration: ["severity": "error"])
+    @Test func discouragedDirectInitWithConfiguredSeverity() async {
+        await verifyRule(baseDescription, ruleConfiguration: ["severity": "error"])
     }
 
-    @Test func discouragedDirectInitWithNewIncludedTypes() {
+    @Test func discouragedDirectInitWithNewIncludedTypes() async {
         let triggeringExamples = [
             Example("let foo = ↓Foo()"),
             Example("let bar = ↓Bar()"),
@@ -26,10 +24,10 @@ import Testing
                 .with(triggeringExamples: triggeringExamples)
                 .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["types": ["Foo", "Bar"]])
+        await verifyRule(description, ruleConfiguration: ["types": ["Foo", "Bar"]])
     }
 
-    @Test func discouragedDirectInitWithReplacedTypes() {
+    @Test func discouragedDirectInitWithReplacedTypes() async {
         let triggeringExamples = [
             Example("let bundle = ↓Bundle()"),
         ]
@@ -43,6 +41,6 @@ import Testing
                 .with(triggeringExamples: triggeringExamples)
                 .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["types": ["Bundle"]])
+        await verifyRule(description, ruleConfiguration: ["types": ["Bundle"]])
     }
 }

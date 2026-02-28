@@ -16,9 +16,9 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
         requiresFileOnDisk: true,
     )
 
-    func validate(file: SwiftLintFile, compilerArguments: [String]) -> [StyleViolation] {
+    func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {
         importUsage(in: file, compilerArguments: compilerArguments).map { importUsage in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(
@@ -30,7 +30,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
         }
     }
 
-    func correct(file: SwiftLintFile, compilerArguments: [String]) -> Int {
+    func correct(file: SwiftSource, compilerArguments: [String]) -> Int {
         let importUsages = importUsage(in: file, compilerArguments: compilerArguments)
         let matches = file.ruleEnabled(
             violatingRanges: importUsages.compactMap(\.violationRange), for: self,
@@ -74,7 +74,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
                 &insertionLocation,
                 end: nil,
                 contentsEnd: nil,
-                for: firstImportRange,
+                for: NSRange(firstImportRange, in: file.contents),
             )
         }
 
@@ -95,7 +95,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
         return numberOfCorrections
     }
 
-    private func importUsage(in file: SwiftLintFile, compilerArguments: [String]) -> [ImportUsage] {
+    private func importUsage(in file: SwiftSource, compilerArguments: [String]) -> [ImportUsage] {
         guard compilerArguments.isNotEmpty else {
             Issue.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
             return []
@@ -108,7 +108,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
     }
 }
 
-private extension SwiftLintFile {
+private extension SwiftSource {
     func getImportUsage(
         compilerArguments: [String], configuration: UnusedImportConfiguration,
     ) -> [ImportUsage] {
@@ -231,10 +231,11 @@ private extension SwiftLintFile {
     }
 
     func rangedAndSortedUnusedImports(of unusedImports: [String]) -> [(String, NSRange)] {
-        unusedImports
+        let str = stringView.string
+        return unusedImports
             .compactMap { module in
                 match(pattern: "^(@(?!_exported)\\w+ +)?import +\(module)\\b.*?\n").first.map {
-                    (module, $0.0)
+                    (module, NSRange($0.0, in: str))
                 }
             }
             .sorted(by: { $0.1.location < $1.1.location })
@@ -352,14 +353,3 @@ private extension SwiftLintFile {
     }
 }
 
-extension UnusedImportRule {
-    private static let _postMessage: Void = {
-        Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
-        ).print()
-    }()
-
-    func notifyRuleDisabledOnce() {
-        _ = Self._postMessage
-    }
-}

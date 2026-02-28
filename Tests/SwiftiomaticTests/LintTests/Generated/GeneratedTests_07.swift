@@ -1,202 +1,152 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct PreferConditionListRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PreferConditionListRule.description)
+@Suite(.rulesRegistered) struct PreferConditionListRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PreferConditionListRule.description)
     }
 }
 
-@Suite struct PreferKeyPathRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PreferKeyPathRule.description)
+@Suite(.rulesRegistered) struct PreferKeyPathRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PreferKeyPathRule.description)
     }
 }
 
-@Suite struct PreferNimbleRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PreferNimbleRule.description)
+@Suite(.rulesRegistered) struct PreferNimbleRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PreferNimbleRule.description)
     }
 }
 
-@Suite struct PreferSelfInStaticReferencesRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PreferSelfInStaticReferencesRule.description)
+@Suite(.rulesRegistered) struct PreferSelfInStaticReferencesRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PreferSelfInStaticReferencesRule.description)
     }
 }
 
-@Suite struct PreferSelfTypeOverTypeOfSelfRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PreferSelfTypeOverTypeOfSelfRule.description)
+@Suite(.rulesRegistered) struct PreferSelfTypeOverTypeOfSelfRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PreferSelfTypeOverTypeOfSelfRule.description)
     }
 }
 
-@Suite struct PreferTypeCheckingRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PreferTypeCheckingRule.description)
+@Suite(.rulesRegistered) struct PreferTypeCheckingRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PreferTypeCheckingRule.description)
     }
 }
 
-@Suite struct PreferZeroOverExplicitInitRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PreferZeroOverExplicitInitRule.description)
+@Suite(.rulesRegistered) struct PreferZeroOverExplicitInitRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PreferZeroOverExplicitInitRule.description)
     }
 }
 
-@Suite struct PrefixedTopLevelConstantRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PrefixedTopLevelConstantRule.description)
+@Suite(.rulesRegistered) struct PrefixedTopLevelConstantRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PrefixedTopLevelConstantRule.description)
     }
 }
 
-@Suite struct PrivateActionRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PrivateActionRule.description)
+@Suite(.rulesRegistered) struct PrivateActionRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PrivateActionRule.description)
     }
 }
 
-@Suite struct PrivateOutletRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PrivateOutletRule.description)
+@Suite(.rulesRegistered) struct PrivateOutletRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PrivateOutletRule.description)
     }
 }
 
-@Suite struct PrivateOverFilePrivateRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PrivateOverFilePrivateRule.description)
+@Suite(.rulesRegistered) struct PrivateOverFilePrivateRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PrivateOverFilePrivateRule.description)
     }
 }
 
-@Suite struct PrivateSubjectRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PrivateSubjectRule.description)
+@Suite(.rulesRegistered) struct PrivateSubjectRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PrivateSubjectRule.description)
     }
 }
 
-@Suite struct PrivateSwiftUIStatePropertyRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PrivateSwiftUIStatePropertyRule.description)
+@Suite(.rulesRegistered) struct PrivateSwiftUIStatePropertyRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PrivateSwiftUIStatePropertyRule.description)
     }
 }
 
-@Suite struct PrivateUnitTestRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(PrivateUnitTestRule.description)
+@Suite(.rulesRegistered) struct PrivateUnitTestRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(PrivateUnitTestRule.description)
     }
 }
 
-@Suite struct ProhibitedInterfaceBuilderRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ProhibitedInterfaceBuilderRule.description)
+@Suite(.rulesRegistered) struct ProhibitedInterfaceBuilderRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ProhibitedInterfaceBuilderRule.description)
     }
 }
 
-@Suite struct ProhibitedSuperRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ProhibitedSuperRule.description)
+@Suite(.rulesRegistered) struct ProhibitedSuperRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ProhibitedSuperRule.description)
     }
 }
 
-@Suite struct ProtocolPropertyAccessorsOrderRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ProtocolPropertyAccessorsOrderRule.description)
+@Suite(.rulesRegistered) struct ProtocolPropertyAccessorsOrderRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ProtocolPropertyAccessorsOrderRule.description)
     }
 }
 
-@Suite struct QuickDiscouragedCallRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(QuickDiscouragedCallRule.description)
+@Suite(.rulesRegistered) struct QuickDiscouragedCallRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(QuickDiscouragedCallRule.description)
     }
 }
 
-@Suite struct QuickDiscouragedFocusedTestRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(QuickDiscouragedFocusedTestRule.description)
+@Suite(.rulesRegistered) struct QuickDiscouragedFocusedTestRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(QuickDiscouragedFocusedTestRule.description)
     }
 }
 
-@Suite struct QuickDiscouragedPendingTestRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(QuickDiscouragedPendingTestRule.description)
+@Suite(.rulesRegistered) struct QuickDiscouragedPendingTestRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(QuickDiscouragedPendingTestRule.description)
     }
 }
 
-@Suite struct RawValueForCamelCasedCodableEnumRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(RawValueForCamelCasedCodableEnumRule.description)
+@Suite(.rulesRegistered) struct RawValueForCamelCasedCodableEnumRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(RawValueForCamelCasedCodableEnumRule.description)
     }
 }
 
-@Suite struct ReduceBooleanRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ReduceBooleanRule.description)
+@Suite(.rulesRegistered) struct ReduceBooleanRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ReduceBooleanRule.description)
     }
 }
 
-@Suite struct ReduceIntoRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ReduceIntoRule.description)
+@Suite(.rulesRegistered) struct ReduceIntoRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ReduceIntoRule.description)
     }
 }
 
-@Suite struct RedundantDiscardableLetRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(RedundantDiscardableLetRule.description)
+@Suite(.rulesRegistered) struct RedundantDiscardableLetRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(RedundantDiscardableLetRule.description)
     }
 }
 
-@Suite struct RedundantNilCoalescingRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(RedundantNilCoalescingRule.description)
+@Suite(.rulesRegistered) struct RedundantNilCoalescingRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(RedundantNilCoalescingRule.description)
     }
 }

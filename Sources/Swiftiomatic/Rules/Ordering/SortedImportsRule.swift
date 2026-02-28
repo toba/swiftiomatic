@@ -16,11 +16,11 @@ struct SortedImportsRule: Rule {
 }
 
 extension SortedImportsRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
@@ -273,7 +273,7 @@ private struct Import: Comparable {
         )
     }
 
-    func isDirectlyAfter(previous: Self, in file: SwiftLintFile) -> Bool {
+    func isDirectlyAfter(previous: Self, in file: SwiftSource) -> Bool {
         let lineAfterPrevious = previous.line + previous.offset + 1
 
         // Import is either directly after the previous import ...

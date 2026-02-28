@@ -15,7 +15,7 @@ struct MockRule: Rule {
     init() { /* conformance for test */ }
     init(configuration _: Any) { self.init() }
 
-    func validate(file _: SwiftLintFile) -> [StyleViolation] { [] }
+    func validate(file _: SwiftSource) -> [RuleViolation] { [] }
 }
 
 struct RuleWithLevelsMock: Rule {
@@ -35,5 +35,5 @@ struct RuleWithLevelsMock: Rule {
         try self.configuration.apply(configuration: configuration)
     }
 
-    func validate(file _: SwiftLintFile) -> [StyleViolation] { [] }
+    func validate(file _: SwiftSource) -> [RuleViolation] { [] }
 }

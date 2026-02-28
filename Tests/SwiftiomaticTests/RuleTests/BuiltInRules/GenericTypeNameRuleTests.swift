@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct GenericTypeNameRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func genericTypeNameWithExcluded() {
+@Suite(.rulesRegistered) struct GenericTypeNameRuleTests {
+    @Test func genericTypeNameWithExcluded() async {
         let baseDescription = GenericTypeNameRule.description
         let nonTriggeringExamples =
             baseDescription.nonTriggeringExamples + [
@@ -21,10 +19,10 @@ import Testing
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: triggeringExamples,
         )
-        verifyRule(description, ruleConfiguration: ["excluded": ["apple", "some.*", ".*st\\d+.*"]])
+        await verifyRule(description, ruleConfiguration: ["excluded": ["apple", "some.*", ".*st\\d+.*"]])
     }
 
-    @Test func genericTypeNameWithAllowedSymbols() {
+    @Test func genericTypeNameWithAllowedSymbols() async {
         let baseDescription = GenericTypeNameRule.description
         let nonTriggeringExamples =
             baseDescription.nonTriggeringExamples + [
@@ -37,20 +35,20 @@ import Testing
             ]
 
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-        verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
+        await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
     }
 
-    @Test func genericTypeNameWithAllowedSymbolsAndViolation() {
+    @Test func genericTypeNameWithAllowedSymbolsAndViolation() async {
         let baseDescription = GenericTypeNameRule.description
         let triggeringExamples = [
             Example("func foo<↓T_$>() {}"),
         ]
 
         let description = baseDescription.with(triggeringExamples: triggeringExamples)
-        verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
+        await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
     }
 
-    @Test func genericTypeNameWithIgnoreStartWithLowercase() {
+    @Test func genericTypeNameWithIgnoreStartWithLowercase() async {
         let baseDescription = GenericTypeNameRule.description
         let triggeringExamplesToRemove = [
             Example("func foo<↓type>() {}"),
@@ -66,6 +64,6 @@ import Testing
 
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
-        verifyRule(description, ruleConfiguration: ["validates_start_with_lowercase": "off"])
+        await verifyRule(description, ruleConfiguration: ["validates_start_with_lowercase": "off"])
     }
 }

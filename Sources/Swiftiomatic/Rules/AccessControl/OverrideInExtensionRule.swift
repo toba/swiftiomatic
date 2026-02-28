@@ -46,7 +46,7 @@ struct OverrideInExtensionRule: OptInRule, SwiftSyntaxRule {
         ],
     )
 
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         let allowedExtensions = ClassNameCollectingVisitor(
             configuration: configuration,
             file: file,
@@ -65,7 +65,7 @@ private extension OverrideInExtensionRule {
 
         init(
             configuration: ConfigurationType,
-            file: SwiftLintFile,
+            file: SwiftSource,
             allowedExtensions: Set<String>,
         ) {
             self.allowedExtensions = allowedExtensions

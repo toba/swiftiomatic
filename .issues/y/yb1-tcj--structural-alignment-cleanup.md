@@ -27,8 +27,8 @@ Fix structural issues after consolidating three analysis engines into a single t
   - `SyntaxClassification+isComment.swift` — used by `PeriodSpacingRule` and `CommentSpacingRule`
   - `RandomAccessCollection+Swiftlint.swift` — used by `SwiftLintSyntaxMap.swift`
   - `StringView+SwiftSyntax.swift` — used by `SyntacticSugarRule`, `RedundantObjcAttributeRule`, `SwiftSyntaxCorrectableRule`
-  - `SwiftLintFile+Regex.swift` — used by `CustomRules`, `UnusedImportRule`, `StatementPositionRule`, `Linter`
-  - `SwiftLintFile+BodyLineCount.swift` — used by `BodyLengthVisitor.swift`
+  - `SwiftSource+Regex.swift` — used by `CustomRules`, `UnusedImportRule`, `StatementPositionRule`, `Linter`
+  - `SwiftSource+BodyLineCount.swift` — used by `BodyLengthVisitor.swift`
 
 
 ## Summary of Changes

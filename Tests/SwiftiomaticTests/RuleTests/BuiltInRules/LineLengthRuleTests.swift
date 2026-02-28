@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct LineLengthRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct LineLengthRuleTests {
     private static let longString = String(repeating: "a", count: 121)
 
     private let longFunctionDeclarations = [
@@ -166,22 +164,22 @@ import Testing
         """,
     )
 
-    @Test func lineLength() {
-        verifyRule(
+    @Test func lineLength() async {
+        await verifyRule(
             LineLengthRule.description,
             commentDoesNotViolate: false,
             stringDoesNotViolate: false,
         )
     }
 
-    @Test func lineLengthWithIgnoreFunctionDeclarationsEnabled() {
+    @Test func lineLengthWithIgnoreFunctionDeclarationsEnabled() async {
         let baseDescription = LineLengthRule.description
         let description = baseDescription.with(
             nonTriggeringExamples: baseDescription.nonTriggeringExamples + longFunctionDeclarations,
             triggeringExamples: longFunctionCalls,
         )
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: ["ignores_function_declarations": true],
             commentDoesNotViolate: false,
@@ -189,7 +187,7 @@ import Testing
         )
     }
 
-    @Test func lineLengthWithIgnoreCommentsEnabled() {
+    @Test func lineLengthWithIgnoreCommentsEnabled() async {
         let baseDescription = LineLengthRule.description
         let triggeringExamples = longFunctionDeclarations + [declarationWithTrailingLongComment]
         let nonTriggeringExamples = [longComment, longBlockComment, longRealBlockComment]
@@ -197,13 +195,13 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["ignores_comments": true],
             commentDoesNotViolate: false, stringDoesNotViolate: false, skipCommentTests: true,
         )
     }
 
-    @Test func lineLengthWithIgnoreURLsEnabled() {
+    @Test func lineLengthWithIgnoreURLsEnabled() async {
         let url = "https://github.com/realm/SwiftLint"
         let triggeringLines = [Example(String(repeating: "/", count: 121) + "\(url)\n")]
         let nonTriggeringLines = [
@@ -218,13 +216,13 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["ignores_urls": true],
             commentDoesNotViolate: false, stringDoesNotViolate: false,
         )
     }
 
-    @Test func lineLengthWithIgnoreInterpolatedStringsTrue() {
+    @Test func lineLengthWithIgnoreInterpolatedStringsTrue() async {
         let triggeringLines = [plainString]
         let nonTriggeringLines = [interpolatedString]
 
@@ -235,13 +233,13 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["ignores_interpolated_strings": true],
             commentDoesNotViolate: false, stringDoesNotViolate: false,
         )
     }
 
-    @Test func lineLengthWithIgnoreMultilineStringsTrue() {
+    @Test func lineLengthWithIgnoreMultilineStringsTrue() async {
         let triggeringLines = [
             multilineStringFail,
             tripleStringSingleLine,
@@ -261,13 +259,13 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["ignores_multiline_strings": true],
             commentDoesNotViolate: false, stringDoesNotViolate: false,
         )
     }
 
-    @Test func lineLengthWithIgnoreInterpolatedStringsFalse() {
+    @Test func lineLengthWithIgnoreInterpolatedStringsFalse() async {
         let triggeringLines = [plainString, interpolatedString]
 
         let baseDescription = LineLengthRule.description
@@ -277,13 +275,13 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["ignores_interpolated_strings": false],
             commentDoesNotViolate: false, stringDoesNotViolate: false,
         )
     }
 
-    @Test func lineLengthWithExcludedLinesPatterns() {
+    @Test func lineLengthWithExcludedLinesPatterns() async {
         let nonTriggeringLines = [plainString, interpolatedString]
 
         let baseDescription = LineLengthRule.description
@@ -295,7 +293,7 @@ import Testing
                 .with(nonTriggeringExamples: nonTriggeringExamples)
                 .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: ["excluded_lines_patterns": ["^print"]],
             commentDoesNotViolate: false,
@@ -303,7 +301,7 @@ import Testing
         )
     }
 
-    @Test func lineLengthWithEmptyExcludedLinesPatterns() {
+    @Test func lineLengthWithEmptyExcludedLinesPatterns() async {
         let triggeringLines = [plainString, interpolatedString]
 
         let baseDescription = LineLengthRule.description
@@ -315,7 +313,7 @@ import Testing
                 .with(nonTriggeringExamples: nonTriggeringExamples)
                 .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: ["excluded_lines_patterns": []],
             commentDoesNotViolate: false,
@@ -323,7 +321,7 @@ import Testing
         )
     }
 
-    @Test func lineLengthWithIgnoreRegexLiteralsTrue() {
+    @Test func lineLengthWithIgnoreRegexLiteralsTrue() async {
         let triggeringLines = [
             regexLiteralFail,
             plainString,
@@ -341,7 +339,7 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: ["ignores_regex_literals": true],
             commentDoesNotViolate: false,

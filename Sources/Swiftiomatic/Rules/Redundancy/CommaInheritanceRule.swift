@@ -74,28 +74,30 @@ struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
 
     // MARK: - Rule
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         violationRanges(in: file).map {
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: $0.location),
+                location: Location(file: file, stringIndex: $0.lowerBound),
             )
         }
     }
 
     // MARK: - SubstitutionCorrectableRule
 
-    func substitution(for violationRange: NSRange, in _: SwiftLintFile) -> (NSRange, String)? {
+    func substitution(for violationRange: Range<String.Index>, in _: SwiftSource)
+        -> (Range<String.Index>, String)?
+    {
         (violationRange, ", ")
     }
 
-    func violationRanges(in file: SwiftLintFile) -> [NSRange] {
+    func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
         let visitor = CommaInheritanceRuleVisitor(viewMode: .sourceAccurate)
         return visitor.walk(file: file) { visitor -> [ByteRange] in
             visitor.violationRanges
         }.compactMap {
-            file.stringView.byteRangeToNSRange($0)
+            file.stringView.byteRangeToStringRange($0)
         }
     }
 }

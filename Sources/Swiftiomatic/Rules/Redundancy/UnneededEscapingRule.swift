@@ -16,13 +16,13 @@ struct UnneededEscapingRule: Rule {
 }
 
 extension UnneededEscapingRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
 
 extension UnneededEscapingRule {
-    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+    func preprocess(file: SwiftSource) -> SourceFileSyntax? {
         file.foldedSyntaxTree
     }
 }

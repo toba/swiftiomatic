@@ -222,7 +222,7 @@ struct Analyze: AsyncParsableCommand {
         let storage = RuleStorage()
         let correctableRules = analyzer.lintRules.compactMap { $0 as? any CorrectableRule }
         let collectingRules = analyzer.lintRules.filter { $0 is any AnyCollectingRule }
-        let lintFiles = files.compactMap { SwiftLintFile(path: $0) }
+        let lintFiles = files.compactMap { SwiftSource(path: $0) }
 
         // Collect phase for collecting rules
         for file in lintFiles {

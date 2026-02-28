@@ -159,21 +159,21 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
         ],
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         violations(in: file).map { violation in
-            styleViolation(for: violation, in: file)
+            ruleViolation(for: violation, in: file)
         }
     }
 
-    private func styleViolation(for violation: Violation,
-                                in file: SwiftLintFile) -> StyleViolation
+    private func ruleViolation(for violation: Violation,
+                                in file: SwiftSource) -> RuleViolation
     {
         let reason =
             "\(Self.description.description); "
                 + "expected indentation of \(violation.indentationRanges.expected.length), "
                 + "got \(violation.indentationRanges.actual.length)"
 
-        return StyleViolation(
+        return RuleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
             location: Location(file: file, byteOffset: violation.endOffset),
@@ -181,11 +181,11 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
         )
     }
 
-    fileprivate static let notWhitespace = regex("[^\\s]")
+    fileprivate static let notWhitespace: RegularExpression = "[^\\s]"
 }
 
 extension LiteralExpressionEndIndentationRule: CorrectableRule {
-    func correct(file: SwiftLintFile) -> Int {
+    func correct(file: SwiftSource) -> Int {
         let allViolations = violations(in: file).reversed().filter { violation in
             guard let nsRange = file.stringView.byteRangeToNSRange(violation.range) else {
                 return false
@@ -213,7 +213,7 @@ extension LiteralExpressionEndIndentationRule: CorrectableRule {
     }
 
     private func correct(contents: inout String, expected: NSRange, actual: NSRange) -> Bool {
-        guard let actualIndices = contents.nsrangeToIndexRange(actual) else {
+        guard let actualIndices = contents.nsRangeToIndexRange(actual) else {
             return false
         }
 
@@ -247,7 +247,7 @@ private extension LiteralExpressionEndIndentationRule {
         var range: ByteRange
     }
 
-    func violations(in file: SwiftLintFile) -> [Violation] {
+    func violations(in file: SwiftSource) -> [Violation] {
         file.structureDictionary.traverseDepthFirst { subDict in
             guard let kind = subDict.expressionKind else { return nil }
             guard let violation = violation(in: file, of: kind, dictionary: subDict)
@@ -257,8 +257,8 @@ private extension LiteralExpressionEndIndentationRule {
     }
 
     private func violation(
-        in file: SwiftLintFile,
-        of kind: SwiftExpressionKind,
+        in file: SwiftSource,
+        of kind: ExpressionKind,
         dictionary: SourceKitDictionary,
     ) -> Violation? {
         guard kind == .dictionary || kind == .array else {
@@ -288,8 +288,9 @@ private extension LiteralExpressionEndIndentationRule {
         let range = file.lines[startLine - 1].range
         let regex = Self.notWhitespace
         let actual = endPosition - 1
-        guard let match = regex.firstMatch(in: file.contents, options: [], range: range)?.range,
-              case let expected = match.location - range.location,
+        guard let match = regex.firstMatch(in: file.contents, range: range),
+              case let matchNSRange = NSRange(match.range, in: file.contents),
+              case let expected = matchNSRange.location - range.location,
               expected != actual
         else {
             return nil
@@ -309,14 +310,3 @@ private extension LiteralExpressionEndIndentationRule {
     }
 }
 
-extension LiteralExpressionEndIndentationRule {
-    private static let _postMessage: Void = {
-        Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
-        ).print()
-    }()
-
-    func notifyRuleDisabledOnce() {
-        _ = Self._postMessage
-    }
-}

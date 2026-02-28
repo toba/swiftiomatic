@@ -24,7 +24,7 @@ struct CompilerProtocolInitRule: Rule {
 }
 
 extension CompilerProtocolInitRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -56,7 +56,7 @@ private extension CompilerProtocolInitRule {
                 }
 
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Initializers declared in compiler protocol \(compilerProtocol.protocolName) "
                             + "shouldn't be called directly",

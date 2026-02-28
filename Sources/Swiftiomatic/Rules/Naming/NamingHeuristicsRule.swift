@@ -23,7 +23,7 @@ struct NamingHeuristicsRule: Rule {
 }
 
 extension NamingHeuristicsRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -31,10 +31,10 @@ extension NamingHeuristicsRule: SwiftSyntaxRule {
 extension NamingHeuristicsRule: OptInRule {}
 
 extension NamingHeuristicsRule: AsyncEnrichableRule {
-    func enrichAsync(
-        file: SwiftLintFile,
+    func enrich(
+        file: SwiftSource,
         typeResolver: any TypeResolver,
-    ) async -> [StyleViolation] {
+    ) async -> [RuleViolation] {
         guard let filePath = file.path else { return [] }
 
         // Find variables without explicit Bool annotation that might be inferred Bool
@@ -46,18 +46,18 @@ extension NamingHeuristicsRule: AsyncEnrichableRule {
         let exprTypes = await typeResolver.expressionTypes(inFile: filePath)
         guard !exprTypes.isEmpty else { return [] }
 
-        var violations: [StyleViolation] = []
+        var violations: [RuleViolation] = []
 
         for candidate in collector.candidates {
             let isBool = exprTypes.contains { info in
                 info.offset == candidate.offset
                     && (info.typeName == "Bool" || info.typeName == "Swift.Bool")
             }
-            if isBool, !NamingHelpers.isAssertionNamed(candidate.name),
+            if isBool, !NamingConventionChecker.isAssertionNamed(candidate.name),
                !candidate.name.hasPrefix("_")
             {
                 violations.append(
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         severity: configuration.severity,
                         location: Location(
@@ -123,12 +123,12 @@ private extension NamingHeuristicsRule {
                 .compactMap { $0.decl.as(FunctionDeclSyntax.self) }
             let hasActionVerbs = methods.contains { method in
                 let n = method.name.text
-                return NamingHelpers.actionVerbPrefixes.contains { n.hasPrefix($0) }
+                return NamingConventionChecker.actionVerbPrefixes.contains { n.hasPrefix($0) }
             }
 
             if hasActionVerbs {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.name.positionAfterSkippingLeadingTrivia,
                         reason:
                         "Protocol '\(name)' uses -able suffix but conformers perform the action — consider -ing suffix",
@@ -161,10 +161,10 @@ private extension NamingHeuristicsRule {
         override func visitPost(_ node: FunctionDeclSyntax) {
             let name = node.name.text
             guard node.modifiers.contains(where: { $0.name.text == "static" }) else { return }
-            guard let suggestion = NamingHelpers.factoryMethodSuggestion(for: name) else { return }
+            guard let suggestion = NamingConventionChecker.factoryMethodSuggestion(for: name) else { return }
 
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: node.name.positionAfterSkippingLeadingTrivia,
                     reason:
                     "Factory method '\(name)' should use 'make' prefix per Swift API Design Guidelines",
@@ -176,9 +176,9 @@ private extension NamingHeuristicsRule {
         }
 
         private func checkBoolNaming(name: String, position: AbsolutePosition) {
-            if !NamingHelpers.isAssertionNamed(name), !name.hasPrefix("_") {
+            if !NamingConventionChecker.isAssertionNamed(name), !name.hasPrefix("_") {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: position,
                         reason: "Bool property '\(name)' doesn't read as an assertion",
                         severity: .warning,

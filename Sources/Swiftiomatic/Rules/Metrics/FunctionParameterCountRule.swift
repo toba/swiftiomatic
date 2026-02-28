@@ -43,7 +43,7 @@ struct FunctionParameterCountRule: Rule {
 }
 
 extension FunctionParameterCountRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -80,7 +80,7 @@ private extension FunctionParameterCountRule {
                         + "or less: it currently has \(parameterCount)"
 
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.funcKeyword.positionAfterSkippingLeadingTrivia,
                         reason: reason,
                         severity: parameter.severity,

@@ -65,47 +65,40 @@ struct PeriodSpacingRule: SourceKitFreeRule, OptInRule, SubstitutionCorrectableR
         ],
     )
 
-    func violationRanges(in file: SwiftLintFile) -> [NSRange] {
-        // Find all comment tokens in the file and regex search them for violations
-        file.syntaxClassifications
+    func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
+        let str = file.stringView.string
+        return file.syntaxClassifications
             .filter(\.kind.isComment)
             .map { $0.range.toSourceKitByteRange() }
-            .compactMap { (range: ByteRange) -> [NSRange]? in
-                file.stringView
-                    .substringWithByteRange(range)
-                    .map(StringView.init)
-                    .map { commentBody in
-                        // Look for a period followed by two or more whitespaces but not new line or carriage returns
-                        regex(#"\.[^\S\r\n]{2,}"#)
-                            .matches(in: commentBody)
-                            .compactMap { result in
-                                // Set the location to start from the second whitespace till the last one.
-                                file.stringView.byteRangeToNSRange(
-                                    ByteRange(
-                                        // Safe to mix NSRange offsets with byte offsets here because the
-                                        // regex can't contain multi-byte characters
-                                        location: ByteCount(range.lowerBound.value + result.range
-                                            .lowerBound + 2),
-                                        length: ByteCount(result.range.length.advanced(by: -2)),
-                                    ),
-                                )
-                            }
+            .compactMap { (range: ByteRange) -> [Range<String.Index>]? in
+                guard let searchRange = file.stringView.byteRangeToStringRange(range)
+                else { return nil }
+                return regex(#"\.[^\S\r\n]{2,}"#)
+                    .matches(in: str, range: searchRange)
+                    .compactMap { result -> Range<String.Index>? in
+                        // Skip the period and first space, keep remaining extra spaces
+                        let matchRange = result.range
+                        let skipIndex = str.index(matchRange.lowerBound, offsetBy: 2)
+                        guard skipIndex <= matchRange.upperBound else { return nil }
+                        return skipIndex..<matchRange.upperBound
                     }
             }
             .flatMap(\.self)
     }
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         violationRanges(in: file).map { range in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: range.location),
+                location: Location(file: file, stringIndex: range.lowerBound),
             )
         }
     }
 
-    func substitution(for violationRange: NSRange, in _: SwiftLintFile) -> (NSRange, String)? {
+    func substitution(for violationRange: Range<String.Index>, in _: SwiftSource)
+        -> (Range<String.Index>, String)?
+    {
         (violationRange, "")
     }
 }

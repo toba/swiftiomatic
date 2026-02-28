@@ -20,7 +20,7 @@ struct FileLengthRule: Rule {
 }
 
 extension FileLengthRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -58,7 +58,7 @@ private extension FileLengthRule {
             let lastLineStartOffset = lastLine?.byteRange.location ?? 0
             let violationPosition = AbsolutePosition(utf8Offset: lastLineStartOffset.value)
 
-            let violation = ReasonedRuleViolation(
+            let violation = SyntaxViolation(
                 position: violationPosition,
                 reason: reason,
                 severity: severity,

@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ExtendedNSStringTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ExtendedNSStringTests {
     @Test func lineAndCharacterForByteOffset_forContentsContainingMultibyteCharacters() {
         let contents =
             "" + "import Foundation\n" // 18 characters

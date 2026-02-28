@@ -1,53 +1,51 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct TodoRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func todo() {
-        verifyRule(TodoRule.description, commentDoesNotViolate: false)
+@Suite(.rulesRegistered) struct TodoRuleTests {
+    @Test func todo() async {
+        await verifyRule(TodoRule.description, commentDoesNotViolate: false)
     }
 
-    @Test func todoMessage() {
+    @Test func todoMessage() async {
         let example = Example("fatalError() // TODO: Implement")
-        let allViolations = violations(example)
+        let allViolations = await violations(example)
         #expect(allViolations.count == 1)
         #expect(allViolations.first?.reason == "TODOs should be resolved (Implement)")
     }
 
-    @Test func fixMeMessage() {
+    @Test func fixMeMessage() async {
         let example = Example("fatalError() // FIXME: Implement")
-        let allViolations = violations(example)
+        let allViolations = await violations(example)
         #expect(allViolations.count == 1)
         #expect(allViolations.first?.reason == "FIXMEs should be resolved (Implement)")
     }
 
-    @Test func onlyFixMe() {
+    @Test func onlyFixMe() async {
         let example = Example(
             """
                 fatalError() // TODO: Implement todo
                 fatalError() // FIXME: Implement fixme
             """,
         )
-        let allViolations = violations(example, config: ["only": ["FIXME"]])
+        let allViolations = await violations(example, config: ["only": ["FIXME"]])
         #expect(allViolations.count == 1)
         #expect(allViolations.first?.reason == "FIXMEs should be resolved (Implement fixme)")
     }
 
-    @Test func onlyTodo() {
+    @Test func onlyTodo() async {
         let example = Example(
             """
                 fatalError() // TODO: Implement todo
                 fatalError() // FIXME: Implement fixme
             """,
         )
-        let allViolations = violations(example, config: ["only": ["TODO"]])
+        let allViolations = await violations(example, config: ["only": ["TODO"]])
         #expect(allViolations.count == 1)
         #expect(allViolations.first?.reason == "TODOs should be resolved (Implement todo)")
     }
 
-    private func violations(_ example: Example, config: Any? = nil) -> [StyleViolation] {
+    private func violations(_ example: Example, config: Any? = nil) async -> [RuleViolation] {
         let config = makeConfig(config, TodoRule.identifier)!
-        return SwiftiomaticTests.violations(example, config: config)
+        return await SwiftiomaticTests.violations(example, config: config)
     }
 }

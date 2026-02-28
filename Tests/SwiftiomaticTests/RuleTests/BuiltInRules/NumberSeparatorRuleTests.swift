@@ -3,10 +3,8 @@ import SwiftParser
 import SwiftSyntax
 @testable import Swiftiomatic
 
-@Suite struct NumberSeparatorRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func numberSeparatorWithMinimumLength() {
+@Suite(.rulesRegistered) struct NumberSeparatorRuleTests {
+    @Test func numberSeparatorWithMinimumLength() async {
         let nonTriggeringExamples = [
             Example("let foo = 10_000"),
             Example("let foo = 1000"),
@@ -30,10 +28,10 @@ import SwiftSyntax
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(corrections: corrections)
 
-        verifyRule(description, ruleConfiguration: ["minimum_length": 5])
+        await verifyRule(description, ruleConfiguration: ["minimum_length": 5])
     }
 
-    @Test func numberSeparatorWithMinimumFractionLength() {
+    @Test func numberSeparatorWithMinimumFractionLength() async {
         let nonTriggeringExamples = [
             Example("let foo = 1_000.000_000_1"),
             Example("let foo = 1.000_001"),
@@ -56,10 +54,10 @@ import SwiftSyntax
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(corrections: corrections)
 
-        verifyRule(description, ruleConfiguration: ["minimum_fraction_length": 5])
+        await verifyRule(description, ruleConfiguration: ["minimum_fraction_length": 5])
     }
 
-    @Test func numberSeparatorWithExcludeRanges() {
+    @Test func numberSeparatorWithExcludeRanges() async {
         let nonTriggeringExamples = [
             Example("let foo = 1950"),
             Example("let foo = 1_950"),
@@ -90,7 +88,7 @@ import SwiftSyntax
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(corrections: corrections)
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: [
                 "exclude_ranges": [
@@ -102,34 +100,34 @@ import SwiftSyntax
         )
     }
 
-    @Test func specificViolationReasons() {
+    @Test func specificViolationReasons() async {
         #expect(
-            violations(in: "1_000") == [],
+            await violations(in: "1_000") == [],
         )
         #expect(
-            violations(in: "1000") == [NumberSeparatorRule.missingSeparatorsReason],
+            await violations(in: "1000") == [NumberSeparatorRule.missingSeparatorsReason],
         )
         #expect(
-            violations(in: "1.000000", config: ["minimum_fraction_length": 5]) == [
+            await violations(in: "1.000000", config: ["minimum_fraction_length": 5]) == [
                 NumberSeparatorRule.missingSeparatorsReason,
             ],
         )
         #expect(
-            violations(in: "10_00") == [NumberSeparatorRule.misplacedSeparatorsReason],
+            await violations(in: "10_00") == [NumberSeparatorRule.misplacedSeparatorsReason],
         )
         #expect(
-            violations(in: "1_000_0") == [NumberSeparatorRule.misplacedSeparatorsReason],
+            await violations(in: "1_000_0") == [NumberSeparatorRule.misplacedSeparatorsReason],
         )
         #expect(
-            violations(in: "1000.0_00") == [NumberSeparatorRule.misplacedSeparatorsReason],
+            await violations(in: "1000.0_00") == [NumberSeparatorRule.misplacedSeparatorsReason],
         )
         #expect(
-            violations(in: "10_00", config: ["minimum_length": 5]) == [
+            await violations(in: "10_00", config: ["minimum_length": 5]) == [
                 NumberSeparatorRule.misplacedSeparatorsReason,
             ],
         )
         #expect(
-            violations(in: "1000.0_00", config: ["minimum_fraction_length": 5]) == [
+            await violations(in: "1000.0_00", config: ["minimum_fraction_length": 5]) == [
                 NumberSeparatorRule.misplacedSeparatorsReason,
             ],
         )
@@ -138,7 +136,7 @@ import SwiftSyntax
     private func violations(in code: String, config: Any = [Any]()) -> [String] {
         var rule = NumberSeparatorRule()
         try? rule.configuration.apply(configuration: config)
-        let visitor = rule.makeVisitor(file: SwiftLintFile(contents: ""))
+        let visitor = rule.makeVisitor(file: SwiftSource(contents: ""))
         visitor.walk(Parser.parse(source: "let a = " + code))
         return visitor.violations.compactMap(\.reason)
     }

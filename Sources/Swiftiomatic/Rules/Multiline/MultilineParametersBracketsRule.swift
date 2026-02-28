@@ -115,14 +115,14 @@ struct MultilineParametersBracketsRule: OptInRule {
         ],
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         violations(in: file.structureDictionary, file: file)
     }
 
-    private func violations(in substructure: SourceKitDictionary, file: SwiftLintFile)
-        -> [StyleViolation]
+    private func violations(in substructure: SourceKitDictionary, file: SwiftSource)
+        -> [RuleViolation]
     {
-        var violations = [StyleViolation]()
+        var violations = [RuleViolation]()
 
         // find violations at current level
         if let kind = substructure.declarationKind,
@@ -173,8 +173,8 @@ struct MultilineParametersBracketsRule: OptInRule {
 
     private func openingBracketViolation(
         parameters: [SourceKitDictionary],
-        file: SwiftLintFile,
-    ) -> StyleViolation? {
+        file: SwiftSource,
+    ) -> RuleViolation? {
         guard
             let firstParamByteRange = parameters.first?.byteRange,
             let firstParamRange = file.stringView.byteRangeToNSRange(firstParamByteRange)
@@ -186,26 +186,23 @@ struct MultilineParametersBracketsRule: OptInRule {
         let invalidRegex = regex("\\([ \\t]*\\z")
 
         guard
-            let invalidMatch = invalidRegex.firstMatch(
-                in: prefix,
-                options: [],
-                range: prefix.fullNSRange,
-            )
+            let invalidMatch = invalidRegex.firstMatch(in: prefix, range: prefix.fullNSRange)
         else {
             return nil
         }
 
-        return StyleViolation(
+        let matchNSRange = NSRange(invalidMatch.range, in: prefix)
+        return RuleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
-            location: Location(file: file, characterOffset: invalidMatch.range.location + 1),
+            location: Location(file: file, characterOffset: matchNSRange.location + 1),
         )
     }
 
     private func closingBracketViolation(
         parameters: [SourceKitDictionary],
-        file: SwiftLintFile,
-    ) -> StyleViolation? {
+        file: SwiftSource,
+    ) -> RuleViolation? {
         guard
             let lastParamByteRange = parameters.last?.byteRange,
             let lastParamRange = file.stringView.byteRangeToNSRange(lastParamByteRange)
@@ -217,17 +214,14 @@ struct MultilineParametersBracketsRule: OptInRule {
         let invalidRegex = regex("\\A[ \\t]*\\)")
 
         guard
-            let invalidMatch = invalidRegex.firstMatch(
-                in: suffix,
-                options: [],
-                range: suffix.fullNSRange,
-            )
+            let invalidMatch = invalidRegex.firstMatch(in: suffix, range: suffix.fullNSRange)
         else {
             return nil
         }
 
-        let characterOffset = lastParamRange.upperBound + invalidMatch.range.upperBound - 1
-        return StyleViolation(
+        let matchNSRange = NSRange(invalidMatch.range, in: suffix)
+        let characterOffset = lastParamRange.upperBound + matchNSRange.upperBound - 1
+        return RuleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
             location: Location(file: file, characterOffset: characterOffset),
@@ -235,14 +229,3 @@ struct MultilineParametersBracketsRule: OptInRule {
     }
 }
 
-extension MultilineParametersBracketsRule {
-    private static let _postMessage: Void = {
-        Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
-        ).print()
-    }()
-
-    func notifyRuleDisabledOnce() {
-        _ = Self._postMessage
-    }
-}

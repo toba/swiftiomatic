@@ -20,7 +20,7 @@ struct VerticalWhitespaceBetweenCasesRule: Rule {
 }
 
 extension VerticalWhitespaceBetweenCasesRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }

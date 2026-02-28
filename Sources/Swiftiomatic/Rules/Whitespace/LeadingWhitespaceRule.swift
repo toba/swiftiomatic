@@ -20,7 +20,7 @@ struct LeadingWhitespaceRule: CorrectableRule, SourceKitFreeRule {
         ],
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         let countOfLeadingWhitespace = file.contents.countOfLeadingCharacters(
             in: .whitespacesAndNewlines,
         )
@@ -29,7 +29,7 @@ struct LeadingWhitespaceRule: CorrectableRule, SourceKitFreeRule {
         }
 
         return [
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: file.path, line: 1),
@@ -37,7 +37,7 @@ struct LeadingWhitespaceRule: CorrectableRule, SourceKitFreeRule {
         ]
     }
 
-    func correct(file: SwiftLintFile) -> Int {
+    func correct(file: SwiftSource) -> Int {
         let whitespaceAndNewline = CharacterSet.whitespacesAndNewlines
         let spaceCount = file.contents.countOfLeadingCharacters(in: whitespaceAndNewline)
         guard spaceCount > 0,

@@ -1,5 +1,12 @@
 import Foundation
 
+extension Duration {
+    var timeInterval: Double {
+        let (seconds, attoseconds) = components
+        return Double(seconds) + Double(attoseconds) * 1e-18
+    }
+}
+
 struct BenchmarkEntry {
     let id: String
     let time: Double
@@ -17,8 +24,8 @@ struct Benchmark {
         entries.append(BenchmarkEntry(id: id, time: time))
     }
 
-    mutating func record(file: SwiftLintFile, from start: Date) {
-        record(id: file.path ?? "<nopath>", time: -start.timeIntervalSinceNow)
+    mutating func record(file: SwiftSource, from start: ContinuousClock.Instant) {
+        record(id: file.path ?? "<nopath>", time: (ContinuousClock.now - start).timeInterval)
     }
 
     func save() {

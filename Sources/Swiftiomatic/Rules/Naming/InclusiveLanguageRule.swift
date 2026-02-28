@@ -18,7 +18,7 @@ struct InclusiveLanguageRule: Rule {
 }
 
 extension InclusiveLanguageRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -111,12 +111,12 @@ private extension InclusiveLanguageRule {
             .skipChildren
         }
 
-        private func violation(for node: TokenSyntax) -> ReasonedRuleViolation? {
+        private func violation(for node: TokenSyntax) -> SyntaxViolation? {
             guard let (term, name) = violationTerm(for: node) else {
                 return nil
             }
 
-            return ReasonedRuleViolation(
+            return SyntaxViolation(
                 position: node.positionAfterSkippingLeadingTrivia,
                 reason:
                 "Declaration \(name) contains the term \"\(term)\" which is not considered inclusive",

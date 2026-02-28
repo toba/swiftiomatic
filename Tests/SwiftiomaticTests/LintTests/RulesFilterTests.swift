@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct RulesFilterTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct RulesFilterTests {
     @Test func rulesFilterExcludesEnabledRules() {
         let allRules = RuleList(
             rules: [
@@ -133,7 +131,7 @@ private struct RuleMock1: Rule {
     init() { /* conformance for test */ }
     init(configuration _: Any) { self.init() }
 
-    func validate(file _: SwiftLintFile) -> [StyleViolation] {
+    func validate(file _: SwiftSource) -> [RuleViolation] {
         []
     }
 }
@@ -150,7 +148,7 @@ private struct RuleMock2: Rule {
     init() { /* conformance for test */ }
     init(configuration _: Any) { self.init() }
 
-    func validate(file _: SwiftLintFile) -> [StyleViolation] {
+    func validate(file _: SwiftSource) -> [RuleViolation] {
         []
     }
 }
@@ -167,11 +165,11 @@ private struct CorrectableRuleMock: CorrectableRule {
     init() { /* conformance for test */ }
     init(configuration _: Any) { self.init() }
 
-    func validate(file _: SwiftLintFile) -> [StyleViolation] {
+    func validate(file _: SwiftSource) -> [RuleViolation] {
         []
     }
 
-    func correct(file _: SwiftLintFile) -> Int {
+    func correct(file _: SwiftSource) -> Int {
         0
     }
 }

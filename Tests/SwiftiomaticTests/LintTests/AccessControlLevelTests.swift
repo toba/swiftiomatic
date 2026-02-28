@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct AccessControlLevelTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct AccessControlLevelTests {
     @Test func description() {
         #expect(AccessControlLevel.private.description == "private")
         #expect(AccessControlLevel.fileprivate.description == "fileprivate")

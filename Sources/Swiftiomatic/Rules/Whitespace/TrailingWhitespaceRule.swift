@@ -33,7 +33,7 @@ struct TrailingWhitespaceRule: Rule {
 }
 
 extension TrailingWhitespaceRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -104,7 +104,7 @@ private extension TrailingWhitespaceRule {
                 let correctionEnd = lineStartPos.advanced(by: line.utf8.count)
 
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: violationPosition,
                         correction: .init(
                             start: violationPosition,

@@ -44,14 +44,14 @@ struct InvalidCommandRule: Rule, SourceKitFreeRule {
         ].skipWrappingInCommentTests(),
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         badPrefixViolations(in: file) + invalidCommandViolations(in: file)
     }
 
-    private func badPrefixViolations(in file: SwiftLintFile) -> [StyleViolation] {
+    private func badPrefixViolations(in file: SwiftSource) -> [RuleViolation] {
         (file.commands + file.invalidCommands).compactMap { command in
             command.isPrecededByInvalidCharacter(in: file)
-                ? styleViolation(
+                ? ruleViolation(
                     for: command,
                     in: file,
                     reason: "sm: command should be preceded by whitespace or a comment character",
@@ -60,19 +60,19 @@ struct InvalidCommandRule: Rule, SourceKitFreeRule {
         }
     }
 
-    private func invalidCommandViolations(in file: SwiftLintFile) -> [StyleViolation] {
+    private func invalidCommandViolations(in file: SwiftSource) -> [RuleViolation] {
         file.invalidCommands.map { command in
-            styleViolation(
+            ruleViolation(
                 for: command, in: file,
                 reason: command.invalidReason() ?? Self.description.description,
             )
         }
     }
 
-    private func styleViolation(for command: Command, in file: SwiftLintFile, reason: String)
-        -> StyleViolation
+    private func ruleViolation(for command: Command, in file: SwiftSource, reason: String)
+        -> RuleViolation
     {
-        StyleViolation(
+        RuleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
             location: Location(
@@ -86,7 +86,7 @@ struct InvalidCommandRule: Rule, SourceKitFreeRule {
 }
 
 private extension Command {
-    func isPrecededByInvalidCharacter(in file: SwiftLintFile) -> Bool {
+    func isPrecededByInvalidCharacter(in file: SwiftSource) -> Bool {
         guard line > 0, let character = range?.lowerBound, character > 1, line <= file.lines.count
         else {
             return false

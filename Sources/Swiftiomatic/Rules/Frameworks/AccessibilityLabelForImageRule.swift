@@ -28,7 +28,7 @@ struct AccessibilityLabelForImageRule: Rule, OptInRule {
 }
 
 extension AccessibilityLabelForImageRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -55,7 +55,7 @@ private extension AccessibilityLabelForImageRule {
 
             // Use centralized exemption logic
             if !AccessibilityDeterminator.isExempt(node) {
-                let violation = ReasonedRuleViolation(
+                let violation = SyntaxViolation(
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason: """
                     Images that provide context should have an accessibility label or should be \

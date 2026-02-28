@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct MissingDocsRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct MissingDocsRuleTests {
     @Test func descriptionEmpty() {
         let configuration = MissingDocsConfiguration()
         #expect(

@@ -24,9 +24,9 @@ Swift Testing runs `@Suite` types concurrently within a single process. The test
 
 **Total: ~505 suites**, each potentially spinning up its own thread. Two interacting problems:
 
-1. **OOM from concurrent lint test execution**: Each `verifyRule()` call constructs a `Configuration`, creates `SwiftLintFile` objects, and runs the full rule. Hundreds of these running concurrently exhaust memory. Signal 137 = kernel OOM kill.
+1. **OOM from concurrent lint test execution**: Each `verifyRule()` call constructs a `Configuration`, creates `SwiftSource` objects, and runs the full rule. Hundreds of these running concurrently exhaust memory. Signal 137 = kernel OOM kill.
 
-2. **Lock serialization makes combined runs too slow**: An `NSRecursiveLock` (`lintTestLock`) was added to serialize lint test helpers (`violations()`, `verifyRule()`, `corrections()`). This prevents data races on `SwiftLintFile.clearCaches()` and shared `RuleRegistry` state, but when hundreds of suites queue up on the lock, the process appears hung. The lock only serializes work — threads and their memory are still all alive.
+2. **Lock serialization makes combined runs too slow**: An `NSRecursiveLock` (`lintTestLock`) was added to serialize lint test helpers (`violations()`, `verifyRule()`, `corrections()`). This prevents data races on `SwiftSource.clearCaches()` and shared `RuleRegistry` state, but when hundreds of suites queue up on the lock, the process appears hung. The lock only serializes work — threads and their memory are still all alive.
 
 ### What works now
 

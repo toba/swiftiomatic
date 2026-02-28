@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct FileTypesOrderRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func fileTypesOrderReversedOrder() {
+@Suite(.rulesRegistered) struct FileTypesOrderRuleTests {
+    @Test func fileTypesOrderReversedOrder() async {
         // Test with reversed `order` entries
         let nonTriggeringExamples = [
             Example(FileTypesOrderRuleExamples.defaultOrderParts.reversed()
@@ -86,7 +84,7 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             reversedOrderDescription,
             ruleConfiguration: [
                 "order": [
@@ -97,7 +95,7 @@ import Testing
         )
     }
 
-    @Test func fileTypesOrderGroupedOrder() {
+    @Test func fileTypesOrderGroupedOrder() async {
         // Test with grouped `order` entries
         let nonTriggeringExamples = [
             Example(
@@ -161,7 +159,7 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             groupedOrderDescription,
             ruleConfiguration: [
                 "order": [

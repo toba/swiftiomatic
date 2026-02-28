@@ -53,13 +53,15 @@
       "mcp__xc-swift__swift_package_build",
       "mcp__xc-swift__swift_package_test",
       "mcp__xc-swift__swift_format",
-      "mcp__xc-swift__swift_lint"
+      "mcp__xc-swift__swift_lint",
+      "mcp__xc-build__build_macos",
+      "mcp__xc-build__discover_projs"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "xc-build",
     "xc-swift",
     "xc-debug"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

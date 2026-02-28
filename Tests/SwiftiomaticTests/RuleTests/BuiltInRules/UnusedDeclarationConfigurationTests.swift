@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct UnusedDeclarationConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct UnusedDeclarationConfigurationTests {
     @Test func parseConfiguration() throws {
         var testee = UnusedDeclarationConfiguration()
         let config =

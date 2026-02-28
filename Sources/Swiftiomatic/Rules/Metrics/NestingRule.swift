@@ -15,7 +15,7 @@ struct NestingRule: Rule {
 }
 
 extension NestingRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -179,7 +179,7 @@ private extension NestingRule {
             let threshold = configuration.threshold(with: targetLevel, for: severity)
             let pluralSuffix = threshold > 1 ? "s" : ""
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: triggeringToken.positionAfterSkippingLeadingTrivia,
                     reason: "\(targetName) should be nested at most \(threshold) level\(pluralSuffix) deep",
                     severity: severity,

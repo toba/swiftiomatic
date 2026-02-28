@@ -25,7 +25,7 @@ struct XCTSpecificMatcherRule: Rule {
 }
 
 extension XCTSpecificMatcherRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -39,7 +39,7 @@ private extension XCTSpecificMatcherRule {
                let suggestion = TwoArgsXCTAssert.violations(in: node)
             {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Prefer the specific matcher '\(suggestion)' instead",
                     ),
@@ -48,7 +48,7 @@ private extension XCTSpecificMatcherRule {
                       let suggestion = OneArgXCTAssert.violations(in: node)
             {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Prefer the specific matcher '\(suggestion)' instead",
                     ),

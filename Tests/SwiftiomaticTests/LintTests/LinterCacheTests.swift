@@ -20,16 +20,16 @@ private struct CacheTestHelper {
         self.cache = cache
     }
 
-    fileprivate func makeViolations(file: String) -> [StyleViolation] {
+    fileprivate func makeViolations(file: String) -> [RuleViolation] {
         touch(file: file)
         return [
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: ruleDescription,
                 severity: .warning,
                 location: Location(file: file, line: 10, character: 2),
                 reason: "Something is not right",
             ),
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: ruleDescription,
                 severity: .error,
                 location: Location(file: file, line: 5, character: nil),
@@ -55,7 +55,7 @@ private struct CacheTestHelper {
     }
 }
 
-private final class TestFileManager: @unchecked Sendable, LintableFileManager {
+private final class TestFileManager: @unchecked Sendable, LintableFileDiscovering {
     fileprivate func filesToLint(
         inPath _: String,
         rootDirectory _: String? = nil,
@@ -72,8 +72,6 @@ private final class TestFileManager: @unchecked Sendable, LintableFileManager {
 }
 
 @Suite final class LinterCacheTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
     // MARK: Test Helpers
 
     private var cache = LinterCache(fileManager: TestFileManager())
@@ -83,7 +81,7 @@ private final class TestFileManager: @unchecked Sendable, LintableFileManager {
     }
 
     private func cacheAndValidate(
-        violations: [StyleViolation],
+        violations: [RuleViolation],
         forFile: String,
         configuration: Configuration,
         file _: StaticString = #filePath,
@@ -130,7 +128,7 @@ private final class TestFileManager: @unchecked Sendable, LintableFileManager {
     // MARK: Cache Reuse
 
     // Two subsequent lints with no changes reuses cache
-    @Test func unchangedFilesReusesCache() {
+    @Test func unchangedFilesReusesCache() async {
         let helper = makeCacheTestHelper(dict: ["only_rules": ["mock"]])
         let file = "foo.swift"
         let violations = helper.makeViolations(file: file)
@@ -141,7 +139,7 @@ private final class TestFileManager: @unchecked Sendable, LintableFileManager {
         #expect(cache.violations(forFile: file, configuration: helper.configuration) == nil)
     }
 
-    @Test func configFileReorderedReusesCache() {
+    @Test func configFileReorderedReusesCache() async {
         let helper = makeCacheTestHelper(dict: ["only_rules": ["mock"], "disabled_rules": [Any]()])
         let file = "foo.swift"
         let violations = helper.makeViolations(file: file)
@@ -170,7 +168,7 @@ private final class TestFileManager: @unchecked Sendable, LintableFileManager {
         #expect(cache.violations(forFile: file, configuration: helper.configuration) == violations)
     }
 
-    @Test func configFileUnrelatedKeysChangedOrAddedOrRemovedReusesCache() {
+    @Test func configFileUnrelatedKeysChangedOrAddedOrRemovedReusesCache() async {
         let helper = makeCacheTestHelper(dict: ["only_rules": ["mock"], "reporter": "json"])
         let file = "foo.swift"
         let violations = helper.makeViolations(file: file)
@@ -186,7 +184,7 @@ private final class TestFileManager: @unchecked Sendable, LintableFileManager {
 
     // Two subsequent lints with a file touch in between causes just that one
     // file to be re-linted, with the cache used for all other files
-    @Test func changedFileCausesJustThatFileToBeLintWithCacheUsedForAllOthers() {
+    @Test func changedFileCausesJustThatFileToBeLintWithCacheUsedForAllOthers() async {
         let helper = makeCacheTestHelper(dict: ["only_rules": ["mock"], "reporter": "json"])
         let (file1, file2) = ("file1.swift", "file2.swift")
         let violations1 = helper.makeViolations(file: file1)
@@ -208,7 +206,7 @@ private final class TestFileManager: @unchecked Sendable, LintableFileManager {
         #expect(cache.violations(forFile: file2, configuration: helper.configuration) == nil)
     }
 
-    @Test func fileRemovedPreservesThatFileInTheCacheAndDoesNotCauseAnyOtherFilesToBeLinted() {
+    @Test func fileRemovedPreservesThatFileInTheCacheAndDoesNotCauseAnyOtherFilesToBeLinted() async {
         let helper = makeCacheTestHelper(dict: ["only_rules": ["mock"], "reporter": "json"])
         let (file1, file2) = ("file1.swift", "file2.swift")
         let violations1 = helper.makeViolations(file: file1)
@@ -326,7 +324,7 @@ private final class TestFileManager: @unchecked Sendable, LintableFileManager {
         try validateNewConfigDoesNotHitCache(dict: [:], initialConfig: initialConfig)
     }
 
-    @Test func swiftVersionChangedRemovedCausesAllFilesToBeReLinted() {
+    @Test func swiftVersionChangedRemovedCausesAllFilesToBeReLinted() async {
         let fileManager = TestFileManager()
         cache = LinterCache(fileManager: fileManager)
         let helper = makeCacheTestHelper(dict: [:])

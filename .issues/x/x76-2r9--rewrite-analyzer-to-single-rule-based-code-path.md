@@ -21,7 +21,7 @@ After all Checks are merged into Rules, collapse the Analyzer's dual code paths 
 
 ## Target state
 Single path:
-1. Parse files → build SwiftLintFile instances
+1. Parse files → build SwiftSource instances
 2. Collect phase: `collectInfo()` for CollectingRule instances
 3. Validate phase: `validate()` for all rules
 4. Async enrichment: `enrichAsync()` for AsyncEnrichableRule rules

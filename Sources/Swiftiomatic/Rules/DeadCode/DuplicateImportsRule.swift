@@ -22,9 +22,9 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
         corrections: DuplicateImportsRuleExamples.corrections,
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         file.duplicateImportsViolationPositions().map { position in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: file, position: position),
@@ -32,11 +32,11 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
         }
     }
 
-    func makeVisitor(file _: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file _: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         queuedFatalError("Unreachable: `validate(file:)` will be used instead")
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
@@ -181,7 +181,7 @@ private let explicitSystemModules = Set(
     ].map { $0.split(separator: ".").map(String.init) },
 )
 
-private extension SwiftLintFile {
+private extension SwiftSource {
     func duplicateImportsViolationPositions() -> [AbsolutePosition] {
         let importPaths = ImportPathVisitor(viewMode: .sourceAccurate)
             .walk(file: self, handler: \.sortedImportPaths)

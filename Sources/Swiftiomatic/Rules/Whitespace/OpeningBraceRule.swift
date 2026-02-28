@@ -23,7 +23,7 @@ struct OpeningBraceRule: Rule {
 }
 
 extension OpeningBraceRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -168,7 +168,7 @@ private extension OpeningBraceRule {
         override func collectViolations(for bracedItem: (some BracedSyntax)?) {
             if let bracedItem, let correction = violationCorrection(bracedItem) {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: bracedItem.openingPosition,
                         reason: """
                         Opening braces should be preceded by a single space and on the same line \
@@ -180,7 +180,7 @@ private extension OpeningBraceRule {
             }
         }
 
-        private func violationCorrection(_ node: some BracedSyntax) -> ReasonedRuleViolation
+        private func violationCorrection(_ node: some BracedSyntax) -> SyntaxViolation
             .ViolationCorrection?
         {
             let leftBrace = node.leftBrace

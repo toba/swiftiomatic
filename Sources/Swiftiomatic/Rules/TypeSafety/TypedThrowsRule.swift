@@ -20,7 +20,7 @@ struct TypedThrowsRule: Rule {
 }
 
 extension TypedThrowsRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -28,16 +28,16 @@ extension TypedThrowsRule: SwiftSyntaxRule {
 extension TypedThrowsRule: OptInRule {}
 
 extension TypedThrowsRule: AsyncEnrichableRule {
-    func enrichAsync(
-        file: SwiftLintFile,
+    func enrich(
+        file: SwiftSource,
         typeResolver: any TypeResolver,
-    ) async -> [StyleViolation] {
+    ) async -> [RuleViolation] {
         guard let filePath = file.path else { return [] }
 
         let visitor = UnknownThrowCollectorVisitor(viewMode: .sourceAccurate)
         visitor.walk(file.syntaxTree)
 
-        var violations: [StyleViolation] = []
+        var violations: [RuleViolation] = []
 
         for query in visitor.queries {
             guard let resolved = await typeResolver.resolveType(
@@ -49,7 +49,7 @@ extension TypedThrowsRule: AsyncEnrichableRule {
 
             if allTypes.count == 1, let errorType = allTypes.first {
                 violations.append(
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         severity: configuration.severity,
                         location: Location(file: filePath, line: query.line, character: query.column),
@@ -85,7 +85,7 @@ private extension TypedThrowsRule {
 
             let funcName = node.name.text
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason: "Function '\(funcName)' throws only '\(errorType)' but declares untyped 'throws'",
                     severity: .warning,
@@ -111,7 +111,7 @@ private extension TypedThrowsRule {
             else { return }
 
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason: "Initializer throws only '\(errorType)' but declares untyped 'throws'",
                     severity: .warning,

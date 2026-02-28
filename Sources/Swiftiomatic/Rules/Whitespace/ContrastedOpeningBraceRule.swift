@@ -23,7 +23,7 @@ struct ContrastedOpeningBraceRule: Rule {
 }
 
 extension ContrastedOpeningBraceRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -35,7 +35,7 @@ private extension ContrastedOpeningBraceRule {
         override func collectViolations(for bracedItem: (some BracedSyntax)?) {
             if let bracedItem, let correction = violationCorrection(bracedItem) {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: bracedItem.openingPosition,
                         reason: "Opening brace should be on a separate line",
                         correction: correction,
@@ -44,7 +44,7 @@ private extension ContrastedOpeningBraceRule {
             }
         }
 
-        private func violationCorrection(_ node: some BracedSyntax) -> ReasonedRuleViolation
+        private func violationCorrection(_ node: some BracedSyntax) -> SyntaxViolation
             .ViolationCorrection?
         {
             let leftBrace = node.leftBrace

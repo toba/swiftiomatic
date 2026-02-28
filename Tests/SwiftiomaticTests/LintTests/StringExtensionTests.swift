@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct StringExtensionTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct StringExtensionTests {
     @Test func relativePathExpression() {
         #expect("Folder/Test" == "Root/Folder/Test".path(relativeTo: "Root"))
         #expect("Test" == "Root/Folder/Test".path(relativeTo: "Root/Folder"))

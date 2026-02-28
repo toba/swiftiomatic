@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ExplicitTypeInterfaceRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func localVars() {
+@Suite(.rulesRegistered) struct ExplicitTypeInterfaceRuleTests {
+    @Test func localVars() async {
         let nonTriggeringExamples = [
             Example("func foo() {\nlet intVal: Int = 1\n}"),
             Example(
@@ -33,10 +31,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description)
+        await verifyRule(description)
     }
 
-    @Test func excludeLocalVars() {
+    @Test func excludeLocalVars() async {
         let nonTriggeringExamples =
             ExplicitTypeInterfaceRule.description.nonTriggeringExamples + [
                 Example("func foo() {\nlet intVal = 1\n}"),
@@ -46,10 +44,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["excluded": ["local"]])
+        await verifyRule(description, ruleConfiguration: ["excluded": ["local"]])
     }
 
-    @Test func excludeClassVars() {
+    @Test func excludeClassVars() async {
         let nonTriggeringExamples =
             ExplicitTypeInterfaceRule.description.nonTriggeringExamples + [
                 Example("class Foo {\n  static var myStaticVar = 0\n}\n"),
@@ -64,10 +62,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["excluded": ["static"]])
+        await verifyRule(description, ruleConfiguration: ["excluded": ["static"]])
     }
 
-    @Test func allowRedundancy() {
+    @Test func allowRedundancy() async {
         let nonTriggeringExamples: [Example] = [
             Example("class Foo {\n  var myVar: Int? = 0\n}\n"),
             Example("class Foo {\n  let myVar: Int? = 0\n}\n"),
@@ -95,10 +93,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["allow_redundancy": true])
+        await verifyRule(description, ruleConfiguration: ["allow_redundancy": true])
     }
 
-    @Test func embeddedInStatements() {
+    @Test func embeddedInStatements() async {
         let nonTriggeringExamples = [
             Example(
                 """
@@ -126,10 +124,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description)
+        await verifyRule(description)
     }
 
-    @Test func captureGroup() {
+    @Test func captureGroup() async {
         let nonTriggeringExamples = [
             Example(
                 """
@@ -165,10 +163,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description)
+        await verifyRule(description)
     }
 
-    @Test func fastEnumerationDeclaration() {
+    @Test func fastEnumerationDeclaration() async {
         let nonTriggeringExamples = [
             Example(
                 """
@@ -192,10 +190,10 @@ import Testing
         let description = ExplicitTypeInterfaceRule.description
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
-        verifyRule(description)
+        await verifyRule(description)
     }
 
-    @Test func switchCaseDeclarations() {
+    @Test func switchCaseDeclarations() async {
         let nonTriggeringExamples = [
             Example(
                 """
@@ -263,6 +261,6 @@ import Testing
         let description = ExplicitTypeInterfaceRule.description
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
-        verifyRule(description)
+        await verifyRule(description)
     }
 }

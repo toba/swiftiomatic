@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ConditionalReturnsOnNewlineRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func conditionalReturnsOnNewlineWithIfOnly() {
+@Suite(.rulesRegistered) struct ConditionalReturnsOnNewlineRuleTests {
+    @Test func conditionalReturnsOnNewlineWithIfOnly() async {
         // Test with `if_only` set to true
         let nonTriggeringExamples = [
             Example("guard true else {\n return true\n}"),
@@ -27,6 +25,6 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["if_only": true])
+        await verifyRule(description, ruleConfiguration: ["if_only": true])
     }
 }

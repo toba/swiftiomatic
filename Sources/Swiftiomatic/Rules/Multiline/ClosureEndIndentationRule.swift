@@ -15,7 +15,7 @@ struct ClosureEndIndentationRule: Rule {
 }
 
 extension ClosureEndIndentationRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -83,7 +83,7 @@ private extension ClosureEndIndentationRule {
 
                 let reason = "expected \(expectedIndentationColumn), got \(actualIndentationColumn)"
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.rightBrace.positionAfterSkippingLeadingTrivia,
                         reason: reason,
                         severity: configuration.severity,

@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct TypesafeArrayInitRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func violationRuleIdentifier() {
+@Suite(.rulesRegistered) struct TypesafeArrayInitRuleTests {
+    @Test func violationRuleIdentifier() async {
         let baseDescription = TypesafeArrayInitRule.description
         guard let triggeringExample = baseDescription.triggeringExamples.first else {
             Issue.record("No triggering examples found")
@@ -14,7 +12,7 @@ import Testing
             Issue.record("Failed to create configuration")
             return
         }
-        let allViolations = violations(triggeringExample, config: config, requiresFileOnDisk: true)
+        let allViolations = await violations(triggeringExample, config: config, requiresFileOnDisk: true)
         #expect(allViolations.count >= 1)
         #expect(allViolations.first?.ruleIdentifier == baseDescription.identifier)
     }

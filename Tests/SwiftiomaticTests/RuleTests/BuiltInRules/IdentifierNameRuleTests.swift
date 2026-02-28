@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct IdentifierNameRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func identifierNameWithExcluded() {
+@Suite(.rulesRegistered) struct IdentifierNameRuleTests {
+    @Test func identifierNameWithExcluded() async {
         let baseDescription = IdentifierNameRule.description
         let nonTriggeringExamples =
             baseDescription.nonTriggeringExamples + [
@@ -21,10 +19,10 @@ import Testing
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: triggeringExamples,
         )
-        verifyRule(description, ruleConfiguration: ["excluded": ["Apple", "some.*", ".*\\d+.*"]])
+        await verifyRule(description, ruleConfiguration: ["excluded": ["Apple", "some.*", ".*\\d+.*"]])
     }
 
-    @Test func identifierNameWithAllowedSymbols() {
+    @Test func identifierNameWithAllowedSymbols() async {
         let baseDescription = IdentifierNameRule.description
         let nonTriggeringExamples =
             baseDescription.nonTriggeringExamples + [
@@ -39,20 +37,20 @@ import Testing
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: triggeringExamples,
         )
-        verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%", "_"]])
+        await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%", "_"]])
     }
 
-    @Test func identifierNameWithAllowedSymbolsAndViolation() {
+    @Test func identifierNameWithAllowedSymbolsAndViolation() async {
         let baseDescription = IdentifierNameRule.description
         let triggeringExamples = [
             Example("let ↓my_Let$ = 0"),
         ]
 
         let description = baseDescription.with(triggeringExamples: triggeringExamples)
-        verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
+        await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
     }
 
-    @Test func identifierNameWithIgnoreStartWithLowercase() {
+    @Test func identifierNameWithIgnoreStartWithLowercase() async {
         let baseDescription = IdentifierNameRule.description
         let triggeringExamplesToRemove = [
             Example("let ↓MyLet = 0"),
@@ -72,10 +70,10 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["validates_start_with_lowercase": "off"])
+        await verifyRule(description, ruleConfiguration: ["validates_start_with_lowercase": "off"])
     }
 
-    @Test func startsWithLowercaseCheck() {
+    @Test func startsWithLowercaseCheck() async {
         let triggeringExamples = [
             Example("let ↓MyLet = 0"),
             Example("enum Foo { case ↓MyCase }"),
@@ -87,14 +85,14 @@ import Testing
             Example("func isOperator(name: String) -> Bool { true }"),
         ]
 
-        verifyRule(
+        await verifyRule(
             IdentifierNameRule.description
                 .with(triggeringExamples: triggeringExamples)
                 .with(nonTriggeringExamples: nonTriggeringExamples),
             ruleConfiguration: ["validates_start_with_lowercase": "error"],
         )
 
-        verifyRule(
+        await verifyRule(
             IdentifierNameRule.description
                 .with(triggeringExamples: [])
                 .with(
@@ -105,8 +103,8 @@ import Testing
         )
     }
 
-    @Test func startsWithLowercaseCheckInCombinationWithAllowedSymbols() {
-        verifyRule(
+    @Test func startsWithLowercaseCheckInCombinationWithAllowedSymbols() async {
+        await verifyRule(
             IdentifierNameRule.description
                 .with(triggeringExamples: [
                     Example("let ↓OneLet = 0"),
@@ -122,18 +120,18 @@ import Testing
         )
     }
 
-    @Test func linuxCrashOnEmojiNames() {
+    @Test func linuxCrashOnEmojiNames() async {
         let baseDescription = IdentifierNameRule.description
         let triggeringExamples = [
             Example("let 👦🏼 = \"👦🏼\""),
         ]
 
         let description = baseDescription.with(triggeringExamples: triggeringExamples)
-        verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
+        await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
     }
 
     @Test func functionNameInViolationMessage() {
-        let example = SwiftLintFile(contents: "func _abc(arg: String) {}")
+        let example = SwiftSource(contents: "func _abc(arg: String) {}")
         let violations = IdentifierNameRule().validate(file: example)
         #expect(
             violations.map(\.reason) == [

@@ -60,7 +60,7 @@ struct StatementPositionRule: CorrectableRule {
         ],
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         switch configuration.statementMode {
             case .default:
                 return defaultValidate(file: file)
@@ -69,7 +69,7 @@ struct StatementPositionRule: CorrectableRule {
         }
     }
 
-    func correct(file: SwiftLintFile) -> Int {
+    func correct(file: SwiftSource) -> Int {
         switch configuration.statementMode {
             case .default:
                 defaultCorrect(file: file)
@@ -86,25 +86,25 @@ private extension StatementPositionRule {
     /// followed by 'else' or 'catch' literals
     static let defaultPattern = "\\}(?:[\\s\\n\\r]{2,}|[\\n\\t\\r]+)?\\b(else|catch)\\b"
 
-    func defaultValidate(file: SwiftLintFile) -> [StyleViolation] {
+    func defaultValidate(file: SwiftSource) -> [RuleViolation] {
         defaultViolationRanges(in: file, matching: Self.defaultPattern).compactMap { range in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: range.location),
+                location: Location(file: file, stringIndex: range.lowerBound),
             )
         }
     }
 
-    func defaultViolationRanges(in file: SwiftLintFile, matching pattern: String)
-        -> [NSRange]
+    func defaultViolationRanges(in file: SwiftSource, matching pattern: String)
+        -> [Range<String.Index>]
     {
         file.match(pattern: pattern).filter { _, syntaxKinds in
             syntaxKinds.starts(with: [.keyword])
         }.compactMap(\.0)
     }
 
-    func defaultCorrect(file: SwiftLintFile) -> Int {
+    func defaultCorrect(file: SwiftSource) -> Int {
         let violations = defaultViolationRanges(in: file, matching: Self.defaultPattern)
         let matches = file.ruleEnabled(violatingRanges: violations, for: self)
         if matches.isEmpty {
@@ -113,10 +113,9 @@ private extension StatementPositionRule {
         let regularExpression = regex(Self.defaultPattern)
         var contents = file.contents
         for range in matches.reversed() {
-            contents = regularExpression.stringByReplacingMatches(
-                in: contents, options: [], range: range,
-                withTemplate: "} $1",
-            )
+            contents = regularExpression.replacing(in: contents, range: range) { match in
+                "} \(match.output[1].substring ?? "")"
+            }
         }
         file.write(contents)
         return matches.count
@@ -125,12 +124,12 @@ private extension StatementPositionRule {
 
 /// Uncuddled Behaviors
 private extension StatementPositionRule {
-    func uncuddledValidate(file: SwiftLintFile) -> [StyleViolation] {
+    func uncuddledValidate(file: SwiftSource) -> [RuleViolation] {
         uncuddledViolationRanges(in: file).compactMap { range in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.uncuddledDescription,
                 severity: configuration.severity,
-                location: Location(file: file, characterOffset: range.location),
+                location: Location(file: file, stringIndex: range.lowerBound),
             )
         }
     }
@@ -143,27 +142,46 @@ private extension StatementPositionRule {
 
     static let uncuddledRegex = regex(uncuddledPattern, options: [])
 
-    static func uncuddledMatchValidator(contents: StringView) -> (
-        (NSTextCheckingResult)
-            -> NSTextCheckingResult?
+    /// A validated match that holds ranges for each capture group.
+    private struct UncuddledMatch {
+        let fullRange: Range<String.Index>
+        let group1Range: Range<String.Index> // leading whitespace before }
+        let group2Range: Range<String.Index>? // newlines between } and else/catch
+        let group3Range: Range<String.Index> // whitespace before else/catch
+    }
+
+    private static func uncuddledMatches(in file: SwiftSource) -> [UncuddledMatch] {
+        return uncuddledRegex.matches(in: file).compactMap { match in
+            let fullRange = match.range
+            // Group 1: leading whitespace
+            guard let g1Sub = match.output[1].substring else { return nil }
+            let g1Range = g1Sub.startIndex..<g1Sub.endIndex
+            // Group 2: newlines (optional)
+            let g2Range = match.output[2].substring.map { sub in
+                sub.startIndex..<sub.endIndex
+            }
+            // Group 3: whitespace before keyword
+            guard let g3Sub = match.output[3].substring else { return nil }
+            let g3Range = g3Sub.startIndex..<g3Sub.endIndex
+
+            return UncuddledMatch(
+                fullRange: fullRange,
+                group1Range: g1Range,
+                group2Range: g2Range,
+                group3Range: g3Range,
+            )
+        }
+    }
+
+    private static func uncuddledMatchValidator(contents: StringView) -> (
+        (UncuddledMatch) -> UncuddledMatch?
     ) {
         { match in
-            if match.numberOfRanges != 5 {
+            guard let group2Range = match.group2Range, !group2Range.isEmpty else {
                 return match
             }
-            if match.range(at: 2).length == 0 {
-                return match
-            }
-            let range1 = match.range(at: 1)
-            let range2 = match.range(at: 3)
-            let whitespace1 = contents.string.substring(
-                from: range1.location,
-                length: range1.length,
-            )
-            let whitespace2 = contents.string.substring(
-                from: range2.location,
-                length: range2.length,
-            )
+            let whitespace1 = String(contents.string[match.group1Range])
+            let whitespace2 = String(contents.string[match.group3Range])
             if whitespace1 == whitespace2 {
                 return nil
             }
@@ -171,77 +189,54 @@ private extension StatementPositionRule {
         }
     }
 
-    static func uncuddledMatchFilter(
+    private static func uncuddledMatchFilter(
         contents: StringView,
-        syntaxMap: SwiftLintSyntaxMap,
-    ) -> ((NSTextCheckingResult) -> Bool) {
+        syntaxMap: ResolvedSyntaxMap,
+    ) -> ((UncuddledMatch) -> Bool) {
         { match in
-            let range = match.range
-            guard
-                let matchRange = contents.NSRangeToByteRange(
-                    start: range.location,
-                    length: range.length,
-                )
-            else {
-                return false
-            }
-            return syntaxMap.kinds(inByteRange: matchRange) == [.keyword]
+            let matchByteRange = contents.stringRangeToByteRange(match.fullRange)
+            return syntaxMap.kinds(inByteRange: matchByteRange) == [.keyword]
         }
     }
 
-    func uncuddledViolationRanges(in file: SwiftLintFile) -> [NSRange] {
+    func uncuddledViolationRanges(in file: SwiftSource) -> [Range<String.Index>] {
         let contents = file.stringView
         let syntaxMap = file.syntaxMap
-        let matches = Self.uncuddledRegex.matches(in: file)
+        let matches = Self.uncuddledMatches(in: file)
         let validator = Self.uncuddledMatchValidator(contents: contents)
         let filterMatches = Self.uncuddledMatchFilter(contents: contents, syntaxMap: syntaxMap)
 
-        return matches.compactMap(validator).filter(filterMatches).map(\.range)
+        return matches.compactMap(validator).filter(filterMatches).map(\.fullRange)
     }
 
-    func uncuddledCorrect(file: SwiftLintFile) -> Int {
+    func uncuddledCorrect(file: SwiftSource) -> Int {
         var contents = file.contents
         let syntaxMap = file.syntaxMap
-        let matches = Self.uncuddledRegex.matches(in: file)
+        let matches = Self.uncuddledMatches(in: file)
         let validator = Self.uncuddledMatchValidator(contents: file.stringView)
         let filterRanges = Self.uncuddledMatchFilter(
             contents: file.stringView,
             syntaxMap: syntaxMap,
         )
         let validMatches = matches.compactMap(validator).filter(filterRanges)
-            .filter { file.ruleEnabled(violatingRanges: [$0.range], for: self).isNotEmpty }
+            .filter { file.ruleEnabled(violatingRanges: [$0.fullRange], for: self).isNotEmpty }
         if validMatches.isEmpty {
             return 0
         }
         for match in validMatches.reversed() {
-            let range1 = match.range(at: 1)
-            let range2 = match.range(at: 3)
-            let newlineRange = match.range(at: 2)
-            var whitespace = contents.bridge().substring(with: range1)
+            var whitespace = String(contents[match.group1Range])
             let newLines: String
-            if newlineRange.location != NSNotFound {
-                newLines = contents.bridge().substring(with: newlineRange)
+            if let group2Range = match.group2Range {
+                newLines = String(contents[group2Range])
             } else {
                 newLines = ""
             }
             if !whitespace.hasPrefix("\n"), newLines != "\n" {
                 whitespace.insert("\n", at: whitespace.startIndex)
             }
-            contents = contents.bridge().replacingCharacters(in: range2, with: whitespace)
+            contents.replaceSubrange(match.group3Range, with: whitespace)
         }
         file.write(contents)
         return validMatches.count
-    }
-}
-
-extension StatementPositionRule {
-    private static let _postMessage: Void = {
-        Issue.genericWarning(
-            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited.",
-        ).print()
-    }()
-
-    func notifyRuleDisabledOnce() {
-        _ = Self._postMessage
     }
 }

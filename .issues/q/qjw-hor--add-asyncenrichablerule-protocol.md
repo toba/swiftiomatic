@@ -13,7 +13,7 @@ Add a new protocol to the Rule hierarchy for rules that can be enriched with asy
 
 ```swift
 protocol AsyncEnrichableRule: Rule {
-    func enrichAsync(file: SwiftLintFile, typeResolver: any TypeResolver) async -> [StyleViolation]
+    func enrichAsync(file: SwiftSource, typeResolver: any TypeResolver) async -> [StyleViolation]
 }
 ```
 

@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ImplicitlyUnwrappedOptionalConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ImplicitlyUnwrappedOptionalConfigurationTests {
     @Test func implicitlyUnwrappedOptionalConfigurationProperlyAppliesConfigurationFromDictionary()
         throws
     {

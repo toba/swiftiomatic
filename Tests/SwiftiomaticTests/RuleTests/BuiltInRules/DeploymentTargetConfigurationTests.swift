@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct DeploymentTargetConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct DeploymentTargetConfigurationTests {
     private typealias Version = DeploymentTargetConfiguration.Version
 
     @Test func appliesConfigurationFromDictionary() throws {

@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct RequiredEnumCaseConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct RequiredEnumCaseConfigurationTests {
     private typealias RuleConfiguration = RequiredEnumCaseConfiguration
     private typealias RequiredCase = RuleConfiguration.RequiredCase
 

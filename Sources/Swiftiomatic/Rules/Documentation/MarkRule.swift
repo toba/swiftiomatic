@@ -16,11 +16,11 @@ struct MarkRule: Rule {
 }
 
 extension MarkRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
@@ -54,18 +54,23 @@ private struct ViolationResult {
 extension TokenSyntax {
     private enum Mark {
         static func lint(in text: String) -> [() -> String] {
-            regex(badPattern).matches(in: text, options: [], range: text.fullNSRange).compactMap {
-                match in
-                isIgnoredCases(text, range: match.range)
-                    ? nil
-                    : {
-                        var corrected = replace(text, range: match.range(at: 2), to: "- ")
-                        corrected = replace(corrected, range: match.range(at: 1), to: "// MARK: ")
-                        if !text.hasSuffix(" "), corrected.hasSuffix(" ") {
-                            corrected.removeLast()
-                        }
-                        return corrected
+            regex(badPattern).matches(in: text, range: text.fullNSRange).compactMap { match in
+                let matchNSRange = NSRange(match.range, in: text)
+                if isIgnoredCases(text, range: matchNSRange) { return nil }
+                let group1Range: NSRange = match.output[1].substring.map {
+                    NSRange($0.startIndex ..< $0.endIndex, in: text)
+                } ?? NSRange(location: NSNotFound, length: 0)
+                let group2Range: NSRange = match.output[2].substring.map {
+                    NSRange($0.startIndex ..< $0.endIndex, in: text)
+                } ?? NSRange(location: NSNotFound, length: 0)
+                return {
+                    var corrected = replace(text, range: group2Range, to: "- ")
+                    corrected = replace(corrected, range: group1Range, to: "// MARK: ")
+                    if !text.hasSuffix(" "), corrected.hasSuffix(" ") {
+                        corrected.removeLast()
                     }
+                    return corrected
+                }
             }
         }
 

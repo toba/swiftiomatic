@@ -242,7 +242,7 @@ struct DiscouragedNoneNameRule: Rule {
 }
 
 extension DiscouragedNoneNameRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -255,7 +255,7 @@ private extension DiscouragedNoneNameRule {
             let emptyParams = node.parameterClause?.parameters.isEmpty ?? true
             if emptyParams, node.name.isNone {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: reason(type: "`case`"),
                     ),
@@ -286,7 +286,7 @@ private extension DiscouragedNoneNameRule {
                 }
 
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: reason(type: type),
                     ),

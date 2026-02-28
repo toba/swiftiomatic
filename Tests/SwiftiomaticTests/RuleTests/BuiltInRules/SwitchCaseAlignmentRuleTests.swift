@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct SwitchCaseAlignmentRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func switchCaseAlignmentWithoutIndentedCases() {
+@Suite(.rulesRegistered) struct SwitchCaseAlignmentRuleTests {
+    @Test func switchCaseAlignmentWithoutIndentedCases() async {
         let baseDescription = SwitchCaseAlignmentRule.description
         let examples = SwitchCaseAlignmentRule.Examples(indentedCases: false)
 
@@ -13,10 +11,10 @@ import Testing
             triggeringExamples: examples.triggeringExamples,
         )
 
-        verifyRule(description)
+        await verifyRule(description)
     }
 
-    @Test func switchCaseAlignmentWithIndentedCases() {
+    @Test func switchCaseAlignmentWithIndentedCases() async {
         let baseDescription = SwitchCaseAlignmentRule.description
         let examples = SwitchCaseAlignmentRule.Examples(indentedCases: true)
 
@@ -25,6 +23,6 @@ import Testing
             triggeringExamples: examples.triggeringExamples,
         )
 
-        verifyRule(description, ruleConfiguration: ["indented_cases": true])
+        await verifyRule(description, ruleConfiguration: ["indented_cases": true])
     }
 }

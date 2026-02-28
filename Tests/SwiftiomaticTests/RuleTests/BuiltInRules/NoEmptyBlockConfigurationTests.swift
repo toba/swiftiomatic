@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct NoEmptyBlockConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct NoEmptyBlockConfigurationTests {
     @Test func defaultConfiguration() {
         let config = NoEmptyBlockConfiguration()
         #expect(config.severityConfiguration.severity == .warning)

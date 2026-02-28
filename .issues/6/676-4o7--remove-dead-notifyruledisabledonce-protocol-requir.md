@@ -1,10 +1,11 @@
 ---
 # 676-4o7
 title: Remove dead notifyRuleDisabledOnce protocol requirement and implementations
-status: ready
+status: completed
 type: task
+priority: normal
 created_at: 2026-02-28T18:18:12Z
-updated_at: 2026-02-28T18:18:12Z
+updated_at: 2026-02-28T18:54:30Z
 ---
 
 The `notifyRuleDisabledOnce()` protocol requirement on `Rule` and all its implementations are now dead code after the `disableSourceKit` infrastructure was removed from `Request+SwiftLint.swift`.
@@ -27,7 +28,7 @@ The only call site was in `Linter.swift`'s `shouldRun(onFile:)` method, inside t
 
 ## Todo
 
-- [ ] Remove `notifyRuleDisabledOnce()` from the `Rule` protocol
-- [ ] Remove the default implementation in `Rule` extension
-- [ ] Remove all 8 rule-specific implementations
-- [ ] Build and test
+- [x] Remove `notifyRuleDisabledOnce()` from the `Rule` protocol
+- [x] Remove the default implementation in `Rule` extension
+- [x] Remove all 9 rule-specific implementations (+ `_postMessage` static properties)
+- [x] Build and test

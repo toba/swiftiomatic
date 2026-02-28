@@ -11,7 +11,7 @@ struct FileNameRule: OptInRule, SourceKitFreeRule {
         kind: .idiomatic,
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         guard let filePath = file.path,
               !configuration.shouldExclude(filePath: filePath)
         else {
@@ -26,18 +26,18 @@ struct FileNameRule: OptInRule, SourceKitFreeRule {
 
         // Process prefix
         if let match = prefixRegex.firstMatch(
-            in: typeInFileName, options: [], range: typeInFileName.fullNSRange,
+            in: typeInFileName, range: typeInFileName.fullNSRange,
         ),
-            let range = typeInFileName.nsrangeToIndexRange(match.range)
+            let range = typeInFileName.nsRangeToIndexRange(NSRange(match.range, in: typeInFileName))
         {
             typeInFileName.removeSubrange(range)
         }
 
         // Process suffix
         if let match = suffixRegex.firstMatch(
-            in: typeInFileName, options: [], range: typeInFileName.fullNSRange,
+            in: typeInFileName, range: typeInFileName.fullNSRange,
         ),
-            let range = typeInFileName.nsrangeToIndexRange(match.range)
+            let range = typeInFileName.nsRangeToIndexRange(NSRange(match.range, in: typeInFileName))
         {
             typeInFileName.removeSubrange(range)
         }
@@ -56,7 +56,7 @@ struct FileNameRule: OptInRule, SourceKitFreeRule {
         }
 
         return [
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severity,
                 location: Location(file: filePath, line: 1),

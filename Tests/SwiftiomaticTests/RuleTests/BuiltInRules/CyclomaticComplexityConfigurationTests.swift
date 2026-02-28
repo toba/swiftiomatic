@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct CyclomaticComplexityConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct CyclomaticComplexityConfigurationTests {
     @Test func cyclomaticComplexityConfigurationInitializerSetsLevels() {
         let warning = 10
         let error = 30

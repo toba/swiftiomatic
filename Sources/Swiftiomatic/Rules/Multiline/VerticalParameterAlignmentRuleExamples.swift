@@ -2,14 +2,14 @@ enum VerticalParameterAlignmentRuleExamples {
     static let nonTriggeringExamples: [Example] = [
         Example(
             """
-            func validateFunction(_ file: SwiftLintFile, kind: SwiftDeclarationKind,
+            func validateFunction(_ file: SwiftSource, kind: SwiftDeclarationKind,
                                   dictionary: SourceKitDictionary) { }
             """,
         ),
         Example(
             """
-            func validateFunction(_ file: SwiftLintFile, kind: SwiftDeclarationKind,
-                                  dictionary: SourceKitDictionary) -> [StyleViolation]
+            func validateFunction(_ file: SwiftSource, kind: SwiftDeclarationKind,
+                                  dictionary: SourceKitDictionary) -> [RuleViolation]
             """,
         ),
         Example(
@@ -24,24 +24,24 @@ enum VerticalParameterAlignmentRuleExamples {
         ),
         Example(
             """
-            func validateFunction(_ file: SwiftLintFile, kind: SwiftDeclarationKind,
+            func validateFunction(_ file: SwiftSource, kind: SwiftDeclarationKind,
                                   dictionary: SourceKitDictionary)
-                                  -> [StyleViolation]
+                                  -> [RuleViolation]
             """,
         ),
         Example(
             """
             func validateFunction(
-               _ file: SwiftLintFile, kind: SwiftDeclarationKind,
-               dictionary: SourceKitDictionary) -> [StyleViolation]
+               _ file: SwiftSource, kind: SwiftDeclarationKind,
+               dictionary: SourceKitDictionary) -> [RuleViolation]
             """,
         ),
         Example(
             """
             func validateFunction(
-               _ file: SwiftLintFile, kind: SwiftDeclarationKind,
+               _ file: SwiftSource, kind: SwiftDeclarationKind,
                dictionary: SourceKitDictionary
-            ) -> [StyleViolation]
+            ) -> [RuleViolation]
             """,
         ),
         Example(
@@ -91,19 +91,19 @@ enum VerticalParameterAlignmentRuleExamples {
     static let triggeringExamples: [Example] = [
         Example(
             """
-            func validateFunction(_ file: SwiftLintFile, kind: SwiftDeclarationKind,
+            func validateFunction(_ file: SwiftSource, kind: SwiftDeclarationKind,
                               ↓dictionary: SourceKitDictionary) { }
             """,
         ),
         Example(
             """
-            func validateFunction(_ file: SwiftLintFile, kind: SwiftDeclarationKind,
+            func validateFunction(_ file: SwiftSource, kind: SwiftDeclarationKind,
                                    ↓dictionary: SourceKitDictionary) { }
             """,
         ),
         Example(
             """
-            func validateFunction(_ file: SwiftLintFile,
+            func validateFunction(_ file: SwiftSource,
                               ↓kind: SwiftDeclarationKind,
                               ↓dictionary: SourceKitDictionary) { }
             """,

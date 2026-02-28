@@ -1,21 +1,19 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ParserDiagnosticsTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ParserDiagnosticsTests {
     @Test func fileWithParserErrorDiagnostics() {
         $parserDiagnosticsDisabledForTests.withValue(false) {
-            #expect(SwiftLintFile(contents: "importz Foundation").parserDiagnostics != nil)
+            #expect(SwiftSource(contents: "importz Foundation").parserDiagnostics != nil)
         }
     }
 
-    @Test func fileWithParserErrorDiagnosticsDoesNotAutocorrect() throws {
+    @Test func fileWithParserErrorDiagnosticsDoesNotAutocorrect() async throws {
         let contents = """
         print(CGPointZero))
         """
         #expect(
-            SwiftLintFile(contents: contents).parserDiagnostics == [
+            SwiftSource(contents: contents).parserDiagnostics == [
                 "unexpected code \')\' in source file",
             ],
         )
@@ -26,13 +24,13 @@ import Testing
         let config = try #require(
             makeConfig(nil, ruleDescription.identifier, skipDisableCommandTests: true),
         )
-        verifyCorrections(
+        await verifyCorrections(
             ruleDescription, config: config, disableCommands: [],
             testMultiByteOffsets: false, parserDiagnosticsDisabledForTests: false,
         )
     }
 
-    @Test func fileWithParserWarningDiagnostics() throws {
+    @Test func fileWithParserWarningDiagnostics() async throws {
         // extraneous duplicate parameter name; 'bar' already has an argument label
         let original = """
         func foo(bar bar: String) ->   Int { 0 }
@@ -43,7 +41,7 @@ import Testing
         """
 
         $parserDiagnosticsDisabledForTests.withValue(false) {
-            #expect(SwiftLintFile(contents: original).parserDiagnostics == [])
+            #expect(SwiftSource(contents: original).parserDiagnostics == [])
         }
 
         let ruleDescription = ReturnArrowWhitespaceRule.description
@@ -52,7 +50,7 @@ import Testing
         let config = try #require(
             makeConfig(nil, ruleDescription.identifier, skipDisableCommandTests: true),
         )
-        verifyCorrections(
+        await verifyCorrections(
             ruleDescription, config: config, disableCommands: [],
             testMultiByteOffsets: false, parserDiagnosticsDisabledForTests: false,
         )
@@ -60,7 +58,7 @@ import Testing
 
     @Test func fileWithoutParserDiagnostics() {
         $parserDiagnosticsDisabledForTests.withValue(false) {
-            #expect(SwiftLintFile(contents: "import Foundation").parserDiagnostics == [])
+            #expect(SwiftSource(contents: "import Foundation").parserDiagnostics == [])
         }
     }
 }

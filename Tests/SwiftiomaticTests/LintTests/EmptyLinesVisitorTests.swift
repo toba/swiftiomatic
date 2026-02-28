@@ -2,9 +2,7 @@ import Testing
 import SwiftSyntax
 @testable import Swiftiomatic
 
-@Suite struct EmptyLinesVisitorTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct EmptyLinesVisitorTests {
     @Test func emptyFile() {
         #expect(emptyLines(in: "") == [])
     }
@@ -187,6 +185,6 @@ import SwiftSyntax
     }
 
     private func emptyLines(in contents: String) -> [Int] {
-        EmptyLinesVisitor.emptyLines(in: SwiftLintFile(contents: contents)).sorted()
+        EmptyLinesVisitor.emptyLines(in: SwiftSource(contents: contents)).sorted()
     }
 }

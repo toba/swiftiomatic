@@ -1,202 +1,152 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct AccessibilityLabelForImageRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(AccessibilityLabelForImageRule.description)
+@Suite(.rulesRegistered) struct AccessibilityLabelForImageRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(AccessibilityLabelForImageRule.description)
     }
 }
 
-@Suite struct AccessibilityTraitForButtonRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(AccessibilityTraitForButtonRule.description)
+@Suite(.rulesRegistered) struct AccessibilityTraitForButtonRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(AccessibilityTraitForButtonRule.description)
     }
 }
 
-@Suite struct AnonymousArgumentInMultilineClosureRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(AnonymousArgumentInMultilineClosureRule.description)
+@Suite(.rulesRegistered) struct AnonymousArgumentInMultilineClosureRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(AnonymousArgumentInMultilineClosureRule.description)
     }
 }
 
-@Suite struct ArrayInitRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ArrayInitRule.description)
+@Suite(.rulesRegistered) struct ArrayInitRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ArrayInitRule.description)
     }
 }
 
-@Suite struct AsyncWithoutAwaitRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(AsyncWithoutAwaitRule.description)
+@Suite(.rulesRegistered) struct AsyncWithoutAwaitRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(AsyncWithoutAwaitRule.description)
     }
 }
 
-@Suite struct AttributeNameSpacingRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(AttributeNameSpacingRule.description)
+@Suite(.rulesRegistered) struct AttributeNameSpacingRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(AttributeNameSpacingRule.description)
     }
 }
 
-@Suite struct AttributesRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(AttributesRule.description)
+@Suite(.rulesRegistered) struct AttributesRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(AttributesRule.description)
     }
 }
 
-@Suite struct BalancedXCTestLifecycleRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(BalancedXCTestLifecycleRule.description)
+@Suite(.rulesRegistered) struct BalancedXCTestLifecycleRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(BalancedXCTestLifecycleRule.description)
     }
 }
 
-@Suite struct BlanketDisableCommandRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(BlanketDisableCommandRule.description)
+@Suite(.rulesRegistered) struct BlanketDisableCommandRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(BlanketDisableCommandRule.description)
     }
 }
 
-@Suite struct BlockBasedKVORuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(BlockBasedKVORule.description)
+@Suite(.rulesRegistered) struct BlockBasedKVORuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(BlockBasedKVORule.description)
     }
 }
 
-@Suite struct CaptureVariableRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(CaptureVariableRule.description)
+@Suite(.rulesRegistered) struct CaptureVariableRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(CaptureVariableRule.description)
     }
 }
 
-@Suite struct ClassDelegateProtocolRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ClassDelegateProtocolRule.description)
+@Suite(.rulesRegistered) struct ClassDelegateProtocolRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ClassDelegateProtocolRule.description)
     }
 }
 
-@Suite struct ClosingBraceRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ClosingBraceRule.description)
+@Suite(.rulesRegistered) struct ClosingBraceRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ClosingBraceRule.description)
     }
 }
 
-@Suite struct ClosureBodyLengthRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ClosureBodyLengthRule.description)
+@Suite(.rulesRegistered) struct ClosureBodyLengthRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ClosureBodyLengthRule.description)
     }
 }
 
-@Suite struct ClosureEndIndentationRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ClosureEndIndentationRule.description)
+@Suite(.rulesRegistered) struct ClosureEndIndentationRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ClosureEndIndentationRule.description)
     }
 }
 
-@Suite struct ClosureParameterPositionRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ClosureParameterPositionRule.description)
+@Suite(.rulesRegistered) struct ClosureParameterPositionRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ClosureParameterPositionRule.description)
     }
 }
 
-@Suite struct ClosureSpacingRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ClosureSpacingRule.description)
+@Suite(.rulesRegistered) struct ClosureSpacingRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ClosureSpacingRule.description)
     }
 }
 
-@Suite struct CollectionAlignmentRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(CollectionAlignmentRule.description)
+@Suite(.rulesRegistered) struct CollectionAlignmentRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(CollectionAlignmentRule.description)
     }
 }
 
-@Suite struct ColonRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ColonRule.description)
+@Suite(.rulesRegistered) struct ColonRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ColonRule.description)
     }
 }
 
-@Suite struct CommaInheritanceRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(CommaInheritanceRule.description)
+@Suite(.rulesRegistered) struct CommaInheritanceRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(CommaInheritanceRule.description)
     }
 }
 
-@Suite struct CommaRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(CommaRule.description)
+@Suite(.rulesRegistered) struct CommaRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(CommaRule.description)
     }
 }
 
-@Suite struct CommentSpacingRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(CommentSpacingRule.description)
+@Suite(.rulesRegistered) struct CommentSpacingRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(CommentSpacingRule.description)
     }
 }
 
-@Suite struct CompilerProtocolInitRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(CompilerProtocolInitRule.description)
+@Suite(.rulesRegistered) struct CompilerProtocolInitRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(CompilerProtocolInitRule.description)
     }
 }
 
-@Suite struct ComputedAccessorsOrderRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ComputedAccessorsOrderRule.description)
+@Suite(.rulesRegistered) struct ComputedAccessorsOrderRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ComputedAccessorsOrderRule.description)
     }
 }
 
-@Suite struct ConditionalReturnsOnNewlineRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ConditionalReturnsOnNewlineRule.description)
+@Suite(.rulesRegistered) struct ConditionalReturnsOnNewlineRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ConditionalReturnsOnNewlineRule.description)
     }
 }

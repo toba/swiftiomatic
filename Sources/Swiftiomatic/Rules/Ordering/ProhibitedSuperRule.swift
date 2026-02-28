@@ -86,7 +86,7 @@ struct ProhibitedSuperRule: Rule {
 }
 
 extension ProhibitedSuperRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -111,7 +111,7 @@ private extension ProhibitedSuperRule {
             }
 
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: body.leftBrace.endPositionBeforeTrailingTrivia,
                     reason: "Method '\(name)' should not call to super function",
                 ),

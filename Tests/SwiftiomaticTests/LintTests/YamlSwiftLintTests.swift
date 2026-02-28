@@ -3,9 +3,7 @@ import Testing
 import Foundation
 @testable import Swiftiomatic
 
-@Suite struct YamlSwiftLintTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct YamlSwiftLintTests {
     @Test func flattenYaml() {
         do {
             guard let yamlDict = try Yams.load(yaml: getTestYaml()) as? [String: Any] else {

@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct TrailingClosureConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct TrailingClosureConfigurationTests {
     @Test func defaultConfiguration() {
         let config = TrailingClosureConfiguration()
         #expect(config.severityConfiguration.severity == .warning)

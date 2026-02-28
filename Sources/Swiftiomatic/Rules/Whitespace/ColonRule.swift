@@ -16,17 +16,17 @@ struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
         corrections: ColonRuleExamples.corrections,
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         violationRanges(in: file).map { range in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severityConfiguration.severity,
-                location: Location(file: file, characterOffset: range.location),
+                location: Location(file: file, stringIndex: range.lowerBound),
             )
         }
     }
 
-    func violationRanges(in file: SwiftLintFile) -> [NSRange] {
+    func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
         let syntaxTree = file.syntaxTree
         let visitor = ColonRuleVisitor(viewMode: .sourceAccurate)
         visitor.walk(syntaxTree)
@@ -90,11 +90,11 @@ struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
                     return nil
                 }
                 .compactMap { byteRange in
-                    file.stringView.byteRangeToNSRange(byteRange)
+                    file.stringView.byteRangeToStringRange(byteRange)
                 }
     }
 
-    func substitution(for violationRange: NSRange, in _: SwiftLintFile) -> (NSRange, String)? {
+    func substitution(for violationRange: Range<String.Index>, in _: SwiftSource) -> (Range<String.Index>, String)? {
         (violationRange, ": ")
     }
 }

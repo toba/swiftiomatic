@@ -102,18 +102,18 @@ struct LegacyCGGeometryFunctionsRule: Rule {
 }
 
 extension LegacyCGGeometryFunctionsRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
 
 private extension LegacyCGGeometryFunctionsRule {
     final class Visitor: LegacyFunctionVisitor<ConfigurationType> {
-        init(configuration: ConfigurationType, file: SwiftLintFile) {
+        init(configuration: ConfigurationType, file: SwiftSource) {
             super.init(
                 configuration: configuration, file: file,
                 legacyFunctions: LegacyCGGeometryFunctionsRule.legacyFunctions,
@@ -122,7 +122,7 @@ private extension LegacyCGGeometryFunctionsRule {
     }
 
     final class Rewriter: LegacyFunctionRewriter<ConfigurationType> {
-        init(configuration: ConfigurationType, file: SwiftLintFile) {
+        init(configuration: ConfigurationType, file: SwiftSource) {
             super.init(
                 configuration: configuration, file: file,
                 legacyFunctions: LegacyCGGeometryFunctionsRule.legacyFunctions,

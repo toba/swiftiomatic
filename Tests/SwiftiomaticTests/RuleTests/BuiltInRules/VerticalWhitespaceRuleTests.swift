@@ -1,12 +1,10 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct VerticalWhitespaceRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct VerticalWhitespaceRuleTests {
     private let ruleID = VerticalWhitespaceRule.identifier
 
-    @Test func attributesWithMaxEmptyLines() {
+    @Test func attributesWithMaxEmptyLines() async {
         // Test with custom `max_empty_lines`
         let maxEmptyLinesDescription = VerticalWhitespaceRule.description
             .with(nonTriggeringExamples: [Example("let aaaa = 0\n\n\n")])
@@ -16,13 +14,13 @@ import Testing
             ])
             .with(corrections: [:])
 
-        verifyRule(
+        await verifyRule(
             maxEmptyLinesDescription,
             ruleConfiguration: ["max_empty_lines": 2],
         )
     }
 
-    @Test func autoCorrectionWithMaxEmptyLines() {
+    @Test func autoCorrectionWithMaxEmptyLines() async {
         let maxEmptyLinesDescription = VerticalWhitespaceRule.description
             .with(nonTriggeringExamples: [])
             .with(triggeringExamples: [])
@@ -36,18 +34,18 @@ import Testing
                 ),
             ])
 
-        verifyRule(
+        await verifyRule(
             maxEmptyLinesDescription,
             ruleConfiguration: ["max_empty_lines": 2],
         )
     }
 
-    @Test func violationMessageWithMaxEmptyLines() {
+    @Test func violationMessageWithMaxEmptyLines() async {
         guard let config = makeConfig(["max_empty_lines": 2], ruleID) else {
             Issue.record("Failed to create configuration")
             return
         }
-        let allViolations = violations(Example("let aaaa = 0\n\n\n\nlet bbb = 2\n"), config: config)
+        let allViolations = await violations(Example("let aaaa = 0\n\n\n\nlet bbb = 2\n"), config: config)
 
         let verticalWhiteSpaceViolation = allViolations.first { $0.ruleIdentifier == ruleID }
         if let violation = verticalWhiteSpaceViolation {
@@ -58,8 +56,8 @@ import Testing
         }
     }
 
-    @Test func violationMessageWithDefaultConfiguration() {
-        let allViolations = violations(Example("let aaaa = 0\n\n\n\nlet bbb = 2\n"))
+    @Test func violationMessageWithDefaultConfiguration() async {
+        let allViolations = await violations(Example("let aaaa = 0\n\n\n\nlet bbb = 2\n"))
         let verticalWhiteSpaceViolation = allViolations
             .first(where: { $0.ruleIdentifier == ruleID })
         if let violation = verticalWhiteSpaceViolation {

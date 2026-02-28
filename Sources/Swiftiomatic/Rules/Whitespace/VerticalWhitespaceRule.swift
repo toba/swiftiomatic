@@ -54,11 +54,11 @@ struct VerticalWhitespaceRule: Rule {
 }
 
 extension VerticalWhitespaceRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
@@ -122,7 +122,7 @@ private extension VerticalWhitespaceRule {
 
         private func report(_ position: AbsolutePosition, _ newlines: Int) {
             violations.append(
-                ReasonedRuleViolation(
+                SyntaxViolation(
                     position: position,
                     reason: configuration
                         .configuredDescriptionReason + "; currently \(newlines - 1)",

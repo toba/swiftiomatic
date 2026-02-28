@@ -1,23 +1,21 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct CollectingRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func collectsIntoStorage() throws {
+@Suite(.rulesRegistered) struct CollectingRuleTests {
+    @Test func collectsIntoStorage() async throws {
         struct Spec: MockCollectingRule {
             var configuration = SeverityConfiguration<Self>(.warning)
 
-            func collectInfo(for _: SwiftLintFile) -> Int {
+            func collectInfo(for _: SwiftSource) -> Int {
                 42
             }
 
-            func validate(file: SwiftLintFile,
-                          collectedInfo: [SwiftLintFile: Int]) -> [StyleViolation]
+            func validate(file: SwiftSource,
+                          collectedInfo: [SwiftSource: Int]) -> [RuleViolation]
             {
                 #expect(collectedInfo[file] == 42)
                 return [
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         location: Location(file: file, byteOffset: 0),
                     ),
@@ -25,26 +23,27 @@ import Testing
             }
         }
 
-        #expect(try !(violations(Example("_ = 0"), config: #require(Spec.configuration)).isEmpty))
+        let result = await violations(Example("_ = 0"), config: try #require(Spec.configuration))
+        #expect(!result.isEmpty)
     }
 
-    @Test func collectsAllFiles() throws {
+    @Test func collectsAllFiles() async throws {
         struct Spec: MockCollectingRule {
             var configuration = SeverityConfiguration<Self>(.warning)
 
-            func collectInfo(for file: SwiftLintFile) -> String {
+            func collectInfo(for file: SwiftSource) -> String {
                 file.contents
             }
 
-            func validate(file: SwiftLintFile,
-                          collectedInfo: [SwiftLintFile: String]) -> [StyleViolation]
+            func validate(file: SwiftSource,
+                          collectedInfo: [SwiftSource: String]) -> [RuleViolation]
             {
                 let values = collectedInfo.values
                 #expect(values.contains("foo"))
                 #expect(values.contains("bar"))
                 #expect(values.contains("baz"))
                 return [
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         location: Location(file: file, byteOffset: 0),
                     ),
@@ -53,26 +52,27 @@ import Testing
         }
 
         let inputs = ["foo", "bar", "baz"]
-        #expect(try inputs.violations(config: #require(Spec.configuration)).count == inputs.count)
+        let allViolations = await inputs.violations(config: try #require(Spec.configuration))
+        #expect(allViolations.count == inputs.count)
     }
 
-    @Test func collectsAnalyzerFiles() throws {
+    @Test func collectsAnalyzerFiles() async throws {
         struct Spec: MockCollectingRule, AnalyzerRule {
             var configuration = SeverityConfiguration<Self>(.warning)
 
-            func collectInfo(for _: SwiftLintFile, compilerArguments: [String]) -> [String] {
+            func collectInfo(for _: SwiftSource, compilerArguments: [String]) -> [String] {
                 compilerArguments
             }
 
             func validate(
-                file: SwiftLintFile, collectedInfo: [SwiftLintFile: [String]],
+                file: SwiftSource, collectedInfo: [SwiftSource: [String]],
                 compilerArguments: [String],
             )
-                -> [StyleViolation]
+                -> [RuleViolation]
             {
                 #expect(collectedInfo[file] == compilerArguments)
                 return [
-                    StyleViolation(
+                    RuleViolation(
                         ruleDescription: Self.description,
                         location: Location(file: file, byteOffset: 0),
                     ),
@@ -80,29 +80,28 @@ import Testing
             }
         }
 
-        #expect(
-            try !(violations(
-                Example("_ = 0"),
-                config: #require(Spec.configuration),
-                requiresFileOnDisk: true,
-            ).isEmpty),
+        let analyzerResult = await violations(
+            Example("_ = 0"),
+            config: try #require(Spec.configuration),
+            requiresFileOnDisk: true,
         )
+        #expect(!analyzerResult.isEmpty)
     }
 
-    @Test func corrects() throws {
+    @Test func corrects() async throws {
         struct Spec: MockCollectingRule, CorrectableRule {
             var configuration = SeverityConfiguration<Self>(.warning)
 
-            func collectInfo(for file: SwiftLintFile) -> String {
+            func collectInfo(for file: SwiftSource) -> String {
                 file.contents
             }
 
-            func validate(file: SwiftLintFile,
-                          collectedInfo: [SwiftLintFile: String]) -> [StyleViolation]
+            func validate(file: SwiftSource,
+                          collectedInfo: [SwiftSource: String]) -> [RuleViolation]
             {
                 if collectedInfo[file] == "baz" {
                     return [
-                        StyleViolation(
+                        RuleViolation(
                             ruleDescription: Self.description,
                             location: Location(file: file, byteOffset: 2),
                         ),
@@ -111,11 +110,11 @@ import Testing
                 return []
             }
 
-            func correct(file: SwiftLintFile, collectedInfo: [SwiftLintFile: String]) -> Int {
+            func correct(file: SwiftSource, collectedInfo: [SwiftSource: String]) -> Int {
                 collectedInfo[file] == "baz" ? 1 : 0
             }
 
-            func correct(file: SwiftLintFile) -> Int {
+            func correct(file: SwiftSource) -> Int {
                 correct(file: file, collectedInfo: [file: collectInfo(for: file)])
             }
         }
@@ -123,15 +122,15 @@ import Testing
         struct AnalyzerSpec: MockCollectingRule, AnalyzerRule, CorrectableRule {
             var configuration = SeverityConfiguration<Self>(.warning)
 
-            func collectInfo(for file: SwiftLintFile) -> String {
+            func collectInfo(for file: SwiftSource) -> String {
                 file.contents
             }
 
             func validate(
-                file: SwiftLintFile, collectedInfo: [SwiftLintFile: String],
+                file: SwiftSource, collectedInfo: [SwiftSource: String],
                 compilerArguments _: [String],
             )
-                -> [StyleViolation]
+                -> [RuleViolation]
             {
                 collectedInfo[file] == "baz"
                     ? [
@@ -144,14 +143,14 @@ import Testing
             }
 
             func correct(
-                file: SwiftLintFile,
-                collectedInfo: [SwiftLintFile: String],
+                file: SwiftSource,
+                collectedInfo: [SwiftSource: String],
                 compilerArguments _: [String],
             ) -> Int {
                 collectedInfo[file] == "baz" ? 1 : 0
             }
 
-            func correct(file: SwiftLintFile) -> Int {
+            func correct(file: SwiftSource) -> Int {
                 correct(
                     file: file,
                     collectedInfo: [file: collectInfo(for: file)],
@@ -161,13 +160,13 @@ import Testing
         }
 
         let inputs = ["foo", "baz"]
-        #expect(try inputs.corrections(config: #require(Spec.configuration)).count == 1)
-        #expect(
-            try inputs.corrections(
-                config: #require(AnalyzerSpec.configuration),
-                requiresFileOnDisk: true,
-            ).count == 1,
+        let specCorrections = await inputs.corrections(config: try #require(Spec.configuration))
+        #expect(specCorrections.count == 1)
+        let analyzerCorrections = await inputs.corrections(
+            config: try #require(AnalyzerSpec.configuration),
+            requiresFileOnDisk: true,
         )
+        #expect(analyzerCorrections.count == 1)
     }
 }
 

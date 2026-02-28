@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct RuleConfigurationDescriptionTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct RuleConfigurationDescriptionTests {
     private struct MockConfiguration: RuleConfiguration {
         typealias Parent = MockRule
 

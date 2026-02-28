@@ -77,7 +77,7 @@ struct TypesafeArrayInitRule: AnalyzerRule {
         ),
     ]
 
-    func validate(file: SwiftLintFile, compilerArguments: [String]) -> [StyleViolation] {
+    func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {
         guard let filePath = file.path else {
             return []
         }
@@ -97,7 +97,7 @@ struct TypesafeArrayInitRule: AnalyzerRule {
                     return false
                 }
                 return pointsToSystemMapType(pointee: request)
-            }.map { StyleViolation(ruleDescription: Self.description, location: $0.location) }
+            }.map { RuleViolation(ruleDescription: Self.description, location: $0.location) }
     }
 
     private func pointsToSystemMapType(pointee: [String: SourceKitValue]) -> Bool {
@@ -105,14 +105,14 @@ struct TypesafeArrayInitRule: AnalyzerRule {
            pointee["key.name"]?.stringValue == "map(_:)",
            let typeName = pointee["key.typename"]?.stringValue
         {
-            return Self.mapTypePatterns.contains {
-                $0.numberOfMatches(in: typeName, range: typeName.fullNSRange) == 1
+            return Self.mapTypePatterns.contains { pattern in
+                pattern.hasMatch(in: typeName, range: typeName.fullNSRange)
             }
         }
         return false
     }
 
-    private func getOffset(in file: SwiftLintFile, at location: Location) -> ByteCount? {
+    private func getOffset(in file: SwiftSource, at location: Location) -> ByteCount? {
         guard let line = location.line, let offset = location.character else {
             return nil
         }

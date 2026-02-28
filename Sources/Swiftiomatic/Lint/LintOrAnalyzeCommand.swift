@@ -101,7 +101,7 @@ enum LintOrAnalyzeCommand {
     }
 
     private static func collectViolations(builder: LintOrAnalyzeResultBuilder) async throws
-        -> [SwiftLintFile]
+        -> [SwiftSource]
     {
         let options = builder.options
         let baseline = try baseline(options, builder.configuration)
@@ -109,12 +109,12 @@ enum LintOrAnalyzeCommand {
             options: options, cache: builder.cache,
             storage: builder.storage,
         ) { linter in
-            let currentViolations: [StyleViolation]
+            let currentViolations: [RuleViolation]
             if options.benchmark {
-                let start = Date()
+                let start = ContinuousClock.now
                 let (violationsBeforeLeniency, currentRuleTimes) =
                     linter
-                        .styleViolationsAndRuleTimes(using: builder.storage)
+                        .ruleViolationsAndRuleTimes(using: builder.storage)
                 currentViolations = applyLeniency(
                     options: options,
                     strict: builder.configuration.strict,
@@ -130,7 +130,7 @@ enum LintOrAnalyzeCommand {
                     options: options,
                     strict: builder.configuration.strict,
                     lenient: builder.configuration.lenient,
-                    violations: linter.styleViolations(using: builder.storage),
+                    violations: linter.ruleViolations(using: builder.storage),
                 )
             }
             let filteredViolations = baseline?.filter(currentViolations) ?? currentViolations
@@ -145,7 +145,7 @@ enum LintOrAnalyzeCommand {
     }
 
     private static func postProcessViolations(
-        files: [SwiftLintFile],
+        files: [SwiftSource],
         builder: LintOrAnalyzeResultBuilder,
     ) throws -> Int {
         let options = builder.options
@@ -199,7 +199,7 @@ enum LintOrAnalyzeCommand {
     }
 
     private static func printStatus(
-        violations: [StyleViolation], files: [SwiftLintFile], serious: Int, verb: String,
+        violations: [RuleViolation], files: [SwiftSource], serious: Int, verb: String,
     ) {
         let pluralSuffix = { (collection: [Any]) -> String in
             collection.count != 1 ? "s" : ""
@@ -212,21 +212,21 @@ enum LintOrAnalyzeCommand {
 
     private static func isWarningThresholdBroken(
         configuration: Configuration,
-        violations: [StyleViolation],
+        violations: [RuleViolation],
     ) -> Bool {
         guard let warningThreshold = configuration.warningThreshold else { return false }
         let numberOfWarningViolations = violations.count(where: { $0.severity == .warning })
         return numberOfWarningViolations >= warningThreshold
     }
 
-    private static func createThresholdViolation(threshold: Int) -> StyleViolation {
+    private static func createThresholdViolation(threshold: Int) -> RuleViolation {
         let description = RuleDescription(
             identifier: "warning_threshold",
             name: "Warning Threshold",
             description: "Number of warnings thrown is above the threshold",
             kind: .lint,
         )
-        return StyleViolation(
+        return RuleViolation(
             ruleDescription: description,
             severity: .error,
             location: Location(file: "", line: 0, character: 0),
@@ -238,8 +238,8 @@ enum LintOrAnalyzeCommand {
         options: LintOrAnalyzeOptions,
         strict: Bool,
         lenient: Bool,
-        violations: [StyleViolation],
-    ) -> [StyleViolation] {
+        violations: [RuleViolation],
+    ) -> [RuleViolation] {
         let leniency = options.leniency(strict: strict, lenient: lenient)
 
         switch leniency {
@@ -276,15 +276,6 @@ enum LintOrAnalyzeCommand {
         let files =
             try await configuration
                 .visitLintableFiles(options: options, cache: nil, storage: storage) { linter in
-                    if options.format {
-                        switch configuration.indentation {
-                            case .tabs:
-                                linter.format(useTabs: true, indentWidth: 4)
-                            case let .spaces(count):
-                                linter.format(useTabs: false, indentWidth: count)
-                        }
-                    }
-
                     let corrections = linter.correct(using: storage)
                     if !corrections.isEmpty, !options.quiet {
                         if options.useSTDIN {
@@ -329,9 +320,9 @@ private final class LintOrAnalyzeResultBuilder {
         var fileBenchmark = Benchmark(name: "files")
         var ruleBenchmark = Benchmark(name: "rules")
         /// All detected violations, unfiltered by the baseline, if any.
-        var unfilteredViolations = [StyleViolation]()
+        var unfilteredViolations = [RuleViolation]()
         /// The violations to be reported, possibly filtered by a baseline, plus any threshold violations.
-        var violations = [StyleViolation]()
+        var violations = [RuleViolation]()
     }
 
     let state = Mutex(MutableState())
@@ -340,11 +331,11 @@ private final class LintOrAnalyzeResultBuilder {
     let cache: LinterCache?
     let options: LintOrAnalyzeOptions
 
-    var unfilteredViolations: [StyleViolation] {
+    var unfilteredViolations: [RuleViolation] {
         get { state.withLock { $0.unfilteredViolations } }
     }
 
-    var violations: [StyleViolation] {
+    var violations: [RuleViolation] {
         get { state.withLock { $0.violations } }
     }
 
@@ -370,7 +361,7 @@ private final class LintOrAnalyzeResultBuilder {
     }
 
     /// Report violations using Xcode-compatible format (file:line:char: severity: message).
-    func report(violations: [StyleViolation], realtimeCondition: Bool) {
+    func report(violations: [RuleViolation], realtimeCondition: Bool) {
         // Xcode reporter is realtime — output violations as they're found
         if (!options.progress || options.output != nil) == realtimeCondition {
             let report = violations.map(\.description).joined(separator: "\n")

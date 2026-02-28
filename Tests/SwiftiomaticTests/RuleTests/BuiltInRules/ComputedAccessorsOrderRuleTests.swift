@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ComputedAccessorsOrderRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func setGetConfiguration() {
+@Suite(.rulesRegistered) struct ComputedAccessorsOrderRuleTests {
+    @Test func setGetConfiguration() async {
         let nonTriggeringExamples = [
             Example(
                 """
@@ -42,10 +40,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["order": "set_get"])
+        await verifyRule(description, ruleConfiguration: ["order": "set_get"])
     }
 
-    @Test func getSetPropertyReason() {
+    @Test func getSetPropertyReason() async {
         let example = Example(
             """
             class Foo {
@@ -62,12 +60,12 @@ import Testing
         )
 
         #expect(
-            ruleViolations(example).first?.reason
+            await ruleViolations(example).first?.reason
                 == "Computed properties should first declare the getter and then the setter",
         )
     }
 
-    @Test func getSetSubscriptReason() {
+    @Test func getSetSubscriptReason() async {
         let example = Example(
             """
             class Foo {
@@ -84,12 +82,12 @@ import Testing
         )
 
         #expect(
-            ruleViolations(example).first?.reason
+            await ruleViolations(example).first?.reason
                 == "Computed subscripts should first declare the getter and then the setter",
         )
     }
 
-    @Test func setGetPropertyReason() {
+    @Test func setGetPropertyReason() async {
         let example = Example(
             """
             class Foo {
@@ -106,12 +104,12 @@ import Testing
         )
 
         #expect(
-            ruleViolations(example, ruleConfiguration: ["order": "set_get"]).first?.reason
+            await ruleViolations(example, ruleConfiguration: ["order": "set_get"]).first?.reason
                 == "Computed properties should first declare the setter and then the getter",
         )
     }
 
-    @Test func setGetSubscriptReason() {
+    @Test func setGetSubscriptReason() async {
         let example = Example(
             """
             class Foo {
@@ -128,19 +126,19 @@ import Testing
         )
 
         #expect(
-            ruleViolations(example, ruleConfiguration: ["order": "set_get"]).first?.reason
+            await ruleViolations(example, ruleConfiguration: ["order": "set_get"]).first?.reason
                 == "Computed subscripts should first declare the setter and then the getter",
         )
     }
 
     private func ruleViolations(_ example: Example,
-                                ruleConfiguration: Any? = nil) -> [StyleViolation]
+                                ruleConfiguration: Any? = nil) async -> [RuleViolation]
     {
         guard let config = makeConfig(ruleConfiguration, ComputedAccessorsOrderRule.identifier)
         else {
             return []
         }
 
-        return violations(example, config: config)
+        return await violations(example, config: config)
     }
 }

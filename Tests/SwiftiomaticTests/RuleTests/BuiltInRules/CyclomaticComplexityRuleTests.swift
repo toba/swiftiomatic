@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct CyclomaticComplexityRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct CyclomaticComplexityRuleTests {
     private var complexSwitchExample: Example {
         var example = "func switcheroo() {\n"
         example += "    switch foo {\n"
@@ -43,14 +41,14 @@ import Testing
         return Example(example)
     }
 
-    @Test func cyclomaticComplexity() {
-        verifyRule(
+    @Test func cyclomaticComplexity() async {
+        await verifyRule(
             CyclomaticComplexityRule.description, commentDoesNotViolate: true,
             stringDoesNotViolate: true,
         )
     }
 
-    @Test func ignoresCaseStatementsConfigurationEnabled() {
+    @Test func ignoresCaseStatementsConfigurationEnabled() async {
         let baseDescription = CyclomaticComplexityRule.description
         let triggeringExamples = [complexIfExample]
         let nonTriggeringExamples = baseDescription.nonTriggeringExamples + [complexSwitchExample]
@@ -58,13 +56,13 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["ignores_case_statements": true],
             commentDoesNotViolate: true, stringDoesNotViolate: true,
         )
     }
 
-    @Test func ignoresCaseStatementsConfigurationDisabled() {
+    @Test func ignoresCaseStatementsConfigurationDisabled() async {
         let baseDescription = CyclomaticComplexityRule.description
         let triggeringExamples =
             baseDescription.triggeringExamples + [complexSwitchExample, complexSwitchInitExample]
@@ -73,7 +71,7 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description, ruleConfiguration: ["ignores_case_statements": false],
             commentDoesNotViolate: true, stringDoesNotViolate: true,
         )

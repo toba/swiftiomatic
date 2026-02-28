@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct EmptyCountRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func emptyCountWithOnlyAfterDot() {
+@Suite(.rulesRegistered) struct EmptyCountRuleTests {
+    @Test func emptyCountWithOnlyAfterDot() async {
         // Test with `only_after_dot` set to true
         let nonTriggeringExamples = [
             Example("var count = 0\n"),
@@ -70,6 +68,6 @@ import Testing
             .with(nonTriggeringExamples: nonTriggeringExamples)
             .with(corrections: corrections)
 
-        verifyRule(description, ruleConfiguration: ["only_after_dot": true])
+        await verifyRule(description, ruleConfiguration: ["only_after_dot": true])
     }
 }

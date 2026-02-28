@@ -21,7 +21,7 @@ struct NoGroupingExtensionRule: Rule {
         ],
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         Visitor(configuration: configuration, file: file)
             .walk(tree: file.syntaxTree) { visitor in
                 visitor.extensionDeclarations.compactMap { decl in
@@ -29,7 +29,7 @@ struct NoGroupingExtensionRule: Rule {
                         return nil
                     }
 
-                    return ReasonedRuleViolation(position: decl.position)
+                    return SyntaxViolation(position: decl.position)
                 }
             }
             .sorted()
@@ -38,7 +38,7 @@ struct NoGroupingExtensionRule: Rule {
 }
 
 extension NoGroupingExtensionRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }

@@ -41,7 +41,7 @@ Two separate config systems coexist:
 
 - Lint rules use `// swiftlint:disable|enable[:modifier] rule1 rule2`
 - Format rules use `// swiftformat:disable|enable rule1 rule2`
-- Parsed by `CommandVisitor` (AST-based) and `SwiftLintFile+Regex.swift` (region-based)
+- Parsed by `CommandVisitor` (AST-based) and `SwiftSource+Regex.swift` (region-based)
 
 ## Target State
 
@@ -96,7 +96,7 @@ Same modifier semantics as current (`:this`, `:next`, `:previous`), same trailin
 - [x] Update `Configuration+Parsing.swift` to parse the unified YAML schema
 - [x] Remove `Config.swift` / `SwiftiomaticConfig` struct
 - [x] Update `CommandVisitor.swift` to recognize `sm:` prefix instead of `swiftlint:`
-- [x] Update `SwiftLintFile+Cache.swift` fast-path check from `"swiftlint:"` to `"sm:"`
+- [x] Update `SwiftSource+Cache.swift` fast-path check from `"swiftlint:"` to `"sm:"`
 - [x] Update `Command.swift` parsing if it has hardcoded prefix logic
 - [x] Update format engine to recognize `sm:disable`/`sm:enable` instead of `swiftformat:disable`/`swiftformat:enable`
 - [x] Update `BlanketDisableCommandRule` and `SuperfluousDisableCommandRule` for new prefix

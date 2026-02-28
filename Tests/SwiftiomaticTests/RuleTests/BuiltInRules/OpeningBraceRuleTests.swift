@@ -1,15 +1,13 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct OpeningBraceRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func defaultNonTriggeringExamplesWithMultilineOptionsTrue() {
+@Suite(.rulesRegistered) struct OpeningBraceRuleTests {
+    @Test func defaultNonTriggeringExamplesWithMultilineOptionsTrue() async {
         let description = OpeningBraceRule.description
             .with(triggeringExamples: [])
             .with(corrections: [:])
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: [
                 "ignore_multiline_statement_conditions": true,
@@ -19,7 +17,7 @@ import Testing
         )
     }
 
-    @Test func withIgnoreMultilineTypeHeadersTrue() {
+    @Test func withIgnoreMultilineTypeHeadersTrue() async {
         let nonTriggeringExamples = [
             Example(
                 """
@@ -68,10 +66,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(corrections: [:])
 
-        verifyRule(description, ruleConfiguration: ["ignore_multiline_type_headers": true])
+        await verifyRule(description, ruleConfiguration: ["ignore_multiline_type_headers": true])
     }
 
-    @Test func withIgnoreMultilineStatementConditionsTrue() {
+    @Test func withIgnoreMultilineStatementConditionsTrue() async {
         let nonTriggeringExamples = [
             Example(
                 """
@@ -140,10 +138,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(corrections: [:])
 
-        verifyRule(description, ruleConfiguration: ["ignore_multiline_statement_conditions": true])
+        await verifyRule(description, ruleConfiguration: ["ignore_multiline_statement_conditions": true])
     }
 
-    @Test func withIgnoreMultilineFunctionSignaturesTrue() {
+    @Test func withIgnoreMultilineFunctionSignaturesTrue() async {
         let nonTriggeringExamples = [
             Example(
                 """
@@ -236,6 +234,6 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(corrections: [:])
 
-        verifyRule(description, ruleConfiguration: ["ignore_multiline_function_signatures": true])
+        await verifyRule(description, ruleConfiguration: ["ignore_multiline_function_signatures": true])
     }
 }

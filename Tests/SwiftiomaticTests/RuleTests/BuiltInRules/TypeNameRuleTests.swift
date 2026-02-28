@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct TypeNameRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func typeNameWithExcluded() {
+@Suite(.rulesRegistered) struct TypeNameRuleTests {
+    @Test func typeNameWithExcluded() async {
         let baseDescription = TypeNameRule.description
         let nonTriggeringExamples =
             baseDescription.nonTriggeringExamples + [
@@ -21,10 +19,10 @@ import Testing
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: triggeringExamples,
         )
-        verifyRule(description, ruleConfiguration: ["excluded": ["apple", "some.*", ".*st\\d+.*"]])
+        await verifyRule(description, ruleConfiguration: ["excluded": ["apple", "some.*", ".*st\\d+.*"]])
     }
 
-    @Test func typeNameWithAllowedSymbols() {
+    @Test func typeNameWithAllowedSymbols() async {
         let baseDescription = TypeNameRule.description
         let nonTriggeringExamples =
             baseDescription.nonTriggeringExamples + [
@@ -36,20 +34,20 @@ import Testing
             ]
 
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-        verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$"]])
+        await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$"]])
     }
 
-    @Test func typeNameWithAllowedSymbolsAndViolation() {
+    @Test func typeNameWithAllowedSymbolsAndViolation() async {
         let baseDescription = TypeNameRule.description
         let triggeringExamples = [
             Example("class ↓My_Type$ {}"),
         ]
 
         let description = baseDescription.with(triggeringExamples: triggeringExamples)
-        verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
+        await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
     }
 
-    @Test func typeNameWithIgnoreStartWithLowercase() {
+    @Test func typeNameWithIgnoreStartWithLowercase() async {
         let baseDescription = TypeNameRule.description
         let triggeringExamplesToRemove = [
             Example("private typealias ↓foo = Void"),
@@ -66,6 +64,6 @@ import Testing
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
             .with(triggeringExamples: triggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["validates_start_with_lowercase": "off"])
+        await verifyRule(description, ruleConfiguration: ["validates_start_with_lowercase": "off"])
     }
 }

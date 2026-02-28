@@ -14,9 +14,9 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
         corrections: OperatorUsageWhitespaceRuleExamples.corrections,
     )
 
-    func validate(file: SwiftLintFile) -> [StyleViolation] {
+    func validate(file: SwiftSource) -> [RuleViolation] {
         violationRanges(file: file).map { range, _ in
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severityConfiguration.severity,
                 location: Location(file: file, byteOffset: range.location),
@@ -24,7 +24,7 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
         }
     }
 
-    private func violationRanges(file: SwiftLintFile) -> [(ByteRange, String)] {
+    private func violationRanges(file: SwiftSource) -> [(ByteRange, String)] {
         OperatorUsageWhitespaceVisitor(
             allowedNoSpaceOperators: configuration.allowedNoSpaceOperators,
         )
@@ -36,7 +36,7 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
         }
     }
 
-    func correct(file: SwiftLintFile) -> Int {
+    func correct(file: SwiftSource) -> Int {
         let violatingRanges = violationRanges(file: file)
             .compactMap { byteRange, correction -> (NSRange, String)? in
                 guard let range = file.stringView.byteRangeToNSRange(byteRange) else {
@@ -52,7 +52,7 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
         var correctedContents = file.contents
         var numberOfCorrections = 0
         for (violatingRange, correction) in violatingRanges.reversed() {
-            if let indexRange = correctedContents.nsrangeToIndexRange(violatingRange) {
+            if let indexRange = correctedContents.nsRangeToIndexRange(violatingRange) {
                 correctedContents = correctedContents.replacingCharacters(
                     in: indexRange,
                     with: correction,
@@ -64,7 +64,7 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
         return numberOfCorrections
     }
 
-    private func isAlignedConstant(in byteRange: ByteRange, file: SwiftLintFile) -> Bool {
+    private func isAlignedConstant(in byteRange: ByteRange, file: SwiftSource) -> Bool {
         // Make sure we have match with assignment operator and with spaces before it
         guard let matchedString = file.stringView.substringWithByteRange(byteRange) else {
             return false
@@ -73,11 +73,9 @@ struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRul
 
         guard
             let match = equalityOperatorRegex.firstMatch(
-                in: matchedString,
-                options: [],
-                range: matchedString.fullNSRange,
+                in: matchedString, range: matchedString.fullNSRange,
             ),
-            match.range == matchedString.fullNSRange
+            NSRange(match.range, in: matchedString) == matchedString.fullNSRange
         else {
             return false
         }

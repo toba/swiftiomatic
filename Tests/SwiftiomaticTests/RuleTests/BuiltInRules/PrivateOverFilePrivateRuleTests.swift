@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct PrivateOverFilePrivateRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func privateOverFilePrivateValidatingExtensions() {
+@Suite(.rulesRegistered) struct PrivateOverFilePrivateRuleTests {
+    @Test func privateOverFilePrivateValidatingExtensions() async {
         let baseDescription = PrivateOverFilePrivateRule.description
         let triggeringExamples =
             baseDescription.triggeringExamples + [
@@ -24,10 +22,10 @@ import Testing
 
         let description = baseDescription.with(nonTriggeringExamples: [])
             .with(triggeringExamples: triggeringExamples).with(corrections: corrections)
-        verifyRule(description, ruleConfiguration: ["validate_extensions": true])
+        await verifyRule(description, ruleConfiguration: ["validate_extensions": true])
     }
 
-    @Test func privateOverFilePrivateNotValidatingExtensions() {
+    @Test func privateOverFilePrivateNotValidatingExtensions() async {
         let baseDescription = PrivateOverFilePrivateRule.description
         let nonTriggeringExamples =
             baseDescription.nonTriggeringExamples + [
@@ -35,6 +33,6 @@ import Testing
             ]
 
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-        verifyRule(description, ruleConfiguration: ["validate_extensions": false])
+        await verifyRule(description, ruleConfiguration: ["validate_extensions": false])
     }
 }

@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ExplicitTypeInterfaceConfigurationTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ExplicitTypeInterfaceConfigurationTests {
     @Test func defaultConfiguration() {
         let config = ExplicitTypeInterfaceConfiguration()
         #expect(config.severityConfiguration.severity == .warning)

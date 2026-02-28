@@ -80,7 +80,7 @@ struct CyclomaticComplexityRule: Rule {
 }
 
 extension CyclomaticComplexityRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -115,7 +115,7 @@ extension CyclomaticComplexityRule {
                     "Function should have complexity \(configuration.length.warning) or less; "
                         + "currently complexity is \(complexity)"
 
-                let violation = ReasonedRuleViolation(
+                let violation = SyntaxViolation(
                     position: violationToken.positionAfterSkippingLeadingTrivia,
                     reason: reason,
                     severity: parameter.severity,

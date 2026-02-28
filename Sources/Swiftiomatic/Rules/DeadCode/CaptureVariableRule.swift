@@ -171,21 +171,21 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
 
     var configuration = SeverityConfiguration<Self>(.warning)
 
-    func collectInfo(for file: SwiftLintFile, compilerArguments: [String]) -> Self.FileInfo {
+    func collectInfo(for file: SwiftSource, compilerArguments: [String]) -> Self.FileInfo {
         file.declaredVariables(compilerArguments: compilerArguments)
     }
 
     func validate(
-        file: SwiftLintFile,
-        collectedInfo: [SwiftLintFile: Self.FileInfo],
+        file: SwiftSource,
+        collectedInfo: [SwiftSource: Self.FileInfo],
         compilerArguments: [String],
-    ) -> [StyleViolation] {
+    ) -> [RuleViolation] {
         file.captureListVariables(compilerArguments: compilerArguments)
             .filter { capturedVariable in
                 collectedInfo.values.contains { $0.contains(capturedVariable.usr) }
             }
             .map {
-                StyleViolation(
+                RuleViolation(
                     ruleDescription: Self.description,
                     severity: configuration.severity,
                     location: Location(file: file, byteOffset: $0.offset),
@@ -194,7 +194,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
     }
 }
 
-private extension SwiftLintFile {
+private extension SwiftSource {
     static var checkedDeclarationKinds: [SwiftDeclarationKind] {
         [.varClass, .varGlobal, .varInstance, .varStatic]
     }

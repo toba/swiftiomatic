@@ -3,10 +3,8 @@ import Testing
 
 private let detectingTypes = ["actor", "class", "struct", "enum"]
 
-@Suite struct NestingRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func nestingWithAlwaysAllowOneTypeInFunctions() {
+@Suite(.rulesRegistered) struct NestingRuleTests {
+    @Test func nestingWithAlwaysAllowOneTypeInFunctions() async {
         var nonTriggeringExamples = NestingRule.description.nonTriggeringExamples
         nonTriggeringExamples.append(
             contentsOf: detectingTypes.flatMap { type -> [Example] in
@@ -232,10 +230,10 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
             triggeringExamples: triggeringExamples,
         )
 
-        verifyRule(description, ruleConfiguration: ["always_allow_one_type_in_functions": true])
+        await verifyRule(description, ruleConfiguration: ["always_allow_one_type_in_functions": true])
     }
 
-    @Test func nestingWithoutCheckNestingInClosuresAndStatements() {
+    @Test func nestingWithoutCheckNestingInClosuresAndStatements() async {
         var nonTriggeringExamples = NestingRule.description.nonTriggeringExamples
         nonTriggeringExamples.append(
             contentsOf: detectingTypes.flatMap { type -> [Example] in
@@ -566,13 +564,13 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
             triggeringExamples: triggeringExamples,
         )
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: ["check_nesting_in_closures_and_statements": false],
         )
     }
 
-    @Test func nestingWithoutTypealiasAndAssociatedtype() {
+    @Test func nestingWithoutTypealiasAndAssociatedtype() async {
         var nonTriggeringExamples = NestingRule.description.nonTriggeringExamples
         nonTriggeringExamples.append(
             contentsOf: detectingTypes.flatMap { type -> [Example] in
@@ -622,6 +620,6 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
 
         let description = NestingRule.description.with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["ignore_typealiases_and_associatedtypes": true])
+        await verifyRule(description, ruleConfiguration: ["ignore_typealiases_and_associatedtypes": true])
     }
 }

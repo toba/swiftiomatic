@@ -1,20 +1,18 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct BlanketDisableCommandRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct BlanketDisableCommandRuleTests {
     private var emptyDescription: RuleDescription {
         BlanketDisableCommandRule.description
             .with(triggeringExamples: [])
             .with(nonTriggeringExamples: [])
     }
 
-    @Test func alwaysBlanketDisable() {
+    @Test func alwaysBlanketDisable() async {
         let nonTriggeringExamples = [
             Example("// sm:disable file_length\n// sm:enable file_length"),
         ]
-        verifyRule(emptyDescription.with(nonTriggeringExamples: nonTriggeringExamples))
+        await verifyRule(emptyDescription.with(nonTriggeringExamples: nonTriggeringExamples))
 
         let triggeringExamples = [
             Example("// sm:disable file_length\n// sm:enable ↓file_length"),
@@ -22,27 +20,27 @@ import Testing
             Example("// sm:disable:this ↓file_length"),
             Example("// sm:disable:next ↓file_length"),
         ]
-        verifyRule(
+        await verifyRule(
             emptyDescription.with(triggeringExamples: triggeringExamples),
             ruleConfiguration: ["always_blanket_disable": ["file_length"]],
             skipCommentTests: true, skipDisableCommandTests: true,
         )
     }
 
-    @Test func alwaysBlanketDisabledAreAllowed() {
+    @Test func alwaysBlanketDisabledAreAllowed() async {
         let nonTriggeringExamples = [Example("// sm:disable identifier_name\n")]
-        verifyRule(
+        await verifyRule(
             emptyDescription.with(nonTriggeringExamples: nonTriggeringExamples),
             ruleConfiguration: ["always_blanket_disable": ["identifier_name"], "allowed_rules": []],
             skipDisableCommandTests: true,
         )
     }
 
-    @Test func allowedRules() {
+    @Test func allowedRules() async {
         let nonTriggeringExamples = [
             Example("// sm:disable file_length"),
             Example("// sm:disable single_test_class"),
         ]
-        verifyRule(emptyDescription.with(nonTriggeringExamples: nonTriggeringExamples))
+        await verifyRule(emptyDescription.with(nonTriggeringExamples: nonTriggeringExamples))
     }
 }

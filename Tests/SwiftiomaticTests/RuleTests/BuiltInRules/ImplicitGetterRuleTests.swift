@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ImplicitGetterRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func propertyReason() throws {
+@Suite(.rulesRegistered) struct ImplicitGetterRuleTests {
+    @Test func propertyReason() async throws {
         let config = try #require(makeConfig(nil, ImplicitGetterRule.identifier))
         let example = Example(
             """
@@ -18,7 +16,7 @@ import Testing
             """,
         )
 
-        let violations = violations(example, config: config)
+        let violations = await violations(example, config: config)
         #expect(violations.count == 1)
         #expect(
             violations.first?
@@ -26,7 +24,7 @@ import Testing
         )
     }
 
-    @Test func subscriptReason() throws {
+    @Test func subscriptReason() async throws {
         let config = try #require(makeConfig(nil, ImplicitGetterRule.identifier))
         let example = Example(
             """
@@ -40,7 +38,7 @@ import Testing
             """,
         )
 
-        let violations = violations(example, config: config)
+        let violations = await violations(example, config: config)
         #expect(violations.count == 1)
         #expect(
             violations.first?

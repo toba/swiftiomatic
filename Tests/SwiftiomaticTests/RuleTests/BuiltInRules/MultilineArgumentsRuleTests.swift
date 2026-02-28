@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct MultilineArgumentsRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func multilineArgumentsWithWithNextLine() {
+@Suite(.rulesRegistered) struct MultilineArgumentsRuleTests {
+    @Test func multilineArgumentsWithWithNextLine() async {
         let nonTriggeringExamples = [
             Example("foo()"),
             Example("foo(0)"),
@@ -22,10 +20,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["first_argument_location": "next_line"])
+        await verifyRule(description, ruleConfiguration: ["first_argument_location": "next_line"])
     }
 
-    @Test func multilineArgumentsWithWithSameLine() {
+    @Test func multilineArgumentsWithWithSameLine() async {
         let nonTriggeringExamples = [
             Example("foo()"),
             Example("foo(0)"),
@@ -43,10 +41,10 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(description, ruleConfiguration: ["first_argument_location": "same_line"])
+        await verifyRule(description, ruleConfiguration: ["first_argument_location": "same_line"])
     }
 
-    @Test func multilineArgumentsWithOnlyEnforceAfterFirstClosureOnFirstLine() {
+    @Test func multilineArgumentsWithOnlyEnforceAfterFirstClosureOnFirstLine() async {
         let nonTriggeringExamples: [Example] = [
             Example("foo()"),
             Example("foo(0)"),
@@ -68,7 +66,7 @@ import Testing
             .with(triggeringExamples: triggeringExamples)
             .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        verifyRule(
+        await verifyRule(
             description,
             ruleConfiguration: ["only_enforce_after_first_closure_on_first_line": true],
         )

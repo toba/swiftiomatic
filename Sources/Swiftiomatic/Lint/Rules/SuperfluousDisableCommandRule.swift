@@ -31,7 +31,7 @@ struct SuperfluousDisableCommandRule: SourceKitFreeRule, Sendable {
         ],
     )
 
-    func validate(file _: SwiftLintFile) -> [StyleViolation] {
+    func validate(file _: SwiftSource) -> [RuleViolation] {
         // This rule is implemented in Linter.swift
         []
     }

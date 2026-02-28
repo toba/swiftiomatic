@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct UnusedOptionalBindingRuleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func defaultConfiguration() {
+@Suite(.rulesRegistered) struct UnusedOptionalBindingRuleTests {
+    @Test func defaultConfiguration() async {
         let baseDescription = UnusedOptionalBindingRule.description
         let triggeringExamples =
             baseDescription.triggeringExamples + [
@@ -12,10 +10,10 @@ import Testing
             ]
 
         let description = baseDescription.with(triggeringExamples: triggeringExamples)
-        verifyRule(description)
+        await verifyRule(description)
     }
 
-    @Test func ignoreOptionalTryEnabled() {
+    @Test func ignoreOptionalTryEnabled() async {
         // Perform additional tests with the ignore_optional_try settings enabled.
         let baseDescription = UnusedOptionalBindingRule.description
         let nonTriggeringExamples =
@@ -24,6 +22,6 @@ import Testing
             ]
 
         let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-        verifyRule(description, ruleConfiguration: ["ignore_optional_try": true])
+        await verifyRule(description, ruleConfiguration: ["ignore_optional_try": true])
     }
 }

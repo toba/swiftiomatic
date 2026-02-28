@@ -63,11 +63,11 @@ struct SelfBindingRule: Rule {
 }
 
 extension SelfBindingRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
@@ -93,7 +93,7 @@ private extension SelfBindingRule {
 
                 if hasViolation {
                     violations.append(
-                        ReasonedRuleViolation(
+                        SyntaxViolation(
                             position: identifierPattern.positionAfterSkippingLeadingTrivia,
                             reason: "`self` should always be re-bound to `\(configuration.bindIdentifier)`",
                         ),

@@ -1,10 +1,8 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct LintModifierOrderTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func attributeTypeMethod() {
+@Suite(.rulesRegistered) struct LintModifierOrderTests {
+    @Test func attributeTypeMethod() async {
         let descriptionOverride = ModifierOrderRule.description
             .with(nonTriggeringExamples: [
                 Example(
@@ -40,13 +38,13 @@ import Testing
             ])
             .with(corrections: [:])
 
-        verifyRule(
+        await verifyRule(
             descriptionOverride,
             ruleConfiguration: ["preferred_modifier_order": ["typeMethods", "acl"]],
         )
     }
 
-    @Test func rightOrderedModifierGroups() {
+    @Test func rightOrderedModifierGroups() async {
         let descriptionOverride = ModifierOrderRule.description
             .with(nonTriggeringExamples: [
                 Example("public protocol Foo: class {}\n" +
@@ -68,7 +66,7 @@ import Testing
             ])
             .with(corrections: [:])
 
-        verifyRule(
+        await verifyRule(
             descriptionOverride,
             ruleConfiguration: [
                 "preferred_modifier_order": [
@@ -84,7 +82,7 @@ import Testing
         )
     }
 
-    @Test func atPrefixedGroup() {
+    @Test func atPrefixedGroup() async {
         let descriptionOverride = ModifierOrderRule.description
             .with(nonTriggeringExamples: [
                 Example(
@@ -203,13 +201,13 @@ import Testing
             ])
             .with(corrections: [:])
 
-        verifyRule(
+        await verifyRule(
             descriptionOverride,
             ruleConfiguration: ["preferred_modifier_order": ["override", "acl", "owned", "final"]],
         )
     }
 
-    @Test func nonSpecifiedModifiersDontInterfere() {
+    @Test func nonSpecifiedModifiersDontInterfere() async {
         let descriptionOverride = ModifierOrderRule.description
             .with(nonTriggeringExamples: [
                 Example(
@@ -273,13 +271,13 @@ import Testing
             ])
             .with(corrections: [:])
 
-        verifyRule(
+        await verifyRule(
             descriptionOverride,
             ruleConfiguration: ["preferred_modifier_order": ["final", "override", "acl"]],
         )
     }
 
-    @Test func correctionsAreAppliedCorrectly() {
+    @Test func correctionsAreAppliedCorrectly() async {
         let descriptionOverride = ModifierOrderRule.description
             .with(nonTriggeringExamples: [], triggeringExamples: [])
             .with(corrections: [
@@ -361,7 +359,7 @@ import Testing
                     ),
             ])
 
-        verifyRule(
+        await verifyRule(
             descriptionOverride,
             ruleConfiguration: ["preferred_modifier_order": [
                 "final",
@@ -372,7 +370,7 @@ import Testing
         )
     }
 
-    @Test func correctionsAreNotAppliedToIrrelevantModifier() {
+    @Test func correctionsAreNotAppliedToIrrelevantModifier() async {
         let descriptionOverride = ModifierOrderRule.description
             .with(nonTriggeringExamples: [], triggeringExamples: [])
             .with(corrections: [
@@ -450,7 +448,7 @@ import Testing
                     ),
             ])
 
-        verifyRule(
+        await verifyRule(
             descriptionOverride,
             ruleConfiguration: ["preferred_modifier_order": [
                 "final",
@@ -461,7 +459,7 @@ import Testing
         )
     }
 
-    @Test func typeMethodClassCorrection() {
+    @Test func typeMethodClassCorrection() async {
         let descriptionOverride = ModifierOrderRule.description
             .with(nonTriggeringExamples: [], triggeringExamples: [])
             .with(corrections: [
@@ -487,19 +485,19 @@ import Testing
                     ),
             ])
 
-        verifyRule(
+        await verifyRule(
             descriptionOverride,
             ruleConfiguration: ["preferred_modifier_order": ["final", "typeMethods", "acl"]],
         )
     }
 
-    @Test func violationMessage() {
+    @Test func violationMessage() async {
         let ruleID = ModifierOrderRule.identifier
         guard let config = makeConfig(["preferred_modifier_order": ["acl", "final"]], ruleID) else {
             Issue.record("Failed to create configuration")
             return
         }
-        let allViolations = violations(Example("final public var foo: String"), config: config)
+        let allViolations = await violations(Example("final public var foo: String"), config: config)
         let modifierOrderRuleViolation = allViolations.first { $0.ruleIdentifier == ruleID }
         if let violation = modifierOrderRuleViolation {
             #expect(violation.reason == "public modifier should come before final")
@@ -508,7 +506,7 @@ import Testing
         }
     }
 
-    @Test func isolationModifierOrder() {
+    @Test func isolationModifierOrder() async {
         let descriptionOverride = ModifierOrderRule.description
             .with(nonTriggeringExamples: [
                 Example(
@@ -573,7 +571,7 @@ import Testing
                     ),
             ])
 
-        verifyRule(
+        await verifyRule(
             descriptionOverride,
             ruleConfiguration: ["preferred_modifier_order": [
                 "override",
@@ -584,7 +582,7 @@ import Testing
         )
     }
 
-    @Test func isolationModifierCustomOrder() {
+    @Test func isolationModifierCustomOrder() async {
         let descriptionOverride = ModifierOrderRule.description
             .with(nonTriggeringExamples: [
                 Example(
@@ -625,7 +623,7 @@ import Testing
                     ),
             ])
 
-        verifyRule(
+        await verifyRule(
             descriptionOverride,
             ruleConfiguration: ["preferred_modifier_order": [
                 "override",

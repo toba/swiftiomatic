@@ -243,11 +243,11 @@ struct ExplicitInitRule: Rule {
 }
 
 extension ExplicitInitRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
@@ -270,7 +270,7 @@ private extension ExplicitInitRule {
                let violationPosition = calledExpression.bareInitPosition
             {
                 let reason = "Prefer named constructors over .init and type inference"
-                violations.append(ReasonedRuleViolation(
+                violations.append(SyntaxViolation(
                     position: violationPosition,
                     reason: reason,
                 ))

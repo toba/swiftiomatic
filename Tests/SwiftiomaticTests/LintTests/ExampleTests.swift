@@ -1,9 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ExampleTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
+@Suite(.rulesRegistered) struct ExampleTests {
     @Test func equatableDoesNotLookAtFile() {
         let first = Example("foo", file: "a", line: 1)
         let second = Example("foo", file: "b", line: 1)

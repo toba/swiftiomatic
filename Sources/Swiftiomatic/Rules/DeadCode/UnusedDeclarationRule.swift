@@ -29,7 +29,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
         requiresFileOnDisk: true,
     )
 
-    func collectInfo(for file: SwiftLintFile, compilerArguments: [String]) -> Self.FileUSRs {
+    func collectInfo(for file: SwiftSource, compilerArguments: [String]) -> Self.FileUSRs {
         guard compilerArguments.isNotEmpty else {
             Issue.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
             return .empty
@@ -61,10 +61,10 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
     }
 
     func validate(
-        file: SwiftLintFile,
-        collectedInfo: [SwiftLintFile: Self.FileUSRs],
+        file: SwiftSource,
+        collectedInfo: [SwiftSource: Self.FileUSRs],
         compilerArguments _: [String],
-    ) -> [StyleViolation] {
+    ) -> [RuleViolation] {
         let allReferencedUSRs = collectedInfo.values
             .reduce(into: Set()) { $0.formUnion($1.referenced) }
         return violationOffsets(
@@ -72,7 +72,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
             allReferencedUSRs: allReferencedUSRs,
         )
         .map {
-            StyleViolation(
+            RuleViolation(
                 ruleDescription: Self.description,
                 severity: configuration.severityConfiguration.severity,
                 location: Location(file: file, byteOffset: $0),
@@ -95,7 +95,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
 
 // MARK: - File Extensions
 
-private extension SwiftLintFile {
+private extension SwiftSource {
     func index(compilerArguments: [String]) -> SourceKitDictionary? {
         path
             .flatMap { path in

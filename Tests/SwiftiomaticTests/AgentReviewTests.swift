@@ -11,7 +11,7 @@ struct AgentReviewTests {
     }()
 
     @Test func detectsFireAndForgetTask() throws {
-        let file = SwiftLintFile(path: fixturePath)!
+        let file = SwiftSource(path: fixturePath)!
         let rule = FireAndForgetTaskRule()
         let violations = rule.validate(file: file)
 
@@ -20,7 +20,7 @@ struct AgentReviewTests {
     }
 
     @Test func detectsErrorEnumWithoutLocalizedError() throws {
-        let file = SwiftLintFile(path: fixturePath)!
+        let file = SwiftSource(path: fixturePath)!
         let rule = AgentReviewRule()
         let violations = rule.validate(file: file)
 
@@ -30,7 +30,7 @@ struct AgentReviewTests {
     }
 
     @Test func detectsNonisolatedUnsafe() throws {
-        let file = SwiftLintFile(path: fixturePath)!
+        let file = SwiftSource(path: fixturePath)!
         let rule = AgentReviewRule()
         let violations = rule.validate(file: file)
 

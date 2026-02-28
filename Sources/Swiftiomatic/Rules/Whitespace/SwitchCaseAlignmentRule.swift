@@ -42,7 +42,7 @@ struct SwitchCaseAlignmentRule: Rule {
 }
 
 extension SwitchCaseAlignmentRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -89,7 +89,7 @@ extension SwitchCaseAlignmentRule {
                 their closing brace
                 """
 
-                violations.append(ReasonedRuleViolation(position: casePosition, reason: reason))
+                violations.append(SyntaxViolation(position: casePosition, reason: reason))
             }
         }
     }

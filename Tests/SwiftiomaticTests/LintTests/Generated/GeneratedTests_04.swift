@@ -1,202 +1,152 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite struct ForceTryRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ForceTryRule.description)
+@Suite(.rulesRegistered) struct ForceTryRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ForceTryRule.description)
     }
 }
 
-@Suite struct ForceUnwrappingRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ForceUnwrappingRule.description)
+@Suite(.rulesRegistered) struct ForceUnwrappingRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ForceUnwrappingRule.description)
     }
 }
 
-@Suite struct FunctionBodyLengthRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FunctionBodyLengthRule.description)
+@Suite(.rulesRegistered) struct FunctionBodyLengthRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FunctionBodyLengthRule.description)
     }
 }
 
-@Suite struct FunctionDefaultParameterAtEndRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FunctionDefaultParameterAtEndRule.description)
+@Suite(.rulesRegistered) struct FunctionDefaultParameterAtEndRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FunctionDefaultParameterAtEndRule.description)
     }
 }
 
-@Suite struct FunctionNameWhitespaceRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FunctionNameWhitespaceRule.description)
+@Suite(.rulesRegistered) struct FunctionNameWhitespaceRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FunctionNameWhitespaceRule.description)
     }
 }
 
-@Suite struct FunctionParameterCountRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(FunctionParameterCountRule.description)
+@Suite(.rulesRegistered) struct FunctionParameterCountRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(FunctionParameterCountRule.description)
     }
 }
 
-@Suite struct GenericTypeNameRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(GenericTypeNameRule.description)
+@Suite(.rulesRegistered) struct GenericTypeNameRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(GenericTypeNameRule.description)
     }
 }
 
-@Suite struct IBInspectableInExtensionRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(IBInspectableInExtensionRule.description)
+@Suite(.rulesRegistered) struct IBInspectableInExtensionRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(IBInspectableInExtensionRule.description)
     }
 }
 
-@Suite struct IdenticalOperandsRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(IdenticalOperandsRule.description)
+@Suite(.rulesRegistered) struct IdenticalOperandsRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(IdenticalOperandsRule.description)
     }
 }
 
-@Suite struct IdentifierNameRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(IdentifierNameRule.description)
+@Suite(.rulesRegistered) struct IdentifierNameRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(IdentifierNameRule.description)
     }
 }
 
-@Suite struct ImplicitGetterRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ImplicitGetterRule.description)
+@Suite(.rulesRegistered) struct ImplicitGetterRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ImplicitGetterRule.description)
     }
 }
 
-@Suite struct ImplicitOptionalInitializationRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ImplicitOptionalInitializationRule.description)
+@Suite(.rulesRegistered) struct ImplicitOptionalInitializationRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ImplicitOptionalInitializationRule.description)
     }
 }
 
-@Suite struct ImplicitReturnRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ImplicitReturnRule.description)
+@Suite(.rulesRegistered) struct ImplicitReturnRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ImplicitReturnRule.description)
     }
 }
 
-@Suite struct ImplicitlyUnwrappedOptionalRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(ImplicitlyUnwrappedOptionalRule.description)
+@Suite(.rulesRegistered) struct ImplicitlyUnwrappedOptionalRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(ImplicitlyUnwrappedOptionalRule.description)
     }
 }
 
-@Suite struct InclusiveLanguageRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(InclusiveLanguageRule.description)
+@Suite(.rulesRegistered) struct InclusiveLanguageRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(InclusiveLanguageRule.description)
     }
 }
 
-@Suite struct IncompatibleConcurrencyAnnotationRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(IncompatibleConcurrencyAnnotationRule.description)
+@Suite(.rulesRegistered) struct IncompatibleConcurrencyAnnotationRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(IncompatibleConcurrencyAnnotationRule.description)
     }
 }
 
-@Suite struct IndentationWidthRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(IndentationWidthRule.description)
+@Suite(.rulesRegistered) struct IndentationWidthRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(IndentationWidthRule.description)
     }
 }
 
-@Suite struct InvalidCommandRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(InvalidCommandRule.description)
+@Suite(.rulesRegistered) struct InvalidCommandRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(InvalidCommandRule.description)
     }
 }
 
-@Suite struct IsDisjointRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(IsDisjointRule.description)
+@Suite(.rulesRegistered) struct IsDisjointRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(IsDisjointRule.description)
     }
 }
 
-@Suite struct JoinedDefaultParameterRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(JoinedDefaultParameterRule.description)
+@Suite(.rulesRegistered) struct JoinedDefaultParameterRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(JoinedDefaultParameterRule.description)
     }
 }
 
-@Suite struct LargeTupleRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(LargeTupleRule.description)
+@Suite(.rulesRegistered) struct LargeTupleRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(LargeTupleRule.description)
     }
 }
 
-@Suite struct LastWhereRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(LastWhereRule.description)
+@Suite(.rulesRegistered) struct LastWhereRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(LastWhereRule.description)
     }
 }
 
-@Suite struct LeadingWhitespaceRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(LeadingWhitespaceRule.description)
+@Suite(.rulesRegistered) struct LeadingWhitespaceRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(LeadingWhitespaceRule.description)
     }
 }
 
-@Suite struct LegacyCGGeometryFunctionsRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(LegacyCGGeometryFunctionsRule.description)
+@Suite(.rulesRegistered) struct LegacyCGGeometryFunctionsRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(LegacyCGGeometryFunctionsRule.description)
     }
 }
 
-@Suite struct LegacyConstantRuleGeneratedTests {
-    init() { RuleRegistry.registerAllRulesOnce() }
-
-    @Test func withDefaultConfiguration() {
-        verifyRule(LegacyConstantRule.description)
+@Suite(.rulesRegistered) struct LegacyConstantRuleGeneratedTests {
+    @Test func withDefaultConfiguration() async {
+        await verifyRule(LegacyConstantRule.description)
     }
 }

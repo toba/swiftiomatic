@@ -29,7 +29,7 @@ struct AccessibilityTraitForButtonRule: Rule {
 }
 
 extension AccessibilityTraitForButtonRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
         Visitor(configuration: configuration, file: file)
     }
 }
@@ -59,7 +59,7 @@ private extension AccessibilityTraitForButtonRule {
             // exemption.
             if !AccessibilityButtonTraitDeterminator.isExempt(tapGestureNode: node) {
                 violations.append(
-                    ReasonedRuleViolation(
+                    SyntaxViolation(
                         // Position of .onTapGesture etc.
                         position: node.calledExpression.positionAfterSkippingLeadingTrivia,
                         reason: AccessibilityTraitForButtonRule.description.description,
