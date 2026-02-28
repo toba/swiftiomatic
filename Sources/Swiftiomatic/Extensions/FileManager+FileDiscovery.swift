@@ -32,25 +32,26 @@ extension FileManager: LintableFileDiscovering, @unchecked @retroactive Sendable
   }
 
   private func collectFiles(atPath absolutePath: URL, excluder: Excluder) -> [String] {
-    guard let root = absolutePath.filepathGuarded,
-      let enumerator = enumerator(atPath: root)
-    else {
+    guard let enumerator = enumerator(
+      at: absolutePath,
+      includingPropertiesForKeys: [.isRegularFileKey],
+      options: []
+    ) else {
       return []
     }
 
     var files = [String]()
     var directoriesToWalk = [String]()
 
-    while let element = enumerator.nextObject() as? String {
-      let absoluteElementPath = URL(fileURLWithPath: element, relativeTo: absolutePath)
+    for case let elementURL as URL in enumerator {
       guard
-        let absoluteStandardizedElementPath = absoluteElementPath.standardized
+        let absoluteStandardizedElementPath = elementURL.standardized
           .filepathGuarded
       else {
         continue
       }
-      if absoluteElementPath.path.isFile {
-        if absoluteElementPath.pathExtension == "swift",
+      if elementURL.path.isFile {
+        if elementURL.pathExtension == "swift",
           !excluder.excludes(path: absoluteStandardizedElementPath)
         {
           files.append(absoluteStandardizedElementPath)

@@ -70,7 +70,7 @@ final class FormatRule: Hashable, Comparable, CustomStringConvertible, @unchecke
     }
 }
 
-nonisolated(unsafe) let FormatRules = _FormatRules()
+nonisolated(unsafe) let FormatRules = FormatRuleCatalog()
 
 private let rulesByName: [String: FormatRule] = {
     var rules = [String: FormatRule]()
@@ -109,7 +109,7 @@ private let _deprecatedRules = _allRules.filter(\.isDeprecated)
 private let _disabledByDefault = _allRules.filter(\.disabledByDefault)
 private let _defaultRules = allRules(except: _disabledByDefault)
 
-extension _FormatRules {
+extension FormatRuleCatalog {
     /// A Dictionary of rules by name
     var byName: [String: FormatRule] {
         rulesByName
@@ -146,7 +146,7 @@ extension _FormatRules {
     }
 }
 
-extension _FormatRules {
+extension FormatRuleCatalog {
     /// Get all format options used by a given set of rules
     func optionsForRules(_ rules: [FormatRule]) -> [String] {
         var options = Set<String>()
@@ -169,6 +169,6 @@ extension _FormatRules {
     }
 }
 
-struct _FormatRules {
+struct FormatRuleCatalog {
     fileprivate init() {}
 }

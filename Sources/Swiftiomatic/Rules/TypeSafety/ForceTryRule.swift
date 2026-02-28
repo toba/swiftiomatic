@@ -1,46 +1,46 @@
 import SwiftSyntax
 
 struct ForceTryRule: Rule {
-    var configuration = SeverityConfiguration<Self>(.error)
+  var configuration = SeverityConfiguration<Self>(.error)
 
-    static let description = RuleDescription(
-        identifier: "force_try",
-        name: "Force Try",
-        description: "Force tries should be avoided",
-        kind: .idiomatic,
-        nonTriggeringExamples: [
-            Example(
-                """
-                func a() throws {}
-                do {
-                  try a()
-                } catch {}
-                """,
-            ),
-        ],
-        triggeringExamples: [
-            Example(
-                """
-                func a() throws {}
-                ↓try! a()
-                """,
-            ),
-        ],
-    )
+  static let description = RuleDescription(
+    identifier: "force_try",
+    name: "Force Try",
+    description: "Force tries should be avoided",
+    kind: .idiomatic,
+    nonTriggeringExamples: [
+      Example(
+        """
+        func a() throws {}
+        do {
+          try a()
+        } catch {}
+        """,
+      )
+    ],
+    triggeringExamples: [
+      Example(
+        """
+        func a() throws {}
+        ↓try! a()
+        """,
+      )
+    ],
+  )
 }
 
 extension ForceTryRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
-        Visitor(configuration: configuration, file: file)
-    }
+  func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    Visitor(configuration: configuration, file: file)
+  }
 }
 
-private extension ForceTryRule {
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override func visitPost(_ node: TryExprSyntax) {
-            if node.questionOrExclamationMark?.tokenKind == .exclamationMark {
-                violations.append(node.positionAfterSkippingLeadingTrivia)
-            }
-        }
+extension ForceTryRule {
+  fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+    override func visitPost(_ node: TryExprSyntax) {
+      if node.questionOrExclamationMark?.tokenKind == .exclamationMark {
+        violations.append(node.positionAfterSkippingLeadingTrivia)
+      }
     }
+  }
 }

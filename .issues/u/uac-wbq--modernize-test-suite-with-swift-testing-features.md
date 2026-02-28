@@ -1,21 +1,21 @@
 ---
 # uac-wbq
 title: Modernize test suite with Swift Testing features
-status: in-progress
+status: completed
 type: epic
 priority: normal
 created_at: 2026-02-28T16:29:06Z
-updated_at: 2026-02-28T18:26:09Z
+updated_at: 2026-02-28T21:26:53Z
 ---
 
 Modernize the ~100k-line test suite to use advanced Swift Testing features. Already migrated from XCTest to basic `@Suite`/`@Test`, but no parameterization, custom traits, or TestScoping is used.
 
 ## Goals
 
-- [ ] Custom traits to eliminate boilerplate init blocks (104 files)
-- [ ] Parameterized tests where tests differ only by input data
-- [ ] Split oversized test files (30+ files exceed 500 lines)
-- [ ] Swift modernization: `#require`, modern URL APIs, eliminate force unwraps
+- [x] Custom traits to eliminate boilerplate init blocks (104 files)
+- [x] Parameterized tests where tests differ only by input data
+- [x] Split oversized test files (30+ files exceed 500 lines)
+- [x] Swift modernization: `#require`, modern URL APIs, eliminate force unwraps
 
 ## Scope Notes
 

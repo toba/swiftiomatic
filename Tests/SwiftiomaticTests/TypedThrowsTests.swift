@@ -5,13 +5,14 @@ import Foundation
 @Suite("TypedThrowsRule")
 struct TypedThrowsTests {
     let fixturePath: String = {
-        let thisFile = #filePath
-        let dir = (thisFile as NSString).deletingLastPathComponent
-        return (dir as NSString).appendingPathComponent("Fixtures/TypedThrows.swift")
+        URL(filePath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/TypedThrows.swift")
+            .path
     }()
 
     @Test func detectsUntypedThrowsWithSingleErrorType() throws {
-        let file = SwiftSource(path: fixturePath)!
+        let file = try #require(SwiftSource(path: fixturePath))
         let rule = TypedThrowsRule()
         let violations = rule.validate(file: file)
 
@@ -22,7 +23,7 @@ struct TypedThrowsTests {
     }
 
     @Test func ignoresAlreadyTypedThrows() throws {
-        let file = SwiftSource(path: fixturePath)!
+        let file = try #require(SwiftSource(path: fixturePath))
         let rule = TypedThrowsRule()
         let violations = rule.validate(file: file)
 
@@ -31,7 +32,7 @@ struct TypedThrowsTests {
     }
 
     @Test func ignoresMultipleErrorTypes() throws {
-        let file = SwiftSource(path: fixturePath)!
+        let file = try #require(SwiftSource(path: fixturePath))
         let rule = TypedThrowsRule()
         let violations = rule.validate(file: file)
 

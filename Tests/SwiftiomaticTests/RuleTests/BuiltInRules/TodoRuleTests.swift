@@ -6,46 +6,46 @@ import Testing
         await verifyRule(TodoRule.description, commentDoesNotViolate: false)
     }
 
-    @Test func todoMessage() async {
+    @Test func todoMessage() async throws {
         let example = Example("fatalError() // TODO: Implement")
-        let allViolations = await violations(example)
+        let allViolations = try await violations(example)
         #expect(allViolations.count == 1)
         #expect(allViolations.first?.reason == "TODOs should be resolved (Implement)")
     }
 
-    @Test func fixMeMessage() async {
+    @Test func fixMeMessage() async throws {
         let example = Example("fatalError() // FIXME: Implement")
-        let allViolations = await violations(example)
+        let allViolations = try await violations(example)
         #expect(allViolations.count == 1)
         #expect(allViolations.first?.reason == "FIXMEs should be resolved (Implement)")
     }
 
-    @Test func onlyFixMe() async {
+    @Test func onlyFixMe() async throws {
         let example = Example(
             """
                 fatalError() // TODO: Implement todo
                 fatalError() // FIXME: Implement fixme
             """,
         )
-        let allViolations = await violations(example, config: ["only": ["FIXME"]])
+        let allViolations = try await violations(example, config: ["only": ["FIXME"]])
         #expect(allViolations.count == 1)
         #expect(allViolations.first?.reason == "FIXMEs should be resolved (Implement fixme)")
     }
 
-    @Test func onlyTodo() async {
+    @Test func onlyTodo() async throws {
         let example = Example(
             """
                 fatalError() // TODO: Implement todo
                 fatalError() // FIXME: Implement fixme
             """,
         )
-        let allViolations = await violations(example, config: ["only": ["TODO"]])
+        let allViolations = try await violations(example, config: ["only": ["TODO"]])
         #expect(allViolations.count == 1)
         #expect(allViolations.first?.reason == "TODOs should be resolved (Implement todo)")
     }
 
-    private func violations(_ example: Example, config: Any? = nil) async -> [RuleViolation] {
-        let config = makeConfig(config, TodoRule.identifier)!
+    private func violations(_ example: Example, config: Any? = nil) async throws -> [RuleViolation] {
+        let config = try #require(makeConfig(config, TodoRule.identifier))
         return await SwiftiomaticTests.violations(example, config: config)
     }
 }

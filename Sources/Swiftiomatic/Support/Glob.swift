@@ -110,7 +110,7 @@ enum Glob {
     private static func populateFiles(globResult: glob_t) -> [String] {
         let matchCount = globResult.gl_matchc
         return (0 ..< Int(matchCount)).compactMap { index in
-            globResult.gl_pathv[index].flatMap { String(validatingUTF8: $0) }
+            globResult.gl_pathv[index].flatMap { String(validatingCString: $0) }
         }
     }
 }

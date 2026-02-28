@@ -5,7 +5,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
 
 @Suite(.rulesRegistered) struct FileHeaderRuleTests {
     private func validate(fileName: String, using configuration: Any) throws -> [RuleViolation] {
-        let file = SwiftSource(path: fixturesDirectory.stringByAppendingPathComponent(fileName))!
+        let file = try #require(SwiftSource(path: fixturesDirectory.stringByAppendingPathComponent(fileName)))
         let rule = try FileHeaderRule(configuration: configuration)
         return rule.validate(file: file)
     }

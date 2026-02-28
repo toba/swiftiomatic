@@ -476,7 +476,7 @@ private extension String {
     }
 }
 
-let Descriptors = _Descriptors()
+let Descriptors = OptionDescriptorCatalog()
 
 private nonisolated(unsafe) var _allDescriptors: [OptionDescriptor] = {
     var descriptors = [OptionDescriptor]()
@@ -510,7 +510,7 @@ private nonisolated(unsafe) let _formattingDescriptors: [OptionDescriptor] = {
     return _allDescriptors.filter { !internalDescriptors.contains($0.argumentName) }
 }()
 
-extension _Descriptors {
+extension OptionDescriptorCatalog {
     var formatting: [OptionDescriptor] {
         _formattingDescriptors
     }
@@ -547,7 +547,7 @@ extension _Descriptors {
     }
 }
 
-struct _Descriptors: @unchecked Sendable {
+struct OptionDescriptorCatalog: @unchecked Sendable {
     let lineAfterMarks = OptionDescriptor(
         argumentName: "line-after-marks",
         displayName: "Blank line after \"MARK\"",
@@ -955,11 +955,11 @@ struct _Descriptors: @unchecked Sendable {
         help: "Comma-delimited list of modifiers in preferred order",
         keyPath: \FormatOptions.modifierOrder,
         validate: { modifier in
-            guard _FormatRules.mapModifiers(modifier) != nil else {
+            guard FormatRuleCatalog.mapModifiers(modifier) != nil else {
                 throw FormatError.invalidOption(
                     modifier,
                     for: "modifier-order",
-                    with: _FormatRules.allModifiers + _FormatRules.semanticModifierGroups,
+                    with: FormatRuleCatalog.allModifiers + FormatRuleCatalog.semanticModifierGroups,
                 )
             }
         },
@@ -1572,7 +1572,7 @@ struct _Descriptors: @unchecked Sendable {
         help: "deprecated",
         keyPath: \FormatOptions.modifierOrder,
         validate: {
-            guard _FormatRules.mapModifiers($0) != nil else {
+            guard FormatRuleCatalog.mapModifiers($0) != nil else {
                 throw FormatError.options("'\($0)' is not a valid specifier")
             }
         },

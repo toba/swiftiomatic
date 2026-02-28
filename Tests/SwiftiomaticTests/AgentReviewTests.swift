@@ -5,13 +5,14 @@ import Foundation
 @Suite("AgentReview Rules")
 struct AgentReviewTests {
     let fixturePath: String = {
-        let thisFile = #filePath
-        let dir = (thisFile as NSString).deletingLastPathComponent
-        return (dir as NSString).appendingPathComponent("Fixtures/AgentReview.swift")
+        URL(filePath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/AgentReview.swift")
+            .path
     }()
 
     @Test func detectsFireAndForgetTask() throws {
-        let file = SwiftSource(path: fixturePath)!
+        let file = try #require(SwiftSource(path: fixturePath))
         let rule = FireAndForgetTaskRule()
         let violations = rule.validate(file: file)
 
@@ -20,7 +21,7 @@ struct AgentReviewTests {
     }
 
     @Test func detectsErrorEnumWithoutLocalizedError() throws {
-        let file = SwiftSource(path: fixturePath)!
+        let file = try #require(SwiftSource(path: fixturePath))
         let rule = AgentReviewRule()
         let violations = rule.validate(file: file)
 
@@ -30,7 +31,7 @@ struct AgentReviewTests {
     }
 
     @Test func detectsNonisolatedUnsafe() throws {
-        let file = SwiftSource(path: fixturePath)!
+        let file = try #require(SwiftSource(path: fixturePath))
         let rule = AgentReviewRule()
         let violations = rule.validate(file: file)
 

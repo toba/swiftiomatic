@@ -330,14 +330,16 @@ struct Configuration {
     /// Find config file by walking up from the given directory.
     static func findConfig(from directory: String) -> String? {
         let fm = FileManager.default
-        var components = (directory as NSString).pathComponents
-        while !components.isEmpty {
-            let dir = NSString.path(withComponents: components)
-            let candidate = (dir as NSString).appendingPathComponent(defaultFileName)
+        var url = URL(filePath: directory, directoryHint: .isDirectory)
+        while true {
+            let candidate = url.appending(path: defaultFileName)
+                .path(percentEncoded: false)
             if fm.fileExists(atPath: candidate) {
                 return candidate
             }
-            components.removeLast()
+            let parent = url.deletingLastPathComponent()
+            if parent.path(percentEncoded: false) == url.path(percentEncoded: false) { break }
+            url = parent
         }
         return nil
     }

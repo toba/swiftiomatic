@@ -1,77 +1,78 @@
 import SwiftSyntax
 
 struct FatalErrorMessageRule: Rule {
-    var configuration = SeverityConfiguration<Self>(.warning)
+  var configuration = SeverityConfiguration<Self>(.warning)
 
-    static let description = RuleDescription(
-        identifier: "fatal_error_message",
-        name: "Fatal Error Message",
-        description: "A fatalError call should have a message",
-        kind: .idiomatic,
-        nonTriggeringExamples: [
-            Example(
-                """
-                func foo() {
-                  fatalError("Foo")
-                }
-                """,
-            ),
-            Example(
-                """
-                func foo() {
-                  fatalError(x)
-                }
-                """,
-            ),
-        ],
-        triggeringExamples: [
-            Example(
-                """
-                func foo() {
-                  ↓fatalError("")
-                }
-                """,
-            ),
-            Example(
-                """
-                func foo() {
-                  ↓fatalError()
-                }
-                """,
-            ),
-        ],
-    )
+  static let description = RuleDescription(
+    identifier: "fatal_error_message",
+    name: "Fatal Error Message",
+    description: "A fatalError call should have a message",
+    kind: .idiomatic,
+    nonTriggeringExamples: [
+      Example(
+        """
+        func foo() {
+          fatalError("Foo")
+        }
+        """,
+      ),
+      Example(
+        """
+        func foo() {
+          fatalError(x)
+        }
+        """,
+      ),
+    ],
+    triggeringExamples: [
+      Example(
+        """
+        func foo() {
+          ↓fatalError("")
+        }
+        """,
+      ),
+      Example(
+        """
+        func foo() {
+          ↓fatalError()
+        }
+        """,
+      ),
+    ],
+  )
 }
 
 extension FatalErrorMessageRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
-        Visitor(configuration: configuration, file: file)
-    }
+  func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    Visitor(configuration: configuration, file: file)
+  }
 }
 
 extension FatalErrorMessageRule: OptInRule {}
 
-private extension FatalErrorMessageRule {
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override func visitPost(_ node: FunctionCallExprSyntax) {
-            guard let expression = node.calledExpression.as(DeclReferenceExprSyntax.self),
-                  expression.baseName.text == "fatalError",
-                  node.arguments.isEmptyOrEmptyString
-            else {
-                return
-            }
+extension FatalErrorMessageRule {
+  fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+    override func visitPost(_ node: FunctionCallExprSyntax) {
+      guard let expression = node.calledExpression.as(DeclReferenceExprSyntax.self),
+        expression.baseName.text == "fatalError",
+        node.arguments.isEmptyOrEmptyString
+      else {
+        return
+      }
 
-            violations.append(node.positionAfterSkippingLeadingTrivia)
-        }
+      violations.append(node.positionAfterSkippingLeadingTrivia)
     }
+  }
 }
 
-private extension LabeledExprListSyntax {
-    var isEmptyOrEmptyString: Bool {
-        if isEmpty {
-            return true
-        }
-        return count == 1 && first?.expression.as(StringLiteralExprSyntax.self)?
-            .isEmptyString == true
+extension LabeledExprListSyntax {
+  fileprivate var isEmptyOrEmptyString: Bool {
+    if isEmpty {
+      return true
     }
+    return count == 1
+      && first?.expression.as(StringLiteralExprSyntax.self)?
+        .isEmptyString == true
+  }
 }

@@ -9,7 +9,7 @@ enum TestResources {
     ]
 
     static func path(_ calleePath: String = #filePath) -> String {
-        let parentDir = URL(fileURLWithPath: calleePath, isDirectory: false)
+        let parentDir = URL(filePath: calleePath, directoryHint: .notDirectory)
             .deletingLastPathComponent()
         let dirName = parentDir.lastPathComponent
         let resourceDir = resourceDirNames[dirName] ?? "Resources"

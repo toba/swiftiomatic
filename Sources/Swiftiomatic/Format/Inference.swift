@@ -1149,7 +1149,7 @@ private struct Inference {
                               ),
                               let name = formatter.token(at: nextIndex)?.unescaped(),
                               !localNames.contains(name), !selfRequired.contains(name),
-                              !_FormatRules.globalSwiftFunctions.contains(name)
+                              !FormatRuleCatalog.globalSwiftFunctions.contains(name)
                         else {
                             break
                         }

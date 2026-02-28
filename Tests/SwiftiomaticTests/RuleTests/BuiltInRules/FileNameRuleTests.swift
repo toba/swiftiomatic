@@ -13,7 +13,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileNameRuleFixtures"
         nestedTypeSeparator: String? = nil,
         requireFullyQualifiedNames: Bool = false,
     ) throws -> [RuleViolation] {
-        let file = SwiftSource(path: fixturesDirectory.stringByAppendingPathComponent(fileName))!
+        let file = try #require(SwiftSource(path: fixturesDirectory.stringByAppendingPathComponent(fileName)))
 
         var configuration = [String: Any]()
 

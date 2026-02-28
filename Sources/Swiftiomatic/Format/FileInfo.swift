@@ -1,0 +1,266 @@
+import Foundation
+
+enum ReplacementKey: String, CaseIterable {
+    case fileName = "file"
+    case currentYear = "year"
+    case createdDate = "created"
+    case createdYear = "created.year"
+    case author
+    case authorName = "author.name"
+    case authorEmail = "author.email"
+
+    var placeholder: String {
+        "{\(rawValue)}"
+    }
+}
+
+/// Argument type for stripping
+enum FileHeaderMode: Equatable, RawRepresentable, ExpressibleByStringLiteral {
+    case ignore
+    case replace(String)
+
+    init(stringLiteral value: String) {
+        self.init(rawValue: value)!
+    }
+
+    init?(rawValue: String) {
+        switch rawValue.lowercased() {
+            case "ignore", "keep", "preserve":
+                self = .ignore
+            case "strip", "":
+                self = .replace("")
+            default:
+                // Normalize the header
+                let header = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                let isMultiline = header.hasPrefix("/*")
+                var lines = header.components(separatedBy: "\\n")
+                lines = lines.map {
+                    var line = $0
+                    if !isMultiline, !line.hasPrefix("//") {
+                        line = "//\(line.isEmpty ? "" : " ")\(line)"
+                    }
+                    return line
+                }
+                while lines.last?.isEmpty == true {
+                    lines.removeLast()
+                }
+                self = .replace(lines.joined(separator: "\n"))
+        }
+    }
+
+    var rawValue: String {
+        switch self {
+            case .ignore:
+                return "ignore"
+            case let .replace(string):
+                return string.isEmpty ? "strip" : string.replacingOccurrences(of: "\n", with: "\\n")
+        }
+    }
+
+    var needsGitInfo: Bool {
+        guard case let .replace(str) = self else {
+            return false
+        }
+        let keys: [ReplacementKey] = [
+            .createdDate,
+            .createdYear,
+            .author,
+            .authorName,
+            .authorEmail,
+        ]
+        return keys.contains(where: { str.contains($0.placeholder) })
+    }
+}
+
+struct ReplacementOptions: CustomStringConvertible {
+    var dateFormat: DateFormat
+    var timeZone: FormatTimeZone
+
+    init(dateFormat: DateFormat, timeZone: FormatTimeZone) {
+        self.dateFormat = dateFormat
+        self.timeZone = timeZone
+    }
+
+    init(_ options: FormatOptions) {
+        self.init(dateFormat: options.dateFormat, timeZone: options.timeZone)
+    }
+
+    var description: String {
+        "\(dateFormat)@\(timeZone)"
+    }
+}
+
+enum ReplacementType: Equatable, CustomStringConvertible {
+    case constant(String)
+    case dynamic((FileInfo, ReplacementOptions) -> String?)
+
+    init?(_ value: String?) {
+        guard let val = value else { return nil }
+        self = .constant(val)
+    }
+
+    static func == (lhs: ReplacementType, rhs: ReplacementType) -> Bool {
+        switch (lhs, rhs) {
+            case let (.constant(lhsVal), .constant(rhsVal)):
+                return lhsVal == rhsVal
+            case let (.dynamic(lhsClosure), .dynamic(rhsClosure)):
+                return lhsClosure as AnyObject === rhsClosure as AnyObject
+            default:
+                return false
+        }
+    }
+
+    func resolve(_ info: FileInfo, _ options: ReplacementOptions) -> String? {
+        switch self {
+            case let .constant(value):
+                return value
+            case let .dynamic(fn):
+                return fn(info, options)
+        }
+    }
+
+    var description: String {
+        switch self {
+            case let .constant(value):
+                return value
+            case .dynamic:
+                return "dynamic"
+        }
+    }
+}
+
+/// File info, used for constructing header comments
+struct FileInfo: Equatable, CustomStringConvertible {
+    nonisolated(unsafe) static var defaultReplacements: [ReplacementKey: ReplacementType] = [
+        .createdDate: .dynamic { info, options in
+            info.creationDate?.format(
+                with: options.dateFormat,
+                timeZone: options.timeZone,
+            )
+        },
+        .createdYear: .dynamic { info, _ in info.creationDate?.yearString },
+        .currentYear: .constant(Date.currentYear),
+    ]
+
+    let filePath: String?
+    var creationDate: Date?
+    var replacements: [ReplacementKey: ReplacementType] = Self.defaultReplacements
+
+    var fileName: String? {
+        filePath.map { URL(fileURLWithPath: $0).lastPathComponent }
+    }
+
+    init(
+        filePath: String? = nil,
+        creationDate: Date? = nil,
+        replacements: [ReplacementKey: ReplacementType] = [:],
+    ) {
+        self.filePath = filePath
+        self.creationDate = creationDate
+        self.replacements[.fileName] = fileName.map { .constant($0) }
+        self.replacements.merge(replacements, uniquingKeysWith: { $1 })
+    }
+
+    var description: String {
+        replacements
+            .sorted(by: { $0.key.rawValue < $1.key.rawValue })
+            .map { "\($0)=\($1)" }
+            .joined(separator: ";")
+    }
+
+    func hasReplacement(for key: ReplacementKey, options: FormatOptions) -> Bool {
+        replacements[key]?.resolve(self, ReplacementOptions(options)) != nil
+    }
+}
+
+/// Format to use when printing dates
+enum DateFormat: Equatable, RawRepresentable, CustomStringConvertible {
+    case dayMonthYear
+    case iso
+    case monthDayYear
+    case system
+    case custom(String)
+
+    init?(rawValue: String) {
+        switch rawValue {
+            case "dmy":
+                self = .dayMonthYear
+            case "iso":
+                self = .iso
+            case "mdy":
+                self = .monthDayYear
+            case "system":
+                self = .system
+            default:
+                self = .custom(rawValue)
+        }
+    }
+
+    var rawValue: String {
+        switch self {
+            case .dayMonthYear:
+                return "dmy"
+            case .iso:
+                return "iso"
+            case .monthDayYear:
+                return "mdy"
+            case .system:
+                return "system"
+            case let .custom(str):
+                return str
+        }
+    }
+
+    var description: String {
+        rawValue
+    }
+}
+
+/// Timezone to use when printing dates
+enum FormatTimeZone: Equatable, RawRepresentable, CustomStringConvertible {
+    case system
+    case abbreviation(String)
+    case identifier(String)
+
+    static let utcNames = ["utc", "gmt"]
+
+    init?(rawValue: String) {
+        if Self.utcNames.contains(rawValue.lowercased()) {
+            self = .identifier("UTC")
+        } else if TimeZone.knownTimeZoneIdentifiers.contains(rawValue) {
+            self = .identifier(rawValue)
+        } else if TimeZone.abbreviationDictionary.keys.contains(rawValue) {
+            self = .abbreviation(rawValue)
+        } else if rawValue == Self.system.rawValue {
+            self = .system
+        } else {
+            return nil
+        }
+    }
+
+    var rawValue: String {
+        switch self {
+            case .system:
+                return "system"
+            case let .abbreviation(abbreviation):
+                return abbreviation
+            case let .identifier(identifier):
+                return identifier
+        }
+    }
+
+    var timeZone: TimeZone? {
+        switch self {
+            case .system:
+                return TimeZone.current
+            case let .abbreviation(abbreviation):
+                return TimeZone(abbreviation: abbreviation)
+            case let .identifier(identifier):
+                return TimeZone(identifier: identifier)
+        }
+    }
+
+    var description: String {
+        rawValue
+    }
+}

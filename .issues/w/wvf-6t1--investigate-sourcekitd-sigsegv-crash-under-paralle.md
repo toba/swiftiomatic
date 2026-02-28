@@ -5,67 +5,82 @@ status: in-progress
 type: bug
 priority: low
 created_at: 2026-02-28T16:18:06Z
-updated_at: 2026-02-28T18:30:31Z
+updated_at: 2026-02-28T20:41:12Z
 ---
 
 ## Problem
 
-`swift test` exits with code 1 despite 0 test failures. The cause is a SIGSEGV (signal 11) in sourcekitd during parallel test execution. The crash produces an LLVM bug report message:
+`swift test` exits with code 1 despite 0 test failures. The cause is a SIGSEGV (signal 11) in sourcekitd during test execution. The crash produces an LLVM bug report message:
 
 ```
 PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace.
 ```
 
-This is an external LLVM/SourceKit bug, not a Swiftiomatic bug, but it makes CI unreliable since exit code 1 looks like a test failure.
+This is an upstream LLVM/SourceKit bug (apple/swift#55112), not a Swiftiomatic bug, but it makes CI unreliable since exit code 1 looks like a test failure.
 
-## Observed Behavior
+## Root Cause
 
-- 126+ tests pass, 0 failures
-- sourcekitd crashes with SIGSEGV partway through the run
-- Exit code is 1 (not 0) due to the crash
-- Happens intermittently under parallel test load
+`sourcekitdInProc.framework` is loaded in-process (not via XPC). Once loaded, background threads spawn during initialization. During test process exit, these threads continue running in static destructors, causing a **delayed non-deterministic SIGSEGV** — not from any specific SourceKit request, but from internal state corruption during shutdown.
 
-## Investigation Areas
+**Key proof**: serial execution (`--no-parallel`) still crashes. The crash occurs during unrelated tests (e.g. `EnumAssociableTests.nilOptionalString()` — a pure enum test with zero SourceKit usage) proving it's a delayed crash, not a request-triggered one.
 
-- [x] Determine which tests trigger sourcekitd (likely AnalyzerRule tests that call SourceKit)
-- [x] Check if running SourceKit-dependent tests serialized avoids the crash
-- [x] Check if disabling SourceKit-dependent tests entirely gives clean exit code 0
-- [x] Search LLVM/Swift bug tracker for known issues
-- [ ] Consider CI workaround (e.g. ignore exit code if 0 test failures in output)
+## How SourceKit Gets Loaded
 
-## Findings
+SourceKit loads via `responseCache` factory in `SwiftSource+Cache.swift` which calls `Request.editorOpen()`. This factory runs on first access of `structureDictionary` or `syntaxMap` on any `SwiftSource` instance.
 
-### sourcekitdInProc is loaded in-process
-The bindings load `sourcekitdInProc.framework` (not the XPC variant), so SIGSEGV kills the test process itself. The LLVM crash handler (`PLEASE submit a bug report`) is installed by sourcekitd_initialize and fires for any SIGSEGV in the process.
+### Loading paths (2 existed, 1 now fixed)
 
-### Not limited to AnalyzerRule tests
-5 AnalyzerRules have `requiresFileOnDisk: true` and make index/cursorInfo requests: UnusedDeclarationRule, UnusedImportRule, ExplicitSelfRule, CaptureVariableRule, TypesafeArrayInitRule. However, **every test file** triggers `Request.editorOpen` via `responseCache` in SwiftSource+Cache.swift (for structureDictionary, syntaxMap access). Skipping only AnalyzerRule tests still crashes.
+1. ~~**`sourcekitdFailed` getter** — checked `responseCache.get()` which triggered the factory~~ **FIXED** in o2q-4qz: now uses `responseCache.has(key:)` first; returns `false` if cache has no entry (SourceKit hasn't been tried yet)
+2. **Rule `validate()` methods** — 8 rules directly access `file.structureDictionary` or `file.syntaxMap`:
 
-### Serializing SourceKit requests does not fix the crash
-Added a `DispatchSemaphore(value: 1)` gate around `Request.send()` and `Request.asyncSend()` — crash persists. The SIGSEGV may originate inside sourcekitdInProc from internal state corruption even with serialized requests, or from another LLVM component (SwiftParser/swift-syntax).
+| Rule | Property | Access Count |
+|------|----------|-------------|
+| `ASTRule.validate()` (protocol default) | `structureDictionary` | 1 |
+| `FileTypesOrderRule` | `structureDictionary` | 5 |
+| `LiteralExpressionEndIndentationRule` | `structureDictionary` | 1 |
+| `MultilineParametersBracketsRule` | `structureDictionary` | 1 |
+| `CaptureVariableRule` | `structureDictionary` | 2 |
+| `UnusedImportRule` | `structureDictionary` + `syntaxMap` | 3 |
+| `IndentationWidthRule` | `syntaxMap` | 3 |
+| `StatementPositionRule` | `syntaxMap` | 2 |
 
-### Disabling SourceKit eliminates the SIGSEGV but hits a fatalError
-With `SWIFTLINT_DISABLE_SOURCEKIT=1`, signal 11 is gone, but tests crash on `queuedFatalError("Never call this for file that sourcekitd fails.")` in SwiftSource+Cache.swift:158 because `structureDictionary` is accessed on a file where `sourcekitdFailed` is true.
+Since these rules are in the default config, any test exercising them loads SourceKit and makes the SIGSEGV inevitable.
 
-### In-flight change: Request.swift serialization gate
-Added `sourceKitRequestGate` semaphore in Request.swift. Correct but insufficient — the crash is deeper in sourcekitdInProc. Change is still beneficial for reducing concurrent load.
+## SourceKit Architecture in Swiftiomatic
 
-### Dead code: disableSourceKit infrastructure
-`Request.disableSourceKit`, `disableSourceKitOverride`, `SWIFTLINT_DISABLE_SOURCEKIT` env var, `SourceKitDisabledError` — all dead code per project direction (SourceKit always on). Separate cleanup task.
+- **172+ rules** are `SourceKitFreeRule` (via `SwiftSyntaxRule` conformance) — safe
+- **8 rules** access `structureDictionary`/`syntaxMap` in `validate()` — trigger loading
+- **5 AnalyzerRules** additionally need compiler index data (`requiresFileOnDisk: true`)
+- `SwiftSyntaxKindBridge` already provides a SourceKit-free alternative to `syntaxMap`
+- `responseCache` factory (`Request.editorOpen`) is the sole loading trigger
 
+## What Didn't Work
 
-### Upstream bug: apple/swift#55112 (open, unfixed)
-[libsourcekitdInProc.so may crash during exit](https://github.com/apple/swift/issues/55112) — background threads in sourcekitd run during static destructors, causing non-deterministic SIGSEGV. Filed by @benlangmuir. Three proposed fixes (enhanced shutdown, -fno-c++-static-destructors, out-of-process on all platforms) — none implemented. No other exact match found in Swift/LLVM trackers.
+- **Serializing SourceKit requests** (`Mutex` gate in `Request.send()`): crash persists, it's internal to sourcekitdInProc
+- **`--no-parallel`**: crash persists, it's delayed shutdown corruption not concurrent access
+- **`SWIFTLINT_DISABLE_SOURCEKIT=1`**: eliminates SIGSEGV but hits `queuedFatalError("Never call this for file that sourcekitd fails.")` when rules access `structureDictionary`
 
-### Serial execution (`--no-parallel`) does NOT fix the crash
-Ran `swift test --no-parallel` — still crashes with signal 11, exit code 1. 555 tests pass, 0 fail, then SIGSEGV kills the process during `EnumAssociableTests.nilOptionalString()` — a pure enum test with zero SourceKit usage. This confirms the crash is a **delayed SIGSEGV from sourcekitd background threads**, not from any specific SourceKit request.
+## Fixes Applied
 
-### SourceKit dependency is narrow
-Only ~7 rules use `structureDictionary` (SourceKit), ~9 files use `syntaxMap`. 172+ rules are already `SourceKitFreeRule` (via SwiftSyntaxRule or direct conformance). `SwiftSyntaxKindBridge` already provides a SourceKit-free alternative to `syntaxMap`. The `responseCache` factory (`Request.editorOpen`) is the sole trigger — once any test touches it, sourcekitd loads in-process and the delayed crash becomes inevitable.
+- [x] `sourcekitdFailed` getter no longer triggers SourceKit initialization (uses `Cache.has(key:)`)
+- [x] `Request.send()` typed throws fixed (`Mutex.withLock` → `Result` pattern)
+- [x] `QueuedPrint.swift` `Mutex<()>.withLock` closures fixed (added `_ in`)
+- [x] `nsrangeToIndexRange` → `nsRangeToIndexRange` casing fixed in 3 files
+- [x] `sourceKitRequestGate` serialization gate added (reduces concurrent load, doesn't fix crash)
 
-### Remaining approach options (not yet implemented)
-1. **CI wrapper script**: Run `swift test`, parse output, return 0 if 0 test failures + signal 11
-2. **Prevent SourceKit loading in tests**: Set `SWIFTLINT_DISABLE_SOURCEKIT=1` but fix the `queuedFatalError` in `structureDictionary`/`syntaxMap` to gracefully degrade (use `assertHandler` pattern); skip tests needing real structure data
-3. **Migrate remaining rules off SourceKit**: Move the ~7 `structureDictionary` users and ~9 `syntaxMap` users to swift-syntax equivalents (`SwiftSyntaxKindBridge`, AST visitors). AnalyzerRules (UnusedImportRule, CaptureVariableRule) cannot be fully migrated — they need compiler index data
-4. **Use XPC sourcekitd** instead of in-process: crash wouldn't kill test process, but binding changes required
-5. **`sourcekitdFailed` triggers SourceKit**: The computed property calls `responseCache.get(self)` which runs the factory. Should be refactored to use a separate flag that doesn't trigger initialization
+## Remaining Work
+
+- [ ] Eliminate SourceKit loading during tests (pick one approach below)
+- [ ] Clean up dead code: `Request.disableSourceKit`, `disableSourceKitOverride`, `SWIFTLINT_DISABLE_SOURCEKIT` env var, `SourceKitDisabledError`
+
+## Approach Options
+
+1. **Migrate 8 rules to swift-syntax** — replace `structureDictionary`/`syntaxMap` with AST visitors and `SwiftSyntaxKindBridge`. Makes them `SourceKitFreeRule`. AnalyzerRules (UnusedImportRule, CaptureVariableRule) can't fully migrate — they need compiler index data
+2. **Disable generated tests for the 8 rules** — quick fix, add `.disabled("sourcekitd SIGSEGV")` trait to their test suites
+3. **CI wrapper script** — parse `swift test` output, return 0 if 0 test failures + signal 11
+4. **Graceful degradation** — fix `structureDictionary`/`syntaxMap` to return empty values (via `assertHandler` pattern) when `SWIFTLINT_DISABLE_SOURCEKIT=1`, then skip tests needing real structure data
+5. **XPC sourcekitd** — use out-of-process variant so crash doesn't kill test process (binding changes required)
+
+## Upstream Reference
+
+[apple/swift#55112](https://github.com/apple/swift/issues/55112) — "libsourcekitdInProc.so may crash during exit". Filed by @benlangmuir. Three proposed fixes (enhanced shutdown, `-fno-c++-static-destructors`, out-of-process on all platforms) — none implemented as of Feb 2026.

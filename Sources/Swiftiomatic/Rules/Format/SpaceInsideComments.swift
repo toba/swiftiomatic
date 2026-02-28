@@ -1,68 +1,68 @@
 import Foundation
 
 extension FormatRule {
-    /// Add space inside comments, taking care not to mangle headerdoc or
-    /// carefully preformatted comments, such as star boxes, etc.
-    static let spaceInsideComments = FormatRule(
-        help: "Add leading and/or trailing space inside comments.",
-    ) { formatter in
-        formatter.forEach(.startOfScope("//")) { i, _ in
-            guard case let .commentBody(string)? = formatter.token(at: i + 1),
-                  let first = string.first
-            else { return }
-            if "/!:".contains(first) {
-                let nextIndex = string.index(after: string.startIndex)
-                if nextIndex < string.endIndex, case let next = string[nextIndex],
-                   !" \t/".contains(next)
-                {
-                    let string = String(string.first!) + " " + String(string.dropFirst())
-                    formatter.replaceToken(at: i + 1, with: .commentBody(string))
-                }
-            } else if !" \t".contains(first),
-                      !string.hasPrefix("===")
-            { // Special-case check for swift stdlib codebase
-                formatter.insert(.space(" "), at: i + 1)
-            }
+  /// Add space inside comments, taking care not to mangle headerdoc or
+  /// carefully preformatted comments, such as star boxes, etc.
+  static let spaceInsideComments = FormatRule(
+    help: "Add leading and/or trailing space inside comments.",
+  ) { formatter in
+    formatter.forEach(.startOfScope("//")) { i, _ in
+      guard case .commentBody(let string)? = formatter.token(at: i + 1),
+        let first = string.first
+      else { return }
+      if "/!:".contains(first) {
+        let nextIndex = string.index(after: string.startIndex)
+        if nextIndex < string.endIndex, case let next = string[nextIndex],
+          !" \t/".contains(next)
+        {
+          let string = String(string.first!) + " " + String(string.dropFirst())
+          formatter.replaceToken(at: i + 1, with: .commentBody(string))
         }
-        formatter.forEach(.startOfScope("/*")) { i, _ in
-            guard case let .commentBody(string)? = formatter.token(at: i + 1),
-                  !string.hasPrefix("---"), !string.hasPrefix("@"), !string.hasSuffix("---"),
-                  !string.hasSuffix("@")
-            else {
-                return
-            }
-            if let first = string.first, "*!:".contains(first) {
-                let nextIndex = string.index(after: string.startIndex)
-                if nextIndex < string.endIndex, case let next = string[nextIndex],
-                   !" /t".contains(next), !string.hasPrefix("**"), !string.hasPrefix("*/")
-                {
-                    let string = String(string.first!) + " " + String(string.dropFirst())
-                    formatter.replaceToken(at: i + 1, with: .commentBody(string))
-                }
-            } else {
-                formatter.insert(.space(" "), at: i + 1)
-            }
-            if let i = formatter.index(of: .endOfScope("*/"), after: i),
-               let prevToken = formatter.token(at: i - 1)
-            {
-                if !prevToken.isSpaceOrLinebreak, !prevToken.string.hasSuffix("*"),
-                   !prevToken.string.trimmingCharacters(in: .whitespaces).isEmpty
-                {
-                    formatter.insert(.space(" "), at: i)
-                }
-            }
-        }
-    } examples: {
-        """
-        ```diff
-        - let a = 5 //assignment
-        + let a = 5 // assignment
-        ```
-
-        ```diff
-        - func foo() { /*...*/ }
-        + func foo() { /* ... */ }
-        ```
-        """
+      } else if !" \t".contains(first),
+        !string.hasPrefix("===")
+      {  // Special-case check for swift stdlib codebase
+        formatter.insert(.space(" "), at: i + 1)
+      }
     }
+    formatter.forEach(.startOfScope("/*")) { i, _ in
+      guard case .commentBody(let string)? = formatter.token(at: i + 1),
+        !string.hasPrefix("---"), !string.hasPrefix("@"), !string.hasSuffix("---"),
+        !string.hasSuffix("@")
+      else {
+        return
+      }
+      if let first = string.first, "*!:".contains(first) {
+        let nextIndex = string.index(after: string.startIndex)
+        if nextIndex < string.endIndex, case let next = string[nextIndex],
+          !" /t".contains(next), !string.hasPrefix("**"), !string.hasPrefix("*/")
+        {
+          let string = String(string.first!) + " " + String(string.dropFirst())
+          formatter.replaceToken(at: i + 1, with: .commentBody(string))
+        }
+      } else {
+        formatter.insert(.space(" "), at: i + 1)
+      }
+      if let i = formatter.index(of: .endOfScope("*/"), after: i),
+        let prevToken = formatter.token(at: i - 1)
+      {
+        if !prevToken.isSpaceOrLinebreak, !prevToken.string.hasSuffix("*"),
+          !prevToken.string.trimmingCharacters(in: .whitespaces).isEmpty
+        {
+          formatter.insert(.space(" "), at: i)
+        }
+      }
+    }
+  } examples: {
+    """
+    ```diff
+    - let a = 5 //assignment
+    + let a = 5 // assignment
+    ```
+
+    ```diff
+    - func foo() { /*...*/ }
+    + func foo() { /* ... */ }
+    ```
+    """
+  }
 }

@@ -80,10 +80,9 @@ extension String {
     }
 
     func countOfLeadingCharacters(in characterSet: CharacterSet) -> Int {
-        let characterSet = characterSet.bridge()
         var count = 0
         for char in utf16 {
-            if !characterSet.characterIsMember(char) { break }
+            guard let scalar = UnicodeScalar(char), characterSet.contains(scalar) else { break }
             count += 1
         }
         return count

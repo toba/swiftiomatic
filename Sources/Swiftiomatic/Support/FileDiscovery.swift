@@ -45,24 +45,27 @@ enum FileDiscovery {
         extraExclusions: Set<String>,
         into results: inout [String],
     ) {
-        guard let enumerator = fm.enumerator(atPath: directory) else { return }
+        let directoryURL = URL(filePath: directory, directoryHint: .isDirectory)
+        guard let enumerator = fm.enumerator(
+            at: directoryURL,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: []
+        ) else { return }
 
-        while let relativePath = enumerator.nextObject() as? String {
-            let fullPath = (directory as NSString).appendingPathComponent(relativePath)
+        for case let fileURL as URL in enumerator {
+            let lastComponent = fileURL.lastPathComponent
 
-            // Check directory exclusions
-            let lastComponent = (relativePath as NSString).lastPathComponent
-            if excludedDirectories.contains(lastComponent) || extraExclusions
-                .contains(lastComponent)
+            if excludedDirectories.contains(lastComponent)
+                || extraExclusions.contains(lastComponent)
             {
                 enumerator.skipDescendants()
                 continue
             }
 
-            // Collect .swift files
-            guard relativePath.hasSuffix(".swift") else { continue }
-            guard !isExcludedFile(relativePath) else { continue }
-            results.append(fullPath)
+            guard fileURL.pathExtension == "swift" else { continue }
+            let path = fileURL.path(percentEncoded: false)
+            guard !isExcludedFile(path) else { continue }
+            results.append(path)
         }
     }
 

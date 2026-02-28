@@ -12,10 +12,10 @@ extension SwiftSource {
         persistToDisk: Bool = false,
     ) -> SwiftSource {
         if persistToDisk {
-            let url = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+            let url = URL(filePath: NSTemporaryDirectory(), directoryHint: .isDirectory)
                 .appendingPathComponent(UUID().uuidString)
                 .appendingPathExtension("swift")
-            _ = try? contents.data(using: .utf8)!.write(to: url)
+            try? Data(contents.utf8).write(to: url)
             return SwiftSource(path: url.path, isTestFile: true)!
         }
         return SwiftSource(contents: contents, isTestFile: true)
@@ -23,7 +23,7 @@ extension SwiftSource {
 
     func makeCompilerArguments() -> [String] {
         let sdk = macOSSDKPath()
-        let frameworks = URL(fileURLWithPath: sdk, isDirectory: true)
+        let frameworks = URL(filePath: sdk, directoryHint: .isDirectory)
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .appendingPathComponent("Library")
@@ -44,13 +44,13 @@ extension SwiftSource {
 
 extension String {
     func stringByAppendingPathComponent(_ pathComponent: String) -> String {
-        URL(fileURLWithPath: self).appendingPathComponent(pathComponent).filepath
+        URL(filePath: self).appendingPathComponent(pathComponent).filepath
     }
 }
 
 private func macOSSDKPath() -> String {
     let task = Process()
-    task.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+    task.executableURL = URL(filePath: "/usr/bin/xcrun")
     task.arguments = ["--show-sdk-path", "--sdk", "macosx"]
     let pipe = Pipe()
     task.standardOutput = pipe
@@ -299,9 +299,12 @@ private func assertCorrection(
         "File contents don't match expected",
         sourceLocation: sourceLocation,
     )
-    let path = file.path!
+    guard let path = file.path else {
+        Testing.Issue.record("File has no path", sourceLocation: sourceLocation)
+        return
+    }
     do {
-        let corrected = try String(contentsOfFile: path, encoding: .utf8)
+        let corrected = try String(contentsOf: URL(filePath: path), encoding: .utf8)
         #expect(
             corrected == expected.code,
             "Corrected file doesn't match expected",

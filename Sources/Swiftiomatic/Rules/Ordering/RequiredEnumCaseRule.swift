@@ -68,136 +68,136 @@ import SwiftSyntax
 /// }
 /// ````
 struct RequiredEnumCaseRule: Rule {
-    var configuration = RequiredEnumCaseConfiguration()
+  var configuration = RequiredEnumCaseConfiguration()
 
-    private static let exampleConfiguration = [
-        "NetworkResponsable": ["success": "warning", "error": "warning", "notConnected": "warning"],
-    ]
+  private static let exampleConfiguration = [
+    "NetworkResponsable": ["success": "warning", "error": "warning", "notConnected": "warning"]
+  ]
 
-    static let description = RuleDescription(
-        identifier: "required_enum_case",
-        name: "Required Enum Case",
-        description: "Enums conforming to a specified protocol must implement a specific case(s).",
-        kind: .lint,
-        nonTriggeringExamples: [
-            Example(
-                """
-                enum MyNetworkResponse: String, NetworkResponsable {
-                    case success, error, notConnected
-                }
-                """, configuration: exampleConfiguration,
-            ),
-            Example(
-                """
-                enum MyNetworkResponse: String, NetworkResponsable {
-                    case success, error, notConnected(error: Error)
-                }
-                """, configuration: exampleConfiguration,
-            ),
-            Example(
-                """
-                enum MyNetworkResponse: String, NetworkResponsable {
-                    case success
-                    case error
-                    case notConnected
-                }
-                """, configuration: exampleConfiguration,
-            ),
-            Example(
-                """
-                enum MyNetworkResponse: String, NetworkResponsable {
-                    case success
-                    case error
-                    case notConnected(error: Error)
-                }
-                """, configuration: exampleConfiguration,
-            ),
-        ],
-        triggeringExamples: [
-            Example(
-                """
-                ↓enum MyNetworkResponse: String, NetworkResponsable {
-                    case success, error
-                }
-                """, configuration: exampleConfiguration,
-            ),
-            Example(
-                """
-                ↓enum MyNetworkResponse: String, NetworkResponsable {
-                    case success, error
-                }
-                """, configuration: exampleConfiguration,
-            ),
-            Example(
-                """
-                ↓enum MyNetworkResponse: String, NetworkResponsable {
-                    case success
-                    case error
-                }
-                """, configuration: exampleConfiguration,
-            ),
-            Example(
-                """
-                ↓enum MyNetworkResponse: String, NetworkResponsable {
-                    case success
-                    case error
-                }
-                """, configuration: exampleConfiguration,
-            ),
-        ],
-    )
+  static let description = RuleDescription(
+    identifier: "required_enum_case",
+    name: "Required Enum Case",
+    description: "Enums conforming to a specified protocol must implement a specific case(s).",
+    kind: .lint,
+    nonTriggeringExamples: [
+      Example(
+        """
+        enum MyNetworkResponse: String, NetworkResponsable {
+            case success, error, notConnected
+        }
+        """, configuration: exampleConfiguration,
+      ),
+      Example(
+        """
+        enum MyNetworkResponse: String, NetworkResponsable {
+            case success, error, notConnected(error: Error)
+        }
+        """, configuration: exampleConfiguration,
+      ),
+      Example(
+        """
+        enum MyNetworkResponse: String, NetworkResponsable {
+            case success
+            case error
+            case notConnected
+        }
+        """, configuration: exampleConfiguration,
+      ),
+      Example(
+        """
+        enum MyNetworkResponse: String, NetworkResponsable {
+            case success
+            case error
+            case notConnected(error: Error)
+        }
+        """, configuration: exampleConfiguration,
+      ),
+    ],
+    triggeringExamples: [
+      Example(
+        """
+        ↓enum MyNetworkResponse: String, NetworkResponsable {
+            case success, error
+        }
+        """, configuration: exampleConfiguration,
+      ),
+      Example(
+        """
+        ↓enum MyNetworkResponse: String, NetworkResponsable {
+            case success, error
+        }
+        """, configuration: exampleConfiguration,
+      ),
+      Example(
+        """
+        ↓enum MyNetworkResponse: String, NetworkResponsable {
+            case success
+            case error
+        }
+        """, configuration: exampleConfiguration,
+      ),
+      Example(
+        """
+        ↓enum MyNetworkResponse: String, NetworkResponsable {
+            case success
+            case error
+        }
+        """, configuration: exampleConfiguration,
+      ),
+    ],
+  )
 }
 
 extension RequiredEnumCaseRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
-        Visitor(configuration: configuration, file: file)
-    }
+  func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    Visitor(configuration: configuration, file: file)
+  }
 }
 
 extension RequiredEnumCaseRule: OptInRule {}
 
-private extension RequiredEnumCaseRule {
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override func visitPost(_ node: EnumDeclSyntax) {
-            guard configuration.protocols.isNotEmpty else {
-                return
+extension RequiredEnumCaseRule {
+  fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+    override func visitPost(_ node: EnumDeclSyntax) {
+      guard configuration.protocols.isNotEmpty else {
+        return
+      }
+
+      let enumCases = node.enumCasesNames
+      let violations = configuration.protocols
+        .flatMap { type, requiredCases -> [SyntaxViolation] in
+          guard node.inheritanceClause.containsInheritedType(inheritedTypes: [type])
+          else {
+            return []
+          }
+
+          return requiredCases.compactMap { requiredCase in
+            guard !enumCases.contains(requiredCase.name) else {
+              return nil
             }
 
-            let enumCases = node.enumCasesNames
-            let violations = configuration.protocols
-                .flatMap { type, requiredCases -> [SyntaxViolation] in
-                    guard node.inheritanceClause.containsInheritedType(inheritedTypes: [type])
-                    else {
-                        return []
-                    }
-
-                    return requiredCases.compactMap { requiredCase in
-                        guard !enumCases.contains(requiredCase.name) else {
-                            return nil
-                        }
-
-                        return SyntaxViolation(
-                            position: node.positionAfterSkippingLeadingTrivia,
-                            reason: "Enums conforming to \"\(type)\" must have a \"\(requiredCase.name)\" case",
-                            severity: requiredCase.severity,
-                        )
-                    }
-                }
-
-            self.violations.append(contentsOf: violations)
+            return SyntaxViolation(
+              position: node.positionAfterSkippingLeadingTrivia,
+              reason: "Enums conforming to \"\(type)\" must have a \"\(requiredCase.name)\" case",
+              severity: requiredCase.severity,
+            )
+          }
         }
+
+      self.violations.append(contentsOf: violations)
     }
+  }
 }
 
-private extension EnumDeclSyntax {
-    var enumCasesNames: [String] {
-        memberBlock.members
-            .flatMap { member -> [String] in
-                guard let enumCaseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
-                    return []
-                }
+extension EnumDeclSyntax {
+  fileprivate var enumCasesNames: [String] {
+    memberBlock.members
+      .flatMap { member -> [String] in
+        guard let enumCaseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
+          return []
+        }
 
-                return enumCaseDecl.elements.map(\.name.text)
-            }
-    }
+        return enumCaseDecl.elements.map(\.name.text)
+      }
+  }
 }

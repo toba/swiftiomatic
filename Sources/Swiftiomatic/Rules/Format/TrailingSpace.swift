@@ -1,39 +1,40 @@
 import Foundation
 
 extension FormatRule {
-    /// Remove trailing space from the end of lines, as it has no semantic
-    /// meaning and leads to noise in commits.
-    static let trailingSpace = FormatRule(
-        help: "Remove trailing space at end of a line.",
-        orderAfter: [.wrap, .wrapArguments],
-        options: ["trim-whitespace"],
-    ) { formatter in
-        formatter.forEach(.space) { i, _ in
-            switch formatter.token(at: i + 1) {
-                case nil, .linebreak:
-                    if formatter.options.truncateBlankLines || formatter.token(at: i - 1)?
-                        .isLinebreak == false
-                    {
-                        formatter.removeToken(at: i)
-                    }
-                case .stringBody("") where formatter.options.truncateBlankLines:
-                    formatter.removeTokens(in: i ... i + 1)
-                default:
-                    break
-            }
+  /// Remove trailing space from the end of lines, as it has no semantic
+  /// meaning and leads to noise in commits.
+  static let trailingSpace = FormatRule(
+    help: "Remove trailing space at end of a line.",
+    orderAfter: [.wrap, .wrapArguments],
+    options: ["trim-whitespace"],
+  ) { formatter in
+    formatter.forEach(.space) { i, _ in
+      switch formatter.token(at: i + 1) {
+      case nil, .linebreak:
+        if formatter.options.truncateBlankLines
+          || formatter.token(at: i - 1)?
+            .isLinebreak == false
+        {
+          formatter.removeToken(at: i)
         }
-    } examples: {
-        """
-        ```diff
-        - let foo: Foo␣
-        + let foo: Foo
-        - ␣␣␣␣
-        +
-        - func bar() {␣␣
-        + func bar() {
-          ␣␣␣␣print("foo")
-          }
-        ```
-        """
+      case .stringBody("") where formatter.options.truncateBlankLines:
+        formatter.removeTokens(in: i...i + 1)
+      default:
+        break
+      }
     }
+  } examples: {
+    """
+    ```diff
+    - let foo: Foo␣
+    + let foo: Foo
+    - ␣␣␣␣
+    +
+    - func bar() {␣␣
+    + func bar() {
+      ␣␣␣␣print("foo")
+      }
+    ```
+    """
+  }
 }

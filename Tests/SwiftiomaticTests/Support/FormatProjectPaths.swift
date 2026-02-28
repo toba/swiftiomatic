@@ -1,7 +1,7 @@
 import Foundation
 @testable import Swiftiomatic
 
-let formatProjectDirectory = URL(fileURLWithPath: #filePath)
+let formatProjectDirectory = URL(filePath: #filePath)
     .deletingLastPathComponent() // Helpers/
     .deletingLastPathComponent() // FormatTests/
     .deletingLastPathComponent() // SwiftiomaticTests/

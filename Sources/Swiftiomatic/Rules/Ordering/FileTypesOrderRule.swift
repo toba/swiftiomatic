@@ -1,196 +1,195 @@
 import Foundation
 
 private typealias FileTypeOffset = (
-    fileType: FileTypesOrderConfiguration.FileType, offset: ByteCount,
+  fileType: FileTypesOrderConfiguration.FileType, offset: ByteCount,
 )
 
 struct FileTypesOrderRule: OptInRule {
-    var configuration = FileTypesOrderConfiguration()
+  var configuration = FileTypesOrderConfiguration()
 
-    static let description = RuleDescription(
-        identifier: "file_types_order",
-        name: "File Types Order",
-        description: "Specifies how the types within a file should be ordered.",
-        kind: .style,
-        nonTriggeringExamples: FileTypesOrderRuleExamples.nonTriggeringExamples,
-        triggeringExamples: FileTypesOrderRuleExamples.triggeringExamples,
+  static let description = RuleDescription(
+    identifier: "file_types_order",
+    name: "File Types Order",
+    description: "Specifies how the types within a file should be ordered.",
+    kind: .style,
+    nonTriggeringExamples: FileTypesOrderRuleExamples.nonTriggeringExamples,
+    triggeringExamples: FileTypesOrderRuleExamples.triggeringExamples,
+  )
+
+  func validate(file: SwiftSource) -> [RuleViolation] {
+    guard let mainTypeSubstructure = mainTypeSubstructure(in: file),
+      let mainTypeSubstuctureOffset = mainTypeSubstructure.offset
+    else { return [] }
+
+    let extensionsSubstructures = extensionsSubstructures(
+      in: file,
+      mainTypeSubstructure: mainTypeSubstructure,
     )
 
-    func validate(file: SwiftSource) -> [RuleViolation] {
-        guard let mainTypeSubstructure = mainTypeSubstructure(in: file),
-              let mainTypeSubstuctureOffset = mainTypeSubstructure.offset
-        else { return [] }
+    let supportingTypesSubstructures = supportingTypesSubstructures(
+      in: file,
+      mainTypeSubstructure: mainTypeSubstructure,
+    )
 
-        let extensionsSubstructures = extensionsSubstructures(
-            in: file,
-            mainTypeSubstructure: mainTypeSubstructure,
-        )
+    let previewProviderSubstructures = substructures(
+      in: file,
+      withInheritedType: "PreviewProvider",
+    )
 
-        let supportingTypesSubstructures = supportingTypesSubstructures(
-            in: file,
-            mainTypeSubstructure: mainTypeSubstructure,
-        )
+    let libraryContentSubstructures = substructures(
+      in: file,
+      withInheritedType: "LibraryContentProvider",
+    )
 
-        let previewProviderSubstructures = substructures(
-            in: file,
-            withInheritedType: "PreviewProvider",
-        )
+    let mainTypeOffset: [FileTypeOffset] = [(.mainType, mainTypeSubstuctureOffset)]
+    let extensionOffsets: [FileTypeOffset] = extensionsSubstructures.offsets(for: .extension)
+    let supportingTypeOffsets: [FileTypeOffset] = supportingTypesSubstructures.offsets(
+      for: .supportingType,
+    )
+    let previewProviderOffsets: [FileTypeOffset] = previewProviderSubstructures.offsets(
+      for: .previewProvider,
+    )
+    let libraryContentOffsets: [FileTypeOffset] = libraryContentSubstructures.offsets(
+      for: .libraryContentProvider,
+    )
 
-        let libraryContentSubstructures = substructures(
-            in: file,
-            withInheritedType: "LibraryContentProvider",
-        )
+    let allOffsets =
+      mainTypeOffset
+      + extensionOffsets
+      + supportingTypeOffsets
+      + previewProviderOffsets
+      + libraryContentOffsets
 
-        let mainTypeOffset: [FileTypeOffset] = [(.mainType, mainTypeSubstuctureOffset)]
-        let extensionOffsets: [FileTypeOffset] = extensionsSubstructures.offsets(for: .extension)
-        let supportingTypeOffsets: [FileTypeOffset] = supportingTypesSubstructures.offsets(
-            for: .supportingType,
-        )
-        let previewProviderOffsets: [FileTypeOffset] = previewProviderSubstructures.offsets(
-            for: .previewProvider,
-        )
-        let libraryContentOffsets: [FileTypeOffset] = libraryContentSubstructures.offsets(
-            for: .libraryContentProvider,
-        )
+    let orderedFileTypeOffsets = allOffsets.sorted { lhs, rhs in lhs.offset < rhs.offset }
 
-        let allOffsets =
-            mainTypeOffset
-                + extensionOffsets
-                + supportingTypeOffsets
-                + previewProviderOffsets
-                + libraryContentOffsets
+    var violations = [RuleViolation]()
 
-        let orderedFileTypeOffsets = allOffsets.sorted { lhs, rhs in lhs.offset < rhs.offset }
+    var lastMatchingIndex = -1
+    for expectedTypes in configuration.order {
+      var potentialViolatingIndexes = [Int]()
 
-        var violations = [RuleViolation]()
-
-        var lastMatchingIndex = -1
-        for expectedTypes in configuration.order {
-            var potentialViolatingIndexes = [Int]()
-
-            let startIndex = lastMatchingIndex + 1
-            for index in startIndex ..< orderedFileTypeOffsets.count {
-                let fileType = orderedFileTypeOffsets[index].fileType
-                if expectedTypes.contains(fileType) {
-                    lastMatchingIndex = index
-                } else {
-                    potentialViolatingIndexes.append(index)
-                }
-            }
-
-            let violatingIndexes = potentialViolatingIndexes.filter { $0 < lastMatchingIndex }
-            for index in violatingIndexes {
-                let fileTypeOffset = orderedFileTypeOffsets[index]
-
-                let fileType = fileTypeOffset.fileType.rawValue
-                let expected = expectedTypes.map(\.rawValue).joined(separator: ",")
-                let article =
-                    ["a", "e", "i", "o", "u"]
-                        .contains(fileType.substring(from: 0, length: 1)) ? "An" : "A"
-
-                let ruleViolation = RuleViolation(
-                    ruleDescription: Self.description,
-                    severity: configuration.severityConfiguration.severity,
-                    location: Location(file: file, byteOffset: fileTypeOffset.offset),
-                    reason:
-                    "\(article) '\(fileType)' should not be placed amongst the file type(s) '\(expected)'",
-                )
-                violations.append(ruleViolation)
-            }
+      let startIndex = lastMatchingIndex + 1
+      for index in startIndex..<orderedFileTypeOffsets.count {
+        let fileType = orderedFileTypeOffsets[index].fileType
+        if expectedTypes.contains(fileType) {
+          lastMatchingIndex = index
+        } else {
+          potentialViolatingIndexes.append(index)
         }
+      }
 
-        return violations
+      let violatingIndexes = potentialViolatingIndexes.filter { $0 < lastMatchingIndex }
+      for index in violatingIndexes {
+        let fileTypeOffset = orderedFileTypeOffsets[index]
+
+        let fileType = fileTypeOffset.fileType.rawValue
+        let expected = expectedTypes.map(\.rawValue).joined(separator: ",")
+        let article =
+          ["a", "e", "i", "o", "u"]
+            .contains(fileType.substring(from: 0, length: 1)) ? "An" : "A"
+
+        let ruleViolation = RuleViolation(
+          ruleDescription: Self.description,
+          severity: configuration.severityConfiguration.severity,
+          location: Location(file: file, byteOffset: fileTypeOffset.offset),
+          reason:
+            "\(article) '\(fileType)' should not be placed amongst the file type(s) '\(expected)'",
+        )
+        violations.append(ruleViolation)
+      }
     }
 
-    private func extensionsSubstructures(
-        in file: SwiftSource,
-        mainTypeSubstructure: SourceKitDictionary,
-    ) -> [SourceKitDictionary] {
-        let dict = file.structureDictionary
-        return dict.substructure.filter { substructure in
-            guard let kind = substructure.kind else { return false }
-            return substructure.offset != mainTypeSubstructure.offset
-                && kind.contains(SwiftDeclarationKind.extension.rawValue)
-        }
+    return violations
+  }
+
+  private func extensionsSubstructures(
+    in file: SwiftSource,
+    mainTypeSubstructure: SourceKitDictionary,
+  ) -> [SourceKitDictionary] {
+    let dict = file.structureDictionary
+    return dict.substructure.filter { substructure in
+      guard let kind = substructure.kind else { return false }
+      return substructure.offset != mainTypeSubstructure.offset
+        && kind.contains(SwiftDeclarationKind.extension.rawValue)
+    }
+  }
+
+  private func supportingTypesSubstructures(
+    in file: SwiftSource,
+    mainTypeSubstructure: SourceKitDictionary,
+  ) -> [SourceKitDictionary] {
+    var supportingTypeKinds = SwiftDeclarationKind.typeKinds
+    supportingTypeKinds.insert(SwiftDeclarationKind.protocol)
+
+    let dict = file.structureDictionary
+    return dict.substructure.filter { substructure in
+      guard let declarationKind = substructure.declarationKind else { return false }
+      guard !substructure.hasExcludedInheritedType else { return false }
+
+      return substructure.offset != mainTypeSubstructure.offset
+        && supportingTypeKinds.contains(declarationKind)
+    }
+  }
+
+  private func substructures(
+    in file: SwiftSource,
+    withInheritedType inheritedType: String,
+  ) -> [SourceKitDictionary] {
+    file.structureDictionary.substructure.filter { substructure in
+      substructure.inheritedTypes.contains(inheritedType)
+    }
+  }
+
+  private func mainTypeSubstructure(in file: SwiftSource) -> SourceKitDictionary? {
+    let dict = file.structureDictionary
+
+    guard let filePath = file.path else {
+      return mainTypeSubstructure(in: dict)
     }
 
-    private func supportingTypesSubstructures(
-        in file: SwiftSource,
-        mainTypeSubstructure: SourceKitDictionary,
-    ) -> [SourceKitDictionary] {
-        var supportingTypeKinds = SwiftDeclarationKind.typeKinds
-        supportingTypeKinds.insert(SwiftDeclarationKind.protocol)
-
-        let dict = file.structureDictionary
-        return dict.substructure.filter { substructure in
-            guard let declarationKind = substructure.declarationKind else { return false }
-            guard !substructure.hasExcludedInheritedType else { return false }
-
-            return substructure.offset != mainTypeSubstructure.offset
-                && supportingTypeKinds.contains(declarationKind)
-        }
+    let fileName = URL(fileURLWithPath: filePath, isDirectory: false)
+      .lastPathComponent.replacingOccurrences(of: ".swift", with: "")
+    guard let mainTypeSubstructure = dict.substructure.first(where: { $0.name == fileName })
+    else {
+      return mainTypeSubstructure(in: file.structureDictionary)
     }
 
-    private func substructures(
-        in file: SwiftSource,
-        withInheritedType inheritedType: String,
-    ) -> [SourceKitDictionary] {
-        file.structureDictionary.substructure.filter { substructure in
-            substructure.inheritedTypes.contains(inheritedType)
-        }
+    // specify type with name matching the files name as main type
+    return mainTypeSubstructure
+  }
+
+  private func mainTypeSubstructure(in dict: SourceKitDictionary) -> SourceKitDictionary? {
+    let priorityKinds: [SwiftDeclarationKind] = [.class, .enum, .struct]
+
+    let priorityKindSubstructures = dict.substructure.filter { substructure in
+      guard let kind = substructure.declarationKind else { return false }
+      guard !substructure.hasExcludedInheritedType else { return false }
+
+      return priorityKinds.contains(kind)
     }
 
-    private func mainTypeSubstructure(in file: SwiftSource) -> SourceKitDictionary? {
-        let dict = file.structureDictionary
-
-        guard let filePath = file.path else {
-            return mainTypeSubstructure(in: dict)
-        }
-
-        let fileName = URL(fileURLWithPath: filePath, isDirectory: false)
-            .lastPathComponent.replacingOccurrences(of: ".swift", with: "")
-        guard let mainTypeSubstructure = dict.substructure.first(where: { $0.name == fileName })
-        else {
-            return mainTypeSubstructure(in: file.structureDictionary)
-        }
-
-        // specify type with name matching the files name as main type
-        return mainTypeSubstructure
+    let substructuresSortedByBodyLength = priorityKindSubstructures.sorted { lhs, rhs in
+      (lhs.bodyLength ?? 0) > (rhs.bodyLength ?? 0)
     }
 
-    private func mainTypeSubstructure(in dict: SourceKitDictionary) -> SourceKitDictionary? {
-        let priorityKinds: [SwiftDeclarationKind] = [.class, .enum, .struct]
-
-        let priorityKindSubstructures = dict.substructure.filter { substructure in
-            guard let kind = substructure.declarationKind else { return false }
-            guard !substructure.hasExcludedInheritedType else { return false }
-
-            return priorityKinds.contains(kind)
-        }
-
-        let substructuresSortedByBodyLength = priorityKindSubstructures.sorted { lhs, rhs in
-            (lhs.bodyLength ?? 0) > (rhs.bodyLength ?? 0)
-        }
-
-        // specify class, enum or struct with longest body as main type
-        return substructuresSortedByBodyLength.first
-    }
+    // specify class, enum or struct with longest body as main type
+    return substructuresSortedByBodyLength.first
+  }
 }
 
-private extension SourceKitDictionary {
-    var hasExcludedInheritedType: Bool {
-        inheritedTypes.contains { inheritedType in
-            inheritedType == "PreviewProvider" || inheritedType == "LibraryContentProvider"
-        }
+extension SourceKitDictionary {
+  fileprivate var hasExcludedInheritedType: Bool {
+    inheritedTypes.contains { inheritedType in
+      inheritedType == "PreviewProvider" || inheritedType == "LibraryContentProvider"
     }
+  }
 }
 
-private extension [SourceKitDictionary] {
-    func offsets(for fileType: FileTypesOrderConfiguration.FileType) -> [FileTypeOffset] {
-        compactMap { substructure in
-            guard let offset = substructure.offset else { return nil }
-            return (fileType, offset)
-        }
+extension [SourceKitDictionary] {
+  fileprivate func offsets(for fileType: FileTypesOrderConfiguration.FileType) -> [FileTypeOffset] {
+    compactMap { substructure in
+      guard let offset = substructure.offset else { return nil }
+      return (fileType, offset)
     }
+  }
 }
-

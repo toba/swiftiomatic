@@ -5,13 +5,14 @@ import Foundation
 @Suite("NamingHeuristicsRule")
 struct NamingTests {
     let fixturePath: String = {
-        let thisFile = #filePath
-        let dir = (thisFile as NSString).deletingLastPathComponent
-        return (dir as NSString).appendingPathComponent("Fixtures/Naming.swift")
+        URL(filePath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/Naming.swift")
+            .path
     }()
 
     @Test func detectsBoolNotReadingAsAssertion() throws {
-        let file = SwiftSource(path: fixturePath)!
+        let file = try #require(SwiftSource(path: fixturePath))
         let rule = NamingHeuristicsRule()
         let violations = rule.validate(file: file)
 
@@ -22,7 +23,7 @@ struct NamingTests {
     }
 
     @Test func detectsFactoryMethodWithoutMakePrefix() throws {
-        let file = SwiftSource(path: fixturePath)!
+        let file = try #require(SwiftSource(path: fixturePath))
         let rule = NamingHeuristicsRule()
         let violations = rule.validate(file: file)
 

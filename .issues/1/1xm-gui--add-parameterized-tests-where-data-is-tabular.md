@@ -1,10 +1,11 @@
 ---
 # 1xm-gui
 title: Add parameterized tests where data is tabular
-status: ready
+status: completed
 type: task
+priority: normal
 created_at: 2026-02-28T16:29:48Z
-updated_at: 2026-02-28T16:29:48Z
+updated_at: 2026-02-28T21:09:13Z
 parent: uac-wbq
 ---
 
@@ -33,3 +34,19 @@ Identify and convert test methods that differ only by input data into parameteri
 - `swift test` passes with no regressions
 - Test count remains the same (parameterized tests expand at runtime)
 - Each parameterized test case has a descriptive label
+
+
+
+## Summary of Changes
+
+Added `FormatCase` struct to `FormatTestHelper.swift` for parameterized test support. Converted 4 test files:
+
+| File | Before | After | Parameterized |
+|------|--------|-------|---------------|
+| YodaConditionsTests | 50 methods | 3 methods | 48 cases |
+| SpaceAroundParensTests | 65 methods | 15 methods | 51 cases |
+| SpaceAroundOperatorsTests | 122 methods | 51 methods | 72 cases |
+| RedundantParensTests | 178 methods | 31 methods | 124 cases |
+| **Total** | **415 methods** | **100 methods** | **295 cases** |
+
+Tests with `exclude:` or `options:` parameters kept as individual `@Test func` methods since `FormatRule` is not `Sendable`.

@@ -1,11 +1,11 @@
 ---
 # o2q-4qz
 title: Add custom SuiteTrait for RuleRegistry initialization
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-02-28T16:29:47Z
-updated_at: 2026-02-28T19:53:23Z
+updated_at: 2026-02-28T20:40:44Z
 parent: uac-wbq
 ---
 
@@ -60,6 +60,21 @@ Create a `RulesRegistered` SuiteTrait using `TestScoping` that replaces the iden
 6. **`flatMap` with async closures**: `[Example].flatMap { violations($0) }` doesn't work when `violations` is async. Must rewrite as `for` loops.
 
 ### Still Needed
-- [ ] Run full test suite to verify no regressions (suite is ~100k lines, needs >10 min)
-- [ ] Consider `FormatGlobalsInitialized` trait (deferred — `_initFormatGlobals` already works fine inside `testFormatting()`)
-- [ ] Verify no `SwiftLintFile` references remain in test files
+- [x] Run full test suite to verify no regressions (suite is ~100k lines, needs >10 min)
+- [x] Consider `FormatGlobalsInitialized` trait (deferred — `_initFormatGlobals` already works fine inside `testFormatting()`)
+- [x] Verify no `SwiftLintFile` references remain in test files
+
+
+## Summary of Changes
+
+- Created `TestTraits.swift` with `RulesRegistered` SuiteTrait using `TestScoping`
+- Replaced `init() { RuleRegistry.registerAllRulesOnce() }` with `@Suite(.rulesRegistered)` in 110 test files
+- Fixed pre-existing test failures:
+  - `RegionTests`: Updated character offsets for `sm:` prefix (was still using `swiftlint:` lengths)
+  - `FileNameRuleTests`: Added `Notification.Name` declarations to empty fixture files
+  - `QueuedPrint.swift`: Added `_ in` for `Mutex.withLock` closures
+  - `nsrangeToIndexRange` → `nsRangeToIndexRange` casing in 3 files
+  - `Request.send()`: Fixed typed throws through `Mutex.withLock` using `Result`
+- `sourcekitdFailed` getter no longer triggers SourceKit initialization (prevents unnecessary loading)
+- `FormatGlobalsInitialized` trait deferred — `_initFormatGlobals` works fine per-call
+- SIGSEGV crash remains (tracked in wvf-6t1, upstream apple/swift#55112)

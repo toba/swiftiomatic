@@ -1,17 +1,17 @@
 import Foundation
 
 extension FormatRule {
-    /// Deprecated
-    static let sortedImports = FormatRule(
-        help: "Sort import statements alphabetically.",
-        deprecationMessage: "Use sortImports instead.",
-        options: ["import-grouping"],
-        sharedOptions: ["linebreaks"],
-    ) { formatter in
-        _ = formatter.options.importGrouping
-        _ = formatter.options.linebreak
-        FormatRule.sortImports.apply(with: formatter)
-    } examples: {
-        nil
-    }
+  /// Deprecated
+  static let sortedImports = FormatRule(
+    help: "Sort import statements alphabetically.",
+    deprecationMessage: "Use sortImports instead.",
+    options: ["import-grouping"],
+    sharedOptions: ["linebreaks"],
+  ) { formatter in
+    _ = formatter.options.importGrouping
+    _ = formatter.options.linebreak
+    FormatRule.sortImports.apply(with: formatter)
+  } examples: {
+    nil
+  }
 }

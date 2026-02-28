@@ -1,48 +1,48 @@
 import SwiftSyntax
 
 struct NoFallthroughOnlyRule: Rule {
-    var configuration = SeverityConfiguration<Self>(.warning)
+  var configuration = SeverityConfiguration<Self>(.warning)
 
-    static let description = RuleDescription(
-        identifier: "no_fallthrough_only",
-        name: "No Fallthrough only",
-        description:
-        "Fallthroughs can only be used if the `case` contains at least one other statement",
-        kind: .idiomatic,
-        nonTriggeringExamples: NoFallthroughOnlyRuleExamples.nonTriggeringExamples,
-        triggeringExamples: NoFallthroughOnlyRuleExamples.triggeringExamples,
-    )
+  static let description = RuleDescription(
+    identifier: "no_fallthrough_only",
+    name: "No Fallthrough only",
+    description:
+      "Fallthroughs can only be used if the `case` contains at least one other statement",
+    kind: .idiomatic,
+    nonTriggeringExamples: NoFallthroughOnlyRuleExamples.nonTriggeringExamples,
+    triggeringExamples: NoFallthroughOnlyRuleExamples.triggeringExamples,
+  )
 }
 
 extension NoFallthroughOnlyRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
-        Visitor(configuration: configuration, file: file)
-    }
+  func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType> {
+    Visitor(configuration: configuration, file: file)
+  }
 }
 
-private extension NoFallthroughOnlyRule {
-    final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
-        override func visitPost(_ node: SwitchCaseListSyntax) {
-            let cases = node.compactMap { $0.as(SwitchCaseSyntax.self) }
+extension NoFallthroughOnlyRule {
+  fileprivate final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
+    override func visitPost(_ node: SwitchCaseListSyntax) {
+      let cases = node.compactMap { $0.as(SwitchCaseSyntax.self) }
 
-            let localViolations = cases.enumerated()
-                .compactMap { index, element -> AbsolutePosition? in
-                    if let fallthroughStmt = element.statements.onlyElement?.item.as(
-                        FallThroughStmtSyntax.self,
-                    ) {
-                        if case let nextCaseIndex = cases.index(after: index),
-                           nextCaseIndex < cases.endIndex,
-                           case let nextCase = cases[nextCaseIndex],
-                           nextCase.attribute != nil
-                        {
-                            return nil
-                        }
-                        return fallthroughStmt.positionAfterSkippingLeadingTrivia
-                    }
-                    return nil
-                }
-
-            violations.append(contentsOf: localViolations)
+      let localViolations = cases.enumerated()
+        .compactMap { index, element -> AbsolutePosition? in
+          if let fallthroughStmt = element.statements.onlyElement?.item.as(
+            FallThroughStmtSyntax.self,
+          ) {
+            if case let nextCaseIndex = cases.index(after: index),
+              nextCaseIndex < cases.endIndex,
+              case let nextCase = cases[nextCaseIndex],
+              nextCase.attribute != nil
+            {
+              return nil
+            }
+            return fallthroughStmt.positionAfterSkippingLeadingTrivia
+          }
+          return nil
         }
+
+      violations.append(contentsOf: localViolations)
     }
+  }
 }

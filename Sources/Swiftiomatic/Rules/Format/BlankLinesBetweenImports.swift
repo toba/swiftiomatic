@@ -1,40 +1,40 @@
 import Foundation
 
 extension FormatRule {
-    /// Remove blank lines between import statements
-    static let blankLinesBetweenImports = FormatRule(
-        help: "Remove blank lines between import statements.",
-        sharedOptions: ["linebreaks"],
-    ) { formatter in
-        formatter.forEach(.keyword("import")) { currentImportIndex, _ in
-            guard let endOfLine = formatter.index(of: .linebreak, after: currentImportIndex),
-                  let nextImportIndex = formatter.index(
-                      of: .nonSpaceOrLinebreak, after: endOfLine,
-                      if: {
-                          $0 == .keyword("@testable") || $0 == .keyword("import")
-                      },
-                  )
-            else {
-                return
-            }
+  /// Remove blank lines between import statements
+  static let blankLinesBetweenImports = FormatRule(
+    help: "Remove blank lines between import statements.",
+    sharedOptions: ["linebreaks"],
+  ) { formatter in
+    formatter.forEach(.keyword("import")) { currentImportIndex, _ in
+      guard let endOfLine = formatter.index(of: .linebreak, after: currentImportIndex),
+        let nextImportIndex = formatter.index(
+          of: .nonSpaceOrLinebreak, after: endOfLine,
+          if: {
+            $0 == .keyword("@testable") || $0 == .keyword("import")
+          },
+        )
+      else {
+        return
+      }
 
-            formatter.replaceTokens(
-                in: endOfLine ..< nextImportIndex,
-                with: formatter.linebreakToken(for: currentImportIndex + 1),
-            )
-        }
-    } examples: {
-        """
-        ```diff
-          import A
-        -
-          import B
-          import C
-        -
-        -
-          @testable import D
-          import E
-        ```
-        """
+      formatter.replaceTokens(
+        in: endOfLine..<nextImportIndex,
+        with: formatter.linebreakToken(for: currentImportIndex + 1),
+      )
     }
+  } examples: {
+    """
+    ```diff
+      import A
+    -
+      import B
+      import C
+    -
+    -
+      @testable import D
+      import E
+    ```
+    """
+  }
 }

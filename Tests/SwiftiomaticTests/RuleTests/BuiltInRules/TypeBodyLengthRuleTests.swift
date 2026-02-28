@@ -2,7 +2,7 @@ import Testing
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct TypeBodyLengthRuleTests {
-    @Test func warning() async {
+    @Test func warning() async throws {
         let example = Example(
             """
             actor A {
@@ -14,7 +14,7 @@ import Testing
         )
 
         #expect(
-            await violations(example, configuration: ["warning": 2, "error": 4]) == [
+            try await violations(example, configuration: ["warning": 2, "error": 4]) == [
                 RuleViolation(
                     ruleDescription: TypeBodyLengthRule.description,
                     severity: .warning,
@@ -28,7 +28,7 @@ import Testing
         )
     }
 
-    @Test func error() async {
+    @Test func error() async throws {
         let example = Example(
             """
             class C {
@@ -40,7 +40,7 @@ import Testing
         )
 
         #expect(
-            await violations(example, configuration: ["warning": 1, "error": 2]) == [
+            try await violations(example, configuration: ["warning": 1, "error": 2]) == [
                 RuleViolation(
                     ruleDescription: TypeBodyLengthRule.description,
                     severity: .error,
@@ -54,10 +54,10 @@ import Testing
         )
     }
 
-    @Test func violationMessages() async {
+    @Test func violationMessages() async throws {
         var allViolations: [RuleViolation] = []
         for example in TypeBodyLengthRule.description.triggeringExamples {
-            allViolations.append(contentsOf: await violations(example, configuration: ["warning": 2]))
+            allViolations.append(contentsOf: try await violations(example, configuration: ["warning": 2]))
         }
         let types = allViolations.compactMap {
             $0.reason.split(separator: " ", maxSplits: 1).first
@@ -68,8 +68,8 @@ import Testing
         )
     }
 
-    private func violations(_ example: Example, configuration: Any? = nil) async -> [RuleViolation] {
-        let config = makeConfig(configuration, TypeBodyLengthRule.identifier)!
+    private func violations(_ example: Example, configuration: Any? = nil) async throws -> [RuleViolation] {
+        let config = try #require(makeConfig(configuration, TypeBodyLengthRule.identifier))
         return await SwiftiomaticTests.violations(example, config: config)
     }
 }

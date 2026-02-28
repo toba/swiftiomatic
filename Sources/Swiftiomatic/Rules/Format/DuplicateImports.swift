@@ -1,43 +1,43 @@
 import Foundation
 
 extension FormatRule {
-    /// Remove duplicate import statements
-    static let duplicateImports = FormatRule(
-        help: "Remove duplicate import statements.",
-    ) { formatter in
-        for var importRanges in formatter.parseImports().reversed() {
-            for i in importRanges.indices.reversed() {
-                let range = importRanges.remove(at: i)
-                guard let j = importRanges.firstIndex(where: { $0.module == range.module }) else {
-                    continue
-                }
-                let range2 = importRanges[j]
-                if Set(range.attributes).isSubset(of: range2.attributes) {
-                    formatter.removeTokens(in: range.range)
-                    continue
-                }
-                if j >= i {
-                    formatter.removeTokens(in: range2.range)
-                    importRanges.remove(at: j)
-                }
-                importRanges.append(range)
-            }
+  /// Remove duplicate import statements
+  static let duplicateImports = FormatRule(
+    help: "Remove duplicate import statements.",
+  ) { formatter in
+    for var importRanges in formatter.parseImports().reversed() {
+      for i in importRanges.indices.reversed() {
+        let range = importRanges.remove(at: i)
+        guard let j = importRanges.firstIndex(where: { $0.module == range.module }) else {
+          continue
         }
-    } examples: {
-        """
-        ```diff
-          import Foo
-          import Bar
-        - import Foo
-        ```
-
-        ```diff
-          import B
-          #if os(iOS)
-            import A
-        -   import B
-          #endif
-        ```
-        """
+        let range2 = importRanges[j]
+        if Set(range.attributes).isSubset(of: range2.attributes) {
+          formatter.removeTokens(in: range.range)
+          continue
+        }
+        if j >= i {
+          formatter.removeTokens(in: range2.range)
+          importRanges.remove(at: j)
+        }
+        importRanges.append(range)
+      }
     }
+  } examples: {
+    """
+    ```diff
+      import Foo
+      import Bar
+    - import Foo
+    ```
+
+    ```diff
+      import B
+      #if os(iOS)
+        import A
+    -   import B
+      #endif
+    ```
+    """
+  }
 }

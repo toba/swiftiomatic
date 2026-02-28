@@ -1,99 +1,99 @@
 import Foundation
 
 extension FormatRule {
-    /// Strip redundant `.init` from type instantiations
-    static let redundantInit = FormatRule(
-        help: "Remove explicit `init` if not required.",
-        orderAfter: [.propertyTypes],
-    ) { formatter in
-        formatter.forEach(.identifier("init")) { initIndex, _ in
-            guard
-                let dotIndex = formatter.index(
-                    of: .nonSpaceOrCommentOrLinebreak, before: initIndex,
-                    if: {
-                        $0.isOperator(".")
-                    },
-                ),
-                let openParenOrOpenBraceIndex = formatter.index(
-                    of: .nonSpaceOrLinebreak, after: initIndex,
-                    if: {
-                        $0 == .startOfScope("(") || $0 == .startOfScope("{")
-                    },
-                ),
-                let closeParenOrCloseBraceIndex = formatter
-                .endOfScope(at: openParenOrOpenBraceIndex),
-                formatter.last(.nonSpaceOrCommentOrLinebreak, before: closeParenOrCloseBraceIndex)
-                != .delimiter(":"),
-                let prevIndex = formatter.index(
-                    of: .nonSpaceOrCommentOrLinebreak,
-                    before: dotIndex,
-                ),
-                let prevToken = formatter.token(at: prevIndex),
-                formatter.isValidEndOfType(at: prevIndex),
-                // Find and parse the type that comes before the .init call
-                let startOfTypeIndex = Array(0 ..< dotIndex).reversed().last(where: { typeIndex in
-                    guard let type = formatter.parseType(at: typeIndex) else { return false }
-                    return
-                        (formatter.index(
-                            of: .nonSpaceOrCommentOrLinebreak,
-                            after: type.range.upperBound,
-                        )
-                            == dotIndex
-                            // Since `Foo.init` is potentially a valid type, the `.init` may be parsed as part of the type name
-                            || type.range.upperBound == initIndex)
-                        // If this is actually a method call like `type(of: foo).init()`, the token before the "type"
-                        // (which in this case looks like a tuple) will be an identifier.
-                        &&
-                        !(formatter.last(.nonSpaceOrComment, before: typeIndex)?
-                            .isIdentifier ?? false)
-                }),
-                let type = formatter.parseType(at: startOfTypeIndex),
-                // Filter out values that start with a lowercase letter.
-                // This covers edge cases like `super.init()`, where the `init` is not redundant.
-                let firstChar = type.string.components(separatedBy: ".").last?.first,
-                firstChar != "$",
-                String(firstChar).uppercased() == String(firstChar)
-            else { return }
-
-            let lineStart = formatter.startOfLine(at: prevIndex, excludingIndent: true)
-            if [.startOfScope("#if"), .keyword("#elseif")].contains(formatter.tokens[lineStart]) {
-                return
-            }
-            var j = dotIndex
-            while let prevIndex = formatter.index(
-                of: prevToken, before: j,
+  /// Strip redundant `.init` from type instantiations
+  static let redundantInit = FormatRule(
+    help: "Remove explicit `init` if not required.",
+    orderAfter: [.propertyTypes],
+  ) { formatter in
+    formatter.forEach(.identifier("init")) { initIndex, _ in
+      guard
+        let dotIndex = formatter.index(
+          of: .nonSpaceOrCommentOrLinebreak, before: initIndex,
+          if: {
+            $0.isOperator(".")
+          },
+        ),
+        let openParenOrOpenBraceIndex = formatter.index(
+          of: .nonSpaceOrLinebreak, after: initIndex,
+          if: {
+            $0 == .startOfScope("(") || $0 == .startOfScope("{")
+          },
+        ),
+        let closeParenOrCloseBraceIndex =
+          formatter
+          .endOfScope(at: openParenOrOpenBraceIndex),
+        formatter.last(.nonSpaceOrCommentOrLinebreak, before: closeParenOrCloseBraceIndex)
+          != .delimiter(":"),
+        let prevIndex = formatter.index(
+          of: .nonSpaceOrCommentOrLinebreak,
+          before: dotIndex,
+        ),
+        let prevToken = formatter.token(at: prevIndex),
+        formatter.isValidEndOfType(at: prevIndex),
+        // Find and parse the type that comes before the .init call
+        let startOfTypeIndex = Array(0..<dotIndex).reversed().last(where: { typeIndex in
+          guard let type = formatter.parseType(at: typeIndex) else { return false }
+          return
+            (formatter.index(
+              of: .nonSpaceOrCommentOrLinebreak,
+              after: type.range.upperBound,
             )
-                ?? formatter.index(
-                    of: .startOfScope, before: j,
-                )
-            {
-                j = prevIndex
-                if prevToken == formatter.tokens[prevIndex],
-                   let prevPrevToken = formatter.last(
-                       .nonSpaceOrCommentOrLinebreak, before: prevIndex,
-                   ), [.keyword("let"), .keyword("var")].contains(prevPrevToken)
-                {
-                    return
-                }
-            }
+            == dotIndex
+            // Since `Foo.init` is potentially a valid type, the `.init` may be parsed as part of the type name
+            || type.range.upperBound == initIndex)
+            // If this is actually a method call like `type(of: foo).init()`, the token before the "type"
+            // (which in this case looks like a tuple) will be an identifier.
+            && !(formatter.last(.nonSpaceOrComment, before: typeIndex)?
+              .isIdentifier ?? false)
+        }),
+        let type = formatter.parseType(at: startOfTypeIndex),
+        // Filter out values that start with a lowercase letter.
+        // This covers edge cases like `super.init()`, where the `init` is not redundant.
+        let firstChar = type.string.components(separatedBy: ".").last?.first,
+        firstChar != "$",
+        String(firstChar).uppercased() == String(firstChar)
+      else { return }
 
-            if formatter.tokens[openParenOrOpenBraceIndex] == .startOfScope("(") {
-                formatter.removeTokens(in: initIndex + 1 ..< openParenOrOpenBraceIndex)
-            }
-
-            let endOfTypeIndex =
-                (startOfTypeIndex ..< dotIndex).last(where: {
-                    formatter.tokens[$0].isNonSpaceOrCommentOrLinebreak
-                }) ?? startOfTypeIndex
-
-            formatter.removeTokens(in: (endOfTypeIndex + 1) ... initIndex)
+      let lineStart = formatter.startOfLine(at: prevIndex, excludingIndent: true)
+      if [.startOfScope("#if"), .keyword("#elseif")].contains(formatter.tokens[lineStart]) {
+        return
+      }
+      var j = dotIndex
+      while let prevIndex = formatter.index(
+        of: prevToken, before: j,
+      )
+        ?? formatter.index(
+          of: .startOfScope, before: j,
+        )
+      {
+        j = prevIndex
+        if prevToken == formatter.tokens[prevIndex],
+          let prevPrevToken = formatter.last(
+            .nonSpaceOrCommentOrLinebreak, before: prevIndex,
+          ), [.keyword("let"), .keyword("var")].contains(prevPrevToken)
+        {
+          return
         }
-    } examples: {
-        """
-        ```diff
-        - String.init("text")
-        + String("text")
-        ```
-        """
+      }
+
+      if formatter.tokens[openParenOrOpenBraceIndex] == .startOfScope("(") {
+        formatter.removeTokens(in: initIndex + 1..<openParenOrOpenBraceIndex)
+      }
+
+      let endOfTypeIndex =
+        (startOfTypeIndex..<dotIndex).last(where: {
+          formatter.tokens[$0].isNonSpaceOrCommentOrLinebreak
+        }) ?? startOfTypeIndex
+
+      formatter.removeTokens(in: (endOfTypeIndex + 1)...initIndex)
     }
+  } examples: {
+    """
+    ```diff
+    - String.init("text")
+    + String("text")
+    ```
+    """
+  }
 }

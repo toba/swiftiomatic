@@ -1,6 +1,21 @@
 import Testing
 @testable import Swiftiomatic
 
+/// A test case for parameterized `testFormatting(for:_:rule:)` tests.
+///
+/// When `output` is `nil`, the test asserts no change (input is already formatted).
+struct FormatCase: CustomTestStringConvertible, Sendable {
+    let testDescription: String
+    let input: String
+    let output: String?
+
+    init(_ label: String, input: String, output: String? = nil) {
+        self.testDescription = label
+        self.input = input
+        self.output = output
+    }
+}
+
 // Eagerly initialize format globals to avoid lazy-init races during parallel tests.
 private let _initFormatGlobals: Void = {
     _ = FormatRules.all

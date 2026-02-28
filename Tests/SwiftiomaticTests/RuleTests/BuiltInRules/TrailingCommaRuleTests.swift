@@ -2,7 +2,7 @@ import Testing
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct TrailingCommaRuleTests {
-    @Test func trailingCommaRuleWithDefaultConfiguration() async {
+    @Test func trailingCommaRuleWithDefaultConfiguration() async throws {
         // Verify TrailingCommaRule with test values for when mandatory_comma is false (default).
         let triggeringExamples =
             TrailingCommaRule.description.triggeringExamples + [
@@ -15,7 +15,7 @@ import Testing
         // Ensure the rule produces the correct reason string.
         let failingCase = Example("let array = [\n\t1,\n\t2,\n]\n")
         #expect(
-            await trailingCommaViolations(failingCase).first?.reason
+            try await trailingCommaViolations(failingCase).first?.reason
                 == "Collection literals should not have trailing commas",
         )
     }
@@ -63,7 +63,7 @@ import Testing
         .with(triggeringExamples: TrailingCommaRuleTests.triggeringExamples)
         .with(corrections: TrailingCommaRuleTests.corrections)
 
-    @Test func trailingCommaRuleWithMandatoryComma() async {
+    @Test func trailingCommaRuleWithMandatoryComma() async throws {
         // Verify TrailingCommaRule with test values for when mandatory_comma is true.
         let ruleDescription = mandatoryCommaRuleDescription
         let ruleConfiguration = ["mandatory_comma": true]
@@ -73,15 +73,15 @@ import Testing
         // Ensure the rule produces the correct reason string.
         let failingCase = Example("let array = [\n\t1,\n\t2\n]\n")
         #expect(
-            await trailingCommaViolations(failingCase, ruleConfiguration: ruleConfiguration).first?.reason
+            try await trailingCommaViolations(failingCase, ruleConfiguration: ruleConfiguration).first?.reason
                 == "Multi-line collection literals should have trailing commas",
         )
     }
 
     private func trailingCommaViolations(_ example: Example, ruleConfiguration: Any? = nil)
-        async -> [RuleViolation]
+        async throws -> [RuleViolation]
     {
-        let config = makeConfig(ruleConfiguration, TrailingCommaRule.identifier)!
+        let config = try #require(makeConfig(ruleConfiguration, TrailingCommaRule.identifier))
         return await violations(example, config: config)
     }
 }

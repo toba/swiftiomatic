@@ -7,7 +7,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileNameNoSpaceRuleFixt
     private func validate(fileName: String, excludedOverride: [String]? = nil) throws
         -> [RuleViolation]
     {
-        let file = SwiftSource(path: fixturesDirectory.stringByAppendingPathComponent(fileName))!
+        let file = try #require(SwiftSource(path: fixturesDirectory.stringByAppendingPathComponent(fileName)))
         let rule: FileNameNoSpaceRule
         if let excluded = excludedOverride {
             rule = try FileNameNoSpaceRule(configuration: ["excluded": excluded])

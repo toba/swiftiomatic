@@ -102,6 +102,13 @@ Content with code examples:
 ![Image alt text](image-name)
 ```
 
+## Project Conventions
+
+This project follows specific DocC patterns. See [references/swiftiomatic-conventions.md](references/swiftiomatic-conventions.md) for project-specific rules including:
+- Where documentation lives in the single-module structure
+- How to document rules and analysis categories
+- Cross-referencing between rule types and configuration
+
 ## Layout Directives
 
 For rich layouts beyond standard Markdown:
@@ -142,7 +149,5 @@ For rich layouts beyond standard Markdown:
 Build documentation to check for errors:
 
 ```bash
-# In Xcode: Product → Build Documentation
-# Or via command line:
-xcodebuild docbuild -scheme SchemeName
+swift package generate-documentation --target Swiftiomatic
 ```
