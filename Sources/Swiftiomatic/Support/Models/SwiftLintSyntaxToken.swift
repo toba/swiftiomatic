@@ -1,19 +1,18 @@
-import SourceKittenFramework
 
 /// A SwiftLint-aware Swift syntax token.
 struct SwiftLintSyntaxToken {
-    /// The raw `SyntaxToken` obtained by SourceKitten.
+    /// The raw `SyntaxToken` obtained by SourceKit.
     let value: SyntaxToken
 
     /// The syntax kind associated with is token.
-    let kind: SyntaxKind?
+    let kind: SourceKitSyntaxKind?
 
-    /// Creates a `SwiftLintSyntaxToken` from the raw `SyntaxToken` obtained by SourceKitten.
+    /// Creates a `SwiftLintSyntaxToken` from the raw `SyntaxToken` obtained by SourceKit.
     ///
-    /// - parameter value: The raw `SyntaxToken` obtained by SourceKitten.
+    /// - parameter value: The raw `SyntaxToken` obtained by SourceKit.
     init(value: SyntaxToken) {
         self.value = value
-        kind = SyntaxKind(rawValue: value.type)
+        kind = SourceKitSyntaxKind(rawValue: value.type)
     }
 
     /// The byte range in a source file for this token.
@@ -34,7 +33,7 @@ struct SwiftLintSyntaxToken {
 
 extension [SwiftLintSyntaxToken] {
     /// The kinds for these tokens.
-    var kinds: [SyntaxKind] {
+    var kinds: [SourceKitSyntaxKind] {
         compactMap(\.kind)
     }
 }

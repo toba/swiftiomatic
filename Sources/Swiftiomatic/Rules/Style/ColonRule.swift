@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 struct ColonRule: SubstitutionCorrectableRule, SourceKitFreeRule {
     var configuration = ColonConfiguration()

@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct FileNameConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")

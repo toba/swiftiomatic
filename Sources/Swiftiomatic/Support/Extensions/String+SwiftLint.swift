@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 extension String {
     func hasTrailingWhitespace() -> Bool {

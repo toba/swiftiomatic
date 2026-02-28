@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 // swiftlint:disable file_length
 
@@ -483,18 +482,10 @@ struct CollectedLinter: @unchecked Sendable {
     }
 
     /// Formats the file associated with this linter.
-    ///
-    /// - parameter useTabs:     Should the file be formatted using tabs?
-    /// - parameter indentWidth: How many spaces should be used per indentation level.
+    /// Note: SourceKit-based formatting was removed with SourceKit vendoring.
+    /// Use the SwiftFormat engine for formatting instead.
     func format(useTabs: Bool, indentWidth: Int) {
-        let formattedContents = try? file.file.format(
-            trimmingTrailingWhitespace: true,
-            useTabs: useTabs,
-            indentWidth: indentWidth,
-        )
-        if let formattedContents {
-            file.write(formattedContents)
-        }
+        // No-op: SourceKit-based formatting removed.
     }
 
     private func undefinedSuperfluousCommandViolations(

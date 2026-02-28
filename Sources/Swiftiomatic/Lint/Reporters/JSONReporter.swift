@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 /// Reports violations as a JSON array.
 struct JSONReporter: Reporter {

@@ -1,13 +1,12 @@
-import SourceKittenFramework
 
 /// Represents a Swift file's syntax information.
 struct SwiftLintSyntaxMap {
     /// The SwiftLint-specific syntax tokens for this syntax map.
     let tokens: [SwiftLintSyntaxToken]
 
-    /// Creates a `SwiftLintSyntaxMap` from the raw `SyntaxMap` obtained by SourceKitten.
+    /// Creates a `SwiftLintSyntaxMap` from the raw `SyntaxMap` obtained by SourceKit.
     ///
-    /// - parameter value: The raw `SyntaxMap` obtained by SourceKitten.
+    /// - parameter value: The raw `SyntaxMap` obtained by SourceKit.
     init(value: SyntaxMap) {
         tokens = value.tokens.map(SwiftLintSyntaxToken.init)
     }
@@ -44,7 +43,7 @@ struct SwiftLintSyntaxMap {
     /// - parameter byteRange: Byte range.
     ///
     /// - returns: The syntax kinds in the specified byte range.
-    func kinds(inByteRange byteRange: ByteRange) -> [SyntaxKind] {
+    func kinds(inByteRange byteRange: ByteRange) -> [SourceKitSyntaxKind] {
         tokens(inByteRange: byteRange).compactMap(\.kind)
     }
 }

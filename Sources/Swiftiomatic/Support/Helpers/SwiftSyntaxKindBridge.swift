@@ -1,14 +1,12 @@
 import SwiftSyntax
 import SwiftIDEUtils
-import SourceKittenFramework
 
-/// Bridge to convert SwiftSyntax classifications to SourceKitten syntax kinds.
+/// Bridge to convert SwiftSyntax classifications to SourceKit syntax kinds.
 /// This enables SwiftSyntax-based custom rules to work with kind filtering
 /// without making any SourceKit calls.
 enum SwiftSyntaxKindBridge {
-    /// Map a SwiftSyntax classification to SourceKitten syntax kind.
-    static func mapClassification(_ classification: SyntaxClassification) -> SourceKittenFramework
-        .SyntaxKind?
+    /// Map a SwiftSyntax classification to SourceKit syntax kind.
+    static func mapClassification(_ classification: SyntaxClassification) -> SourceKitSyntaxKind?
     {
         // swiftlint:disable:previous cyclomatic_complexity
         switch classification {
@@ -43,14 +41,14 @@ enum SwiftSyntaxKindBridge {
         }
     }
 
-    /// Convert SwiftSyntax syntax classifications to SourceKitten-compatible syntax tokens.
-    static func sourceKittenSyntaxKinds(for file: SwiftLintFile) -> [SwiftLintSyntaxToken] {
+    /// Convert SwiftSyntax syntax classifications to SourceKit-compatible syntax tokens.
+    static func sourceKitSyntaxKinds(for file: SwiftLintFile) -> [SwiftLintSyntaxToken] {
         file.syntaxClassifications.compactMap { classifiedRange in
             guard let syntaxKind = mapClassification(classifiedRange.kind) else {
                 return nil
             }
 
-            let byteRange = classifiedRange.range.toSourceKittenByteRange()
+            let byteRange = classifiedRange.range.toSourceKitByteRange()
             let token = SyntaxToken(
                 type: syntaxKind.rawValue,
                 offset: byteRange.location,

@@ -1,9 +1,8 @@
-import SourceKittenFramework
 
 /// A collection of keys and values as parsed out of SourceKit, with many conveniences for accessing SwiftLint-specific
 /// values.
-struct SourceKittenDictionary {
-    /// The underlying SourceKitten dictionary.
+struct SourceKitDictionary {
+    /// The underlying SourceKit dictionary.
     let value: [String: any SourceKitRepresentable]
     /// The cached substructure for this dictionary. Empty if there is no substructure.
     let substructure: [Self]
@@ -18,7 +17,7 @@ struct SourceKittenDictionary {
     /// The accessibility level for this dictionary, if it is a declaration.
     let accessibility: AccessControlLevel?
 
-    /// Creates a SourceKitten dictionary given a `Dictionary<String, SourceKitRepresentable>` input.
+    /// Creates a SourceKit dictionary given a `Dictionary<String, SourceKitRepresentable>` input.
     ///
     /// - parameter value: The input dictionary/
     init(_ value: [String: any SourceKitRepresentable]) {
@@ -120,7 +119,7 @@ struct SourceKittenDictionary {
             .compactMap(SwiftDeclarationAttributeKind.init(rawValue:))
     }
 
-    /// The fully preserved SourceKitten dictionaries for all the attributes associated with this dictionary.
+    /// The fully preserved SourceKit dictionaries for all the attributes associated with this dictionary.
     var swiftAttributes: [Self] {
         let array = value["key.attributes"] as? [any SourceKitRepresentable] ?? []
         return array.compactMap { $0 as? [String: any SourceKitRepresentable] }
@@ -174,11 +173,11 @@ struct SourceKittenDictionary {
     }
 }
 
-extension SourceKittenDictionary {
+extension SourceKitDictionary {
     /// Block executed for every encountered entity during traversal of a dictionary.
     typealias TraverseBlock<T> = (
-        _ parent: SourceKittenDictionary,
-        _ entity: SourceKittenDictionary,
+        _ parent: SourceKitDictionary,
+        _ entity: SourceKitDictionary,
     )
         -> T?
 
@@ -188,7 +187,7 @@ extension SourceKittenDictionary {
     /// - parameter traverseBlock: block that will be called for each substructure in the dictionary.
     ///
     /// - returns: The list of substructure dictionaries with updated values from the traverse block.
-    func traverseDepthFirst<T>(traverseBlock: (SourceKittenDictionary) -> [T]?) -> [T] {
+    func traverseDepthFirst<T>(traverseBlock: (SourceKitDictionary) -> [T]?) -> [T] {
         var result: [T] = []
         traverseDepthFirst(collectingValuesInto: &result, traverseBlock: traverseBlock)
         return result
@@ -196,7 +195,7 @@ extension SourceKittenDictionary {
 
     private func traverseDepthFirst<T>(
         collectingValuesInto array: inout [T],
-        traverseBlock: (SourceKittenDictionary) -> [T]?,
+        traverseBlock: (SourceKitDictionary) -> [T]?,
     ) {
         for subDict in substructure {
             subDict.traverseDepthFirst(collectingValuesInto: &array, traverseBlock: traverseBlock)

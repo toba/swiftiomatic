@@ -1,6 +1,5 @@
 import Darwin.POSIX
 import Foundation
-import SourceKittenFramework
 
 /// An interface for enumerating files that can be linted by SwiftLint.
 protocol LintableFileManager: Sendable {

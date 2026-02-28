@@ -1,4 +1,3 @@
-@preconcurrency import SourceKittenFramework
 
 extension SwiftDeclarationKind {
     static let functionKinds: Set<SwiftDeclarationKind> = [

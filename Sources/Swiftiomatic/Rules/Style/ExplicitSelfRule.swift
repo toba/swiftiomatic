@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -104,7 +103,7 @@ extension SwiftLintFile {
             // prefixes `$` and `_`), while `key.name` contains the prefix. Hence we need to check for explicit access
             // at a corrected offset as well.
             var prefixLength: Int64 = 0
-            let sourceKittenDictionary = SourceKittenDictionary(cursorInfo)
+            let sourceKittenDictionary = SourceKitDictionary(cursorInfo)
             if sourceKittenDictionary.kind == "source.lang.swift.ref.var.instance",
                let name = sourceKittenDictionary.name,
                let length = sourceKittenDictionary.length

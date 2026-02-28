@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct TypesafeArrayInitRule: AnalyzerRule {
     var configuration = SeverityConfiguration<Self>(.warning)

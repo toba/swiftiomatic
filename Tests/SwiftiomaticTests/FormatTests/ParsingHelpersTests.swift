@@ -2387,7 +2387,7 @@ import Testing
         #expect(formatter.parseType(at: 5)?.string == "Foo!!")
     }
 
-    @Test func doesntParseTernaryOperatorAsType() {
+    @Test func doesNotParseTernaryOperatorAsType() {
         let formatter = Formatter(
             tokenize(
                 """
@@ -2398,7 +2398,7 @@ import Testing
         #expect(formatter.parseType(at: 0)?.string == "Foo.bar")
     }
 
-    @Test func doesntParseMacroInvocationAsType() {
+    @Test func doesNotParseMacroInvocationAsType() {
         let formatter = Formatter(
             tokenize(
                 """
@@ -2409,7 +2409,7 @@ import Testing
         #expect(formatter.parseType(at: 6) == nil)
     }
 
-    @Test func doesntParseSelectorAsType() {
+    @Test func doesNotParseSelectorAsType() {
         let formatter = Formatter(
             tokenize(
                 """
@@ -2420,7 +2420,7 @@ import Testing
         #expect(formatter.parseType(at: 6) == nil)
     }
 
-    @Test func doesntParseArrayAsType() {
+    @Test func doesNotParseArrayAsType() {
         let formatter = Formatter(
             tokenize(
                 """
@@ -2431,7 +2431,7 @@ import Testing
         #expect(formatter.parseType(at: 6) == nil)
     }
 
-    @Test func doesntParseDictionaryAsType() {
+    @Test func doesNotParseDictionaryAsType() {
         let formatter = Formatter(
             tokenize(
                 """
@@ -2656,7 +2656,7 @@ import Testing
         #expect(formatter.parseType(at: 5)?.string == "Foo.Bar.Baaz")
     }
 
-    @Test func doesntParseLeadingDotAsType() {
+    @Test func doesNotParseLeadingDotAsType() {
         let formatter = Formatter(
             tokenize(
                 """

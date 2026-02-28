@@ -3,13 +3,13 @@ enum VerticalParameterAlignmentRuleExamples {
         Example(
             """
             func validateFunction(_ file: SwiftLintFile, kind: SwiftDeclarationKind,
-                                  dictionary: SourceKittenDictionary) { }
+                                  dictionary: SourceKitDictionary) { }
             """,
         ),
         Example(
             """
             func validateFunction(_ file: SwiftLintFile, kind: SwiftDeclarationKind,
-                                  dictionary: SourceKittenDictionary) -> [StyleViolation]
+                                  dictionary: SourceKitDictionary) -> [StyleViolation]
             """,
         ),
         Example(
@@ -25,7 +25,7 @@ enum VerticalParameterAlignmentRuleExamples {
         Example(
             """
             func validateFunction(_ file: SwiftLintFile, kind: SwiftDeclarationKind,
-                                  dictionary: SourceKittenDictionary)
+                                  dictionary: SourceKitDictionary)
                                   -> [StyleViolation]
             """,
         ),
@@ -33,14 +33,14 @@ enum VerticalParameterAlignmentRuleExamples {
             """
             func validateFunction(
                _ file: SwiftLintFile, kind: SwiftDeclarationKind,
-               dictionary: SourceKittenDictionary) -> [StyleViolation]
+               dictionary: SourceKitDictionary) -> [StyleViolation]
             """,
         ),
         Example(
             """
             func validateFunction(
                _ file: SwiftLintFile, kind: SwiftDeclarationKind,
-               dictionary: SourceKittenDictionary
+               dictionary: SourceKitDictionary
             ) -> [StyleViolation]
             """,
         ),
@@ -92,20 +92,20 @@ enum VerticalParameterAlignmentRuleExamples {
         Example(
             """
             func validateFunction(_ file: SwiftLintFile, kind: SwiftDeclarationKind,
-                              ↓dictionary: SourceKittenDictionary) { }
+                              ↓dictionary: SourceKitDictionary) { }
             """,
         ),
         Example(
             """
             func validateFunction(_ file: SwiftLintFile, kind: SwiftDeclarationKind,
-                                   ↓dictionary: SourceKittenDictionary) { }
+                                   ↓dictionary: SourceKitDictionary) { }
             """,
         ),
         Example(
             """
             func validateFunction(_ file: SwiftLintFile,
                               ↓kind: SwiftDeclarationKind,
-                              ↓dictionary: SourceKittenDictionary) { }
+                              ↓dictionary: SourceKitDictionary) { }
             """,
         ),
         Example(

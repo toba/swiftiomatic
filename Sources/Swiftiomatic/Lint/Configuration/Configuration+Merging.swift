@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 // GENERAL NOTE ON MERGING: The child configuration is added on top of the parent configuration
 // and is preferred in case of conflicts!

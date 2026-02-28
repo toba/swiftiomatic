@@ -1,4 +1,3 @@
-import SourceKittenFramework
 
 extension SwiftDeclarationAttributeKind {
     static var attributesRequiringFoundation: Set<SwiftDeclarationAttributeKind> {

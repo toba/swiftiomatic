@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 struct CommaRule: CorrectableRule, SourceKitFreeRule {
     var configuration = SeverityConfiguration<Self>(.warning)

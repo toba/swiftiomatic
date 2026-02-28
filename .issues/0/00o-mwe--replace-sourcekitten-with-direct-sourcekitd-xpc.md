@@ -1,11 +1,11 @@
 ---
 # 00o-mwe
 title: Replace SourceKitten with direct sourcekitd XPC
-status: ready
+status: completed
 type: feature
 priority: normal
 created_at: 2026-02-28T03:08:16Z
-updated_at: 2026-02-28T03:08:16Z
+updated_at: 2026-02-28T16:16:09Z
 ---
 
 ## Problem
@@ -54,3 +54,14 @@ Replace SourceKittenFramework with direct sourcekitd XPC communication:
 - All imports currently use `@preconcurrency import SourceKittenFramework` due to Sendability
 - Direct XPC would let us make the client properly Sendable from the start
 - Can be done incrementally: shim the existing API surface first, then slim down
+
+## Summary of Changes
+
+Replaced SourceKitten SPM dependency with a vendored ~24-file subset in Sources/Swiftiomatic/SourceKit/. Created SourceKitC C module target for sourcekitd.h types. Removed all SourceKitten naming throughout the codebase:
+
+- SyntaxKind → SourceKitSyntaxKind (fixes SwiftSyntax collision)
+- SourceKittenDictionary → SourceKitDictionary (~60 files)
+- SourceKittenResolver → SourceKitResolver
+- All methods, properties, comments, queue labels purged
+
+Dependencies reduced to: swift-syntax, swift-argument-parser, yams (SourceKitten and SWXMLHash removed).

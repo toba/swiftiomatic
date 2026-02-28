@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 /// A SwiftLint CorrectableRule that performs its corrections using a SwiftSyntax `SyntaxRewriter`.
 protocol SwiftSyntaxCorrectableRule: SwiftSyntaxRule, CorrectableRule {

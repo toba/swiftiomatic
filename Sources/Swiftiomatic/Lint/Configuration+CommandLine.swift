@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 private actor CounterActor {
     private var count = 0

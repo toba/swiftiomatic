@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 struct TrailingWhitespaceRule: Rule {
     var configuration = TrailingWhitespaceConfiguration()
@@ -361,17 +360,6 @@ private extension String {
             ? TrailingWhitespaceInfo(characterCount: charCount, byteLength: byteLen) : nil
     }
 
-    func trimmingTrailingCharacters(in characterSet: CharacterSet) -> String {
-        var end = endIndex
-        while end > startIndex {
-            let index = index(before: end)
-            if !characterSet.contains(self[index].unicodeScalars.first!) {
-                break
-            }
-            end = index
-        }
-        return String(self[..<end])
-    }
 }
 
 private extension TriviaPiece {

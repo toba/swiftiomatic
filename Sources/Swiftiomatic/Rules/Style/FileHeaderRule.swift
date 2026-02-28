@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 struct FileHeaderRule: Rule {
     var configuration = FileHeaderConfiguration()

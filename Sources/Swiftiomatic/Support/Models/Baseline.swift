@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 private typealias BaselineViolations = [BaselineViolation]
 private typealias ViolationsPerFile = [String: BaselineViolations]

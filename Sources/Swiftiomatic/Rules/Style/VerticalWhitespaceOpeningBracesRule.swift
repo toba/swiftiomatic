@@ -1,9 +1,8 @@
 import Foundation
-import SourceKittenFramework
 
 private extension SwiftLintFile {
     func violatingRanges(for pattern: String) -> [NSRange] {
-        match(pattern: pattern, excludingSyntaxKinds: SyntaxKind.commentAndStringKinds)
+        match(pattern: pattern, excludingSyntaxKinds: SourceKitSyntaxKind.commentAndStringKinds)
     }
 }
 

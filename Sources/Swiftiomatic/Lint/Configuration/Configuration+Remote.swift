@@ -1,5 +1,4 @@
 import Foundation // swiftlint:disable:this file_name
-import SourceKittenFramework
 import Synchronization
 
 extension Configuration.FileGraph.FilePath {

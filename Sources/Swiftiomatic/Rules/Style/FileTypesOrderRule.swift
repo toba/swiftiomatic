@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 private typealias FileTypeOffset = (
     fileType: FileTypesOrderConfiguration.FileType, offset: ByteCount,
@@ -105,8 +104,8 @@ struct FileTypesOrderRule: OptInRule {
 
     private func extensionsSubstructures(
         in file: SwiftLintFile,
-        mainTypeSubstructure: SourceKittenDictionary,
-    ) -> [SourceKittenDictionary] {
+        mainTypeSubstructure: SourceKitDictionary,
+    ) -> [SourceKitDictionary] {
         let dict = file.structureDictionary
         return dict.substructure.filter { substructure in
             guard let kind = substructure.kind else { return false }
@@ -117,8 +116,8 @@ struct FileTypesOrderRule: OptInRule {
 
     private func supportingTypesSubstructures(
         in file: SwiftLintFile,
-        mainTypeSubstructure: SourceKittenDictionary,
-    ) -> [SourceKittenDictionary] {
+        mainTypeSubstructure: SourceKitDictionary,
+    ) -> [SourceKitDictionary] {
         var supportingTypeKinds = SwiftDeclarationKind.typeKinds
         supportingTypeKinds.insert(SwiftDeclarationKind.protocol)
 
@@ -135,13 +134,13 @@ struct FileTypesOrderRule: OptInRule {
     private func substructures(
         in file: SwiftLintFile,
         withInheritedType inheritedType: String,
-    ) -> [SourceKittenDictionary] {
+    ) -> [SourceKitDictionary] {
         file.structureDictionary.substructure.filter { substructure in
             substructure.inheritedTypes.contains(inheritedType)
         }
     }
 
-    private func mainTypeSubstructure(in file: SwiftLintFile) -> SourceKittenDictionary? {
+    private func mainTypeSubstructure(in file: SwiftLintFile) -> SourceKitDictionary? {
         let dict = file.structureDictionary
 
         guard let filePath = file.path else {
@@ -159,7 +158,7 @@ struct FileTypesOrderRule: OptInRule {
         return mainTypeSubstructure
     }
 
-    private func mainTypeSubstructure(in dict: SourceKittenDictionary) -> SourceKittenDictionary? {
+    private func mainTypeSubstructure(in dict: SourceKitDictionary) -> SourceKitDictionary? {
         let priorityKinds: [SwiftDeclarationKind] = [.class, .enum, .struct]
 
         let priorityKindSubstructures = dict.substructure.filter { substructure in
@@ -178,7 +177,7 @@ struct FileTypesOrderRule: OptInRule {
     }
 }
 
-private extension SourceKittenDictionary {
+private extension SourceKitDictionary {
     var hasExcludedInheritedType: Bool {
         inheritedTypes.contains { inheritedType in
             inheritedType == "PreviewProvider" || inheritedType == "LibraryContentProvider"
@@ -186,7 +185,7 @@ private extension SourceKittenDictionary {
     }
 }
 
-private extension [SourceKittenDictionary] {
+private extension [SourceKitDictionary] {
     func offsets(for fileType: FileTypesOrderConfiguration.FileType) -> [FileTypeOffset] {
         compactMap { substructure in
             guard let offset = substructure.offset else { return nil }

@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
     typealias Parent = FileHeaderRule

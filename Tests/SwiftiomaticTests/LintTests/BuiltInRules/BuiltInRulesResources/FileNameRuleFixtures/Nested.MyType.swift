@@ -1,4 +1,0 @@
-enum Nested {
-  struct MyType {
-  }
-}

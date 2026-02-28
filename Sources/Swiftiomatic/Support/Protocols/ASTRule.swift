@@ -1,4 +1,3 @@
-import SourceKittenFramework
 
 /// A rule that leverages the Swift source's pre-typechecked Abstract Syntax Tree to recurse into the source's
 /// structure, validating the rule recursively in nested source bodies.
@@ -14,16 +13,16 @@ protocol ASTRule: Rule {
     /// - parameter dictionary: The dictionary for an AST subset to validate.
     ///
     /// - returns: All style violations to the rule's expectations.
-    func validate(file: SwiftLintFile, kind: KindType, dictionary: SourceKittenDictionary)
+    func validate(file: SwiftLintFile, kind: KindType, dictionary: SourceKitDictionary)
         -> [StyleViolation]
 
     /// Get the `kind` from the specified dictionary.
     ///
-    /// - parameter dictionary: The `SourceKittenDictionary` representing the source structure from which to extract the
+    /// - parameter dictionary: The `SourceKitDictionary` representing the source structure from which to extract the
     ///                         `kind`.
     ///
     /// - returns: The `kind` from the specified dictionary, if one was found.
-    func kind(from dictionary: SourceKittenDictionary) -> KindType?
+    func kind(from dictionary: SourceKitDictionary) -> KindType?
 }
 
 extension ASTRule {
@@ -38,7 +37,7 @@ extension ASTRule {
     /// - parameter dictionary: The dictionary for an AST subset to validate.
     ///
     /// - returns: All style violations to the rule's expectations.
-    func validate(file: SwiftLintFile, dictionary: SourceKittenDictionary) -> [StyleViolation] {
+    func validate(file: SwiftLintFile, dictionary: SourceKitDictionary) -> [StyleViolation] {
         dictionary.traverseDepthFirst { subDict in
             guard let kind = self.kind(from: subDict) else { return nil }
             return validate(file: file, kind: kind, dictionary: subDict)
@@ -47,19 +46,19 @@ extension ASTRule {
 }
 
 extension ASTRule where KindType == SwiftDeclarationKind {
-    func kind(from dictionary: SourceKittenDictionary) -> KindType? {
+    func kind(from dictionary: SourceKitDictionary) -> KindType? {
         dictionary.declarationKind
     }
 }
 
 extension ASTRule where KindType == SwiftExpressionKind {
-    func kind(from dictionary: SourceKittenDictionary) -> KindType? {
+    func kind(from dictionary: SourceKitDictionary) -> KindType? {
         dictionary.expressionKind
     }
 }
 
 extension ASTRule where KindType == StatementKind {
-    func kind(from dictionary: SourceKittenDictionary) -> KindType? {
+    func kind(from dictionary: SourceKitDictionary) -> KindType? {
         dictionary.statementKind
     }
 }

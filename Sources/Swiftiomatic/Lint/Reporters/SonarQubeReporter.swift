@@ -1,4 +1,3 @@
-import SourceKittenFramework
 
 /// Reports violations in SonarQube import format.
 struct SonarQubeReporter: Reporter {

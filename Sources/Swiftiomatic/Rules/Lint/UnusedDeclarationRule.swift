@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
     struct FileUSRs: Hashable {
@@ -44,7 +43,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
 
         guard
             let editorOpen = (try? Request.editorOpen(file: file.file).sendIfNotDisabled())
-            .map(SourceKittenDictionary.init)
+            .map(SourceKitDictionary.init)
         else {
             Issue.fileNotReadable(path: file.path, ruleID: Self.identifier).print()
             return .empty
@@ -97,15 +96,15 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
 // MARK: - File Extensions
 
 private extension SwiftLintFile {
-    func index(compilerArguments: [String]) -> SourceKittenDictionary? {
+    func index(compilerArguments: [String]) -> SourceKitDictionary? {
         path
             .flatMap { path in
                 try? Request.index(file: path, arguments: compilerArguments).send()
             }
-            .map(SourceKittenDictionary.init)
+            .map(SourceKitDictionary.init)
     }
 
-    func referencedUSRs(index: SourceKittenDictionary, editorOpen: SourceKittenDictionary)
+    func referencedUSRs(index: SourceKitDictionary, editorOpen: SourceKitDictionary)
         -> Set<String>
     {
         Set(
@@ -129,8 +128,8 @@ private extension SwiftLintFile {
     }
 
     func declaredUSRs(
-        index: SourceKittenDictionary,
-        editorOpen: SourceKittenDictionary,
+        index: SourceKitDictionary,
+        editorOpen: SourceKitDictionary,
         compilerArguments: [String],
         configuration: UnusedDeclarationConfiguration,
     ) -> Set<UnusedDeclarationRule.DeclaredUSR> {
@@ -146,8 +145,8 @@ private extension SwiftLintFile {
     }
 
     func declaredUSR(
-        indexEntity: SourceKittenDictionary,
-        editorOpen: SourceKittenDictionary,
+        indexEntity: SourceKitDictionary,
+        editorOpen: SourceKitDictionary,
         compilerArguments: [String],
         configuration: UnusedDeclarationConfiguration,
     ) -> UnusedDeclarationRule.DeclaredUSR? {
@@ -239,16 +238,16 @@ private extension SwiftLintFile {
     }
 
     func cursorInfo(at byteOffset: ByteCount, compilerArguments: [String])
-        -> SourceKittenDictionary?
+        -> SourceKitDictionary?
     {
         let request = Request.cursorInfoWithoutSymbolGraph(
             file: path!, offset: byteOffset, arguments: compilerArguments,
         )
-        return (try? request.sendIfNotDisabled()).map(SourceKittenDictionary.init)
+        return (try? request.sendIfNotDisabled()).map(SourceKitDictionary.init)
     }
 
     private func shouldIgnoreEntity(
-        _ indexEntity: SourceKittenDictionary, relatedUSRsToSkip: Set<String>,
+        _ indexEntity: SourceKitDictionary, relatedUSRsToSkip: Set<String>,
     ) -> Bool {
         let declarationAttributesToSkip: Set<SwiftDeclarationAttributeKind> = [
             .ibsegueaction,
@@ -297,7 +296,7 @@ private extension SwiftLintFile {
     }
 }
 
-private extension SourceKittenDictionary {
+private extension SourceKitDictionary {
     var usr: String? {
         value["key.usr"] as? String
     }
@@ -327,7 +326,7 @@ private extension SourceKittenDictionary {
 
     func shouldSkipRelated(relatedUSRsToSkip: Set<String>) -> Bool {
         (value["key.related"] as? [[String: any SourceKitRepresentable]])?
-            .compactMap { SourceKittenDictionary($0).usr }
+            .compactMap { SourceKitDictionary($0).usr }
             .contains(where: relatedUSRsToSkip.contains) == true
     }
 

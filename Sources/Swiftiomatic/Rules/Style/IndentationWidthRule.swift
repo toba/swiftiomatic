@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct IndentationWidthRule: OptInRule {
     // MARK: - Subtypes
@@ -169,7 +168,7 @@ struct IndentationWidthRule: OptInRule {
             return false
         }
         let syntaxKindsInLine = Set(file.syntaxMap.tokens(inByteRange: line.byteRange).kinds)
-        if syntaxKindsInLine.isNotEmpty, SyntaxKind.commentKinds.isSuperset(of: syntaxKindsInLine) {
+        if syntaxKindsInLine.isNotEmpty, SourceKitSyntaxKind.commentKinds.isSuperset(of: syntaxKindsInLine) {
             return true
         }
         return false

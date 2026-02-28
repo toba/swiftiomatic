@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 /// The placement of a segment of Swift in a collection of source files.
 struct Location: CustomStringConvertible, Comparable, Codable, Sendable {

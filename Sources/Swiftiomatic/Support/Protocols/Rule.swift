@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 /// An executable value that can identify issues (violations) in Swift source code.
 protocol Rule: Sendable {

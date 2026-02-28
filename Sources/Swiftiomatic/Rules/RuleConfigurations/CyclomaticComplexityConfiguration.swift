@@ -1,4 +1,3 @@
-import SourceKittenFramework
 
 struct CyclomaticComplexityConfiguration: RuleConfiguration {
     @ConfigurationElement(inline: true)

@@ -1,6 +1,5 @@
 import Foundation
 import SwiftIDEUtils
-import SourceKittenFramework
 
 struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -171,7 +170,7 @@ struct CommentSpacingRule: SourceKitFreeRule, SubstitutionCorrectableRule {
         // Find all comment tokens in the file and regex search them for violations
         file.syntaxClassifications
             .filter(\.kind.isComment)
-            .map { $0.range.toSourceKittenByteRange() }
+            .map { $0.range.toSourceKitByteRange() }
             .compactMap { (range: ByteRange) -> [NSRange]? in
                 file.stringView
                     .substringWithByteRange(range)

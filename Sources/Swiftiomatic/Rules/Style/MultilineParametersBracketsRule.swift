@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct MultilineParametersBracketsRule: OptInRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -120,7 +119,7 @@ struct MultilineParametersBracketsRule: OptInRule {
         violations(in: file.structureDictionary, file: file)
     }
 
-    private func violations(in substructure: SourceKittenDictionary, file: SwiftLintFile)
+    private func violations(in substructure: SourceKitDictionary, file: SwiftLintFile)
         -> [StyleViolation]
     {
         var violations = [StyleViolation]()
@@ -173,7 +172,7 @@ struct MultilineParametersBracketsRule: OptInRule {
     }
 
     private func openingBracketViolation(
-        parameters: [SourceKittenDictionary],
+        parameters: [SourceKitDictionary],
         file: SwiftLintFile,
     ) -> StyleViolation? {
         guard
@@ -204,7 +203,7 @@ struct MultilineParametersBracketsRule: OptInRule {
     }
 
     private func closingBracketViolation(
-        parameters: [SourceKittenDictionary],
+        parameters: [SourceKitDictionary],
         file: SwiftLintFile,
     ) -> StyleViolation? {
         guard

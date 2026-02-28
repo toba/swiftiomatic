@@ -1,5 +1,4 @@
 import SwiftSyntax
-import SourceKittenFramework
 
 struct FileLengthRule: Rule {
     var configuration = FileLengthConfiguration()

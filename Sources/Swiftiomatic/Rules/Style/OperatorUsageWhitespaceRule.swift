@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 struct OperatorUsageWhitespaceRule: OptInRule, CorrectableRule, SourceKitFreeRule {
     var configuration = OperatorUsageWhitespaceConfiguration()

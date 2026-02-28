@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 func regex(
     _ pattern: String,
@@ -105,7 +104,7 @@ extension SwiftLintFile {
         return Location(file: path, line: nextLine, character: nextCharacter)
     }
 
-    func match(pattern: String, with syntaxKinds: [SyntaxKind],
+    func match(pattern: String, with syntaxKinds: [SourceKitSyntaxKind],
                range: NSRange? = nil) -> [NSRange]
     {
         match(pattern: pattern, range: range)
@@ -114,7 +113,7 @@ extension SwiftLintFile {
     }
 
     func match(pattern: String, range: NSRange? = nil, captureGroup: Int = 0) -> [(
-        NSRange, [SyntaxKind],
+        NSRange, [SourceKitSyntaxKind],
     )] {
         let contents = stringView
         let range = range ?? contents.range
@@ -140,7 +139,7 @@ extension SwiftLintFile {
     /// file contents.
     func match(
         pattern: String,
-        excludingSyntaxKinds syntaxKinds: Set<SyntaxKind>,
+        excludingSyntaxKinds syntaxKinds: Set<SourceKitSyntaxKind>,
         range: NSRange? = nil,
         captureGroup: Int = 0,
     ) -> [NSRange] {

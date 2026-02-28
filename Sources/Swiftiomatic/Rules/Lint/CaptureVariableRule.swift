@@ -1,4 +1,3 @@
-import SourceKittenFramework
 
 struct CaptureVariableRule: AnalyzerRule, CollectingRule {
     struct Variable: Hashable {
@@ -204,7 +203,7 @@ private extension SwiftLintFile {
         Self.captureListVariableOffsets(parentEntity: structureDictionary)
     }
 
-    static func captureListVariableOffsets(parentEntity: SourceKittenDictionary) -> Set<
+    static func captureListVariableOffsets(parentEntity: SourceKitDictionary) -> Set<
         ByteCount,
     > {
         parentEntity.substructure
@@ -261,7 +260,7 @@ private extension SwiftLintFile {
         Self.declaredVariableOffsets(parentStructure: structureDictionary)
     }
 
-    static func declaredVariableOffsets(parentStructure: SourceKittenDictionary) -> Set<
+    static func declaredVariableOffsets(parentStructure: SourceKitDictionary) -> Set<
         ByteCount,
     > {
         Set(
@@ -304,7 +303,7 @@ private extension SwiftLintFile {
         )
     }
 
-    func index(compilerArguments: [String]) -> SourceKittenDictionary? {
+    func index(compilerArguments: [String]) -> SourceKitDictionary? {
         guard
             let path,
             let response = try? Request.index(file: path, arguments: compilerArguments)
@@ -314,11 +313,11 @@ private extension SwiftLintFile {
             return nil
         }
 
-        return SourceKittenDictionary(response)
+        return SourceKitDictionary(response)
     }
 }
 
-private extension SourceKittenDictionary {
+private extension SourceKitDictionary {
     var usr: String? {
         value["key.usr"] as? String
     }

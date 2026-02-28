@@ -1,5 +1,4 @@
 import SwiftSyntax
-import SourceKittenFramework
 
 struct ClosureEndIndentationRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)

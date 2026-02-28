@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -123,7 +122,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     func validate(
         file: SwiftLintFile,
         kind: SwiftExpressionKind,
-        dictionary: SourceKittenDictionary,
+        dictionary: SourceKitDictionary,
     ) -> [StyleViolation] {
         violatingOffsets(file: file, kind: kind, dictionary: dictionary).map { offset in
             StyleViolation(
@@ -137,7 +136,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     private func violatingOffsets(
         file: SwiftLintFile,
         kind: SwiftExpressionKind,
-        dictionary: SourceKittenDictionary,
+        dictionary: SourceKitDictionary,
     ) -> [Int] {
         let ranges = callRanges(file: file, kind: kind, dictionary: dictionary)
 
@@ -196,7 +195,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     private func callRanges(
         file: SwiftLintFile,
         kind: SwiftExpressionKind,
-        dictionary: SourceKittenDictionary,
+        dictionary: SourceKitDictionary,
         parentCallName: String? = nil,
     ) -> [ByteRange] {
         guard
@@ -240,7 +239,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
 
     private func subcallRange(
         file: SwiftLintFile,
-        call: SourceKittenDictionary,
+        call: SourceKitDictionary,
         parentName: String,
         parentNameOffset: ByteCount,
     ) -> ByteRange? {
@@ -268,9 +267,9 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     }
 }
 
-private extension SourceKittenDictionary {
-    var subcalls: [SourceKittenDictionary] {
-        substructure.compactMap { dictionary -> SourceKittenDictionary? in
+private extension SourceKitDictionary {
+    var subcalls: [SourceKitDictionary] {
+        substructure.compactMap { dictionary -> SourceKitDictionary? in
             guard dictionary.expressionKind == .call else {
                 return nil
             }

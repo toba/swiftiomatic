@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 struct ContrastedOpeningBraceRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)

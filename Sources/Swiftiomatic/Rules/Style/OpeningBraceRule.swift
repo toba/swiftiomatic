@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 struct OpeningBraceRule: Rule {
     var configuration = OpeningBraceConfiguration()

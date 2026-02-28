@@ -1,6 +1,5 @@
 import Foundation
 import SwiftIDEUtils
-import SourceKittenFramework
 
 struct PeriodSpacingRule: SourceKitFreeRule, OptInRule, SubstitutionCorrectableRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -70,7 +69,7 @@ struct PeriodSpacingRule: SourceKitFreeRule, OptInRule, SubstitutionCorrectableR
         // Find all comment tokens in the file and regex search them for violations
         file.syntaxClassifications
             .filter(\.kind.isComment)
-            .map { $0.range.toSourceKittenByteRange() }
+            .map { $0.range.toSourceKitByteRange() }
             .compactMap { (range: ByteRange) -> [NSRange]? in
                 file.stringView
                     .substringWithByteRange(range)

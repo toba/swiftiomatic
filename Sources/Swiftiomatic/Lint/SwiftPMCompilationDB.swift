@@ -26,6 +26,20 @@ private struct SwiftPMNodes: Codable {
 struct SwiftPMCompilationDB: Codable {
     private let commands: [String: SwiftPMCommand]
 
+    /// Discover first available compiler arguments from an SPM project root.
+    /// Reads `.build/debug.yaml` if it exists.
+    static func compilerArguments(inPath projectRoot: String) -> [String]? {
+        let yamlPath = URL(fileURLWithPath: projectRoot)
+            .appendingPathComponent(".build/debug.yaml").path
+        guard let data = FileManager.default.contents(atPath: yamlPath),
+              let fileToArgs = try? parse(yaml: data),
+              let firstArgs = fileToArgs.values.first(where: { !$0.isEmpty })
+        else {
+            return nil
+        }
+        return firstArgs
+    }
+
     static func parse(yaml: Data) throws -> [FilePath: CompilerArguments] {
         let decoder = YAMLDecoder()
         let compilationDB: Self

@@ -1,8 +1,7 @@
 import SwiftSyntax
-import SourceKittenFramework
 
 extension ByteCount {
-    /// Converts a SwiftSyntax `AbsolutePosition` to a SourceKitten `ByteCount`.
+    /// Converts a SwiftSyntax `AbsolutePosition` to a SourceKit `ByteCount`.
     ///
     /// - parameter position: The SwiftSyntax position to convert.
     init(_ position: AbsolutePosition) {

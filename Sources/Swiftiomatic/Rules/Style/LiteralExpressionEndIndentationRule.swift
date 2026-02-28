@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
     var configuration = SeverityConfiguration<Self>(.warning)
@@ -260,7 +259,7 @@ private extension LiteralExpressionEndIndentationRule {
     private func violation(
         in file: SwiftLintFile,
         of kind: SwiftExpressionKind,
-        dictionary: SourceKittenDictionary,
+        dictionary: SourceKitDictionary,
     ) -> Violation? {
         guard kind == .dictionary || kind == .array else {
             return nil

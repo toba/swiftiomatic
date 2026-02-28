@@ -1,4 +1,3 @@
-import SourceKittenFramework
 
 struct ModifierOrderConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")

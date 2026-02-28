@@ -4,7 +4,6 @@ import SwiftSyntax
 import SwiftIDEUtils
 import SwiftOperators
 import SwiftDiagnostics
-import SourceKittenFramework
 import SwiftParserDiagnostics
 import Synchronization
 
@@ -22,7 +21,7 @@ private let responseCache = Cache { file -> [String: any SourceKitRepresentable]
 }
 
 private let structureDictionaryCache = Cache { file in
-    responseCache.get(file).map(Structure.init).map { SourceKittenDictionary($0.dictionary) }
+    responseCache.get(file).map(Structure.init).map { SourceKitDictionary($0.dictionary) }
 }
 
 private let syntaxTreeCache = Cache { file -> SourceFileSyntax in
@@ -54,8 +53,8 @@ private let syntaxMapCache = Cache { file in
 private let syntaxClassificationsCache = Cache { $0.syntaxTree.classifications }
 private let linesWithTokensCache = Cache { $0.computeLinesWithTokens() }
 private let swiftSyntaxTokensCache = Cache { file -> [SwiftLintSyntaxToken]? in
-    // Use SwiftSyntaxKindBridge to derive SourceKitten-compatible tokens from SwiftSyntax
-    SwiftSyntaxKindBridge.sourceKittenSyntaxKinds(for: file)
+    // Use SwiftSyntaxKindBridge to derive SourceKit-compatible tokens from SwiftSyntax
+    SwiftSyntaxKindBridge.sourceKitSyntaxKinds(for: file)
 }
 
 private let commentLinesCache = Cache { CommentLinesVisitor.commentLines(in: $0) }
@@ -150,11 +149,11 @@ extension SwiftLintFile {
         linesWithTokensCache.get(self)
     }
 
-    var structureDictionary: SourceKittenDictionary {
+    var structureDictionary: SourceKitDictionary {
         guard let structureDictionary = structureDictionaryCache.get(self) else {
             if let handler = assertHandler {
                 handler()
-                return SourceKittenDictionary([:])
+                return SourceKitDictionary([:])
             }
             queuedFatalError("Never call this for file that sourcekitd fails.")
         }
@@ -196,7 +195,7 @@ extension SwiftLintFile {
         commandsCache.get(self).filter { !$0.isValid }
     }
 
-    var swiftSyntaxDerivedSourceKittenTokens: [SwiftLintSyntaxToken]? {
+    var swiftSyntaxDerivedSourceKitTokens: [SwiftLintSyntaxToken]? {
         swiftSyntaxTokensCache.get(self)
     }
 

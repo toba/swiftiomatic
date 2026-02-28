@@ -67,10 +67,10 @@ struct Scan: AsyncParsableCommand {
         var resolver: (any TypeResolver)?
         if sourcekit {
             if !compilerArgs.isEmpty {
-                resolver = SourceKittenResolver(compilerArgs: compilerArgs)
+                resolver = SourceKitResolver(compilerArgs: compilerArgs)
             } else {
                 let root = projectRoot ?? "."
-                if let spmResolver = SourceKittenResolver(projectRoot: root) {
+                if let spmResolver = SourceKitResolver(projectRoot: root) {
                     resolver = spmResolver
                 } else {
                     FileHandle.standardError.write(

@@ -1,5 +1,4 @@
 import SwiftSyntax
-import SourceKittenFramework
 
 struct TypeContentsOrderRule: Rule {
     var configuration = TypeContentsOrderConfiguration()

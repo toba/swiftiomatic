@@ -1,11 +1,11 @@
 ---
 # 7f5-mwk
 title: Split test target to fix OOM crashes and lock contention
-status: ready
+status: scrapped
 type: task
 priority: high
 created_at: 2026-02-28T05:48:09Z
-updated_at: 2026-02-28T05:48:09Z
+updated_at: 2026-02-28T15:30:59Z
 blocked_by:
     - 0na-1xs
 ---

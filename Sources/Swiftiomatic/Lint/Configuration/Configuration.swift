@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 /// The configuration struct for SwiftLint. User-defined in the `.swiftlint.yml` file, drives the behavior of SwiftLint.
 struct Configuration {

@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 /// A value describing the version of the Swift compiler.
 struct SwiftVersion: RawRepresentable, Codable, VersionComparable, Sendable {

@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 import Synchronization
 
 // MARK: - Modern RegularExpression (Swift Regex)

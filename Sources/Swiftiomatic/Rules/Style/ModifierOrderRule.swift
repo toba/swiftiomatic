@@ -1,5 +1,4 @@
 import SwiftSyntax
-import SourceKittenFramework
 
 struct ModifierOrderRule: Rule {
     var configuration = ModifierOrderConfiguration()

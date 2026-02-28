@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 struct LineLengthRule: Rule {
     var configuration = LineLengthConfiguration()

@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct LeadingWhitespaceRule: CorrectableRule, SourceKitFreeRule {
     var configuration = SeverityConfiguration<Self>(.warning)

@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 // swiftlint:disable file_length
 
@@ -47,7 +46,7 @@ extension AbsolutePosition {
 }
 
 extension Range<AbsolutePosition> {
-    func toSourceKittenByteRange() -> ByteRange {
+    func toSourceKitByteRange() -> ByteRange {
         ByteRange(
             location: ByteCount(lowerBound),
             length: ByteCount(upperBound.utf8Offset) - ByteCount(lowerBound.utf8Offset),

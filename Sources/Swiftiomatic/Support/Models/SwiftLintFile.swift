@@ -1,9 +1,8 @@
 import Foundation
-@preconcurrency import SourceKittenFramework
 
 /// A unit of Swift source code, either on disk or in memory.
 final class SwiftLintFile: Sendable {
-    /// The underlying SourceKitten file.
+    /// The underlying SourceKit file.
     let file: File
     /// The associated unique identifier for this file.
     let id: UUID
@@ -12,9 +11,9 @@ final class SwiftLintFile: Sendable {
     /// A file is virtual if it is not backed by a filesystem path.
     let isVirtual: Bool
 
-    /// Creates a `SwiftLintFile` with a SourceKitten `File`.
+    /// Creates a `SwiftLintFile` with a SourceKit `File`.
     ///
-    /// - parameter file: A file from SourceKitten.
+    /// - parameter file: A file from the vendored SourceKit layer.
     /// - parameter isTestFile: Mark the file as being generated for testing purposes only.
     /// - parameter isVirtual: Mark the file as virtual (in-memory).
     init(file: File, isTestFile: Bool = false, isVirtual: Bool = false) {

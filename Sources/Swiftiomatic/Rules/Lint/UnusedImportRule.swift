@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 private let moduleToLog = ProcessInfo.processInfo.environment["SWIFTLINT_LOG_MODULE_USAGE"]
 
@@ -196,7 +195,7 @@ private extension SwiftLintFile {
                 nextIsModuleImport = true
                 continue
             }
-            if SyntaxKind.kindsWithoutModuleInfo.contains(tokenKind) {
+            if SourceKitSyntaxKind.kindsWithoutModuleInfo.contains(tokenKind) {
                 continue
             }
             let cursorInfoRequest = Request.cursorInfoWithoutSymbolGraph(
@@ -204,7 +203,7 @@ private extension SwiftLintFile {
             )
             guard
                 let cursorInfo = (try? cursorInfoRequest.sendIfNotDisabled()).map(
-                    SourceKittenDictionary.init,
+                    SourceKitDictionary.init,
                 )
             else {
                 Issue.missingCursorInfo(path: path, ruleID: UnusedImportRule.identifier).print()
@@ -247,7 +246,7 @@ private extension SwiftLintFile {
     {
         guard
             let index = (try? Request.index(file: path!, arguments: arguments).sendIfNotDisabled())
-            .map(SourceKittenDictionary.init)
+            .map(SourceKitDictionary.init)
         else {
             Issue.indexingError(path: path, ruleID: UnusedImportRule.identifier).print()
             return []
@@ -272,7 +271,7 @@ private extension SwiftLintFile {
                 )
                 guard
                     let cursorInfo = (try? cursorInfoRequest.sendIfNotDisabled())
-                    .map(SourceKittenDictionary.init)
+                    .map(SourceKitDictionary.init)
                 else {
                     Issue.missingCursorInfo(path: path, ruleID: UnusedImportRule.identifier).print()
                     continue
@@ -285,7 +284,7 @@ private extension SwiftLintFile {
         return imports
     }
 
-    func flatEntities(entity: SourceKittenDictionary) -> [SourceKittenDictionary] {
+    func flatEntities(entity: SourceKitDictionary) -> [SourceKitDictionary] {
         let entities = entity.entities
         if entities.isEmpty {
             return [entity]
@@ -318,7 +317,7 @@ private extension SwiftLintFile {
     }
 
     func appendUsedImports(
-        cursorInfo: SourceKittenDictionary, usrFragments: inout Set<String>,
+        cursorInfo: SourceKitDictionary, usrFragments: inout Set<String>,
     ) {
         if let rootModuleName = cursorInfo.moduleName?.split(separator: ".").first
             .map(String.init)
@@ -340,7 +339,7 @@ private extension SwiftLintFile {
             return false
         }
 
-        func containsAttributesRequiringFoundation(dict: SourceKittenDictionary) -> Bool {
+        func containsAttributesRequiringFoundation(dict: SourceKitDictionary) -> Bool {
             let attributesRequiringFoundation = SwiftDeclarationAttributeKind
                 .attributesRequiringFoundation
             if !attributesRequiringFoundation.isDisjoint(with: dict.enclosedSwiftAttributes) {

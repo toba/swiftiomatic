@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct FileNameNoSpaceRule: OptInRule, SourceKitFreeRule {
     var configuration = FileNameNoSpaceConfiguration()

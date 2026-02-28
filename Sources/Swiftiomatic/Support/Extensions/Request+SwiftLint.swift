@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 import Synchronization
 
 struct SourceKitDisabledError: Swift.Error, CustomStringConvertible {

@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 /// To some tools (i.e. Datadog), code quality findings are reported in the SARIF format:
 ///     - Full Spec: https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/sarif-v2.1.0-errata01-os-complete.html

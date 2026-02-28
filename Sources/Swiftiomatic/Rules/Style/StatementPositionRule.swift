@@ -1,5 +1,4 @@
 import Foundation
-import SourceKittenFramework
 
 struct StatementPositionRule: CorrectableRule {
     var configuration = StatementPositionConfiguration()

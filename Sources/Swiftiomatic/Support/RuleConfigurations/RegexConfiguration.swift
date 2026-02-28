@@ -1,5 +1,4 @@
 import Foundation
-@preconcurrency import SourceKittenFramework
 
 /// A rule configuration used for defining custom rules in yaml.
 struct RegexConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Hashable,
@@ -30,7 +29,7 @@ struct RegexConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Hashabl
     var excluded: [RegularExpression] = []
     /// The syntax kinds to exclude from matches. If the regex matched syntax kinds from this list, it would
     /// be ignored and not count as a rule violation.
-    var excludedMatchKinds = Set<SyntaxKind>()
+    var excludedMatchKinds = Set<SourceKitSyntaxKind>()
     @ConfigurationElement(key: "severity")
     var severityConfiguration = SeverityConfiguration<Parent>(.warning)
     /// The index of the regex capture group to match.
@@ -46,7 +45,7 @@ struct RegexConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Hashabl
             regex.pattern,
             included.map(\.pattern).joined(separator: ","),
             excluded.map(\.pattern).joined(separator: ","),
-            SyntaxKind.allKinds.subtracting(excludedMatchKinds)
+            SourceKitSyntaxKind.allKinds.subtracting(excludedMatchKinds)
                 .map(\.rawValue).sorted(by: <).joined(separator: ","),
             severity.rawValue,
             executionMode.rawValue,
@@ -144,14 +143,14 @@ struct RegexConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Hashabl
     }
 
     private func excludedMatchKinds(from configurationDict: [String: Any]) throws(Issue) -> Set<
-        SyntaxKind,
+        SourceKitSyntaxKind,
     > {
         let matchKinds = [String].array(of: configurationDict["match_kinds"])
         let excludedMatchKinds = [String].array(of: configurationDict["excluded_match_kinds"])
 
         switch (matchKinds, excludedMatchKinds) {
             case (.some(let matchKinds), nil):
-                return try SyntaxKind.allKinds.subtracting(toSyntaxKinds(matchKinds))
+                return try SourceKitSyntaxKind.allKinds.subtracting(toSyntaxKinds(matchKinds))
             case (nil, let .some(excludedMatchKinds)):
                 return try toSyntaxKinds(excludedMatchKinds)
             case (nil, nil):
@@ -163,9 +162,9 @@ struct RegexConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Hashabl
         }
     }
 
-    private func toSyntaxKinds(_ names: [String]) throws(Issue) -> Set<SyntaxKind> {
+    private func toSyntaxKinds(_ names: [String]) throws(Issue) -> Set<SourceKitSyntaxKind> {
         let kinds = try names.map { name throws(Issue) in
-            if let kind = SyntaxKind(shortName: name) {
+            if let kind = SourceKitSyntaxKind(shortName: name) {
                 return kind
             }
             throw .invalidConfiguration(ruleID: Parent.identifier)

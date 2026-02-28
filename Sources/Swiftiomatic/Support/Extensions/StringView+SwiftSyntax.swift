@@ -1,6 +1,5 @@
 import Foundation
 import SwiftSyntax
-import SourceKittenFramework
 
 extension StringView {
     /// Converts two absolute positions from SwiftSyntax to a valid `NSRange` if possible.
