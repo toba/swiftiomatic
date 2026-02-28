@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let validateTestCases = FormatRule(
         help: "Ensure test case methods have the correct `test` prefix or `@Test` attribute.",
         disabledByDefault: true

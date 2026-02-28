@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Add space around comments, except at the start or end of a line
     static let spaceAroundComments = FormatRule(
         help: "Add space before and/or after comments."

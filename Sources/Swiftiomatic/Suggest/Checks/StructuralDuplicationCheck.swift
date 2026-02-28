@@ -7,11 +7,11 @@ import SwiftSyntax
 /// literal values, and trivia). Functions with fewer than 5 structural nodes are skipped.
 ///
 /// Pass 2: Group functions by fingerprint. Groups of 2+ are structural duplicates.
-public final class StructuralDuplicationCheck: BaseCheck {
+final class StructuralDuplicationCheck: BaseCheck {
     /// Collected function fingerprints from this file.
-    public private(set) var collectedFunctions: [(name: String, file: String, line: Int, fingerprint: String)] = []
+    private(set) var collectedFunctions: [(name: String, file: String, line: Int, fingerprint: String)] = []
 
-    override public func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         guard let body = node.body else { return .visitChildren }
 
         let nodes = FingerprintVisitor.collectNodeTypes(from: body)
@@ -34,7 +34,7 @@ public final class StructuralDuplicationCheck: BaseCheck {
     ///
     /// - Parameter allCollected: Combined fingerprint data from all files.
     /// - Returns: Findings for groups of 2+ functions sharing an identical fingerprint.
-    public func generateDuplicationFindings(
+    func generateDuplicationFindings(
         allCollected: [(name: String, file: String, line: Int, fingerprint: String)]
     ) -> [Finding] {
         var groups: [String: [(name: String, file: String, line: Int)]] = [:]

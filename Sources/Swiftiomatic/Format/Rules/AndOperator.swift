@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Replace the `&&` operator with `,` where applicable
     static let andOperator = FormatRule(
         help: "Prefer comma over `&&` in `if`, `guard` or `while` conditions."

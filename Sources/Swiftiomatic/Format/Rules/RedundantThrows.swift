@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let redundantThrows = FormatRule(
         help: "Remove redundant `throws` keyword from function declarations that don't throw any errors.",
         orderAfter: [.noForceUnwrapInTests, .noForceTryInTests, .noGuardInTests, .throwingTests],

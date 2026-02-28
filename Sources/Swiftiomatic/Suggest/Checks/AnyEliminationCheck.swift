@@ -5,7 +5,7 @@ import SwiftSyntax
 ///
 /// When a `TypeResolver` is available, also detects type aliases
 /// that resolve to `Any` (e.g. `typealias JSON = Any`).
-public final class AnyEliminationCheck: BaseCheck {
+final class AnyEliminationCheck: BaseCheck {
 
     /// Tracks type annotations that aren't literally `Any` but might alias to it.
     private struct AliasQuery {
@@ -18,19 +18,19 @@ public final class AnyEliminationCheck: BaseCheck {
 
     // MARK: - Any / AnyObject in type annotations
 
-    override public func visit(_ node: TypeAnnotationSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: TypeAnnotationSyntax) -> SyntaxVisitorContinueKind {
         checkForAny(in: node.type, at: node)
         return .visitChildren
     }
 
-    override public func visit(_ node: ReturnClauseSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: ReturnClauseSyntax) -> SyntaxVisitorContinueKind {
         checkForAny(in: node.type, at: node)
         return .visitChildren
     }
 
     // MARK: - [String: Any] dictionaries
 
-    override public func visit(_ node: DictionaryTypeSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: DictionaryTypeSyntax) -> SyntaxVisitorContinueKind {
         let key = node.key.trimmedDescription
         let value = node.value.trimmedDescription
 
@@ -50,7 +50,7 @@ public final class AnyEliminationCheck: BaseCheck {
 
     // MARK: - as? / as! casts from Any
 
-    override public func visit(_ node: AsExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: AsExprSyntax) -> SyntaxVisitorContinueKind {
         // Flag forced casts as higher severity
         if node.questionOrExclamationMark?.tokenKind == .exclamationMark {
             addFinding(
@@ -106,7 +106,7 @@ public final class AnyEliminationCheck: BaseCheck {
         }
     }
 
-    override public func resolveTypeQueries() async {
+    override func resolveTypeQueries() async {
         guard let resolver = typeResolver, !aliasQueries.isEmpty else { return }
 
         for query in aliasQueries {

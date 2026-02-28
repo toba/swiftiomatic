@@ -3,7 +3,7 @@
 /// Checks use this to upgrade confidence when type information is available.
 /// The default `NullResolver` returns nil for everything, preserving
 /// syntax-only behavior when `--sourcekit` is not passed.
-public protocol TypeResolver: Sendable {
+protocol TypeResolver: Sendable {
     /// Whether the resolver has a working connection to sourcekitd.
     var isAvailable: Bool { get }
 
@@ -18,17 +18,17 @@ public protocol TypeResolver: Sendable {
 }
 
 /// Resolved type information from a cursorinfo request.
-public struct ResolvedType: Sendable, Equatable {
+struct ResolvedType: Sendable, Equatable {
     /// The fully-qualified type name (e.g. "Swift.Bool", "Dispatch.DispatchQueue").
-    public let typeName: String
+    let typeName: String
 
     /// The Unique Symbol Reference for the type (e.g. "s:Sb" for Bool).
-    public let usr: String?
+    let usr: String?
 
     /// The module the type belongs to (e.g. "Swift", "Dispatch").
-    public let moduleName: String?
+    let moduleName: String?
 
-    public init(typeName: String, usr: String? = nil, moduleName: String? = nil) {
+    init(typeName: String, usr: String? = nil, moduleName: String? = nil) {
         self.typeName = typeName
         self.usr = usr
         self.moduleName = moduleName
@@ -36,31 +36,31 @@ public struct ResolvedType: Sendable, Equatable {
 }
 
 /// A declaration or reference found during file indexing.
-public struct IndexSymbol: Sendable, Equatable {
-    public enum Kind: String, Sendable {
+struct IndexSymbol: Sendable, Equatable {
+    enum Kind: String, Sendable {
         case declaration
         case reference
     }
 
     /// The symbol's name.
-    public let name: String
+    let name: String
 
     /// The Unique Symbol Reference — stable across files.
-    public let usr: String
+    let usr: String
 
     /// Whether this is a declaration or a reference.
-    public let kind: Kind
+    let kind: Kind
 
     /// Byte offset in the source file.
-    public let offset: Int
+    let offset: Int
 
     /// Line number (1-based).
-    public let line: Int
+    let line: Int
 
     /// Column number (1-based).
-    public let column: Int
+    let column: Int
 
-    public init(name: String, usr: String, kind: Kind, offset: Int, line: Int, column: Int) {
+    init(name: String, usr: String, kind: Kind, offset: Int, line: Int, column: Int) {
         self.name = name
         self.usr = usr
         self.kind = kind
@@ -71,38 +71,38 @@ public struct IndexSymbol: Sendable, Equatable {
 }
 
 /// Index data for a single file — declarations and references with USRs.
-public struct FileIndex: Sendable {
-    public let file: String
-    public let symbols: [IndexSymbol]
+struct FileIndex: Sendable {
+    let file: String
+    let symbols: [IndexSymbol]
 
-    public init(file: String, symbols: [IndexSymbol]) {
+    init(file: String, symbols: [IndexSymbol]) {
         self.file = file
         self.symbols = symbols
     }
 
     /// All declarations in this file.
-    public var declarations: [IndexSymbol] {
+    var declarations: [IndexSymbol] {
         symbols.filter { $0.kind == .declaration }
     }
 
     /// All references in this file.
-    public var references: [IndexSymbol] {
+    var references: [IndexSymbol] {
         symbols.filter { $0.kind == .reference }
     }
 }
 
 /// Type information for an expression span, from the expression-type request.
-public struct ExpressionTypeInfo: Sendable, Equatable {
+struct ExpressionTypeInfo: Sendable, Equatable {
     /// Byte offset of the expression start.
-    public let offset: Int
+    let offset: Int
 
     /// Byte length of the expression.
-    public let length: Int
+    let length: Int
 
     /// The resolved type name.
-    public let typeName: String
+    let typeName: String
 
-    public init(offset: Int, length: Int, typeName: String) {
+    init(offset: Int, length: Int, typeName: String) {
         self.offset = offset
         self.length = length
         self.typeName = typeName

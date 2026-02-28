@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let docCommentsBeforeModifiers = FormatRule(
         help: "Place doc comments before any declaration modifiers or attributes.",
         orderAfter: [.docComments]

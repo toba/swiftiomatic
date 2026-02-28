@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// §8: Detects SwiftUI layout composition anti-patterns by tracking view nesting.
-public final class SwiftUILayoutCheck: BaseCheck {
+final class SwiftUILayoutCheck: BaseCheck {
 
     /// Container names we track for nesting analysis.
     private static let trackedContainers: Set<String> = [
@@ -24,7 +24,7 @@ public final class SwiftUILayoutCheck: BaseCheck {
 
     // MARK: - Visit
 
-    override public func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         let callee = node.calledExpression.trimmedDescription
 
         guard Self.trackedContainers.contains(callee) else {
@@ -44,7 +44,7 @@ public final class SwiftUILayoutCheck: BaseCheck {
         return .visitChildren
     }
 
-    override public func visitPost(_ node: FunctionCallExprSyntax) {
+    override func visitPost(_ node: FunctionCallExprSyntax) {
         let callee = node.calledExpression.trimmedDescription
 
         guard Self.trackedContainers.contains(callee) else {

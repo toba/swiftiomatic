@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Replace the obsolete `@UIApplicationMain` and `@NSApplicationMain`
     /// attributes with `@main` in Swift 5.3 and above, per SE-0383
     static let applicationMain = FormatRule(

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Implement the following rules with respect to the spacing around square brackets:
     /// * There is no space between an opening bracket and the preceding identifier,
     ///   unless the identifier is one of the specified keywords

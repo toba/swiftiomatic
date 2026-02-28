@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove unused private and fileprivate declarations
     static let unusedPrivateDeclarations = FormatRule(
         help: "Remove unused private and fileprivate declarations.",

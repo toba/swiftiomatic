@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Add the `final` keyword to all classes that are not declared as `open`
     static let preferFinalClasses = FormatRule(
         help: """

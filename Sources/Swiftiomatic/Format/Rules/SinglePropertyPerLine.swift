@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let singlePropertyPerLine = FormatRule(
         help: "Use a separate let/var declaration on its own line for every property definition.",
         disabledByDefault: true,

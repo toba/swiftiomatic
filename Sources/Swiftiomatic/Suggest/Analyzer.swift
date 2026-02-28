@@ -3,20 +3,20 @@ import SwiftParser
 import SwiftSyntax
 
 /// Orchestrates parsing and analysis of Swift source files.
-public struct Analyzer: Sendable {
+struct Analyzer: Sendable {
     /// Categories to analyze. Empty means all.
-    public let categories: Set<Category>
+    let categories: Set<Category>
 
     /// Minimum confidence to include in results.
-    public let minConfidence: Confidence
+    let minConfidence: Confidence
 
     /// Minimum severity to include in results.
-    public let minSeverity: Severity
+    let minSeverity: Severity
 
     /// Optional SourceKit-backed type resolver for semantic analysis.
-    public let typeResolver: (any TypeResolver)?
+    let typeResolver: (any TypeResolver)?
 
-    public init(
+    init(
         categories: Set<Category> = [],
         minConfidence: Confidence = .low,
         minSeverity: Severity = .low,
@@ -29,7 +29,7 @@ public struct Analyzer: Sendable {
     }
 
     /// Analyze the given file paths and return sorted findings.
-    public func analyze(paths: [String]) async -> [Finding] {
+    func analyze(paths: [String]) async -> [Finding] {
         let files = FileDiscovery.findSwiftFiles(in: paths)
         guard !files.isEmpty else { return [] }
 

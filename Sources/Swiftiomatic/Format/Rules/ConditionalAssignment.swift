@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let conditionalAssignment = FormatRule(
         help: "Assign properties using if / switch expressions.",
         orderAfter: [.redundantReturn],

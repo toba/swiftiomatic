@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let privateStateVariables = FormatRule(
         help: "Adds `private` access control to @State properties without existing access control modifiers.",
         disabledByDefault: true

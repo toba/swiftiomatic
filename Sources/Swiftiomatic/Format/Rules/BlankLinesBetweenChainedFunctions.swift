@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove blank lines between chained functions but keep the linebreaks
     static let blankLinesBetweenChainedFunctions = FormatRule(
         help: "Remove blank lines between chained functions but keep the linebreaks."

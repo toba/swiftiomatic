@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Strip unnecessary `weak` from @IBOutlet properties (except delegates and datasources)
     static let strongOutlets = FormatRule(
         help: "Remove `weak` modifier from `@IBOutlet` properties."

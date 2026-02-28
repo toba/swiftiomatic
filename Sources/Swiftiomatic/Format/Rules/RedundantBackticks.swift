@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant backticks around non-keywords, or in places where keywords don't need escaping
     static let redundantBackticks = FormatRule(
         help: "Remove redundant backticks around identifiers."

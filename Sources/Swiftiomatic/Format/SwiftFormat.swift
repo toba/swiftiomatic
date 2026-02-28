@@ -33,17 +33,17 @@ import Foundation
 
 /// The current SwiftFormat version
 let swiftFormatVersion = "0.59.1"
-public let version = swiftFormatVersion
+let version = swiftFormatVersion
 
 /// Supported Swift compiler versions
-public let swiftVersions = [
+let swiftVersions = [
     "3.x", "4.0", "4.1", "4.2",
     "5.0", "5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "5.10",
     "6.0", "6.1", "6.2", "6.3", "6.4",
 ]
 
 /// Supported Swift language modes
-public let languageModes = [
+let languageModes = [
     "4", "4.2", "5", "6",
 ]
 
@@ -64,7 +64,7 @@ func defaultLanguageMode(for compilerVersion: Version) -> Version {
 }
 
 /// An enumeration of the types of error that may be thrown by SwiftFormat
-public enum FormatError: Error, CustomStringConvertible, LocalizedError {
+enum FormatError: Error, CustomStringConvertible, LocalizedError {
     case reading(String)
     case writing(String)
     case parsing(String)
@@ -82,7 +82,7 @@ public enum FormatError: Error, CustomStringConvertible, LocalizedError {
         return .options("\(message). Did you mean '\(match)'?")
     }
 
-    public var description: String {
+    var description: String {
         switch self {
         case let .reading(string),
              let .writing(string),
@@ -92,28 +92,28 @@ public enum FormatError: Error, CustomStringConvertible, LocalizedError {
         }
     }
 
-    public var localizedDescription: String {
+    var localizedDescription: String {
         "Error: \(description)."
     }
 }
 
 /// Line and column offset in source
 /// Note: line and column indexes start at 1
-public struct SourceOffset: Equatable, CustomStringConvertible {
+struct SourceOffset: Equatable, CustomStringConvertible {
     var line, column: Int
 
-    public init(line: Int, column: Int) {
+    init(line: Int, column: Int) {
         self.line = line
         self.column = column
     }
 
-    public var description: String {
+    var description: String {
         "\(line):\(column)"
     }
 }
 
 /// Get offset for token
-public func offsetForToken(at index: Int, in tokens: [Token], tabWidth: Int) -> SourceOffset {
+func offsetForToken(at index: Int, in tokens: [Token], tabWidth: Int) -> SourceOffset {
     var column = 1
     for token in tokens[..<index].reversed() {
         switch token {
@@ -127,7 +127,7 @@ public func offsetForToken(at index: Int, in tokens: [Token], tabWidth: Int) -> 
 }
 
 /// Get token index for offset
-public func tokenIndex(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> Int {
+func tokenIndex(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> Int {
     var tokenIndex = 0, line = 1
     for index in tokens.indices {
         guard case let .linebreak(_, originalLine) = tokens[index] else {
@@ -151,7 +151,7 @@ public func tokenIndex(for offset: SourceOffset, in tokens: [Token], tabWidth: I
 }
 
 /// Get token index range for line range
-public func tokenRange(forLineRange lineRange: ClosedRange<Int>, in tokens: [Token]) -> Range<Int> {
+func tokenRange(forLineRange lineRange: ClosedRange<Int>, in tokens: [Token]) -> Range<Int> {
     let startOffset = SourceOffset(line: lineRange.lowerBound, column: 0)
     let endOffset = SourceOffset(line: lineRange.upperBound + 1, column: 0)
     let tokenStart = max(0, tokenIndex(for: startOffset, in: tokens, tabWidth: 1) - 1)
@@ -160,7 +160,7 @@ public func tokenRange(forLineRange lineRange: ClosedRange<Int>, in tokens: [Tok
 }
 
 /// Get new offset for an original offset (before formatting)
-public func newOffset(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> SourceOffset {
+func newOffset(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> SourceOffset {
     var closestLine = 0
     for i in tokens.indices {
         guard case let .linebreak(_, originalLine) = tokens[i] else {
@@ -185,7 +185,7 @@ public func newOffset(for offset: SourceOffset, in tokens: [Token], tabWidth: In
 }
 
 /// Process parsing errors
-public func parsingError(for tokens: [Token], options: FormatOptions, allowErrorsInFragments: Bool = true) -> FormatError? {
+func parsingError(for tokens: [Token], options: FormatOptions, allowErrorsInFragments: Bool = true) -> FormatError? {
     guard let index = tokens.firstIndex(where: {
         guard (options.fragment && allowErrorsInFragments) || !$0.isError else { return true }
         guard !options.ignoreConflictMarkers, case let .operator(string, _) = $0 else { return false }
@@ -213,12 +213,12 @@ public func parsingError(for tokens: [Token], options: FormatOptions, allowError
 }
 
 /// Convert a token array back into a string
-public func sourceCode(for tokens: [Token]?) -> String {
+func sourceCode(for tokens: [Token]?) -> String {
     (tokens ?? []).map(\.string).joined()
 }
 
 /// Apply specified rules to a token array and optionally capture list of changes
-public func applyRules(
+func applyRules(
     _ originalRules: [FormatRule],
     to originalTokens: [Token],
     with options: FormatOptions,
@@ -378,7 +378,7 @@ public func applyRules(
 }
 
 /// Format a pre-parsed token array
-public func format(
+func format(
     _ tokens: [Token], rules: [FormatRule] = FormatRules.default,
     options: FormatOptions = .default, range: Range<Int>? = nil
 ) throws -> (tokens: [Token], changes: [Formatter.Change]) {
@@ -386,7 +386,7 @@ public func format(
 }
 
 /// Format code with specified rules and options
-public func format(
+func format(
     _ source: String, rules: [FormatRule] = FormatRules.default,
     options: FormatOptions = .default, lineRange: ClosedRange<Int>? = nil
 ) throws -> (output: String, changes: [Formatter.Change]) {
@@ -397,7 +397,7 @@ public func format(
 }
 
 /// Lint a pre-parsed token array
-public func lint(
+func lint(
     _ tokens: [Token], rules: [FormatRule] = FormatRules.default,
     options: FormatOptions = .default, range: Range<Int>? = nil
 ) throws -> [Formatter.Change] {
@@ -405,7 +405,7 @@ public func lint(
 }
 
 /// Lint code with specified rules and options
-public func lint(
+func lint(
     _ source: String, rules: [FormatRule] = FormatRules.default,
     options: FormatOptions = .default, lineRange: ClosedRange<Int>? = nil
 ) throws -> [Formatter.Change] {
@@ -416,7 +416,7 @@ public func lint(
 
 // MARK: Path utilities
 
-public func expandPath(_ path: String, in directory: String) -> URL {
+func expandPath(_ path: String, in directory: String) -> URL {
     let nsPath: NSString = (path as NSString).expandingTildeInPath as NSString
     if nsPath.isAbsolutePath {
         return URL(fileURLWithPath: nsPath as String).standardized

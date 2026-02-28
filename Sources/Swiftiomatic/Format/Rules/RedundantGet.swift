@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant `get {}` clause inside read-only computed property
     static let redundantGet = FormatRule(
         help: "Remove unneeded `get` clause inside computed properties."

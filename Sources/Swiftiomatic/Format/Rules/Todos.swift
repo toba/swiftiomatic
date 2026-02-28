@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Ensure that TODO, MARK and FIXME comments are followed by a : as required
     static let todos = FormatRule(
         help: "Use correct formatting for `TODO:`, `MARK:` or `FIXME:` comments."

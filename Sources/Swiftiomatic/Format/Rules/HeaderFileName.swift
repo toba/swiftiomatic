@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Ensure file name reference in header matches actual file name
     static let headerFileName = FormatRule(
         help: "Ensure file name in header comment matches the actual file name.",

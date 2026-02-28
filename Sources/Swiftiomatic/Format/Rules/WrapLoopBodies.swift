@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let wrapLoopBodies = FormatRule(
         help: "Wrap the bodies of inline loop statements onto a new line.",
         orderAfter: [.preferForLoop],

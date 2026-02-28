@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove duplicate import statements
     static let duplicateImports = FormatRule(
         help: "Remove duplicate import statements."

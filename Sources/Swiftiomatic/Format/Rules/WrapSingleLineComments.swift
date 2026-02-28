@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Wrap single-line comments that exceed given `FormatOptions.maxWidth` setting.
     static let wrapSingleLineComments = FormatRule(
         help: "Wrap single line `//` comments that exceed the specified `--max-width`.",

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant raw string values for case statements
     static let redundantRawValues = FormatRule(
         help: "Remove redundant raw string values for enum cases."

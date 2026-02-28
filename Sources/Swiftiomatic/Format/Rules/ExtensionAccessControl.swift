@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let extensionAccessControl = FormatRule(
         help: "Configure the placement of an extension's access control keyword.",
         options: ["extension-acl"]

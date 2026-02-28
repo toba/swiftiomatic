@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let redundantAsync = FormatRule(
         help: "Remove redundant `async` keyword from function declarations that don't contain any await expressions.",
         options: ["redundant-async"]

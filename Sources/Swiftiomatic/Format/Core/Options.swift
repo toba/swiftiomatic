@@ -32,13 +32,13 @@
 import Foundation
 
 /// The indenting mode to use for #if/#endif statements
-public enum IndentMode: String, CaseIterable {
+enum IndentMode: String, CaseIterable {
     case indent
     case noIndent = "no-indent"
     case preserve
     case outdent
 
-    public init?(rawValue: String) {
+    init?(rawValue: String) {
         switch rawValue {
         case "indent":
             self = .indent
@@ -55,14 +55,14 @@ public enum IndentMode: String, CaseIterable {
 }
 
 /// Wrap mode for arguments
-public enum WrapMode: String, CaseIterable {
+enum WrapMode: String, CaseIterable {
     case beforeFirst = "before-first"
     case afterFirst = "after-first"
     case preserve
     case disabled
     case `default`
 
-    public init?(rawValue: String) {
+    init?(rawValue: String) {
         switch rawValue {
         case "before-first", "beforefirst":
             self = .beforeFirst
@@ -81,46 +81,46 @@ public enum WrapMode: String, CaseIterable {
 }
 
 /// Wrap enum cases
-public enum WrapEnumCases: String, CaseIterable {
+enum WrapEnumCases: String, CaseIterable {
     case always
     case withValues = "with-values"
 }
 
 /// Argument type for stripping
-public enum ArgumentStrippingMode: String, CaseIterable {
+enum ArgumentStrippingMode: String, CaseIterable {
     case unnamedOnly = "unnamed-only"
     case closureOnly = "closure-only"
     case all = "always"
 }
 
 /// Wrap mode for @ attributes
-public enum AttributeMode: String, CaseIterable {
+enum AttributeMode: String, CaseIterable {
     case prevLine = "prev-line"
     case sameLine = "same-line"
     case preserve
 }
 
 /// Where to place the else or catch in an if/else or do/catch statement
-public enum ElsePosition: String, CaseIterable {
+enum ElsePosition: String, CaseIterable {
     case sameLine = "same-line"
     case nextLine = "next-line"
 }
 
 /// Where to place the else in a guard statement
-public enum GuardElsePosition: String, CaseIterable {
+enum GuardElsePosition: String, CaseIterable {
     case sameLine = "same-line"
     case nextLine = "next-line"
     case auto
 }
 
 /// Where to place the access control keyword of an extension
-public enum ExtensionACLPlacement: String, CaseIterable {
+enum ExtensionACLPlacement: String, CaseIterable {
     case onExtension = "on-extension"
     case onDeclarations = "on-declarations"
 }
 
 /// Wrapping behavior for the return type of a function declaration
-public enum WrapReturnType: String, CaseIterable {
+enum WrapReturnType: String, CaseIterable {
     case preserve
     /// `-> ReturnType` is wrapped to the line after the closing paren
     /// if the function signature spans multiple lines
@@ -130,7 +130,7 @@ public enum WrapReturnType: String, CaseIterable {
 }
 
 /// Wrapping behavior for effects (`async`, `throws`)
-public enum WrapEffects: String, CaseIterable {
+enum WrapEffects: String, CaseIterable {
     case preserve
     /// `async` and `throws` are wrapped to the line after the closing paren
     /// if the function signature spans multiple lines
@@ -140,7 +140,7 @@ public enum WrapEffects: String, CaseIterable {
 }
 
 /// Argument type for whether explicit or inferred properties are preferred
-public enum PropertyTypes: String, CaseIterable {
+enum PropertyTypes: String, CaseIterable {
     /// Preserves the type as a part of the property definition:
     /// `let foo: Foo = Foo()` becomes `let foo: Foo = .init()`
     case explicit
@@ -158,14 +158,14 @@ public enum PropertyTypes: String, CaseIterable {
 }
 
 /// Argument type for empty brace spacing behavior
-public enum EmptyBracesSpacing: String, CaseIterable {
+enum EmptyBracesSpacing: String, CaseIterable {
     case spaced
     case noSpace = "no-space"
     case linebreak
 }
 
 /// Wrapping behavior for multi-line ternary operators
-public enum TernaryOperatorWrapMode: String, CaseIterable {
+enum TernaryOperatorWrapMode: String, CaseIterable {
     /// Wraps ternary operators using the default `wrap` behavior,
     /// which performs the minimum amount of wrapping necessary.
     case `default`
@@ -173,7 +173,7 @@ public enum TernaryOperatorWrapMode: String, CaseIterable {
     case beforeOperators = "before-operators"
 }
 
-public enum StringInterpolationWrapMode: String, CaseIterable {
+enum StringInterpolationWrapMode: String, CaseIterable {
     /// Wraps string interpolation if necessary based on the max line length
     case `default`
     /// Preserve existing wrapping for string interpolations,
@@ -182,12 +182,12 @@ public enum StringInterpolationWrapMode: String, CaseIterable {
 }
 
 /// Whether or not to remove `-> Void` from closures
-public enum ClosureVoidReturn: String, CaseIterable {
+enum ClosureVoidReturn: String, CaseIterable {
     case remove
     case preserve
 }
 
-public enum TrailingCommas: String, CaseIterable {
+enum TrailingCommas: String, CaseIterable {
     case never
     case always
     case collectionsOnly = "collections-only"
@@ -195,23 +195,23 @@ public enum TrailingCommas: String, CaseIterable {
 }
 
 /// Whether to insert, remove, or preserve spaces around operators
-public enum OperatorSpacingMode: String, CaseIterable {
+enum OperatorSpacingMode: String, CaseIterable {
     case insert = "spaced"
     case remove = "no-space"
     case preserve
 }
 
 /// Version number wrapper
-public struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral, CustomStringConvertible, Sendable {
-    public let rawValue: String
+struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral, CustomStringConvertible, Sendable {
+    let rawValue: String
 
-    public static let undefined = Version(rawValue: "0")!
+    static let undefined = Version(rawValue: "0")!
 
-    public init(stringLiteral value: String) {
+    init(stringLiteral value: String) {
         self.init(rawValue: value)!
     }
 
-    public init?(rawValue: String) {
+    init?(rawValue: String) {
         let rawValue = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard CharacterSet.decimalDigits.contains(rawValue.unicodeScalars.first ?? " ") else {
             return nil
@@ -219,7 +219,7 @@ public struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral,
         self.rawValue = rawValue
     }
 
-    public static func < (lhs: Version, rhs: Version) -> Bool {
+    static func < (lhs: Version, rhs: Version) -> Bool {
         lhs.rawValue.compare(
             rhs.rawValue,
             options: .numeric,
@@ -227,12 +227,12 @@ public struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral,
         ) == .orderedAscending
     }
 
-    public var description: String {
+    var description: String {
         rawValue
     }
 }
 
-public enum ReplacementKey: String, CaseIterable {
+enum ReplacementKey: String, CaseIterable {
     case fileName = "file"
     case currentYear = "year"
     case createdDate = "created"
@@ -247,15 +247,15 @@ public enum ReplacementKey: String, CaseIterable {
 }
 
 /// Argument type for stripping
-public enum FileHeaderMode: Equatable, RawRepresentable, ExpressibleByStringLiteral {
+enum FileHeaderMode: Equatable, RawRepresentable, ExpressibleByStringLiteral {
     case ignore
     case replace(String)
 
-    public init(stringLiteral value: String) {
+    init(stringLiteral value: String) {
         self.init(rawValue: value)!
     }
 
-    public init?(rawValue: String) {
+    init?(rawValue: String) {
         switch rawValue.lowercased() {
         case "ignore", "keep", "preserve":
             self = .ignore
@@ -280,7 +280,7 @@ public enum FileHeaderMode: Equatable, RawRepresentable, ExpressibleByStringLite
         }
     }
 
-    public var rawValue: String {
+    var rawValue: String {
         switch self {
         case .ignore:
             return "ignore"
@@ -298,7 +298,7 @@ public enum FileHeaderMode: Equatable, RawRepresentable, ExpressibleByStringLite
     }
 }
 
-public struct ReplacementOptions: CustomStringConvertible {
+struct ReplacementOptions: CustomStringConvertible {
     var dateFormat: DateFormat
     var timeZone: FormatTimeZone
 
@@ -311,12 +311,12 @@ public struct ReplacementOptions: CustomStringConvertible {
         self.init(dateFormat: options.dateFormat, timeZone: options.timeZone)
     }
 
-    public var description: String {
+    var description: String {
         "\(dateFormat)@\(timeZone)"
     }
 }
 
-public enum ReplacementType: Equatable, CustomStringConvertible {
+enum ReplacementType: Equatable, CustomStringConvertible {
     case constant(String)
     case dynamic((FileInfo, ReplacementOptions) -> String?)
 
@@ -325,7 +325,7 @@ public enum ReplacementType: Equatable, CustomStringConvertible {
         self = .constant(val)
     }
 
-    public static func == (lhs: ReplacementType, rhs: ReplacementType) -> Bool {
+    static func == (lhs: ReplacementType, rhs: ReplacementType) -> Bool {
         switch (lhs, rhs) {
         case let (.constant(lhsVal), .constant(rhsVal)):
             return lhsVal == rhsVal
@@ -336,7 +336,7 @@ public enum ReplacementType: Equatable, CustomStringConvertible {
         }
     }
 
-    public func resolve(_ info: FileInfo, _ options: ReplacementOptions) -> String? {
+    func resolve(_ info: FileInfo, _ options: ReplacementOptions) -> String? {
         switch self {
         case let .constant(value):
             return value
@@ -345,7 +345,7 @@ public enum ReplacementType: Equatable, CustomStringConvertible {
         }
     }
 
-    public var description: String {
+    var description: String {
         switch self {
         case let .constant(value):
             return value
@@ -356,7 +356,7 @@ public enum ReplacementType: Equatable, CustomStringConvertible {
 }
 
 /// File info, used for constructing header comments
-public struct FileInfo: Equatable, CustomStringConvertible {
+struct FileInfo: Equatable, CustomStringConvertible {
     nonisolated(unsafe) static var defaultReplacements: [ReplacementKey: ReplacementType] = [
         .createdDate: .dynamic { info, options in
             info.creationDate?.format(with: options.dateFormat,
@@ -374,7 +374,7 @@ public struct FileInfo: Equatable, CustomStringConvertible {
         filePath.map { URL(fileURLWithPath: $0).lastPathComponent }
     }
 
-    public init(
+    init(
         filePath: String? = nil,
         creationDate: Date? = nil,
         replacements: [ReplacementKey: ReplacementType] = [:]
@@ -385,25 +385,25 @@ public struct FileInfo: Equatable, CustomStringConvertible {
         self.replacements.merge(replacements, uniquingKeysWith: { $1 })
     }
 
-    public var description: String {
+    var description: String {
         replacements
             .sorted(by: { $0.key.rawValue < $1.key.rawValue })
             .map { "\($0)=\($1)" }
             .joined(separator: ";")
     }
 
-    public func hasReplacement(for key: ReplacementKey, options: FormatOptions) -> Bool {
+    func hasReplacement(for key: ReplacementKey, options: FormatOptions) -> Bool {
         replacements[key]?.resolve(self, ReplacementOptions(options)) != nil
     }
 }
 
 /// Grouping for numeric literals
-public enum Grouping: Equatable, RawRepresentable, CustomStringConvertible {
+enum Grouping: Equatable, RawRepresentable, CustomStringConvertible {
     case ignore
     case none
     case group(Int, Int)
 
-    public init?(rawValue: String) {
+    init?(rawValue: String) {
         switch rawValue {
         case "ignore":
             self = .ignore
@@ -423,7 +423,7 @@ public enum Grouping: Equatable, RawRepresentable, CustomStringConvertible {
         }
     }
 
-    public var rawValue: String {
+    var rawValue: String {
         switch self {
         case .ignore:
             return "ignore"
@@ -434,13 +434,13 @@ public enum Grouping: Equatable, RawRepresentable, CustomStringConvertible {
         }
     }
 
-    public var description: String {
+    var description: String {
         rawValue
     }
 }
 
 /// Grouping for sorting imports
-public enum ImportGrouping: String, CaseIterable {
+enum ImportGrouping: String, CaseIterable {
     case alpha
     case length
     case testableFirst = "testable-first"
@@ -448,53 +448,53 @@ public enum ImportGrouping: String, CaseIterable {
 }
 
 /// Self insertion mode
-public enum SelfMode: String, CaseIterable {
+enum SelfMode: String, CaseIterable {
     case insert
     case remove
     case initOnly = "init-only"
 }
 
 /// Optionals mode
-public enum OptionalsMode: String, CaseIterable {
+enum OptionalsMode: String, CaseIterable {
     case preserveStructInits = "preserve-struct-inits"
     case exceptPropertiesDeprecated = "except-properties"
     case always
 }
 
 /// Argument type for yoda conditions
-public enum YodaMode: String, CaseIterable {
+enum YodaMode: String, CaseIterable {
     case literalsOnly = "literals-only"
     case always
 }
 
 /// Argument type for asset literals
-public enum AssetLiteralWidth: String, CaseIterable {
+enum AssetLiteralWidth: String, CaseIterable {
     case actualWidth = "actual-width"
     case visualWidth = "visual-width"
 }
 
 /// Whether or not to mark types / extensions
-public enum MarkMode: String, CaseIterable {
+enum MarkMode: String, CaseIterable {
     case always
     case never
     case ifNotEmpty = "if-not-empty"
 }
 
 /// Whether to convert types to enum
-public enum EnumNamespacesMode: String, CaseIterable {
+enum EnumNamespacesMode: String, CaseIterable {
     case always
     case structsOnly = "structs-only"
 }
 
 /// Whether to add spacing around a delimiter
-public enum DelimiterSpacing: String, CaseIterable {
+enum DelimiterSpacing: String, CaseIterable {
     case spaced
     case spaceAfter = "space-after"
     case noSpace = "no-space"
 }
 
 /// Declaration organization mode
-public enum DeclarationOrganizationMode: String, CaseIterable {
+enum DeclarationOrganizationMode: String, CaseIterable {
     /// Organize declarations by visibility
     case visibility
     /// Organize declarations by type
@@ -502,7 +502,7 @@ public enum DeclarationOrganizationMode: String, CaseIterable {
 }
 
 /// Treatment of MARK comments in type bodies
-public enum TypeBodyMarks: String, CaseIterable {
+enum TypeBodyMarks: String, CaseIterable {
     /// Preserve all existing MARK comments in type bodies
     case preserve
     /// Remove MARK comments that don't match expected visibility/declaration kind marks
@@ -510,27 +510,27 @@ public enum TypeBodyMarks: String, CaseIterable {
 }
 
 /// Whether to insert or remove blank lines from the start / end of type bodies
-public enum TypeBlankLines: String, CaseIterable {
+enum TypeBlankLines: String, CaseIterable {
     case remove
     case insert
     case preserve
 }
 
 /// Treatment of semicolons
-public enum SemicolonsMode: String, CaseIterable {
+enum SemicolonsMode: String, CaseIterable {
     case inlineOnly = "inline-only"
     case never
 }
 
 /// Format to use when printing dates
-public enum DateFormat: Equatable, RawRepresentable, CustomStringConvertible {
+enum DateFormat: Equatable, RawRepresentable, CustomStringConvertible {
     case dayMonthYear
     case iso
     case monthDayYear
     case system
     case custom(String)
 
-    public init?(rawValue: String) {
+    init?(rawValue: String) {
         switch rawValue {
         case "dmy":
             self = .dayMonthYear
@@ -545,7 +545,7 @@ public enum DateFormat: Equatable, RawRepresentable, CustomStringConvertible {
         }
     }
 
-    public var rawValue: String {
+    var rawValue: String {
         switch self {
         case .dayMonthYear:
             return "dmy"
@@ -560,20 +560,20 @@ public enum DateFormat: Equatable, RawRepresentable, CustomStringConvertible {
         }
     }
 
-    public var description: String {
+    var description: String {
         rawValue
     }
 }
 
 /// Timezone to use when printing dates
-public enum FormatTimeZone: Equatable, RawRepresentable, CustomStringConvertible {
+enum FormatTimeZone: Equatable, RawRepresentable, CustomStringConvertible {
     case system
     case abbreviation(String)
     case identifier(String)
 
     static let utcNames = ["utc", "gmt"]
 
-    public init?(rawValue: String) {
+    init?(rawValue: String) {
         if Self.utcNames.contains(rawValue.lowercased()) {
             self = .identifier("UTC")
         } else if TimeZone.knownTimeZoneIdentifiers.contains(rawValue) {
@@ -587,7 +587,7 @@ public enum FormatTimeZone: Equatable, RawRepresentable, CustomStringConvertible
         }
     }
 
-    public var rawValue: String {
+    var rawValue: String {
         switch self {
         case .system:
             return "system"
@@ -598,7 +598,7 @@ public enum FormatTimeZone: Equatable, RawRepresentable, CustomStringConvertible
         }
     }
 
-    public var timeZone: TimeZone? {
+    var timeZone: TimeZone? {
         switch self {
         case .system:
             return TimeZone.current
@@ -609,14 +609,14 @@ public enum FormatTimeZone: Equatable, RawRepresentable, CustomStringConvertible
         }
     }
 
-    public var description: String {
+    var description: String {
         rawValue
     }
 }
 
 /// When initializing an optional value type,
 /// is it necessary to explicitly declare a default value
-public enum NilInitType: String, CaseIterable {
+enum NilInitType: String, CaseIterable {
     /// Remove redundant `nil` if it is added as default value
     case remove
 
@@ -625,13 +625,13 @@ public enum NilInitType: String, CaseIterable {
 }
 
 /// Placement for closing paren in a function call or definition
-public enum ClosingParenPosition: String, CaseIterable {
+enum ClosingParenPosition: String, CaseIterable {
     case balanced
     case sameLine = "same-line"
     case `default`
 }
 
-public enum SwiftUIPropertiesSortMode: String, CaseIterable {
+enum SwiftUIPropertiesSortMode: String, CaseIterable {
     /// No sorting
     case none
     /// Sort alphabetically
@@ -640,13 +640,13 @@ public enum SwiftUIPropertiesSortMode: String, CaseIterable {
     case firstAppearanceSort = "first-appearance-sort"
 }
 
-public enum EquatableMacro: Equatable, RawRepresentable, CustomStringConvertible {
+enum EquatableMacro: Equatable, RawRepresentable, CustomStringConvertible {
     /// No equatable macro
     case none
     /// The name and the module for the macro, e.g. `@Equatable,EquatableMacroLib`
     case macro(String, module: String)
 
-    public init?(rawValue: String) {
+    init?(rawValue: String) {
         let components = rawValue.components(separatedBy: ",")
         if components.count == 2 {
             self = .macro(components[0], module: components[1])
@@ -657,7 +657,7 @@ public enum EquatableMacro: Equatable, RawRepresentable, CustomStringConvertible
         }
     }
 
-    public var rawValue: String {
+    var rawValue: String {
         switch self {
         case .none:
             return "none"
@@ -666,25 +666,25 @@ public enum EquatableMacro: Equatable, RawRepresentable, CustomStringConvertible
         }
     }
 
-    public var description: String {
+    var description: String {
         rawValue
     }
 }
 
-public enum BlankLineAfterSwitchCase: String, CaseIterable {
+enum BlankLineAfterSwitchCase: String, CaseIterable {
     /// Always add blank lines after switch cases
     case always
     /// Add blank lines after multiline switch cases only
     case multilineOnly = "multiline-only"
 }
 
-public enum URLMacro: Equatable, RawRepresentable, CustomStringConvertible {
+enum URLMacro: Equatable, RawRepresentable, CustomStringConvertible {
     /// No URL macro
     case none
     /// The name and the module for the macro, e.g. `#URL,URLFoundation`
     case macro(String, module: String)
 
-    public init?(rawValue: String) {
+    init?(rawValue: String) {
         let components = rawValue.components(separatedBy: ",")
         if components.count == 2 {
             self = .macro(components[0], module: components[1])
@@ -695,7 +695,7 @@ public enum URLMacro: Equatable, RawRepresentable, CustomStringConvertible {
         }
     }
 
-    public var rawValue: String {
+    var rawValue: String {
         switch self {
         case .none:
             return "none"
@@ -704,13 +704,13 @@ public enum URLMacro: Equatable, RawRepresentable, CustomStringConvertible {
         }
     }
 
-    public var description: String {
+    var description: String {
         rawValue
     }
 }
 
 /// Mode for preferring synthesized memberwise init for internal structs
-public enum PreferSynthesizedInitMode: Equatable, CustomStringConvertible {
+enum PreferSynthesizedInitMode: Equatable, CustomStringConvertible {
     /// Never prefer synthesized init (default)
     case never
     /// Always prefer synthesized init for internal structs
@@ -718,7 +718,7 @@ public enum PreferSynthesizedInitMode: Equatable, CustomStringConvertible {
     /// Prefer synthesized init only for structs conforming to specific protocols
     case conformances([String])
 
-    public init?(rawValue: String) {
+    init?(rawValue: String) {
         switch rawValue.lowercased() {
         case "never", "false":
             self = .never
@@ -734,7 +734,7 @@ public enum PreferSynthesizedInitMode: Equatable, CustomStringConvertible {
         }
     }
 
-    public var rawValue: String {
+    var rawValue: String {
         switch self {
         case .never:
             return "never"
@@ -745,159 +745,159 @@ public enum PreferSynthesizedInitMode: Equatable, CustomStringConvertible {
         }
     }
 
-    public var description: String {
+    var description: String {
         rawValue
     }
 }
 
 /// Configuration options for formatting. These aren't actually used by the
 /// Formatter class itself, but it makes them available to the format rules.
-public struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
-    public var lineAfterMarks: Bool
-    public var indent: String
-    public var linebreak: String
-    public var semicolons: SemicolonsMode
-    public var spaceAroundRangeOperators: OperatorSpacingMode
-    public var spaceAroundOperatorDeclarations: OperatorSpacingMode
-    public var useVoid: Bool
-    public var indentCase: Bool
-    public var trailingCommas: TrailingCommas
-    public var truncateBlankLines: Bool
-    public var insertBlankLines: Bool
-    public var removeBlankLines: Bool
-    public var allmanBraces: Bool
-    public var fileHeader: FileHeaderMode
-    public var ifdefIndent: IndentMode
-    public var wrapArguments: WrapMode
-    public var wrapParameters: WrapMode
-    public var wrapCollections: WrapMode
-    public var wrapTypealiases: WrapMode
-    public var wrapEnumCases: WrapEnumCases
-    public var closingParenPosition: ClosingParenPosition
-    public var callSiteClosingParenPosition: ClosingParenPosition
-    public var wrapReturnType: WrapReturnType
-    public var wrapConditions: WrapMode
-    public var wrapTernaryOperators: TernaryOperatorWrapMode
-    public var wrapStringInterpolation: StringInterpolationWrapMode
-    public var uppercaseHex: Bool
-    public var uppercaseExponent: Bool
-    public var decimalGrouping: Grouping
-    public var binaryGrouping: Grouping
-    public var octalGrouping: Grouping
-    public var hexGrouping: Grouping
-    public var fractionGrouping: Bool
-    public var exponentGrouping: Bool
-    public var hoistPatternLet: Bool
-    public var stripUnusedArguments: ArgumentStrippingMode
-    public var elsePosition: ElsePosition
-    public var guardElsePosition: GuardElsePosition
-    public var explicitSelf: SelfMode
-    public var selfRequired: Set<String>
-    public var throwCapturing: Set<String>
-    public var asyncCapturing: Set<String>
-    public var experimentalRules: Bool
-    public var importGrouping: ImportGrouping
-    public var trailingClosures: Set<String>
-    public var neverTrailing: Set<String>
-    public var xcodeIndentation: Bool
-    public var tabWidth: Int
-    public var maxWidth: Int
-    public var smartTabs: Bool
-    public var assetLiteralWidth: AssetLiteralWidth
-    public var noSpaceOperators: Set<String>
-    public var noWrapOperators: Set<String>
-    public var modifierOrder: [String]
-    public var shortOptionals: OptionalsMode
-    public var funcAttributes: AttributeMode
-    public var typeAttributes: AttributeMode
-    public var varAttributes: AttributeMode
-    public var storedVarAttributes: AttributeMode
-    public var computedVarAttributes: AttributeMode
-    public var complexAttributes: AttributeMode
-    public var complexAttributesExceptions: Set<String>
-    public var markTypes: MarkMode
-    public var typeMarkComment: String
-    public var markExtensions: MarkMode
-    public var extensionMarkComment: String
-    public var groupedExtensionMarkComment: String
-    public var markCategories: Bool
-    public var categoryMarkComment: String
-    public var beforeMarks: Set<String>
-    public var lifecycleMethods: Set<String>
-    public var organizeTypes: Set<String>
-    public var organizeClassThreshold: Int
-    public var organizeStructThreshold: Int
-    public var organizeEnumThreshold: Int
-    public var organizeExtensionThreshold: Int
-    public var markStructThreshold: Int
-    public var markClassThreshold: Int
-    public var markEnumThreshold: Int
-    public var markExtensionThreshold: Int
-    public var organizationMode: DeclarationOrganizationMode
-    public var typeBodyMarks: TypeBodyMarks
-    public var visibilityOrder: [String]?
-    public var typeOrder: [String]?
-    public var customVisibilityMarks: Set<String>
-    public var customTypeMarks: Set<String>
-    public var blankLineAfterSubgroups: Bool
-    public var alphabeticallySortedDeclarationPatterns: Set<String>
-    public var swiftUIPropertiesSortMode: SwiftUIPropertiesSortMode
-    public var yodaSwap: YodaMode
-    public var extensionACLPlacement: ExtensionACLPlacement
-    public var propertyTypes: PropertyTypes
-    public var preservedPropertyTypes: Set<String>
-    public var inferredTypesInConditionalExpressions: Bool
-    public var emptyBracesSpacing: EmptyBracesSpacing
-    public var acronyms: Set<String>
-    public var preserveAcronyms: Set<String>
-    public var indentStrings: Bool
-    public var closureVoidReturn: ClosureVoidReturn
-    public var enumNamespaces: EnumNamespacesMode
-    public var typeBlankLines: TypeBlankLines
-    public var genericTypes: String
-    public var useSomeAny: Bool
-    public var wrapEffects: WrapEffects
-    public var preserveAnonymousForEach: Bool
-    public var preserveSingleLineForEach: Bool
-    public var preserveDocComments: Bool
-    public var conditionalAssignmentOnlyAfterNewProperties: Bool
-    public var typeDelimiterSpacing: DelimiterSpacing
-    public var initCoderNil: Bool
-    public var dateFormat: DateFormat
-    public var timeZone: FormatTimeZone
-    public var nilInit: NilInitType
-    public var preservedPrivateDeclarations: Set<String>
-    public var additionalXCTestSymbols: Set<String>
-    public var defaultTestSuiteAttributes: [String]
-    public var equatableMacro: EquatableMacro
-    public var urlMacro: URLMacro
-    public var preferFileMacro: Bool
-    public var lineBetweenConsecutiveGuards: Bool
-    public var blankLineAfterSwitchCase: BlankLineAfterSwitchCase
-    public var redundantThrows: RedundantEffectMode
-    public var redundantAsync: RedundantEffectMode
-    public var allowPartialWrapping: Bool
-    public var preferSynthesizedInitForInternalStructs: PreferSynthesizedInitMode
+struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
+    var lineAfterMarks: Bool
+    var indent: String
+    var linebreak: String
+    var semicolons: SemicolonsMode
+    var spaceAroundRangeOperators: OperatorSpacingMode
+    var spaceAroundOperatorDeclarations: OperatorSpacingMode
+    var useVoid: Bool
+    var indentCase: Bool
+    var trailingCommas: TrailingCommas
+    var truncateBlankLines: Bool
+    var insertBlankLines: Bool
+    var removeBlankLines: Bool
+    var allmanBraces: Bool
+    var fileHeader: FileHeaderMode
+    var ifdefIndent: IndentMode
+    var wrapArguments: WrapMode
+    var wrapParameters: WrapMode
+    var wrapCollections: WrapMode
+    var wrapTypealiases: WrapMode
+    var wrapEnumCases: WrapEnumCases
+    var closingParenPosition: ClosingParenPosition
+    var callSiteClosingParenPosition: ClosingParenPosition
+    var wrapReturnType: WrapReturnType
+    var wrapConditions: WrapMode
+    var wrapTernaryOperators: TernaryOperatorWrapMode
+    var wrapStringInterpolation: StringInterpolationWrapMode
+    var uppercaseHex: Bool
+    var uppercaseExponent: Bool
+    var decimalGrouping: Grouping
+    var binaryGrouping: Grouping
+    var octalGrouping: Grouping
+    var hexGrouping: Grouping
+    var fractionGrouping: Bool
+    var exponentGrouping: Bool
+    var hoistPatternLet: Bool
+    var stripUnusedArguments: ArgumentStrippingMode
+    var elsePosition: ElsePosition
+    var guardElsePosition: GuardElsePosition
+    var explicitSelf: SelfMode
+    var selfRequired: Set<String>
+    var throwCapturing: Set<String>
+    var asyncCapturing: Set<String>
+    var experimentalRules: Bool
+    var importGrouping: ImportGrouping
+    var trailingClosures: Set<String>
+    var neverTrailing: Set<String>
+    var xcodeIndentation: Bool
+    var tabWidth: Int
+    var maxWidth: Int
+    var smartTabs: Bool
+    var assetLiteralWidth: AssetLiteralWidth
+    var noSpaceOperators: Set<String>
+    var noWrapOperators: Set<String>
+    var modifierOrder: [String]
+    var shortOptionals: OptionalsMode
+    var funcAttributes: AttributeMode
+    var typeAttributes: AttributeMode
+    var varAttributes: AttributeMode
+    var storedVarAttributes: AttributeMode
+    var computedVarAttributes: AttributeMode
+    var complexAttributes: AttributeMode
+    var complexAttributesExceptions: Set<String>
+    var markTypes: MarkMode
+    var typeMarkComment: String
+    var markExtensions: MarkMode
+    var extensionMarkComment: String
+    var groupedExtensionMarkComment: String
+    var markCategories: Bool
+    var categoryMarkComment: String
+    var beforeMarks: Set<String>
+    var lifecycleMethods: Set<String>
+    var organizeTypes: Set<String>
+    var organizeClassThreshold: Int
+    var organizeStructThreshold: Int
+    var organizeEnumThreshold: Int
+    var organizeExtensionThreshold: Int
+    var markStructThreshold: Int
+    var markClassThreshold: Int
+    var markEnumThreshold: Int
+    var markExtensionThreshold: Int
+    var organizationMode: DeclarationOrganizationMode
+    var typeBodyMarks: TypeBodyMarks
+    var visibilityOrder: [String]?
+    var typeOrder: [String]?
+    var customVisibilityMarks: Set<String>
+    var customTypeMarks: Set<String>
+    var blankLineAfterSubgroups: Bool
+    var alphabeticallySortedDeclarationPatterns: Set<String>
+    var swiftUIPropertiesSortMode: SwiftUIPropertiesSortMode
+    var yodaSwap: YodaMode
+    var extensionACLPlacement: ExtensionACLPlacement
+    var propertyTypes: PropertyTypes
+    var preservedPropertyTypes: Set<String>
+    var inferredTypesInConditionalExpressions: Bool
+    var emptyBracesSpacing: EmptyBracesSpacing
+    var acronyms: Set<String>
+    var preserveAcronyms: Set<String>
+    var indentStrings: Bool
+    var closureVoidReturn: ClosureVoidReturn
+    var enumNamespaces: EnumNamespacesMode
+    var typeBlankLines: TypeBlankLines
+    var genericTypes: String
+    var useSomeAny: Bool
+    var wrapEffects: WrapEffects
+    var preserveAnonymousForEach: Bool
+    var preserveSingleLineForEach: Bool
+    var preserveDocComments: Bool
+    var conditionalAssignmentOnlyAfterNewProperties: Bool
+    var typeDelimiterSpacing: DelimiterSpacing
+    var initCoderNil: Bool
+    var dateFormat: DateFormat
+    var timeZone: FormatTimeZone
+    var nilInit: NilInitType
+    var preservedPrivateDeclarations: Set<String>
+    var additionalXCTestSymbols: Set<String>
+    var defaultTestSuiteAttributes: [String]
+    var equatableMacro: EquatableMacro
+    var urlMacro: URLMacro
+    var preferFileMacro: Bool
+    var lineBetweenConsecutiveGuards: Bool
+    var blankLineAfterSwitchCase: BlankLineAfterSwitchCase
+    var redundantThrows: RedundantEffectMode
+    var redundantAsync: RedundantEffectMode
+    var allowPartialWrapping: Bool
+    var preferSynthesizedInitForInternalStructs: PreferSynthesizedInitMode
 
     /// Deprecated
-    public var indentComments: Bool
+    var indentComments: Bool
 
     /// Doesn't really belong here, but hard to put elsewhere
-    public var fragment: Bool
-    public var ignoreConflictMarkers: Bool
-    public var swiftVersion: Version
-    public var languageMode: Version
-    public var fileInfo: FileInfo
-    public var markdownFiles: MarkdownFormattingMode
-    public var timeout: TimeInterval
+    var fragment: Bool
+    var ignoreConflictMarkers: Bool
+    var swiftVersion: Version
+    var languageMode: Version
+    var fileInfo: FileInfo
+    var markdownFiles: MarkdownFormattingMode
+    var timeout: TimeInterval
 
     /// Enabled rules - this is a hack used to allow rules to vary their behavior
     /// based on other rules being enabled. Do not rely on it in other contexts
     var enabledRules: Set<String> = []
 
-    public static let `default` = FormatOptions()
+    static let `default` = FormatOptions()
 
-    public init(lineAfterMarks: Bool = true,
+    init(lineAfterMarks: Bool = true,
                 indent: String = "    ",
                 linebreak: String = "\n",
                 semicolons: SemicolonsMode = .inlineOnly,
@@ -1167,16 +1167,16 @@ public struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
         self.timeout = timeout
     }
 
-    public var useTabs: Bool {
+    var useTabs: Bool {
         indent.first == "\t"
     }
 
-    public var requiresFileInfo: Bool {
+    var requiresFileInfo: Bool {
         let string = fileHeader.rawValue
         return string.contains("{created") || string.contains("{file")
     }
 
-    public var allOptions: [String: Any] {
+    var allOptions: [String: Any] {
         let pairs = Mirror(reflecting: self).children.map { ($0!, $1) }
         var options = Dictionary(pairs, uniquingKeysWith: { $1 })
         for key in ["fileInfo", "enabledRules", "timeout"] { // Special cases
@@ -1185,7 +1185,7 @@ public struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
         return options
     }
 
-    public var description: String {
+    var description: String {
         let allowedCharacters = CharacterSet.newlines.inverted
         return Mirror(reflecting: self).children.compactMap { child in
             var value = child.value
@@ -1203,14 +1203,14 @@ public struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
 }
 
 /// When to remove redundant `throws` / `async` effects
-public enum RedundantEffectMode: String, CaseIterable {
+enum RedundantEffectMode: String, CaseIterable {
     /// Only remove redundant effects from test functions (default)
     case testsOnly = "tests-only"
     /// Remove redundant effects from all functions (can cause additional warnings / errors)
     case always
 }
 
-public enum MarkdownFormattingMode: String, CaseIterable {
+enum MarkdownFormattingMode: String, CaseIterable {
     /// Swift code in markdown files is ignored (default)
     case ignore
     /// Errors in markdown code blocks are ignored

@@ -3,7 +3,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let noForceTryInTests = FormatRule(
         help: "Write tests that use `throws` instead of using `try!`."
     ) { formatter in

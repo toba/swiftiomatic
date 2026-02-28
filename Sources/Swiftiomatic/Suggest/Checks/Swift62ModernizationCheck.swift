@@ -1,11 +1,11 @@
 import SwiftSyntax
 
 /// §4: Finds code that can benefit from Swift 6.2 features.
-public final class Swift62ModernizationCheck: BaseCheck {
+final class Swift62ModernizationCheck: BaseCheck {
 
     // MARK: - Task.detached → @concurrent
 
-    override public func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         let callee = node.calledExpression.trimmedDescription
 
         if callee == "Task.detached" {
@@ -36,7 +36,7 @@ public final class Swift62ModernizationCheck: BaseCheck {
 
     // MARK: - weak var that could be weak let
 
-    override public func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         let hasWeak = node.modifiers.contains { $0.name.text == "weak" }
         guard hasWeak else { return .visitChildren }
 
@@ -57,7 +57,7 @@ public final class Swift62ModernizationCheck: BaseCheck {
 
     // MARK: - UnsafeBufferPointer → Span candidates
 
-    override public func visit(_ node: TypeAnnotationSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: TypeAnnotationSyntax) -> SyntaxVisitorContinueKind {
         let typeStr = node.type.trimmedDescription
 
         if typeStr.contains("UnsafeRawBufferPointer")
@@ -80,7 +80,7 @@ public final class Swift62ModernizationCheck: BaseCheck {
 
     // MARK: - didSet/willSet with side effects
 
-    override public func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
         let accessorKind = node.accessorSpecifier.text
         guard accessorKind == "didSet" || accessorKind == "willSet" else {
             return .visitChildren

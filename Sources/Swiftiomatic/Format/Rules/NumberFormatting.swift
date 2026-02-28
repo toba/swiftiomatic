@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Standardize formatting of numeric literals
     static let numberFormatting = FormatRule(
         help: """

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant @objc annotation
     static let redundantObjc = FormatRule(
         help: "Remove redundant `@objc` annotations."

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let assertionFailures = FormatRule(
         help: """
         Changes all instances of assert(false, ...) to assertionFailure(...)

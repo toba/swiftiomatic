@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let genericExtensions = FormatRule(
         help: """
         Use angle brackets (`extension Array<Foo>`) for generic type extensions

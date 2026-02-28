@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Sort import statements
     static let sortImports = FormatRule(
         help: "Sort import statements alphabetically.",

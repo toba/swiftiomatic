@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let sortDeclarations = FormatRule(
         help: """
         Sorts the body of declarations with // swiftformat:sort

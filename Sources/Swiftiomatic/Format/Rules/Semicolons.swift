@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove semicolons, except where doing so would change the meaning of the code
     static let semicolons = FormatRule(
         help: "Remove semicolons.",

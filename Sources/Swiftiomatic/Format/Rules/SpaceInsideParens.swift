@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove space immediately inside parens
     static let spaceInsideParens = FormatRule(
         help: "Remove space inside parentheses."

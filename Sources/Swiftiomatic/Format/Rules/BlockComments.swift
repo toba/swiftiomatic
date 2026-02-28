@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let blockComments = FormatRule(
         help: "Convert block comments to consecutive single line comments.",
         disabledByDefault: true

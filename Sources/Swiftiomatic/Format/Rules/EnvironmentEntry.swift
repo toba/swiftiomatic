@@ -3,7 +3,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Removes types conforming `EnvironmentKey` and replaces them with the @Entry macro
     static let environmentEntry = FormatRule(
         help: "Updates SwiftUI `EnvironmentValues` definitions to use the @Entry macro."

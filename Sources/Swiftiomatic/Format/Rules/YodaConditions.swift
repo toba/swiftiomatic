@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Reorders "yoda conditions" where constant is placed on lhs of a comparison
     static let yodaConditions = FormatRule(
         help: "Prefer constant values to be on the right-hand-side of expressions.",

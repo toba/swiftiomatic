@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant pattern in case statements
     static let redundantPattern = FormatRule(
         help: "Remove redundant pattern matching parameter syntax."

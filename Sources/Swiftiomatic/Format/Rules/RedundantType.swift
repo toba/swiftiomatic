@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Removes explicit type declarations from initialization declarations
     static let redundantType = FormatRule(
         help: "Remove redundant type from variable declarations.",

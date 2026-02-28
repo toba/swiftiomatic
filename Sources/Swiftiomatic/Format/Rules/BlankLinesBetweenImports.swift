@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove blank lines between import statements
     static let blankLinesBetweenImports = FormatRule(
         help: "Remove blank lines between import statements.",

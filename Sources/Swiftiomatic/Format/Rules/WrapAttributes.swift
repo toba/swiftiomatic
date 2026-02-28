@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let wrapAttributes = FormatRule(
         help: "Wrap @attributes onto a separate line, or keep them on the same line.",
         options: ["func-attributes", "type-attributes", "var-attributes", "stored-var-attributes", "computed-var-attributes", "complex-attributes", "non-complex-attributes"],

@@ -7,7 +7,7 @@ import SwiftSyntax
 ///
 /// When a `TypeResolver` is available, resolves thrown variables (the `__unknown__`
 /// fallback) to their actual types via cursorinfo.
-public final class TypedThrowsCheck: BaseCheck {
+final class TypedThrowsCheck: BaseCheck {
 
     /// Pending throw-expression queries for post-walk resolution.
     private struct ThrowQuery {
@@ -19,7 +19,7 @@ public final class TypedThrowsCheck: BaseCheck {
     }
 
     private var throwQueries: [ThrowQuery] = []
-    override public func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         // Only interested in functions that declare `throws` without a type
         guard let throwsClause = node.signature.effectSpecifiers?.throwsClause,
               throwsClause.type == nil
@@ -80,7 +80,7 @@ public final class TypedThrowsCheck: BaseCheck {
         return .visitChildren
     }
 
-    override public func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         guard let throwsClause = node.signature.effectSpecifiers?.throwsClause,
               throwsClause.type == nil
         else {
@@ -107,7 +107,7 @@ public final class TypedThrowsCheck: BaseCheck {
         return .visitChildren
     }
 
-    override public func resolveTypeQueries() async {
+    override func resolveTypeQueries() async {
         guard let resolver = typeResolver, !throwQueries.isEmpty else { return }
 
         // Group queries by function

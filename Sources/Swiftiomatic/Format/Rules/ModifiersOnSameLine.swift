@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Ensure all modifiers are on the same line as the declaration keyword
     static let modifiersOnSameLine = FormatRule(
         help: "Ensure that all modifiers are on the same line as the declaration keyword."

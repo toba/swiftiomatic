@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Wrap single-line property bodies onto multiple lines.
     static let wrapPropertyBodies = FormatRule(
         help: "Wrap single-line property bodies onto multiple lines.",

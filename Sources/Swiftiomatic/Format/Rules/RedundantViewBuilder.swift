@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant @ViewBuilder attributes
     static let redundantViewBuilder = FormatRule(
         help: "Remove redundant @ViewBuilder attribute when it's not needed."

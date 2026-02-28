@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let fileMacro = FormatRule(
         help: "Prefer either #file or #fileID, which have the same behavior in Swift 6 and later.",
         options: ["file-macro"]

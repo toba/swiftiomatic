@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Add @available(*, unavailable) to init?(coder aDecoder: NSCoder)
     static let initCoderUnavailable = FormatRule(
         help: """

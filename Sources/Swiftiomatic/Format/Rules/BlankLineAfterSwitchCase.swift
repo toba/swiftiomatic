@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let blankLineAfterSwitchCase = FormatRule(
         help: """
         Insert a blank line after switch cases (excluding the last case,

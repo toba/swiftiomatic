@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove space immediately inside square brackets
     static let spaceInsideBrackets = FormatRule(
         help: "Remove space inside square brackets."

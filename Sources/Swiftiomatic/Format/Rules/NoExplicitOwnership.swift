@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let noExplicitOwnership = FormatRule(
         help: "Don't use explicit ownership modifiers (borrowing / consuming).",
         disabledByDefault: true

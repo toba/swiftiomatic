@@ -3,7 +3,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let blankLinesAfterGuardStatements = FormatRule(
         help: "Remove blank lines between consecutive guard statements, and insert a blank after the last guard statement.",
         disabledByDefault: true,

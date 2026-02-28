@@ -1,11 +1,11 @@
 import SwiftSyntax
 
 /// §7: Finds common pitfalls with the Observation framework.
-public final class ObservationPitfallsCheck: BaseCheck {
+final class ObservationPitfallsCheck: BaseCheck {
 
     // MARK: - withObservationTracking that should be Observations
 
-    override public func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         let callee = node.calledExpression.trimmedDescription
 
         if callee == "withObservationTracking" {
@@ -24,7 +24,7 @@ public final class ObservationPitfallsCheck: BaseCheck {
 
     // MARK: - Observations missing weak self
 
-    override public func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
         // Look for `for await ... in Observations { ... }`
         guard let callExpr = node.sequence.as(FunctionCallExprSyntax.self),
               callExpr.calledExpression.trimmedDescription == "Observations"

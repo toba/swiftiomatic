@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Insert or remove redundant self keyword
     static let redundantSelf = FormatRule(
         help: "Insert/remove explicit `self` where applicable.",

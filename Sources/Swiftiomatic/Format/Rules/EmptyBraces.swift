@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove white-space between empty braces
     static let emptyBraces = FormatRule(
         help: "Remove whitespace inside empty braces.",

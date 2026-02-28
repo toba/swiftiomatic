@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Implement brace-wrapping rules
     static let braces = FormatRule(
         help: "Wrap braces in accordance with selected style (K&R or Allman).",

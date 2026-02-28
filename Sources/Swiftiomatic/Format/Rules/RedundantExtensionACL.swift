@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant access control level modifiers in extensions
     static let redundantExtensionACL = FormatRule(
         help: "Remove redundant access control modifiers."

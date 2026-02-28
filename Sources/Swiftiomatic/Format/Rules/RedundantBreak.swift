@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant `break` keyword from switch cases
     static let redundantBreak = FormatRule(
         help: "Remove redundant `break` in switch case."

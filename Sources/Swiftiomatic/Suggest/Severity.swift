@@ -1,5 +1,5 @@
 /// Severity level for a finding.
-public enum Severity: String, Codable, Comparable, Sendable {
+enum Severity: String, Codable, Comparable, Sendable {
     case low
     case medium
     case high
@@ -12,7 +12,7 @@ public enum Severity: String, Codable, Comparable, Sendable {
         }
     }
 
-    public static func < (lhs: Severity, rhs: Severity) -> Bool {
+    static func < (lhs: Severity, rhs: Severity) -> Bool {
         lhs.rank < rhs.rank
     }
 }

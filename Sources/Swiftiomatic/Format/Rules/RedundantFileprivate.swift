@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Replace `fileprivate` with `private` where possible
     static let redundantFileprivate = FormatRule(
         help: "Prefer `private` over `fileprivate` where equivalent."

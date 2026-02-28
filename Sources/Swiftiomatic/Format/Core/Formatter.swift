@@ -37,12 +37,12 @@ import Foundation
 /// The primary advantage it provides over operating on the token array
 /// directly is that it allows mutation during enumeration, and
 /// transparently handles changes that affect the current token index.
-public final class Formatter {
+final class Formatter {
     private var enumerationIndex = -1
     private var autoUpdatingReferences = [WeakAutoUpdatingReference]()
 
     /// Formatting range
-    public var range: Range<Int>?
+    var range: Range<Int>?
 
     /// Current rule, used for handling comment directives
     var currentRule: FormatRule? {
@@ -57,16 +57,16 @@ public final class Formatter {
     }
 
     /// The options that the formatter was initialized with
-    public private(set) var options: FormatOptions
+    private(set) var options: FormatOptions
 
     /// The token array managed by the formatter (read-only)
-    public private(set) var tokens: [Token]
+    private(set) var tokens: [Token]
 
     /// Swiftformat directives found in the file
     private var directives: [Directive] = []
 
     /// Create a new formatter instance from a token array
-    public init(_ tokens: [Token], options: FormatOptions = FormatOptions(),
+    init(_ tokens: [Token], options: FormatOptions = FormatOptions(),
                 trackChanges: Bool = false, range: Range<Int>? = nil)
     {
         self.tokens = tokens
@@ -256,23 +256,23 @@ public final class Formatter {
     // MARK: change tracking
 
     /// Change record
-    public struct Change: Equatable {
-        public let line: Int
-        public let rule: FormatRule
-        public let filePath: String?
-        public let isMove: Bool
+    struct Change: Equatable {
+        let line: Int
+        let rule: FormatRule
+        let filePath: String?
+        let isMove: Bool
 
-        public var help: String {
+        var help: String {
             stripMarkdown(rule.help).replacingOccurrences(of: "\n", with: " ")
         }
 
-        public func description(asError: Bool) -> String {
+        func description(asError: Bool) -> String {
             "\(filePath ?? ""):\(line):1: \(asError ? "error" : "warning"): (\(rule.name)) \(help)"
         }
     }
 
     /// Changes made
-    public private(set) var changes = [Change]()
+    private(set) var changes = [Change]()
 
     /// Should formatter track changes?
     private let trackChanges: Bool
@@ -329,7 +329,7 @@ public final class Formatter {
     }
 }
 
-public extension Formatter {
+extension Formatter {
     // MARK: access and mutation
 
     /// Returns the token at the specified index, or nil if index is invalid
@@ -980,12 +980,12 @@ private struct WeakAutoUpdatingReference {
 }
 
 /// Either an `Int` or an `AutoUpdatingIndex`
-public protocol AnyIndex {
+protocol AnyIndex {
     var index: Int { get }
 }
 
 extension Int: AnyIndex {
-    public var index: Int {
+    var index: Int {
         self
     }
 }
@@ -1020,11 +1020,11 @@ final class AutoUpdatingIndex: AutoUpdatingReference, AnyIndex, Equatable, Custo
 }
 
 /// Either a `ClosedRange` or an `AutoUpdatingRange`
-public protocol AnyClosedRange {
+protocol AnyClosedRange {
     var range: ClosedRange<Int> { get }
 }
 
-public extension AnyClosedRange {
+extension AnyClosedRange {
     var lowerBound: Int {
         range.lowerBound
     }
@@ -1035,7 +1035,7 @@ public extension AnyClosedRange {
 }
 
 extension ClosedRange: AnyClosedRange where Bound == Int {
-    public var range: ClosedRange<Int> {
+    var range: ClosedRange<Int> {
         self
     }
 }

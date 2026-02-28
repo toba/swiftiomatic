@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let trailingCommas = FormatRule(
         help: "Add or remove trailing commas in comma-separated lists.",
         options: ["trailing-commas"]

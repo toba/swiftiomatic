@@ -4,7 +4,7 @@ import SwiftSyntax
 ///
 /// Replaces the basic fire-and-forget detection from AgentReviewCheck with
 /// deeper AST analysis, adding scope-aware severity and .onAppear+Task detection.
-public final class FireAndForgetTaskCheck: BaseCheck {
+final class FireAndForgetTaskCheck: BaseCheck {
 
     /// Whether we are currently inside a `var body: some View` computed property.
     private var insideViewBody = false
@@ -14,7 +14,7 @@ public final class FireAndForgetTaskCheck: BaseCheck {
 
     // MARK: - Scope Tracking
 
-    override public func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         // Detect `var body: some View`
         guard node.bindingSpecifier.tokenKind == .keyword(.var) else {
             return .visitChildren
@@ -29,7 +29,7 @@ public final class FireAndForgetTaskCheck: BaseCheck {
         return .visitChildren
     }
 
-    override public func visitPost(_ node: VariableDeclSyntax) {
+    override func visitPost(_ node: VariableDeclSyntax) {
         // Reset when leaving the variable declaration.
         // Note: This resets after visiting the variable decl node itself,
         // but the accessor block children are visited before visitPost.
@@ -42,18 +42,18 @@ public final class FireAndForgetTaskCheck: BaseCheck {
         }
     }
 
-    override public func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
         insideInit = true
         return .visitChildren
     }
 
-    override public func visitPost(_ node: InitializerDeclSyntax) {
+    override func visitPost(_ node: InitializerDeclSyntax) {
         insideInit = false
     }
 
     // MARK: - Fire-and-Forget Task Detection (§8b) & .onAppear+Task (§8c)
 
-    override public func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         let callee = node.calledExpression.trimmedDescription
 
         // §8c: .onAppear { Task { } } detection

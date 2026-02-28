@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove or insert  redundant `= nil` initialization for Optional properties
     static let redundantNilInit = FormatRule(
         help: "Remove/insert redundant `nil` default value (Optional vars are nil by default).",

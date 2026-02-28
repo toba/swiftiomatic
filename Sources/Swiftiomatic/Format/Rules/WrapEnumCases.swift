@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Formats enum cases declaration into one case per line
     static let wrapEnumCases = FormatRule(
         help: "Rewrite comma-delimited enum cases to one case per line.",

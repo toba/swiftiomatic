@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Reposition `await` keyword outside of the current scope.
     static let hoistAwait = FormatRule(
         help: "Move inline `await` keyword(s) to start of expression.",

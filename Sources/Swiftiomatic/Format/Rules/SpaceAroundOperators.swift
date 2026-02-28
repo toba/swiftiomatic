@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Implement the following rules with respect to the spacing around operators:
     /// * Infix operators are separated from their operands by a space on either
     ///   side. Does not affect prefix/postfix operators, as required by syntax.

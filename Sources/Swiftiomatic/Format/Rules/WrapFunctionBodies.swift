@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Wrap single-line function, init, and subscript bodies onto multiple lines.
     static let wrapFunctionBodies = FormatRule(
         help: "Wrap single-line function, init, and subscript bodies onto multiple lines.",

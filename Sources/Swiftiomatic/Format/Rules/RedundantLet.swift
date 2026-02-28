@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant let/var for unnamed variables
     static let redundantLet = FormatRule(
         help: "Remove redundant `let`/`var` from ignored variables."

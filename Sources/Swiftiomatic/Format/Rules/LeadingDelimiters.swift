@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let leadingDelimiters = FormatRule(
         help: "Move leading delimiters to the end of the previous line.",
         sharedOptions: ["linebreaks"]

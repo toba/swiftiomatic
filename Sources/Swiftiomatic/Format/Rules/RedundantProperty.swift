@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let redundantProperty = FormatRule(
         help: "Simplifies redundant property definitions that are immediately returned.",
         orderAfter: [.propertyTypes]

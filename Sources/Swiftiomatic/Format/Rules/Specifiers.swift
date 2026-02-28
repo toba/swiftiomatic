@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Deprecated
     static let specifiers = FormatRule(
         help: "Use consistent ordering for member modifiers.",

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let preferKeyPath = FormatRule(
         help: "Convert trivial `map { $0.foo }` closures to keyPath-based syntax."
     ) { formatter in

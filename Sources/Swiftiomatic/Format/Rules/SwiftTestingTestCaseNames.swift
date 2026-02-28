@@ -1,7 +1,7 @@
 // Created by Cal Stephens on 2/19/25.
 // Copyright © 2025 Airbnb Inc. All rights reserved.
 
-public extension FormatRule {
+extension FormatRule {
     static let swiftTestingTestCaseNames = FormatRule(
         help: "In Swift Testing, don't prefix @Test methods with 'test'."
     ) { formatter in

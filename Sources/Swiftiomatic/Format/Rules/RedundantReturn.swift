@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant return keyword
     static let redundantReturn = FormatRule(
         help: "Remove unneeded `return` keyword."

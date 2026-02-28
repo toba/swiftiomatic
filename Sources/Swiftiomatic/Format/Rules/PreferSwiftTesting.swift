@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let preferSwiftTesting = FormatRule(
         help: "Prefer the Swift Testing library over XCTest.",
         disabledByDefault: true,

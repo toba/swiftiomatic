@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Adds a blank line around MARK: comments
     static let blankLinesAroundMark = FormatRule(
         help: "Insert blank line before and after `MARK:` comments.",

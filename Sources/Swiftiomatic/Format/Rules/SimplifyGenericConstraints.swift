@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let simplifyGenericConstraints = FormatRule(
         help: """
         Use inline generic constraints (`<T: Foo>`) instead of where clauses

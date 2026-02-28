@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Replace count == 0 with isEmpty
     static let isEmpty = FormatRule(
         help: "Prefer `isEmpty` over comparing `count` against zero.",

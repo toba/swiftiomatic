@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let preferCountWhere = FormatRule(
         help: "Prefer `count(where:)` over `filter(_:).count`."
     ) { formatter in

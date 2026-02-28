@@ -1,7 +1,7 @@
 // Created by Cal Stephens on 9/25/24.
 // Copyright © 2024 Airbnb Inc. All rights reserved.
 
-public extension FormatRule {
+extension FormatRule {
     static let redundantEquatable = FormatRule(
         help: "Omit a hand-written Equatable implementation when the compiler-synthesized conformance would be equivalent.",
         options: ["equatable-macro"]

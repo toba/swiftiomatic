@@ -1,6 +1,6 @@
 /// Formats findings as human-readable text matching the swift-review scan output.
-public enum TextFormatter {
-    public static func format(_ findings: [Finding]) -> String {
+enum TextFormatter {
+    static func format(_ findings: [Finding]) -> String {
         guard !findings.isEmpty else {
             return "No findings."
         }

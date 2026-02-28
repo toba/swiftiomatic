@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Strip header comments from the file
     static let fileHeader = FormatRule(
         help: "Use specified source file header template for all files.",

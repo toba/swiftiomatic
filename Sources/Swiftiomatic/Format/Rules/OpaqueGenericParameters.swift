@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let opaqueGenericParameters = FormatRule(
         help: """
         Use opaque generic parameters (`some Protocol`) instead of generic parameters

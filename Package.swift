@@ -37,7 +37,14 @@ let package = Package(
                 .product(name: "SwiftyTextTable", package: "SwiftyTextTable"),
                 .product(name: "Yams", package: "Yams"),
             ],
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
+                .enableExperimentalFeature("ApproachableConcurrency"),
+                .enableUpcomingFeature("InternalImportsByDefault"),
+                .enableUpcomingFeature("MemberImportVisibility"),
+                .enableUpcomingFeature("DisableOutwardActorIsolation"),
+                .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+            ]
         ),
         .target(
             name: "DyldWarningWorkaround",
@@ -49,12 +56,18 @@ let package = Package(
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
             ],
-            path: "Sources/Lint/Macros"
+            path: "Sources/Lint/Macros",
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
+            ]
         ),
         .testTarget(
             name: "SwiftiomaticTests",
             dependencies: ["Swiftiomatic"],
-            resources: [.copy("Fixtures")]
+            resources: [.copy("Fixtures")],
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
+            ]
         ),
     ]
 )

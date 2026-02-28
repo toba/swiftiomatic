@@ -10,14 +10,14 @@ import Synchronization
 ///
 /// When a `FileIndex` is provided (via `--sourcekit`), uses USR-based matching
 /// instead of name-only matching, eliminating false negatives from name collisions.
-public final class DeadSymbolsCheck: BaseCheck {
+final class DeadSymbolsCheck: BaseCheck {
     /// Shared symbol table across all files.
     let symbolTable: SymbolTable
 
     /// Optional SourceKit file index for USR-based reference matching.
     let fileIndex: FileIndex?
 
-    public init(filePath: String, symbolTable: SymbolTable, fileIndex: FileIndex? = nil) {
+    init(filePath: String, symbolTable: SymbolTable, fileIndex: FileIndex? = nil) {
         self.symbolTable = symbolTable
         self.fileIndex = fileIndex
         super.init(filePath: filePath)
@@ -25,7 +25,7 @@ public final class DeadSymbolsCheck: BaseCheck {
 
     // Pass 2: Find references and mark used symbols.
     // When a FileIndex is available, use USR-based matching for precision.
-    override public func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
         let loc = node.startLocation(converter: .init(fileName: filePath, tree: node.root))
         let name = node.baseName.text
         let usr = findUSR(for: name, line: loc.line, column: loc.column)
@@ -33,7 +33,7 @@ public final class DeadSymbolsCheck: BaseCheck {
         return .visitChildren
     }
 
-    override public func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
         let loc = node.startLocation(converter: .init(fileName: filePath, tree: node.root))
         let name = node.declName.baseName.text
         let usr = findUSR(for: name, line: loc.line, column: loc.column)
@@ -50,7 +50,7 @@ public final class DeadSymbolsCheck: BaseCheck {
     }
 
     /// After all files have been walked, generate findings for dead symbols.
-    public func generateFindings() -> [Finding] {
+    func generateFindings() -> [Finding] {
         var results: [Finding] = []
 
         for symbol in symbolTable.unreferencedSymbols {
@@ -71,19 +71,19 @@ public final class DeadSymbolsCheck: BaseCheck {
 }
 
 /// Pass 1 visitor: Collects private declarations.
-public final class DeclarationCollector: SyntaxVisitor {
+final class DeclarationCollector: SyntaxVisitor {
     let filePath: String
     let symbolTable: SymbolTable
     let fileIndex: FileIndex?
 
-    public init(filePath: String, symbolTable: SymbolTable, fileIndex: FileIndex? = nil) {
+    init(filePath: String, symbolTable: SymbolTable, fileIndex: FileIndex? = nil) {
         self.filePath = filePath
         self.symbolTable = symbolTable
         self.fileIndex = fileIndex
         super.init(viewMode: .sourceAccurate)
     }
 
-    override public func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         guard isPrivate(node.modifiers), !shouldExclude(node) else { return .visitChildren }
 
         let loc = node.startLocation(converter: .init(fileName: filePath, tree: node.root))
@@ -98,7 +98,7 @@ public final class DeclarationCollector: SyntaxVisitor {
         return .visitChildren
     }
 
-    override public func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         guard isPrivate(node.modifiers) else { return .visitChildren }
 
         for binding in node.bindings {
@@ -117,7 +117,7 @@ public final class DeclarationCollector: SyntaxVisitor {
         return .visitChildren
     }
 
-    override public func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         guard isPrivate(node.modifiers) else { return .visitChildren }
         let loc = node.startLocation(converter: .init(fileName: filePath, tree: node.root))
         symbolTable.addDeclaration(
@@ -128,7 +128,7 @@ public final class DeclarationCollector: SyntaxVisitor {
         return .visitChildren
     }
 
-    override public func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
         guard isPrivate(node.modifiers) else { return .visitChildren }
         let loc = node.startLocation(converter: .init(fileName: filePath, tree: node.root))
         symbolTable.addDeclaration(
@@ -139,7 +139,7 @@ public final class DeclarationCollector: SyntaxVisitor {
         return .visitChildren
     }
 
-    override public func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         guard isPrivate(node.modifiers) else { return .visitChildren }
         let loc = node.startLocation(converter: .init(fileName: filePath, tree: node.root))
         symbolTable.addDeclaration(
@@ -190,7 +190,7 @@ public final class DeclarationCollector: SyntaxVisitor {
 ///
 /// When USRs are available (via `--sourcekit`), matching is USR-based for precision.
 /// Without USRs, falls back to name-based matching (the original behavior).
-public final class SymbolTable: Sendable {
+final class SymbolTable: Sendable {
     struct SymbolEntry: Sendable {
         let name: String
         let kind: String
@@ -205,7 +205,7 @@ public final class SymbolTable: Sendable {
 
     private let state = Mutex<[String: [SymbolEntry]]>([:])
 
-    public init() {}
+    init() {}
 
     func addDeclaration(name: String, kind: String, file: String, line: Int, column: Int, usr: String? = nil) {
         state.withLock { symbols in

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let wrapConditionalBodies = FormatRule(
         help: "Wrap the bodies of inline conditional statements onto a new line.",
         disabledByDefault: true,

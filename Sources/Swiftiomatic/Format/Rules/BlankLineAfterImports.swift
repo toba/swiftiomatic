@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Insert blank line after import statements
     static let blankLineAfterImports = FormatRule(
         help: "Insert blank line after import statements.",

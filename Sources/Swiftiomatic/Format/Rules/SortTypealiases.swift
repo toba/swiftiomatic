@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let sortTypealiases = FormatRule(
         help: "Sort protocol composition typealiases alphabetically.",
         sharedOptions: ["linebreaks"]

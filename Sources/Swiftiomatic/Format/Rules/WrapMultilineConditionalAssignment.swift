@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let wrapMultilineConditionalAssignment = FormatRule(
         help: "Wrap multiline conditional assignment expressions after the assignment operator.",
         disabledByDefault: true,

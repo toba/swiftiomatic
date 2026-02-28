@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant `let error` from `catch` statements
     static let redundantLetError = FormatRule(
         help: "Remove redundant `let error` from `catch` clause."

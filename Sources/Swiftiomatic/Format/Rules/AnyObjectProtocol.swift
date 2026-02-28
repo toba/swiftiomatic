@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Prefer `AnyObject` over `class` for class-based protocols
     static let anyObjectProtocol = FormatRule(
         help: "Prefer `AnyObject` over `class` in protocol definitions."

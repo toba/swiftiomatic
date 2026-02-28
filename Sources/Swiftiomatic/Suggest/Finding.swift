@@ -1,15 +1,15 @@
 /// A single analysis finding with location, message, and metadata.
-public struct Finding: Codable, Sendable, Comparable {
-    public let category: Category
-    public let severity: Severity
-    public let file: String
-    public let line: Int
-    public let column: Int
-    public let message: String
-    public let suggestion: String?
-    public let confidence: Confidence
+struct Finding: Codable, Sendable, Comparable {
+    let category: Category
+    let severity: Severity
+    let file: String
+    let line: Int
+    let column: Int
+    let message: String
+    let suggestion: String?
+    let confidence: Confidence
 
-    public init(
+    init(
         category: Category,
         severity: Severity,
         file: String,
@@ -30,7 +30,7 @@ public struct Finding: Codable, Sendable, Comparable {
     }
 
     /// Sort by file path, then line, then column.
-    public static func < (lhs: Finding, rhs: Finding) -> Bool {
+    static func < (lhs: Finding, rhs: Finding) -> Bool {
         if lhs.file != rhs.file { return lhs.file < rhs.file }
         if lhs.line != rhs.line { return lhs.line < rhs.line }
         return lhs.column < rhs.column

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Strip redundant `.init` from type instantiations
     static let redundantInit = FormatRule(
         help: "Remove explicit `init` if not required.",

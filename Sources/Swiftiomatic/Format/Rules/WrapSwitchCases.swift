@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Writes one switch case per line
     static let wrapSwitchCases = FormatRule(
         help: "Wrap comma-delimited switch cases onto multiple lines.",

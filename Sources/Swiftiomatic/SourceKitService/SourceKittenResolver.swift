@@ -6,20 +6,20 @@ import Synchronization
 ///
 /// Wraps cursorinfo, index, and expression-type requests.
 /// Caches compiler args and file indexes for the lifetime of the scan.
-public final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
+final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
     private let compilerArgs: [String]
     private let indexCache = Mutex<[String: FileIndex]>([:])
 
 
-    public var isAvailable: Bool { true }
+    var isAvailable: Bool { true }
 
     /// Create a resolver with explicit compiler arguments.
-    public init(compilerArgs: [String]) {
+    init(compilerArgs: [String]) {
         self.compilerArgs = compilerArgs
     }
 
     /// Create a resolver that discovers compiler args from an SPM project root.
-    public init?(projectRoot: String) {
+    init?(projectRoot: String) {
         guard let module = Module(spmArguments: [], inPath: projectRoot) else {
             return nil
         }
@@ -28,7 +28,7 @@ public final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
 
     // MARK: - TypeResolver
 
-    public func resolveType(inFile file: String, offset: Int) async -> ResolvedType? {
+    func resolveType(inFile file: String, offset: Int) async -> ResolvedType? {
         let request = Request.cursorInfo(
             file: file,
             offset: ByteCount(offset),
@@ -43,7 +43,7 @@ public final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
         return ResolvedType(typeName: typeName, usr: usr, moduleName: moduleName)
     }
 
-    public func indexFile(_ file: String) async -> FileIndex? {
+    func indexFile(_ file: String) async -> FileIndex? {
         if let cached = indexCache.withLock({ $0[file] }) {
             return cached
         }
@@ -62,7 +62,7 @@ public final class SourceKittenResolver: TypeResolver, @unchecked Sendable {
         return index
     }
 
-    public func expressionTypes(inFile file: String) async -> [ExpressionTypeInfo] {
+    func expressionTypes(inFile file: String) async -> [ExpressionTypeInfo] {
         guard let source = try? String(contentsOfFile: file, encoding: .utf8) else { return [] }
 
         let request = Request.customRequest(request: [

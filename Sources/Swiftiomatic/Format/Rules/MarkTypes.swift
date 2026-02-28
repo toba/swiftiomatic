@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let markTypes = FormatRule(
         help: "Add a MARK comment before top-level types and extensions.",
         runOnceOnly: true,

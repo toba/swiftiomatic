@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let hoistTry = FormatRule(
         help: "Move inline `try` keyword(s) to start of expression.",
         options: ["throw-capturing"]

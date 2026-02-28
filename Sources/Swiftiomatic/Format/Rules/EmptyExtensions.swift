@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove empty, non-conforming, extensions.
     static let emptyExtensions = FormatRule(
         help: "Remove empty, non-protocol-conforming extensions.",

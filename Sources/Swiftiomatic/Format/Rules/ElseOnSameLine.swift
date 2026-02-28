@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Ensure that an `else` statement following `if { ... }` appears on the same line
     /// as the closing brace. This has no effect on the `else` part of a `guard` statement.
     /// Also applies to `catch` after `try` and `while` after `repeat`.

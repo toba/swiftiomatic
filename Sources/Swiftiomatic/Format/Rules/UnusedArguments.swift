@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Replace unused arguments with an underscore
     static let unusedArguments = FormatRule(
         help: "Mark unused function arguments with `_`.",

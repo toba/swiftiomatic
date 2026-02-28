@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Replace Array<T>, Dictionary<T, U> and Optional<T> with [T], [T: U] and T?
     static let typeSugar = FormatRule(
         help: "Prefer shorthand syntax for Arrays, Dictionaries and Optionals.",

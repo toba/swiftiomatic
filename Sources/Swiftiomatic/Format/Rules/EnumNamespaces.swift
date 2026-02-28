@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Converts types used for hosting only static members into enums to avoid instantiation.
     static let enumNamespaces = FormatRule(
         help: """

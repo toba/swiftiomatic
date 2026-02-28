@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let preferForLoop = FormatRule(
         help: "Convert functional `forEach` calls to for loops.",
         options: ["anonymous-for-each", "single-line-for-each"]

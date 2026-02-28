@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove redundant void return values for function and closure declarations
     static let redundantVoidReturnType = FormatRule(
         help: "Remove explicit `Void` return type.",

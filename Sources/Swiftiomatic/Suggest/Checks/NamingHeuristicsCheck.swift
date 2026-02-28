@@ -1,10 +1,11 @@
+import Foundation
 import SwiftSyntax
 
 /// §6: Checks names against Swift API Design Guidelines.
 ///
 /// When a `TypeResolver` is available, also checks variables without
 /// explicit `: Bool` annotation but with an inferred Bool type.
-public final class NamingHeuristicsCheck: BaseCheck {
+final class NamingHeuristicsCheck: BaseCheck {
 
     /// Bindings without explicit Bool annotation to check via expression types.
     private struct InferredBoolCandidate {
@@ -18,7 +19,7 @@ public final class NamingHeuristicsCheck: BaseCheck {
 
     // MARK: - Protocol naming
 
-    override public func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
         let name = node.name.text
 
         // Check for -able suffix where -ing might be more appropriate
@@ -55,7 +56,7 @@ public final class NamingHeuristicsCheck: BaseCheck {
 
     // MARK: - Boolean naming
 
-    override public func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         for binding in node.bindings {
             guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self) else { continue }
             let name = pattern.identifier.text
@@ -106,7 +107,7 @@ public final class NamingHeuristicsCheck: BaseCheck {
         }
     }
 
-    override public func resolveTypeQueries() async {
+    override func resolveTypeQueries() async {
         guard let resolver = typeResolver, !inferredBoolCandidates.isEmpty else { return }
 
         let exprTypes = await resolver.expressionTypes(inFile: filePath)
@@ -126,7 +127,7 @@ public final class NamingHeuristicsCheck: BaseCheck {
 
     // MARK: - Factory methods
 
-    override public func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         let name = node.name.text
 
         // Static methods that return Self or the enclosing type should use make- prefix

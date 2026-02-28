@@ -1,5 +1,5 @@
 /// The 8 analysis categories matching the swift-review skill sections.
-public enum Category: String, Codable, CaseIterable, Sendable {
+enum Category: String, Codable, CaseIterable, Sendable {
     case anyElimination = "any-elimination"
     case typedThrows = "typed-throws"
     case concurrencyModernization = "concurrency"
@@ -10,7 +10,7 @@ public enum Category: String, Codable, CaseIterable, Sendable {
     case agentReview = "agent-review"
 
     /// Section number matching the swift-review skill.
-    public var sectionNumber: Int {
+    var sectionNumber: Int {
         switch self {
         case .anyElimination: 1
         case .typedThrows: 2
@@ -24,7 +24,7 @@ public enum Category: String, Codable, CaseIterable, Sendable {
     }
 
     /// Human-readable display name for text output.
-    public var displayName: String {
+    var displayName: String {
         switch self {
         case .anyElimination: "Generic Consolidation & Any Elimination"
         case .typedThrows: "Typed Throws Candidates"

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let consistentSwitchCaseSpacing = FormatRule(
         help: "Ensures consistent spacing among all of the cases in a switch statement.",
         orderAfter: [.blankLineAfterSwitchCase]

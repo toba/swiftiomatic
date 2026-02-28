@@ -32,7 +32,7 @@
 import Foundation
 
 /// Infer default options by examining the existing source
-public func inferFormatOptions(from tokens: [Token]) -> FormatOptions {
+func inferFormatOptions(from tokens: [Token]) -> FormatOptions {
     var options = FormatOptions.default
     inferFormatOptions(Inference.all, from: tokens, into: &options)
     return options

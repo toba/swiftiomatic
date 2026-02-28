@@ -31,29 +31,29 @@
 
 import Foundation
 
-public final class FormatRule: Hashable, Comparable, CustomStringConvertible, @unchecked Sendable {
+final class FormatRule: Hashable, Comparable, CustomStringConvertible, @unchecked Sendable {
     static let unnamedRule = "[unnamed rule]"
 
     private let fn: (Formatter) -> Void
-    public fileprivate(set) var name = FormatRule.unnamedRule
+    fileprivate(set) var name = FormatRule.unnamedRule
     fileprivate(set) var index = 0
     let help: String
     let examples: String?
     let runOnceOnly: Bool
-    public let disabledByDefault: Bool
+    let disabledByDefault: Bool
     let orderAfter: [FormatRule]
     let options: [String]
     let sharedOptions: [String]
-    public let deprecationMessage: String?
+    let deprecationMessage: String?
 
     /// Null rule, used for testing
     static let none: FormatRule = .init(help: "") { _ in } examples: { nil }
 
-    public var isDeprecated: Bool {
+    var isDeprecated: Bool {
         deprecationMessage != nil
     }
 
-    public var description: String {
+    var description: String {
         name
     }
 
@@ -78,26 +78,26 @@ public final class FormatRule: Hashable, Comparable, CustomStringConvertible, @u
         self.examples = examples()
     }
 
-    public func apply(with formatter: Formatter) {
+    func apply(with formatter: Formatter) {
         formatter.currentRule = self
         fn(formatter)
         formatter.currentRule = nil
     }
 
-    public static func == (lhs: FormatRule, rhs: FormatRule) -> Bool {
+    static func == (lhs: FormatRule, rhs: FormatRule) -> Bool {
         lhs === rhs
     }
 
-    public static func < (lhs: FormatRule, rhs: FormatRule) -> Bool {
+    static func < (lhs: FormatRule, rhs: FormatRule) -> Bool {
         lhs.index < rhs.index
     }
 
-    public func hash(into hasher: inout Hasher) {
+    func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(self))
     }
 }
 
-nonisolated(unsafe) public let FormatRules = _FormatRules()
+nonisolated(unsafe) let FormatRules = _FormatRules()
 
 private let rulesByName: [String: FormatRule] = {
     var rules = [String: FormatRule]()
@@ -136,7 +136,7 @@ private let _deprecatedRules = _allRules.filter(\.isDeprecated)
 private let _disabledByDefault = _allRules.filter(\.disabledByDefault)
 private let _defaultRules = allRules(except: _disabledByDefault)
 
-public extension _FormatRules {
+extension _FormatRules {
     /// A Dictionary of rules by name
     var byName: [String: FormatRule] {
         rulesByName
@@ -196,6 +196,6 @@ extension _FormatRules {
     }
 }
 
-public struct _FormatRules {
+struct _FormatRules {
     fileprivate init() {}
 }

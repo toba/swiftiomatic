@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Standardise the order of property modifiers
     static let modifierOrder = FormatRule(
         help: "Use consistent ordering for member modifiers.",

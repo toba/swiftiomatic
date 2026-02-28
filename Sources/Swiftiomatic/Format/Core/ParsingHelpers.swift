@@ -10,7 +10,7 @@ import Foundation
 
 // MARK: - shared helper methods
 
-public extension Formatter {
+extension Formatter {
     /// Returns the index of the first token of the line containing the specified index
     func startOfLine(at index: Int, excludingIndent: Bool = false) -> Int {
         var index = min(index, tokens.count)

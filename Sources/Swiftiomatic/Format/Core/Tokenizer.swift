@@ -49,7 +49,7 @@ let swiftKeywords = Set([
     /* Any, Self, self, super, nil, true, false */
 ])
 
-public extension String {
+extension String {
     /// Is this string a reserved keyword in Swift?
     var isSwiftKeyword: Bool {
         swiftKeywords.contains(self)
@@ -106,7 +106,7 @@ public extension String {
 }
 
 /// Classes of token used for matching
-public enum TokenType {
+enum TokenType {
     case space
     case comment
     case linebreak
@@ -139,7 +139,7 @@ public enum TokenType {
 }
 
 /// Numeric literal types
-public enum NumberType: String {
+enum NumberType: String {
     case integer
     case decimal
     case binary
@@ -148,7 +148,7 @@ public enum NumberType: String {
 }
 
 /// Operator/operator types
-public enum OperatorType: String {
+enum OperatorType: String {
     case none
     case infix
     case prefix
@@ -156,10 +156,10 @@ public enum OperatorType: String {
 }
 
 /// Original line number for token
-public typealias OriginalLine = Int
+typealias OriginalLine = Int
 
 /// All token types
-public enum Token: Hashable {
+enum Token: Hashable {
     case number(String, NumberType)
     case linebreak(String, OriginalLine)
     case startOfScope(String)
@@ -240,7 +240,7 @@ private extension Token {
     }
 }
 
-public extension Token {
+extension Token {
     /// The original token string
     var string: String {
         switch self {
@@ -1296,7 +1296,7 @@ extension UnicodeScalarView {
     }
 }
 
-public func tokenize(_ source: String) -> [Token] {
+func tokenize(_ source: String) -> [Token] {
     var scopeIndexStack: [Int] = []
     var tokens: [Token] = []
     var characters = UnicodeScalarView(source.unicodeScalars)
@@ -2170,7 +2170,7 @@ extension Token: Encodable {
         case operatorType
     }
 
-    public func encode(to encoder: Encoder) throws {
+    func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(typeName, forKey: .type)
         try container.encode(string, forKey: .string)

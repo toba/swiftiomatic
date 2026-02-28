@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let organizeDeclarations = FormatRule(
         help: "Organize declarations within class, struct, enum, actor, and extension bodies.",
         runOnceOnly: true,

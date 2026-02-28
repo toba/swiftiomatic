@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let redundantInternal = FormatRule(
         help: "Remove redundant internal access control."
     ) { formatter in

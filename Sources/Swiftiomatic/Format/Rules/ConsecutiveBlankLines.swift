@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Collapse all consecutive blank lines into a single blank line
     static let consecutiveBlankLines = FormatRule(
         help: "Replace consecutive blank lines with a single blank line."

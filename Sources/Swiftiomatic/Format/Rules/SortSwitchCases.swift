@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Sorts switch cases alphabetically
     static let sortSwitchCases = FormatRule(
         help: "Sort switch cases alphabetically.",

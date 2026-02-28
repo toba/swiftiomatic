@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Removed backticks from `self` when strongifying
     static let strongifiedSelf = FormatRule(
         help: "Remove backticks around `self` in Optional unwrap expressions."

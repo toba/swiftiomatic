@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Move `let` and `var` inside patterns to the beginning
     static let hoistPatternLet = FormatRule(
         help: "Reposition `let` or `var` bindings within pattern.",

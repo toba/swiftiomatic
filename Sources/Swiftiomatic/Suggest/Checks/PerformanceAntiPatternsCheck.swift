@@ -1,11 +1,11 @@
 import SwiftSyntax
 
 /// §5: Finds common performance anti-patterns.
-public final class PerformanceAntiPatternsCheck: BaseCheck {
+final class PerformanceAntiPatternsCheck: BaseCheck {
 
     // MARK: - Date() for benchmarking
 
-    override public func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         let callee = node.calledExpression.trimmedDescription
 
         // Date() used near timing patterns
@@ -33,7 +33,7 @@ public final class PerformanceAntiPatternsCheck: BaseCheck {
 
     // MARK: - Mutation during iteration (for-in + remove/insert)
 
-    override public func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: ForStmtSyntax) -> SyntaxVisitorContinueKind {
         guard let sequenceExpr = node.sequence.as(DeclReferenceExprSyntax.self) else {
             return .visitChildren
         }
@@ -61,7 +61,7 @@ public final class PerformanceAntiPatternsCheck: BaseCheck {
 
     // MARK: - Empty/single-element array literals for Collection/Sequence params
 
-    override public func visit(_ node: ArrayExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: ArrayExprSyntax) -> SyntaxVisitorContinueKind {
         let elementCount = node.elements.count
 
         guard elementCount <= 1 else { return .visitChildren }

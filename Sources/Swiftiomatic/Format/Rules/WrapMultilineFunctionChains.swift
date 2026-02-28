@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let wrapMultilineFunctionChains = FormatRule(
         help: "Wraps chained function calls to either all on the same line, or one per line.",
         disabledByDefault: true,

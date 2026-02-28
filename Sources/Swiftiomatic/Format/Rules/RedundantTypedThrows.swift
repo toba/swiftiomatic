@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let redundantTypedThrows = FormatRule(
         help: """
         Converts `throws(any Error)` to `throws`, and converts `throws(Never)` to non-throwing.

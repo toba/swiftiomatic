@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Normalize argument wrapping style
     static let wrapArguments = FormatRule(
         help: "Align wrapped function arguments or collection elements.",

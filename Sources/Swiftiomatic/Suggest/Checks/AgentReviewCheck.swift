@@ -1,11 +1,11 @@
 import SwiftSyntax
 
 /// §8: Lower-confidence checks that need agent verification.
-public final class AgentReviewCheck: BaseCheck {
+final class AgentReviewCheck: BaseCheck {
 
     // MARK: - 8b: Fire-and-forget Task {}
 
-    override public func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         let callee = node.calledExpression.trimmedDescription
 
         // Unassigned Task { }
@@ -51,7 +51,7 @@ public final class AgentReviewCheck: BaseCheck {
 
     // MARK: - 8b: Fire-and-forget via MemberAccessExpr
 
-    override public func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
         // 8f: .absoluteString
         if node.declName.baseName.text == "absoluteString" {
             // Only flag if it's not already caught as a function call
@@ -71,14 +71,14 @@ public final class AgentReviewCheck: BaseCheck {
 
     // MARK: - 8c: .onAppear + Task (should be .task modifier)
 
-    override public func visit(_ node: LabeledExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: LabeledExprSyntax) -> SyntaxVisitorContinueKind {
         // This is a heuristic — look for .onAppear closures containing Task {}
         return .visitChildren
     }
 
     // MARK: - 8d: Error enums without LocalizedError
 
-    override public func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
         guard let inheritance = node.inheritanceClause else { return .visitChildren }
         let inheritedTypes = inheritance.inheritedTypes.map { $0.type.trimmedDescription }
 
@@ -98,7 +98,7 @@ public final class AgentReviewCheck: BaseCheck {
 
     // MARK: - 8g: nonisolated(unsafe) let
 
-    override public func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         let modifiers = node.modifiers.map { $0.trimmedDescription }
         if modifiers.contains("nonisolated(unsafe)") {
             let bindingName = node.bindings.first?.pattern.trimmedDescription ?? "unknown"

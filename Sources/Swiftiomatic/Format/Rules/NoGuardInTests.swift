@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let noGuardInTests = FormatRule(
         help: """
         Convert guard statements in unit tests to `try #require(...)` / `#expect(...)`

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let redundantClosure = FormatRule(
         help: """
         Removes redundant closures bodies, containing a single statement,

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove blank lines immediately after an opening brace, bracket, paren, chevron, or colon
     /// that starts a new scope.
     static let blankLinesAtStartOfScope = FormatRule(

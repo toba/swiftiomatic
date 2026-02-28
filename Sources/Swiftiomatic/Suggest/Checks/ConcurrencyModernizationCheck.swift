@@ -6,7 +6,7 @@ import SwiftSyntax
 /// When a `TypeResolver` is available, verifies that string-matched
 /// `DispatchQueue` actually resolves to `Dispatch.DispatchQueue`,
 /// upgrading confidence from medium to high.
-public final class ConcurrencyModernizationCheck: BaseCheck {
+final class ConcurrencyModernizationCheck: BaseCheck {
 
     /// DispatchQueue findings that can be verified via SourceKit.
     private struct DispatchQueueQuery {
@@ -18,7 +18,7 @@ public final class ConcurrencyModernizationCheck: BaseCheck {
 
     // MARK: - Completion handlers
 
-    override public func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
         // Find functions with @escaping completion handler parameters
         for param in node.signature.parameterClause.parameters {
             let paramName = param.firstName.text
@@ -43,7 +43,7 @@ public final class ConcurrencyModernizationCheck: BaseCheck {
 
     // MARK: - DispatchQueue usage
 
-    override public func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
         let callee = node.calledExpression.trimmedDescription
 
         // DispatchQueue.main.async / .global().async
@@ -96,7 +96,7 @@ public final class ConcurrencyModernizationCheck: BaseCheck {
 
     // MARK: - @unchecked Sendable
 
-    override public func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+    override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         if hasUncheckedSendable(node.inheritanceClause) {
             addFinding(
                 at: node,
@@ -121,7 +121,7 @@ public final class ConcurrencyModernizationCheck: BaseCheck {
         return clause.trimmedDescription.contains("@unchecked Sendable")
     }
 
-    override public func resolveTypeQueries() async {
+    override func resolveTypeQueries() async {
         guard let resolver = typeResolver, !dispatchQueries.isEmpty else { return }
 
         for query in dispatchQueries {

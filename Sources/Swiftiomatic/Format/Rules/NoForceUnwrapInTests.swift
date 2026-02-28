@@ -3,7 +3,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let noForceUnwrapInTests = FormatRule(
         help: "Use XCTUnwrap or #require in test cases, rather than force unwrapping.",
         orderAfter: [.urlMacro, .noForceTryInTests, .throwingTests]

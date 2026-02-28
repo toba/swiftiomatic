@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Ensure that there is space immediately inside braces
     static let spaceInsideBraces = FormatRule(
         help: "Add space inside curly braces."

@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let wrap = FormatRule(
         help: "Wrap lines that exceed the specified maximum width.",
         options: ["max-width", "no-wrap-operators", "asset-literals", "wrap-ternary", "wrap-string-interpolation"],

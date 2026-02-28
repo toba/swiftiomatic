@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Remove space immediately inside chevrons
     static let spaceInsideGenerics = FormatRule(
         help: "Remove space inside angle brackets."

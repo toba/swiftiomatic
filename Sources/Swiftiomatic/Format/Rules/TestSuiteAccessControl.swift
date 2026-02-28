@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     static let testSuiteAccessControl = FormatRule(
         help: "Test methods should be internal, and other properties / functions in a test suite should be private.",
         disabledByDefault: true

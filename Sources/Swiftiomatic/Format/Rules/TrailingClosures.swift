@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension FormatRule {
+extension FormatRule {
     /// Convert closure arguments to trailing closure syntax where possible
     static let trailingClosures = FormatRule(
         help: "Use trailing closure syntax where applicable.",
