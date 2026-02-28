@@ -71,7 +71,9 @@ extension SwiftSyntaxRule {
             ruleDescription: Self.description,
             severity: severity,
             location: Location(file: file, position: violation.position),
-            reason: violation.reason
+            reason: violation.reason,
+            confidence: violation.confidence,
+            suggestion: violation.suggestion
         )
     }
 
