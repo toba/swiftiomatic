@@ -100,7 +100,7 @@ private extension TypeContentsOrderRule {
             }
         }
 
-        // swiftlint:disable:next cyclomatic_complexity
+        // sm:disable:next cyclomatic_complexity
         private func categorize(member: MemberBlockItemSyntax) -> (
             position: AbsolutePosition, category: TypeContent,
         )? {

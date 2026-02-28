@@ -12,15 +12,15 @@ import Testing
 
     @Test func alwaysBlanketDisable() {
         let nonTriggeringExamples = [
-            Example("// swiftlint:disable file_length\n// swiftlint:enable file_length"),
+            Example("// sm:disable file_length\n// sm:enable file_length"),
         ]
         verifyRule(emptyDescription.with(nonTriggeringExamples: nonTriggeringExamples))
 
         let triggeringExamples = [
-            Example("// swiftlint:disable file_length\n// swiftlint:enable ↓file_length"),
-            Example("// swiftlint:disable:previous ↓file_length"),
-            Example("// swiftlint:disable:this ↓file_length"),
-            Example("// swiftlint:disable:next ↓file_length"),
+            Example("// sm:disable file_length\n// sm:enable ↓file_length"),
+            Example("// sm:disable:previous ↓file_length"),
+            Example("// sm:disable:this ↓file_length"),
+            Example("// sm:disable:next ↓file_length"),
         ]
         verifyRule(
             emptyDescription.with(triggeringExamples: triggeringExamples),
@@ -30,7 +30,7 @@ import Testing
     }
 
     @Test func alwaysBlanketDisabledAreAllowed() {
-        let nonTriggeringExamples = [Example("// swiftlint:disable identifier_name\n")]
+        let nonTriggeringExamples = [Example("// sm:disable identifier_name\n")]
         verifyRule(
             emptyDescription.with(nonTriggeringExamples: nonTriggeringExamples),
             ruleConfiguration: ["always_blanket_disable": ["identifier_name"], "allowed_rules": []],
@@ -40,8 +40,8 @@ import Testing
 
     @Test func allowedRules() {
         let nonTriggeringExamples = [
-            Example("// swiftlint:disable file_length"),
-            Example("// swiftlint:disable single_test_class"),
+            Example("// sm:disable file_length"),
+            Example("// sm:disable single_test_class"),
         ]
         verifyRule(emptyDescription.with(nonTriggeringExamples: nonTriggeringExamples))
     }

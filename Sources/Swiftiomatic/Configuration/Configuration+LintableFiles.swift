@@ -79,7 +79,7 @@ extension Configuration {
         #else
         let result = NSOrderedSet(array: paths)
         #endif
-        return result.array as! [String] // swiftlint:disable:this force_cast
+        return result.array as! [String] // sm:disable:this force_cast
     }
 
     func filteredPaths(in paths: [String], excludeByPrefix: Bool) -> [String] {

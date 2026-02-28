@@ -239,7 +239,7 @@ import Testing
     @Test func canDisableUnusedPrivateDeclarationsRule() {
         let input = """
         private enum Foo {
-            // swiftformat:disable:next unusedPrivateDeclarations
+            // sm:disable:next unusedPrivateDeclarations
             fileprivate static func bar() {}
         }
         """
@@ -389,7 +389,7 @@ import Testing
     @Test func declarationNotRemovedWhenUsedOutsideFormatRange() {
         let input = """
         private let used: Int = 22
-        // swiftformat:disable:all
+        // sm:disable:all
         struct Formatting {
             let a: Int
 

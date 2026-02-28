@@ -21,7 +21,7 @@ struct RegularExpression: Hashable, Comparable, ExpressibleByStringLiteral, @unc
     }
 
     init(stringLiteral value: String) {
-        // swiftlint:disable:next force_try
+        // sm:disable:next force_try
         try! self.init(pattern: value)
     }
 

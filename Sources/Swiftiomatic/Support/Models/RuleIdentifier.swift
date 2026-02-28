@@ -1,13 +1,13 @@
-/// An identifier representing a SwiftLint rule, or all rules.
+/// An identifier representing a rule, or all rules.
 enum RuleIdentifier: Hashable, ExpressibleByStringLiteral, Comparable, Sendable {
     // MARK: - Values
 
-    /// Special identifier that should be treated as referring to 'all' SwiftLint rules. One helpful usecase is in
-    /// disabling all SwiftLint rules in a given file by adding a `// swiftlint:disable all` comment at the top of the
+    /// Special identifier that should be treated as referring to 'all' rules. One helpful usecase is in
+    /// disabling all rules in a given file by adding a `// sm:disable all` comment at the top of the
     /// file.
     case all
 
-    /// Represents a single SwiftLint rule with the specified identifier.
+    /// Represents a single rule with the specified identifier.
     case single(identifier: String)
 
     // MARK: - Properties

@@ -5,27 +5,27 @@ struct SuperfluousDisableCommandRule: SourceKitFreeRule, Sendable {
         identifier: "superfluous_disable_command",
         name: "Superfluous Disable Command",
         description: """
-        SwiftLint 'disable' commands are superfluous when the disabled rule would not have triggered a violation \
+        'disable' commands are superfluous when the disabled rule would not have triggered a violation \
         in the disabled region. Use " - " if you wish to document a command.
         """,
         kind: .lint,
         nonTriggeringExamples: [
-            Example("let abc:Void // swiftlint:disable:this colon"),
+            Example("let abc:Void // sm:disable:this colon"),
             Example(
                 """
-                // swiftlint:disable colon
+                // sm:disable colon
                 let abc:Void
-                // swiftlint:enable colon
+                // sm:enable colon
                 """,
             ),
         ],
         triggeringExamples: [
-            Example("let abc: Void // swiftlint:disable:this colon"),
+            Example("let abc: Void // sm:disable:this colon"),
             Example(
                 """
-                // swiftlint:disable colon
+                // sm:disable colon
                 let abc: Void
-                // swiftlint:enable colon
+                // sm:enable colon
                 """,
             ),
         ],
@@ -38,12 +38,12 @@ struct SuperfluousDisableCommandRule: SourceKitFreeRule, Sendable {
 
     func reason(forRuleIdentifier ruleIdentifier: String) -> String {
         """
-        SwiftLint rule '\(ruleIdentifier)' did not trigger a violation in the disabled region; \
+        Rule '\(ruleIdentifier)' did not trigger a violation in the disabled region; \
         remove the disable command
         """
     }
 
     func reason(forNonExistentRule rule: String) -> String {
-        "'\(rule)' is not a valid SwiftLint rule; remove it from the disable command"
+        "'\(rule)' is not a valid rule; remove it from the disable command"
     }
 }

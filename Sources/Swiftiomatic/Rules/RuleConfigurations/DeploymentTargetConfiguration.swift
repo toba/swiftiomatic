@@ -129,7 +129,7 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
         }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // sm:disable:next cyclomatic_complexity
     mutating func apply(configuration: Any) throws(Issue) {
         guard let configuration = configuration as? [String: Any] else {
             throw .invalidConfiguration(ruleID: Parent.identifier)

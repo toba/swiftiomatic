@@ -1,46 +1,46 @@
 import Foundation
 
-struct InvalidSwiftLintCommandRule: Rule, SourceKitFreeRule {
+struct InvalidCommandRule: Rule, SourceKitFreeRule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
     static let description = RuleDescription(
-        identifier: "invalid_swiftlint_command",
-        name: "Invalid SwiftLint Command",
-        description: "swiftlint command is invalid",
+        identifier: "invalid_command",
+        name: "Invalid Command",
+        description: "sm: command is invalid",
         kind: .lint,
         nonTriggeringExamples: [
-            Example("// swiftlint:disable unused_import"),
-            Example("// swiftlint:enable unused_import"),
-            Example("// swiftlint:disable:next unused_import"),
-            Example("// swiftlint:disable:previous unused_import"),
-            Example("// swiftlint:disable:this unused_import"),
-            Example("//swiftlint:disable:this unused_import"),
+            Example("// sm:disable unused_import"),
+            Example("// sm:enable unused_import"),
+            Example("// sm:disable:next unused_import"),
+            Example("// sm:disable:previous unused_import"),
+            Example("// sm:disable:this unused_import"),
+            Example("//sm:disable:this unused_import"),
             Example(
-                "_ = \"🤵🏼‍♀️\" // swiftlint:disable:this unused_import",
+                "_ = \"🤵🏼‍♀️\" // sm:disable:this unused_import",
                 excludeFromDocumentation: true,
             ),
             Example(
-                "_ = \"🤵🏼‍♀️ 🤵🏼‍♀️\" // swiftlint:disable:this unused_import",
+                "_ = \"🤵🏼‍♀️ 🤵🏼‍♀️\" // sm:disable:this unused_import",
                 excludeFromDocumentation: true,
             ),
         ],
         triggeringExamples: [
-            Example("// ↓swiftlint:"),
-            Example("// ↓swiftlint: "),
-            Example("// ↓swiftlint::"),
-            Example("// ↓swiftlint:: "),
-            Example("// ↓swiftlint:disable"),
-            Example("// ↓swiftlint:dissable unused_import"),
-            Example("// ↓swiftlint:enaaaable unused_import"),
-            Example("// ↓swiftlint:disable:nxt unused_import"),
-            Example("// ↓swiftlint:enable:prevus unused_import"),
-            Example("// ↓swiftlint:enable:ths unused_import"),
-            Example("// ↓swiftlint:enable"),
-            Example("// ↓swiftlint:enable:"),
-            Example("// ↓swiftlint:enable: "),
-            Example("// ↓swiftlint:disable: unused_import"),
-            Example("// s↓swiftlint:disable unused_import"),
-            Example("// 🤵🏼‍♀️swiftlint:disable unused_import", excludeFromDocumentation: true),
+            Example("// ↓sm:"),
+            Example("// ↓sm: "),
+            Example("// ↓sm::"),
+            Example("// ↓sm:: "),
+            Example("// ↓sm:disable"),
+            Example("// ↓sm:dissable unused_import"),
+            Example("// ↓sm:enaaaable unused_import"),
+            Example("// ↓sm:disable:nxt unused_import"),
+            Example("// ↓sm:enable:prevus unused_import"),
+            Example("// ↓sm:enable:ths unused_import"),
+            Example("// ↓sm:enable"),
+            Example("// ↓sm:enable:"),
+            Example("// ↓sm:enable: "),
+            Example("// ↓sm:disable: unused_import"),
+            Example("// s↓sm:disable unused_import"),
+            Example("// 🤵🏼‍♀️sm:disable unused_import", excludeFromDocumentation: true),
         ].skipWrappingInCommentTests(),
     )
 
@@ -54,7 +54,7 @@ struct InvalidSwiftLintCommandRule: Rule, SourceKitFreeRule {
                 ? styleViolation(
                     for: command,
                     in: file,
-                    reason: "swiftlint command should be preceded by whitespace or a comment character",
+                    reason: "sm: command should be preceded by whitespace or a comment character",
                 )
                 : nil
         }
@@ -103,13 +103,13 @@ private extension Command {
 
     func invalidReason() -> String? {
         if action == .invalid {
-            return "swiftlint command does not have a valid action"
+            return "sm: command does not have a valid action"
         }
         if modifier == .invalid {
-            return "swiftlint command does not have a valid modifier"
+            return "sm: command does not have a valid modifier"
         }
         if ruleIdentifiers.isEmpty {
-            return "swiftlint command does not specify any rules"
+            return "sm: command does not specify any rules"
         }
         return nil
     }

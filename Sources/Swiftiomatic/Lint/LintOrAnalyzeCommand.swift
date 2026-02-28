@@ -2,7 +2,7 @@
 import Foundation
 import Synchronization
 
-// swiftlint:disable file_length
+// sm:disable file_length
 
 enum LintOrAnalyzeMode {
     case lint, analyze
@@ -339,7 +339,6 @@ private final class LintOrAnalyzeResultBuilder {
     let state = Mutex(MutableState())
     let storage = RuleStorage()
     let configuration: Configuration
-    let reporter: any Reporter.Type
     let cache: LinterCache?
     let options: LintOrAnalyzeOptions
 
@@ -356,7 +355,6 @@ private final class LintOrAnalyzeResultBuilder {
             Configuration(options: options)
         }
         configuration = config
-        reporter = reporterFrom(identifier: options.reporter ?? config.reporter)
         if options.ignoreCache || ProcessInfo.processInfo.isLikelyXcodeCloudEnvironment {
             cache = nil
         } else {
@@ -373,11 +371,11 @@ private final class LintOrAnalyzeResultBuilder {
         }
     }
 
+    /// Report violations using Xcode-compatible format (file:line:char: severity: message).
     func report(violations: [StyleViolation], realtimeCondition: Bool) {
-        if (reporter.isRealtime && (!options.progress || options.output != nil)) ==
-            realtimeCondition
-        {
-            let report = reporter.generateReport(violations)
+        // Xcode reporter is realtime — output violations as they're found
+        if (!options.progress || options.output != nil) == realtimeCondition {
+            let report = violations.map(\.description).joined(separator: "\n")
             if !report.isEmpty {
                 options.writeToOutput(report)
             }

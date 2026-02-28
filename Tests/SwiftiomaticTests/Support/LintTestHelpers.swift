@@ -428,7 +428,7 @@ func verifyRule(
     if skipDisableCommandTests {
         disableCommands = []
     } else {
-        disableCommands = ruleDescription.allIdentifiers.map { "// swiftlint:disable \($0)\n" }
+        disableCommands = ruleDescription.allIdentifiers.map { "// sm:disable \($0)\n" }
     }
 
     verifyLint(

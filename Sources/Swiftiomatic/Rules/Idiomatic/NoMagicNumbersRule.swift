@@ -1,4 +1,4 @@
-// swiftlint:disable file_length
+// sm:disable file_length
 
 import Foundation
 import SwiftSyntax

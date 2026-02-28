@@ -654,7 +654,7 @@ import Testing
 
         class TestCase: XCTestCase {
             func test_something() {
-                // swiftformat:disable:next noForceUnwrapInTests
+                // sm:disable:next noForceUnwrapInTests
                 let result = myOptional!.with.nested!.property!
             }
         }

@@ -1,4 +1,4 @@
-// swiftlint:disable file_header
+// sm:disable file_header
 //
 // Adapted from swift-format's UseSynthesizedInitializer.swift
 //
@@ -182,7 +182,7 @@ extension StructDeclSyntax {
     }
 
     /// Does the body initialize all, and only, the stored properties for the struct?
-    private func initializerBody( // swiftlint:disable:this cyclomatic_complexity
+    private func initializerBody( // sm:disable:this cyclomatic_complexity
         _ initializerBody: CodeBlockSyntax?,
         matches storedProperties: [VariableDeclSyntax],
     ) -> Bool {

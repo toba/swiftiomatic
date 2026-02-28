@@ -1,4 +1,4 @@
-// swiftlint:disable file_header
+// sm:disable file_header
 //
 // Adapted from periphery's UpdateChecker.swift
 //

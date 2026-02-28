@@ -1,5 +1,5 @@
 struct IncompatibleConcurrencyAnnotationConfiguration: SeverityBasedRuleConfiguration {
-    // swiftlint:disable:previous type_name
+    // sm:disable:previous type_name
 
     @ConfigurationElement(key: "severity")
     private(set) var severityConfiguration = SeverityConfiguration<Parent>(.warning)

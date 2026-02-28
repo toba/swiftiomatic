@@ -1,7 +1,7 @@
 struct ImplicitlyUnwrappedOptionalConfiguration: SeverityBasedRuleConfiguration {
     enum ImplicitlyUnwrappedOptionalModeConfiguration: String,
         AcceptableByConfigurationElement
-    { // swiftlint:disable:this type_name
+    { // sm:disable:this type_name
         case all
         case allExceptIBOutlets = "all_except_iboutlets"
         case weakExceptIBOutlets = "weak_except_iboutlets"

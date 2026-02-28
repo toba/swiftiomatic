@@ -39,7 +39,7 @@ private let locationConverterCache = Cache { file -> SourceLocationConverter in
 }
 
 private let commandsCache = Cache { file -> [Command] in
-    guard file.contents.contains("swiftlint:") else {
+    guard file.contents.contains("sm:") else {
         return []
     }
     return CommandVisitor(locationConverter: file.locationConverter)

@@ -3,7 +3,7 @@ import SwiftSyntax
 
 // MARK: - CommandVisitor
 
-/// Visits the source syntax tree to collect all SwiftLint-style comment commands.
+/// Visits the source syntax tree to collect all `sm:` comment commands.
 final class CommandVisitor: SyntaxVisitor {
     private(set) var commands: [Command] = []
     let locationConverter: SourceLocationConverter
@@ -23,7 +23,7 @@ final class CommandVisitor: SyntaxVisitor {
         for piece in trivia {
             switch piece {
                 case let .lineComment(comment):
-                    guard let lower = comment.range(of: "swiftlint:")?.lowerBound
+                    guard let lower = comment.range(of: "sm:")?.lowerBound
                         .samePosition(in: comment.utf8)
                     else {
                         break

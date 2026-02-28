@@ -95,7 +95,7 @@ final class Formatter {
                 case .startOfScope("/*"):
                     tokenIndex = i - lineIndex
                 case let .commentBody(comment):
-                    guard let range = comment.range(of: "swiftformat:") else {
+                    guard let range = comment.range(of: "sm:") else {
                         continue
                     }
                     let comment = String(comment[range.upperBound...])
@@ -103,7 +103,7 @@ final class Formatter {
                     parts = parts[0]
                         .components(separatedBy: ":") + [parts[1...].joined(separator: " ")]
                     guard let directive = parts.popFirst(), !directive.isEmpty else {
-                        fatalError("Expected directive after 'swiftformat:' prefix", at: i)
+                        fatalError("Expected directive after 'sm:' prefix", at: i)
                         return
                     }
                     let toggle: Bool
@@ -140,7 +140,7 @@ final class Formatter {
                             // TODO: handle sort the same way as other directives
                             continue
                         default:
-                            fatalError("Unknown directive 'swiftformat:\(directive)'", at: i)
+                            fatalError("Unknown directive 'sm:\(directive)'", at: i)
                             return
                     }
                     directives.append(.init(

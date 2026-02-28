@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-// swiftlint:disable file_length
+// sm:disable file_length
 
 // workaround for https://bugs.swift.org/browse/SR-10121 so we can use `Self` in a closure
 protocol SwiftLintSyntaxVisitor: SyntaxVisitor {}

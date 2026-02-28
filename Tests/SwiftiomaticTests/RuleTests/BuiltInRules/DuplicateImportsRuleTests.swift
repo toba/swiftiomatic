@@ -7,7 +7,7 @@ import Testing
     @Test func disableCommand() {
         let content = """
         import InspireAPI
-        // swiftlint:disable:next duplicate_imports
+        // sm:disable:next duplicate_imports
         import class InspireAPI.Response
         """
         let file = SwiftLintFile(contents: content)

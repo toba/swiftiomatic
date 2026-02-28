@@ -166,7 +166,7 @@ extension Formatter {
               )
         else { return false }
 
-        // Check if this is a directive like MARK or swiftformat:disable etc.
+        // Check if this is a directive like MARK or sm:disable etc.
         // In that case just preserve the comment as-is.
         for index in indices {
             if case let .commentBody(body)? = next(.nonSpace, after: index),

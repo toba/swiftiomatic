@@ -1,5 +1,5 @@
-// swiftlint:disable file_length
-// swiftlint:disable:next type_name type_body_length
+// sm:disable file_length
+// sm:disable:next type_name type_body_length
 enum UnneededSynthesizedInitializerRuleExamples {
     static let nonTriggering = [
         Example(

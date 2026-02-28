@@ -8,7 +8,7 @@ enum SwiftSyntaxKindBridge {
     /// Map a SwiftSyntax classification to SourceKit syntax kind.
     static func mapClassification(_ classification: SyntaxClassification) -> SourceKitSyntaxKind?
     {
-        // swiftlint:disable:previous cyclomatic_complexity
+        // sm:disable:previous cyclomatic_complexity
         switch classification {
             case .attribute:
                 return .attributeID

@@ -109,8 +109,8 @@ struct LetVarWhitespaceRule: Rule {
             ),
             Example(
                 """
-                // swiftlint:disable superfluous_disable_command
-                // swiftlint:disable force_cast
+                // sm:disable superfluous_disable_command
+                // sm:disable force_cast
 
                 let x = bar as! Bar
                 """,

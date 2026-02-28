@@ -51,7 +51,7 @@ import SwiftSyntax
 ///
 /// Since that cannot be done this rule allows you to define cases that should be present if conforming to a protocol.
 ///
-/// `.swiftlint.yml`
+/// `.swiftiomatic.yaml`
 /// ````
 /// required_enum_case:
 ///   MyServiceResponse:

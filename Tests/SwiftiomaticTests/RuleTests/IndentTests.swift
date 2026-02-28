@@ -3890,7 +3890,7 @@ import Testing
         let input = """
         struct ContentView: View {
             var body: some View {
-                // swiftformat:options --ifdef indent
+                // sm:options --ifdef indent
 
                 Text("Hello, world!")
                 // Comment above
@@ -3904,7 +3904,7 @@ import Testing
                     .padding()
                 #endif
 
-                // swiftformat:options --ifdef no-indent
+                // sm:options --ifdef no-indent
 
                 Text("Hello, world!")
                 // Comment above
@@ -3918,7 +3918,7 @@ import Testing
                     .padding()
                 #endif
 
-                // swiftformat:options --ifdef outdent
+                // sm:options --ifdef outdent
 
                 Text("Hello, world!")
                 // Comment above
@@ -3937,7 +3937,7 @@ import Testing
         let output = """
         struct ContentView: View {
             var body: some View {
-                // swiftformat:options --ifdef indent
+                // sm:options --ifdef indent
 
                 Text("Hello, world!")
                 // Comment above
@@ -3951,7 +3951,7 @@ import Testing
                     .padding()
                 #endif
 
-                // swiftformat:options --ifdef no-indent
+                // sm:options --ifdef no-indent
 
                 Text("Hello, world!")
                 // Comment above
@@ -3965,7 +3965,7 @@ import Testing
                     .padding()
                 #endif
 
-                // swiftformat:options --ifdef outdent
+                // sm:options --ifdef outdent
 
                 Text("Hello, world!")
         // Comment above

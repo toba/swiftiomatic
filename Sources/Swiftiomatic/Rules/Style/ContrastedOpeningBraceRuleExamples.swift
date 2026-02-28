@@ -1,6 +1,6 @@
-// swiftlint:disable file_length
+// sm:disable file_length
 
-// swiftlint:disable:next type_body_length
+// sm:disable:next type_body_length
 enum ContrastedOpeningBraceRuleExamples {
     static let nonTriggeringExamples = [
         Example(
@@ -544,7 +544,7 @@ enum ContrastedOpeningBraceRuleExamples {
             """
             if
                 "test".isEmpty
-            // swiftlint:disable:next contrasted_opening_brace
+            // sm:disable:next contrasted_opening_brace
               {
                 // code here
             }
@@ -553,7 +553,7 @@ enum ContrastedOpeningBraceRuleExamples {
             """
             if
                 "test".isEmpty
-            // swiftlint:disable:next contrasted_opening_brace
+            // sm:disable:next contrasted_opening_brace
               {
                 // code here
             }

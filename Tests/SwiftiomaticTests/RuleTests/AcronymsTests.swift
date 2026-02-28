@@ -65,7 +65,7 @@ import Testing
 
     @Test func disableUppercaseAcronym() {
         let input = """
-        // swiftformat:disable:next acronyms
+        // sm:disable:next acronyms
         typeNotOwnedByAuthor.destinationUrl = URL()
         typeOwnedByAuthor.destinationURL = URL()
         """

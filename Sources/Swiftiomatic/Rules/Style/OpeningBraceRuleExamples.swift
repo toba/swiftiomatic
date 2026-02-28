@@ -1,6 +1,6 @@
-// swiftlint:disable file_length
+// sm:disable file_length
 
-// swiftlint:disable:next type_body_length
+// sm:disable:next type_body_length
 enum OpeningBraceRuleExamples {
     static let nonTriggeringExamples = [
         Example("func abc() {\n}"),
@@ -766,7 +766,7 @@ enum OpeningBraceRuleExamples {
             """
             if
                 "test".isEmpty
-            // swiftlint:disable:next opening_brace
+            // sm:disable:next opening_brace
             {
                 // code here
             }
@@ -775,7 +775,7 @@ enum OpeningBraceRuleExamples {
             """
             if
                 "test".isEmpty
-            // swiftlint:disable:next opening_brace
+            // sm:disable:next opening_brace
             {
                 // code here
             }

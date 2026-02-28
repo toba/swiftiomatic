@@ -19,7 +19,7 @@ import Testing
     @Test func regionsFromSingleCommand() {
         // disable
         do {
-            let file = SwiftLintFile(contents: "// swiftlint:disable rule_id\n")
+            let file = SwiftLintFile(contents: "// sm:disable rule_id\n")
             let start = Location(file: nil, line: 1, character: 29)
             let end = Location(file: nil, line: .max, character: .max)
             #expect(
@@ -32,7 +32,7 @@ import Testing
         }
         // enable
         do {
-            let file = SwiftLintFile(contents: "// swiftlint:enable rule_id\n")
+            let file = SwiftLintFile(contents: "// sm:enable rule_id\n")
             let start = Location(file: nil, line: 1, character: 28)
             let end = Location(file: nil, line: .max, character: .max)
             #expect(file.regions() == [Region(start: start, end: end, disabledRuleIdentifiers: [])])
@@ -43,7 +43,7 @@ import Testing
         // disable/enable
         do {
             let file = SwiftLintFile(
-                contents: "// swiftlint:disable rule_id\n// swiftlint:enable rule_id\n",
+                contents: "// sm:disable rule_id\n// sm:enable rule_id\n",
             )
             #expect(
                 file.regions() == [
@@ -63,7 +63,7 @@ import Testing
         // enable/disable
         do {
             let file = SwiftLintFile(
-                contents: "// swiftlint:enable rule_id\n// swiftlint:disable rule_id\n",
+                contents: "// sm:enable rule_id\n// sm:disable rule_id\n",
             )
             #expect(
                 file.regions() == [
@@ -84,8 +84,8 @@ import Testing
 
     @Test func regionsFromThreeCommandForSingleLine() {
         let file = SwiftLintFile(
-            contents: "// swiftlint:disable:next 1\n" + "// swiftlint:disable:this 2\n"
-                + "// swiftlint:disable:previous 3\n",
+            contents: "// sm:disable:next 1\n" + "// sm:disable:this 2\n"
+                + "// sm:disable:previous 3\n",
         )
         #expect(
             file.regions() == [
@@ -106,12 +106,12 @@ import Testing
     @Test func severalRegionsFromSeveralCommands() {
         let file = SwiftLintFile(
             contents: """
-            // swiftlint:disable 1
-            // swiftlint:disable 2
-            // swiftlint:disable 3
-            // swiftlint:enable 1
-            // swiftlint:enable 2
-            // swiftlint:enable 3
+            // sm:disable 1
+            // sm:disable 2
+            // sm:disable 3
+            // sm:enable 1
+            // sm:enable 2
+            // sm:enable 3
             """,
         )
         #expect(

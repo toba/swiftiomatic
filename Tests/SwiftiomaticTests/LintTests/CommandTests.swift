@@ -26,23 +26,23 @@ extension Command {
     }
 
     @Test func disable() {
-        let input = "// swiftlint:disable rule_id\n"
+        let input = "// sm:disable rule_id\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
             action: .disable,
             ruleIdentifiers: ["rule_id"],
             line: 1,
-            range: 4 ..< 29,
+            range: 4 ..< 22,
         )
         #expect(file.commands() == [expected])
         #expect(Command(string: input) == expected)
     }
 
     @Test func disablePrevious() {
-        let input = "// swiftlint:disable:previous rule_id\n"
+        let input = "// sm:disable:previous rule_id\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
-            action: .disable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 38,
+            action: .disable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 31,
             modifier: .previous,
         )
         #expect(file.commands() == expected.expand())
@@ -50,10 +50,10 @@ extension Command {
     }
 
     @Test func disableThis() {
-        let input = "// swiftlint:disable:this rule_id\n"
+        let input = "// sm:disable:this rule_id\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
-            action: .disable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 34,
+            action: .disable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 27,
             modifier: .this,
         )
         #expect(file.commands() == expected.expand())
@@ -61,10 +61,10 @@ extension Command {
     }
 
     @Test func disableNext() {
-        let input = "// swiftlint:disable:next rule_id\n"
+        let input = "// sm:disable:next rule_id\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
-            action: .disable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 34,
+            action: .disable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 27,
             modifier: .next,
         )
         #expect(file.commands() == expected.expand())
@@ -72,23 +72,23 @@ extension Command {
     }
 
     @Test func enable() {
-        let input = "// swiftlint:enable rule_id\n"
+        let input = "// sm:enable rule_id\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
             action: .enable,
             ruleIdentifiers: ["rule_id"],
             line: 1,
-            range: 4 ..< 28,
+            range: 4 ..< 21,
         )
         #expect(file.commands() == [expected])
         #expect(Command(string: input) == expected)
     }
 
     @Test func enablePrevious() {
-        let input = "// swiftlint:enable:previous rule_id\n"
+        let input = "// sm:enable:previous rule_id\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
-            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 37,
+            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 30,
             modifier: .previous,
         )
         #expect(file.commands() == expected.expand())
@@ -96,10 +96,10 @@ extension Command {
     }
 
     @Test func enableThis() {
-        let input = "// swiftlint:enable:this rule_id\n"
+        let input = "// sm:enable:this rule_id\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
-            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 33,
+            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 26,
             modifier: .this,
         )
         #expect(file.commands() == expected.expand())
@@ -107,10 +107,10 @@ extension Command {
     }
 
     @Test func enableNext() {
-        let input = "// swiftlint:enable:next rule_id\n"
+        let input = "// sm:enable:next rule_id\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
-            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 33,
+            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 26,
             modifier: .next,
         )
         #expect(file.commands() == expected.expand())
@@ -118,10 +118,10 @@ extension Command {
     }
 
     @Test func trailingComment() {
-        let input = "// swiftlint:enable:next rule_id - Comment\n"
+        let input = "// sm:enable:next rule_id - Comment\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
-            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 43,
+            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 36,
             modifier: .next,
             trailingComment: "Comment",
         )
@@ -131,10 +131,10 @@ extension Command {
 
     @Test func trailingCommentWithUrl() {
         let input =
-            "// swiftlint:enable:next rule_id - Comment with URL https://github.com/realm/SwiftLint\n"
+            "// sm:enable:next rule_id - Comment with URL https://github.com/realm/SwiftLint\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
-            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 87,
+            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 80,
             modifier: .next,
             trailingComment: "Comment with URL https://github.com/realm/SwiftLint",
         )
@@ -143,10 +143,10 @@ extension Command {
     }
 
     @Test func trailingCommentUrlOnly() {
-        let input = "// swiftlint:enable:next rule_id - https://github.com/realm/SwiftLint\n"
+        let input = "// sm:enable:next rule_id - https://github.com/realm/SwiftLint\n"
         let file = SwiftLintFile(contents: input)
         let expected = Command(
-            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 70,
+            action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4 ..< 63,
             modifier: .next,
             trailingComment: "https://github.com/realm/SwiftLint",
         )
@@ -337,22 +337,22 @@ extension Command {
 
     @Test func superfluousDisableCommands() {
         #expect(
-            violations(Example("// swiftlint:disable nesting\nprint(123)\n"))
+            violations(Example("// sm:disable nesting\nprint(123)\n"))
                 .map(\.ruleIdentifier) == [
                     "blanket_disable_command",
                     "superfluous_disable_command",
                 ],
         )
         #expect(
-            violations(Example("// swiftlint:disable:next nesting\nprint(123)\n"))[0].ruleIdentifier
+            violations(Example("// sm:disable:next nesting\nprint(123)\n"))[0].ruleIdentifier
                 == "superfluous_disable_command",
         )
         #expect(
-            violations(Example("print(123) // swiftlint:disable:this nesting\n"))[0].ruleIdentifier
+            violations(Example("print(123) // sm:disable:this nesting\n"))[0].ruleIdentifier
                 == "superfluous_disable_command",
         )
         #expect(
-            violations(Example("print(123)\n// swiftlint:disable:previous nesting\n"))[0]
+            violations(Example("print(123)\n// sm:disable:previous nesting\n"))[0]
                 .ruleIdentifier
                 == "superfluous_disable_command",
         )
@@ -390,7 +390,7 @@ extension Command {
         #expect(
             violations(
                 Example(
-                    "// swiftlint:disable all\n// swiftlint:disable:previous nesting\nprint(123)\n",
+                    "// sm:disable all\n// sm:disable:previous nesting\nprint(123)\n",
                 ),
             ).isEmpty,
         )
@@ -399,20 +399,20 @@ extension Command {
     @Test func superfluousDisableCommandsIgnoreDelimiter() {
         let longComment = "Comment with a large number of words that shouldn't register as superfluous"
         #expect(
-            violations(Example("// swiftlint:disable nesting - \(longComment)\nprint(123)\n")).map(
+            violations(Example("// sm:disable nesting - \(longComment)\nprint(123)\n")).map(
                 \.ruleIdentifier,
             ) == ["blanket_disable_command", "superfluous_disable_command"],
         )
         #expect(
-            violations(Example("// swiftlint:disable:next nesting - Comment\nprint(123)\n"))[0]
+            violations(Example("// sm:disable:next nesting - Comment\nprint(123)\n"))[0]
                 .ruleIdentifier == "superfluous_disable_command",
         )
         #expect(
-            violations(Example("print(123) // swiftlint:disable:this nesting - Comment\n"))[0]
+            violations(Example("print(123) // sm:disable:this nesting - Comment\n"))[0]
                 .ruleIdentifier == "superfluous_disable_command",
         )
         #expect(
-            violations(Example("print(123)\n// swiftlint:disable:previous nesting - Comment\n"))[0]
+            violations(Example("print(123)\n// sm:disable:previous nesting - Comment\n"))[0]
                 .ruleIdentifier == "superfluous_disable_command",
         )
     }
@@ -421,32 +421,32 @@ extension Command {
         #expect(
             violations(
                 Example(
-                    "// swiftlint:disable nesting_foo\n" + "print(123)\n"
-                        + "// swiftlint:enable nesting_foo\n",
+                    "// sm:disable nesting_foo\n" + "print(123)\n"
+                        + "// sm:enable nesting_foo\n",
                 ),
             )[0].ruleIdentifier
                 == "superfluous_disable_command",
         )
         #expect(
-            violations(Example("// swiftlint:disable:next nesting_foo\nprint(123)\n"))[0]
+            violations(Example("// sm:disable:next nesting_foo\nprint(123)\n"))[0]
                 .ruleIdentifier == "superfluous_disable_command",
         )
         #expect(
-            violations(Example("print(123) // swiftlint:disable:this nesting_foo\n"))[0]
+            violations(Example("print(123) // sm:disable:this nesting_foo\n"))[0]
                 .ruleIdentifier == "superfluous_disable_command",
         )
         #expect(
-            violations(Example("print(123)\n// swiftlint:disable:previous nesting_foo\n"))[0]
+            violations(Example("print(123)\n// sm:disable:previous nesting_foo\n"))[0]
                 .ruleIdentifier == "superfluous_disable_command",
         )
 
         #expect(
-            violations(Example("print(123)\n// swiftlint:disable:previous nesting_foo \n"))
+            violations(Example("print(123)\n// sm:disable:previous nesting_foo \n"))
                 .count == 1,
         )
 
         let example = Example(
-            "// swiftlint:disable nesting this is a comment\n// swiftlint:enable nesting\n",
+            "// sm:disable nesting this is a comment\n// sm:enable nesting\n",
         )
         let multipleViolations = violations(example)
         #expect(
@@ -459,7 +459,7 @@ extension Command {
         )
 
         let onlyNonExistentRulesViolations = violations(
-            Example("// swiftlint:disable this is a comment\n"),
+            Example("// sm:disable this is a comment\n"),
         )
         #expect(
             onlyNonExistentRulesViolations
@@ -473,9 +473,9 @@ extension Command {
         )
 
         #expect(
-            violations(Example("print(123)\n// swiftlint:disable:previous nesting_foo\n"))[0].reason
+            violations(Example("print(123)\n// sm:disable:previous nesting_foo\n"))[0].reason
                 ==
-                "'nesting_foo' is not a valid SwiftLint rule; remove it from the disable command",
+                "'nesting_foo' is not a valid rule; remove it from the disable command",
         )
     }
 
@@ -483,24 +483,24 @@ extension Command {
         #expect(
             violations(
                 Example(
-                    "// swiftlint:disable superfluous_disable_command nesting\n" + "print(123)\n"
-                        + "// swiftlint:enable superfluous_disable_command nesting\n",
+                    "// sm:disable superfluous_disable_command nesting\n" + "print(123)\n"
+                        + "// sm:enable superfluous_disable_command nesting\n",
                 ),
             ) == [],
         )
         #expect(
             violations(
                 Example(
-                    "// swiftlint:disable superfluous_disable_command\n" + "// swiftlint:disable nesting\n"
+                    "// sm:disable superfluous_disable_command\n" + "// sm:disable nesting\n"
                         + "print(123)\n" +
-                        "// swiftlint:enable superfluous_disable_command nesting\n",
+                        "// sm:enable superfluous_disable_command nesting\n",
                 ),
             ) == [],
         )
         #expect(
             violations(
                 Example(
-                    "// swiftlint:disable:next superfluous_disable_command nesting\nprint(123)\n",
+                    "// sm:disable:next superfluous_disable_command nesting\nprint(123)\n",
                 ),
             )
                 == [],
@@ -508,7 +508,7 @@ extension Command {
         #expect(
             violations(
                 Example(
-                    "print(123) // swiftlint:disable:this superfluous_disable_command nesting\n",
+                    "print(123) // sm:disable:this superfluous_disable_command nesting\n",
                 ),
             ) ==
                 [],
@@ -516,7 +516,7 @@ extension Command {
         #expect(
             violations(
                 Example(
-                    "print(123)\n// swiftlint:disable:previous superfluous_disable_command nesting\n",
+                    "print(123)\n// sm:disable:previous superfluous_disable_command nesting\n",
                 ),
             )
                 == [],
@@ -532,29 +532,29 @@ extension Command {
         #expect(
             violations(
                 Example(
-                    "// swiftlint:disable nesting\n" + "print(123)\n" +
-                        "// swiftlint:enable nesting\n",
+                    "// sm:disable nesting\n" + "print(123)\n" +
+                        "// sm:enable nesting\n",
                 ),
                 config: configuration,
             ) == [],
         )
         #expect(
             violations(
-                Example("// swiftlint:disable:next nesting\nprint(123)\n"),
+                Example("// sm:disable:next nesting\nprint(123)\n"),
                 config: configuration,
             )
                 == [],
         )
         #expect(
             violations(
-                Example("print(123) // swiftlint:disable:this nesting\n"),
+                Example("print(123) // sm:disable:this nesting\n"),
                 config: configuration,
             )
                 == [],
         )
         #expect(
             violations(
-                Example("print(123)\n// swiftlint:disable:previous nesting\n"),
+                Example("print(123)\n// sm:disable:previous nesting\n"),
                 config: configuration,
             ) == [],
         )

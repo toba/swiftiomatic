@@ -19,7 +19,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
     private var _forbiddenRegex: RegularExpression?
     private var _requiredRegex: RegularExpression?
 
-    // swiftlint:disable:next force_try
+    // sm:disable:next force_try
     private static let defaultRegex = try! RegularExpression(
         pattern: "\\bCopyright\\b", options: [.caseInsensitive],
     )

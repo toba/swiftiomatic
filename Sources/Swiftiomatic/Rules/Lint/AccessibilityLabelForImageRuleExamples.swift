@@ -1,6 +1,6 @@
-// swiftlint:disable file_length
+// sm:disable file_length
 
-// swiftlint:disable:next type_body_length
+// sm:disable:next type_body_length
 enum AccessibilityLabelForImageRuleExamples {
     static let nonTriggeringExamples = [
         Example(

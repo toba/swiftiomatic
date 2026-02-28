@@ -182,28 +182,28 @@ struct DirectReturnRule: Rule {
             Example(
                 """
                 func f() -> UIView {
-                    let view = instantiateView() as! UIView // swiftlint:disable:this force_cast
+                    let view = instantiateView() as! UIView // sm:disable:this force_cast
                     return view
                 }
                 """,
             ): Example(
                 """
                 func f() -> UIView {
-                    return instantiateView() as! UIView // swiftlint:disable:this force_cast
+                    return instantiateView() as! UIView // sm:disable:this force_cast
                 }
                 """,
             ),
             Example(
                 """
                 func f() -> UIView {
-                    let view = instantiateView() as! UIView // swiftlint:disable:this force_cast
+                    let view = instantiateView() as! UIView // sm:disable:this force_cast
                     return view // return the view
                 }
                 """,
             ): Example(
                 """
                 func f() -> UIView {
-                    return instantiateView() as! UIView // swiftlint:disable:this force_cast // return the view
+                    return instantiateView() as! UIView // sm:disable:this force_cast // return the view
                 }
                 """,
             ),

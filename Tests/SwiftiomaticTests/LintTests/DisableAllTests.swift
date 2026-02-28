@@ -24,10 +24,10 @@ import Testing
 
     // MARK: Enable / Disable Base
 
-    /// Tests whether swiftlint:disable all protects properly
+    /// Tests whether sm:disable all protects properly
     @Test func disableAll() {
         for violatingPhrase in violatingPhrases {
-            let code = "// swiftlint:disable all\n" + violatingPhrase.code + "\n// swiftlint:enable all\n"
+            let code = "// sm:disable all\n" + violatingPhrase.code + "\n// sm:enable all\n"
             let protectedPhrase = violatingPhrase.with(code: code)
             #expect(
                 violations(protectedPhrase).isEmpty,
@@ -35,14 +35,14 @@ import Testing
         }
     }
 
-    /// Tests whether swiftlint:enable all unprotects properly
+    /// Tests whether sm:enable all unprotects properly
     @Test func enableAll() {
         for violatingPhrase in violatingPhrases {
             let unprotectedPhrase = violatingPhrase.with(
                 code: """
-                // swiftlint:disable all
+                // sm:disable all
                 \(violatingPhrase.code)
-                // swiftlint:enable all
+                // sm:enable all
                 \(violatingPhrase.code)\n
                 """,
             )
@@ -54,7 +54,7 @@ import Testing
 
     // MARK: Enable / Disable Previous
 
-    /// Tests whether swiftlint:disable:previous all protects properly
+    /// Tests whether sm:disable:previous all protects properly
     @Test func disableAllPrevious() {
         for violatingPhrase in violatingPhrases {
             let protectedPhrase =
@@ -62,7 +62,7 @@ import Testing
                     .with(
                         code: """
                         \(violatingPhrase.code)
-                        // swiftlint:disable:previous all\n
+                        // sm:disable:previous all\n
                         """,
                     )
             #expect(
@@ -71,16 +71,16 @@ import Testing
         }
     }
 
-    /// Tests whether swiftlint:enable:previous all unprotects properly
+    /// Tests whether sm:enable:previous all unprotects properly
     @Test func enableAllPrevious() {
         for violatingPhrase in violatingPhrases {
             let unprotectedPhrase = violatingPhrase.with(
                 code: """
-                // swiftlint:disable all
+                // sm:disable all
                 \(violatingPhrase.code)
                 \(violatingPhrase.code)
-                // swiftlint:enable:previous all
-                // swiftlint:enable all
+                // sm:enable:previous all
+                // sm:enable all
                 """,
             )
             #expect(
@@ -91,11 +91,11 @@ import Testing
 
     // MARK: Enable / Disable Next
 
-    /// Tests whether swiftlint:disable:next all protects properly
+    /// Tests whether sm:disable:next all protects properly
     @Test func disableAllNext() {
         for violatingPhrase in violatingPhrases {
             let protectedPhrase = violatingPhrase.with(
-                code: "// swiftlint:disable:next all\n" + violatingPhrase.code,
+                code: "// sm:disable:next all\n" + violatingPhrase.code,
             )
             #expect(
                 violations(protectedPhrase).isEmpty,
@@ -103,16 +103,16 @@ import Testing
         }
     }
 
-    /// Tests whether swiftlint:enable:next all unprotects properly
+    /// Tests whether sm:enable:next all unprotects properly
     @Test func enableAllNext() {
         for violatingPhrase in violatingPhrases {
             let unprotectedPhrase = violatingPhrase.with(
                 code: """
-                // swiftlint:disable all
+                // sm:disable all
                 \(violatingPhrase.code)
-                // swiftlint:enable:next all
+                // sm:enable:next all
                 \(violatingPhrase.code)
-                // swiftlint:enable all
+                // sm:enable all
                 """,
             )
             #expect(
@@ -123,12 +123,12 @@ import Testing
 
     // MARK: Enable / Disable This
 
-    /// Tests whether swiftlint:disable:this all protects properly
+    /// Tests whether sm:disable:this all protects properly
     @Test func disableAllThis() {
         for violatingPhrase in violatingPhrases {
             let rawViolatingPhrase = violatingPhrase.code.replacingOccurrences(of: "\n", with: "")
             let protectedPhrase = violatingPhrase.with(
-                code: rawViolatingPhrase + "// swiftlint:disable:this all\n",
+                code: rawViolatingPhrase + "// sm:disable:this all\n",
             )
             #expect(
                 violations(protectedPhrase).isEmpty,
@@ -136,16 +136,16 @@ import Testing
         }
     }
 
-    /// Tests whether swiftlint:enable:next all unprotects properly
+    /// Tests whether sm:enable:next all unprotects properly
     @Test func enableAllThis() {
         for violatingPhrase in violatingPhrases {
             let rawViolatingPhrase = violatingPhrase.code.replacingOccurrences(of: "\n", with: "")
             let unprotectedPhrase = violatingPhrase.with(
                 code: """
-                // swiftlint:disable all
+                // sm:disable all
                 \(violatingPhrase.code)
-                \(rawViolatingPhrase)// swiftlint:enable:this all
-                // swiftlint:enable all
+                \(rawViolatingPhrase)// sm:enable:this all
+                // sm:enable all
                 """,
             )
             #expect(

@@ -122,7 +122,7 @@ import Foundation
 
     @Test func noStripFormatDirective() {
         let input = """
-        // swiftformat:options --swiftversion 5.2
+        // sm:options --swiftversion 5.2
 
         import PackageDescription
         """
@@ -133,7 +133,7 @@ import Foundation
     @Test func noStripFormatDirectiveAfterHeader() {
         let input = """
         // header
-        // swiftformat:options --swiftversion 5.2
+        // sm:options --swiftversion 5.2
 
         import PackageDescription
         """
@@ -143,14 +143,14 @@ import Foundation
 
     @Test func noReplaceFormatDirective() {
         let input = """
-        // swiftformat:options --swiftversion 5.2
+        // sm:options --swiftversion 5.2
 
         import PackageDescription
         """
         let output = """
         // Hello World
 
-        // swiftformat:options --swiftversion 5.2
+        // sm:options --swiftversion 5.2
 
         import PackageDescription
         """
@@ -231,9 +231,9 @@ import Foundation
 
     @Test func noStripHeaderIfRuleDisabled() {
         let input = """
-        // swiftformat:disable fileHeader
+        // sm:disable fileHeader
         // test
-        // swiftformat:enable fileHeader
+        // sm:enable fileHeader
 
         func foo() {}
         """
@@ -243,7 +243,7 @@ import Foundation
 
     @Test func noStripHeaderIfNextRuleDisabled() {
         let input = """
-        // swiftformat:disable:next fileHeader
+        // sm:disable:next fileHeader
         // test
 
         func foo() {}
@@ -301,19 +301,19 @@ import Foundation
         let input = """
         // Copyright (c) 2010-2023 Foobar
         //
-        // swiftformat:disable all
+        // sm:disable all
 
         class Foo {}
         """
         let output = """
         // Copyright (c) 2010-2024 Foobar
         //
-        // swiftformat:disable all
+        // sm:disable all
 
         class Foo {}
         """
         let options = FormatOptions(
-            fileHeader: "// Copyright (c) 2010-2024 Foobar\n//\n// swiftformat:disable all",
+            fileHeader: "// Copyright (c) 2010-2024 Foobar\n//\n// sm:disable all",
         )
         testFormatting(for: input, output, rule: .fileHeader, options: options)
     }
@@ -619,7 +619,7 @@ import Foundation
     @Test func disableFileHeaderCommentRespectedAfterHashbang() {
         let input = """
         #!/usr/bin/swift
-        // swiftformat:disable fileHeader
+        // sm:disable fileHeader
 
         // Header line1
         // Header line2
@@ -634,7 +634,7 @@ import Foundation
         let input = """
         #!/usr/bin/swift
 
-        // swiftformat:disable fileHeader
+        // sm:disable fileHeader
         // Header line1
         // Header line2
 

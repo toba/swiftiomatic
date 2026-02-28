@@ -134,7 +134,7 @@ extension ExplicitACLRule: OptInRule {}
 
 private enum CheckACLState {
     case yes
-    case no // swiftlint:disable:this identifier_name
+    case no // sm:disable:this identifier_name
 }
 
 private extension ExplicitACLRule {

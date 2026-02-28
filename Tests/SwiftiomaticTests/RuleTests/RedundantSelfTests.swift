@@ -2106,7 +2106,7 @@ import Testing
     @Test func disableRedundantSelfDirective() {
         let input = """
         func smallest() -> Foo? {
-            // swiftformat:disable:next redundantSelf
+            // sm:disable:next redundantSelf
             let bar = self.foo { rect1, rect2 -> Bool in
                 rect1.perimeter < rect2.perimeter
             }
@@ -2123,7 +2123,7 @@ import Testing
         let input = """
         func smallest() -> Foo? {
             let bar =
-                // swiftformat:disable:next redundantSelf
+                // sm:disable:next redundantSelf
                 self.foo { rect1, rect2 -> Bool in
                     rect1.perimeter < rect2.perimeter
                 }
@@ -2136,11 +2136,11 @@ import Testing
         )
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported"))
+    @Test(.disabled("Inline sm:options not supported"))
     func selfInsertDirective() {
         let input = """
         func smallest() -> Foo? {
-            // swiftformat:options:next --self insert
+            // sm:options:next --self insert
             let bar = self.foo { rect1, rect2 -> Bool in
                 rect1.perimeter < rect2.perimeter
             }
@@ -3758,9 +3758,9 @@ import Testing
         class Foo {
             var bar: Int
             func baz() {
-                // swiftformat:disable redundantSelf
+                // sm:disable redundantSelf
                 self.bar = 1
-                // swiftformat:enable redundantSelf
+                // sm:enable redundantSelf
                 self.bar = 2
             }
         }
@@ -3769,9 +3769,9 @@ import Testing
         class Foo {
             var bar: Int
             func baz() {
-                // swiftformat:disable redundantSelf
+                // sm:disable redundantSelf
                 self.bar = 1
-                // swiftformat:enable redundantSelf
+                // sm:enable redundantSelf
                 bar = 2
             }
         }
@@ -3784,9 +3784,9 @@ import Testing
         class Foo {
             var bar: Int
             func baz() {
-                // swiftformat:disable redundantself
+                // sm:disable redundantself
                 self.bar = 1
-                // swiftformat:enable RedundantSelf
+                // sm:enable RedundantSelf
                 self.bar = 2
             }
         }
@@ -3795,9 +3795,9 @@ import Testing
         class Foo {
             var bar: Int
             func baz() {
-                // swiftformat:disable redundantself
+                // sm:disable redundantself
                 self.bar = 1
-                // swiftformat:enable RedundantSelf
+                // sm:enable RedundantSelf
                 bar = 2
             }
         }
@@ -3810,7 +3810,7 @@ import Testing
         class Foo {
             var bar: Int
             func baz() {
-                // swiftformat:disable:next redundantSelf
+                // sm:disable:next redundantSelf
                 self.bar = 1
                 self.bar = 2
             }
@@ -3820,7 +3820,7 @@ import Testing
         class Foo {
             var bar: Int
             func baz() {
-                // swiftformat:disable:next redundantSelf
+                // sm:disable:next redundantSelf
                 self.bar = 1
                 bar = 2
             }
@@ -3834,7 +3834,7 @@ import Testing
         class Foo {
             var bar: Int
             func baz() {
-                /* swiftformat:disable redundantSelf */ self.bar = 1 /* swiftformat:enable all */
+                /* sm:disable redundantSelf */ self.bar = 1 /* sm:enable all */
                 self.bar = 2
             }
         }
@@ -3843,7 +3843,7 @@ import Testing
         class Foo {
             var bar: Int
             func baz() {
-                /* swiftformat:disable redundantSelf */ self.bar = 1 /* swiftformat:enable all */
+                /* sm:disable redundantSelf */ self.bar = 1 /* sm:enable all */
                 bar = 2
             }
         }
@@ -3856,7 +3856,7 @@ import Testing
         class Foo {
             var bar: Int
             func baz() {
-                /* swiftformat:disable:next redundantSelf */
+                /* sm:disable:next redundantSelf */
                 self.bar = 1
                 self.bar = 2
             }
@@ -3866,7 +3866,7 @@ import Testing
         class Foo {
             var bar: Int
             func baz() {
-                /* swiftformat:disable:next redundantSelf */
+                /* sm:disable:next redundantSelf */
                 self.bar = 1
                 bar = 2
             }

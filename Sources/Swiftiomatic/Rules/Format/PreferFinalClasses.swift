@@ -6,7 +6,7 @@ extension FormatRule {
         help: """
         Prefer defining `final` classes. To suppress this rule, add "Base" to the class name, \
         add a doc comment with mentioning "base class" or "subclass", make the class `open`, \
-        or use a `// swiftformat:disable:next preferFinalClasses` directive.
+        or use a `// sm:disable:next preferFinalClasses` directive.
         """,
         disabledByDefault: true,
     ) { formatter in

@@ -213,7 +213,7 @@ private extension AttributeListSyntax {
             }
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // sm:disable:next cyclomatic_complexity
     func makeHelper(locationConverter: SourceLocationConverter) -> RuleHelper? {
         guard let parent else {
             return nil

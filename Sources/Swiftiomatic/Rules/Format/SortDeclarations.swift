@@ -3,9 +3,9 @@ import Foundation
 extension FormatRule {
     static let sortDeclarations = FormatRule(
         help: """
-        Sorts the body of declarations with // swiftformat:sort
-        and declarations between // swiftformat:sort:begin and
-        // swiftformat:sort:end comments.
+        Sorts the body of declarations with // sm:sort
+        and declarations between // sm:sort:begin and
+        // sm:sort:end comments.
         """,
         options: ["sorted-patterns"],
         sharedOptions: [
@@ -15,7 +15,7 @@ extension FormatRule {
     ) { formatter in
         formatter.forEachToken(
             where: {
-                $0.isCommentBody && $0.string.contains("swiftformat:sort")
+                $0.isCommentBody && $0.string.contains("sm:sort")
                     || $0.isDeclarationTypeKeyword(including: Array(Token.swiftTypeKeywords))
             },
         ) { index, token in
@@ -24,7 +24,7 @@ extension FormatRule {
 
             // For `:sort:begin`, directives, we sort the declarations
             // between the `:begin` and and `:end` comments
-            let shouldBePartiallySorted = token.string.contains("swiftformat:sort:begin")
+            let shouldBePartiallySorted = token.string.contains("sm:sort:begin")
 
             let identifier = formatter.next(.identifier, after: index)
             let shouldBeSortedByNamePattern = formatter.options
@@ -41,7 +41,7 @@ extension FormatRule {
             if shouldBePartiallySorted {
                 guard
                     let endCommentIndex = formatter.tokens[index...].firstIndex(where: {
-                        $0.isComment && $0.string.contains("swiftformat:sort:end")
+                        $0.isComment && $0.string.contains("sm:sort:end")
                     }),
                     let sortRangeStart = formatter.index(of: .nonSpaceOrComment, after: index),
                     let firstRangeToken = formatter.index(of: .nonLinebreak, after: sortRangeStart),
@@ -165,7 +165,7 @@ extension FormatRule {
     } examples: {
         """
         ```diff
-          // swiftformat:sort
+          // sm:sort
           enum FeatureFlags {
         -     case upsellB
         -     case fooFeature
@@ -198,7 +198,7 @@ extension FormatRule {
           }
 
           enum FeatureFlags {
-              // swiftformat:sort:begin
+              // sm:sort:begin
         -     case upsellB
         -     case fooFeature
         -     case barFeature
@@ -211,7 +211,7 @@ extension FormatRule {
         +         fooConfiguration: Foo,
         +         barConfiguration: Bar)
         +     case upsellB
-              // swiftformat:sort:end
+              // sm:sort:end
 
               var anUnsortedProperty: Foo {
                   Foo()

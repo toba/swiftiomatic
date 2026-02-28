@@ -137,11 +137,11 @@ import Testing
     }
 }
 
-@Suite struct InvalidSwiftLintCommandRuleGeneratedTests {
+@Suite struct InvalidCommandRuleGeneratedTests {
     init() { RuleRegistry.registerAllRulesOnce() }
 
     @Test func withDefaultConfiguration() {
-        verifyRule(InvalidSwiftLintCommandRule.description)
+        verifyRule(InvalidCommandRule.description)
     }
 }
 

@@ -2449,7 +2449,7 @@ import Testing
 
     @Test func doesNotConflictWithOrganizeDeclarations() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case barFeature
             case fooFeature
@@ -2473,7 +2473,7 @@ import Testing
 
     @Test func sortsWithinOrganizeDeclarations() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case fooFeature
             case barFeature
@@ -2493,7 +2493,7 @@ import Testing
         """
 
         let output = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case barFeature
             case fooFeature
@@ -2650,7 +2650,7 @@ import Testing
 
     @Test func organizeDeclarationsSortUsesLocalizedCompare() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case upsella
             case upsellA
@@ -2666,7 +2666,7 @@ import Testing
         let input = """
         public enum Namespace {}
 
-        // swiftformat:sort
+        // sm:sort
         extension Namespace {
             static let foo = "foo"
             public static let bar = "bar"
@@ -2677,7 +2677,7 @@ import Testing
         let output = """
         public enum Namespace {}
 
-        // swiftformat:sort
+        // sm:sort
         extension Namespace {
             static let baaz = "baaz"
             public static let bar = "bar"
@@ -2699,7 +2699,7 @@ import Testing
         let input = """
         public enum Namespace {}
 
-        // swiftformat:sort
+        // sm:sort
         extension Namespace {
             static let foo = "foo"
             public static let bar = "bar"
@@ -2710,7 +2710,7 @@ import Testing
         let output = """
         public enum Namespace {}
 
-        // swiftformat:sort
+        // sm:sort
         extension Namespace {
 
             // MARK: Public
@@ -2772,7 +2772,7 @@ import Testing
 
     @Test func sortStructPropertiesWithAttributes() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         struct BookReaderView {
           @Namespace private var animation
           @State private var animationContent: Bool = false
@@ -2786,7 +2786,7 @@ import Testing
         }
         """
         let output = """
-        // swiftformat:sort
+        // sm:sort
         struct BookReaderView {
 
           // MARK: Internal
@@ -3961,7 +3961,7 @@ import Testing
 
     @Test func organizeDeclarationsSortsEnumNamespace() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         public enum Constants {
             public static let foo = "foo"
             public static let bar = "bar"
@@ -3970,7 +3970,7 @@ import Testing
         """
 
         let output = """
-        // swiftformat:sort
+        // sm:sort
         public enum Constants {
             public static let baaz = "baaz"
             public static let bar = "bar"

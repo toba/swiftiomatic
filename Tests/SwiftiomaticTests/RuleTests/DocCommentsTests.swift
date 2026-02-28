@@ -408,7 +408,7 @@ import Testing
 
     @Test func doesNotConvertAnnotationCommentsToDocComments() {
         let input = """
-        // swiftformat:disable some_swift_format_rule
+        // sm:disable some_swift_format_rule
         let testSwiftLint: Foo
         let testSwiftLint: Foo
 
@@ -665,7 +665,7 @@ import Testing
 
     @Test func preserveDocCommentAfterSwiftFormatDirective() {
         let input = """
-        // swiftformat:enable docComments
+        // sm:enable docComments
         /// Placeholder text describing a sample flow origin.
         public enum PlaceholderFlowOrigin {
             case standard(ScreenAuthenticationType)
@@ -679,7 +679,7 @@ import Testing
     @Test func preserveDocCommentBeforeSwiftFormatDirective() {
         let input = """
         /// Placeholder text describing a sample flow origin.
-        // swiftformat:enable:next docComments
+        // sm:enable:next docComments
         public enum PlaceholderFlowOrigin {
             case standard(ScreenAuthenticationType)
             case premium(sampleType: ScreenAuthenticationType?)

@@ -1,4 +1,4 @@
-// swiftlint:disable:next type_name
+// sm:disable:next type_name
 enum VerticalWhitespaceClosingBracesRuleExamples {
     private static let beforeTrivialLinesConfiguration = ["only_enforce_before_trivial_lines": true]
 

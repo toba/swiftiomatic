@@ -8,7 +8,7 @@ func regex(
     // confirmed to work, so it's ok to force-try here.
 
     let options = options ?? [.anchorsMatchLines, .dotMatchesLineSeparators]
-    // swiftlint:disable:next force_try
+    // sm:disable:next force_try
     return try! .cached(pattern: pattern, options: options)
 }
 

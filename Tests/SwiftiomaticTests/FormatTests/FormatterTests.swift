@@ -84,27 +84,27 @@ import Testing
     // MARK: enable/disable directives
 
     @Test func disableRule() throws {
-        let input = "//swiftformat:disable spaceAroundOperators\nlet foo : Int=5;"
-        let output = "// swiftformat:disable spaceAroundOperators\nlet foo : Int=5\n"
+        let input = "//sm:disable spaceAroundOperators\nlet foo : Int=5;"
+        let output = "// sm:disable spaceAroundOperators\nlet foo : Int=5\n"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func directiveInMiddleOfComment() throws {
-        let input = "//fixme: swiftformat:disable spaceAroundOperators - bug\nlet foo : Int=5;"
-        let output = "// FIXME: swiftformat:disable spaceAroundOperators - bug\nlet foo : Int=5\n"
+        let input = "//fixme: sm:disable spaceAroundOperators - bug\nlet foo : Int=5;"
+        let output = "// FIXME: sm:disable spaceAroundOperators - bug\nlet foo : Int=5\n"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func disableAndReEnableRules() throws {
         let input = """
-        // swiftformat:disable indent blankLinesBetweenScopes redundantSelf
+        // sm:disable indent blankLinesBetweenScopes redundantSelf
         class Foo {
         let _foo = "foo"
         func foo() {
         print(self._foo)
         }
         }
-        // swiftformat:enable indent redundantSelf
+        // sm:enable indent redundantSelf
         class Bar {
         let _bar = "bar"
         func bar() {
@@ -113,14 +113,14 @@ import Testing
         }
         """
         let output = """
-        // swiftformat:disable indent blankLinesBetweenScopes redundantSelf
+        // sm:disable indent blankLinesBetweenScopes redundantSelf
         class Foo {
         let _foo = "foo"
         func foo() {
         print(self._foo)
         }
         }
-        // swiftformat:enable indent redundantSelf
+        // sm:enable indent redundantSelf
         class Bar {
             let _bar = "bar"
             func bar() {
@@ -132,20 +132,20 @@ import Testing
     }
 
     @Test func disableAllRules() throws {
-        let input = "//swiftformat:disable all\nlet foo : Int=5;"
+        let input = "//sm:disable all\nlet foo : Int=5;"
         #expect(try format(input, rules: FormatRules.default).output == input)
     }
 
     @Test func disableAndReEnableAllRules() throws {
         let input = """
-        // swiftformat:disable all
+        // sm:disable all
         class Foo {
         let _foo = "foo"
         func foo() {
         print(self._foo)
         }
         }
-        // swiftformat:enable all
+        // sm:enable all
         class Bar {
         let _bar = "bar"
         func bar() {
@@ -154,14 +154,14 @@ import Testing
         }
         """
         let output = """
-        // swiftformat:disable all
+        // sm:disable all
         class Foo {
         let _foo = "foo"
         func foo() {
         print(self._foo)
         }
         }
-        // swiftformat:enable all
+        // sm:enable all
         class Bar {
             let _bar = "bar"
             func bar() {
@@ -174,80 +174,80 @@ import Testing
 
     @Test func disableAllRulesAndReEnableOneRule() throws {
         let input =
-            "//swiftformat:disable all\nlet foo : Int=5;\n//swiftformat:enable linebreakAtEndOfFile"
+            "//sm:disable all\nlet foo : Int=5;\n//sm:enable linebreakAtEndOfFile"
         let output =
-            "//swiftformat:disable all\nlet foo : Int=5;\n//swiftformat:enable linebreakAtEndOfFile\n"
+            "//sm:disable all\nlet foo : Int=5;\n//sm:enable linebreakAtEndOfFile\n"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func disableNext() throws {
-        let input = "//swiftformat:disable:next all\nlet foo : Int=5;\nlet foo : Int=5;"
-        let output = "// swiftformat:disable:next all\nlet foo : Int=5;\nlet foo: Int = 5\n"
+        let input = "//sm:disable:next all\nlet foo : Int=5;\nlet foo : Int=5;"
+        let output = "// sm:disable:next all\nlet foo : Int=5;\nlet foo: Int = 5\n"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func enableNext() throws {
         let input =
-            "//swiftformat:disable all\n//swiftformat:enable:next all\nlet foo : Int=5;\nlet foo : Int=5;"
+            "//sm:disable all\n//sm:enable:next all\nlet foo : Int=5;\nlet foo : Int=5;"
         let output =
-            "//swiftformat:disable all\n//swiftformat:enable:next all\nlet foo: Int = 5\nlet foo : Int=5;"
+            "//sm:disable all\n//sm:enable:next all\nlet foo: Int = 5\nlet foo : Int=5;"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func disableThis() throws {
-        let input = "let foo : Int=5; // swiftformat:disable:this all\nlet foo : Int=5;"
-        let output = "let foo : Int=5; // swiftformat:disable:this all\nlet foo: Int = 5\n"
+        let input = "let foo : Int=5; // sm:disable:this all\nlet foo : Int=5;"
+        let output = "let foo : Int=5; // sm:disable:this all\nlet foo: Int = 5\n"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func enableThis() throws {
         let input =
-            "//swiftformat:disable all\nlet foo : Int=5; //swiftformat:enable:this all\nlet foo : Int=5;"
+            "//sm:disable all\nlet foo : Int=5; //sm:enable:this all\nlet foo : Int=5;"
         let output =
-            "//swiftformat:disable all\nlet foo: Int = 5 // swiftformat:enable:this all\nlet foo : Int=5;"
+            "//sm:disable all\nlet foo: Int = 5 // sm:enable:this all\nlet foo : Int=5;"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func disableRuleWithMultilineComment() throws {
-        let input = "/*swiftformat:disable spaceAroundOperators*/let foo : Int=5;"
-        let output = "/* swiftformat:disable spaceAroundOperators */ let foo : Int=5\n"
+        let input = "/*sm:disable spaceAroundOperators*/let foo : Int=5;"
+        let output = "/* sm:disable spaceAroundOperators */ let foo : Int=5\n"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func disableAllRulesWithMultilineComment() throws {
-        let input = "/*swiftformat:disable all*/let foo : Int=5;"
-        let output = "/*swiftformat:disable all*/let foo : Int=5;"
+        let input = "/*sm:disable all*/let foo : Int=5;"
+        let output = "/*sm:disable all*/let foo : Int=5;"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func disableAndReenableAllRulesWithMultilineComment() throws {
         let input = """
-        /*swiftformat:disable all*/let foo : Int=5;/*swiftformat:enable all*/let foo : Int=5;
+        /*sm:disable all*/let foo : Int=5;/*sm:enable all*/let foo : Int=5;
         """
         let output = """
-        /*swiftformat:disable all*/let foo : Int=5; /* swiftformat:enable all */ let foo: Int = 5
+        /*sm:disable all*/let foo : Int=5; /* sm:enable all */ let foo: Int = 5
 
         """
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func disableNextWithMultilineComment() throws {
-        let input = "/*swiftformat:disable:next all*/\nlet foo : Int=5;\nlet foo : Int=5;"
-        let output = "/* swiftformat:disable:next all */\nlet foo : Int=5;\nlet foo: Int = 5\n"
+        let input = "/*sm:disable:next all*/\nlet foo : Int=5;\nlet foo : Int=5;"
+        let output = "/* sm:disable:next all */\nlet foo : Int=5;\nlet foo: Int = 5\n"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func enableNextWithMultilineComment() throws {
         let input =
-            "//swiftformat:disable all\n/*swiftformat:enable:next all*/\nlet foo : Int=5;\nlet foo : Int=5;"
+            "//sm:disable all\n/*sm:enable:next all*/\nlet foo : Int=5;\nlet foo : Int=5;"
         let output =
-            "//swiftformat:disable all\n/*swiftformat:enable:next all*/\nlet foo: Int = 5\nlet foo : Int=5;"
+            "//sm:disable all\n/*sm:enable:next all*/\nlet foo: Int = 5\nlet foo : Int=5;"
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
     @Test func disableLinewrap() throws {
         let input = """
-        // swiftformat:disable all
+        // sm:disable all
         let foo = bar.baz(some: param).quux("a string of some sort")
         """
         let options = FormatOptions(maxWidth: 10)
@@ -255,37 +255,37 @@ import Testing
     }
 
     @Test func malformedDirective() {
-        let input = "// swiftformat:disbible all"
+        let input = "// sm:disbible all"
         do {
             _ = try format(input, rules: FormatRules.default).output
             Issue.record("Expected error")
         } catch {
-            #expect("\(error)" == "Unknown directive 'swiftformat:disbible' on line 1")
+            #expect("\(error)" == "Unknown directive 'sm:disbible' on line 1")
         }
     }
 
     @Test func malformedDirective2() {
-        let input = "// swiftformat: --disable all"
+        let input = "// sm: --disable all"
         do {
             _ = try format(input, rules: FormatRules.default).output
             Issue.record("Expected error")
         } catch {
-            #expect("\(error)" == "Expected directive after 'swiftformat:' prefix on line 1")
+            #expect("\(error)" == "Expected directive after 'sm:' prefix on line 1")
         }
     }
 
     // MARK: options directive
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func allmanOption() throws {
+    @Test(.disabled("Inline sm:options not supported")) func allmanOption() throws {
         let input = """
-        // swiftformat:options --allman true
+        // sm:options --allman true
         func foo() {
             print("bar")
         }
 
         """
         let output = """
-        // swiftformat:options --allman true
+        // sm:options --allman true
         func foo()
         {
             print("bar")
@@ -295,15 +295,15 @@ import Testing
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func allmanThis() throws {
+    @Test(.disabled("Inline sm:options not supported")) func allmanThis() throws {
         let input = """
-        func foo() // swiftformat:options:this --allman true
+        func foo() // sm:options:this --allman true
         {
             print("bar")
         }
 
         func foo()
-        { // swiftformat:options:this --allman true
+        { // sm:options:this --allman true
             print("bar")
         }
 
@@ -311,9 +311,9 @@ import Testing
         #expect(try format(input, rules: FormatRules.default).output == input)
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func allmanNext() throws {
+    @Test(.disabled("Inline sm:options not supported")) func allmanNext() throws {
         let input = """
-        func foo() // swiftformat:options:next --allman true
+        func foo() // sm:options:next --allman true
         {
             print("bar")
         }
@@ -322,11 +322,11 @@ import Testing
         #expect(try format(input, rules: FormatRules.default).output == input)
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func allmanPrevious() throws {
+    @Test(.disabled("Inline sm:options not supported")) func allmanPrevious() throws {
         let input = """
         func foo()
         {
-            // swiftformat:options:previous --allman true
+            // sm:options:previous --allman true
             print("bar")
         }
 
@@ -334,10 +334,10 @@ import Testing
         #expect(try format(input, rules: FormatRules.default).output == input)
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func indentNext() throws {
+    @Test(.disabled("Inline sm:options not supported")) func indentNext() throws {
         let input = """
         class Foo {
-            // swiftformat:options:next --indent 2
+            // sm:options:next --indent 2
             func bar() {
                 print("bar")
             }
@@ -350,7 +350,7 @@ import Testing
         """
         let output = """
         class Foo {
-            // swiftformat:options:next --indent 2
+            // sm:options:next --indent 2
             func bar() {
               print("bar")
             }
@@ -364,15 +364,15 @@ import Testing
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func swiftVersionNext() throws {
+    @Test(.disabled("Inline sm:options not supported")) func swiftVersionNext() throws {
         let input = """
-        // swiftformat:options:next --swiftversion 5.2
+        // sm:options:next --swiftversion 5.2
         let foo1 = bar.map { $0.foo }
         let foo2 = bar.map { $0.foo }
 
         """
         let output = """
-        // swiftformat:options:next --swiftversion 5.2
+        // sm:options:next --swiftversion 5.2
         let foo1 = bar.map(\\.foo)
         let foo2 = bar.map { $0.foo }
 
@@ -380,29 +380,29 @@ import Testing
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func cumulativeOptions() throws {
+    @Test(.disabled("Inline sm:options not supported")) func cumulativeOptions() throws {
         let input = """
-        // swiftformat:options --self insert
-        // swiftformat:options:next --swiftversion 5.2
+        // sm:options --self insert
+        // sm:options:next --swiftversion 5.2
         let foo1 = self.map { $0.foo }
-        // swiftformat:options --self remove
+        // sm:options --self remove
         let foo2 = self.map { $0.foo }
 
         """
         let output = """
-        // swiftformat:options --self insert
-        // swiftformat:options:next --swiftversion 5.2
+        // sm:options --self insert
+        // sm:options:next --swiftversion 5.2
         let foo1 = self.map(\\.foo)
-        // swiftformat:options --self remove
+        // sm:options --self remove
         let foo2 = map { $0.foo }
 
         """
         #expect(try format(input, rules: FormatRules.default).output == output)
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func malformedOption() {
+    @Test(.disabled("Inline sm:options not supported")) func malformedOption() {
         let input = """
-        // swiftformat:options blooblahbleh
+        // sm:options blooblahbleh
         """
         do {
             _ = try format(input, rules: FormatRules.default).output
@@ -412,9 +412,9 @@ import Testing
         }
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func invalidOption() {
+    @Test(.disabled("Inline sm:options not supported")) func invalidOption() {
         let input = """
-        // swiftformat:options --foobar baz
+        // sm:options --foobar baz
         """
         do {
             _ = try format(input, rules: FormatRules.default).output
@@ -424,9 +424,9 @@ import Testing
         }
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func invalidOptionValue() {
+    @Test(.disabled("Inline sm:options not supported")) func invalidOptionValue() {
         let input = """
-        // swiftformat:options --indent baz
+        // sm:options --indent baz
         """
         do {
             _ = try format(input, rules: FormatRules.default).output
@@ -436,9 +436,9 @@ import Testing
         }
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func invalidEnumOptionValue() {
+    @Test(.disabled("Inline sm:options not supported")) func invalidEnumOptionValue() {
         let input = """
-        // swiftformat:options --else-position prev-line
+        // sm:options --else-position prev-line
         """
         do {
             _ = try format(input, rules: FormatRules.default).output
@@ -452,9 +452,9 @@ import Testing
         }
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func invalidEnumOptionValue2() {
+    @Test(.disabled("Inline sm:options not supported")) func invalidEnumOptionValue2() {
         let input = """
-        // swiftformat:options --else-position next
+        // sm:options --else-position next
         """
         do {
             _ = try format(input, rules: FormatRules.default).output
@@ -468,9 +468,9 @@ import Testing
         }
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func invalidBoolOptionValue() {
+    @Test(.disabled("Inline sm:options not supported")) func invalidBoolOptionValue() {
         let input = """
-        // swiftformat:options --allman always
+        // sm:options --allman always
         """
         do {
             _ = try format(input, rules: FormatRules.default).output
@@ -484,9 +484,9 @@ import Testing
         }
     }
 
-    @Test(.disabled("Inline swiftformat:options not supported")) func deprecatedOptionValue() {
+    @Test(.disabled("Inline sm:options not supported")) func deprecatedOptionValue() {
         let input = """
-        // swiftformat:options --ranges spaced
+        // sm:options --ranges spaced
         """
         #expect(throws: Never.self) { try format(input, rules: FormatRules.default).output }
     }

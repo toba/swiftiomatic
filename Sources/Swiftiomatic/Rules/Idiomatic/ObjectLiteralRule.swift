@@ -27,7 +27,7 @@ struct ObjectLiteralRule: Rule {
                     Example(
                         "let color = ↓\(prefix)Color\(method)(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)",
                     ),
-                    // swiftlint:disable:next line_length
+                    // sm:disable:next line_length
                     Example(
                         "let color = ↓\(prefix)Color\(method)(red: 100 / 255.0, green: 50 / 255.0, blue: 0, alpha: 1)",
                     ),

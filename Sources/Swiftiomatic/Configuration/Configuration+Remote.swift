@@ -1,4 +1,4 @@
-import Foundation // swiftlint:disable:this file_name
+import Foundation // sm:disable:this file_name
 import Synchronization
 
 extension Configuration.FileGraph.FilePath {

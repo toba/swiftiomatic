@@ -31,7 +31,7 @@ private extension VerticalWhitespaceBetweenCasesRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {
         private lazy var emptyLines = EmptyLinesVisitor.emptyLines(in: file)
 
-        // swiftlint:disable:next function_body_length
+        // sm:disable:next function_body_length
         override func visitPost(_ cases: SwitchCaseListSyntax) {
             for index in cases.indices.dropLast() {
                 let nextIndex = cases.index(after: index)

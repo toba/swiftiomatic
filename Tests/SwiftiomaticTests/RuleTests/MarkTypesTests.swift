@@ -581,11 +581,11 @@ import Testing
         let input = """
         extension Foo: FooProtocol {}
 
-        // swiftformat:disable markTypes
+        // sm:disable markTypes
 
         extension Bar: BarProtocol {}
 
-        // swiftformat:enable markTypes
+        // sm:enable markTypes
 
         extension Baz: BazProtocol {}
 
@@ -597,13 +597,13 @@ import Testing
 
         extension Foo: FooProtocol {}
 
-        // swiftformat:disable markTypes
+        // sm:disable markTypes
 
         extension Bar: BarProtocol {}
 
         // MARK: - Baz + BazProtocol
 
-        // swiftformat:enable markTypes
+        // sm:enable markTypes
 
         extension Baz: BazProtocol {}
 

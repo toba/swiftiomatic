@@ -4,7 +4,7 @@ import Testing
 @Suite struct SortDeclarationsTests {
     @Test func sortEnumBody() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case upsellB
             case fooFeature(
@@ -26,7 +26,7 @@ import Testing
         """
 
         let output = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case barFeature // Trailing comment -- bar feature
             case fooFeature(
@@ -52,7 +52,7 @@ import Testing
 
     @Test func sortEnumBodyWithOnlyOneCase() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case upsellB
         }
@@ -63,7 +63,7 @@ import Testing
 
     @Test func sortEnumBodyWithoutCase() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {}
         """
 
@@ -85,7 +85,7 @@ import Testing
 
     @Test func preservesSortedBody() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case barFeature
             case fooFeature
@@ -99,7 +99,7 @@ import Testing
 
     @Test func sortsTypeBody() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case upsellB
             case fooFeature
@@ -109,7 +109,7 @@ import Testing
         """
 
         let output = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case barFeature
             case fooFeature
@@ -126,7 +126,7 @@ import Testing
 
     @Test func sortClassWithMixedDeclarationTypes() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         class Foo {
             let quuxProperty = Quux()
             let barProperty = Bar()
@@ -142,7 +142,7 @@ import Testing
         """
 
         let output = """
-        // swiftformat:sort
+        // sm:sort
         class Foo {
             func baazFunction() -> Baaz {
                 Baaz()
@@ -167,12 +167,12 @@ import Testing
     @Test func sortBetweenDirectiveCommentsInType() {
         let input = """
         enum FeatureFlags {
-            // swiftformat:sort:begin
+            // sm:sort:begin
             case upsellB
             case fooFeature
             case barFeature
             case upsellA
-            // swiftformat:sort:end
+            // sm:sort:end
 
             var anUnsortedProperty: Foo {
                 Foo()
@@ -182,12 +182,12 @@ import Testing
 
         let output = """
         enum FeatureFlags {
-            // swiftformat:sort:begin
+            // sm:sort:begin
             case barFeature
             case fooFeature
             case upsellA
             case upsellB
-            // swiftformat:sort:end
+            // sm:sort:end
 
             var anUnsortedProperty: Foo {
                 Foo()
@@ -202,12 +202,12 @@ import Testing
         let input = """
         let anUnsortedGlobal = 0
 
-        // swiftformat:sort:begin
+        // sm:sort:begin
         let sortThisGlobal = 1
         public let thisGlobalIsSorted = 2
         private let anotherSortedGlobal = 5
         let sortAllOfThem = 8
-        // swiftformat:sort:end
+        // sm:sort:end
 
         let anotherUnsortedGlobal = 9
         """
@@ -215,12 +215,12 @@ import Testing
         let output = """
         let anUnsortedGlobal = 0
 
-        // swiftformat:sort:begin
+        // sm:sort:begin
         private let anotherSortedGlobal = 5
         let sortAllOfThem = 8
         let sortThisGlobal = 1
         public let thisGlobalIsSorted = 2
-        // swiftformat:sort:end
+        // sm:sort:end
 
         let anotherUnsortedGlobal = 9
         """
@@ -279,7 +279,7 @@ import Testing
 
     @Test func sortDeclarationsUsesLocalizedCompare() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         enum FeatureFlags {
             case upsella
             case upsellA
@@ -293,7 +293,7 @@ import Testing
 
     @Test func sortEnumNamespaceSmallerThanOrganizeDeclarationsEnumThreshold() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         public enum Constants {
             public static let foo = "foo"
             public static let bar = "bar"
@@ -302,7 +302,7 @@ import Testing
         """
 
         let output = """
-        // swiftformat:sort
+        // sm:sort
         public enum Constants {
             public static let baaz = "baaz"
             public static let bar = "bar"
@@ -319,7 +319,7 @@ import Testing
 
     @Test func sortStructSmallerThanOrganizeDeclarationsEnumThreshold() {
         let input = """
-        // swiftformat:sort
+        // sm:sort
         public struct Foo {
             public let foo = "foo"
             public let bar = "bar"
@@ -328,7 +328,7 @@ import Testing
         """
 
         let output = """
-        // swiftformat:sort
+        // sm:sort
         public struct Foo {
             public let baaz = "baaz"
             public let bar = "bar"

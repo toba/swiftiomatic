@@ -37,7 +37,7 @@ struct ExpiringTodoConfiguration: RuleConfiguration {
     @ConfigurationElement(key: "bad_formatting_severity")
     private(set) var badFormattingSeverity = Severity(.error)
 
-    // swiftlint:disable:next todo
+    // sm:disable:next todo
     /// The number of days prior to expiry before the TODO emits a violation
     @ConfigurationElement(key: "approaching_expiry_threshold")
     private(set) var approachingExpiryThreshold = 15

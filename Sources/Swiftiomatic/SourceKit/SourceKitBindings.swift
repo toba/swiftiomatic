@@ -5,7 +5,7 @@ import SourceKitC
 
 private let library = toolchainLoader.load(path: "sourcekitdInProc.framework/Versions/A/sourcekitdInProc")
 
-// swiftlint:disable unused_declaration
+// sm:disable unused_declaration
 
 internal let sourcekitd_initialize: @convention(c) () -> Void = library.load(symbol: "sourcekitd_initialize")
 internal let sourcekitd_shutdown: @convention(c) () -> Void = library.load(symbol: "sourcekitd_shutdown")

@@ -1,5 +1,5 @@
-// swiftlint:disable file_length
-// swiftlint:disable:next type_body_length type_name
+// sm:disable file_length
+// sm:disable:next type_body_length type_name
 enum VerticalWhitespaceBetweenCasesRuleExamples {
     private static let noSeparation = ["separation": "never"]
 

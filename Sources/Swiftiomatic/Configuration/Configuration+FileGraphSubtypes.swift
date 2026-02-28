@@ -1,4 +1,4 @@
-import Foundation // swiftlint:disable:this file_name
+import Foundation // sm:disable:this file_name
 
 extension Configuration.FileGraph {
     // MARK: - FilePath
@@ -104,10 +104,10 @@ extension Configuration.FileGraph {
     // MARK: - Edge
 
     struct Edge: Hashable {
-        // swiftlint:disable implicitly_unwrapped_optional
+        // sm:disable implicitly_unwrapped_optional
         var parent: Vertex!
         var child: Vertex!
-        // swiftlint:enable implicitly_unwrapped_optional
+        // sm:enable implicitly_unwrapped_optional
     }
 
     // MARK: - EdgeType

@@ -103,7 +103,7 @@ func testFormatting(
         }
         if !input.hasPrefix("#!") {
             for rule in rules {
-                let disabled = "// swiftformat:disable \(rule)\n\(input)"
+                let disabled = "// sm:disable \(rule)\n\(input)"
                 do {
                     #expect(
                         try format(disabled, rules: [rule], options: options).output

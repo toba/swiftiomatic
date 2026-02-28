@@ -1,6 +1,6 @@
 import Foundation
 
-// swiftlint:disable file_length
+// sm:disable file_length
 
 /// A type that can be converted into a human-readable representation.
 protocol Documentable {
@@ -17,7 +17,7 @@ protocol Documentable {
     /// - Returns: A "one liner" describing the object.
     func oneLiner() -> String
 
-    /// Convert an object to YAML as used in `.swiftlint.yml`.
+    /// Convert an object to YAML as used in `.swiftiomatic.yaml`.
     ///
     /// - Returns: A YAML snippet that can be used in configuration files.
     func yaml() -> String
@@ -392,7 +392,7 @@ protocol InlinableOptionType: AcceptableByConfigurationElement {}
 /// ```
 /// to add a (boolean) option to a configuration. The name of the option will be inferred from the name of the property.
 /// In this case, it's just `property`. CamelCase names will translated into snake_case, i.e. `myOption` is going to be
-/// translated into `my_option` in the `.swiftlint.yml` configuration file.
+/// translated into `my_option` in the `.swiftiomatic.yaml` configuration file.
 ///
 /// This mechanism may be overwritten with an explicitly set key:
 /// ```swift
@@ -487,7 +487,7 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
         deprecationNotice: DeprecationNotice? = nil,
         postprocessor: @escaping @Sendable (inout T) -> Void = { _ in },
     ) {
-        // swiftlint:disable:previous no_empty_block
+        // sm:disable:previous no_empty_block
         self.init(
             wrappedValue: value,
             key: key,
@@ -538,7 +538,7 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
         deprecationNotice: DeprecationNotice? = nil,
         postprocessor: @escaping @Sendable (inout T) -> Void = { _ in },
     ) {
-        // swiftlint:disable:previous no_empty_block
+        // sm:disable:previous no_empty_block
         self.wrappedValue = wrappedValue
         self.key = key
         self.inline = inline

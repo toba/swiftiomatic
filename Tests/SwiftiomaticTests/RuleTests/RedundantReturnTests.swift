@@ -660,7 +660,7 @@ import Testing
     @Test func disableNextRedundantReturn() {
         let input = """
         func foo() -> Foo {
-            // swiftformat:disable:next redundantReturn
+            // sm:disable:next redundantReturn
             return Foo()
         }
         """

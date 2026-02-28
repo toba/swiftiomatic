@@ -158,7 +158,7 @@ struct TrailingClosureRule: Rule {
             Example(
                 """
                 let dataSource = RxTableViewSectionedReloadDataSource(
-                    configureCell: { cell in // swiftlint:disable:this trailing_closure
+                    configureCell: { cell in // sm:disable:this trailing_closure
                         return cell
                     }
                 )
@@ -166,7 +166,7 @@ struct TrailingClosureRule: Rule {
             ): Example(
                 """
                 let dataSource = RxTableViewSectionedReloadDataSource(
-                    configureCell: { cell in // swiftlint:disable:this trailing_closure
+                    configureCell: { cell in // sm:disable:this trailing_closure
                         return cell
                     }
                 )

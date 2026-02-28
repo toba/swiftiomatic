@@ -121,7 +121,7 @@ extension Example {
     }
 
     /// Makes the current example focused. This is for debugging purposes only.
-    func focused() -> Example { // swiftlint:disable:this unused_declaration
+    func focused() -> Example { // sm:disable:this unused_declaration
         var new = self
         new.isFocused = true
         return new

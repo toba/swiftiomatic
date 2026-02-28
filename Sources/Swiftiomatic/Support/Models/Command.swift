@@ -1,17 +1,17 @@
 import Foundation
 
-/// A SwiftLint-interpretable command to modify SwiftLint's behavior embedded as comments in source code.
+/// A command to modify analysis behavior, embedded as comments in source code.
 struct Command: Equatable {
-    /// The action (verb) that SwiftLint should perform when interpreting this command.
+    /// The action (verb) to perform when interpreting this command.
     enum Action: String {
-        /// The rule(s) associated with this command should be enabled by the SwiftLint engine.
+        /// The rule(s) associated with this command should be enabled.
         case enable
-        /// The rule(s) associated with this command should be disabled by the SwiftLint engine.
+        /// The rule(s) associated with this command should be disabled.
         case disable
         /// The action string was invalid.
         case invalid
 
-        /// - returns: The inverse action that can cancel out the current action, restoring the SwifttLint engine's
+        /// - returns: The inverse action that can cancel out the current action, restoring the engine's
         ///            state prior to the current action.
         package func inverse() -> Self {
             switch self {
@@ -35,17 +35,16 @@ struct Command: Equatable {
     }
 
     /// Text after this delimiter is not considered part of the rule.
-    /// The purpose of this delimiter is to allow SwiftLint
-    /// commands to be documented in source code.
+    /// The purpose of this delimiter is to allow commands to be documented in source code.
     ///
-    ///     swiftlint:disable:next force_try - Explanation here
+    ///     sm:disable:next force_try - Explanation here
     private static let commentDelimiter = " - "
 
     var isValid: Bool {
         action != .invalid && modifier != .invalid && !ruleIdentifiers.isEmpty
     }
 
-    /// The action (verb) that SwiftLint should perform when interpreting this command.
+    /// The action (verb) to perform when interpreting this command.
     let action: Action
     /// The identifiers for the rules associated with this command.
     let ruleIdentifiers: Set<RuleIdentifier>
@@ -89,7 +88,7 @@ struct Command: Equatable {
     /// - parameter range:         The range of the command in the line (0-based).
     init(commandString: String, line: Int, range: Range<Int>) {
         let scanner = Scanner(string: commandString)
-        _ = scanner.scanString("swiftlint:")
+        _ = scanner.scanString("sm:")
         // (enable|disable)(:previous|:this|:next)
         guard let actionAndModifierString = scanner.scanUpToString(" ") else {
             self.init(action: .invalid, line: line, range: range)

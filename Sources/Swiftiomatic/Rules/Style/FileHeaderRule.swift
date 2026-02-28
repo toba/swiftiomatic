@@ -224,7 +224,7 @@ private extension FileHeaderRule {
 
         private func isSwiftLintCommand(piece: TriviaPiece) -> Bool {
             guard let text = piece.commentText else { return false }
-            return text.contains("swiftlint:")
+            return text.contains("sm:")
         }
 
         private func forbiddenReason() -> String {

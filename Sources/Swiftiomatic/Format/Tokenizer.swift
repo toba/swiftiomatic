@@ -55,12 +55,12 @@ extension String {
         return tokens.count == 1 && tokens[0].isOperator
     }
 
-    /// Is this string a comment directive (MARK:, TODO:, swiftlint:, etc)?
+    /// Is this string a comment directive (MARK:, TODO:, sm:, etc)?
     var isCommentDirective: Bool {
         commentDirective != nil
     }
 
-    /// Returns comment directive prefix (MARK:, TODO:, swiftlint:, etc)?
+    /// Returns comment directive prefix (MARK:, TODO:, sm:, etc)?
     var commentDirective: String? {
         let parts = split(separator: ":")
         guard parts.count > 1 else {

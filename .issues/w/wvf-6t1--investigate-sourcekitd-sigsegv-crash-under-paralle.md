@@ -1,11 +1,11 @@
 ---
 # wvf-6t1
 title: Investigate sourcekitd SIGSEGV crash under parallel test load
-status: ready
+status: in-progress
 type: bug
 priority: low
 created_at: 2026-02-28T16:18:06Z
-updated_at: 2026-02-28T16:18:06Z
+updated_at: 2026-02-28T17:16:26Z
 ---
 
 ## Problem

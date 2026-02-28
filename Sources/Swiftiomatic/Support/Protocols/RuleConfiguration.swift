@@ -37,7 +37,7 @@ extension RuleConfiguration {
         nil
     }
 
-    // swiftlint:disable:next unneeded_throws_rethrows
+    // sm:disable:next unneeded_throws_rethrows
     func validate() {
         // Do nothing by default.
     }

@@ -8,7 +8,6 @@ extension Configuration {
         case excluded
         case included
         case optInRules = "opt_in_rules"
-        case reporter
         case swiftlintVersion = "swiftlint_version"
         case warningThreshold = "warning_threshold"
         case onlyRules = "only_rules"
@@ -107,7 +106,6 @@ extension Configuration {
             excludedPaths: defaultStringArray(dict[Key.excluded.rawValue]),
             indentation: Self.getIndentationLogIfInvalid(from: dict),
             warningThreshold: dict[Key.warningThreshold.rawValue] as? Int,
-            reporter: dict[Key.reporter.rawValue] as? String ?? XcodeReporter.identifier,
             cachePath: cachePath ?? dict[Key.cachePath.rawValue] as? String,
             pinnedVersion: dict[Key.swiftlintVersion.rawValue].map {
                 ($0 as? String) ?? String(describing: $0)
@@ -257,7 +255,7 @@ extension Configuration {
         return nil
     }
 
-    // swiftlint:disable:next function_parameter_count
+    // sm:disable:next function_parameter_count
     static func validateConfiguredRuleIsEnabled(
         parentConfiguration: Configuration?,
         enabledInParentRules: Set<String>,

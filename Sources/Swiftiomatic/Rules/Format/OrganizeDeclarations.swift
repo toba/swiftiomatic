@@ -308,7 +308,7 @@ extension Formatter {
         // If this type has a leading :sort directive, we sort alphabetically
         // within the subcategories (where ordering is otherwise undefined)
         let shouldSortAlphabeticallyBySortingMark = tokens[rangeBeforeKeyword].contains(where: {
-            $0.isCommentBody && $0.string.contains("swiftformat:sort") && !$0.string
+            $0.isCommentBody && $0.string.contains("sm:sort") && !$0.string
                 .contains(":sort:")
         })
 

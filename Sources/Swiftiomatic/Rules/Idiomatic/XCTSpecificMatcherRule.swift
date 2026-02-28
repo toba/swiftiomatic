@@ -70,7 +70,7 @@ private enum OneArgXCTAssert: String {
         case notIdentical = "!=="
     }
 
-    // swiftlint:disable:next cyclomatic_complexity
+    // sm:disable:next cyclomatic_complexity
     private func suggestion(for comparisonOperator: Comparison) -> String {
         switch (self, comparisonOperator) {
             case (.assert, .equal): "XCTAssertEqual"

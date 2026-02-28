@@ -1,6 +1,6 @@
 import Foundation
 
-/// The configuration struct for SwiftLint. User-defined in the `.swiftlint.yml` file, drives the behavior of SwiftLint.
+/// The configuration struct. User-defined in the `.swiftiomatic.yaml` file.
 struct Configuration {
     // MARK: - Properties: Static
 
@@ -11,7 +11,7 @@ struct Configuration {
     }
 
     /// The default file name to look for user-defined configurations.
-    static let defaultFileName = ".swiftlint.yml"
+    static let defaultFileName = ".swiftiomatic.yaml"
 
     // MARK: Public Instance
 
@@ -26,9 +26,6 @@ struct Configuration {
 
     /// The threshold for the number of warnings to tolerate before treating the lint as having failed.
     let warningThreshold: Int?
-
-    /// The identifier for the `Reporter` to use to report style violations.
-    let reporter: String?
 
     /// The location of the persisted cache to use with this configuration.
     let cachePath: String?
@@ -53,7 +50,7 @@ struct Configuration {
 
     /// This value is `true` iff the `--config` parameter was used to specify (a) configuration file(s)
     /// In particular, this means that the value is also `true` if the `--config` parameter
-    /// was used to explicitly specify the default `.swiftlint.yml` as the configuration file
+    /// was used to explicitly specify the default `.swiftiomatic.yaml` as the configuration file
     private(set) var basedOnCustomConfigurationFiles = false
 
     // MARK: Public Computed
@@ -92,7 +89,6 @@ struct Configuration {
         excludedPaths: [String],
         indentation: IndentationStyle,
         warningThreshold: Int?,
-        reporter: String?,
         cachePath: String?,
         allowZeroLintableFiles: Bool,
         strict: Bool,
@@ -107,7 +103,6 @@ struct Configuration {
         self.excludedPaths = excludedPaths
         self.indentation = indentation
         self.warningThreshold = warningThreshold
-        self.reporter = reporter
         self.cachePath = cachePath
         self.allowZeroLintableFiles = allowZeroLintableFiles
         self.strict = strict
@@ -127,7 +122,6 @@ struct Configuration {
         excludedPaths = configuration.excludedPaths
         indentation = configuration.indentation
         warningThreshold = configuration.warningThreshold
-        reporter = configuration.reporter
         basedOnCustomConfigurationFiles = configuration.basedOnCustomConfigurationFiles
         cachePath = configuration.cachePath
         allowZeroLintableFiles = configuration.allowZeroLintableFiles
@@ -153,7 +147,6 @@ struct Configuration {
     /// - parameter indentation:            The style to use when indenting Swift source code.
     /// - parameter warningThreshold:       The threshold for the number of warnings to tolerate before treating the
     ///                                     lint as having failed.
-    /// - parameter reporter:               The identifier for the `Reporter` to use to report style violations.
     /// - parameter cachePath:              The location of the persisted cache to use with this configuration.
     /// - parameter pinnedVersion:          The SwiftLint version defined in this configuration.
     /// - parameter allowZeroLintableFiles: Allow SwiftLint to exit successfully when passed ignored or unlintable
@@ -172,7 +165,6 @@ struct Configuration {
         excludedPaths: [String] = [],
         indentation: IndentationStyle = .default,
         warningThreshold: Int? = nil,
-        reporter: String? = nil,
         cachePath: String? = nil,
         pinnedVersion: String? = nil,
         allowZeroLintableFiles: Bool = false,
@@ -205,7 +197,6 @@ struct Configuration {
             excludedPaths: excludedPaths,
             indentation: indentation,
             warningThreshold: warningThreshold,
-            reporter: reporter,
             cachePath: cachePath,
             allowZeroLintableFiles: allowZeroLintableFiles,
             strict: strict,
@@ -221,7 +212,7 @@ struct Configuration {
     /// Creates a `Configuration` with convenience parameters.
     ///
     /// - parameter configurationFiles:         The path on disk to one or multiple configuration files. If this array
-    ///                                         is empty, the default `.swiftlint.yml` file will be used.
+    ///                                         is empty, the default `.swiftiomatic.yaml` file will be used.
     /// - parameter enableAllRules:             Enable all available rules.
     /// - parameter cachePath:                  The location of the persisted cache to use whith this configuration.
     /// - parameter ignoreParentAndChildConfigs:If `true`, child and parent config references will be ignored.
@@ -237,7 +228,7 @@ struct Configuration {
         ignoreParentAndChildConfigs: Bool = false,
         mockedNetworkResults: [String: String] = [:],
         useDefaultConfigOnFailure: Bool? =
-            nil, // swiftlint:disable:this discouraged_optional_boolean
+            nil, // sm:disable:this discouraged_optional_boolean
     ) {
         // Handle mocked network results if needed
         Self.FileGraph.FilePath.mockedNetworkResults = mockedNetworkResults
@@ -339,7 +330,6 @@ extension Configuration: Hashable {
         hasher.combine(excludedPaths)
         hasher.combine(indentation)
         hasher.combine(warningThreshold)
-        hasher.combine(reporter)
         hasher.combine(allowZeroLintableFiles)
         hasher.combine(strict)
         hasher.combine(lenient)
@@ -355,7 +345,6 @@ extension Configuration: Hashable {
     static func == (lhs: Configuration, rhs: Configuration) -> Bool {
         lhs.includedPaths == rhs.includedPaths && lhs.excludedPaths == rhs.excludedPaths
             && lhs.indentation == rhs.indentation && lhs.warningThreshold == rhs.warningThreshold
-            && lhs.reporter == rhs.reporter
             && lhs.basedOnCustomConfigurationFiles == rhs.basedOnCustomConfigurationFiles
             && lhs.cachePath == rhs.cachePath && lhs.rules == rhs.rules && lhs.fileGraph == rhs
             .fileGraph
@@ -376,7 +365,6 @@ extension Configuration: CustomStringConvertible {
             + "- Excluded Paths: \(excludedPaths)\n"
             + "- Warning Threshold: \(warningThreshold as Optional)\n"
             + "- Root Directory: \(rootDirectory as Optional)\n"
-            + "- Reporter: \(reporter ?? "default")\n"
             + "- Cache Path: \(cachePath as Optional)\n"
             + "- Computed Cache Description: \(computedCacheDescription as Optional)\n"
             + "- Rules: \(rules.map { type(of: $0).identifier })"

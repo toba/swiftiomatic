@@ -7,15 +7,15 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
         identifier: "blanket_disable_command",
         name: "Blanket Disable Command",
         description: """
-        `swiftlint:disable` commands should use `next`, `this` or `previous` to disable rules for a \
-        single line, or `swiftlint:enable` to re-enable the rules immediately after the violations \
+        `sm:disable` commands should use `next`, `this` or `previous` to disable rules for a \
+        single line, or `sm:enable` to re-enable the rules immediately after the violations \
         to be ignored, instead of disabling the rule for the rest of the file.
         """,
         rationale: """
         The intent of this rule is to prevent code like
 
         ```
-        // swiftlint:disable force_unwrapping
+        // sm:disable force_unwrapping
         let foo = bar!
         ```
 
@@ -28,50 +28,50 @@ struct BlanketDisableCommandRule: Rule, SourceKitFreeRule {
         To disable this rule in code you will need to do something like
 
         ```
-        // swiftlint:disable:next blanket_disable_command
-        // swiftlint:disable force_unwrapping
+        // sm:disable:next blanket_disable_command
+        // sm:disable force_unwrapping
         ```
         """,
         kind: .lint,
         nonTriggeringExamples: [
             Example(
                 """
-                // swiftlint:disable unused_import
-                // swiftlint:enable unused_import
+                // sm:disable unused_import
+                // sm:enable unused_import
                 """,
             ),
             Example(
                 """
-                // swiftlint:disable unused_import unused_declaration
-                // swiftlint:enable unused_import
-                // swiftlint:enable unused_declaration
+                // sm:disable unused_import unused_declaration
+                // sm:enable unused_import
+                // sm:enable unused_declaration
                 """,
             ),
-            Example("// swiftlint:disable:this unused_import"),
-            Example("// swiftlint:disable:next unused_import"),
-            Example("// swiftlint:disable:previous unused_import"),
+            Example("// sm:disable:this unused_import"),
+            Example("// sm:disable:next unused_import"),
+            Example("// sm:disable:previous unused_import"),
         ],
         triggeringExamples: [
-            Example("// swiftlint:disable ↓unused_import"),
+            Example("// sm:disable ↓unused_import"),
             Example(
                 """
-                // swiftlint:disable unused_import ↓unused_declaration
-                // swiftlint:enable unused_import
+                // sm:disable unused_import ↓unused_declaration
+                // sm:enable unused_import
                 """,
             ),
             Example(
                 """
-                // swiftlint:disable unused_import
-                // swiftlint:disable ↓unused_import
-                // swiftlint:enable unused_import
+                // sm:disable unused_import
+                // sm:disable ↓unused_import
+                // sm:enable unused_import
                 """,
             ),
             Example(
                 """
-                // swiftlint:enable ↓unused_import
+                // sm:enable ↓unused_import
                 """,
             ),
-            Example("// swiftlint:disable all"),
+            Example("// sm:disable all"),
         ].skipWrappingInCommentTests().skipDisableCommandTests(),
     )
 

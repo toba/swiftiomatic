@@ -22,7 +22,6 @@ extension Configuration {
             excludedPaths: mergedIncludedAndExcluded.excludedPaths,
             indentation: childConfiguration.indentation,
             warningThreshold: mergedWarningTreshold(with: childConfiguration),
-            reporter: reporter,
             cachePath: cachePath,
             allowZeroLintableFiles: childConfiguration.allowZeroLintableFiles,
             strict: childConfiguration.strict,

@@ -40,7 +40,7 @@ extension String {
         ]
         let range = range ?? NSRange(location: 0, length: nsString.length)
         for pattern in patterns {
-            let regex = try! NSRegularExpression(pattern: pattern.pattern, options: pattern.options) // swiftlint:disable:this force_try
+            let regex = try! NSRegularExpression(pattern: pattern.pattern, options: pattern.options) // sm:disable:this force_try
             let matches = regex.matches(in: self, options: [], range: range)
             let bodyParts = matches.flatMap { match -> [String] in
                 let numberOfRanges = match.numberOfRanges

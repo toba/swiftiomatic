@@ -1,4 +1,4 @@
-// swiftlint:disable:next type_name
+// sm:disable:next type_name
 enum IncompatibleConcurrencyAnnotationRuleExamples {
     static let nonTriggeringExamples = [
         // Sendable conformance is fine
