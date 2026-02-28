@@ -78,7 +78,7 @@ import Testing
         var errorThrown = false
 
         do {
-            try config.apply(configuration: "Howdy")
+            try config.apply(configuration: ["invalid": "Howdy"])
         } catch {
             errorThrown = true
         }

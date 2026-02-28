@@ -60,12 +60,9 @@ private let swiftSyntaxTokensCache = Cache { file -> [ResolvedSyntaxToken]? in
 private let commentLinesCache = Cache { CommentLinesVisitor.commentLines(in: $0) }
 private let emptyLinesCache = Cache { EmptyLinesVisitor.emptyLines(in: $0) }
 
-package typealias AssertHandler = () -> Void
 /// Re-enable once all parser diagnostics in tests have been addressed.
 /// https://github.com/realm/SwiftLint/issues/3348
 @TaskLocal package var parserDiagnosticsDisabledForTests = false
-
-private let assertHandlerCache = Cache { (_: SwiftSource) -> AssertHandler? in nil }
 
 private final class Cache<T>: Sendable {
   private struct CacheStorage: @unchecked Sendable {
@@ -133,15 +130,6 @@ extension SwiftSource {
     }
   }
 
-  package var assertHandler: AssertHandler? {
-    get {
-      assertHandlerCache.get(self)
-    }
-    set {
-      assertHandlerCache.set(key: cacheKey, value: newValue)
-    }
-  }
-
   var parserDiagnostics: [String] {
     if parserDiagnosticsDisabledForTests {
       return []
@@ -157,14 +145,7 @@ extension SwiftSource {
   }
 
   var structureDictionary: SourceKitDictionary {
-    guard let structureDictionary = structureDictionaryCache.get(self) else {
-      if let handler = assertHandler {
-        handler()
-        return SourceKitDictionary([:])
-      }
-      queuedFatalError("Never call this for file that sourcekitd fails.")
-    }
-    return structureDictionary
+    structureDictionaryCache.get(self) ?? SourceKitDictionary([:])
   }
 
   var syntaxClassifications: SyntaxClassifications {
@@ -172,14 +153,7 @@ extension SwiftSource {
   }
 
   var syntaxMap: ResolvedSyntaxMap {
-    guard let syntaxMap = syntaxMapCache.get(self) else {
-      if let handler = assertHandler {
-        handler()
-        return ResolvedSyntaxMap(value: SyntaxMap(tokens: []))
-      }
-      queuedFatalError("Never call this for file that sourcekitd fails.")
-    }
-    return syntaxMap
+    syntaxMapCache.get(self) ?? ResolvedSyntaxMap(value: SyntaxMap(tokens: []))
   }
 
   var syntaxTree: SourceFileSyntax {
@@ -218,7 +192,6 @@ extension SwiftSource {
   func invalidateCache() {
     file.clearCaches()
     responseCache.invalidate(self)
-    assertHandlerCache.invalidate(self)
     structureDictionaryCache.invalidate(self)
     syntaxClassificationsCache.invalidate(self)
     syntaxMapCache.invalidate(self)
@@ -234,7 +207,6 @@ extension SwiftSource {
 
   package static func clearCaches() {
     responseCache.clear()
-    assertHandlerCache.clear()
     structureDictionaryCache.clear()
     syntaxClassificationsCache.clear()
     syntaxMapCache.clear()

@@ -62,7 +62,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct CaptureVariableRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(CaptureVariableRule.description)
     }
 }

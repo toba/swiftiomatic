@@ -117,7 +117,7 @@ struct UnicodeScalarView {
     }
 
     /// Returns the remaining characters
-    fileprivate var unicodeScalars: String.UnicodeScalarView.SubSequence {
+    var unicodeScalars: String.UnicodeScalarView.SubSequence {
         characters[startIndex ..< endIndex]
     }
 }
@@ -141,7 +141,7 @@ private extension String.UnicodeScalarView.SubSequence {
     }
 }
 
-private extension UnicodeScalarView {
+extension UnicodeScalarView {
     mutating func readCharacters(where matching: (UnicodeScalar) -> Bool) -> String? {
         var index = startIndex
         while index < endIndex {
@@ -1502,3 +1502,4 @@ func tokenize(_ source: String) -> [Token] {
     }
 
     return tokens
+}

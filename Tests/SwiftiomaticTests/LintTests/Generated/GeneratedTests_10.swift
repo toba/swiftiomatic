@@ -26,7 +26,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct UnusedDeclarationRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(UnusedDeclarationRule.description)
     }
 }
@@ -38,7 +38,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct UnusedImportRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(UnusedImportRule.description)
     }
 }

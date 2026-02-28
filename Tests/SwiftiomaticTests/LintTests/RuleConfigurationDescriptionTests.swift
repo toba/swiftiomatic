@@ -42,7 +42,7 @@ import Testing
         @ConfigurationElement(key: "levels")
         var nestedSeverityLevels = SeverityLevelsConfiguration<Parent>(warning: 3, error: 2)
 
-        mutating func apply(configuration: Any) throws(Swiftiomatic.Issue) {
+        mutating func apply(configuration: [String: Any]) throws(Swiftiomatic.Issue) {
             // Set keys for elements that need them
             if $flag.key.isEmpty { $flag.key = "flag" }
             if $string.key.isEmpty { $string.key = "string" }
@@ -56,11 +56,6 @@ import Testing
             if $setOfDoubles.key.isEmpty { $setOfDoubles.key = "set_of_doubles" }
             if $renamedSeverityConfig.key.isEmpty { $renamedSeverityConfig.key = "SEVERITY" }
             if $nestedSeverityLevels.key.isEmpty { $nestedSeverityLevels.key = "levels" }
-
-            guard let configuration = configuration as? [String: Any] else {
-                if configuration is Void { return }
-                throw Swiftiomatic.Issue.nothingApplied(ruleID: Parent.identifier)
-            }
             if let value = configuration[$flag.key] { try flag.apply(
                 value,
                 ruleID: Parent.identifier,
@@ -129,7 +124,7 @@ import Testing
 
     @Test func descriptionFromConfiguration() throws {
         var configuration = MockConfiguration()
-        try configuration.apply(configuration: ()) // Configure to set keys.
+        try configuration.apply(configuration: [:]) // Configure to set keys.
         let description = RuleConfigurationDescription.from(configuration: configuration)
 
         #expect(
@@ -320,7 +315,7 @@ import Testing
             @ConfigurationElement(key: "invisible")
             var invisible = true
 
-            mutating func apply(configuration _: Any) { /* conformance for test */ }
+            mutating func apply(configuration _: [String: Any]) { /* conformance for test */ }
 
             func isEqualTo(_: some RuleConfiguration) -> Bool { false }
         }

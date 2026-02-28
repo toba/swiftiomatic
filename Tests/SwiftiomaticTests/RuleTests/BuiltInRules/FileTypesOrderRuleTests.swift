@@ -1,7 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite(.rulesRegistered) struct FileTypesOrderRuleTests {
+@Suite(.rulesRegistered, .disabled("requires sourcekitd")) struct FileTypesOrderRuleTests {
     @Test func fileTypesOrderReversedOrder() async {
         // Test with reversed `order` entries
         let nonTriggeringExamples = [

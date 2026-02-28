@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-/// A violation produced by `ViolationsSyntaxVisitor`s.
+/// A violation produced by `ViolationCollectingVisitor`s.
 struct SyntaxViolation: Comparable, Hashable {
     /// The correction of a violation that is basically the violation's range in the source code and a
     /// replacement for this range that would fix the violation.

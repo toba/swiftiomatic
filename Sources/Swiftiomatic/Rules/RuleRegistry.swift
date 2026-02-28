@@ -2,6 +2,8 @@ import Synchronization
 
 /// Container to register and look up SwiftLint rules.
 final class RuleRegistry: Sendable {
+  // @unchecked because `any Rule.Type` metatypes aren't Sendable-conforming,
+  // but metatypes are inherently safe to share across concurrency domains.
   private struct State: @unchecked Sendable {
     var registeredRules = [any Rule.Type]()
     var list: RuleList?

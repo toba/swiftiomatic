@@ -92,7 +92,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct TypesafeArrayInitRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(TypesafeArrayInitRule.description)
     }
 }

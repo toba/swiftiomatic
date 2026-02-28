@@ -28,17 +28,11 @@ struct Analyze: AsyncParsableCommand {
     @Option(name: .long, help: "Path to .swiftiomatic.yaml config file")
     var config: String?
 
-    @Option(name: .long, parsing: .upToNextOption, help: "Limit to specific suggest categories")
-    var category: [String] = []
-
     @Option(name: .long, parsing: .upToNextOption, help: "Additional exclusion patterns")
     var exclude: [String] = []
 
     @Option(name: .long, help: "Minimum confidence: high, medium, or low")
     var minConfidence: Confidence = .low
-
-    @Option(name: .long, help: "Minimum severity: high, medium, or low")
-    var minSeverity: Severity = .low
 
     @Flag(name: .long, help: "Summary counts only")
     var quiet = false
@@ -70,26 +64,8 @@ struct Analyze: AsyncParsableCommand {
     @Option(name: .long, parsing: .upToNextOption, help: "Enable specific opt-in rules")
     var enableRule: [String] = []
 
-    @Flag(name: .long, help: "Skip suggest checks, only run lint rules")
-    var lintOnly = false
-
-    @Flag(name: .long, help: "Skip lint rules, only run suggest checks")
-    var suggestOnly = false
-
     mutating func run() async throws {
         let cfg = Configuration.loadUnified(configPath: config)
-
-        // Build suggest categories
-        let categories: Set<Category> =
-            if category.isEmpty {
-                []
-            } else {
-                Set(
-                    category.compactMap { name in
-                        Category.allCases.first { $0.rawValue == name }
-                    },
-                )
-            }
 
         // Create SourceKit resolver if requested
         var resolver: (any TypeResolver)?
@@ -111,27 +87,20 @@ struct Analyze: AsyncParsableCommand {
             }
         }
 
-        // Load lint rules (unless suggest-only)
-        let lintRules: [any Rule]
-        if suggestOnly {
-            lintRules = []
-        } else {
-            let mergedDisabled = Set(disableRule + cfg.disabledLintRules)
-            let mergedEnabled: Set<String>? = enableRule.isEmpty && cfg.enabledLintRules.isEmpty
-                ? nil
-                : Set(enableRule + cfg.enabledLintRules)
-            lintRules = RuleLoader.loadRules(
-                enabled: mergedEnabled,
-                disabled: mergedDisabled,
-                onlyRules: Set(onlyRule),
-                ruleConfigs: cfg.lintRuleConfigs,
-            )
-        }
+        // Load lint rules
+        let mergedDisabled = Set(disableRule + cfg.disabledLintRules)
+        let mergedEnabled: Set<String>? = enableRule.isEmpty && cfg.enabledLintRules.isEmpty
+            ? nil
+            : Set(enableRule + cfg.enabledLintRules)
+        let lintRules = RuleResolver.loadRules(
+            enabled: mergedEnabled,
+            disabled: mergedDisabled,
+            onlyRules: Set(onlyRule),
+            ruleConfigs: cfg.lintRuleConfigs,
+        )
 
         let analyzer = Analyzer(
-            categories: categories,
             minConfidence: minConfidence,
-            minSeverity: minSeverity,
             typeResolver: resolver,
             lintRules: lintRules,
             compilerArguments: compilerArgs,
@@ -154,7 +123,7 @@ struct Analyze: AsyncParsableCommand {
 
         // Apply dedup — remove lint rules superseded by format rules when format is active
         if includeFormat {
-            diagnostics = RuleDeduplication.deduplicate(diagnostics)
+            diagnostics = DiagnosticDeduplicator.deduplicate(diagnostics)
         }
 
         // Output
@@ -167,21 +136,7 @@ struct Analyze: AsyncParsableCommand {
         } else {
             switch format {
                 case .text:
-                    // Suggest-style diagnostics get the rich TextFormatter
-                    let suggestDiags = diagnostics.filter { $0.engine == .suggest }
-                    if !suggestDiags.isEmpty {
-                        print(TextFormatter.format(suggestDiags))
-                    }
-                    // Lint/format diagnostics in Xcode-compatible format
-                    let lintDiags = diagnostics
-                        .filter { $0.engine == .lint || $0.engine == .format }
-                    if !lintDiags.isEmpty {
-                        print(DiagnosticFormatter.formatXcode(lintDiags))
-                        print("\nLint: \(lintDiags.count) issues")
-                    }
-                    if diagnostics.isEmpty {
-                        print("No issues found.")
-                    }
+                    print(TextFormatter.format(diagnostics))
                 case .json:
                     try print(DiagnosticFormatter.formatJSON(diagnostics))
             }
@@ -221,7 +176,7 @@ struct Analyze: AsyncParsableCommand {
         // 2. Lint correctable rules run their correct() methods
         let storage = RuleStorage()
         let correctableRules = analyzer.lintRules.compactMap { $0 as? any CorrectableRule }
-        let collectingRules = analyzer.lintRules.filter { $0 is any AnyCollectingRule }
+        let collectingRules = analyzer.lintRules.filter { $0 is any CollectingRuleMarker }
         let lintFiles = files.compactMap { SwiftSource(path: $0) }
 
         // Collect phase for collecting rules
@@ -337,5 +292,4 @@ enum OutputFormat: String, ExpressibleByArgument {
 }
 
 extension Confidence: ExpressibleByArgument {}
-extension Severity: ExpressibleByArgument {}
 extension RuleEngine: ExpressibleByArgument {}

@@ -34,7 +34,7 @@ import Testing
     }
 
     @Test func nestingConfigurationThrowsOnBadConfig() {
-        let config = 17
+        let config: [String: Any] = ["type_level": "not_a_number"]
         var nestingConfig = defaultNestingConfiguration
         checkError(Issue.invalidConfiguration(ruleID: NestingRule.identifier)) {
             try nestingConfig.apply(configuration: config)
@@ -44,12 +44,12 @@ import Testing
     @Test func severityWorksAsOnlyParameter() throws {
         var config = AttributesConfiguration()
         #expect(config.severity == .warning)
-        try config.apply(configuration: "error")
+        try config.apply(configuration: ["severity": "error"])
         #expect(config.severity == .error)
     }
 
     @Test func severityConfigurationFromString() {
-        let config = "Warning"
+        let config: [String: Any] = ["severity": "Warning"]
         let comp = SeverityConfiguration<MockRule>(.warning)
         var severityConfig = SeverityConfiguration<MockRule>(.error)
         do {
@@ -73,7 +73,7 @@ import Testing
     }
 
     @Test func severityConfigurationThrowsNothingApplied() {
-        let config = 17
+        let config: [String: Any] = ["unrelated_key": 17]
         var severityConfig = SeverityConfiguration<MockRule>(.error)
         checkError(Issue.nothingApplied(ruleID: MockRule.identifier)) {
             try severityConfig.apply(configuration: config)
@@ -81,7 +81,7 @@ import Testing
     }
 
     @Test func severityConfigurationThrowsInvalidConfiguration() {
-        let config = "foo"
+        let config: [String: Any] = ["severity": "foo"]
         var severityConfig = SeverityConfiguration<MockRule>(.warning)
         checkError(Issue.invalidConfiguration(ruleID: MockRule.identifier)) {
             try severityConfig.apply(configuration: config)
@@ -107,7 +107,8 @@ import Testing
 
     @Test func severityLevelConfigApplyNilErrorValue() throws {
         var severityConfig = SeverityLevelsConfiguration<MockRule>(warning: 17, error: 20)
-        try severityConfig.apply(configuration: ["error": nil, "warning": 18])
+        // Specifying warning without error causes error to be set to nil
+        try severityConfig.apply(configuration: ["warning": 18])
         #expect(severityConfig.params == [RuleParameter(severity: .warning, value: 18)])
     }
 
@@ -118,7 +119,7 @@ import Testing
     }
 
     @Test func trailingWhitespaceConfigurationThrowsOnBadConfig() {
-        let config = "unknown"
+        let config: [String: Any] = ["severity": "unknown"]
         var configuration = TrailingWhitespaceConfiguration(
             ignoresEmptyLines: false,
             ignoresComments: true,

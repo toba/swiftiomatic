@@ -15,7 +15,7 @@ extension SeverityLevelsConfiguration: SeverityLevelsBasedRuleConfiguration {
 /// Violation visitor customized to collect violations of code blocks that exceed a specified number of lines.
 class BodyLengthVisitor<
     LevelConfig: SeverityLevelsBasedRuleConfiguration,
->: ViolationsSyntaxVisitor<
+>: ViolationCollectingVisitor<
     LevelConfig,
 > {
     @inlinable

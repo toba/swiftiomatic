@@ -19,13 +19,13 @@ extension Request {
             )
           }
 
-          // Check if the current rule is a SourceKitFreeRule
-          if ruleType is any SourceKitFreeRule.Type {
+          // Check if the current rule is a SyntaxOnlyRule
+          if ruleType is any SyntaxOnlyRule.Type {
             queuedFatalError(
               """
               '\(
                                 ruleID
-                            )' is a SourceKitFreeRule and should not be making requests to SourceKit.
+                            )' is a SyntaxOnlyRule and should not be making requests to SourceKit.
               """,
             )
           }

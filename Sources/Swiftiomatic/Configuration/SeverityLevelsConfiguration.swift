@@ -27,12 +27,12 @@ struct SeverityLevelsConfiguration<Parent: Rule>: RuleConfiguration, InlinableOp
         return [RuleParameter(severity: .warning, value: warning)]
     }
 
-    mutating func apply(configuration: Any) throws(Issue) {
-        if let configurationArray = [Int].array(of: configuration), configurationArray.isNotEmpty {
-            warning = configurationArray[0]
-            error = (configurationArray.count > 1) ? configurationArray[1] : nil
-        } else if let configDict = configuration as? [String: Any?] {
-            let warningValue = configDict[$warning.key]
+    mutating func apply(configuration: [String: Any]) throws(Issue) {
+        if let rawArray = configuration["_values"] as? [Int], rawArray.isNotEmpty {
+            warning = rawArray[0]
+            error = (rawArray.count > 1) ? rawArray[1] : nil
+        } else {
+            let warningValue: Any? = configuration[$warning.key]
             if let warningValue {
                 if let warning = warningValue as? Int {
                     self.warning = warning
@@ -40,10 +40,8 @@ struct SeverityLevelsConfiguration<Parent: Rule>: RuleConfiguration, InlinableOp
                     throw .invalidConfiguration(ruleID: Parent.identifier)
                 }
             }
-            if let errorValue = configDict[$error.key] {
-                if errorValue == nil {
-                    error = nil
-                } else if let error = errorValue as? Int {
+            if let errorValue = configuration[$error.key] {
+                if let error = errorValue as? Int {
                     self.error = error
                 } else {
                     throw .invalidConfiguration(ruleID: Parent.identifier)
@@ -51,8 +49,6 @@ struct SeverityLevelsConfiguration<Parent: Rule>: RuleConfiguration, InlinableOp
             } else if warningValue != nil {
                 error = nil
             }
-        } else {
-            throw .nothingApplied(ruleID: Parent.identifier)
         }
     }
 }

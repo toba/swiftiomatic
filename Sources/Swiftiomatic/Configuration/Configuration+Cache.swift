@@ -1,53 +1,14 @@
 import Foundation
-import Synchronization
 
 extension Configuration {
-    // MARK: Caching Configurations By Identifier (In-Memory)
+    // MARK: On-Disk Cache
 
-    private static let cachedConfigurationsByIdentifier = Mutex([String: Configuration]())
-
-    /// Since the cache is stored in a static var, this function is used to reset the cache during tests
-    static func resetCache() {
-        cachedConfigurationsByIdentifier.withLock { $0.removeAll() }
-    }
-
-    func setCached(forIdentifier identifier: String) {
-        Self.cachedConfigurationsByIdentifier.withLock { $0[identifier] = self }
-    }
-
-    static func getCached(forIdentifier identifier: String) -> Configuration? {
-        cachedConfigurationsByIdentifier.withLock { $0[identifier] }
-    }
-
-    /// Returns a copy of the current `Configuration` with its `computedCacheDescription` property set to the value of
-    /// `cacheDescription`, which is expensive to compute.
+    /// A SHA-256 fingerprint of this configuration's root directory and rule settings.
     ///
-    /// - returns: A new `Configuration` value.
-    func withPrecomputedCacheDescription() -> Configuration {
-        var result = self
-        result.computedCacheDescription = result.cacheDescription
-        return result
-    }
-
-    // MARK: Nested Config Is Self Cache
-
-    private static let nestedConfigIsSelfByIdentifier = Mutex([String: Bool]())
-
-    static func setIsNestedConfigurationSelf(forIdentifier identifier: String, value: Bool) {
-        nestedConfigIsSelfByIdentifier.withLock { $0[identifier] = value }
-    }
-
-    static func getIsNestedConfigurationSelf(forIdentifier identifier: String) -> Bool {
-        nestedConfigIsSelfByIdentifier.withLock { $0[identifier] ?? false }
-    }
-
-    // MARK: SwiftLint Cache (On-Disk)
-
+    /// ``LinterCache`` uses this as a cache key: lint results for a file are only valid
+    /// when produced under the same configuration fingerprint. Changing any rule or its
+    /// settings produces a different fingerprint, invalidating stale cached violations.
     var cacheDescription: String {
-        if let computedCacheDescription {
-            return computedCacheDescription
-        }
-
         let cacheRulesDescriptions =
             rules
                 .map { rule in [type(of: rule).identifier, rule.cacheDescription] }
@@ -59,6 +20,11 @@ extension Configuration {
         queuedFatalError("Could not serialize configuration for cache")
     }
 
+    /// The directory where ``LinterCache`` stores its per-file violation caches.
+    ///
+    /// Resolves to `<cachePath>/SwiftLint/<version>/<buildID>/`, falling back to
+    /// `~/Library/Caches/` when no custom ``cachePath`` is set. The directory is
+    /// created on access if it doesn't exist.
     var cacheURL: URL {
         let baseURL: URL
         if let path = cachePath {

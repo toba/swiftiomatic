@@ -1,0 +1,53 @@
+import SwiftSyntax
+
+struct EmptyXCTestMethodRule: Rule {
+  var configuration = EmptyXCTestMethodConfiguration()
+
+  static let description = RuleDescription(
+    identifier: "empty_xctest_method",
+    name: "Empty XCTest Method",
+    description: "Empty XCTest method should be avoided",
+    kind: .lint,
+    nonTriggeringExamples: EmptyXCTestMethodRuleExamples.nonTriggeringExamples,
+    triggeringExamples: EmptyXCTestMethodRuleExamples.triggeringExamples,
+  )
+}
+
+extension EmptyXCTestMethodRule: SwiftSyntaxRule {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    Visitor(configuration: configuration, file: file)
+  }
+}
+
+extension EmptyXCTestMethodRule: OptInRule {}
+
+extension EmptyXCTestMethodRule {
+  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+      .all
+    }
+
+    override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+      node.isXCTestCase(configuration.testParentClasses) ? .visitChildren : .skipChildren
+    }
+
+    override func visitPost(_ node: FunctionDeclSyntax) {
+      if node.modifiers.contains(keyword: .override) || node.isTestMethod, node.hasEmptyBody {
+        violations.append(node.funcKeyword.positionAfterSkippingLeadingTrivia)
+      }
+    }
+  }
+}
+
+extension FunctionDeclSyntax {
+  fileprivate var hasEmptyBody: Bool {
+    if let body {
+      return body.statements.isEmpty
+    }
+    return false
+  }
+
+  fileprivate var isTestMethod: Bool {
+    name.text.hasPrefix("test") && signature.parameterClause.parameters.isEmpty
+  }
+}

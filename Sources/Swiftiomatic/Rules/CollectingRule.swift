@@ -1,8 +1,8 @@
-/// Type-erased protocol used to check whether a rule is collectable.
-protocol AnyCollectingRule: Rule {}
+/// Marker protocol used to check whether a rule is collectable.
+protocol CollectingRuleMarker: Rule {}
 
 /// A rule that requires knowledge of all other files being linted.
-protocol CollectingRule: AnyCollectingRule {
+protocol CollectingRule: CollectingRuleMarker {
   /// The kind of information to collect for each file being linted for this rule.
   associatedtype FileInfo
 

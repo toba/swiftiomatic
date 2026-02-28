@@ -133,7 +133,7 @@ import SwiftSyntax
         )
     }
 
-    private func violations(in code: String, config: Any = [Any]()) -> [String] {
+    private func violations(in code: String, config: [String: Any] = [:]) -> [String] {
         var rule = NumberSeparatorRule()
         try? rule.configuration.apply(configuration: config)
         let visitor = rule.makeVisitor(file: SwiftSource(contents: ""))

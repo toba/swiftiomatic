@@ -693,8 +693,12 @@ extension AcceptableByConfigurationElement where Self: RuleConfiguration {
         return RuleConfigurationDescription(options: [key => asOption()])
     }
 
-    mutating func apply(_ value: Any, ruleID _: String) throws(Issue) {
-        try apply(configuration: value)
+    mutating func apply(_ value: Any, ruleID: String) throws(Issue) {
+        if let dict = value as? [String: Any] {
+            try apply(configuration: dict)
+        } else {
+            throw .invalidConfiguration(ruleID: ruleID)
+        }
     }
 
     init(fromAny _: Any, context _: String) throws(Issue) {

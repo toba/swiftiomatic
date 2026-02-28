@@ -122,7 +122,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct StatementPositionRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(StatementPositionRule.description)
     }
 }

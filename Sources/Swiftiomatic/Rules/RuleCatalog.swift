@@ -17,29 +17,6 @@ enum RuleCatalog {
   static func allRules() -> [Entry] {
     var entries: [Entry] = []
 
-    // Suggest categories (deep analysis via Analyzer + TypeResolver)
-    for category in Category.allCases {
-      let crossFile = category == .agentReview  // dead symbols + structural duplication
-      let needsSourceKit = [
-        Category.typedThrows, .concurrencyModernization,
-        .namingHeuristics, .anyElimination,
-      ].contains(category)
-      entries.append(
-        Entry(
-          id: category.rawValue,
-          name: category.displayName,
-          engine: .suggest,
-          category: category.rawValue,
-          description: category.displayName,
-          isEnabled: true,
-          isDeprecated: false,
-          canAutoFix: false,
-          isCrossFile: crossFile,
-          requiresSourceKit: needsSourceKit,
-        ),
-      )
-    }
-
     // Lint rules (AST-based, run through unified Analyzer)
     RuleRegistry.registerAllRulesOnce()
     let ruleList = RuleRegistry.shared.list

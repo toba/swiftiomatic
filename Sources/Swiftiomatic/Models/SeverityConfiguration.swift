@@ -16,7 +16,8 @@ struct SeverityConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Inli
     var severity = ViolationSeverity.warning
 
     var severityConfiguration: Self {
-        self
+        get { self }
+        set { self = newValue }
     }
 
     /// Create a `SeverityConfiguration` with the specified severity.
@@ -26,10 +27,8 @@ struct SeverityConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Inli
         self.severity = severity
     }
 
-    mutating func apply(configuration: Any) throws(Issue) {
-        let configString = configuration as? String
-        let configDict = configuration as? [String: Any]
-        if let severityString: String = configString ?? configDict?[$severity.key] as? String {
+    mutating func apply(configuration: [String: Any]) throws(Issue) {
+        if let severityString = configuration[$severity.key] as? String {
             if let severity = ViolationSeverity(rawValue: severityString.lowercased()) {
                 self.severity = severity
             } else {
@@ -37,6 +36,18 @@ struct SeverityConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Inli
             }
         } else {
             throw .nothingApplied(ruleID: Parent.identifier)
+        }
+    }
+
+    /// Applies a value from a parent configuration element.
+    /// Accepts either a `[String: Any]` dict or a bare severity string.
+    mutating func apply(_ value: Any, ruleID: String) throws(Issue) {
+        if let dict = value as? [String: Any] {
+            try apply(configuration: dict)
+        } else if let string = value as? String {
+            try apply(configuration: [$severity.key: string])
+        } else {
+            throw .invalidConfiguration(ruleID: ruleID)
         }
     }
 }

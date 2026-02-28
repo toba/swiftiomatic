@@ -2,22 +2,6 @@ import Testing
 @testable import Swiftiomatic
 
 extension ValidateTestCasesTests {
-            @Test func example() {
-                #expect(true)
-            }
-
-            func createFixture() -> String {
-                return "fixture"
-            }
-        }
-        """
-
-        testFormatting(
-            for: input, output, rule: .validateTestCases,
-            exclude: [.unusedArguments, .testSuiteAccessControl],
-        )
-    }
-
     @Test func doesNotApplyWhenBothTestingFrameworksAreImported() {
         // When both Testing and XCTest are imported, it's ambiguous which framework to use
         let input = """

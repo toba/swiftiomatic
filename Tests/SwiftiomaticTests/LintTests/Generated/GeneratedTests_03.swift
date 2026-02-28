@@ -56,7 +56,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct ExplicitSelfRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(ExplicitSelfRule.description)
     }
 }
@@ -116,7 +116,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct FileTypesOrderRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(FileTypesOrderRule.description)
     }
 }

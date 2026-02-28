@@ -1,7 +1,7 @@
 import Testing
 @testable import Swiftiomatic
 
-@Suite(.rulesRegistered) struct TypesafeArrayInitRuleTests {
+@Suite(.rulesRegistered, .disabled("requires sourcekitd")) struct TypesafeArrayInitRuleTests {
     @Test func violationRuleIdentifier() async {
         let baseDescription = TypesafeArrayInitRule.description
         guard let triggeringExample = baseDescription.triggeringExamples.first else {

@@ -12,7 +12,7 @@ protocol RuleConfiguration: Equatable, Sendable {
   /// - parameter configuration: The untyped configuration value to apply.
   ///
   /// - throws: Throws if the configuration is not in the expected format.
-  mutating func apply(configuration: Any) throws(Issue)
+  mutating func apply(configuration: [String: Any]) throws(Issue)
 
   /// Run a sanity check on the configuration, perform optional postprocessing steps and/or warn about potential
   /// issues.
@@ -22,13 +22,22 @@ protocol RuleConfiguration: Equatable, Sendable {
 /// A configuration for a rule that allows to configure at least the severity.
 protocol SeverityBasedRuleConfiguration: RuleConfiguration {
   /// The configuration of a rule's severity.
-  var severityConfiguration: SeverityConfiguration<Parent> { get }
+  var severityConfiguration: SeverityConfiguration<Parent> { get set }
 }
 
 extension SeverityBasedRuleConfiguration {
   /// The severity of a rule.
   var severity: ViolationSeverity {
     severityConfiguration.severity
+  }
+
+  /// Apply severity from the configuration if present, silently ignoring when absent.
+  mutating func applySeverityIfPresent(_ configuration: [String: Any]) throws(Issue) {
+    do {
+      try severityConfiguration.apply(configuration, ruleID: Parent.identifier)
+    } catch let issue where issue == Issue.nothingApplied(ruleID: Parent.identifier) {
+      // Acceptable — severity is optional.
+    }
   }
 }
 
@@ -47,5 +56,13 @@ extension RuleConfiguration {
   /// All keys supported by this configuration.
   var supportedKeys: Set<String> {
     Set(RuleConfigurationDescription.from(configuration: self).allowedKeys())
+  }
+
+  /// Emit a warning for any unrecognized keys in the configuration.
+  func warnAboutUnknownKeys(in configuration: [String: Any]) {
+    if !supportedKeys.isSuperset(of: configuration.keys) {
+      let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)
+      Issue.invalidConfigurationKeys(ruleID: Parent.identifier, keys: unknownKeys).print()
+    }
   }
 }

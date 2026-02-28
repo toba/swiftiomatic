@@ -45,7 +45,7 @@ private struct MockSeverityLevelsRule: Rule {
     @Test func applyConfigurationWithSingleElementArray() throws {
         var config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 0, error: 0)
 
-        try config.apply(configuration: [15])
+        try config.apply(configuration: ["_values": [15]])
 
         #expect(config.warning == 15)
         #expect(config.error == nil)
@@ -54,7 +54,7 @@ private struct MockSeverityLevelsRule: Rule {
     @Test func applyConfigurationWithTwoElementArray() throws {
         var config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 0, error: 0)
 
-        try config.apply(configuration: [10, 25])
+        try config.apply(configuration: ["_values": [10, 25]])
 
         #expect(config.warning == 10)
         #expect(config.error == 25)
@@ -63,26 +63,28 @@ private struct MockSeverityLevelsRule: Rule {
     @Test func applyConfigurationWithMultipleElementArray() throws {
         var config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 0, error: 0)
 
-        try config.apply(configuration: [10, 25, 50])
+        try config.apply(configuration: ["_values": [10, 25, 50]])
 
         #expect(config.warning == 10)
         #expect(config.error == 25) // Only first two elements are used
     }
 
-    @Test func applyConfigurationWithEmptyArray() {
+    @Test func applyConfigurationWithEmptyArray() throws {
         var config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 12, error: nil)
 
-        checkError(Issue.nothingApplied(ruleID: MockSeverityLevelsRule.identifier)) {
-            try config.apply(configuration: [] as [Int])
-        }
+        // Empty _values array is silently ignored (no recognized keys to apply)
+        try config.apply(configuration: ["_values": [] as [Int]])
+        #expect(config.warning == 12) // unchanged
+        #expect(config.error == nil) // unchanged
     }
 
-    @Test func applyConfigurationWithInvalidArrayType() {
+    @Test func applyConfigurationWithInvalidArrayType() throws {
         var config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 12, error: nil)
 
-        checkError(Issue.nothingApplied(ruleID: MockSeverityLevelsRule.identifier)) {
-            try config.apply(configuration: ["invalid"])
-        }
+        // Non-Int _values array fails the as? [Int] cast; silently ignored
+        try config.apply(configuration: ["_values": ["invalid"]])
+        #expect(config.warning == 12) // unchanged
+        #expect(config.error == nil) // unchanged
     }
 
     @Test func applyConfigurationWithWarningOnlyDictionary() throws {
@@ -115,7 +117,8 @@ private struct MockSeverityLevelsRule: Rule {
     @Test func applyConfigurationWithNilErrorDictionary() throws {
         var config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 10, error: 20)
 
-        try config.apply(configuration: ["error": nil as Int?])
+        // Specifying warning without error causes error to be set to nil
+        try config.apply(configuration: ["warning": 10])
 
         #expect(config.warning == 10)
         #expect(config.error == nil)
@@ -146,12 +149,13 @@ private struct MockSeverityLevelsRule: Rule {
         }
     }
 
-    @Test func applyConfigurationWithInvalidConfigurationType() {
+    @Test func applyConfigurationWithInvalidConfigurationType() throws {
         var config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 12, error: nil)
 
-        checkError(Issue.nothingApplied(ruleID: MockSeverityLevelsRule.identifier)) {
-            try config.apply(configuration: "invalid")
-        }
+        // Unrecognized keys are silently ignored
+        try config.apply(configuration: ["unrecognized": "invalid"])
+        #expect(config.warning == 12) // unchanged
+        #expect(config.error == nil) // unchanged
     }
 
     @Test func applyConfigurationWithEmptyDictionary() throws {

@@ -16,4 +16,18 @@ enum RuleKind: String, CaseIterable, Codable, Sendable {
     case concurrency
     /// Describes rules that validate Observation framework usage.
     case observation
+
+    /// Human-readable display name for text output.
+    var displayName: String {
+        switch self {
+            case .lint: "Lint"
+            case .idiomatic: "Idiomatic Swift"
+            case .style: "Style"
+            case .metrics: "Metrics"
+            case .performance: "Performance"
+            case .suggest: "Suggestions"
+            case .concurrency: "Concurrency"
+            case .observation: "Observation"
+        }
+    }
 }

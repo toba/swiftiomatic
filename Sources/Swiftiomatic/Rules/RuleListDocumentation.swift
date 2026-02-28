@@ -70,8 +70,8 @@ struct RuleListDocumentation {
     )
     let enabledSourceKitRules = rulesUsingSourceKit.filter(\.isEnabledByDefault)
     let disabledSourceKitRules = rulesUsingSourceKit.filter(\.isDisabledByDefault)
-    let enabledSourceKitFreeRules = rulesNotUsingSourceKit.filter(\.isEnabledByDefault)
-    let disabledSourceKitFreeRules = rulesNotUsingSourceKit.filter(\.isDisabledByDefault)
+    let enabledSyntaxOnlyRules = rulesNotUsingSourceKit.filter(\.isEnabledByDefault)
+    let disabledSyntaxOnlyRules = rulesNotUsingSourceKit.filter(\.isDisabledByDefault)
 
     return """
       # Swift Syntax Dashboard
@@ -97,13 +97,13 @@ struct RuleListDocumentation {
 
       ## Rules not Using SourceKit
 
-      ### Default Rules (\(enabledSourceKitFreeRules.count))
+      ### Default Rules (\(enabledSyntaxOnlyRules.count))
 
-      \(enabledSourceKitFreeRules.map(makeListEntry).joined(separator: "\n"))
+      \(enabledSyntaxOnlyRules.map(makeListEntry).joined(separator: "\n"))
 
-      ### Opt-in Rules (\(disabledSourceKitFreeRules.count))
+      ### Opt-in Rules (\(disabledSyntaxOnlyRules.count))
 
-      \(disabledSourceKitFreeRules.map(makeListEntry).joined(separator: "\n"))
+      \(disabledSyntaxOnlyRules.map(makeListEntry).joined(separator: "\n"))
 
       """
   }

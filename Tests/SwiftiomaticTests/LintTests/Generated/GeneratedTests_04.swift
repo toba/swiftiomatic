@@ -98,7 +98,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct IndentationWidthRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(IndentationWidthRule.description)
     }
 }

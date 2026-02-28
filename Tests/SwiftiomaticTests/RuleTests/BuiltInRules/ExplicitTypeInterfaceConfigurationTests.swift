@@ -37,7 +37,7 @@ import Testing
     @Test func invalidTypeOfCustomConfiguration() {
         var config = ExplicitTypeInterfaceConfiguration()
         checkError(Issue.invalidConfiguration(ruleID: ExplicitTypeInterfaceRule.identifier)) {
-            try config.apply(configuration: "invalidKey")
+            try config.apply(configuration: ["severity": "invalidKey"])
         }
     }
 

@@ -141,6 +141,17 @@ private let initializeSourceKitFailable: Void = {
 /// `send()` polls this with a short sleep on connection-interrupted errors.
 private let sourceKitRestored = Mutex(false)
 
+/// When true, `send()` throws immediately without calling `sourcekitd_initialize()`.
+/// Set once during test setup to prevent the in-process sourcekitd from loading
+/// background threads that SIGSEGV during process exit (apple/swift#55112).
+private let _sourceKitDisabled = Mutex(false)
+
+/// Prevent sourcekitd from being initialized for the lifetime of this process.
+/// Call once during test setup. Not reversible.
+package func disableSourceKitForTesting() {
+    _sourceKitDisabled.withLock { $0 = true }
+}
+
 /// Serializes sourcekitd requests to avoid SIGSEGV crashes under parallel load.
 /// sourcekitd runs as a single XPC service process and is not resilient to
 /// unbounded concurrent requests (especially index/cursorinfo).
@@ -243,6 +254,9 @@ enum Request {
     }
 
     func send() throws(Request.Error) -> [String: SourceKitValue] {
+        if _sourceKitDisabled.withLock({ $0 }) {
+            throw .failed("SourceKit is disabled for testing (apple/swift#55112)")
+        }
         initializeSourceKitFailable
         let result: Result<[String: SourceKitValue], Request.Error> = sourceKitRequestGate.withLock { _ in
             let response = sourcekitObject.sendSync()

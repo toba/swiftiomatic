@@ -50,7 +50,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct LiteralExpressionEndIndentationRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(LiteralExpressionEndIndentationRule.description)
     }
 }
@@ -104,7 +104,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct MultilineFunctionChainsRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(MultilineFunctionChainsRule.description)
     }
 }
@@ -116,7 +116,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct MultilineParametersBracketsRuleGeneratedTests {
-    @Test func withDefaultConfiguration() async {
+    @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
         await verifyRule(MultilineParametersBracketsRule.description)
     }
 }

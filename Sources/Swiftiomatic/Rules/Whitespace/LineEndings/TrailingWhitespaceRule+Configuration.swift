@@ -1,0 +1,25 @@
+struct TrailingWhitespaceConfiguration: SeverityBasedRuleConfiguration {
+  @ConfigurationElement(key: "severity")
+  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  @ConfigurationElement(key: "ignores_empty_lines")
+  private(set) var ignoresEmptyLines = false
+  @ConfigurationElement(key: "ignores_comments")
+  private(set) var ignoresComments = true
+  @ConfigurationElement(key: "ignores_literals")
+  private(set) var ignoresLiterals = false
+  typealias Parent = TrailingWhitespaceRule
+  mutating func apply(configuration: [String: Any]) throws(Issue) {
+    try applySeverityIfPresent(configuration)
+    if let value = configuration[$ignoresEmptyLines.key] {
+      try ignoresEmptyLines.apply(value, ruleID: Parent.identifier)
+    }
+    if let value = configuration[$ignoresComments.key] {
+      try ignoresComments.apply(value, ruleID: Parent.identifier)
+    }
+    if let value = configuration[$ignoresLiterals.key] {
+      try ignoresLiterals.apply(value, ruleID: Parent.identifier)
+    }
+    warnAboutUnknownKeys(in: configuration)
+    try validate()
+  }
+}

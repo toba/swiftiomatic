@@ -32,7 +32,17 @@ struct RuleWithLevelsMock: Rule {
     init() { /* conformance for test */ }
     init(configuration: Any) throws {
         self.init()
-        try self.configuration.apply(configuration: configuration)
+        let normalized: [String: Any]
+        if let dict = configuration as? [String: Any] {
+            normalized = dict
+        } else if let array = configuration as? [Int] {
+            normalized = ["_values": array]
+        } else if let value = configuration as? Int {
+            normalized = ["_values": [value]]
+        } else {
+            throw Issue.invalidConfiguration(ruleID: Self.identifier)
+        }
+        try self.configuration.apply(configuration: normalized)
     }
 
     func validate(file _: SwiftSource) -> [RuleViolation] { [] }

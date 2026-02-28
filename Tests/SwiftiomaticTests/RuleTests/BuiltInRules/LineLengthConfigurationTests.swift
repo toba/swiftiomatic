@@ -129,10 +129,10 @@ import Testing
         let length2 = SeverityLevelsConfiguration<LineLengthRule>(warning: warning2, error: nil)
         let config2 = [warning2]
 
-        try configuration.apply(configuration: config1)
+        try configuration.apply(configuration: ["_values": config1])
         #expect(configuration.length == length1)
 
-        try configuration.apply(configuration: config2)
+        try configuration.apply(configuration: ["_values": config2])
         #expect(configuration.length == length2)
     }
 

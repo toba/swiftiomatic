@@ -1,3 +1,5 @@
+import Foundation
+
 /// An enumeration of the types of error that may be thrown by SwiftFormat
 enum FormatError: Error, CustomStringConvertible, LocalizedError {
     case reading(String)

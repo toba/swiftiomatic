@@ -49,11 +49,6 @@ struct Configuration {
     /// Check for updates.
     let checkForUpdates: Bool
 
-    /// This value is `true` iff the `--config` parameter was used to specify (a) configuration file(s)
-    /// In particular, this means that the value is also `true` if the `--config` parameter
-    /// was used to explicitly specify the default `.swiftiomatic.yaml` as the configuration file
-    private(set) var basedOnCustomConfigurationFiles = false
-
     // MARK: Unified Config (format / suggest / lint-override)
 
     /// Lint rules explicitly enabled (for opt-in rules).
@@ -91,12 +86,8 @@ struct Configuration {
     }
 
     /// The root directory is the directory that included & excluded paths relate to.
-    /// By default, the root directory is the current working directory,
-    /// but during some merging algorithms it may be used differently.
-    /// The rootDirectory also serves as the stopping point when searching for nested configs along the file hierarchy.
-    var rootDirectory: String {
-        fileGraph.rootDirectory
-    }
+    /// By default, the root directory is the current working directory.
+    var rootDirectory: String
 
     /// The rules mode used for this configuration.
     var rulesMode: RulesMode {
@@ -105,16 +96,14 @@ struct Configuration {
 
     // MARK: Internal Instance
 
-    var fileGraph: FileGraph
     private(set) var rulesWrapper: RulesWrapper
-    var computedCacheDescription: String?
 
     // MARK: - Initializers: Internal
 
     /// Initialize with all properties
     init(
         rulesWrapper: RulesWrapper,
-        fileGraph: FileGraph,
+        rootDirectory: String,
         includedPaths: [String],
         excludedPaths: [String],
         indentation: IndentationStyle,
@@ -128,7 +117,7 @@ struct Configuration {
         checkForUpdates: Bool,
     ) {
         self.rulesWrapper = rulesWrapper
-        self.fileGraph = fileGraph
+        self.rootDirectory = rootDirectory
         self.includedPaths = includedPaths
         self.excludedPaths = excludedPaths
         self.indentation = indentation
@@ -147,12 +136,11 @@ struct Configuration {
     /// - parameter copying:    The existing configuration to copy.
     init(copying configuration: Self) {
         rulesWrapper = configuration.rulesWrapper
-        fileGraph = configuration.fileGraph
+        rootDirectory = configuration.rootDirectory
         includedPaths = configuration.includedPaths
         excludedPaths = configuration.excludedPaths
         indentation = configuration.indentation
         warningThreshold = configuration.warningThreshold
-        basedOnCustomConfigurationFiles = configuration.basedOnCustomConfigurationFiles
         cachePath = configuration.cachePath
         allowZeroLintableFiles = configuration.allowZeroLintableFiles
         strict = configuration.strict
@@ -179,8 +167,7 @@ struct Configuration {
     /// - parameter allRulesWrapped:        The rules with their own configurations already applied.
     /// - parameter ruleList:               The list of all rules. Used for alias resolving and as a fallback
     ///                                     if `allRulesWrapped` is nil.
-    /// - parameter filePath                The underlying file graph. If `nil` is specified, a empty file graph
-    ///                                     with the current working directory as the `rootDirectory` will be used.
+    /// - parameter rootDirectory:          The root directory for path resolution. Defaults to cwd.
     /// - parameter includedPaths:          Included paths to lint.
     /// - parameter excludedPaths:          Excluded paths to not lint.
     /// - parameter indentation:            The style to use when indenting Swift source code.
@@ -199,7 +186,7 @@ struct Configuration {
         rulesMode: RulesMode = .defaultConfiguration(disabled: [], optIn: []),
         allRulesWrapped: [ConfigurationRuleWrapper]? = nil,
         ruleList: RuleList = RuleRegistry.shared.list,
-        fileGraph: FileGraph? = nil,
+        rootDirectory: String? = nil,
         includedPaths: [String] = [],
         excludedPaths: [String] = [],
         indentation: IndentationStyle = .default,
@@ -227,11 +214,9 @@ struct Configuration {
                 allRulesWrapped: allRulesWrapped ?? (try? ruleList.allRulesWrapped()) ?? [],
                 aliasResolver: { ruleList.identifier(for: $0) ?? $0 },
             ),
-            fileGraph: fileGraph
-                ?? FileGraph(
-                    rootDirectory: FileManager.default.currentDirectoryPath.bridge()
-                        .absolutePathStandardized(),
-                ),
+            rootDirectory: rootDirectory
+                ?? FileManager.default.currentDirectoryPath.bridge()
+                    .absolutePathStandardized(),
             includedPaths: includedPaths,
             excludedPaths: excludedPaths,
             indentation: indentation,
@@ -264,11 +249,10 @@ struct Configuration {
         useDefaultConfigOnFailure: Bool? =
             nil, // sm:disable:this discouraged_optional_boolean
     ) {
-        // Store whether there are custom configuration files; use default config file name if there are none
+        // Use default config file name if none specified
         let hasCustomConfigurationFiles: Bool = configurationFiles.isNotEmpty
         let configurationFiles =
             configurationFiles.isEmpty ? [Self.defaultFileName] : configurationFiles
-        defer { basedOnCustomConfigurationFiles = hasCustomConfigurationFiles }
 
         let currentWorkingDirectory = FileManager.default.currentDirectoryPath.bridge()
             .absolutePathStandardized()
@@ -281,16 +265,9 @@ struct Configuration {
                 .defaultConfiguration(disabled: [], optIn: [])
             }
 
-        // Try obtaining cached config
-        let cacheIdentifier = "\(currentWorkingDirectory) - \(configurationFiles)"
-        if let cachedConfig = Self.getCached(forIdentifier: cacheIdentifier) {
-            self.init(copying: cachedConfig)
-            return
-        }
-
         // Try building configuration from config files
         do {
-            let (resultingConfiguration, loadedFiles) = try FileGraph.resultingConfiguration(
+            let resultingConfiguration = try Self.resultingConfiguration(
                 configFiles: configurationFiles,
                 rootDirectory: currentWorkingDirectory,
                 enableAllRules: enableAllRules,
@@ -299,11 +276,6 @@ struct Configuration {
             )
 
             self.init(copying: resultingConfiguration)
-            self.fileGraph = FileGraph(
-                rootDirectory: currentWorkingDirectory,
-                loadedConfigFiles: loadedFiles,
-            )
-            setCached(forIdentifier: cacheIdentifier)
         } catch {
             if case Issue.initialFileNotFound = error, !hasCustomConfigurationFiles {
                 // The initial configuration file wasn't found, but the user didn't explicitly specify one
@@ -422,6 +394,78 @@ struct Configuration {
         return .default
     }
 
+    // MARK: - Methods: Merging
+
+    /// Merges this configuration with a child configuration, producing a new configuration
+    /// whose rules combine both parent and child rule settings.
+    func merged(withChild child: Configuration, rootDirectory: String) -> Configuration {
+        Configuration(
+            rulesWrapper: rulesWrapper.merged(with: child.rulesWrapper),
+            rootDirectory: rootDirectory,
+            includedPaths: child.includedPaths.isEmpty ? includedPaths : child.includedPaths,
+            excludedPaths: child.excludedPaths.isEmpty ? excludedPaths : child.excludedPaths,
+            indentation: child.indentation,
+            warningThreshold: child.warningThreshold ?? warningThreshold,
+            cachePath: child.cachePath ?? cachePath,
+            allowZeroLintableFiles: child.allowZeroLintableFiles,
+            strict: child.strict,
+            lenient: child.lenient,
+            baseline: child.baseline ?? baseline,
+            writeBaseline: child.writeBaseline ?? writeBaseline,
+            checkForUpdates: child.checkForUpdates,
+        )
+    }
+
+    // MARK: - Methods: Private Static
+
+    /// Parses the given config file paths and returns the resulting configuration.
+    /// When multiple files are provided, later files override earlier ones (no merging).
+    private static func resultingConfiguration(
+        configFiles: [String],
+        rootDirectory: String,
+        enableAllRules: Bool,
+        onlyRule: [String],
+        cachePath: String?,
+    ) throws -> Configuration {
+        let configData: [(configurationDict: [String: Any], rootDirectory: String)] =
+            try configFiles.map { filePath in
+                let absolutePath = filePath
+                    .absolutePathRepresentation(rootDirectory: rootDirectory)
+
+                guard !absolutePath.isEmpty,
+                      FileManager.default.fileExists(atPath: absolutePath)
+                else {
+                    let isInitial = configFiles.first == filePath
+                    throw isInitial
+                        ? Issue.initialFileNotFound(path: absolutePath)
+                        : Issue.fileNotFound(path: absolutePath)
+                }
+
+                let contents = try String(contentsOfFile: absolutePath, encoding: .utf8)
+                let dict = try YamlParser.parse(contents)
+
+                let fileRoot = absolutePath.bridge().deletingLastPathComponent
+                return (configurationDict: dict, rootDirectory: fileRoot)
+            }
+
+        // Use the last config file (later files win)
+        let data = configData.last ?? (configurationDict: [:], rootDirectory: "")
+
+        var configuration = try Configuration(
+            dict: data.configurationDict,
+            enableAllRules: enableAllRules,
+            onlyRule: onlyRule,
+            cachePath: cachePath,
+        )
+        configuration.rootDirectory = rootDirectory
+        configuration.makeIncludedAndExcludedPaths(
+            relativeTo: rootDirectory,
+            previousBasePath: data.rootDirectory,
+        )
+
+        return configuration
+    }
+
     // MARK: - Methods: Internal
 
     mutating func makeIncludedAndExcludedPaths(
@@ -459,18 +503,16 @@ extension Configuration: Hashable {
         hasher.combine(baseline)
         hasher.combine(writeBaseline)
         hasher.combine(checkForUpdates)
-        hasher.combine(basedOnCustomConfigurationFiles)
         hasher.combine(cachePath)
         hasher.combine(rules.map { type(of: $0).identifier })
-        hasher.combine(fileGraph)
+        hasher.combine(rootDirectory)
     }
 
     static func == (lhs: Configuration, rhs: Configuration) -> Bool {
         lhs.includedPaths == rhs.includedPaths && lhs.excludedPaths == rhs.excludedPaths
             && lhs.indentation == rhs.indentation && lhs.warningThreshold == rhs.warningThreshold
-            && lhs.basedOnCustomConfigurationFiles == rhs.basedOnCustomConfigurationFiles
-            && lhs.cachePath == rhs.cachePath && lhs.rules == rhs.rules && lhs.fileGraph == rhs
-            .fileGraph
+            && lhs.cachePath == rhs.cachePath && lhs.rules == rhs.rules
+            && lhs.rootDirectory == rhs.rootDirectory
             && lhs.allowZeroLintableFiles == rhs.allowZeroLintableFiles && lhs.strict == rhs.strict
             && lhs.lenient == rhs.lenient && lhs.baseline == rhs.baseline
             && lhs.writeBaseline == rhs.writeBaseline && lhs.checkForUpdates == rhs.checkForUpdates
@@ -489,7 +531,6 @@ extension Configuration: CustomStringConvertible {
             + "- Warning Threshold: \(warningThreshold as Optional)\n"
             + "- Root Directory: \(rootDirectory as Optional)\n"
             + "- Cache Path: \(cachePath as Optional)\n"
-            + "- Computed Cache Description: \(computedCacheDescription as Optional)\n"
             + "- Rules: \(rules.map { type(of: $0).identifier })"
     }
 }

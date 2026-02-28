@@ -1,6 +1,12 @@
 # Swiftiomatic
 
-AST-based Swift code analysis CLI, powered by swift-syntax. Like a linter but a lot more opinionated and meant to be called by an agent which may determine which opinions matter.
+Lint within Xcode, auto-format as an Xcode plugin or CLI, and scan for anti-patterns as a CLI an  LLM agent can call for suggestions requiring further analysis.
+
+## Important Agent Rules
+
+- Always create a jig issue before beginning work
+- Update the jig issue continuously as you work
+- Never git stash to avoid an error -- FIX the error
 
 ## Philosophy
 

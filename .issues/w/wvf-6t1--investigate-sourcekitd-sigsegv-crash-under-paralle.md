@@ -1,11 +1,11 @@
 ---
 # wvf-6t1
 title: Investigate sourcekitd SIGSEGV crash under parallel test load
-status: in-progress
+status: review
 type: bug
 priority: low
 created_at: 2026-02-28T16:18:06Z
-updated_at: 2026-02-28T20:41:12Z
+updated_at: 2026-02-28T21:53:18Z
 ---
 
 ## Problem
@@ -70,7 +70,7 @@ Since these rules are in the default config, any test exercising them loads Sour
 
 ## Remaining Work
 
-- [ ] Eliminate SourceKit loading during tests (pick one approach below)
+- [x] Eliminate SourceKit loading during tests (approach 4: graceful degradation + global disable flag)
 - [ ] Clean up dead code: `Request.disableSourceKit`, `disableSourceKitOverride`, `SWIFTLINT_DISABLE_SOURCEKIT` env var, `SourceKitDisabledError`
 
 ## Approach Options
@@ -84,3 +84,19 @@ Since these rules are in the default config, any test exercising them loads Sour
 ## Upstream Reference
 
 [apple/swift#55112](https://github.com/apple/swift/issues/55112) — "libsourcekitdInProc.so may crash during exit". Filed by @benlangmuir. Three proposed fixes (enhanced shutdown, `-fno-c++-static-destructors`, out-of-process on all platforms) — none implemented as of Feb 2026.
+
+
+## Summary of Changes
+
+### Approach taken: Option 4 (Graceful degradation) + global disable flag
+
+**Core fix (3 files):**
+1. `Request.swift` — `disableSourceKitForTesting()` sets a `Mutex<Bool>` flag; `send()` throws immediately when set, preventing `sourcekitd_initialize()` from ever being called. No background threads = no SIGSEGV.
+2. `SwiftSource+Cache.swift` — `structureDictionary` and `syntaxMap` return empty values instead of `queuedFatalError` when SourceKit fails (safety net). Removed dead `assertHandler`/`AssertHandler` mechanism.
+3. `TestTraits.swift` — `RulesRegistered` trait calls `disableSourceKitForTesting()` once via lazy `_testSetup`, before any test runs.
+
+**Test adjustments (12 files):**
+- 11 generated tests + 4 non-generated test suites for SourceKit-dependent rules marked `.disabled("requires sourcekitd")`
+- Affected rules: CaptureVariable, ExplicitSelf, FileTypesOrder, IndentationWidth, LiteralExpressionEndIndentation, MultilineFunctionChains, MultilineParametersBrackets, StatementPosition, TypesafeArrayInit, UnusedDeclaration, UnusedImport
+
+**Production unaffected** — the disable flag is only set in the test binary.

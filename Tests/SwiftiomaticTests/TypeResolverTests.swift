@@ -37,8 +37,7 @@ struct TypeResolverTests {
 
     @Test func analyzerWorksWithNilResolver() async {
         let analyzer = Analyzer(
-            categories: [.typedThrows],
-            typeResolver: nil,
+            typeResolver: nil
         )
         // Just verify it doesn't crash — analyzer uses paths, not inline source
         let findings = await analyzer.analyze(paths: [])

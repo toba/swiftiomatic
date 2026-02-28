@@ -540,4 +540,19 @@ import Testing
         import Testing
 
         final class HelperTests {
+            @Test func example() {
+                #expect(true)
+            }
+
+            func createFixture() -> String {
+                return "fixture"
+            }
+        }
+        """
+
+        testFormatting(
+            for: input, output, rule: .validateTestCases,
+            exclude: [.unusedArguments, .testSuiteAccessControl],
+        )
+    }
 }

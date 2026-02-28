@@ -53,7 +53,7 @@ import Testing
     }
 
     @Test func nameConfigurationThrowsOnBadConfig() {
-        let config = 17
+        let config: [String: Any] = ["min_length": ["warning": "not_a_number"]]
         var nameConfig = TesteeType(
             minLengthWarning: 0,
             minLengthError: 0,

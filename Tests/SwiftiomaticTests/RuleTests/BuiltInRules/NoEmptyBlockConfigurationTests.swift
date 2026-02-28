@@ -37,7 +37,7 @@ import Testing
     @Test func invalidTypeOfCustomConfiguration() {
         var config = NoEmptyBlockConfiguration()
         checkError(Issue.invalidConfiguration(ruleID: NoEmptyBlockRule.identifier)) {
-            try config.apply(configuration: "invalidKey")
+            try config.apply(configuration: ["severity": "invalidKey"])
         }
     }
 

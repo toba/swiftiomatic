@@ -1,13 +1,13 @@
 import SwiftSyntax
 
 /// A SwiftLint Rule backed by SwiftSyntax that does not use SourceKit requests.
-protocol SwiftSyntaxRule: SourceKitFreeRule {
-  /// Produce a `ViolationsSyntaxVisitor` for the given file.
+protocol SwiftSyntaxRule: SyntaxOnlyRule {
+  /// Produce a `ViolationCollectingVisitor` for the given file.
   ///
   /// - parameter file: The file for which to produce the visitor.
   ///
-  /// - returns: A `ViolationsSyntaxVisitor` for the given file.
-  func makeVisitor(file: SwiftSource) -> ViolationsSyntaxVisitor<ConfigurationType>
+  /// - returns: A `ViolationCollectingVisitor` for the given file.
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType>
 
   /// Produce a violation for the given file and absolute position.
   ///

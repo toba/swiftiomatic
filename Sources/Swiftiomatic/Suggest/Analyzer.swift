@@ -7,14 +7,8 @@ import SwiftSyntax
 /// All analysis — suggest, lint, and async enrichment — flows through `Rule.validate()`.
 /// Rules conforming to `AsyncEnrichableRule` get a second pass via `enrich()` with SourceKit resolution.
 struct Analyzer: Sendable {
-    /// Categories to analyze. Empty means all.
-    let categories: Set<Category>
-
     /// Minimum confidence to include in results.
     let minConfidence: Confidence
-
-    /// Minimum severity to include in results.
-    let minSeverity: Severity
 
     /// Optional SourceKit-backed type resolver for semantic analysis.
     let typeResolver: (any TypeResolver)?
@@ -26,16 +20,12 @@ struct Analyzer: Sendable {
     let compilerArguments: [String]
 
     init(
-        categories: Set<Category> = [],
         minConfidence: Confidence = .low,
-        minSeverity: Severity = .low,
         typeResolver: (any TypeResolver)? = nil,
         lintRules: [any Rule] = [],
         compilerArguments: [String] = [],
     ) {
-        self.categories = categories
         self.minConfidence = minConfidence
-        self.minSeverity = minSeverity
         self.typeResolver = typeResolver
         self.lintRules = lintRules
         self.compilerArguments = compilerArguments
@@ -46,14 +36,14 @@ struct Analyzer: Sendable {
         let files = FileDiscovery.findSwiftFiles(in: paths)
         guard !files.isEmpty else { return [] }
 
-        var diagnostics = runLintRules(on: files)
+        let sources = files.compactMap { SwiftSource(path: $0) }
+        var diagnostics = runLintRules(on: sources)
 
         // Async enrichment for rules that support it
         if let resolver = typeResolver, resolver.isAvailable {
             let enrichableRules = lintRules.compactMap { $0 as? any AsyncEnrichableRule }
             if !enrichableRules.isEmpty {
-                let lintFiles = files.compactMap { SwiftSource(path: $0) }
-                for file in lintFiles {
+                for file in sources {
                     for rule in enrichableRules {
                         let extra = await rule.enrich(file: file, typeResolver: resolver)
                         diagnostics += extra.map { $0.toDiagnostic() }
@@ -62,28 +52,22 @@ struct Analyzer: Sendable {
             }
         }
 
-        // Filter by confidence and severity
-        diagnostics = diagnostics.filter { d in
-            d.confidence >= minConfidence
-                && (d.severity == .error || minSeverity <= .low)
-        }
+        // Filter by confidence
+        diagnostics = diagnostics.filter { $0.confidence >= minConfidence }
 
         return diagnostics.sorted()
     }
 
     // MARK: - Lint Rules
 
-    private func runLintRules(on files: [String]) -> [Diagnostic] {
+    private func runLintRules(on lintFiles: [SwiftSource]) -> [Diagnostic] {
         guard !lintRules.isEmpty else { return [] }
 
         let storage = RuleStorage()
 
         // Separate collecting rules (need two-pass) from single-pass rules
-        let collectingRules = lintRules.filter { $0 is any AnyCollectingRule }
-        let singlePassRules = lintRules.filter { !($0 is any AnyCollectingRule) }
-
-        // Build SwiftSources
-        let lintFiles = files.compactMap { SwiftSource(path: $0) }
+        let collectingRules = lintRules.filter { $0 is any CollectingRuleMarker }
+        let singlePassRules = lintRules.filter { !($0 is any CollectingRuleMarker) }
 
         // Pass 1: collect cross-file info for CollectingRules
         for file in lintFiles {

@@ -289,7 +289,7 @@ struct Linter: @unchecked Sendable {
       return rule is any AnalyzerRule || rule is SuperfluousDisableCommandRule
     }
     self.rules = rules
-    isCollecting = rules.contains(where: { $0 is any AnyCollectingRule })
+    isCollecting = rules.contains(where: { $0 is any CollectingRuleMarker })
   }
 
   /// Returns a linter capable of checking for violations after running each rule's collection step.

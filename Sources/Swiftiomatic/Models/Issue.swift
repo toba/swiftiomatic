@@ -36,14 +36,8 @@ enum Issue: LocalizedError, Equatable {
     /// Found a rule configuration for a rule that is disabled.
     case ruleDisabledInDisabledRules(ruleID: String)
 
-    /// Found a rule configuration for a rule that is disabled in the parent configuration.
-    case ruleDisabledInParentConfiguration(ruleID: String)
-
     /// Found a rule configuration for a rule that is not enabled in `opt_in_rules`.
     case ruleNotEnabledInOptInRules(ruleID: String)
-
-    /// Found a rule configuration for a rule that is not enabled in parent `only_rules`.
-    case ruleNotEnabledInParentOnlyRules(ruleID: String)
 
     /// A generic warning specified by a string.
     case genericWarning(String)
@@ -166,13 +160,8 @@ enum Issue: LocalizedError, Equatable {
                 return "Found a configuration for '\(id)' rule, but it is not present in 'only_rules'."
             case let .ruleDisabledInDisabledRules(id):
                 return "Found a configuration for '\(id)' rule, but it is disabled in 'disabled_rules'."
-            case let .ruleDisabledInParentConfiguration(id):
-                return "Found a configuration for '\(id)' rule, but it is disabled in a parent configuration."
             case let .ruleNotEnabledInOptInRules(id):
                 return "Found a configuration for '\(id)' rule, but it is not enabled in 'opt_in_rules'."
-            case let .ruleNotEnabledInParentOnlyRules(id):
-                return
-                    "Found a configuration for '\(id)' rule, but it is not present in the parent's 'only_rules'."
             case let .genericWarning(message), let .genericError(message):
                 return message
             case let .ruleDeprecated(id):

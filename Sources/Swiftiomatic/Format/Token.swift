@@ -178,6 +178,9 @@ private extension Token {
         }
     }
 
+}
+
+extension Token {
     struct StringDelimiterType {
         var isRegex: Bool
         var isMultiline: Bool
@@ -315,7 +318,7 @@ extension Token {
                 else {
                     return s.replacingOccurrences(of: "_", with: "")
                 }
-                return String(characters).replacingOccurrences(of: "_", with: "")
+                return String(characters.unicodeScalars).replacingOccurrences(of: "_", with: "")
             default:
                 return string
         }

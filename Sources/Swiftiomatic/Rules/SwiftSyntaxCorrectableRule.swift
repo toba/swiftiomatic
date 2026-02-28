@@ -3,17 +3,17 @@ import SwiftSyntax
 
 /// A SwiftLint CorrectableRule that performs its corrections using a SwiftSyntax `SyntaxRewriter`.
 protocol SwiftSyntaxCorrectableRule: SwiftSyntaxRule, CorrectableRule {
-  /// Produce a `ViolationsSyntaxRewriter` for the given file.
+  /// Produce a `ViolationCollectingRewriter` for the given file.
   ///
   /// - parameter file: The file for which to produce the rewriter.
   ///
-  /// - returns: A `ViolationsSyntaxRewriter` for the given file. May be `nil` in which case the rule visitor's
+  /// - returns: A `ViolationCollectingRewriter` for the given file. May be `nil` in which case the rule visitor's
   ///            collected `violationCorrections` will be used.
-  func makeRewriter(file: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>?
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>?
 }
 
 extension SwiftSyntaxCorrectableRule {
-  func makeRewriter(file _: SwiftSource) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+  func makeRewriter(file _: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
     nil
   }
 
@@ -72,7 +72,7 @@ extension SwiftSyntaxCorrectableRule {
 }
 
 /// A SwiftSyntax `SyntaxRewriter` that produces absolute positions where corrections were applied.
-class ViolationsSyntaxRewriter<Configuration: RuleConfiguration>: SyntaxRewriter {
+class ViolationCollectingRewriter<Configuration: RuleConfiguration>: SyntaxRewriter {
   /// A rule's configuration.
   let configuration: Configuration
   /// The file from which the traversed syntax tree stems from.
@@ -88,7 +88,7 @@ class ViolationsSyntaxRewriter<Configuration: RuleConfiguration>: SyntaxRewriter
   /// The number of corrections made by the rewriter.
   var numberOfCorrections = 0
 
-  /// Initializer for a ``ViolationsSyntaxRewriter``.
+  /// Initializer for a ``ViolationCollectingRewriter``.
   ///
   /// - Parameters:
   ///   - configuration: Configuration of a rule.

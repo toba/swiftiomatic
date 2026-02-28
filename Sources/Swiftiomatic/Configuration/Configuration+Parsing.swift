@@ -29,7 +29,6 @@ extension Configuration {
 
     /// Creates a Configuration value based on the specified parameters.
     ///
-    /// - parameter parentConfiguration:    The parent configuration, if any.
     /// - parameter dict:                   The untyped dictionary to serve as the input for this typed configuration.
     ///                                     Typically generated from a YAML-formatted file.
     /// - parameter ruleList:               The list of rules to be available to this configuration.
@@ -37,7 +36,6 @@ extension Configuration {
     ///                                     settings in `dict`.
     /// - parameter cachePath:              The location of the persisted cache on disk.
     init(
-        parentConfiguration: Configuration? = nil,
         dict: [String: Any],
         ruleList: RuleList = RuleRegistry.shared.list,
         enableAllRules: Bool = false,
@@ -87,7 +85,6 @@ extension Configuration {
 
         if onlyRule.isEmpty {
             Self.validateConfiguredRulesAreEnabled(
-                parentConfiguration: parentConfiguration,
                 configurationDictionary: dict,
                 ruleList: ruleList,
                 rulesMode: rulesMode,
@@ -173,7 +170,6 @@ extension Configuration {
     }
 
     private static func validateConfiguredRulesAreEnabled(
-        parentConfiguration: Configuration?,
         configurationDictionary dict: [String: Any],
         ruleList: RuleList,
         rulesMode: RulesMode,
@@ -189,14 +185,11 @@ extension Configuration {
                 case .allCommandLine, .onlyCommandLine:
                     return
                 case let .onlyConfiguration(onlyRules):
-                    let issue = validateConfiguredRuleIsEnabled(
-                        onlyRules: onlyRules,
-                        ruleType: ruleType,
-                    )
-                    issue?.print()
+                    if onlyRules.isDisjoint(with: ruleType.description.allIdentifiers) {
+                        Issue.ruleNotPresentInOnlyRules(ruleID: ruleType.identifier).print()
+                    }
                 case let .defaultConfiguration(disabled: disabledRules, optIn: optInRules):
                     let issue = validateConfiguredRuleIsEnabled(
-                        parentConfiguration: parentConfiguration,
                         disabledRules: disabledRules,
                         optInRules: optInRules,
                         ruleType: ruleType,
@@ -207,86 +200,22 @@ extension Configuration {
     }
 
     static func validateConfiguredRuleIsEnabled(
-        parentConfiguration: Configuration?,
         disabledRules: Set<String>,
         optInRules: Set<String>,
         ruleType: any Rule.Type,
     ) -> Issue? {
-        var enabledInParentRules: Set<String> = []
-        var disabledInParentRules: Set<String> = []
-        var allEnabledRules: Set<String> = []
-
-        if case let .onlyConfiguration(onlyRules) = parentConfiguration?.rulesMode {
-            enabledInParentRules = onlyRules
-        } else if case let .defaultConfiguration(
-            parentDisabledRules, parentOptInRules,
-        ) = parentConfiguration?.rulesMode {
-            enabledInParentRules = parentOptInRules
-            disabledInParentRules = parentDisabledRules
-        }
-        allEnabledRules =
-            enabledInParentRules
-                .subtracting(disabledInParentRules)
-                .union(optInRules)
-                .subtracting(disabledRules)
-
-        return validateConfiguredRuleIsEnabled(
-            parentConfiguration: parentConfiguration,
-            enabledInParentRules: enabledInParentRules,
-            disabledInParentRules: disabledInParentRules,
-            disabledRules: disabledRules,
-            optInRules: optInRules,
-            allEnabledRules: allEnabledRules,
-            ruleType: ruleType,
-        )
-    }
-
-    static func validateConfiguredRuleIsEnabled(
-        onlyRules: Set<String>,
-        ruleType: any Rule.Type,
-    ) -> Issue? {
-        if onlyRules.isDisjoint(with: ruleType.description.allIdentifiers) {
-            return Issue.ruleNotPresentInOnlyRules(ruleID: ruleType.identifier)
-        }
-        return nil
-    }
-
-    // sm:disable:next function_parameter_count
-    static func validateConfiguredRuleIsEnabled(
-        parentConfiguration: Configuration?,
-        enabledInParentRules: Set<String>,
-        disabledInParentRules: Set<String>,
-        disabledRules: Set<String>,
-        optInRules: Set<String>,
-        allEnabledRules: Set<String>,
-        ruleType: any Rule.Type,
-    ) -> Issue? {
-        if case .allCommandLine = parentConfiguration?.rulesMode {
-            if disabledRules.contains(ruleType.identifier) {
-                return Issue.ruleDisabledInDisabledRules(ruleID: ruleType.identifier)
-            }
-            return nil
-        }
-
+        let allEnabledRules = optInRules.subtracting(disabledRules)
         let allIdentifiers = ruleType.description.allIdentifiers
 
         if allEnabledRules.isDisjoint(with: allIdentifiers) {
             if !disabledRules.isDisjoint(with: allIdentifiers) {
                 return Issue.ruleDisabledInDisabledRules(ruleID: ruleType.identifier)
             }
-            if !disabledInParentRules.isDisjoint(with: allIdentifiers) {
-                return Issue.ruleDisabledInParentConfiguration(ruleID: ruleType.identifier)
-            }
 
             if ruleType is any OptInRule.Type {
-                if enabledInParentRules.union(optInRules).isDisjoint(with: allIdentifiers) {
+                if optInRules.isDisjoint(with: allIdentifiers) {
                     return Issue.ruleNotEnabledInOptInRules(ruleID: ruleType.identifier)
                 }
-            } else if case let .onlyConfiguration(enabledInParentRules) = parentConfiguration?
-                .rulesMode,
-                enabledInParentRules.isDisjoint(with: allIdentifiers)
-            {
-                return Issue.ruleNotEnabledInParentOnlyRules(ruleID: ruleType.identifier)
             }
         }
 

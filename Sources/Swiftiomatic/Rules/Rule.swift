@@ -108,7 +108,15 @@ extension Rule {
 
   init(configuration: Any) throws {
     self.init()
-    try self.configuration.apply(configuration: configuration)
+    let normalized: [String: Any]
+    if let dict = configuration as? [String: Any] {
+      normalized = dict
+    } else if let string = configuration as? String {
+      normalized = ["severity": string]
+    } else {
+      throw Issue.invalidConfiguration(ruleID: Self.identifier)
+    }
+    try self.configuration.apply(configuration: normalized)
   }
 
   func validate(file: SwiftSource, using _: RuleStorage, compilerArguments: [String])
@@ -270,14 +278,14 @@ extension [any Rule] {
   }
 }
 
-/// A rule that does not need SourceKit to operate and can still operate even after SourceKit has crashed.
-protocol SourceKitFreeRule: Rule {}
+/// A rule that operates purely on syntax (SwiftSyntax) and does not require SourceKit.
+protocol SyntaxOnlyRule: Rule {}
 
 extension Rule {
   /// Whether this rule requires SourceKit to operate.
-  /// Returns false if the rule conforms to SourceKitFreeRule.
+  /// Returns false if the rule conforms to SyntaxOnlyRule.
   var requiresSourceKit: Bool {
-    !(self is any SourceKitFreeRule)
+    !(self is any SyntaxOnlyRule)
   }
 }
 

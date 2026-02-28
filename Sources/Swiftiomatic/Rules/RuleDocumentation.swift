@@ -19,7 +19,7 @@ struct RuleDocumentation {
 
   /// If this rule uses SourceKit.
   var usesSourceKit: Bool {
-    !(ruleType is any SourceKitFreeRule.Type)
+    !(ruleType is any SyntaxOnlyRule.Type)
   }
 
   /// If this rule is disabled by default.
