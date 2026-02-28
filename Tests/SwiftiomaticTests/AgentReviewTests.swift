@@ -1,4 +1,4 @@
-import Suggest
+@testable import Swiftiomatic
 import Foundation
 import SwiftParser
 import SwiftSyntax

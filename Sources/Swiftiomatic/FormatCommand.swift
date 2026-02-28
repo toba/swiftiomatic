@@ -1,5 +1,4 @@
 import ArgumentParser
-import Format
 import Foundation
 
 struct FormatCommand: ParsableCommand {
@@ -110,7 +109,7 @@ struct FormatCommand: ParsableCommand {
         var options = FormatOptions.default
         options.indent = config.indent
         options.maxWidth = config.maxWidth
-        if let version = Format.Version(rawValue: config.swiftVersion) {
+        if let version = Version(rawValue: config.swiftVersion) {
             options.swiftVersion = version
         }
 

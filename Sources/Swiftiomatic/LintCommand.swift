@@ -1,6 +1,5 @@
 import ArgumentParser
 import Foundation
-import Lint
 
 struct Lint: AsyncParsableCommand {
     static let configuration = CommandConfiguration(

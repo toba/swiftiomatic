@@ -1,5 +1,5 @@
-import Suggest
-import SourceKitService
+@testable import Swiftiomatic
+
 import SwiftParser
 import SwiftSyntax
 import Testing

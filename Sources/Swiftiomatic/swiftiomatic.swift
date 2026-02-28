@@ -1,11 +1,8 @@
 import ArgumentParser
-import Format
 import Foundation
-import SourceKitService
-import Suggest
 
 @main
-struct Swiftiomatic: AsyncParsableCommand {
+struct SwiftiomaticCLI: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "AST-based Swift code analysis and formatting",
         version: "0.1.0",
@@ -52,12 +49,12 @@ struct Scan: AsyncParsableCommand {
     var compilerArgs: [String] = []
 
     mutating func run() async throws {
-        let categories: Set<Suggest.Category> = if category.isEmpty {
+        let categories: Set<Category> = if category.isEmpty {
             []
         } else {
             Set(
                 category.compactMap { name in
-                    Suggest.Category.allCases.first { $0.rawValue == name }
+                    Category.allCases.first { $0.rawValue == name }
                 },
             )
         }
