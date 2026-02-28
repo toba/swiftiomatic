@@ -22,7 +22,6 @@ struct AccessibilityTraitForButtonRule: Rule {
       `.isButton` or `.isLink` trait is not explicitly applied.
       """,
     kind: .lint,
-    minSwiftVersion: .fiveDotOne,
     nonTriggeringExamples: AccessibilityTraitForButtonRuleExamples.nonTriggeringExamples,
     triggeringExamples: AccessibilityTraitForButtonRuleExamples.triggeringExamples,
   )

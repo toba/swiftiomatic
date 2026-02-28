@@ -74,9 +74,9 @@ extension Configuration {
                   "only_rules": onlyRules,
                   firstRule: exampleConfiguration,
               ],
-              let typedConfiguration = try? Configuration(dict: configDict)
+              let config = try? Configuration(dict: configDict)
         else { return self }
-        return merged(withChild: typedConfiguration, rootDirectory: rootDirectory)
+        return config
     }
 }
 
@@ -339,12 +339,9 @@ private func testCorrection(
            "only_rules": onlyRules,
            ruleToConfigure: correctionConfiguration,
        ],
-       let typedConfiguration = try? Configuration(dict: configDict)
+       let newConfig = try? Configuration(dict: configDict)
     {
-        config = configuration.merged(
-            withChild: typedConfiguration,
-            rootDirectory: configuration.rootDirectory,
-        )
+        config = newConfig
     }
 
     await assertCorrection(correction.0, expected: correction.1, config: config)

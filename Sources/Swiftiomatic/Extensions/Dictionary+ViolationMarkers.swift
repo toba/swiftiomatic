@@ -1,5 +1,5 @@
 extension Dictionary where Key == Example {
-  /// Returns a dictionary with SwiftLint violation markers (↓) removed from keys.
+  /// Returns a dictionary with Swiftiomatic violation markers (↓) removed from keys.
   ///
   /// - returns: A new `Dictionary`.
   func removingViolationMarkers() -> [Key: Value] {

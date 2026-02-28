@@ -8,7 +8,7 @@ struct FileHeaderRule: Rule {
     identifier: "file_header",
     name: "File Header",
     description: "Header comments should be consistent with project patterns. "
-      + "The SWIFTLINT_CURRENT_FILENAME placeholder can optionally be used in the "
+      + "The CURRENT_FILENAME placeholder can optionally be used in the "
       + "required and forbidden patterns. It will be replaced by the real file name.",
     kind: .style,
     nonTriggeringExamples: [
@@ -23,7 +23,7 @@ struct FileHeaderRule: Rule {
         """
         //
         //  FileHeaderRule.swift
-        //  SwiftLint
+        //  Swiftiomatic
         //
         //  Created by Marcelo Fabri on 27/11/16.
         //  ↓Copyright © 2016 Realm. All rights reserved.
@@ -143,7 +143,7 @@ extension FileHeaderRule {
         let pieceStart = currentPosition
         currentPosition += piece.sourceLength
 
-        if isSwiftLintCommand(piece: piece) {
+        if isSmDirective(piece: piece) {
           continue
         }
 
@@ -223,7 +223,7 @@ extension FileHeaderRule {
       )
     }
 
-    private func isSwiftLintCommand(piece: TriviaPiece) -> Bool {
+    private func isSmDirective(piece: TriviaPiece) -> Bool {
       guard let text = piece.commentText else { return false }
       return text.contains("sm:")
     }

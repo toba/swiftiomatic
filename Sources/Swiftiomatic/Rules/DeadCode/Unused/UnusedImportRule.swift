@@ -1,6 +1,6 @@
 import Foundation
 
-private let moduleToLog = ProcessInfo.processInfo.environment["SWIFTLINT_LOG_MODULE_USAGE"]
+private let moduleToLog = ProcessInfo.processInfo.environment["SWIFTIOMATIC_LOG_MODULE_USAGE"]
 
 struct UnusedImportRule: CorrectableRule, AnalyzerRule {
   var configuration = UnusedImportConfiguration()
@@ -120,9 +120,7 @@ extension SwiftSource {
     // Always disallow 'Swift' and 'SwiftShims' because they're always available without importing.
     usrFragments.remove("Swift")
     usrFragments.remove("SwiftShims")
-    if SwiftVersion.current >= .fiveDotSix {
-      usrFragments.remove("main")
-    }
+    usrFragments.remove("main")
 
     var unusedImports = imports.subtracting(usrFragments).subtracting(
       configuration.alwaysKeepImports,
@@ -331,7 +329,7 @@ extension SwiftSource {
         let usr = cursorInfo.value["key.usr"] as? String
       {
         queuedPrintError(
-          "[SWIFTLINT_LOG_MODULE_USAGE] \(rootModuleName) referenced by USR '\(usr)' in file '\(filePath)'",
+          "[SWIFTIOMATIC_LOG_MODULE_USAGE] \(rootModuleName) referenced by USR '\(usr)' in file '\(filePath)'",
         )
       }
     }

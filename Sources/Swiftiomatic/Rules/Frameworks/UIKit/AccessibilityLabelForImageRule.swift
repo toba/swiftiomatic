@@ -21,7 +21,6 @@ struct AccessibilityLabelForImageRule: Rule, OptInRule {
       have accessibility properties applied.
       """,
     kind: .lint,
-    minSwiftVersion: .fiveDotOne,
     nonTriggeringExamples: AccessibilityLabelForImageRuleExamples.nonTriggeringExamples,
     triggeringExamples: AccessibilityLabelForImageRuleExamples.triggeringExamples,
   )

@@ -17,10 +17,9 @@ struct PreferKeyPathRule: Rule {
     description: "Use a key path argument instead of a closure with property access",
     rationale: """
       Note: Swift 5 doesn't support identity key path conversions (`{ $0 }` -> `(\\.self)`) and so
-      SwiftLint disregards `ignore_identity_closures: false` if it runs on a Swift <6 project.
+      Swiftiomatic disregards `ignore_identity_closures: false` if it runs on a Swift <6 project.
       """,
     kind: .idiomatic,
-    minSwiftVersion: .fiveDotTwo,
     nonTriggeringExamples: [
       Example("f {}"),
       Example("f { $0 }"),

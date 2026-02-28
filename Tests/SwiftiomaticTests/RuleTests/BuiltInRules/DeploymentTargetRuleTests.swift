@@ -28,8 +28,6 @@ import Testing
 
     @Test(.disabled("Rule produces 0 violations in this configuration"))
     func iOSNegativeAttributeReason() async throws {
-        try #require(SwiftVersion.current >= .fiveDotSix)
-
         let example = Example("if #unavailable(iOS 14) { legacyImplementation() }")
         let violations = await violations(example, config: ["iOS_deployment_target": "15.0"])
 

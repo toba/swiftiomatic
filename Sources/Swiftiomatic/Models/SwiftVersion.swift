@@ -40,26 +40,6 @@ extension VersionComparable {
 }
 
 extension SwiftVersion {
-    /// Swift 5
-    static let five = SwiftVersion(rawValue: "5.0.0")
-    /// Swift 5.1
-    static let fiveDotOne = SwiftVersion(rawValue: "5.1.0")
-    /// Swift 5.2
-    static let fiveDotTwo = SwiftVersion(rawValue: "5.2.0")
-    /// Swift 5.3
-    static let fiveDotThree = SwiftVersion(rawValue: "5.3.0")
-    /// Swift 5.4
-    static let fiveDotFour = SwiftVersion(rawValue: "5.4.0")
-    /// Swift 5.5
-    static let fiveDotFive = SwiftVersion(rawValue: "5.5.0")
-    /// Swift 5.6
-    static let fiveDotSix = SwiftVersion(rawValue: "5.6.0")
-    /// Swift 5.7
-    static let fiveDotSeven = SwiftVersion(rawValue: "5.7.0")
-    /// Swift 5.8
-    static let fiveDotEight = SwiftVersion(rawValue: "5.8.0")
-    /// Swift 5.9
-    static let fiveDotNine = SwiftVersion(rawValue: "5.9.0")
     /// Swift 6
     static let six = SwiftVersion(rawValue: "6.0.0")
     /// Swift 6.1
@@ -81,10 +61,10 @@ extension SwiftVersion {
 
     /// The current detected Swift compiler version, based on the currently accessible SourceKit version.
     ///
-    /// - note: Override by setting the `SWIFTLINT_SWIFT_VERSION` environment variable.
+    /// - note: Override by setting the `SWIFTIOMATIC_SWIFT_VERSION` environment variable.
     static let current: SwiftVersion = {
         // Allow forcing the Swift version, useful in cases where SourceKit isn't available.
-        if let envVersion = ProcessInfo.processInfo.environment["SWIFTLINT_SWIFT_VERSION"] {
+        if let envVersion = ProcessInfo.processInfo.environment["SWIFTIOMATIC_SWIFT_VERSION"] {
             return SwiftVersion(rawValue: envVersion)
         }
         // This request was added in Swift 5.1
@@ -100,6 +80,34 @@ extension SwiftVersion {
         {
             return SwiftVersion(rawValue: "\(major).\(minor).\(patch)")
         }
-        return .five
+        return .compileTime
+    }()
+
+    /// Compile-time Swift version detected via `#if compiler()` directives.
+    /// Used as a fallback when SourceKit is unavailable.
+    private static let compileTime: SwiftVersion = {
+        #if compiler(>=6.3.0)
+        return SwiftVersion(rawValue: "6.3.0")
+        #elseif compiler(>=6.2.4)
+        return SwiftVersion(rawValue: "6.2.4")
+        #elseif compiler(>=6.2.3)
+        return SwiftVersion(rawValue: "6.2.3")
+        #elseif compiler(>=6.2.2)
+        return SwiftVersion(rawValue: "6.2.2")
+        #elseif compiler(>=6.2.1)
+        return SwiftVersion(rawValue: "6.2.1")
+        #elseif compiler(>=6.2.0)
+        return SwiftVersion(rawValue: "6.2.0")
+        #elseif compiler(>=6.1.2)
+        return SwiftVersion(rawValue: "6.1.2")
+        #elseif compiler(>=6.1.1)
+        return SwiftVersion(rawValue: "6.1.1")
+        #elseif compiler(>=6.1.0)
+        return SwiftVersion(rawValue: "6.1.0")
+        #elseif compiler(>=6.0.0)
+        return SwiftVersion(rawValue: "6.0.0")
+        #else
+        return .six
+        #endif
     }()
 }

@@ -97,7 +97,7 @@ struct RuleDescription: Equatable, Sendable {
         description: String,
         rationale: String? = nil,
         kind: RuleKind,
-        minSwiftVersion: SwiftVersion = .five,
+        minSwiftVersion: SwiftVersion = .six,
         nonTriggeringExamples: [Example] = [],
         triggeringExamples: [Example] = [],
         corrections: [Example: Example] = [:],

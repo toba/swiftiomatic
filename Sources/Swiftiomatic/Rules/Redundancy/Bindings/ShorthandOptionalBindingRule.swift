@@ -8,7 +8,6 @@ struct ShorthandOptionalBindingRule: Rule {
     name: "Shorthand Optional Binding",
     description: "Use shorthand syntax for optional binding",
     kind: .idiomatic,
-    minSwiftVersion: .fiveDotSeven,
     nonTriggeringExamples: [
       Example(
         """

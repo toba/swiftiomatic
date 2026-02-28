@@ -17,7 +17,6 @@ struct IncompatibleConcurrencyAnnotationRule: Rule {
       the annotation.
       """,
     kind: .lint,
-    minSwiftVersion: .six,
     nonTriggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.nonTriggeringExamples,
     triggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.triggeringExamples,
     corrections: IncompatibleConcurrencyAnnotationRuleExamples.corrections,

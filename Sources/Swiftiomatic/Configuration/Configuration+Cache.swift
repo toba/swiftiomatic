@@ -22,7 +22,7 @@ extension Configuration {
 
     /// The directory where ``LinterCache`` stores its per-file violation caches.
     ///
-    /// Resolves to `<cachePath>/SwiftLint/<version>/<buildID>/`, falling back to
+    /// Resolves to `<cachePath>/Swiftiomatic/<version>/<buildID>/`, falling back to
     /// `~/Library/Caches/` when no custom ``cachePath`` is set. The directory is
     /// created on access if it doesn't exist.
     var cacheURL: URL {
@@ -34,8 +34,8 @@ extension Configuration {
         }
 
         let versionedDirectory = [
-            "SwiftLint",
-            LintVersion.current.value,
+            "Swiftiomatic",
+            SwiftiomaticVersion.current.value,
             ExecutableInfo.buildID,
         ].compactMap(\.self).joined(separator: "/")
 

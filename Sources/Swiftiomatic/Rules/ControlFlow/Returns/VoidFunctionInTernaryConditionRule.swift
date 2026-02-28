@@ -8,7 +8,6 @@ struct VoidFunctionInTernaryConditionRule: Rule {
     name: "Void Function in Ternary",
     description: "Using ternary to call Void functions should be avoided",
     kind: .idiomatic,
-    minSwiftVersion: .fiveDotOne,
     nonTriggeringExamples: [
       Example(
         """

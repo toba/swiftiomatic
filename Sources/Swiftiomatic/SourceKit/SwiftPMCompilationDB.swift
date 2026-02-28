@@ -47,7 +47,7 @@ struct SwiftPMCompilationDB: Codable {
         if ProcessInfo.processInfo.environment["TEST_SRCDIR"] != nil {
             // Running tests
             let nodes = try decoder.decode(SwiftPMNodes.self, from: yaml)
-            let suffix = "/Source/swiftlint/"
+            let suffix = "/Source/swiftiomatic/"
             let pathToReplace = Array(
                 nodes.nodes.keys.filter { node in
                     node.hasSuffix(suffix)

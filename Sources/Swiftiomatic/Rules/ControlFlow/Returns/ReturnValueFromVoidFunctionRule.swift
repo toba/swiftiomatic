@@ -9,7 +9,6 @@ struct ReturnValueFromVoidFunctionRule: Rule {
     name: "Return Value from Void Function",
     description: "Returning values from Void functions should be avoided",
     kind: .idiomatic,
-    minSwiftVersion: .fiveDotOne,
     nonTriggeringExamples: ReturnValueFromVoidFunctionRuleExamples.nonTriggeringExamples,
     triggeringExamples: ReturnValueFromVoidFunctionRuleExamples.triggeringExamples,
   )

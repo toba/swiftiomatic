@@ -1,6 +1,6 @@
 /// Instantiates lint rules based on enable/disable lists and per-rule configuration.
 ///
-/// Replaces the Configuration+RulesWrapper layer from the vendored SwiftLint orchestration.
+/// Replaces the Configuration+RuleSelection layer from the vendored lint orchestration.
 enum RuleResolver {
   /// Instantiate all registered rules with optional per-rule config overrides.
   ///

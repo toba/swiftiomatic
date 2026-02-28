@@ -1,6 +1,6 @@
 import Foundation
 
-/// User-facing documentation for a SwiftLint RuleList.
+/// User-facing documentation for a Swiftiomatic RuleList.
 struct RuleListDocumentation {
   private let ruleDocumentations: [RuleDocumentation]
 
@@ -83,7 +83,7 @@ struct RuleListDocumentation {
 
       \(rulesUsingSourceKit.count) out of \(linterRuleDocumentations
             .count) (\(percentUsingSourceKit)%)
-      of SwiftLint's linter rules use SourceKit.
+      of Swiftiomatic's linter rules use SourceKit.
 
       ## Rules Using SourceKit
 

@@ -9,7 +9,6 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
     name: "Prefer Self Type Over Type of Self",
     description: "Prefer `Self` over `type(of: self)` when accessing properties or calling methods",
     kind: .style,
-    minSwiftVersion: .fiveDotOne,
     nonTriggeringExamples: [
       Example(
         """

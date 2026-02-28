@@ -71,7 +71,7 @@ private final class TestFileManager: @unchecked Sendable, LintableFileDiscoverin
     }
 }
 
-@Suite final class LinterCacheTests {
+@Suite(.rulesRegistered) final class LinterCacheTests {
     // MARK: Test Helpers
 
     private var cache = LinterCache(fileManager: TestFileManager())
@@ -307,21 +307,24 @@ private final class TestFileManager: @unchecked Sendable, LintableFileDiscoverin
     }
 
     @Test func ruleConfigurationChangedOrAddedOrRemovedCausesAllFilesToBeReLinted() throws {
-        let initialConfig = try Configuration(dict: ["line_length": 120])
-        cacheAndValidateNoViolationsTwoFiles(configuration: initialConfig)
+        let helper = makeCacheTestHelper(dict: ["mock": [10, 20]])
+        cacheAndValidateNoViolationsTwoFiles(configuration: helper.configuration)
+
+        let (file1, file2) = ("file1.swift", "file2.swift")
 
         // Change
-        try validateNewConfigDoesNotHitCache(
-            dict: ["line_length": 100],
-            initialConfig: initialConfig,
-        )
-        // Addition
-        try validateNewConfigDoesNotHitCache(
-            dict: ["line_length": 100, "number_separator": ["minimum_length": 5]],
-            initialConfig: initialConfig,
-        )
-        // Removal
-        try validateNewConfigDoesNotHitCache(dict: [:], initialConfig: initialConfig)
+        let changedConfig = helper.makeConfig(dict: ["mock": [5, 15]])
+        #expect(cache.violations(forFile: file1, configuration: changedConfig) == nil)
+        #expect(cache.violations(forFile: file2, configuration: changedConfig) == nil)
+
+        // Original still cached
+        #expect(cache.violations(forFile: file1, configuration: helper.configuration)! == [])
+        #expect(cache.violations(forFile: file2, configuration: helper.configuration)! == [])
+
+        // Removal (back to defaults, different from [10, 20])
+        let defaultConfig = helper.makeConfig(dict: [:])
+        #expect(cache.violations(forFile: file1, configuration: defaultConfig) == nil)
+        #expect(cache.violations(forFile: file2, configuration: defaultConfig) == nil)
     }
 
     @Test func swiftVersionChangedRemovedCausesAllFilesToBeReLinted() async {
@@ -334,7 +337,7 @@ private final class TestFileManager: @unchecked Sendable, LintableFileDiscoverin
         cacheAndValidate(violations: violations, forFile: file, configuration: helper.configuration)
         let thisSwiftVersionCache = cache
 
-        let differentSwiftVersion: SwiftVersion = .five
+        let differentSwiftVersion = SwiftVersion(rawValue: "5.0.0")
         cache = LinterCache(fileManager: fileManager, swiftVersion: differentSwiftVersion)
 
         #expect(

@@ -4235,7 +4235,7 @@ extension FormatRuleCatalog {
     /// Ownership modifiers
     static let ownershipModifiers = ["weak", "unowned", "unowned(safe)", "unowned(unsafe)"]
 
-    /// Modifier mapping (designed to match SwiftLint)
+    /// Modifier mapping (designed to match Swiftiomatic)
     static func mapModifiers(_ input: String) -> [String]? {
         switch input.lowercased() {
             case "acl":

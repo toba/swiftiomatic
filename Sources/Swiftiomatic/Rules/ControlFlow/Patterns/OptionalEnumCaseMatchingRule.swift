@@ -9,7 +9,6 @@ struct OptionalEnumCaseMatchingRule: Rule {
     description:
       "Matching an enum case against an optional enum without '?' is supported on Swift 5.1 and above",
     kind: .style,
-    minSwiftVersion: .fiveDotOne,
     nonTriggeringExamples: [
       Example(
         """

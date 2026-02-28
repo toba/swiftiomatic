@@ -1,5 +1,5 @@
 /// A configured rule paired with whether it was initialized with a non-empty configuration.
-typealias ConfigurationRuleWrapper = (rule: any Rule, initializedWithNonEmptyConfiguration: Bool)
+typealias ConfiguredRule = (rule: any Rule, initializedWithNonEmptyConfiguration: Bool)
 
 /// All possible rule list configuration errors.
 enum RuleListError: Error {
@@ -44,9 +44,9 @@ struct RuleList {
     // MARK: - Internal
 
     package func allRulesWrapped(configurationDict: [String: Any] = [:])
-        throws(RuleListError) -> [ConfigurationRuleWrapper]
+        throws(RuleListError) -> [ConfiguredRule]
     {
-        var rules = [String: ConfigurationRuleWrapper]()
+        var rules = [String: ConfiguredRule]()
 
         // Add rules where configuration exists
         for (key, configuration) in configurationDict {
@@ -58,7 +58,7 @@ struct RuleList {
                 let isConfigured =
                     (configuration as? [String: Any])?.isEmpty == false
                         || ([Any].array(of: configuration))?.isEmpty == false
-                rules[identifier] = ConfigurationRuleWrapper(
+                rules[identifier] = ConfiguredRule(
                     rule: configuredRule,
                     initializedWithNonEmptyConfiguration: isConfigured,
                 )

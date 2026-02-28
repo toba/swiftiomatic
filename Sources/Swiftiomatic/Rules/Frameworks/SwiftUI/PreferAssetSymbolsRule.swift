@@ -13,7 +13,6 @@ struct PreferAssetSymbolsRule: Rule {
       and system icons from SF Symbols avoid typos and allow for compile-time checking.
       """,
     kind: .idiomatic,
-    minSwiftVersion: .fiveDotNine,
     nonTriggeringExamples: [
       // UIKit - using asset symbols
       Example("UIImage(resource: .someImage)"),

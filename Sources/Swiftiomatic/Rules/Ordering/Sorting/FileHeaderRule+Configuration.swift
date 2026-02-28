@@ -3,7 +3,7 @@ import Foundation
 struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
   typealias Parent = FileHeaderRule
 
-  private static let fileNamePlaceholder = "SWIFTLINT_CURRENT_FILENAME"
+  private static let fileNamePlaceholder = "CURRENT_FILENAME"
 
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
@@ -19,7 +19,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
   private var _forbiddenRegex: RegularExpression?
   private var _requiredRegex: RegularExpression?
 
-  // swiftlint:disable:next force_try
+  // sm:disable:next force_try
   private static let defaultRegex = try! RegularExpression(
     pattern: "\\bCopyright\\b", options: [.caseInsensitive],
   )
@@ -30,7 +30,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
     }
 
     // Cache the created regexes if possible.
-    // If the pattern contains the SWIFTLINT_CURRENT_FILENAME placeholder,
+    // If the pattern contains the CURRENT_FILENAME placeholder,
     // the regex will be recompiled for each validated file.
     if let requiredString = configuration[$requiredString.key] {
       self.requiredString = requiredString

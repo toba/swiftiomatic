@@ -1,6 +1,6 @@
 import Synchronization
 
-/// Container to register and look up SwiftLint rules.
+/// Container to register and look up Swiftiomatic rules.
 final class RuleRegistry: Sendable {
   // @unchecked because `any Rule.Type` metatypes aren't Sendable-conforming,
   // but metatypes are inherently safe to share across concurrency domains.

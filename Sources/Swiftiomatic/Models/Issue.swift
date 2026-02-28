@@ -72,9 +72,6 @@ enum Issue: LocalizedError, Equatable {
     /// An error that occurred when parsing YAML.
     case yamlParsing(String)
 
-    /// The baseline file at `path` is not readable or cannot be opened.
-    case baselineNotReadable(path: String)
-
     /// Flag to enable warnings for deprecations being printed to the console. Printing is enabled by default.
     package nonisolated(unsafe) static var printDeprecationWarnings = true
 
@@ -188,8 +185,6 @@ enum Issue: LocalizedError, Equatable {
                 return "Cannot get cursor info from file at path '\(path ?? "...")' within '\(id)' rule."
             case let .yamlParsing(message):
                 return "Cannot parse YAML file: \(message)"
-            case let .baselineNotReadable(path):
-                return "Cannot open or read the baseline file at path '\(path)'."
         }
     }
 }

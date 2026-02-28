@@ -23,7 +23,7 @@ struct AttributesRule: Rule {
 
       See https://ericasadun.com/2016/10/02/quick-style-survey/ for discussion.
 
-      SwiftLint's rule requires attributes to be on their own lines for functions and types, but on the same line \
+      Swiftiomatic's rule requires attributes to be on their own lines for functions and types, but on the same line \
       for variables and imports.
       """,
     kind: .style,

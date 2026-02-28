@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-/// A SwiftLint Rule backed by SwiftSyntax that does not use SourceKit requests.
+/// A Swiftiomatic Rule backed by SwiftSyntax that does not use SourceKit requests.
 protocol SwiftSyntaxRule: SyntaxOnlyRule {
   /// Produce a `ViolationCollectingVisitor` for the given file.
   ///

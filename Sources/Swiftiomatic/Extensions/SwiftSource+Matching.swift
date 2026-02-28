@@ -4,7 +4,7 @@ func regex(
   _ pattern: String,
   options: NSRegularExpression.Options? = nil,
 ) -> RegularExpression {
-  // all patterns used for regular expressions in SwiftLint are string literals which have been
+  // all patterns used for regular expressions in Swiftiomatic are string literals which have been
   // confirmed to work, so it's ok to force-try here.
 
   // sm:disable:next force_try

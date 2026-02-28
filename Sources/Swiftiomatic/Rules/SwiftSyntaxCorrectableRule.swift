@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-/// A SwiftLint CorrectableRule that performs its corrections using a SwiftSyntax `SyntaxRewriter`.
+/// A Swiftiomatic CorrectableRule that performs its corrections using a SwiftSyntax `SyntaxRewriter`.
 protocol SwiftSyntaxCorrectableRule: SwiftSyntaxRule, CorrectableRule {
   /// Produce a `ViolationCollectingRewriter` for the given file.
   ///

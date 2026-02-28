@@ -163,8 +163,8 @@ extension RedundantSelfRule {
         return false
       }
       return closureType == .anonymousCall
-        || selfCapture == .strong && SwiftVersion.current >= .fiveDotThree
-        || selfCapture == .weak && SwiftVersion.current >= .fiveDotEight
+        || selfCapture == .strong
+        || selfCapture == .weak
     }
   }
 }

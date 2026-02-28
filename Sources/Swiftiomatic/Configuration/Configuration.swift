@@ -25,29 +25,8 @@ struct Configuration {
     /// The style to use when indenting Swift source code.
     let indentation: IndentationStyle
 
-    /// The threshold for the number of warnings to tolerate before treating the lint as having failed.
-    let warningThreshold: Int?
-
     /// The location of the persisted cache to use with this configuration.
     let cachePath: String?
-
-    /// Allow or disallow SwiftLint to exit successfully when passed only ignored or unlintable files.
-    let allowZeroLintableFiles: Bool
-
-    /// Treat warnings as errors.
-    let strict: Bool
-
-    /// Treat errors as warnings.
-    let lenient: Bool
-
-    /// The path to read a baseline from.
-    let baseline: String?
-
-    /// The path to write a baseline to.
-    let writeBaseline: String?
-
-    /// Check for updates.
-    let checkForUpdates: Bool
 
     // MARK: Unified Config (format / suggest / lint-override)
 
@@ -96,39 +75,25 @@ struct Configuration {
 
     // MARK: Internal Instance
 
-    private(set) var rulesWrapper: RulesWrapper
+    private(set) var rulesWrapper: RuleSelection
 
     // MARK: - Initializers: Internal
 
     /// Initialize with all properties
     init(
-        rulesWrapper: RulesWrapper,
+        rulesWrapper: RuleSelection,
         rootDirectory: String,
         includedPaths: [String],
         excludedPaths: [String],
         indentation: IndentationStyle,
-        warningThreshold: Int?,
         cachePath: String?,
-        allowZeroLintableFiles: Bool,
-        strict: Bool,
-        lenient: Bool,
-        baseline: String?,
-        writeBaseline: String?,
-        checkForUpdates: Bool,
     ) {
         self.rulesWrapper = rulesWrapper
         self.rootDirectory = rootDirectory
         self.includedPaths = includedPaths
         self.excludedPaths = excludedPaths
         self.indentation = indentation
-        self.warningThreshold = warningThreshold
         self.cachePath = cachePath
-        self.allowZeroLintableFiles = allowZeroLintableFiles
-        self.strict = strict
-        self.lenient = lenient
-        self.baseline = baseline
-        self.writeBaseline = writeBaseline
-        self.checkForUpdates = checkForUpdates
     }
 
     /// Creates a Configuration by copying an existing configuration.
@@ -140,14 +105,7 @@ struct Configuration {
         includedPaths = configuration.includedPaths
         excludedPaths = configuration.excludedPaths
         indentation = configuration.indentation
-        warningThreshold = configuration.warningThreshold
         cachePath = configuration.cachePath
-        allowZeroLintableFiles = configuration.allowZeroLintableFiles
-        strict = configuration.strict
-        lenient = configuration.lenient
-        baseline = configuration.baseline
-        writeBaseline = configuration.writeBaseline
-        checkForUpdates = configuration.checkForUpdates
         enabledLintRules = configuration.enabledLintRules
         disabledLintRules = configuration.disabledLintRules
         lintRuleConfigs = configuration.lintRuleConfigs
@@ -160,8 +118,7 @@ struct Configuration {
     }
 
     /// Creates a `Configuration` by specifying its properties directly,
-    /// except that rules are still to be synthesized from rulesMode, ruleList & allRulesWrapped
-    /// and a check against the pinnedVersion is performed if given.
+    /// except that rules are still to be synthesized from rulesMode, ruleList & allRulesWrapped.
     ///
     /// - parameter rulesMode:              The `RulesMode` for this configuration.
     /// - parameter allRulesWrapped:        The rules with their own configurations already applied.
@@ -171,45 +128,19 @@ struct Configuration {
     /// - parameter includedPaths:          Included paths to lint.
     /// - parameter excludedPaths:          Excluded paths to not lint.
     /// - parameter indentation:            The style to use when indenting Swift source code.
-    /// - parameter warningThreshold:       The threshold for the number of warnings to tolerate before treating the
-    ///                                     lint as having failed.
     /// - parameter cachePath:              The location of the persisted cache to use with this configuration.
-    /// - parameter pinnedVersion:          The SwiftLint version defined in this configuration.
-    /// - parameter allowZeroLintableFiles: Allow SwiftLint to exit successfully when passed ignored or unlintable
-    ///                                     files.
-    /// - parameter strict:                 Treat warnings as errors.
-    /// - parameter lenient:                Treat errors as warnings.
-    /// - parameter baseline:               The path to read a baseline from.
-    /// - parameter writeBaseline:          The path to write a baseline to.
-    /// - parameter checkForUpdates:        Check for updates to SwiftLint.
     init(
         rulesMode: RulesMode = .defaultConfiguration(disabled: [], optIn: []),
-        allRulesWrapped: [ConfigurationRuleWrapper]? = nil,
+        allRulesWrapped: [ConfiguredRule]? = nil,
         ruleList: RuleList = RuleRegistry.shared.list,
         rootDirectory: String? = nil,
         includedPaths: [String] = [],
         excludedPaths: [String] = [],
         indentation: IndentationStyle = .default,
-        warningThreshold: Int? = nil,
         cachePath: String? = nil,
-        pinnedVersion: String? = nil,
-        allowZeroLintableFiles: Bool = false,
-        strict: Bool = false,
-        lenient: Bool = false,
-        baseline: String? = nil,
-        writeBaseline: String? = nil,
-        checkForUpdates: Bool = false,
     ) {
-        if let pinnedVersion, pinnedVersion != LintVersion.current.value {
-            queuedPrintError(
-                "warning: Currently running SwiftLint \(LintVersion.current.value) but "
-                    + "configuration specified version \(pinnedVersion).",
-            )
-            exit(2)
-        }
-
         self.init(
-            rulesWrapper: RulesWrapper(
+            rulesWrapper: RuleSelection(
                 mode: rulesMode,
                 allRulesWrapped: allRulesWrapped ?? (try? ruleList.allRulesWrapped()) ?? [],
                 aliasResolver: { ruleList.identifier(for: $0) ?? $0 },
@@ -220,39 +151,30 @@ struct Configuration {
             includedPaths: includedPaths,
             excludedPaths: excludedPaths,
             indentation: indentation,
-            warningThreshold: warningThreshold,
             cachePath: cachePath,
-            allowZeroLintableFiles: allowZeroLintableFiles,
-            strict: strict,
-            lenient: lenient,
-            baseline: baseline,
-            writeBaseline: writeBaseline,
-            checkForUpdates: checkForUpdates,
         )
     }
 
     // MARK: Public
 
-    /// Creates a `Configuration` with convenience parameters.
+    /// Creates a `Configuration` from a single configuration file.
     ///
-    /// - parameter configurationFiles:         The path on disk to one or multiple configuration files. If this array
-    ///                                         is empty, the default `.swiftiomatic.yaml` file will be used.
+    /// - parameter configurationFile:          The path on disk to a configuration file. If empty,
+    ///                                         the default `.swiftiomatic.yaml` will be used.
     /// - parameter enableAllRules:             Enable all available rules.
-    /// - parameter cachePath:                  The location of the persisted cache to use whith this configuration.
+    /// - parameter cachePath:                  The location of the persisted cache to use with this configuration.
     /// - parameter useDefaultConfigOnFailure:  If this value is specified, it will override the normal behavior.
     ///                                         This is only intended for tests checking whether invalid configs fail.
     init(
-        configurationFiles: [String], // No default value here to avoid ambiguous Configuration() initializer
+        configurationFile: String = "",
         enableAllRules: Bool = false,
         onlyRule: [String] = [],
         cachePath: String? = nil,
         useDefaultConfigOnFailure: Bool? =
             nil, // sm:disable:this discouraged_optional_boolean
     ) {
-        // Use default config file name if none specified
-        let hasCustomConfigurationFiles: Bool = configurationFiles.isNotEmpty
-        let configurationFiles =
-            configurationFiles.isEmpty ? [Self.defaultFileName] : configurationFiles
+        let hasCustomConfigurationFile = configurationFile.isNotEmpty
+        let filePath = hasCustomConfigurationFile ? configurationFile : Self.defaultFileName
 
         let currentWorkingDirectory = FileManager.default.currentDirectoryPath.bridge()
             .absolutePathStandardized()
@@ -265,32 +187,39 @@ struct Configuration {
                 .defaultConfiguration(disabled: [], optIn: [])
             }
 
-        // Try building configuration from config files
         do {
-            let resultingConfiguration = try Self.resultingConfiguration(
-                configFiles: configurationFiles,
+            let absolutePath = filePath.absolutePathRepresentation(
                 rootDirectory: currentWorkingDirectory,
+            )
+
+            guard !absolutePath.isEmpty,
+                  FileManager.default.fileExists(atPath: absolutePath)
+            else {
+                throw Issue.initialFileNotFound(path: absolutePath)
+            }
+
+            let contents = try String(contentsOfFile: absolutePath, encoding: .utf8)
+            let dict = try YamlParser.parse(contents)
+
+            var configuration = try Configuration(
+                dict: dict,
                 enableAllRules: enableAllRules,
                 onlyRule: onlyRule,
                 cachePath: cachePath,
             )
-
-            self.init(copying: resultingConfiguration)
+            configuration.rootDirectory = currentWorkingDirectory
+            self.init(copying: configuration)
         } catch {
-            if case Issue.initialFileNotFound = error, !hasCustomConfigurationFiles {
-                // The initial configuration file wasn't found, but the user didn't explicitly specify one
-                // Don't handle as error. Instead, silently fall back to default.
+            if case Issue.initialFileNotFound = error, !hasCustomConfigurationFile {
                 self.init(rulesMode: rulesMode, cachePath: cachePath)
                 return
             }
-            if useDefaultConfigOnFailure ?? !hasCustomConfigurationFiles {
-                // No files were explicitly specified, so maybe the user doesn't want a config at all -> warn
+            if useDefaultConfigOnFailure ?? !hasCustomConfigurationFile {
                 queuedPrintError(
                     "\(Issue.wrap(error: error).localizedDescription) – Falling back to default configuration",
                 )
                 self.init(rulesMode: rulesMode, cachePath: cachePath)
             } else {
-                // Files that were explicitly specified could not be loaded -> fail
                 queuedPrintError(Issue.wrap(error: error).asError.localizedDescription)
                 queuedFatalError("Could not read configuration")
             }
@@ -394,95 +323,6 @@ struct Configuration {
         return .default
     }
 
-    // MARK: - Methods: Merging
-
-    /// Merges this configuration with a child configuration, producing a new configuration
-    /// whose rules combine both parent and child rule settings.
-    func merged(withChild child: Configuration, rootDirectory: String) -> Configuration {
-        Configuration(
-            rulesWrapper: rulesWrapper.merged(with: child.rulesWrapper),
-            rootDirectory: rootDirectory,
-            includedPaths: child.includedPaths.isEmpty ? includedPaths : child.includedPaths,
-            excludedPaths: child.excludedPaths.isEmpty ? excludedPaths : child.excludedPaths,
-            indentation: child.indentation,
-            warningThreshold: child.warningThreshold ?? warningThreshold,
-            cachePath: child.cachePath ?? cachePath,
-            allowZeroLintableFiles: child.allowZeroLintableFiles,
-            strict: child.strict,
-            lenient: child.lenient,
-            baseline: child.baseline ?? baseline,
-            writeBaseline: child.writeBaseline ?? writeBaseline,
-            checkForUpdates: child.checkForUpdates,
-        )
-    }
-
-    // MARK: - Methods: Private Static
-
-    /// Parses the given config file paths and returns the resulting configuration.
-    /// When multiple files are provided, later files override earlier ones (no merging).
-    private static func resultingConfiguration(
-        configFiles: [String],
-        rootDirectory: String,
-        enableAllRules: Bool,
-        onlyRule: [String],
-        cachePath: String?,
-    ) throws -> Configuration {
-        let configData: [(configurationDict: [String: Any], rootDirectory: String)] =
-            try configFiles.map { filePath in
-                let absolutePath = filePath
-                    .absolutePathRepresentation(rootDirectory: rootDirectory)
-
-                guard !absolutePath.isEmpty,
-                      FileManager.default.fileExists(atPath: absolutePath)
-                else {
-                    let isInitial = configFiles.first == filePath
-                    throw isInitial
-                        ? Issue.initialFileNotFound(path: absolutePath)
-                        : Issue.fileNotFound(path: absolutePath)
-                }
-
-                let contents = try String(contentsOfFile: absolutePath, encoding: .utf8)
-                let dict = try YamlParser.parse(contents)
-
-                let fileRoot = absolutePath.bridge().deletingLastPathComponent
-                return (configurationDict: dict, rootDirectory: fileRoot)
-            }
-
-        // Use the last config file (later files win)
-        let data = configData.last ?? (configurationDict: [:], rootDirectory: "")
-
-        var configuration = try Configuration(
-            dict: data.configurationDict,
-            enableAllRules: enableAllRules,
-            onlyRule: onlyRule,
-            cachePath: cachePath,
-        )
-        configuration.rootDirectory = rootDirectory
-        configuration.makeIncludedAndExcludedPaths(
-            relativeTo: rootDirectory,
-            previousBasePath: data.rootDirectory,
-        )
-
-        return configuration
-    }
-
-    // MARK: - Methods: Internal
-
-    mutating func makeIncludedAndExcludedPaths(
-        relativeTo newBasePath: String, previousBasePath: String,
-    ) {
-        includedPaths = includedPaths.map {
-            $0.absolutePathRepresentation(rootDirectory: previousBasePath).path(
-                relativeTo: newBasePath,
-            )
-        }
-
-        excludedPaths = excludedPaths.map {
-            $0.absolutePathRepresentation(rootDirectory: previousBasePath).path(
-                relativeTo: newBasePath,
-            )
-        }
-    }
 }
 
 // MARK: - Sendable
@@ -496,13 +336,6 @@ extension Configuration: Hashable {
         hasher.combine(includedPaths)
         hasher.combine(excludedPaths)
         hasher.combine(indentation)
-        hasher.combine(warningThreshold)
-        hasher.combine(allowZeroLintableFiles)
-        hasher.combine(strict)
-        hasher.combine(lenient)
-        hasher.combine(baseline)
-        hasher.combine(writeBaseline)
-        hasher.combine(checkForUpdates)
         hasher.combine(cachePath)
         hasher.combine(rules.map { type(of: $0).identifier })
         hasher.combine(rootDirectory)
@@ -510,12 +343,9 @@ extension Configuration: Hashable {
 
     static func == (lhs: Configuration, rhs: Configuration) -> Bool {
         lhs.includedPaths == rhs.includedPaths && lhs.excludedPaths == rhs.excludedPaths
-            && lhs.indentation == rhs.indentation && lhs.warningThreshold == rhs.warningThreshold
+            && lhs.indentation == rhs.indentation
             && lhs.cachePath == rhs.cachePath && lhs.rules == rhs.rules
             && lhs.rootDirectory == rhs.rootDirectory
-            && lhs.allowZeroLintableFiles == rhs.allowZeroLintableFiles && lhs.strict == rhs.strict
-            && lhs.lenient == rhs.lenient && lhs.baseline == rhs.baseline
-            && lhs.writeBaseline == rhs.writeBaseline && lhs.checkForUpdates == rhs.checkForUpdates
             && lhs.rulesMode == rhs.rulesMode
     }
 }
@@ -528,7 +358,6 @@ extension Configuration: CustomStringConvertible {
             + "- Indentation Style: \(indentation)\n"
             + "- Included Paths: \(includedPaths)\n"
             + "- Excluded Paths: \(excludedPaths)\n"
-            + "- Warning Threshold: \(warningThreshold as Optional)\n"
             + "- Root Directory: \(rootDirectory as Optional)\n"
             + "- Cache Path: \(cachePath as Optional)\n"
             + "- Rules: \(rules.map { type(of: $0).identifier })"

@@ -1,4 +1,4 @@
-/// User-facing documentation for a SwiftLint rule.
+/// User-facing documentation for a Swiftiomatic rule.
 struct RuleDocumentation {
   private let ruleType: any Rule.Type
 

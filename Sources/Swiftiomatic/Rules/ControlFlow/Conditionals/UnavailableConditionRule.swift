@@ -9,7 +9,6 @@ struct UnavailableConditionRule: Rule {
     description:
       "Use #unavailable/#available instead of #available/#unavailable with an empty body.",
     kind: .idiomatic,
-    minSwiftVersion: .fiveDotSix,
     nonTriggeringExamples: [
       Example(
         """

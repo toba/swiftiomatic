@@ -8,17 +8,9 @@ extension Configuration {
         case excluded
         case included
         case optInRules = "opt_in_rules"
-        case swiftlintVersion = "swiftlint_version"
-        case warningThreshold = "warning_threshold"
         case onlyRules = "only_rules"
         case indentation
         case analyzerRules = "analyzer_rules"
-        case allowZeroLintableFiles = "allow_zero_lintable_files"
-        case strict
-        case lenient
-        case baseline
-        case writeBaseline = "write_baseline"
-        case checkForUpdates = "check_for_updates"
     }
 
     // MARK: - Properties
@@ -62,7 +54,7 @@ extension Configuration {
         )
         Self.warnAboutMisplacedAnalyzerRules(optInRules: optInRules, ruleList: ruleList)
 
-        let allRulesWrapped: [ConfigurationRuleWrapper]
+        let allRulesWrapped: [ConfiguredRule]
         do {
             allRulesWrapped = try ruleList.allRulesWrapped(configurationDict: dict)
         } catch let RuleListError.duplicatedConfigurations(ruleType) {
@@ -98,17 +90,7 @@ extension Configuration {
             includedPaths: defaultStringArray(dict[Key.included.rawValue]),
             excludedPaths: defaultStringArray(dict[Key.excluded.rawValue]),
             indentation: Self.getIndentationLogIfInvalid(from: dict),
-            warningThreshold: dict[Key.warningThreshold.rawValue] as? Int,
             cachePath: cachePath ?? dict[Key.cachePath.rawValue] as? String,
-            pinnedVersion: dict[Key.swiftlintVersion.rawValue].map {
-                ($0 as? String) ?? String(describing: $0)
-            },
-            allowZeroLintableFiles: dict[Key.allowZeroLintableFiles.rawValue] as? Bool ?? false,
-            strict: dict[Key.strict.rawValue] as? Bool ?? false,
-            lenient: dict[Key.lenient.rawValue] as? Bool ?? false,
-            baseline: dict[Key.baseline.rawValue] as? String,
-            writeBaseline: dict[Key.writeBaseline.rawValue] as? String,
-            checkForUpdates: dict[Key.checkForUpdates.rawValue] as? Bool ?? false,
         )
     }
 
@@ -232,7 +214,7 @@ extension Configuration {
                 Issue.genericWarning(
                     """
                     '\($0)' should be listed in the 'analyzer_rules' configuration section \
-                    for more clarity as it is only run by 'swiftlint analyze'.
+                    for more clarity as it is only run by the analyze command.
                     """,
                 ).print()
             }

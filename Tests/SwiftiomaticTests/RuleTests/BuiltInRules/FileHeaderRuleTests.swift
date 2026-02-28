@@ -142,7 +142,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
     }
 
     @Test func fileHeaderWithRequiredStringUsingFilenamePlaceholder() throws {
-        let configuration = ["required_string": "// SWIFTLINT_CURRENT_FILENAME"]
+        let configuration = ["required_string": "// CURRENT_FILENAME"]
 
         // Non triggering tests
         #expect(try validate(fileName: "FileNameMatchingSimple.swift", using: configuration)
@@ -156,7 +156,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
     }
 
     @Test func fileHeaderWithForbiddenStringUsingFilenamePlaceholder() throws {
-        let configuration = ["forbidden_string": "// SWIFTLINT_CURRENT_FILENAME"]
+        let configuration = ["forbidden_string": "// CURRENT_FILENAME"]
 
         // Non triggering tests
         #expect(try validate(fileName: "FileNameCaseMismatch.swift", using: configuration).isEmpty)
@@ -169,9 +169,9 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
     }
 
     @Test func fileHeaderWithRequiredPatternUsingFilenamePlaceholder() throws {
-        let configuration1 = ["required_pattern": "// SWIFTLINT_CURRENT_FILENAME\n.*\\d{4}"]
+        let configuration1 = ["required_pattern": "// CURRENT_FILENAME\n.*\\d{4}"]
         let configuration2 = [
-            "required_pattern": "// Copyright © \\d{4}\n// File: \"SWIFTLINT_CURRENT_FILENAME\"",
+            "required_pattern": "// Copyright © \\d{4}\n// File: \"CURRENT_FILENAME\"",
         ]
 
         // Non triggering tests
@@ -188,9 +188,9 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
     }
 
     @Test func fileHeaderWithForbiddenPatternUsingFilenamePlaceholder() throws {
-        let configuration1 = ["forbidden_pattern": "// SWIFTLINT_CURRENT_FILENAME\n.*\\d{4}"]
+        let configuration1 = ["forbidden_pattern": "// CURRENT_FILENAME\n.*\\d{4}"]
         let configuration2 =
-            ["forbidden_pattern": "//.*(\\s|\")SWIFTLINT_CURRENT_FILENAME(\\s|\").*"]
+            ["forbidden_pattern": "//.*(\\s|\")CURRENT_FILENAME(\\s|\").*"]
 
         // Non triggering tests
         #expect(try validate(fileName: "FileNameCaseMismatch.swift", using: configuration1).isEmpty)
