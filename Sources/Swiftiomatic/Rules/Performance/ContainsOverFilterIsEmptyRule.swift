@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ContainsOverFilterIsEmptyRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -27,6 +26,14 @@ struct ContainsOverFilterIsEmptyRule: Rule {
         ]
     )
 }
+
+extension ContainsOverFilterIsEmptyRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ContainsOverFilterIsEmptyRule: OptInRule {}
 
 private extension ContainsOverFilterIsEmptyRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

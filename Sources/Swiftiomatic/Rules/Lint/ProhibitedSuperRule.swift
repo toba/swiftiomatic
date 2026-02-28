@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ProhibitedSuperRule: Rule {
     var configuration = ProhibitedSuperConfiguration()
 
@@ -71,6 +70,14 @@ struct ProhibitedSuperRule: Rule {
         ]
     )
 }
+
+extension ProhibitedSuperRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ProhibitedSuperRule: OptInRule {}
 
 private extension ProhibitedSuperRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

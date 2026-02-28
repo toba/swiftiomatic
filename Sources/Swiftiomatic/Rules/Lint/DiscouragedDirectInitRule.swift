@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct DiscouragedDirectInitRule: Rule {
     var configuration = DiscouragedDirectInitConfiguration()
 
@@ -35,6 +34,12 @@ struct DiscouragedDirectInitRule: Rule {
             Example("let foo = bar(bundle: ↓Bundle.init(), device: ↓UIDevice.init(), error: ↓NSError.init())"),
         ]
     )
+}
+
+extension DiscouragedDirectInitRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension DiscouragedDirectInitRule {

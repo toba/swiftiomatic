@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct SortedEnumCasesRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -109,6 +108,14 @@ struct SortedEnumCasesRule: Rule {
         ]
     )
 }
+
+extension SortedEnumCasesRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension SortedEnumCasesRule: OptInRule {}
 
 private extension SortedEnumCasesRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct RedundantVoidReturnRule: Rule {
     var configuration = RedundantVoidReturnConfiguration()
 
@@ -68,6 +67,15 @@ struct RedundantVoidReturnRule: Rule {
                 Example("protocol Foo {\n    #if true\n    func foo()\n    #endif\n}"),
         ]
     )
+}
+
+extension RedundantVoidReturnRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension RedundantVoidReturnRule {

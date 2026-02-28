@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct OptionalDataStringConversionRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -20,6 +19,12 @@ struct OptionalDataStringConversionRule: Rule {
             Example("String(decoding: data, as: UTF8.self)")
         ]
     )
+}
+
+extension OptionalDataStringConversionRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension OptionalDataStringConversionRule {

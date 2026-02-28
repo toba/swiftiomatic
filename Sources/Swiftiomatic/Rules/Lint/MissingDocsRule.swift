@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct MissingDocsRule: Rule {
     var configuration = MissingDocsConfiguration()
 
@@ -13,6 +12,14 @@ struct MissingDocsRule: Rule {
         triggeringExamples: MissingDocsRuleExamples.triggeringExamples
     )
 }
+
+extension MissingDocsRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension MissingDocsRule: OptInRule {}
 
 private extension MissingDocsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

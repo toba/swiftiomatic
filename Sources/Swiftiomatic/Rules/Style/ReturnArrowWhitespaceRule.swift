@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true)
 struct ReturnArrowWhitespaceRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -52,6 +51,12 @@ struct ReturnArrowWhitespaceRule: Rule {
             Example("func abc()↓  ->\nInt {}"): Example("func abc() ->\nInt {}"),
         ]
     )
+}
+
+extension ReturnArrowWhitespaceRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension ReturnArrowWhitespaceRule {

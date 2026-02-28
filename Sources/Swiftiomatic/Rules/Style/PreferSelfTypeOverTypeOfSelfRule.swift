@@ -1,7 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct PreferSelfTypeOverTypeOfSelfRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -107,6 +106,17 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
         ]
     )
 }
+
+extension PreferSelfTypeOverTypeOfSelfRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension PreferSelfTypeOverTypeOfSelfRule: OptInRule {}
 
 private extension PreferSelfTypeOverTypeOfSelfRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

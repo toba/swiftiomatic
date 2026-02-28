@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true)
 struct RedundantDiscardableLetRule: Rule {
     var configuration = RedundantDiscardableLetConfiguration()
 
@@ -145,6 +144,12 @@ struct RedundantDiscardableLetRule: Rule {
                     """),
         ]
     )
+}
+
+extension RedundantDiscardableLetRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension RedundantDiscardableLetRule {

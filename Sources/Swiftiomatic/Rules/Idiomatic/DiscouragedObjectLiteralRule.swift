@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct DiscouragedObjectLiteralRule: Rule {
     var configuration = DiscouragedObjectLiteralConfiguration()
 
@@ -23,6 +22,14 @@ struct DiscouragedObjectLiteralRule: Rule {
         ]
     )
 }
+
+extension DiscouragedObjectLiteralRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension DiscouragedObjectLiteralRule: OptInRule {}
 
 private extension DiscouragedObjectLiteralRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

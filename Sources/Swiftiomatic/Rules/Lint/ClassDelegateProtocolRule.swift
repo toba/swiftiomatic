@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct ClassDelegateProtocolRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -55,6 +54,12 @@ struct ClassDelegateProtocolRule: Rule {
             Example("↓protocol FooDelegate where Self: A & B {}"),
         ]
     )
+}
+
+extension ClassDelegateProtocolRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension ClassDelegateProtocolRule {

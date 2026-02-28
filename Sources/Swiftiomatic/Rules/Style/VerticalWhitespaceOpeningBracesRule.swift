@@ -7,7 +7,6 @@ private extension SwiftLintFile {
     }
 }
 
-@DisabledWithoutSourceKit
 struct VerticalWhitespaceOpeningBracesRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -190,4 +189,13 @@ extension VerticalWhitespaceOpeningBracesRule: CorrectableRule {
         file.write(fileContents)
         return violatingRanges.count
     }
+}
+
+extension VerticalWhitespaceOpeningBracesRule {
+    private static let _postMessage: Void = {
+        Issue.genericWarning(
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+        ).print()
+    }()
+    func notifyRuleDisabledOnce() { _ = Self._postMessage }
 }

@@ -51,7 +51,6 @@ struct CustomRulesConfiguration: RuleConfiguration, CacheDescriptionProvider {
 
 // MARK: - CustomRules
 
-@DisabledWithoutSourceKit
 struct CustomRules: Rule, CacheDescriptionProvider, ConditionallySourceKitFree {
     init() {
         // Nothing to initialize.
@@ -139,4 +138,13 @@ struct CustomRules: Rule, CacheDescriptionProvider, ConditionallySourceKitFree {
             && !region.disabledRuleIdentifiers.contains(RuleIdentifier(ruleID))
             && !region.disabledRuleIdentifiers.contains(.all)
     }
+}
+
+extension CustomRules {
+    private static let _postMessage: Void = {
+        Issue.genericWarning(
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+        ).print()
+    }()
+    func notifyRuleDisabledOnce() { _ = Self._postMessage }
 }

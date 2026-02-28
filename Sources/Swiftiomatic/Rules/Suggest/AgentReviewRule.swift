@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct AgentReviewRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -19,6 +18,14 @@ struct AgentReviewRule: Rule {
         ]
     )
 }
+
+extension AgentReviewRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension AgentReviewRule: OptInRule {}
 
 private extension AgentReviewRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

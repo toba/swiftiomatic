@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(foldExpressions: true, optIn: true)
 struct QuickDiscouragedCallRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -13,6 +12,20 @@ struct QuickDiscouragedCallRule: Rule {
         triggeringExamples: QuickDiscouragedCallRuleExamples.triggeringExamples
     )
 }
+
+extension QuickDiscouragedCallRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension QuickDiscouragedCallRule {
+    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+        file.foldedSyntaxTree
+    }
+}
+
+extension QuickDiscouragedCallRule: OptInRule {}
 
 private typealias ScopeElement = (kind: QuickCallKind, blockId: SyntaxIdentifier)?
 

@@ -3,7 +3,6 @@ import SourceKittenFramework
 
 private typealias FileTypeOffset = (fileType: FileTypesOrderConfiguration.FileType, offset: ByteCount)
 
-@DisabledWithoutSourceKit
 struct FileTypesOrderRule: OptInRule {
     var configuration = FileTypesOrderConfiguration()
 
@@ -180,4 +179,13 @@ private extension Array where Element == SourceKittenDictionary {
             return (fileType, offset)
         }
     }
+}
+
+extension FileTypesOrderRule {
+    private static let _postMessage: Void = {
+        Issue.genericWarning(
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+        ).print()
+    }()
+    func notifyRuleDisabledOnce() { _ = Self._postMessage }
 }

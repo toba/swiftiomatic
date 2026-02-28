@@ -1,7 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct VoidReturnRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -48,6 +47,15 @@ struct VoidReturnRule: Rule {
             Example("func foo() async throws -> ↓()"): Example("func foo() async throws -> Void"),
         ]
     )
+}
+
+extension VoidReturnRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension VoidReturnRule {

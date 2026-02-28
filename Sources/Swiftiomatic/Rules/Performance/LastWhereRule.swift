@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct LastWhereRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -27,6 +26,14 @@ struct LastWhereRule: Rule {
         ]
     )
 }
+
+extension LastWhereRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension LastWhereRule: OptInRule {}
 
 private extension LastWhereRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

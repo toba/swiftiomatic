@@ -14,7 +14,6 @@ private func embedInSwitch(
         """, file: file, line: line)
 }
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct UnneededBreakInSwitchRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -88,6 +87,15 @@ struct UnneededBreakInSwitchRule: Rule {
                 : embedInSwitch("something()", case: "case .foo, .foo2 where condition"),
         ]
     )
+}
+
+extension UnneededBreakInSwitchRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension UnneededBreakInSwitchRule {

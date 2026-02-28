@@ -1,7 +1,6 @@
 import SwiftBasicFormat
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct ReturnValueFromVoidFunctionRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -15,6 +14,17 @@ struct ReturnValueFromVoidFunctionRule: Rule {
         triggeringExamples: ReturnValueFromVoidFunctionRuleExamples.triggeringExamples
     )
 }
+
+extension ReturnValueFromVoidFunctionRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension ReturnValueFromVoidFunctionRule: OptInRule {}
 
 private extension ReturnValueFromVoidFunctionRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct TypedThrowsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -19,6 +18,14 @@ struct TypedThrowsRule: Rule {
         ]
     )
 }
+
+extension TypedThrowsRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension TypedThrowsRule: OptInRule {}
 
 private extension TypedThrowsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

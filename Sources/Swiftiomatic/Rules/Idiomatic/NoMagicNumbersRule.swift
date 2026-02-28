@@ -3,7 +3,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule(foldExpressions: true, optIn: true)
 struct NoMagicNumbersRule: Rule {
     var configuration = NoMagicNumbersConfiguration()
 
@@ -186,6 +185,20 @@ struct NoMagicNumbersRule: Rule {
         ]
     )
 }
+
+extension NoMagicNumbersRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension NoMagicNumbersRule {
+    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+        file.foldedSyntaxTree
+    }
+}
+
+extension NoMagicNumbersRule: OptInRule {}
 
 private extension NoMagicNumbersRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct YodaConditionRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -35,6 +34,14 @@ struct YodaConditionRule: Rule {
             Example("if ↓200 <= i && i <= 299 || ↓600 <= i {}"),
         ])
 }
+
+extension YodaConditionRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension YodaConditionRule: OptInRule {}
 
 private extension YodaConditionRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

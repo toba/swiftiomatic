@@ -1,5 +1,4 @@
 
-@AutoConfigParser
 struct NumberSeparatorConfiguration: SeverityBasedRuleConfiguration {
     struct ExcludeRange: AcceptableByConfigurationElement, Equatable {
         private let min: Double
@@ -32,4 +31,38 @@ struct NumberSeparatorConfiguration: SeverityBasedRuleConfiguration {
     private(set) var minimumFractionLength: Int?
     @ConfigurationElement(key: "exclude_ranges")
     private(set) var excludeRanges = [ExcludeRange]()
+    typealias Parent = NumberSeparatorRule
+    mutating func apply(configuration: Any) throws(Issue) {
+        if $minimumLength.key.isEmpty {
+            $minimumLength.key = "minimum_length"
+        }
+        if $minimumFractionLength.key.isEmpty {
+            $minimumFractionLength.key = "minimum_fraction_length"
+        }
+        if $excludeRanges.key.isEmpty {
+            $excludeRanges.key = "exclude_ranges"
+        }
+        do {
+            try severityConfiguration.apply(configuration, ruleID: Parent.identifier)
+        } catch let issue where issue == Issue.nothingApplied(ruleID: Parent.identifier) {
+            // Acceptable. Continue.
+        }
+        guard let configuration = configuration as? [String: Any] else {
+            return
+        }
+        if let value = configuration[$minimumLength.key] {
+            try minimumLength.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$minimumFractionLength.key] {
+            try minimumFractionLength.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$excludeRanges.key] {
+            try excludeRanges.apply(value, ruleID: Parent.identifier)
+        }
+        if !supportedKeys.isSuperset(of: configuration.keys) {
+            let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)
+            Issue.invalidConfigurationKeys(ruleID: Parent.identifier, keys: unknownKeys).print()
+        }
+        try validate()
+    }
 }

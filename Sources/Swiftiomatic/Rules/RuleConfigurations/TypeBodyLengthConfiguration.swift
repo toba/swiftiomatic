@@ -1,6 +1,5 @@
 
-@AcceptableByConfigurationElement
-enum TypeBodyLengthCheckType: String, CaseIterable, Comparable {
+enum TypeBodyLengthCheckType: String, AcceptableByConfigurationElement, CaseIterable, Comparable {
     case `actor` = "actor"
     case `class` = "class"
     case `enum` = "enum"
@@ -13,10 +12,31 @@ enum TypeBodyLengthCheckType: String, CaseIterable, Comparable {
     }
 }
 
-@AutoConfigParser
 struct TypeBodyLengthConfiguration: SeverityLevelsBasedRuleConfiguration {
     @ConfigurationElement(inline: true)
     private(set) var severityConfiguration = SeverityLevelsConfiguration<Parent>(warning: 250, error: 350)
     @ConfigurationElement(key: "excluded_types")
     private(set) var excludedTypes = Set<TypeBodyLengthCheckType>([.extension, .protocol])
+    typealias Parent = TypeBodyLengthRule
+    mutating func apply(configuration: Any) throws(Issue) {
+        if $excludedTypes.key.isEmpty {
+            $excludedTypes.key = "excluded_types"
+        }
+        do {
+            try severityConfiguration.apply(configuration, ruleID: Parent.identifier)
+        } catch let issue where issue == Issue.nothingApplied(ruleID: Parent.identifier) {
+            // Acceptable. Continue.
+        }
+        guard let configuration = configuration as? [String: Any] else {
+            return
+        }
+        if let value = configuration[$excludedTypes.key] {
+            try excludedTypes.apply(value, ruleID: Parent.identifier)
+        }
+        if !supportedKeys.isSuperset(of: configuration.keys) {
+            let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)
+            Issue.invalidConfigurationKeys(ruleID: Parent.identifier, keys: unknownKeys).print()
+        }
+        try validate()
+    }
 }

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct UnneededParenthesesInClosureArgumentRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -73,6 +72,17 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
         ]
     )
 }
+
+extension UnneededParenthesesInClosureArgumentRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension UnneededParenthesesInClosureArgumentRule: OptInRule {}
 
 private extension UnneededParenthesesInClosureArgumentRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

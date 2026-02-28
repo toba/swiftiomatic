@@ -1,7 +1,6 @@
 import SwiftLexicalLookup
 import SwiftSyntax
 
-@SwiftSyntaxRule(foldExpressions: true, correctable: true, optIn: true)
 struct UnneededEscapingRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -15,6 +14,20 @@ struct UnneededEscapingRule: Rule {
         corrections: UnneededEscapingRuleExamples.corrections
     )
 }
+
+extension UnneededEscapingRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension UnneededEscapingRule {
+    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+        file.foldedSyntaxTree
+    }
+}
+
+extension UnneededEscapingRule: OptInRule {}
 
 private extension UnneededEscapingRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

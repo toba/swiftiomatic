@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct LegacyRandomRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -20,6 +19,12 @@ struct LegacyRandomRule: Rule {
             Example("↓drand48()"),
         ]
     )
+}
+
+extension LegacyRandomRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension LegacyRandomRule {

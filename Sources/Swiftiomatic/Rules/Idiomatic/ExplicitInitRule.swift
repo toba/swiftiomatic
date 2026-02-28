@@ -1,7 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct ExplicitInitRule: Rule {
     var configuration = ExplicitInitConfiguration()
 
@@ -182,6 +181,17 @@ struct ExplicitInitRule: Rule {
         ]
     )
 }
+
+extension ExplicitInitRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension ExplicitInitRule: OptInRule {}
 
 private extension ExplicitInitRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

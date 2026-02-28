@@ -2,7 +2,6 @@ import Foundation
 import SourceKittenFramework
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct FileHeaderRule: Rule {
     var configuration = FileHeaderConfiguration()
 
@@ -33,6 +32,14 @@ struct FileHeaderRule: Rule {
         ].skipWrappingInCommentTests()
     )
 }
+
+extension FileHeaderRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension FileHeaderRule: OptInRule {}
 
 private struct ProcessTriviaResult {
     let foundNonComment: Bool

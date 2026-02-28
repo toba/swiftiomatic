@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct InclusiveLanguageRule: Rule {
     var configuration = InclusiveLanguageConfiguration()
 
@@ -16,6 +15,12 @@ struct InclusiveLanguageRule: Rule {
         nonTriggeringExamples: InclusiveLanguageRuleExamples.nonTriggeringExamples,
         triggeringExamples: InclusiveLanguageRuleExamples.triggeringExamples
     )
+}
+
+extension InclusiveLanguageRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension InclusiveLanguageRule {

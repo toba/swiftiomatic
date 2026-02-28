@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ExtensionAccessModifierRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -169,6 +168,14 @@ struct ExtensionAccessModifierRule: Rule {
         ]
     )
 }
+
+extension ExtensionAccessModifierRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ExtensionAccessModifierRule: OptInRule {}
 
 private extension ExtensionAccessModifierRule {
     private enum ACL: Hashable {

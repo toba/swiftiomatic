@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ConcurrencyModernizationRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -20,6 +19,14 @@ struct ConcurrencyModernizationRule: Rule {
         ]
     )
 }
+
+extension ConcurrencyModernizationRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ConcurrencyModernizationRule: OptInRule {}
 
 private extension ConcurrencyModernizationRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

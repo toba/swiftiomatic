@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct NoExtensionAccessModifierRule: Rule {
     var configuration = SeverityConfiguration<Self>(.error)
 
@@ -23,6 +22,14 @@ struct NoExtensionAccessModifierRule: Rule {
         ]
     )
 }
+
+extension NoExtensionAccessModifierRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension NoExtensionAccessModifierRule: OptInRule {}
 
 private extension NoExtensionAccessModifierRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

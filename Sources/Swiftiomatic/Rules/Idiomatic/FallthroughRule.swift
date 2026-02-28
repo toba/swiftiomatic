@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct FallthroughRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -29,6 +28,14 @@ struct FallthroughRule: Rule {
         ]
     )
 }
+
+extension FallthroughRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension FallthroughRule: OptInRule {}
 
 private extension FallthroughRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

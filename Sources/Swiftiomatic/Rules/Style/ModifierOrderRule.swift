@@ -1,7 +1,6 @@
 import SourceKittenFramework
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct ModifierOrderRule: Rule {
     var configuration = ModifierOrderConfiguration()
 
@@ -14,6 +13,17 @@ struct ModifierOrderRule: Rule {
         triggeringExamples: ModifierOrderRuleExamples.triggeringExamples
     )
 }
+
+extension ModifierOrderRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension ModifierOrderRule: OptInRule {}
 
 private extension ModifierOrderRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

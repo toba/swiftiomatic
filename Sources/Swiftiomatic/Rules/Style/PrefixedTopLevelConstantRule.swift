@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct PrefixedTopLevelConstantRule: Rule {
     var configuration = PrefixedTopLevelConstantConfiguration()
 
@@ -80,6 +79,14 @@ struct PrefixedTopLevelConstantRule: Rule {
         ]
     )
 }
+
+extension PrefixedTopLevelConstantRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension PrefixedTopLevelConstantRule: OptInRule {}
 
 private extension PrefixedTopLevelConstantRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

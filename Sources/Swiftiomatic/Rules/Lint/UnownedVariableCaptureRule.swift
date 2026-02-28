@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct UnownedVariableCaptureRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -33,6 +32,14 @@ struct UnownedVariableCaptureRule: Rule {
         ]
     )
 }
+
+extension UnownedVariableCaptureRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension UnownedVariableCaptureRule: OptInRule {}
 
 private extension UnownedVariableCaptureRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

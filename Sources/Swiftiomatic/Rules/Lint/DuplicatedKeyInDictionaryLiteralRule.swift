@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct DuplicatedKeyInDictionaryLiteralRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -77,6 +76,12 @@ struct DuplicatedKeyInDictionaryLiteralRule: Rule {
                 """),
         ]
     )
+}
+
+extension DuplicatedKeyInDictionaryLiteralRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension DuplicatedKeyInDictionaryLiteralRule {

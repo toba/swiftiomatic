@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct AttributesRule: Rule {
     var configuration = AttributesConfiguration()
 
@@ -32,6 +31,14 @@ struct AttributesRule: Rule {
         triggeringExamples: AttributesRuleExamples.triggeringExamples
     )
 }
+
+extension AttributesRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension AttributesRule: OptInRule {}
 
 private extension AttributesRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

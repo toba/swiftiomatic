@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct SortedFirstLastRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -45,6 +44,14 @@ struct SortedFirstLastRule: Rule {
         ]
     )
 }
+
+extension SortedFirstLastRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension SortedFirstLastRule: OptInRule {}
 
 private extension SortedFirstLastRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

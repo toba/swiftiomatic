@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct OrphanedDocCommentRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -67,6 +66,12 @@ struct OrphanedDocCommentRule: Rule {
             """),
         ]
     )
+}
+
+extension OrphanedDocCommentRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension OrphanedDocCommentRule {

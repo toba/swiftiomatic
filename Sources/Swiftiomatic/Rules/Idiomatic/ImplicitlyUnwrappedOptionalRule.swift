@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ImplicitlyUnwrappedOptionalRule: Rule {
     var configuration = ImplicitlyUnwrappedOptionalConfiguration()
 
@@ -42,6 +41,14 @@ struct ImplicitlyUnwrappedOptionalRule: Rule {
         ]
     )
 }
+
+extension ImplicitlyUnwrappedOptionalRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ImplicitlyUnwrappedOptionalRule: OptInRule {}
 
 private extension ImplicitlyUnwrappedOptionalRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

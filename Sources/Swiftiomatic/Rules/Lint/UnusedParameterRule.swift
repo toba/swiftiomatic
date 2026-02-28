@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true, optIn: true)
 struct UnusedParameterRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -129,6 +128,14 @@ struct UnusedParameterRule: Rule {
         ]
     )
 }
+
+extension UnusedParameterRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension UnusedParameterRule: OptInRule {}
 
 // MARK: Visitor
 

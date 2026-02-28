@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct IdentifierNameRule: Rule {
     var configuration = IdentifierNameConfiguration()
 
@@ -18,6 +17,12 @@ struct IdentifierNameRule: Rule {
         triggeringExamples: IdentifierNameRuleExamples.triggeringExamples,
         deprecatedAliases: ["variable_name"]
     )
+}
+
+extension IdentifierNameRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension IdentifierNameRule {

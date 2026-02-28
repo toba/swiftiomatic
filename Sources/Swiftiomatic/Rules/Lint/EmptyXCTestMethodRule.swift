@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct EmptyXCTestMethodRule: Rule {
     var configuration = EmptyXCTestMethodConfiguration()
 
@@ -13,6 +12,14 @@ struct EmptyXCTestMethodRule: Rule {
         triggeringExamples: EmptyXCTestMethodRuleExamples.triggeringExamples
     )
 }
+
+extension EmptyXCTestMethodRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension EmptyXCTestMethodRule: OptInRule {}
 
 private extension EmptyXCTestMethodRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

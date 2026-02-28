@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct RedundantNilCoalescingRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -22,6 +21,17 @@ struct RedundantNilCoalescingRule: Rule {
         ]
     )
 }
+
+extension RedundantNilCoalescingRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension RedundantNilCoalescingRule: OptInRule {}
 
 private extension RedundantNilCoalescingRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

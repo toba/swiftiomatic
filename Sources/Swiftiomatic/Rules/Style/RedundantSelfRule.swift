@@ -3,7 +3,6 @@ import SwiftParser
 @_spi(RawSyntax)
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true, optIn: true)
 struct RedundantSelfRule: Rule {
     var configuration = RedundantSelfConfiguration()
 
@@ -18,6 +17,14 @@ struct RedundantSelfRule: Rule {
         deprecatedAliases: ["redundant_self_in_closure"]
     )
 }
+
+extension RedundantSelfRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension RedundantSelfRule: OptInRule {}
 
 private enum TypeDeclarationKind {
     case likeStruct, likeClass, `extension`

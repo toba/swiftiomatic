@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct DiscouragedNoneNameRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -178,6 +177,14 @@ struct DiscouragedNoneNameRule: Rule {
         ]
     )
 }
+
+extension DiscouragedNoneNameRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension DiscouragedNoneNameRule: OptInRule {}
 
 private extension DiscouragedNoneNameRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

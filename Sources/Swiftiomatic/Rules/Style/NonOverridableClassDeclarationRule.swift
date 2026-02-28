@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true, optIn: true)
 struct NonOverridableClassDeclarationRule: Rule {
     var configuration = NonOverridableClassDeclarationConfiguration()
 
@@ -96,6 +95,14 @@ struct NonOverridableClassDeclarationRule: Rule {
         ]
     )
 }
+
+extension NonOverridableClassDeclarationRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension NonOverridableClassDeclarationRule: OptInRule {}
 
 private extension NonOverridableClassDeclarationRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

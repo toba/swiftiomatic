@@ -1,7 +1,6 @@
 // swift-tools-version: 6.2
 
 import PackageDescription
-import CompilerPluginSupport
 
 let package = Package(
     name: "swiftiomatic",
@@ -23,7 +22,6 @@ let package = Package(
             name: "Swiftiomatic",
             dependencies: [
                 "DyldWarningWorkaround",
-                "SwiftLintCoreMacros",
                 "CollectionConcurrencyKit",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "FilenameMatcher", package: "swift-filename-matcher"),
@@ -49,17 +47,6 @@ let package = Package(
         .target(
             name: "DyldWarningWorkaround",
             path: "Sources/Lint/DyldWarningWorkaround"
-        ),
-        .macro(
-            name: "SwiftLintCoreMacros",
-            dependencies: [
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-            ],
-            path: "Sources/Lint/Macros",
-            swiftSettings: [
-                .swiftLanguageMode(.v6),
-            ]
         ),
         .testTarget(
             name: "SwiftiomaticTests",

@@ -8,7 +8,6 @@ private func wrapInSwitch(_ str: String, file: StaticString = #filePath, line: U
     """, file: file, line: line)
 }
 
-@SwiftSyntaxRule(optIn: true)
 struct SwitchCaseOnNewlineRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -61,6 +60,14 @@ struct SwitchCaseOnNewlineRule: Rule {
         ]
     )
 }
+
+extension SwitchCaseOnNewlineRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension SwitchCaseOnNewlineRule: OptInRule {}
 
 private extension SwitchCaseOnNewlineRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

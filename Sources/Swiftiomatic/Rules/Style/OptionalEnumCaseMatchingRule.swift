@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct OptionalEnumCaseMatchingRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -169,6 +168,17 @@ struct OptionalEnumCaseMatchingRule: Rule {
         ]
     )
 }
+
+extension OptionalEnumCaseMatchingRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension OptionalEnumCaseMatchingRule: OptInRule {}
 
 private extension OptionalEnumCaseMatchingRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true, optIn: true)
 struct TestCaseAccessibilityRule: Rule {
     var configuration = TestCaseAccessibilityConfiguration()
 
@@ -14,6 +13,14 @@ struct TestCaseAccessibilityRule: Rule {
         corrections: TestCaseAccessibilityRuleExamples.corrections
     )
 }
+
+extension TestCaseAccessibilityRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension TestCaseAccessibilityRule: OptInRule {}
 
 private extension TestCaseAccessibilityRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

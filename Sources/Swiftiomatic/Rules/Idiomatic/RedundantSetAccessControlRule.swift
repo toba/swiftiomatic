@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct RedundantSetAccessControlRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -58,6 +57,12 @@ struct RedundantSetAccessControlRule: Rule {
             """),
         ]
     )
+}
+
+extension RedundantSetAccessControlRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension RedundantSetAccessControlRule {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct StrongIBOutletRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -28,6 +27,17 @@ struct StrongIBOutletRule: Rule {
         ]
     )
 }
+
+extension StrongIBOutletRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension StrongIBOutletRule: OptInRule {}
 
 private extension StrongIBOutletRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

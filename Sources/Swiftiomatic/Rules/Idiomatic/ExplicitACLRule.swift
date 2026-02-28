@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ExplicitACLRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -104,6 +103,14 @@ struct ExplicitACLRule: Rule {
         ]
     )
 }
+
+extension ExplicitACLRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ExplicitACLRule: OptInRule {}
 
 private enum CheckACLState {
     case yes

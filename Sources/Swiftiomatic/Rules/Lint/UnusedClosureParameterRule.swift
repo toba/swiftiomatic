@@ -2,7 +2,6 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct UnusedClosureParameterRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -15,6 +14,15 @@ struct UnusedClosureParameterRule: Rule {
         triggeringExamples: UnusedClosureParameterRuleExamples.triggering,
         corrections: UnusedClosureParameterRuleExamples.corrections
     )
+}
+
+extension UnusedClosureParameterRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension UnusedClosureParameterRule {

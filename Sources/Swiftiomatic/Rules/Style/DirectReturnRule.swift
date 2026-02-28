@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct DirectReturnRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -179,6 +178,17 @@ struct DirectReturnRule: Rule {
         ]
     )
 }
+
+extension DirectReturnRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension DirectReturnRule: OptInRule {}
 
 private extension DirectReturnRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

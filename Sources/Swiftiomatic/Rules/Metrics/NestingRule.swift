@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct NestingRule: Rule {
     var configuration = NestingConfiguration()
 
@@ -13,6 +12,12 @@ struct NestingRule: Rule {
         nonTriggeringExamples: NestingRuleExamples.nonTriggeringExamples,
         triggeringExamples: NestingRuleExamples.triggeringExamples
     )
+}
+
+extension NestingRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private struct Levels {

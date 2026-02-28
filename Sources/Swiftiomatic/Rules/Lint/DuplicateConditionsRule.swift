@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct DuplicateConditionsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.error)
 
@@ -155,6 +154,12 @@ struct DuplicateConditionsRule: Rule {
                 """),
         ]
     )
+}
+
+extension DuplicateConditionsRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension DuplicateConditionsRule {

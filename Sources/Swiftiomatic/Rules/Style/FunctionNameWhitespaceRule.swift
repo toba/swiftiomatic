@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true)
 struct FunctionNameWhitespaceRule: Rule {
     var configuration = FunctionNameWhitespaceConfiguration()
 
@@ -14,6 +13,12 @@ struct FunctionNameWhitespaceRule: Rule {
         corrections: FunctionNameWhitespaceRuleExamples.corrections,
         deprecatedAliases: ["operator_whitespace"]
     )
+}
+
+extension FunctionNameWhitespaceRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension FunctionNameWhitespaceRule {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct NonOptionalStringDataConversionRule: Rule {
     var configuration = NonOptionalStringDataConversionConfiguration()
 
@@ -31,6 +30,12 @@ struct NonOptionalStringDataConversionRule: Rule {
             Example("↓getValue()?.data(using: .utf8)", configuration: variablesIncluded),
         ]
     )
+}
+
+extension NonOptionalStringDataConversionRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension NonOptionalStringDataConversionRule {

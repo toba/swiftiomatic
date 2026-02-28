@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct UnusedOptionalBindingRule: Rule {
     var configuration = UnusedOptionalBindingConfiguration()
 
@@ -29,6 +28,12 @@ struct UnusedOptionalBindingRule: Rule {
             Example("func foo() { if let ↓_ = bar {} }"),
         ]
     )
+}
+
+extension UnusedOptionalBindingRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension UnusedOptionalBindingRule {

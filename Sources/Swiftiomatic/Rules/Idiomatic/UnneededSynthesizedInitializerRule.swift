@@ -15,7 +15,6 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct UnneededSynthesizedInitializerRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -29,6 +28,15 @@ struct UnneededSynthesizedInitializerRule: Rule {
         triggeringExamples: UnneededSynthesizedInitializerRuleExamples.triggering,
         corrections: UnneededSynthesizedInitializerRuleExamples.corrections
     )
+}
+
+extension UnneededSynthesizedInitializerRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension UnneededSynthesizedInitializerRule {

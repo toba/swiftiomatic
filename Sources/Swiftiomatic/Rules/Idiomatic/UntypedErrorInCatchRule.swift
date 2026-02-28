@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct UntypedErrorInCatchRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -86,6 +85,17 @@ struct UntypedErrorInCatchRule: Rule {
             Example("do {\n    try foo() \n} ↓catch (let error) {}"): Example("do {\n    try foo() \n} catch {}"),
         ])
 }
+
+extension UntypedErrorInCatchRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension UntypedErrorInCatchRule: OptInRule {}
 
 private extension CatchItemSyntax {
     var isIdentifierPattern: Bool {

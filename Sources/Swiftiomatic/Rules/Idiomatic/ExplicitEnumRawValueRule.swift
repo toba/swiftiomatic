@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ExplicitEnumRawValueRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -78,6 +77,14 @@ struct ExplicitEnumRawValueRule: Rule {
         ]
     )
 }
+
+extension ExplicitEnumRawValueRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ExplicitEnumRawValueRule: OptInRule {}
 
 private extension ExplicitEnumRawValueRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

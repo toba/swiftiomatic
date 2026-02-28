@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct PrivateActionRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -32,6 +31,14 @@ struct PrivateActionRule: Rule {
         ]
     )
 }
+
+extension PrivateActionRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension PrivateActionRule: OptInRule {}
 
 private extension PrivateActionRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct IsDisjointRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -20,6 +19,12 @@ struct IsDisjointRule: Rule {
             Example("let isObjc = !objcAttributes.↓intersection(dictionary.enclosedSwiftAttributes).isEmpty"),
         ]
     )
+}
+
+extension IsDisjointRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension IsDisjointRule {

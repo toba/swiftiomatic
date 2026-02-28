@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct NSLocalizedStringKeyRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -32,6 +31,14 @@ struct NSLocalizedStringKeyRule: Rule {
         ]
     )
 }
+
+extension NSLocalizedStringKeyRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension NSLocalizedStringKeyRule: OptInRule {}
 
 private extension NSLocalizedStringKeyRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

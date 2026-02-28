@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct ForceTryRule: Rule {
     var configuration = SeverityConfiguration<Self>(.error)
 
@@ -24,6 +23,12 @@ struct ForceTryRule: Rule {
             """),
         ]
     )
+}
+
+extension ForceTryRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension ForceTryRule {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ClosureBodyLengthRule: Rule {
     private static let defaultWarningThreshold = 30
 
@@ -20,6 +19,14 @@ struct ClosureBodyLengthRule: Rule {
         triggeringExamples: ClosureBodyLengthRuleExamples.triggeringExamples
     )
 }
+
+extension ClosureBodyLengthRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ClosureBodyLengthRule: OptInRule {}
 
 private extension ClosureBodyLengthRule {
     final class Visitor: BodyLengthVisitor<ConfigurationType> {

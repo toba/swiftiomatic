@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ForceUnwrappingRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -66,6 +65,14 @@ struct ForceUnwrappingRule: Rule {
         ]
     )
 }
+
+extension ForceUnwrappingRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ForceUnwrappingRule: OptInRule {}
 
 private extension ForceUnwrappingRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

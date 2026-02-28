@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct SelfInPropertyInitializationRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -96,6 +95,12 @@ struct SelfInPropertyInitializationRule: Rule {
             """),
         ]
     )
+}
+
+extension SelfInPropertyInitializationRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension SelfInPropertyInitializationRule {

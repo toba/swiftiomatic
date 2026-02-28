@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct DiscardedNotificationCenterObserverRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -92,6 +91,14 @@ struct DiscardedNotificationCenterObserverRule: Rule {
         ]
     )
 }
+
+extension DiscardedNotificationCenterObserverRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension DiscardedNotificationCenterObserverRule: OptInRule {}
 
 private enum CodeBlockScope: Equatable {
     case file

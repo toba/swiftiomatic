@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct NoFallthroughOnlyRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -12,6 +11,12 @@ struct NoFallthroughOnlyRule: Rule {
         nonTriggeringExamples: NoFallthroughOnlyRuleExamples.nonTriggeringExamples,
         triggeringExamples: NoFallthroughOnlyRuleExamples.triggeringExamples
     )
+}
+
+extension NoFallthroughOnlyRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension NoFallthroughOnlyRule {

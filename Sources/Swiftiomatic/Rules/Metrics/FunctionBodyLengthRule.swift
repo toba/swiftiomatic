@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct FunctionBodyLengthRule: Rule {
     var configuration = SeverityLevelsConfiguration<Self>(warning: 50, error: 100)
 
@@ -101,6 +100,12 @@ struct FunctionBodyLengthRule: Rule {
             """, configuration: Self.testConfig),
         ]
     )
+}
+
+extension FunctionBodyLengthRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension FunctionBodyLengthRule {

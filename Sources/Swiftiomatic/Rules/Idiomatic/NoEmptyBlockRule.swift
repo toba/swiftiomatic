@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct NoEmptyBlockRule: Rule {
     var configuration = NoEmptyBlockConfiguration()
 
@@ -150,6 +149,14 @@ struct NoEmptyBlockRule: Rule {
         ]
     )
 }
+
+extension NoEmptyBlockRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension NoEmptyBlockRule: OptInRule {}
 
 private extension NoEmptyBlockRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

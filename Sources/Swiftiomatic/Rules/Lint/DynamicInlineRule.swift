@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct DynamicInlineRule: Rule {
     var configuration = SeverityConfiguration<Self>(.error)
 
@@ -22,6 +21,12 @@ struct DynamicInlineRule: Rule {
             Example("class C {\n@inline(__always)\ndynamic\n↓func f() {}\n}"),
         ]
     )
+}
+
+extension DynamicInlineRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension DynamicInlineRule {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(foldExpressions: true, optIn: true)
 struct IdenticalOperandsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -70,6 +69,20 @@ struct IdenticalOperandsRule: Rule {
         ]
     )
 }
+
+extension IdenticalOperandsRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension IdenticalOperandsRule {
+    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+        file.foldedSyntaxTree
+    }
+}
+
+extension IdenticalOperandsRule: OptInRule {}
 
 private extension IdenticalOperandsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

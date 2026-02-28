@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct ValidIBInspectableRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -149,6 +148,12 @@ struct ValidIBInspectableRule: Rule {
         // It seems that only reference types can be used as ImplicitlyUnwrappedOptional or Optional
         return Set(referenceTypes.flatMap(expandToIncludeOptionals) + types + intTypes)
     }()
+}
+
+extension ValidIBInspectableRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension ValidIBInspectableRule {

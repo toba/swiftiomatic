@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct PreferAssetSymbolsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -46,6 +45,14 @@ struct PreferAssetSymbolsRule: Rule {
         ]
     )
 }
+
+extension PreferAssetSymbolsRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension PreferAssetSymbolsRule: OptInRule {}
 
 private extension PreferAssetSymbolsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

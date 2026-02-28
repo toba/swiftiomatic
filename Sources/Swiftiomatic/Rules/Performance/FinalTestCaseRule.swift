@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct FinalTestCaseRule: Rule {
     var configuration = FinalTestCaseConfiguration()
 
@@ -29,6 +28,17 @@ struct FinalTestCaseRule: Rule {
         ]
     )
 }
+
+extension FinalTestCaseRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension FinalTestCaseRule: OptInRule {}
 
 private extension FinalTestCaseRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

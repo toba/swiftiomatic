@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct LargeTupleRule: Rule {
     var configuration = LargeTupleConfiguration()
 
@@ -78,6 +77,12 @@ struct LargeTupleRule: Rule {
             Example("func getDictionaryAndInt() async -> (Dictionary<Int, ↓(String, String, String)>, Int)?"),
         ]
     )
+}
+
+extension LargeTupleRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension LargeTupleRule {

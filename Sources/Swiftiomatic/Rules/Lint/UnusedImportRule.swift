@@ -3,7 +3,6 @@ import SourceKittenFramework
 
 private let moduleToLog = ProcessInfo.processInfo.environment["SWIFTLINT_LOG_MODULE_USAGE"]
 
-@DisabledWithoutSourceKit
 struct UnusedImportRule: CorrectableRule, AnalyzerRule {
     var configuration = UnusedImportConfiguration()
 
@@ -301,4 +300,13 @@ private extension SwiftLintFile {
 
         return containsAttributesRequiringFoundation(dict: structureDictionary)
     }
+}
+
+extension UnusedImportRule {
+    private static let _postMessage: Void = {
+        Issue.genericWarning(
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+        ).print()
+    }()
+    func notifyRuleDisabledOnce() { _ = Self._postMessage }
 }

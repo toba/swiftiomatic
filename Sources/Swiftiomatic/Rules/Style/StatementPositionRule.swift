@@ -1,7 +1,6 @@
 import Foundation
 import SourceKittenFramework
 
-@DisabledWithoutSourceKit
 struct StatementPositionRule: CorrectableRule {
     var configuration = StatementPositionConfiguration()
 
@@ -208,4 +207,13 @@ private extension StatementPositionRule {
         file.write(contents)
         return validMatches.count
     }
+}
+
+extension StatementPositionRule {
+    private static let _postMessage: Void = {
+        Issue.genericWarning(
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+        ).print()
+    }()
+    func notifyRuleDisabledOnce() { _ = Self._postMessage }
 }

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct JoinedDefaultParameterRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -37,6 +36,17 @@ struct JoinedDefaultParameterRule: Rule {
         ]
     )
 }
+
+extension JoinedDefaultParameterRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension JoinedDefaultParameterRule: OptInRule {}
 
 private extension JoinedDefaultParameterRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

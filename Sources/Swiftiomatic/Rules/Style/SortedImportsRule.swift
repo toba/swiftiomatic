@@ -2,7 +2,6 @@ import Foundation
 import SourceKittenFramework
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct SortedImportsRule: Rule {
     var configuration = SortedImportsConfiguration()
 
@@ -16,6 +15,17 @@ struct SortedImportsRule: Rule {
         corrections: SortedImportsRuleExamples.corrections
     )
 }
+
+extension SortedImportsRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension SortedImportsRule: OptInRule {}
 
 private extension SortedImportsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

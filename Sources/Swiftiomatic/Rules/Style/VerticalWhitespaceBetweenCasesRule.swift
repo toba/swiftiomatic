@@ -1,7 +1,6 @@
 import SwiftBasicFormat
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true, optIn: true)
 struct VerticalWhitespaceBetweenCasesRule: Rule {
     var configuration = VerticalWhitespaceBetweenCasesConfiguration()
 
@@ -16,6 +15,14 @@ struct VerticalWhitespaceBetweenCasesRule: Rule {
         corrections: VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples.removingViolationMarkers()
     )
 }
+
+extension VerticalWhitespaceBetweenCasesRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension VerticalWhitespaceBetweenCasesRule: OptInRule {}
 
 private extension VerticalWhitespaceBetweenCasesRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

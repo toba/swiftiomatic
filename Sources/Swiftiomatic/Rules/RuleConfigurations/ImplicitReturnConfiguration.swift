@@ -1,8 +1,6 @@
 
-@AutoConfigParser
 struct ImplicitReturnConfiguration: SeverityBasedRuleConfiguration {
-    @AcceptableByConfigurationElement
-    enum ReturnKind: String, CaseIterable, Comparable {
+    enum ReturnKind: String, AcceptableByConfigurationElement, CaseIterable, Comparable {
         case closure
         case function
         case getter
@@ -27,5 +25,27 @@ struct ImplicitReturnConfiguration: SeverityBasedRuleConfiguration {
 
     func isKindIncluded(_ kind: ReturnKind) -> Bool {
         includedKinds.contains(kind)
+    }
+    typealias Parent = ImplicitReturnRule
+    mutating func apply(configuration: Any) throws(Issue) {
+        if $includedKinds.key.isEmpty {
+            $includedKinds.key = "included"
+        }
+        do {
+            try severityConfiguration.apply(configuration, ruleID: Parent.identifier)
+        } catch let issue where issue == Issue.nothingApplied(ruleID: Parent.identifier) {
+            // Acceptable. Continue.
+        }
+        guard let configuration = configuration as? [String: Any] else {
+            return
+        }
+        if let value = configuration[$includedKinds.key] {
+            try includedKinds.apply(value, ruleID: Parent.identifier)
+        }
+        if !supportedKeys.isSuperset(of: configuration.keys) {
+            let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)
+            Issue.invalidConfigurationKeys(ruleID: Parent.identifier, keys: unknownKeys).print()
+        }
+        try validate()
     }
 }

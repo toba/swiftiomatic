@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct ClosureParameterPositionRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -94,6 +93,12 @@ struct ClosureParameterPositionRule: Rule {
             """),
         ]
     )
+}
+
+extension ClosureParameterPositionRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension ClosureParameterPositionRule {

@@ -2,7 +2,6 @@ import Foundation
 import SourceKittenFramework
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true)
 struct TrailingWhitespaceRule: Rule {
     var configuration = TrailingWhitespaceConfiguration()
 
@@ -28,6 +27,12 @@ struct TrailingWhitespaceRule: Rule {
             Example("/* */ let name: String↓ \n"): Example("/* */ let name: String\n"),
         ]
     )
+}
+
+extension TrailingWhitespaceRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension TrailingWhitespaceRule {

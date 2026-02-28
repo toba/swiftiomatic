@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true, optIn: true)
 struct ImplicitReturnRule: Rule {
     var configuration = ImplicitReturnConfiguration()
 
@@ -14,6 +13,14 @@ struct ImplicitReturnRule: Rule {
         corrections: ImplicitReturnRuleExamples.corrections
     )
 }
+
+extension ImplicitReturnRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ImplicitReturnRule: OptInRule {}
 
 private extension ImplicitReturnRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

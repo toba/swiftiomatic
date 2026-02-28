@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct PrivateOutletRule: Rule {
     var configuration = PrivateOutletConfiguration()
 
@@ -77,6 +76,14 @@ struct PrivateOutletRule: Rule {
         ]
     )
 }
+
+extension PrivateOutletRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension PrivateOutletRule: OptInRule {}
 
 private extension PrivateOutletRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

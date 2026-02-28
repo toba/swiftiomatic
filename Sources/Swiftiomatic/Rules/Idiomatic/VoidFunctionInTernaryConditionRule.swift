@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct VoidFunctionInTernaryConditionRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -113,6 +112,12 @@ struct VoidFunctionInTernaryConditionRule: Rule {
             """),
         ]
     )
+}
+
+extension VoidFunctionInTernaryConditionRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension VoidFunctionInTernaryConditionRule {

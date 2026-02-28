@@ -67,7 +67,6 @@ import SwiftSyntax
 ///     case accountCreated
 /// }
 /// ````
-@SwiftSyntaxRule(optIn: true)
 struct RequiredEnumCaseRule: Rule {
     var configuration = RequiredEnumCaseConfiguration()
 
@@ -132,6 +131,14 @@ struct RequiredEnumCaseRule: Rule {
         ]
     )
 }
+
+extension RequiredEnumCaseRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension RequiredEnumCaseRule: OptInRule {}
 
 private extension RequiredEnumCaseRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

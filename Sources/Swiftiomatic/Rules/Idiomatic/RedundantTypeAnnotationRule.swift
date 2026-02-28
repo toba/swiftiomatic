@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true, optIn: true)
 struct RedundantTypeAnnotationRule: Rule {
     var configuration = RedundantTypeAnnotationConfiguration()
 
@@ -190,6 +189,14 @@ struct RedundantTypeAnnotationRule: Rule {
         ]
     )
 }
+
+extension RedundantTypeAnnotationRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension RedundantTypeAnnotationRule: OptInRule {}
 
 private extension RedundantTypeAnnotationRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

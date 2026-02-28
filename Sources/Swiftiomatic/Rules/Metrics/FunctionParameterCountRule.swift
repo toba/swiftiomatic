@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct FunctionParameterCountRule: Rule {
     var configuration = FunctionParameterCountConfiguration()
 
@@ -35,6 +34,12 @@ struct FunctionParameterCountRule: Rule {
             """),
         ]
     )
+}
+
+extension FunctionParameterCountRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension FunctionParameterCountRule {

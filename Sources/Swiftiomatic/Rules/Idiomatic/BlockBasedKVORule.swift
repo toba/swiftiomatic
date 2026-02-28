@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct BlockBasedKVORule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -34,6 +33,12 @@ struct BlockBasedKVORule: Rule {
             """),
         ]
     )
+}
+
+extension BlockBasedKVORule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension BlockBasedKVORule {

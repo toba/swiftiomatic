@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct FunctionDefaultParameterAtEndRule: Rule {
     var configuration = FunctionDefaultParameterAtEndConfiguration()
 
@@ -58,6 +57,14 @@ struct FunctionDefaultParameterAtEndRule: Rule {
         ]
     )
 }
+
+extension FunctionDefaultParameterAtEndRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension FunctionDefaultParameterAtEndRule: OptInRule {}
 
 private extension FunctionDefaultParameterAtEndRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

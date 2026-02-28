@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct UnhandledThrowingTaskRule: Rule {
     var configuration = SeverityConfiguration<Self>(.error)
 
@@ -185,6 +184,14 @@ struct UnhandledThrowingTaskRule: Rule {
         ]
     )
 }
+
+extension UnhandledThrowingTaskRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension UnhandledThrowingTaskRule: OptInRule {}
 
 private extension UnhandledThrowingTaskRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

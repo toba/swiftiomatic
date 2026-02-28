@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct ForceCastRule: Rule {
     var configuration = SeverityConfiguration<Self>(.error)
 
@@ -14,6 +13,12 @@ struct ForceCastRule: Rule {
         ],
         triggeringExamples: [ Example("NSNumber() ↓as! Int") ]
     )
+}
+
+extension ForceCastRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension ForceCastRule {

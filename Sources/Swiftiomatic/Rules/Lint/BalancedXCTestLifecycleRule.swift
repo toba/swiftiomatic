@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct BalancedXCTestLifecycleRule: Rule {
     var configuration = BalancedXCTestLifecycleConfiguration()
 
@@ -115,6 +114,14 @@ struct BalancedXCTestLifecycleRule: Rule {
         ]
     )
 }
+
+extension BalancedXCTestLifecycleRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension BalancedXCTestLifecycleRule: OptInRule {}
 
 // MARK: - Private
 

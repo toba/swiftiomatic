@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ArrayInitRule: Rule, @unchecked Sendable {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -81,6 +80,14 @@ struct ArrayInitRule: Rule, @unchecked Sendable {
         ]
     )
 }
+
+extension ArrayInitRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ArrayInitRule: OptInRule {}
 
 private extension ArrayInitRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

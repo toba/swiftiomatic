@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct QuickDiscouragedPendingTestRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -13,6 +12,14 @@ struct QuickDiscouragedPendingTestRule: Rule {
         triggeringExamples: QuickDiscouragedPendingTestRuleExamples.triggeringExamples
     )
 }
+
+extension QuickDiscouragedPendingTestRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension QuickDiscouragedPendingTestRule: OptInRule {}
 
 private extension QuickDiscouragedPendingTestRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

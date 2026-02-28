@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct XCTFailMessageRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -34,6 +33,12 @@ struct XCTFailMessageRule: Rule {
             """),
         ]
     )
+}
+
+extension XCTFailMessageRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension XCTFailMessageRule {

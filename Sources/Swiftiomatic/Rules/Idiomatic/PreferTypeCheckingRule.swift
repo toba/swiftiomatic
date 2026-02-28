@@ -1,7 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-@SwiftSyntaxRule(foldExpressions: true, explicitRewriter: true)
 struct PreferTypeCheckingRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -55,6 +54,21 @@ struct PreferTypeCheckingRule: Rule {
             """),
         ]
     )
+}
+
+extension PreferTypeCheckingRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension PreferTypeCheckingRule {
+    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+        file.foldedSyntaxTree
+    }
 }
 
 private extension PreferTypeCheckingRule {

@@ -1,7 +1,6 @@
 import Foundation
 import SourceKittenFramework
 
-@DisabledWithoutSourceKit
 struct VerticalWhitespaceClosingBracesRule: CorrectableRule, OptInRule {
     var configuration = VerticalWhitespaceClosingBracesConfiguration()
 
@@ -63,4 +62,13 @@ private extension SwiftLintFile {
     func violatingRanges(for pattern: String) -> [NSRange] {
         match(pattern: pattern, excludingSyntaxKinds: SyntaxKind.commentAndStringKinds)
     }
+}
+
+extension VerticalWhitespaceClosingBracesRule {
+    private static let _postMessage: Void = {
+        Issue.genericWarning(
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+        ).print()
+    }()
+    func notifyRuleDisabledOnce() { _ = Self._postMessage }
 }

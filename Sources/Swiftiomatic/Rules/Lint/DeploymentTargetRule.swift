@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct DeploymentTargetRule: Rule {
     fileprivate typealias Version = DeploymentTargetConfiguration.Version
 
@@ -15,6 +14,12 @@ struct DeploymentTargetRule: Rule {
         nonTriggeringExamples: DeploymentTargetRuleExamples.nonTriggeringExamples,
         triggeringExamples: DeploymentTargetRuleExamples.triggeringExamples
     )
+}
+
+extension DeploymentTargetRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private enum AvailabilityType {

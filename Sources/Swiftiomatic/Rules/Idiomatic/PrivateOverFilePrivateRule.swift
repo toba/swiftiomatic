@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true)
 struct PrivateOverFilePrivateRule: Rule {
     var configuration = PrivateOverFilePrivateConfiguration()
 
@@ -72,6 +71,12 @@ struct PrivateOverFilePrivateRule: Rule {
                 Example("private actor MyActor { fileprivate(set) var myInt = 4 }"),
         ]
     )
+}
+
+extension PrivateOverFilePrivateRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension PrivateOverFilePrivateRule {

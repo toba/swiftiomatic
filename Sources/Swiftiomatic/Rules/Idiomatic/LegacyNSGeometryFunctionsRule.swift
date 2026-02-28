@@ -1,5 +1,4 @@
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct LegacyNSGeometryFunctionsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -101,6 +100,15 @@ struct LegacyNSGeometryFunctionsRule: Rule {
         "NSIntersectionRect": .function(name: "intersection", argumentLabels: [""]),
         "NSPointInRect": .function(name: "contains", argumentLabels: [""], reversed: true),
     ]
+}
+
+extension LegacyNSGeometryFunctionsRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension LegacyNSGeometryFunctionsRule {

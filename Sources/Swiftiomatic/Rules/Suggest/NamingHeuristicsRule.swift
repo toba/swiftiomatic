@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct NamingHeuristicsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -21,6 +20,14 @@ struct NamingHeuristicsRule: Rule {
         ]
     )
 }
+
+extension NamingHeuristicsRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension NamingHeuristicsRule: OptInRule {}
 
 private extension NamingHeuristicsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

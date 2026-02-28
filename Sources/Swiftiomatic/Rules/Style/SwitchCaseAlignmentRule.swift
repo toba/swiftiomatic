@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct SwitchCaseAlignmentRule: Rule {
     var configuration = SwitchCaseAlignmentConfiguration()
 
@@ -38,6 +37,12 @@ struct SwitchCaseAlignmentRule: Rule {
         ],
         triggeringExamples: Examples(indentedCases: false).triggeringExamples
     )
+}
+
+extension SwitchCaseAlignmentRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 extension SwitchCaseAlignmentRule {

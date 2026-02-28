@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct MultilineArgumentsBracketsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -157,6 +156,14 @@ struct MultilineArgumentsBracketsRule: Rule {
         ]
     )
 }
+
+extension MultilineArgumentsBracketsRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension MultilineArgumentsBracketsRule: OptInRule {}
 
 private extension MultilineArgumentsBracketsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

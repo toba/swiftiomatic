@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct GenericTypeNameRule: Rule {
     var configuration = NameConfiguration<Self>(minLengthWarning: 1,
                                                 minLengthError: 0,
@@ -50,6 +49,12 @@ struct GenericTypeNameRule: Rule {
             ]
         }
     )
+}
+
+extension GenericTypeNameRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension GenericTypeNameRule {

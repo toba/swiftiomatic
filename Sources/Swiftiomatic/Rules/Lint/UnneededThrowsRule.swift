@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true, optIn: true)
 struct UnneededThrowsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -14,6 +13,14 @@ struct UnneededThrowsRule: Rule {
         corrections: UnneededThrowsRuleExamples.corrections
     )
 }
+
+extension UnneededThrowsRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension UnneededThrowsRule: OptInRule {}
 
 private extension UnneededThrowsRule {
     struct Scope {

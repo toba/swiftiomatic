@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct TypeBodyLengthRule: Rule {
     var configuration = TypeBodyLengthConfiguration()
 
@@ -98,6 +97,12 @@ struct TypeBodyLengthRule: Rule {
                 """, configuration: testConfig),
         ]
     )
+}
+
+extension TypeBodyLengthRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension TypeBodyLengthRule {

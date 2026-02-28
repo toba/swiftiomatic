@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct MultilineParametersRule: Rule {
     var configuration = MultilineParametersConfiguration()
 
@@ -13,6 +12,14 @@ struct MultilineParametersRule: Rule {
         triggeringExamples: MultilineParametersRuleExamples.triggeringExamples
     )
 }
+
+extension MultilineParametersRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension MultilineParametersRule: OptInRule {}
 
 private extension MultilineParametersRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

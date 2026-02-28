@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct StrictFilePrivateRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -124,6 +123,14 @@ struct StrictFilePrivateRule: Rule {
         }
     )
 }
+
+extension StrictFilePrivateRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension StrictFilePrivateRule: OptInRule {}
 
 private enum ProtocolRequirementType: Equatable {
     case method(String)

@@ -2,7 +2,6 @@ import Foundation
 import SourceKittenFramework
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ExpiringTodoRule: Rule {
     enum ExpiryViolationLevel {
         case approachingExpiry
@@ -48,6 +47,14 @@ struct ExpiringTodoRule: Rule {
 
     var configuration = ExpiringTodoConfiguration()
 }
+
+extension ExpiringTodoRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ExpiringTodoRule: OptInRule {}
 
 private extension ExpiringTodoRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

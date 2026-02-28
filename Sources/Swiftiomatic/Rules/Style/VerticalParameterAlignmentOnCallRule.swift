@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct VerticalParameterAlignmentOnCallRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -123,6 +122,14 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
         ]
     )
 }
+
+extension VerticalParameterAlignmentOnCallRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension VerticalParameterAlignmentOnCallRule: OptInRule {}
 
 private extension VerticalParameterAlignmentOnCallRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

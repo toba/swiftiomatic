@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct FireAndForgetTaskRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -22,6 +21,14 @@ struct FireAndForgetTaskRule: Rule {
         ]
     )
 }
+
+extension FireAndForgetTaskRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension FireAndForgetTaskRule: OptInRule {}
 
 private extension FireAndForgetTaskRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

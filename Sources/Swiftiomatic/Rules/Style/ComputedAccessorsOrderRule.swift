@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct ComputedAccessorsOrderRule: Rule {
     var configuration = ComputedAccessorsOrderConfiguration()
 
@@ -12,6 +11,12 @@ struct ComputedAccessorsOrderRule: Rule {
         nonTriggeringExamples: ComputedAccessorsOrderRuleExamples.nonTriggeringExamples,
         triggeringExamples: ComputedAccessorsOrderRuleExamples.triggeringExamples
     )
+}
+
+extension ComputedAccessorsOrderRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension ComputedAccessorsOrderRule {

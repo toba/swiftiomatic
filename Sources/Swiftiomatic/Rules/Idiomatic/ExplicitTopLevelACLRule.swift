@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ExplicitTopLevelACLRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -35,6 +34,14 @@ struct ExplicitTopLevelACLRule: Rule {
         ]
     )
 }
+
+extension ExplicitTopLevelACLRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ExplicitTopLevelACLRule: OptInRule {}
 
 private extension ExplicitTopLevelACLRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

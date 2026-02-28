@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct TrailingCommaRule: Rule {
     var configuration = TrailingCommaConfiguration()
 
@@ -48,6 +47,15 @@ struct TrailingCommaRule: Rule {
         triggeringExamples: Self.triggeringExamples,
         corrections: Self.corrections
     )
+}
+
+extension TrailingCommaRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension TrailingCommaRule {

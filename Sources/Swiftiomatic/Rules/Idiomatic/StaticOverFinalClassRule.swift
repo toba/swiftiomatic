@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct StaticOverFinalClassRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -75,6 +74,12 @@ struct StaticOverFinalClassRule: Rule {
             """),
         ]
     )
+}
+
+extension StaticOverFinalClassRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension StaticOverFinalClassRule {

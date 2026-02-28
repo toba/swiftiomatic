@@ -1,7 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct IncompatibleConcurrencyAnnotationRule: Rule {
     var configuration = IncompatibleConcurrencyAnnotationConfiguration()
 
@@ -24,6 +23,17 @@ struct IncompatibleConcurrencyAnnotationRule: Rule {
         corrections: IncompatibleConcurrencyAnnotationRuleExamples.corrections
     )
 }
+
+extension IncompatibleConcurrencyAnnotationRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension IncompatibleConcurrencyAnnotationRule: OptInRule {}
 
 private extension IncompatibleConcurrencyAnnotationRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

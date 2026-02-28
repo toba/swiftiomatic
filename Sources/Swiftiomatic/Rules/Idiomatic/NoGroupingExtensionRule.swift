@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct NoGroupingExtensionRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -37,6 +36,14 @@ struct NoGroupingExtensionRule: Rule {
             .map { makeViolation(file: file, violation: $0) }
     }
 }
+
+extension NoGroupingExtensionRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension NoGroupingExtensionRule: OptInRule {}
 
 private extension NoGroupingExtensionRule {
     struct ExtensionDeclaration: Hashable {

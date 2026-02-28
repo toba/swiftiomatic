@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct PatternMatchingKeywordsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -46,6 +45,14 @@ struct PatternMatchingKeywordsRule: Rule {
             """)
     }
 }
+
+extension PatternMatchingKeywordsRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension PatternMatchingKeywordsRule: OptInRule {}
 
 private extension PatternMatchingKeywordsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

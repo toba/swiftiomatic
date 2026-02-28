@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct PerformanceAntiPatternsRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -22,6 +21,14 @@ struct PerformanceAntiPatternsRule: Rule {
         ]
     )
 }
+
+extension PerformanceAntiPatternsRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension PerformanceAntiPatternsRule: OptInRule {}
 
 private extension PerformanceAntiPatternsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

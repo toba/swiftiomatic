@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct ForWhereRule: Rule {
     var configuration = ForWhereConfiguration()
 
@@ -116,6 +115,12 @@ struct ForWhereRule: Rule {
             """, configuration: ["allow_for_as_filter": true]),
         ]
     )
+}
+
+extension ForWhereRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension ForWhereRule {

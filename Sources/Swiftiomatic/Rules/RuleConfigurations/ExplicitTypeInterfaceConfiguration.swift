@@ -1,8 +1,6 @@
 
-@AutoConfigParser
 struct ExplicitTypeInterfaceConfiguration: SeverityBasedRuleConfiguration {
-    @AcceptableByConfigurationElement
-    enum VariableKind: String, CaseIterable {
+    enum VariableKind: String, AcceptableByConfigurationElement, CaseIterable {
         case instance
         case local
         case `static`
@@ -20,5 +18,33 @@ struct ExplicitTypeInterfaceConfiguration: SeverityBasedRuleConfiguration {
 
     var allowedKinds: Set<VariableKind> {
         VariableKind.all.subtracting(excluded)
+    }
+    typealias Parent = ExplicitTypeInterfaceRule
+    mutating func apply(configuration: Any) throws(Issue) {
+        if $excluded.key.isEmpty {
+            $excluded.key = "excluded"
+        }
+        if $allowRedundancy.key.isEmpty {
+            $allowRedundancy.key = "allow_redundancy"
+        }
+        do {
+            try severityConfiguration.apply(configuration, ruleID: Parent.identifier)
+        } catch let issue where issue == Issue.nothingApplied(ruleID: Parent.identifier) {
+            // Acceptable. Continue.
+        }
+        guard let configuration = configuration as? [String: Any] else {
+            return
+        }
+        if let value = configuration[$excluded.key] {
+            try excluded.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$allowRedundancy.key] {
+            try allowRedundancy.apply(value, ruleID: Parent.identifier)
+        }
+        if !supportedKeys.isSuperset(of: configuration.keys) {
+            let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)
+            Issue.invalidConfigurationKeys(ruleID: Parent.identifier, keys: unknownKeys).print()
+        }
+        try validate()
     }
 }

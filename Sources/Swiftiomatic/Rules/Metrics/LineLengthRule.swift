@@ -2,7 +2,6 @@ import Foundation
 import SourceKittenFramework
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct LineLengthRule: Rule {
     var configuration = LineLengthConfiguration()
 
@@ -22,6 +21,12 @@ struct LineLengthRule: Rule {
             Example(String(repeating: "#imageLiteral(resourceName: \"image.jpg\")", count: 121) + ""),
         ].skipWrappingInCommentTests().skipWrappingInStringTests()
     )
+}
+
+extension LineLengthRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension LineLengthRule {

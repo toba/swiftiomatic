@@ -2,7 +2,6 @@ import Foundation
 import SourceKittenFramework
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct TodoRule: Rule {
     var configuration = TodoConfiguration()
 
@@ -26,6 +25,12 @@ struct TodoRule: Rule {
             Example("/** ↓TODO: */"),
         ].skipWrappingInCommentTests()
     )
+}
+
+extension TodoRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension TodoRule {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct MultilineCallArgumentsRule: Rule {
     var configuration = MultilineCallArgumentsConfiguration()
 
@@ -66,6 +65,14 @@ struct MultilineCallArgumentsRule: Rule {
         ]
     )
 }
+
+extension MultilineCallArgumentsRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension MultilineCallArgumentsRule: OptInRule {}
 
 private extension MultilineCallArgumentsRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

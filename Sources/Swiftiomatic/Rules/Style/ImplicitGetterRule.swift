@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct ImplicitGetterRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -12,6 +11,12 @@ struct ImplicitGetterRule: Rule {
         nonTriggeringExamples: ImplicitGetterRuleExamples.nonTriggeringExamples,
         triggeringExamples: ImplicitGetterRuleExamples.triggeringExamples
     )
+}
+
+extension ImplicitGetterRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private enum ViolationKind {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct CollectionAlignmentRule: Rule {
     var configuration = CollectionAlignmentConfiguration()
 
@@ -13,6 +12,14 @@ struct CollectionAlignmentRule: Rule {
         triggeringExamples: Examples(alignColons: false).triggeringExamples
     )
 }
+
+extension CollectionAlignmentRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension CollectionAlignmentRule: OptInRule {}
 
 private extension CollectionAlignmentRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

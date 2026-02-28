@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct FlatMapOverMapReduceRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -18,6 +17,14 @@ struct FlatMapOverMapReduceRule: Rule {
         ]
     )
 }
+
+extension FlatMapOverMapReduceRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension FlatMapOverMapReduceRule: OptInRule {}
 
 private extension FlatMapOverMapReduceRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

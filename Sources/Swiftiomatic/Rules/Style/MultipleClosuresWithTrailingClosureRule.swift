@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct MultipleClosuresWithTrailingClosureRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -35,6 +34,12 @@ struct MultipleClosuresWithTrailingClosureRule: Rule {
             Example("foo.methodWithParenArgs(param1: { $0 }, param2: (0, 1), (0, 1)) { $0 }"),
         ]
     )
+}
+
+extension MultipleClosuresWithTrailingClosureRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension MultipleClosuresWithTrailingClosureRule {

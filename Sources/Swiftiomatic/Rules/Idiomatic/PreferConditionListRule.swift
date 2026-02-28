@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(foldExpressions: true, explicitRewriter: true, optIn: true)
 struct PreferConditionListRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -88,6 +87,23 @@ struct PreferConditionListRule: Rule {
         ]
     )
 }
+
+extension PreferConditionListRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension PreferConditionListRule {
+    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+        file.foldedSyntaxTree
+    }
+}
+
+extension PreferConditionListRule: OptInRule {}
 
 private extension PreferConditionListRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

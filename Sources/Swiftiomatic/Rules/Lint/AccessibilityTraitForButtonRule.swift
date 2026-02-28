@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct AccessibilityTraitForButtonRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -27,6 +26,14 @@ struct AccessibilityTraitForButtonRule: Rule {
         triggeringExamples: AccessibilityTraitForButtonRuleExamples.triggeringExamples
     )
 }
+
+extension AccessibilityTraitForButtonRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension AccessibilityTraitForButtonRule: OptInRule {}
 
 private extension AccessibilityTraitForButtonRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

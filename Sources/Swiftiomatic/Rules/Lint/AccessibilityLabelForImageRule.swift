@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct AccessibilityLabelForImageRule: Rule, OptInRule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -25,6 +24,12 @@ struct AccessibilityLabelForImageRule: Rule, OptInRule {
         nonTriggeringExamples: AccessibilityLabelForImageRuleExamples.nonTriggeringExamples,
         triggeringExamples: AccessibilityLabelForImageRuleExamples.triggeringExamples
     )
+}
+
+extension AccessibilityLabelForImageRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension AccessibilityLabelForImageRule {

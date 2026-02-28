@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct DuplicateEnumCasesRule: Rule {
     var configuration = SeverityConfiguration<Self>(.error)
 
@@ -55,6 +54,12 @@ struct DuplicateEnumCasesRule: Rule {
             """),
         ]
     )
+}
+
+extension DuplicateEnumCasesRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension DuplicateEnumCasesRule {

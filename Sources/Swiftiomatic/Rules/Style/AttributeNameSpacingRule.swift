@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true)
 struct AttributeNameSpacingRule: Rule {
     var configuration = SeverityConfiguration<Self>(.error)
 
@@ -69,6 +68,12 @@ struct AttributeNameSpacingRule: Rule {
             Example("@MyProperty↓ () let a = 1"): Example("@MyProperty() let a = 1"),
         ]
     )
+}
+
+extension AttributeNameSpacingRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension AttributeNameSpacingRule {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct WeakDelegateRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -66,6 +65,14 @@ struct WeakDelegateRule: Rule {
         ]
     )
 }
+
+extension WeakDelegateRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension WeakDelegateRule: OptInRule {}
 
 private extension WeakDelegateRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

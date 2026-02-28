@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ConditionalReturnsOnNewlineRule: Rule {
     var configuration = ConditionalReturnsOnNewlineConfiguration()
 
@@ -33,6 +32,14 @@ struct ConditionalReturnsOnNewlineRule: Rule {
         ]
     )
 }
+
+extension ConditionalReturnsOnNewlineRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ConditionalReturnsOnNewlineRule: OptInRule {}
 
 private extension ConditionalReturnsOnNewlineRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

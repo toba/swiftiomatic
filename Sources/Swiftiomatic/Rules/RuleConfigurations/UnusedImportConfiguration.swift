@@ -26,7 +26,6 @@ struct TransitiveModuleConfiguration<Parent: Rule>: Equatable, AcceptableByConfi
     }
 }
 
-@AutoConfigParser
 struct UnusedImportConfiguration: SeverityBasedRuleConfiguration {
     @ConfigurationElement(key: "severity")
     private(set) var severityConfiguration = SeverityConfiguration<Parent>.warning
@@ -37,4 +36,38 @@ struct UnusedImportConfiguration: SeverityBasedRuleConfiguration {
     /// A set of modules to never remove the imports of.
     @ConfigurationElement(key: "always_keep_imports")
     private(set) var alwaysKeepImports = [String]()
+    typealias Parent = UnusedImportRule
+    mutating func apply(configuration: Any) throws(Issue) {
+        if $requireExplicitImports.key.isEmpty {
+            $requireExplicitImports.key = "require_explicit_imports"
+        }
+        if $allowedTransitiveImports.key.isEmpty {
+            $allowedTransitiveImports.key = "allowed_transitive_imports"
+        }
+        if $alwaysKeepImports.key.isEmpty {
+            $alwaysKeepImports.key = "always_keep_imports"
+        }
+        do {
+            try severityConfiguration.apply(configuration, ruleID: Parent.identifier)
+        } catch let issue where issue == Issue.nothingApplied(ruleID: Parent.identifier) {
+            // Acceptable. Continue.
+        }
+        guard let configuration = configuration as? [String: Any] else {
+            return
+        }
+        if let value = configuration[$requireExplicitImports.key] {
+            try requireExplicitImports.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$allowedTransitiveImports.key] {
+            try allowedTransitiveImports.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$alwaysKeepImports.key] {
+            try alwaysKeepImports.apply(value, ruleID: Parent.identifier)
+        }
+        if !supportedKeys.isSuperset(of: configuration.keys) {
+            let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)
+            Issue.invalidConfigurationKeys(ruleID: Parent.identifier, keys: unknownKeys).print()
+        }
+        try validate()
+    }
 }

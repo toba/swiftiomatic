@@ -6,7 +6,6 @@ import SwiftSyntax
 /// of objects and the deinit should print a message or remove its instance from a
 /// list of allocations. Even having an empty deinit method is useful to provide
 /// a place to put a breakpoint when chasing down leaks.
-@SwiftSyntaxRule(optIn: true)
 struct RequiredDeinitRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -67,6 +66,14 @@ struct RequiredDeinitRule: Rule {
         ]
     )
 }
+
+extension RequiredDeinitRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension RequiredDeinitRule: OptInRule {}
 
 private extension RequiredDeinitRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

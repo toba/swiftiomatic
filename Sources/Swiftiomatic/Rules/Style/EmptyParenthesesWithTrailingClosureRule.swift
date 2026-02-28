@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct EmptyParenthesesWithTrailingClosureRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -44,6 +43,15 @@ struct EmptyParenthesesWithTrailingClosureRule: Rule {
                 Example("class C {\n#if true\nfunc f() {\n[1, 2].map { $0 + 1 }\n}\n#endif\n}"),
         ]
     )
+}
+
+extension EmptyParenthesesWithTrailingClosureRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension EmptyParenthesesWithTrailingClosureRule {

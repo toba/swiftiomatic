@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct CyclomaticComplexityRule: Rule {
     var configuration = CyclomaticComplexityConfiguration()
 
@@ -70,6 +69,12 @@ struct CyclomaticComplexityRule: Rule {
             """),
         ]
     )
+}
+
+extension CyclomaticComplexityRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension CyclomaticComplexityRule {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct SwiftUILayoutRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -17,6 +16,14 @@ struct SwiftUILayoutRule: Rule {
         ]
     )
 }
+
+extension SwiftUILayoutRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension SwiftUILayoutRule: OptInRule {}
 
 private extension SwiftUILayoutRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

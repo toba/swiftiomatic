@@ -340,6 +340,17 @@ protocol AcceptableByConfigurationElement {
     mutating func apply(_ value: Any, ruleID: String) throws(Issue)
 }
 
+extension AcceptableByConfigurationElement where Self: RawRepresentable, RawValue == String {
+    func asOption() -> OptionType { .symbol(rawValue) }
+    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+        if let value = value as? String, let newSelf = Self(rawValue: value) {
+            self = newSelf
+        } else {
+            throw .invalidConfiguration(ruleID: ruleID)
+        }
+    }
+}
+
 /// Default implementations which are shortcuts applicable for most of the types conforming to the protocol.
 extension AcceptableByConfigurationElement {
     func asDescription(with key: String) -> RuleConfigurationDescription {

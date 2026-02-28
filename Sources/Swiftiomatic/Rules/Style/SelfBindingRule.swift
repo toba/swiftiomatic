@@ -2,7 +2,6 @@ import SwiftSyntax
 
 // MARK: - SelfBindingRule
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct SelfBindingRule: Rule {
     var configuration = SelfBindingConfiguration()
 
@@ -47,6 +46,17 @@ struct SelfBindingRule: Rule {
         ]
     )
 }
+
+extension SelfBindingRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension SelfBindingRule: OptInRule {}
 
 private extension SelfBindingRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

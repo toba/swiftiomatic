@@ -1,7 +1,6 @@
 import Foundation
 import SourceKittenFramework
 
-@DisabledWithoutSourceKit
 struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -217,4 +216,13 @@ private extension SourceKittenDictionary {
             return dictionary
         }
     }
+}
+
+extension MultilineFunctionChainsRule {
+    private static let _postMessage: Void = {
+        Issue.genericWarning(
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+        ).print()
+    }()
+    func notifyRuleDisabledOnce() { _ = Self._postMessage }
 }

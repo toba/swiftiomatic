@@ -1,7 +1,6 @@
 import SourceKittenFramework
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct TypeContentsOrderRule: Rule {
     var configuration = TypeContentsOrderConfiguration()
 
@@ -14,6 +13,14 @@ struct TypeContentsOrderRule: Rule {
         triggeringExamples: TypeContentsOrderRuleExamples.triggeringExamples
     )
 }
+
+extension TypeContentsOrderRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension TypeContentsOrderRule: OptInRule {}
 
 private extension TypeContentsOrderRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

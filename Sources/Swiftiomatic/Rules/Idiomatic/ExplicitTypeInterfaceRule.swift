@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ExplicitTypeInterfaceRule: Rule {
     var configuration = ExplicitTypeInterfaceConfiguration()
 
@@ -70,6 +69,14 @@ struct ExplicitTypeInterfaceRule: Rule {
         ]
     )
 }
+
+extension ExplicitTypeInterfaceRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ExplicitTypeInterfaceRule: OptInRule {}
 
 private extension ExplicitTypeInterfaceRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

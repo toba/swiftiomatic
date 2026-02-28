@@ -2,7 +2,6 @@ import Foundation
 import SourceKittenFramework
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true)
 struct OpeningBraceRule: Rule {
     var configuration = OpeningBraceConfiguration()
 
@@ -22,6 +21,12 @@ struct OpeningBraceRule: Rule {
         triggeringExamples: OpeningBraceRuleExamples.triggeringExamples,
         corrections: OpeningBraceRuleExamples.corrections
     )
+}
+
+extension OpeningBraceRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension OpeningBraceRule {

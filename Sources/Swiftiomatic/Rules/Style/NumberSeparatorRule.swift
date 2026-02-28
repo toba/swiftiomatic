@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct NumberSeparatorRule: Rule {
     var configuration = NumberSeparatorConfiguration()
 
@@ -26,6 +25,17 @@ struct NumberSeparatorRule: Rule {
         Underscore(s) used as thousand separator(s) should be added after every 3 digits only
         """
 }
+
+extension NumberSeparatorRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension NumberSeparatorRule: OptInRule {}
 
 private extension NumberSeparatorRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType>, NumberSeparatorValidator {

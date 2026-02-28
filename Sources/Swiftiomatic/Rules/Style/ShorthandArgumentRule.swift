@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct ShorthandArgumentRule: Rule {
     var configuration = ShorthandArgumentConfiguration()
 
@@ -67,6 +66,14 @@ struct ShorthandArgumentRule: Rule {
         ]
     )
 }
+
+extension ShorthandArgumentRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension ShorthandArgumentRule: OptInRule {}
 
 private extension ShorthandArgumentRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

@@ -1,7 +1,6 @@
 import Foundation
 import SourceKittenFramework
 
-@DisabledWithoutSourceKit
 struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -256,4 +255,13 @@ extension LiteralExpressionEndIndentationRule {
                          endOffset: endOffset,
                          range: ByteRange(location: offset, length: length))
     }
+}
+
+extension LiteralExpressionEndIndentationRule {
+    private static let _postMessage: Void = {
+        Issue.genericWarning(
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+        ).print()
+    }()
+    func notifyRuleDisabledOnce() { _ = Self._postMessage }
 }

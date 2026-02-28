@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct LegacyHashingRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -73,6 +72,12 @@ struct LegacyHashingRule: Rule {
             """),
         ]
     )
+}
+
+extension LegacyHashingRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension LegacyHashingRule {

@@ -1,7 +1,6 @@
 import Foundation
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct TypeNameRule: Rule {
     var configuration = TypeNameConfiguration()
 
@@ -17,6 +16,12 @@ struct TypeNameRule: Rule {
         nonTriggeringExamples: TypeNameRuleExamples.nonTriggeringExamples,
         triggeringExamples: TypeNameRuleExamples.triggeringExamples
     )
+}
+
+extension TypeNameRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension TypeNameRule {

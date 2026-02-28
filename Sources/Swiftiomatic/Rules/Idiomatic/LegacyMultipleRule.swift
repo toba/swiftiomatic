@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(foldExpressions: true, optIn: true)
 struct LegacyMultipleRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -38,6 +37,20 @@ struct LegacyMultipleRule: Rule {
         ]
     )
 }
+
+extension LegacyMultipleRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension LegacyMultipleRule {
+    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+        file.foldedSyntaxTree
+    }
+}
+
+extension LegacyMultipleRule: OptInRule {}
 
 private extension LegacyMultipleRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

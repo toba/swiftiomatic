@@ -1,7 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct PreferZeroOverExplicitInitRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -36,6 +35,17 @@ struct PreferZeroOverExplicitInitRule: Rule {
         ]
     )
 }
+
+extension PreferZeroOverExplicitInitRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension PreferZeroOverExplicitInitRule: OptInRule {}
 
 private extension PreferZeroOverExplicitInitRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

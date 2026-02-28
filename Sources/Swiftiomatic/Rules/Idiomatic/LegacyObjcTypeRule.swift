@@ -28,7 +28,6 @@ private let legacyObjcTypes = [
     "NSUUID",
 ]
 
-@SwiftSyntaxRule(optIn: true)
 struct LegacyObjcTypeRule: Rule {
     var configuration = LegacyObjcTypeConfiguration()
 
@@ -73,6 +72,14 @@ struct LegacyObjcTypeRule: Rule {
         ]
     )
 }
+
+extension LegacyObjcTypeRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension LegacyObjcTypeRule: OptInRule {}
 
 private extension LegacyObjcTypeRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

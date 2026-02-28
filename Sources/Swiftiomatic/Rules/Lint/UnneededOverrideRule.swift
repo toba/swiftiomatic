@@ -1,7 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct UnneededOverrideRule: Rule {
     var configuration = UnneededOverrideConfiguration()
 
@@ -14,6 +13,15 @@ struct UnneededOverrideRule: Rule {
         triggeringExamples: UnneededOverrideRuleExamples.triggeringExamples,
         corrections: UnneededOverrideRuleExamples.corrections
     )
+}
+
+extension UnneededOverrideRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension UnneededOverrideRule {

@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(correctable: true, optIn: true)
 struct AsyncWithoutAwaitRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -14,6 +13,14 @@ struct AsyncWithoutAwaitRule: Rule {
         corrections: AsyncWithoutAwaitRuleExamples.corrections
     )
 }
+
+extension AsyncWithoutAwaitRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension AsyncWithoutAwaitRule: OptInRule {}
 private extension AsyncWithoutAwaitRule {
     private struct FuncInfo {
         var containsAwait = false

@@ -1,7 +1,6 @@
 import Foundation
 import SourceKittenFramework
 
-@DisabledWithoutSourceKit
 struct MultilineParametersBracketsRule: OptInRule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -183,4 +182,13 @@ struct MultilineParametersBracketsRule: OptInRule {
             location: Location(file: file, characterOffset: characterOffset)
         )
     }
+}
+
+extension MultilineParametersBracketsRule {
+    private static let _postMessage: Void = {
+        Issue.genericWarning(
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+        ).print()
+    }()
+    func notifyRuleDisabledOnce() { _ = Self._postMessage }
 }

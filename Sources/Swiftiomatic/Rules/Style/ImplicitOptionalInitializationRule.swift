@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct ImplicitOptionalInitializationRule: Rule {
     var configuration = ImplicitOptionalInitializationConfiguration()
 
@@ -14,6 +13,15 @@ struct ImplicitOptionalInitializationRule: Rule {
         corrections: ImplicitOptionalInitializationRuleExamples.corrections,
         deprecatedAliases: ["redundant_optional_initialization"]
     )
+}
+
+extension ImplicitOptionalInitializationRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension ImplicitOptionalInitializationRule {

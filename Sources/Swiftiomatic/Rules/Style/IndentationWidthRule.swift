@@ -1,7 +1,6 @@
 import Foundation
 import SourceKittenFramework
 
-@DisabledWithoutSourceKit
 struct IndentationWidthRule: OptInRule {
     // MARK: - Subtypes
     private enum Indentation: Equatable {
@@ -202,4 +201,13 @@ struct IndentationWidthRule: OptInRule {
             ) // Allow unindent if it stays in the grid
         )
     }
+}
+
+extension IndentationWidthRule {
+    private static let _postMessage: Void = {
+        Issue.genericWarning(
+            "Skipping enabled rule '\(Self.identifier)' because it requires SourceKit and SourceKit access is prohibited."
+        ).print()
+    }()
+    func notifyRuleDisabledOnce() { _ = Self._postMessage }
 }

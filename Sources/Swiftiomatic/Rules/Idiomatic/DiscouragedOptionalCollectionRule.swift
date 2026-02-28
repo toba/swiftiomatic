@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct DiscouragedOptionalCollectionRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -13,6 +12,14 @@ struct DiscouragedOptionalCollectionRule: Rule {
         triggeringExamples: DiscouragedOptionalCollectionExamples.triggeringExamples
     )
 }
+
+extension DiscouragedOptionalCollectionRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension DiscouragedOptionalCollectionRule: OptInRule {}
 
 private extension DiscouragedOptionalCollectionRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

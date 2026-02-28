@@ -2,7 +2,6 @@ import SwiftLexicalLookup
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-@SwiftSyntaxRule(foldExpressions: true, explicitRewriter: true, optIn: true)
 struct EmptyCountRule: Rule {
     var configuration = EmptyCountConfiguration()
 
@@ -108,6 +107,23 @@ struct EmptyCountRule: Rule {
         ]
     )
 }
+
+extension EmptyCountRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension EmptyCountRule {
+    func preprocess(file: SwiftLintFile) -> SourceFileSyntax? {
+        file.foldedSyntaxTree
+    }
+}
+
+extension EmptyCountRule: OptInRule {}
 
 private extension EmptyCountRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

@@ -1,7 +1,6 @@
 import SourceKittenFramework
 import SwiftSyntax
 
-@SwiftSyntaxRule
 struct FileLengthRule: Rule {
     var configuration = FileLengthConfiguration()
 
@@ -19,6 +18,12 @@ struct FileLengthRule: Rule {
             Example(repeatElement("print(\"swiftlint\")\n\n", count: 201).joined()),
         ].skipWrappingInCommentTests()
     )
+}
+
+extension FileLengthRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
 }
 
 private extension FileLengthRule {

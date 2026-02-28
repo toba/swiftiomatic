@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(optIn: true)
 struct OverriddenSuperCallRule: Rule {
     var configuration = OverriddenSuperCallConfiguration()
 
@@ -75,6 +74,14 @@ struct OverriddenSuperCallRule: Rule {
         ]
     )
 }
+
+extension OverriddenSuperCallRule: SwiftSyntaxRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+}
+
+extension OverriddenSuperCallRule: OptInRule {}
 
 private extension OverriddenSuperCallRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

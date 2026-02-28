@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true)
 struct UnusedControlFlowLabelRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -83,6 +82,15 @@ struct UnusedControlFlowLabelRule: Rule {
                 """),
         ]
     )
+}
+
+extension UnusedControlFlowLabelRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
 }
 
 private extension UnusedControlFlowLabelRule {

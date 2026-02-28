@@ -1,6 +1,5 @@
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct TrailingClosureRule: Rule {
     var configuration = TrailingClosureConfiguration()
 
@@ -135,6 +134,17 @@ struct TrailingClosureRule: Rule {
         ]
     )
 }
+
+extension TrailingClosureRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension TrailingClosureRule: OptInRule {}
 
 private extension TrailingClosureRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

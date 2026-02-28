@@ -1,7 +1,6 @@
 import SwiftBasicFormat
 import SwiftSyntax
 
-@SwiftSyntaxRule(explicitRewriter: true, optIn: true)
 struct SuperfluousElseRule: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
@@ -251,6 +250,17 @@ struct SuperfluousElseRule: Rule {
         ]
     )
 }
+
+extension SuperfluousElseRule: SwiftSyntaxCorrectableRule {
+    func makeVisitor(file: SwiftLintFile) -> ViolationsSyntaxVisitor<ConfigurationType> {
+        Visitor(configuration: configuration, file: file)
+    }
+    func makeRewriter(file: SwiftLintFile) -> ViolationsSyntaxRewriter<ConfigurationType>? {
+        Rewriter(configuration: configuration, file: file)
+    }
+}
+
+extension SuperfluousElseRule: OptInRule {}
 
 private extension SuperfluousElseRule {
     final class Visitor: ViolationsSyntaxVisitor<ConfigurationType> {

@@ -1,5 +1,4 @@
 
-@AutoConfigParser
 struct ExpiringTodoConfiguration: RuleConfiguration {
     typealias Severity = SeverityConfiguration<Parent>
 
@@ -51,4 +50,57 @@ struct ExpiringTodoConfiguration: RuleConfiguration {
     /// The separator used for regex detection of the expiry-date string
     @ConfigurationElement(key: "date_separator")
     private(set) var dateSeparator = "/"
+    typealias Parent = ExpiringTodoRule
+    mutating func apply(configuration: Any) throws(Issue) {
+        if $approachingExpirySeverity.key.isEmpty {
+            $approachingExpirySeverity.key = "approaching_expiry_severity"
+        }
+        if $expiredSeverity.key.isEmpty {
+            $expiredSeverity.key = "expired_severity"
+        }
+        if $badFormattingSeverity.key.isEmpty {
+            $badFormattingSeverity.key = "bad_formatting_severity"
+        }
+        if $approachingExpiryThreshold.key.isEmpty {
+            $approachingExpiryThreshold.key = "approaching_expiry_threshold"
+        }
+        if $dateDelimiters.key.isEmpty {
+            $dateDelimiters.key = "date_delimiters"
+        }
+        if $dateFormat.key.isEmpty {
+            $dateFormat.key = "date_format"
+        }
+        if $dateSeparator.key.isEmpty {
+            $dateSeparator.key = "date_separator"
+        }
+        guard let configuration = configuration as? [String: Any] else {
+            throw .invalidConfiguration(ruleID: Parent.identifier)
+        }
+        if let value = configuration[$approachingExpirySeverity.key] {
+            try approachingExpirySeverity.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$expiredSeverity.key] {
+            try expiredSeverity.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$badFormattingSeverity.key] {
+            try badFormattingSeverity.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$approachingExpiryThreshold.key] {
+            try approachingExpiryThreshold.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$dateDelimiters.key] {
+            try dateDelimiters.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$dateFormat.key] {
+            try dateFormat.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$dateSeparator.key] {
+            try dateSeparator.apply(value, ruleID: Parent.identifier)
+        }
+        if !supportedKeys.isSuperset(of: configuration.keys) {
+            let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)
+            Issue.invalidConfigurationKeys(ruleID: Parent.identifier, keys: unknownKeys).print()
+        }
+        try validate()
+    }
 }
