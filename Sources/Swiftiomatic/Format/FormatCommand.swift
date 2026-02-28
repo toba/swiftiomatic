@@ -42,7 +42,7 @@ struct FormatCommand: ParsableCommand {
 
         let cfg = try loadConfig()
         let engine = buildEngine(config: cfg)
-        let files = collectSwiftFiles(paths: paths, exclude: exclude)
+        let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
 
         if files.isEmpty {
             print("No Swift files found")
@@ -146,8 +146,8 @@ struct FormatCommand: ParsableCommand {
     }
 
     private func buildEngine(config: SwiftiomaticConfig) -> FormatEngine {
-        let allEnabled = config.enabledRules + enable
-        let allDisabled = config.disabledRules + disable
+        let allEnabled = config.enabledFormatRules + enable
+        let allDisabled = config.disabledFormatRules + disable
 
         var options = FormatOptions.default
         options.indent = config.indent
@@ -157,53 +157,6 @@ struct FormatCommand: ParsableCommand {
         }
 
         return FormatEngine(enable: allEnabled, disable: allDisabled, options: options)
-    }
-
-    private func collectSwiftFiles(paths: [String], exclude: [String]) -> [String] {
-        let fm = FileManager.default
-        var files: [String] = []
-        let excludeSet = Set(exclude)
-
-        for path in paths {
-            var isDir: ObjCBool = false
-            let fullPath = (path as NSString).standardizingPath
-
-            guard fm.fileExists(atPath: fullPath, isDirectory: &isDir) else {
-                printError("Path not found: \(path)")
-                continue
-            }
-
-            if isDir.boolValue {
-                guard let enumerator = fm.enumerator(atPath: fullPath) else { continue }
-                while let relativePath = enumerator.nextObject() as? String {
-                    if shouldExclude(relativePath, patterns: excludeSet) {
-                        enumerator.skipDescendants()
-                        continue
-                    }
-                    if relativePath.hasSuffix(".swift") {
-                        files.append((fullPath as NSString).appendingPathComponent(relativePath))
-                    }
-                }
-            } else if fullPath.hasSuffix(".swift") {
-                files.append(fullPath)
-            }
-        }
-
-        return files.sorted()
-    }
-
-    private func shouldExclude(_ path: String, patterns: Set<String>) -> Bool {
-        for pattern in patterns {
-            if path.contains(pattern) { return true }
-        }
-        // Skip hidden directories and build artifacts
-        let components = path.components(separatedBy: "/")
-        for component in components {
-            if component.hasPrefix(".") || component == "Build" || component == ".build" {
-                return true
-            }
-        }
-        return false
     }
 
     private func printError(_ message: String) {

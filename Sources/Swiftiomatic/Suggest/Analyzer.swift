@@ -3,6 +3,9 @@ import SwiftParser
 import SwiftSyntax
 
 /// Orchestrates parsing and analysis of Swift source files.
+///
+/// Runs both suggest checks (deep AST analysis via SyntaxVisitor subclasses)
+/// and lint rules (SwiftLint rule protocol implementations) through a single pass.
 struct Analyzer: Sendable {
     /// Categories to analyze. Empty means all.
     let categories: Set<Category>
@@ -16,44 +19,79 @@ struct Analyzer: Sendable {
     /// Optional SourceKit-backed type resolver for semantic analysis.
     let typeResolver: (any TypeResolver)?
 
+    /// Instantiated lint rules to run alongside suggest checks.
+    let lintRules: [any Rule]
+
+    /// Compiler arguments for AnalyzerRules (if any).
+    let compilerArguments: [String]
+
+    /// When true, skip suggest checks entirely (lint-only mode).
+    let skipSuggest: Bool
+
     init(
         categories: Set<Category> = [],
         minConfidence: Confidence = .low,
         minSeverity: Severity = .low,
         typeResolver: (any TypeResolver)? = nil,
+        lintRules: [any Rule] = [],
+        compilerArguments: [String] = [],
+        skipSuggest: Bool = false,
     ) {
         self.categories = categories
         self.minConfidence = minConfidence
         self.minSeverity = minSeverity
         self.typeResolver = typeResolver
+        self.lintRules = lintRules
+        self.compilerArguments = compilerArguments
+        self.skipSuggest = skipSuggest
     }
 
-    /// Analyze the given file paths and return sorted findings.
-    func analyze(paths: [String]) async -> [Finding] {
+    /// Analyze the given file paths and return unified diagnostics.
+    func analyze(paths: [String]) async -> [Diagnostic] {
         let files = FileDiscovery.findSwiftFiles(in: paths)
         guard !files.isEmpty else { return [] }
 
-        // Parse all files concurrently
-        let parsed = await parseFiles(files)
+        var diagnostics: [Diagnostic] = []
 
-        // Run single-file checks
-        var findings = await runChecks(on: parsed)
-
-        // Run cross-file checks (dead symbols, structural duplication)
-        await findings.append(contentsOf: runCrossFileChecks(on: parsed))
-
-        // Filter by confidence and severity
-        findings = findings.filter { finding in
-            finding.confidence >= minConfidence && finding.severity >= minSeverity
+        // Run suggest checks (unless skipped)
+        if !skipSuggest {
+            let parsed = await parseFiles(files)
+            let findings = await runSuggestChecks(on: parsed)
+            diagnostics += findings.map { $0.toDiagnostic() }
         }
 
-        // Filter by category if specified
+        // Run lint rules
+        diagnostics += runLintRules(on: files)
+
+        // Filter by confidence and severity
+        diagnostics = diagnostics.filter { d in
+            d.confidence >= minConfidence
+                && (d.severity == .error || minSeverity <= .low)
+        }
+
+        return diagnostics.sorted()
+    }
+
+    /// Analyze and return raw suggest findings (for text output mode).
+    func suggestFindings(paths: [String]) async -> [Finding] {
+        let files = FileDiscovery.findSwiftFiles(in: paths)
+        guard !files.isEmpty else { return [] }
+
+        let parsed = await parseFiles(files)
+        var findings = await runSuggestChecks(on: parsed)
+
+        // Filter
+        findings = findings.filter { f in
+            f.confidence >= minConfidence && f.severity >= minSeverity
+        }
         if !categories.isEmpty {
             findings = findings.filter { categories.contains($0.category) }
         }
 
         return findings.sorted()
     }
+
+    // MARK: - File Parsing
 
     private func parseFiles(_ files: [String]) async -> [(file: String, tree: SourceFileSyntax)] {
         await withTaskGroup(of: (String, SourceFileSyntax)?.self) { group in
@@ -77,11 +115,14 @@ struct Analyzer: Sendable {
         }
     }
 
-    private func runChecks(
+    // MARK: - Suggest Checks
+
+    private func runSuggestChecks(
         on parsed: [(file: String, tree: SourceFileSyntax)],
     ) async -> [Finding] {
         var findings: [Finding] = []
 
+        // Single-file checks
         for (file, tree) in parsed {
             let checks = makeChecks(for: file)
             for check in checks {
@@ -96,6 +137,14 @@ struct Analyzer: Sendable {
 
                 findings.append(contentsOf: check.findings)
             }
+        }
+
+        // Cross-file checks (dead symbols, structural duplication)
+        findings.append(contentsOf: await runCrossFileChecks(on: parsed))
+
+        // Filter by category if specified
+        if !categories.isEmpty {
+            findings = findings.filter { categories.contains($0.category) }
         }
 
         return findings
@@ -197,5 +246,46 @@ struct Analyzer: Sendable {
         }
 
         return checks
+    }
+
+    // MARK: - Lint Rules
+
+    private func runLintRules(on files: [String]) -> [Diagnostic] {
+        guard !lintRules.isEmpty else { return [] }
+
+        let storage = RuleStorage()
+
+        // Separate collecting rules (need two-pass) from single-pass rules
+        let collectingRules = lintRules.filter { $0 is any AnyCollectingRule }
+        let singlePassRules = lintRules.filter { !($0 is any AnyCollectingRule) }
+
+        // Build SwiftLintFiles
+        let lintFiles = files.compactMap { SwiftLintFile(path: $0) }
+
+        // Pass 1: collect cross-file info for CollectingRules
+        for file in lintFiles {
+            for rule in collectingRules {
+                rule.collectInfo(for: file, into: storage, compilerArguments: compilerArguments)
+            }
+        }
+
+        // Pass 2: validate all rules
+        var diagnostics: [Diagnostic] = []
+        for file in lintFiles {
+            for rule in singlePassRules {
+                let violations = rule.validate(file: file)
+                diagnostics += violations.map { $0.toDiagnostic() }
+            }
+            for rule in collectingRules {
+                let violations = rule.validate(
+                    file: file,
+                    using: storage,
+                    compilerArguments: compilerArguments,
+                )
+                diagnostics += violations.map { $0.toDiagnostic() }
+            }
+        }
+
+        return diagnostics
     }
 }

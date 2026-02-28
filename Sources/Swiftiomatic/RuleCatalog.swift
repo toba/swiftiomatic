@@ -40,7 +40,7 @@ enum RuleCatalog {
             )
         }
 
-        // Lint rules (AST-based, via SwiftLint engine)
+        // Lint rules (AST-based, run through unified Analyzer)
         RuleRegistry.registerAllRulesOnce()
         let ruleList = RuleRegistry.shared.list
         for (identifier, ruleType) in ruleList.list {
