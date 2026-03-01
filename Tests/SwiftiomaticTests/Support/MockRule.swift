@@ -1,9 +1,17 @@
 @testable import Swiftiomatic
 
+struct MockRuleConfiguration: RuleConfiguration {
+  let id = "MockRule"
+  let name = ""
+  let summary = ""
+}
+
 struct MockRule: Rule {
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
   var options = SeverityConfiguration<Self>(.warning)
+
+  static let configuration = MockRuleConfiguration()
 
   static let description = RuleDescription(
     identifier: "MockRule",
@@ -17,8 +25,17 @@ struct MockRule: Rule {
   func validate(file _: SwiftSource) -> [RuleViolation] { [] }
 }
 
+struct RuleWithLevelsMockConfiguration: RuleConfiguration {
+  let id = "severity_level_mock"
+  let name = ""
+  let summary = ""
+  let deprecatedAliases: Set<String> = ["mock"]
+}
+
 struct RuleWithLevelsMock: Rule {
   var options = SeverityLevelsConfiguration<Self>(warning: 2, error: 3)
+
+  static let configuration = RuleWithLevelsMockConfiguration()
 
   static let description = RuleDescription(
     identifier: "severity_level_mock",
