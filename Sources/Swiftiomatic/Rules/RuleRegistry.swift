@@ -1,8 +1,8 @@
-package import Foundation
+public import Foundation
 import Synchronization
 
 /// Thread-safe container to register and look up Swiftiomatic rules
-package final class RuleRegistry: Sendable {
+public final class RuleRegistry: Sendable {
     private struct State: Sendable {
         var registeredRules = [any Rule.Type]()
         var list: RuleList?
@@ -11,7 +11,7 @@ package final class RuleRegistry: Sendable {
     private let state = Mutex(State())
 
     /// Shared rule registry instance
-    package static let shared = RuleRegistry()
+    public static let shared = RuleRegistry()
 
     /// Rule list associated with this registry, lazily created and immutable once accessed
     ///
@@ -26,7 +26,7 @@ package final class RuleRegistry: Sendable {
     }
 
     /// The number of registered rules
-    package var ruleCount: Int {
+    public var ruleCount: Int {
         list.rules.count
     }
 
@@ -53,7 +53,7 @@ package final class RuleRegistry: Sendable {
     ///
     /// - Parameters:
     ///   - url: The directory URL where documentation files will be written.
-    package func generateDocs(to url: URL) throws {
+    public func generateDocs(to url: URL) throws {
         let docs = RuleListDocumentation(list)
         try docs.write(to: url)
     }

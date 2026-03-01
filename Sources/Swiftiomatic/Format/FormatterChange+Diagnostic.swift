@@ -1,6 +1,6 @@
 extension Formatter.Change {
     /// Converts this change record into a unified ``Diagnostic`` for reporting
-    package func toDiagnostic() -> Diagnostic {
+    public func toDiagnostic() -> Diagnostic {
         Diagnostic(
             ruleID: rule.name,
             source: .format,

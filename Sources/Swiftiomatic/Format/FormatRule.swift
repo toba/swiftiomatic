@@ -5,11 +5,11 @@ import Foundation
 /// Each rule encapsulates a transformation closure, metadata (help text, examples),
 /// and dependency ordering relative to other rules. Rules are registered in the
 /// ``FormatRuleCatalog`` and referenced by name in configuration.
-package final class FormatRule: Hashable, Comparable, CustomStringConvertible, @unchecked Sendable {
+public final class FormatRule: Hashable, Comparable, CustomStringConvertible, @unchecked Sendable {
     static let unnamedRule = "[unnamed rule]"
 
     private let fn: (Formatter) -> Void
-    package fileprivate(set) var name = FormatRule.unnamedRule
+    public fileprivate(set) var name = FormatRule.unnamedRule
     fileprivate(set) var index = 0
     let help: String
     let examples: String?
@@ -26,11 +26,11 @@ package final class FormatRule: Hashable, Comparable, CustomStringConvertible, @
         nil
     }
 
-    package var isDeprecated: Bool {
+    public var isDeprecated: Bool {
         deprecationMessage != nil
     }
 
-    package var description: String {
+    public var description: String {
         name
     }
 
@@ -66,21 +66,21 @@ package final class FormatRule: Hashable, Comparable, CustomStringConvertible, @
         formatter.currentRule = nil
     }
 
-    package static func == (lhs: FormatRule, rhs: FormatRule) -> Bool {
+    public static func == (lhs: FormatRule, rhs: FormatRule) -> Bool {
         lhs === rhs
     }
 
-    package static func < (lhs: FormatRule, rhs: FormatRule) -> Bool {
+    public static func < (lhs: FormatRule, rhs: FormatRule) -> Bool {
         lhs.index < rhs.index
     }
 
-    package func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(self))
     }
 }
 
 /// The shared catalog of all registered format rules
-package let FormatRules = FormatRuleCatalog()
+public let FormatRules = FormatRuleCatalog()
 
 private let rulesByName: [String: FormatRule] = {
     var rules = [String: FormatRule]()
@@ -121,17 +121,17 @@ private let _defaultRules = allRules(except: _disabledByDefault)
 
 extension FormatRuleCatalog {
     /// A Dictionary of rules by name
-    package var byName: [String: FormatRule] {
+    public var byName: [String: FormatRule] {
         rulesByName
     }
 
     /// All rules
-    package var all: [FormatRule] {
+    public var all: [FormatRule] {
         _allRules
     }
 
     /// Default active rules
-    package var `default`: [FormatRule] {
+    public var `default`: [FormatRule] {
         _defaultRules
     }
 
@@ -149,7 +149,7 @@ extension FormatRuleCatalog {
     ///
     /// - Parameters:
     ///   - names: The rule names to look up.
-    package func named(_ names: [String]) -> [FormatRule] {
+    public func named(_ names: [String]) -> [FormatRule] {
         Array(names.sorted().compactMap { rulesByName[$0] })
     }
 
@@ -189,6 +189,6 @@ extension FormatRuleCatalog {
 }
 
 /// Registry that owns all ``FormatRule`` instances and provides lookup by name
-package struct FormatRuleCatalog {
+public struct FormatRuleCatalog: Sendable {
     fileprivate init() {}
 }

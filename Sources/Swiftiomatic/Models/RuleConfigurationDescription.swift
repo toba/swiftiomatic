@@ -3,7 +3,7 @@ import Foundation
 // sm:disable file_length
 
 /// A type that can be converted into a human-readable representation.
-package protocol Documentable {
+public protocol Documentable {
     /// Indicate if the item has some content that is useful to document.
     var hasContent: Bool { get }
 
@@ -24,7 +24,7 @@ package protocol Documentable {
 }
 
 /// Description of a rule configuration.
-package struct RuleConfigurationDescription: Equatable, Sendable {
+public struct RuleConfigurationDescription: Equatable, Sendable {
     fileprivate let options: [RuleConfigurationOption]
 
     fileprivate init(options: [RuleConfigurationOption], exclusiveOptions: Set<String> = []) {
@@ -92,11 +92,11 @@ package struct RuleConfigurationDescription: Equatable, Sendable {
 }
 
 extension RuleConfigurationDescription: Documentable {
-    package var hasContent: Bool {
+    public var hasContent: Bool {
         options.isNotEmpty
     }
 
-    package func oneLiner() -> String {
+    public func oneLiner() -> String {
         oneLiner(separator: ";")
     }
 
@@ -104,7 +104,7 @@ extension RuleConfigurationDescription: Documentable {
         options.map { $0.oneLiner() }.joined(separator: "\(separator) ")
     }
 
-    package func markdown() -> String {
+    public func markdown() -> String {
         guard hasContent else {
             return ""
         }
@@ -120,7 +120,7 @@ extension RuleConfigurationDescription: Documentable {
         """
     }
 
-    package func yaml() -> String {
+    public func yaml() -> String {
         options.map { $0.yaml() }.joined(separator: "\n")
     }
 }
@@ -181,8 +181,8 @@ enum OptionType: Equatable, Sendable {
     case integer(Int)
     /// A floating point number option.
     case float(Double)
-    /// Special option for a ``ViolationSeverity``.
-    case severity(ViolationSeverity)
+    /// Special option for a ``Severity``.
+    case severity(Severity)
     /// A list of options.
     case list([Self])
     /// An option which is another set of configuration options to be nested in the serialized output.

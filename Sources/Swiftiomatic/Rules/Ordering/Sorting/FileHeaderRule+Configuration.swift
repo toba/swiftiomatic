@@ -74,7 +74,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
   ) -> CachedRegex? {
     let replacedPattern =
       file.path.map { path in
-        let fileName = path.bridge().lastPathComponent
+        let fileName = (path as NSString).lastPathComponent
         let escapedName =
           escapeFileName ? CachedRegex.escapedPattern(for: fileName) : fileName
         return pattern.replacingOccurrences(

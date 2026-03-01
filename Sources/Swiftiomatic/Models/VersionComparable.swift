@@ -1,18 +1,18 @@
 /// A comparable `major.minor.patch` version number.
-package protocol VersionComparable: Comparable {
+public protocol VersionComparable: Comparable {
     /// The version string.
     var rawValue: String { get }
 }
 
 extension VersionComparable {
-    package static func == (lhs: Self, rhs: Self) -> Bool {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         if let lhsComparators = lhs.comparators, let rhsComparators = rhs.comparators {
             return lhsComparators == rhsComparators
         }
         return lhs.rawValue == rhs.rawValue
     }
 
-    package static func < (lhs: Self, rhs: Self) -> Bool {
+    public static func < (lhs: Self, rhs: Self) -> Bool {
         if let lhsComparators = lhs.comparators, let rhsComparators = rhs.comparators {
             return lhsComparators.lexicographicallyPrecedes(rhsComparators)
         }

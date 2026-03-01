@@ -1,19 +1,19 @@
 import Synchronization
 
 /// A storage mechanism for aggregating the results of `CollectingRule`s.
-package final class RuleStorage: CustomStringConvertible, Sendable {
+public final class RuleStorage: CustomStringConvertible, Sendable {
     private struct Box: @unchecked Sendable {
         var data: [ObjectIdentifier: [SwiftSource: Any]] = [:]
     }
 
     private let storage = Mutex(Box())
 
-    package var description: String {
+    public var description: String {
         storage.withLock { $0.data.description }
     }
 
     /// Creates a `RuleStorage` with no initial stored data.
-    package init() {}
+    public init() {}
 
     /// Collects file info for a given rule into the storage.
     ///

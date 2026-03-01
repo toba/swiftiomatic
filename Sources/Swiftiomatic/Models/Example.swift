@@ -2,7 +2,7 @@ import Foundation
 
 /// Captures code and context information for an example of a triggering or
 /// non-triggering style
-package struct Example: Sendable {
+public struct Example: Sendable {
     /// The contents of the example
     private(set) var code: String
     /// The untyped configuration to apply to the rule, if deviating from the default configuration.
@@ -21,11 +21,11 @@ package struct Example: Sendable {
     /// - SeeAlso: addEmoji(_:)
     private(set) var shouldTestMultiByteOffsets: Bool
     /// Whether tests shall verify that the example wrapped in a comment doesn't trigger
-    package private(set) var shouldTestWrappingInComment: Bool
+    public private(set) var shouldTestWrappingInComment: Bool
     /// Whether tests shall verify that the example wrapped into a string doesn't trigger
-    package private(set) var shouldTestWrappingInString: Bool
+    public private(set) var shouldTestWrappingInString: Bool
     /// Whether tests shall verify that the disabled rule (comment in the example) doesn't trigger
-    package private(set) var shouldTestDisableCommand: Bool
+    public private(set) var shouldTestDisableCommand: Bool
     /// The path to the file where the example was created
     private(set) var file: StaticString
     /// The line in the file where the example was created
@@ -37,10 +37,10 @@ package struct Example: Sendable {
     /// why a rule is applied and where not. Complex examples with rarely used language constructs or
     /// pathological use cases which are indeed important to test but not helpful for understanding can be
     /// hidden from the documentation with this option.
-    package let isExcludedFromDocumentation: Bool
+    public let isExcludedFromDocumentation: Bool
 
     /// Specifies whether the test example should be the only example run during the current test case execution.
-    package var isFocused: Bool
+    public var isFocused: Bool
 }
 
 extension Example {
@@ -129,7 +129,7 @@ extension Example {
 }
 
 extension Example: Hashable {
-    package static func == (lhs: Example, rhs: Example) -> Bool {
+    public static func == (lhs: Example, rhs: Example) -> Bool {
         // Ignoring file/line metadata because two Examples could represent
         // the same idea, but captured at two different points in the code
         lhs.code == rhs.code
@@ -137,7 +137,7 @@ extension Example: Hashable {
             == rhs.configuration?.mapValues(String.init(describing:))
     }
 
-    package func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         // Ignoring file/line metadata because two Examples could represent
         // the same idea, but captured at two different points in the code
         hasher.combine(code)
@@ -146,7 +146,7 @@ extension Example: Hashable {
 }
 
 extension Example: Comparable {
-    package static func < (lhs: Example, rhs: Example) -> Bool {
+    public static func < (lhs: Example, rhs: Example) -> Bool {
         lhs.code < rhs.code
     }
 }

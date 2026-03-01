@@ -80,7 +80,7 @@ public struct RuleDescription: Equatable, Sendable {
     ///   - corrections:           Sets the description's `corrections` property.
     ///   - deprecatedAliases:     Sets the description's `deprecatedAliases` property.
     ///   - requiresFileOnDisk:    Sets the description's `requiresFileOnDisk` property.
-    package init(
+    public init(
         identifier: String,
         name: String,
         description: String,

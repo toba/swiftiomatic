@@ -1,7 +1,7 @@
 import Foundation
 
 /// A value describing an instance of Swift source code that is considered invalid by a rule.
-package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
+public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendable {
     /// The identifier of the rule that generated this violation.
     let ruleIdentifier: String
 
@@ -12,7 +12,7 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
     let ruleName: String
 
     /// The severity of this violation.
-    private(set) var severity: ViolationSeverity
+    private(set) var severity: Severity
 
     /// The location of this violation.
     private(set) var location: Location
@@ -27,7 +27,7 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
     let suggestion: String?
 
     /// A printable description for this violation.
-    package var description: String {
+    public var description: String {
         // {full_path_to_file}{:line}{:character}: {error,warning}: {content}
         [
             "\(location): ",
@@ -48,7 +48,7 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
     ///     be used.
     init(
         ruleDescription: RuleDescription,
-        severity: ViolationSeverity = .warning,
+        severity: Severity = .warning,
         location: Location,
         reason: String? = nil,
         confidence: Confidence = .high,
@@ -80,7 +80,7 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
     /// Returns the same violation, but with the `severity` that is passed in
     /// - Parameters:
     ///   - severity: the new severity to use in the modified violation
-    func with(severity: ViolationSeverity) -> Self {
+    func with(severity: Severity) -> Self {
         var new = self
         new.severity = severity
         return new
@@ -95,7 +95,7 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
         return new
     }
 
-    package func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(description)
     }
 
@@ -106,7 +106,7 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
         return Diagnostic(
             ruleID: ruleIdentifier,
             source: .lint,
-            severity: severity == .error ? .error : .warning,
+            severity: severity,
             confidence: confidence,
             file: location.file ?? "<unknown>",
             line: location.line ?? 0,

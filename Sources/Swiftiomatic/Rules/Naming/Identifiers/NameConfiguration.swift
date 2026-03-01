@@ -1,7 +1,7 @@
 import Foundation
 
 struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption {
-  typealias Severity = SeverityConfiguration<Parent>
+  typealias SeverityConfig = SeverityConfiguration<Parent>
   typealias SeverityLevels = SeverityLevelsConfiguration<Parent>
   typealias StartWithLowercaseConfiguration = OptionSeverityConfiguration<Parent>
 
@@ -14,7 +14,7 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption {
   @ConfigurationElement(key: "allowed_symbols")
   private(set) var allowedSymbols = Set<String>()
   @ConfigurationElement(key: "unallowed_symbols_severity")
-  private(set) var unallowedSymbolsSeverity = Severity.error
+  private(set) var unallowedSymbolsSeverity = SeverityConfig.error
   @ConfigurationElement(key: "validates_start_with_lowercase")
   private(set) var validatesStartWithLowercase = StartWithLowercaseConfiguration.error
 
@@ -37,7 +37,7 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption {
     maxLengthError: Int,
     excluded: [String] = [],
     allowedSymbols: [String] = [],
-    unallowedSymbolsSeverity: Severity = .error,
+    unallowedSymbolsSeverity: SeverityConfig = .error,
     validatesStartWithLowercase: StartWithLowercaseConfiguration = .error,
   ) {
     minLength = SeverityLevels(warning: minLengthWarning, error: minLengthError)
@@ -87,7 +87,7 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption {
 }
 
 extension NameConfiguration {
-  func severity(forLength length: Int) -> ViolationSeverity? {
+  func severity(forLength length: Int) -> Severity? {
     if let minError = minLength.error, length < minError {
       return .error
     }

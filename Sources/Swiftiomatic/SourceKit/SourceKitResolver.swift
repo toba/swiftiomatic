@@ -8,11 +8,11 @@ import Synchronization
 /// Marked `@unchecked Sendable` because the underlying sourcekitd XPC calls touch
 /// global C state. All mutable state is protected by ``Mutex``, and C FFI calls
 /// are serialized by a global request gate.
-package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
+public final class SourceKitResolver: TypeResolver, @unchecked Sendable {
     private let compilerArgs: [String]
     private let indexCache = Mutex<[String: FileIndex]>([:])
 
-    package var isAvailable: Bool {
+    public var isAvailable: Bool {
         true
     }
 
@@ -20,7 +20,7 @@ package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
     ///
     /// - Parameters:
     ///   - compilerArgs: The compiler arguments passed to SourceKit requests.
-    package init(compilerArgs: [String]) {
+    public init(compilerArgs: [String]) {
         self.compilerArgs = compilerArgs
     }
 
@@ -30,7 +30,7 @@ package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
     ///
     /// - Parameters:
     ///   - projectRoot: The root directory of the Swift Package Manager project.
-    package init?(projectRoot: String) {
+    public init?(projectRoot: String) {
         guard let args = SwiftPMCompilationDB.compilerArguments(inPath: projectRoot) else {
             return nil
         }
@@ -44,7 +44,7 @@ package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
     /// - Parameters:
     ///   - file: The absolute path to the source file.
     ///   - offset: The byte offset of the expression to resolve.
-    package func resolveType(inFile file: String, offset: Int) -> ResolvedType? {
+    public func resolveType(inFile file: String, offset: Int) -> ResolvedType? {
         let request = Request.cursorInfo(
             file: file,
             offset: ByteCount(offset),
@@ -65,7 +65,7 @@ package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
     ///
     /// - Parameters:
     ///   - file: The absolute path to the source file.
-    package func indexFile(_ file: String) -> FileIndex? {
+    public func indexFile(_ file: String) -> FileIndex? {
         if let cached = indexCache.withLock({ $0[file] }) {
             return cached
         }
@@ -88,7 +88,7 @@ package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
     ///
     /// - Parameters:
     ///   - file: The absolute path to the source file.
-    package func expressionTypes(inFile file: String) -> [ExpressionTypeInfo] {
+    public func expressionTypes(inFile file: String) -> [ExpressionTypeInfo] {
         guard let source = try? String(contentsOfFile: file, encoding: .utf8) else { return [] }
 
         let request = Request.customRequest(request: [

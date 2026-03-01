@@ -356,7 +356,7 @@ private struct CorrectingContext<R: Rule> {
   }
 
   private mutating func replaceCharacters(in range: NSRange, with replacement: String) {
-    contents = contents.bridge().replacingCharacters(in: range, with: replacement)
+    contents = (contents as NSString).replacingCharacters(in: range, with: replacement)
   }
 }
 

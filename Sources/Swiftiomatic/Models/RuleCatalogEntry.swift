@@ -9,7 +9,7 @@ public struct RuleCatalogEntry: Sendable, Identifiable, Codable, Hashable {
     public let isCorrectable: Bool
     public let isOptIn: Bool
 
-    package init(
+    public init(
         identifier: String,
         name: String,
         description: String,

@@ -412,9 +412,9 @@ enum PreferSynthesizedInitMode: Equatable, CustomStringConvertible {
 /// These values are not used by ``Formatter`` directly but are made
 /// available to individual ``FormatRule`` implementations through the
 /// formatter's ``Formatter/options`` property.
-package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
+public struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     var lineAfterMarks: Bool
-    package var indent: String
+    public var indent: String
     var lineBreak: String
     var semicolons: SemicolonsMode
     var spaceAroundRangeOperators: OperatorSpacingMode
@@ -461,7 +461,7 @@ package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     var neverTrailing: Set<String>
     var xcodeIndentation: Bool
     var tabWidth: Int
-    package var maxWidth: Int
+    public var maxWidth: Int
     var smartTabs: Bool
     var assetLiteralWidth: AssetLiteralWidth
     var noSpaceOperators: Set<String>
@@ -545,7 +545,7 @@ package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     /// Doesn't really belong here, but hard to put elsewhere
     var fragment: Bool
     var ignoreConflictMarkers: Bool
-    package var swiftVersion: Version
+    public var swiftVersion: Version
     var languageMode: Version
     var fileInfo: FileInfo
     var markdownFiles: MarkdownFormattingMode
@@ -555,7 +555,7 @@ package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     /// based on other rules being enabled. Do not rely on it in other contexts
     var enabledRules: Set<String> = []
 
-    package static let `default` = FormatOptions()
+    public static let `default` = FormatOptions()
 
     init(
         lineAfterMarks: Bool = true,
@@ -848,7 +848,7 @@ package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
         return options
     }
 
-    package var description: String {
+    public var description: String {
         let allowedCharacters = CharacterSet.newlines.inverted
         return Mirror(reflecting: self).children.compactMap { child in
             var value = child.value

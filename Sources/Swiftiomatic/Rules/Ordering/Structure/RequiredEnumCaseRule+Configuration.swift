@@ -3,9 +3,9 @@ struct RequiredEnumCaseConfiguration: RuleConfiguration {
 
   struct RequiredCase: Hashable {
     var name: String
-    var severity: ViolationSeverity
+    var severity: Severity
 
-    init(name: String, severity: ViolationSeverity = .warning) {
+    init(name: String, severity: Severity = .warning) {
       self.name = name
       self.severity = severity
     }
@@ -50,7 +50,7 @@ struct RequiredEnumCaseConfiguration: RuleConfiguration {
     var requiredCases: Set<RequiredCase> = []
 
     for (caseName, severity) in cases {
-      let parsedSeverity: ViolationSeverity = (severity == "error") ? .error : .warning
+      let parsedSeverity: Severity = (severity == "error") ? .error : .warning
       requiredCases.insert(RequiredCase(name: caseName, severity: parsedSeverity))
     }
 

@@ -1,7 +1,7 @@
 import Foundation
 
 /// A unit of Swift source code, either on disk or in memory.
-package final class SwiftSource: Sendable {
+public final class SwiftSource: Sendable {
     /// The underlying SourceKit file.
     let file: File
     /// The associated unique identifier for this file.
@@ -30,7 +30,7 @@ package final class SwiftSource: Sendable {
     /// - Parameters:
     ///   - path: The path to a file on disk. Relative and absolute paths supported.
     ///   - isTestFile: Mark the file as being generated for testing purposes only.
-    package convenience init?(path: String, isTestFile: Bool = false) {
+    public convenience init?(path: String, isTestFile: Bool = false) {
         guard let file = File(path: path) else { return nil }
         self.init(file: file, isTestFile: isTestFile)
     }
@@ -77,11 +77,11 @@ package final class SwiftSource: Sendable {
 // MARK: - Hashable Conformance
 
 extension SwiftSource: Equatable, Hashable {
-    package static func == (lhs: SwiftSource, rhs: SwiftSource) -> Bool {
+    public static func == (lhs: SwiftSource, rhs: SwiftSource) -> Bool {
         lhs.id == rhs.id
     }
 
-    package func hash(into hasher: inout Hasher) {
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
 }

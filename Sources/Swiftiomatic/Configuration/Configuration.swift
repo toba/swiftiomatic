@@ -52,7 +52,7 @@ public struct Configuration {
     public var formatMaxWidth: Int = 120
 
     /// Format Swift version
-    package var formatSwiftVersion: Version = "6.2"
+    public var formatSwiftVersion: Version = "6.2"
 
     /// Minimum confidence level for suggest checks
     public var suggestMinConfidence: Confidence = .low
@@ -132,7 +132,7 @@ public struct Configuration {
                 aliasResolver: { ruleList.identifier(for: $0) ?? $0 },
             ),
             rootDirectory: rootDirectory
-                ?? FileManager.default.currentDirectoryPath.bridge()
+                ?? FileManager.default.currentDirectoryPath
                 .absolutePathStandardized(),
             includedPaths: includedPaths,
             excludedPaths: excludedPaths,
@@ -164,7 +164,7 @@ public struct Configuration {
         let hasCustomConfigurationFile = configurationFile.isNotEmpty
         let filePath = hasCustomConfigurationFile ? configurationFile : Self.defaultFileName
 
-        let currentWorkingDirectory = FileManager.default.currentDirectoryPath.bridge()
+        let currentWorkingDirectory = FileManager.default.currentDirectoryPath
             .absolutePathStandardized()
         let rulesMode: RulesMode =
             if enableAllRules {
@@ -328,7 +328,7 @@ public struct Configuration {
     /// - Parameters:
     ///   - configPath: An explicit path to the config file, or `nil` to search from the current working directory.
     /// - Returns: The loaded ``Configuration``, falling back to ``default`` on failure.
-    package static func loadUnified(configPath: String? = nil) -> Configuration {
+    public static func loadUnified(configPath: String? = nil) -> Configuration {
         if let path = configPath {
             return (try? loadUnified(from: path)) ?? .default
         }
@@ -349,7 +349,7 @@ extension Configuration {
     ///   - additionalEnable: Extra format rule names to enable beyond the configuration.
     ///   - additionalDisable: Extra format rule names to disable beyond the configuration.
     /// - Returns: A configured ``FormatEngine``.
-    package func makeFormatEngine(
+    public func makeFormatEngine(
         additionalEnable: [String] = [],
         additionalDisable: [String] = []
     ) -> FormatEngine {

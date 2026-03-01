@@ -1,8 +1,8 @@
-import Foundation
+public import Foundation
 import Synchronization
 
 /// All possible issues which are printed as warnings by default.
-package enum SwiftiomaticError: LocalizedError, Equatable {
+public enum SwiftiomaticError: LocalizedError, Equatable {
     /// The configuration didn't match internal expectations.
     case invalidConfiguration(ruleID: String, message: String? = nil)
 
@@ -75,7 +75,7 @@ package enum SwiftiomaticError: LocalizedError, Equatable {
 
     /// Flag to enable warnings for deprecations being printed to the console. Printing is enabled by default.
     private static let _printDeprecationWarnings = Mutex(true)
-    package static var printDeprecationWarnings: Bool {
+    public static var printDeprecationWarnings: Bool {
         get { _printDeprecationWarnings.withLock { $0 } }
         set { _printDeprecationWarnings.withLock { $0 = newValue } }
     }
@@ -86,17 +86,17 @@ package enum SwiftiomaticError: LocalizedError, Equatable {
     ///   - error: Any `Error`.
     ///
     /// - returns: A `Issue.genericWarning` containing the message of the `error` argument.
-    package static func wrap(error: some Error) -> Self {
+    public static func wrap(error: some Error) -> Self {
         error as? Self ?? genericWarning(error.localizedDescription)
     }
 
     /// Make this issue an error.
-    package var asError: Self {
+    public var asError: Self {
         Self.genericError(message)
     }
 
     /// The issues description which is ready to be printed to the console.
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
             case .genericError:
                 return "error: \(message)"

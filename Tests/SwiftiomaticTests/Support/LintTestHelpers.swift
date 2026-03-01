@@ -141,14 +141,18 @@ extension Collection where Element: SwiftSource {
     async -> [RuleViolation]
   {
     let storage = RuleStorage()
-    var violations = [RuleViolation]()
+    // Two-pass: collect all files first so collecting rules see the full set
+    var collected = [CollectedLinter]()
     for file in self {
       let linter = Linter(
         file: file, configuration: config,
         compilerArguments: requiresFileOnDisk ? file.makeCompilerArguments() : [],
       )
-      let collected = await linter.collect(into: storage)
-      violations.append(contentsOf: collected.ruleViolations(using: storage))
+      collected.append(await linter.collect(into: storage))
+    }
+    var violations = [RuleViolation]()
+    for linter in collected {
+      violations.append(contentsOf: linter.ruleViolations(using: storage))
     }
     return requiresFileOnDisk ? violations.withoutFiles() : violations
   }
@@ -158,15 +162,18 @@ extension Collection where Element: SwiftSource {
     requiresFileOnDisk: Bool = false,
   ) async -> [String: Int] {
     let storage = RuleStorage()
-    var corrections = [String: Int]()
+    var collected = [CollectedLinter]()
     for file in self {
       let linter = Linter(
         file: file,
         configuration: config,
         compilerArguments: requiresFileOnDisk ? file.makeCompilerArguments() : [],
       )
-      let collectedLinter = await linter.collect(into: storage)
-      for (ruleName, numberOfCorrections) in collectedLinter.correct(using: storage) {
+      collected.append(await linter.collect(into: storage))
+    }
+    var corrections = [String: Int]()
+    for linter in collected {
+      for (ruleName, numberOfCorrections) in linter.correct(using: storage) {
         corrections[ruleName] = numberOfCorrections
       }
     }

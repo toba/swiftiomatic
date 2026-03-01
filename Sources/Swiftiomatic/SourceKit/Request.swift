@@ -169,7 +169,7 @@ private let _sourceKitDisabled = Mutex(false)
 
 /// Prevent sourcekitd from being initialized for the lifetime of this process.
 /// Call once during test setup. Not reversible.
-package func disableSourceKitForTesting() {
+public func disableSourceKitForTesting() {
     _sourceKitDisabled.withLock { $0 = true }
 }
 
@@ -177,7 +177,7 @@ package func disableSourceKitForTesting() {
 /// Check this **before** constructing any `UID` or `SourceKitObject` values,
 /// since those trigger `dlopen` of sourcekitdInProc.framework (which spawns
 /// background threads that SIGSEGV on process exit — apple/swift#55112).
-package var isSourceKitDisabled: Bool {
+public var isSourceKitDisabled: Bool {
     _sourceKitDisabled.withLock { $0 }
 }
 

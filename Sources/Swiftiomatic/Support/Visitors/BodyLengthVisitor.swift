@@ -48,7 +48,7 @@ class BodyLengthVisitor<
             leftBraceLine: leftBraceLine,
             rightBraceLine: rightBraceLine,
         )
-        let severity: ViolationSeverity
+        let severity: Severity
         let upperBound: Int
         if let error = configuration.severityConfiguration.error, lineCount > error {
             severity = .error

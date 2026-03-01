@@ -48,7 +48,7 @@ struct RuleList: Sendable {
 
     // MARK: - Internal
 
-    package func allRulesWrapped(configurationDict: [String: Any] = [:])
+    public func allRulesWrapped(configurationDict: [String: Any] = [:])
         throws(RuleListError) -> [ConfiguredRule]
     {
         var configured = [String: ConfiguredRule]()
@@ -84,11 +84,11 @@ struct RuleList: Sendable {
         return Array(configured.values)
     }
 
-    package func identifier(for alias: String) -> String? {
+    public func identifier(for alias: String) -> String? {
         aliases[alias]
     }
 
-    package func allValidIdentifiers() -> [String] {
+    public func allValidIdentifiers() -> [String] {
         rules.flatMap { _, rule -> [String] in
             rule.description.allIdentifiers
         }

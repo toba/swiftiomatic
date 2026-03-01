@@ -20,8 +20,8 @@ struct FileNameRule: OptInRule, SyntaxOnlyRule {
     let prefixRegex = regex("\\A(?:\(configuration.prefixPattern))")
     let suffixRegex = regex("(?:\(configuration.suffixPattern))\\z")
 
-    let fileName = filePath.bridge().lastPathComponent
-    var typeInFileName = fileName.bridge().deletingPathExtension
+    let fileName = (filePath as NSString).lastPathComponent
+    var typeInFileName = (fileName as NSString).deletingPathExtension
 
     // Process prefix
     if let match = prefixRegex.firstMatch(

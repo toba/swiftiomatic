@@ -62,7 +62,7 @@ private let emptyLinesCache = Cache { EmptyLinesVisitor.emptyLines(in: $0) }
 
 /// Re-enable once all parser diagnostics in tests have been addressed.
 /// https://github.com/realm/SwiftLint/issues/3348
-@TaskLocal package var parserDiagnosticsDisabledForTests = false
+@TaskLocal public var parserDiagnosticsDisabledForTests = false
 
 /// Thread-safe, lazily-populated cache keyed by ``SwiftSource`` identity
 ///
@@ -241,7 +241,7 @@ extension SwiftSource {
     }
 
     /// Remove every cached value across all per-file caches
-    package static func clearCaches() {
+    public static func clearCaches() {
         responseCache.clear()
         structureDictionaryCache.clear()
         syntaxClassificationsCache.clear()

@@ -33,7 +33,7 @@ extension FileLengthRule {
           .walk(tree: node, handler: \.linesWithCode).count
         : file.lines.count
 
-      let severity: ViolationSeverity
+      let severity: Severity
       let upperBound: Int
       if let error = configuration.severityConfiguration.error, lineCount > error {
         severity = .error

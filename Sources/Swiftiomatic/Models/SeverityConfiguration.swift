@@ -13,7 +13,7 @@ struct SeverityConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Inli
     }
 
     @ConfigurationElement(key: "severity")
-    var severity = ViolationSeverity.warning
+    var severity = Severity.warning
 
     var severityConfiguration: Self {
         get { self }
@@ -24,13 +24,13 @@ struct SeverityConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Inli
     ///
     /// - Parameters:
     ///   - severity: The severity that should be used when emitting violations.
-    init(_ severity: ViolationSeverity) {
+    init(_ severity: Severity) {
         self.severity = severity
     }
 
     mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
         if let severityString = configuration[$severity.key] as? String {
-            if let severity = ViolationSeverity(rawValue: severityString.lowercased()) {
+            if let severity = Severity(rawValue: severityString.lowercased()) {
                 self.severity = severity
             } else {
                 throw .invalidConfiguration(ruleID: Parent.identifier)

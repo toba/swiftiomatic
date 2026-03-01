@@ -11,7 +11,7 @@ struct FileNameNoSpaceRule: OptInRule, SyntaxOnlyRule {
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     guard let filePath = file.path,
-      case let fileName = filePath.bridge().lastPathComponent,
+      case let fileName = (filePath as NSString).lastPathComponent,
       !configuration.excluded.contains(fileName),
       fileName.rangeOfCharacter(from: .whitespaces) != nil
     else {

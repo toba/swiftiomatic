@@ -62,7 +62,7 @@ extension EnumCaseAssociatedValuesLengthRule {
         return
       }
 
-      let violationSeverity: ViolationSeverity
+      let violationSeverity: Severity
       if let errorConfig = configuration.error,
         enumCaseAssociatedValueCount >= errorConfig
       {

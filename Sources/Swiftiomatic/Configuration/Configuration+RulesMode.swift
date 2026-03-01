@@ -11,7 +11,7 @@ extension Configuration {
     }
 
     /// Represents how a ``Configuration`` selects which rules are active
-    package enum RulesMode: Equatable, Sendable {
+    public enum RulesMode: Equatable, Sendable {
         /// Enable all non-``OptInRule`` rules minus `disabled`, plus `optIn`
         case defaultConfiguration(disabled: Set<String>, optIn: Set<String>)
 

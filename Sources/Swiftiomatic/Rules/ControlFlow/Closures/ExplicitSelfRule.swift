@@ -29,11 +29,11 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
     if matches.isEmpty {
       return 0
     }
-    var contents = file.contents.bridge()
+    var contents = file.contents as NSString
     for range in matches.reversed() {
-      contents = contents.replacingCharacters(in: range, with: "self.").bridge()
+      contents = contents.replacingCharacters(in: range, with: "self.") as NSString
     }
-    file.write(contents.bridge())
+    file.write(contents as String)
     return matches.count
   }
 

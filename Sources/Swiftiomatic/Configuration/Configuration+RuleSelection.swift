@@ -5,7 +5,7 @@ extension Configuration {
     /// Manages which rules are active based on the configured ``RulesMode``
     ///
     /// All mutable state is protected by `Mutex`, making concurrent access safe.
-    package final class RuleSelection: @unchecked Sendable {
+    public final class RuleSelection: @unchecked Sendable {
         // MARK: - Properties
 
         let allRulesWrapped: [ConfiguredRule]
@@ -49,8 +49,10 @@ extension Configuration {
                         optInRuleIds: optInRuleIdentifiers, valid: validRuleIdentifiers,
                     )
                     resultingRules = allRulesWrapped.filter { tuple in
-                        let id = type(of: tuple.rule).identifier
+                        let ruleType = type(of: tuple.rule)
+                        let id = ruleType.identifier
                         return !disabledRuleIdentifiers.contains(id)
+                            && ruleType.description.scope == .lint
                             && (!(tuple.rule is any OptInRule) || optInRuleIdentifiers.contains(id))
                     }.map(\.rule)
             }

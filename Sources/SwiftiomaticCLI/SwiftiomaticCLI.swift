@@ -1,5 +1,5 @@
 import Foundation
-import ArgumentParser
+public import ArgumentParser
 import Swiftiomatic
 
 @main

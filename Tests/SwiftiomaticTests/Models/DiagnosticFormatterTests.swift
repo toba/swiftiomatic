@@ -6,7 +6,7 @@ import Testing
 @Suite struct DiagnosticFormatterTests {
   private static func makeDiagnostic(
     ruleID: String = "test-rule",
-    severity: DiagnosticSeverity = .warning,
+    severity: Severity = .warning,
     file: String = "/path/to/File.swift",
     line: Int = 42,
     column: Int = 5,

@@ -12,7 +12,7 @@ protocol SourceKitObjectConvertible {
 extension Array: SourceKitObjectConvertible where Element: SourceKitObjectConvertible {
     var sourceKitObject: SourceKitObject? {
         let children = map(\.sourceKitObject)
-        let objects = children.map { $0?.sourcekitdObject }
+        let objects = children.map { $0?.sourceKitdObject }
         return sourcekitd_request_array_create(objects, objects.count).map {
             SourceKitObject($0, children: children)
         }
@@ -25,7 +25,7 @@ extension Dictionary: SourceKitObjectConvertible
     var sourceKitObject: SourceKitObject? {
         let keys: [sourcekitd_uid_t?] = keys.map(\.uid.sourcekitdUID)
         let children = values.map(\.sourceKitObject)
-        let values = children.map { $0?.sourcekitdObject }
+        let values = children.map { $0?.sourceKitdObject }
         return sourcekitd_request_dictionary_create(keys, values, count).map {
             SourceKitObject($0, children: children)
         }
@@ -63,7 +63,7 @@ extension UID: SourceKitObjectConvertible {
 /// Retains child objects to prevent premature deallocation and releases
 /// the underlying C object on `deinit`.
 final class SourceKitObject {
-    fileprivate let sourcekitdObject: sourcekitd_object_t
+    fileprivate let sourceKitdObject: sourcekitd_object_t
     private var children: [SourceKitObject?]
 
     /// Create a request object from a YAML string representation
@@ -71,17 +71,17 @@ final class SourceKitObject {
     /// - Parameters:
     ///   - yaml: The YAML-formatted request string.
     init(yaml: String) {
-        sourcekitdObject = sourcekitd_request_create_from_yaml(yaml, nil)!
+        sourceKitdObject = sourcekitd_request_create_from_yaml(yaml, nil)!
         children = []
     }
 
     fileprivate init(_ sourcekitdObject: sourcekitd_object_t, children: [SourceKitObject?] = []) {
-        self.sourcekitdObject = sourcekitdObject
+        self.sourceKitdObject = sourcekitdObject
         self.children = children
     }
 
     deinit {
-        sourcekitd_request_release(sourcekitdObject)
+        sourcekitd_request_release(sourceKitdObject)
     }
 
     /// Set a value in this dictionary-type request object
@@ -94,7 +94,7 @@ final class SourceKitObject {
         let sourceKitObject = value.sourceKitObject
         children.append(sourceKitObject)
         sourcekitd_request_dictionary_set_value(
-            sourcekitdObject, key.sourcekitdUID, sourceKitObject!.sourcekitdObject,
+            sourceKitdObject, key.sourcekitdUID, sourceKitObject!.sourceKitdObject,
         )
     }
 
@@ -120,7 +120,7 @@ final class SourceKitObject {
 
     /// Send this request synchronously and return the raw response
     func sendSync() -> sourcekitd_response_t? {
-        sourcekitd_send_request_sync(sourcekitdObject)
+        sourcekitd_send_request_sync(sourceKitdObject)
     }
 }
 
@@ -132,7 +132,7 @@ extension SourceKitObject: SourceKitObjectConvertible {
 
 extension SourceKitObject: CustomStringConvertible {
     var description: String {
-        let bytes = sourcekitd_request_description_copy(sourcekitdObject)!
+        let bytes = sourcekitd_request_description_copy(sourceKitdObject)!
         defer { free(bytes) }
         return String(cString: bytes)
     }
@@ -140,7 +140,7 @@ extension SourceKitObject: CustomStringConvertible {
 
 extension SourceKitObject: ExpressibleByArrayLiteral {
     convenience init(arrayLiteral elements: SourceKitObject...) {
-        let objects: [sourcekitd_object_t?] = elements.map(\.sourcekitdObject)
+        let objects: [sourcekitd_object_t?] = elements.map(\.sourceKitdObject)
         self.init(sourcekitd_request_array_create(objects, objects.count)!, children: elements)
     }
 }
@@ -149,7 +149,7 @@ extension SourceKitObject: ExpressibleByDictionaryLiteral {
     convenience init(dictionaryLiteral elements: (UID, SourceKitObjectConvertible)...) {
         let keys: [sourcekitd_uid_t?] = elements.map(\.0.sourcekitdUID)
         let children = elements.map(\.1.sourceKitObject)
-        let values: [sourcekitd_object_t?] = children.map { $0?.sourcekitdObject }
+        let values: [sourcekitd_object_t?] = children.map { $0?.sourceKitdObject }
         self.init(
             sourcekitd_request_dictionary_create(keys, values, elements.count)!, children: children,
         )

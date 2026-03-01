@@ -157,7 +157,7 @@ extension ExpiringTodoRule {
       dateFormatter.date(from: dateString)
     }
 
-    private func getSeverity(for violationLevel: ExpiryViolationLevel) -> ViolationSeverity? {
+    private func getSeverity(for violationLevel: ExpiryViolationLevel) -> Severity? {
       switch violationLevel {
       case .approachingExpiry:
         configuration.approachingExpirySeverity.severity

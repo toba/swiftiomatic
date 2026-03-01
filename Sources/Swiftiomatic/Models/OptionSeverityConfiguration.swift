@@ -25,10 +25,10 @@ struct OptionSeverityConfiguration<Parent: Rule>: RuleConfiguration,
 
     private var optionSeverity: OptionSeverity
 
-    /// The `OptionSeverityConfiguration` mapped to a usually used `ViolationSeverity`. It's `nil` if the option
+    /// The `OptionSeverityConfiguration` mapped to a usually used `Severity`. It's `nil` if the option
     /// is set to `off`.
-    var severity: ViolationSeverity? {
-        ViolationSeverity(rawValue: optionSeverity.rawValue)
+    var severity: Severity? {
+        Severity(rawValue: optionSeverity.rawValue)
     }
 
     mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {

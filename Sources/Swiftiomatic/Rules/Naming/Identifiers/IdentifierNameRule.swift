@@ -131,7 +131,7 @@ extension IdentifierNameRule {
     }
 
     private func violates(_ type: NamedDeclType)
-      -> (reason: String, severity: ViolationSeverity)?
+      -> (reason: String, severity: Severity)?
     {
       guard !nameConfiguration.shouldExclude(name: type.name), type.name != "_",
         let firstCharacter = type.name.first

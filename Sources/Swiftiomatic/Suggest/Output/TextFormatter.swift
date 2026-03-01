@@ -1,6 +1,6 @@
 /// Formats diagnostics as human-readable text grouped by source.
-package enum TextFormatter {
-    package static func format(_ diagnostics: [Diagnostic]) -> String {
+public enum TextFormatter {
+    public static func format(_ diagnostics: [Diagnostic]) -> String {
         guard !diagnostics.isEmpty else {
             return "No findings."
         }

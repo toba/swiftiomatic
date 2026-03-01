@@ -8,7 +8,7 @@ import Foundation
 /// transparently handles changes that affect the current token index.
 /// Individual ``FormatRule`` implementations receive a `Formatter` and
 /// use it to inspect and transform the source.
-package final class Formatter {
+public final class Formatter {
     private var enumerationIndex = -1
     private var autoUpdatingReferences = [WeakAutoUpdatingReference]()
 
@@ -241,7 +241,7 @@ package final class Formatter {
     // MARK: change tracking
 
     /// A record of a single formatting change applied to the source
-    package struct Change: Equatable {
+    public struct Change: Equatable {
         let line: Int
         let rule: FormatRule
         let filePath: String?

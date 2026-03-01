@@ -1,6 +1,6 @@
 extension Configuration {
     /// The style of indentation used in a Swift project
-    package enum IndentationStyle: Hashable, Sendable {
+    public enum IndentationStyle: Hashable, Sendable {
         /// Indent using tabs
         case tabs
         /// Indent using spaces with `count` spaces per indentation level

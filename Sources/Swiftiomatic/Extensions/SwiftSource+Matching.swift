@@ -1,4 +1,5 @@
 import Foundation
+import SwiftSyntax
 
 /// Creates or retrieves a cached regular expression for the given pattern
 ///
@@ -79,9 +80,79 @@ extension SwiftSource {
     range: Range<String.Index>? = nil,
     captureGroup: Int = 0,
   ) -> [Range<String.Index>] {
-    match(pattern: pattern, range: range, captureGroup: captureGroup)
-      .filter { syntaxKinds.isDisjoint(with: $0.1) }
-      .map(\.0)
+    let results = match(pattern: pattern, range: range, captureGroup: captureGroup)
+    // When SourceKit is available, syntax kinds are populated and filtering works.
+    // When SourceKit is disabled, kinds are empty — fall back to SwiftSyntax trivia
+    // to exclude matches inside comments and strings.
+    let hasSourceKit = results.contains { !$0.1.isEmpty }
+    if hasSourceKit {
+      return results
+        .filter { syntaxKinds.isDisjoint(with: $0.1) }
+        .map(\.0)
+    }
+    let excludeComments = !syntaxKinds.isDisjoint(with: SourceKitSyntaxKind.commentKinds)
+    let excludeStrings = syntaxKinds.contains(.string)
+    guard excludeComments || excludeStrings else {
+      return results.map(\.0)
+    }
+    let excludedRanges = syntaxTreeExcludedRanges(
+      comments: excludeComments, strings: excludeStrings
+    )
+    return results.map(\.0).filter { matchRange in
+      !excludedRanges.contains { $0.overlaps(matchRange) }
+    }
+  }
+
+  /// Computes byte ranges of comments and/or string literals using the SwiftSyntax tree.
+  /// Used as a fallback when SourceKit is unavailable.
+  private func syntaxTreeExcludedRanges(
+    comments: Bool, strings: Bool
+  ) -> [Range<String.Index>] {
+    let str = stringView.string
+    var ranges = [Range<String.Index>]()
+    if comments {
+      for token in syntaxTree.tokens(viewMode: .sourceAccurate) {
+        collectCommentRanges(from: token.leadingTrivia, at: token.position, in: str, into: &ranges)
+        collectCommentRanges(
+          from: token.trailingTrivia, at: token.endPositionBeforeTrailingTrivia, in: str,
+          into: &ranges)
+      }
+    }
+    if strings {
+      for token in syntaxTree.tokens(viewMode: .sourceAccurate) {
+        let isString: Bool
+        switch token.tokenKind {
+        case .stringSegment, .multilineStringQuote, .stringQuote:
+          isString = true
+        default:
+          isString = false
+        }
+        guard isString else { continue }
+        let start = str.utf8.index(str.utf8.startIndex, offsetBy: token.position.utf8Offset)
+        let end = str.utf8.index(
+          str.utf8.startIndex, offsetBy: token.endPosition.utf8Offset)
+        if start < end { ranges.append(start..<end) }
+      }
+    }
+    return ranges
+  }
+
+  private func collectCommentRanges(
+    from trivia: Trivia, at position: AbsolutePosition, in str: String,
+    into ranges: inout [Range<String.Index>]
+  ) {
+    var offset = position
+    for piece in trivia {
+      switch piece {
+      case .blockComment, .docBlockComment, .lineComment, .docLineComment:
+        let start = str.utf8.index(str.utf8.startIndex, offsetBy: offset.utf8Offset)
+        let end = str.utf8.index(start, offsetBy: piece.sourceLength.utf8Length)
+        if start < end { ranges.append(start..<end) }
+      default:
+        break
+      }
+      offset = offset.advanced(by: piece.sourceLength.utf8Length)
+    }
   }
 
   /// Filters violation ranges to only those where the rule is enabled by region annotations

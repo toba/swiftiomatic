@@ -19,7 +19,7 @@ import Testing
     @ConfigurationElement(key: "my_double")
     var myDouble = 2.1
     @ConfigurationElement(key: "severity")
-    var severity = ViolationSeverity.warning
+    var severity = Severity.warning
     @ConfigurationElement(
       key: "list",
       postprocessor: { list in list = list.map { $0.uppercased() } },

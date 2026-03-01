@@ -4,7 +4,7 @@ import Synchronization
 private let outputLock = Mutex(())
 
 /// Thread-safe console output utilities
-package enum Console {
+public enum Console {
     /// A thread-safe version of Swift's standard `print()`
     ///
     /// - Parameters:
@@ -29,7 +29,7 @@ package enum Console {
     // MARK: - Test Capture
 
     /// Continuation for the active capture stream, set via ``captureConsole(runner:)``
-    @TaskLocal package static var captureContinuation: AsyncStream<String>.Continuation?
+    @TaskLocal public static var captureContinuation: AsyncStream<String>.Continuation?
 
     /// Captures all messages normally printed to stdout and returns them to the caller
     ///
@@ -39,7 +39,7 @@ package enum Console {
     ///   - runner: The code to run. Messages printed during the execution are collected.
     /// - Returns: The collected messages produced while running the code in the runner.
     @MainActor
-    package static func captureConsole(runner: @Sendable () throws -> Void) async rethrows -> String {
+    public static func captureConsole(runner: @Sendable () throws -> Void) async rethrows -> String {
         let (stream, continuation) = AsyncStream.makeStream(of: String.self)
         try $captureContinuation.withValue(continuation, operation: runner)
         continuation.finish()

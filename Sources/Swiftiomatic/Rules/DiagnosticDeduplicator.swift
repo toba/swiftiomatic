@@ -2,7 +2,7 @@
 ///
 /// When format-lint is active, lint rules in this map are skipped because the format
 /// engine already covers the same check (often with auto-fix capability).
-package enum DiagnosticDeduplicator {
+public enum DiagnosticDeduplicator {
   /// Lint rule ID to format rule name that supersedes it
   static let lintSupersededByFormat: [String: String] = [
     "trailing_whitespace": "trailingSpace",
@@ -24,7 +24,7 @@ package enum DiagnosticDeduplicator {
   /// - Parameters:
   ///   - diagnostics: The full set of diagnostics from both lint and format passes.
   /// - Returns: The filtered diagnostics with superseded lint entries removed.
-  package static func deduplicate(_ diagnostics: [Diagnostic]) -> [Diagnostic] {
+  public static func deduplicate(_ diagnostics: [Diagnostic]) -> [Diagnostic] {
     let activeFormatRules = Set(diagnostics.filter { $0.source == .format }.map(\.ruleID))
     guard !activeFormatRules.isEmpty else { return diagnostics }
 

@@ -66,7 +66,7 @@ extension TodoRule {
         return []
       }
       let matches = keywordRegex
-        .matches(in: comment, range: comment.bridge().fullNSRange)
+        .matches(in: comment, range: comment.fullNSRange)
       return matches.reduce(into: []) { violations, match in
         guard let sub = match.output[1].substring else { return }
         let annotationRange = sub.startIndex..<sub.endIndex

@@ -1,40 +1,40 @@
 import Foundation
 
 /// A value describing the version of the Swift compiler.
-package struct SwiftVersion: RawRepresentable, Codable, VersionComparable, Sendable {
-    package typealias RawValue = String
+public struct SwiftVersion: RawRepresentable, Codable, VersionComparable, Sendable {
+    public typealias RawValue = String
 
-    package let rawValue: String
+    public let rawValue: String
 
-    package init(rawValue: String) {
+    public init(rawValue: String) {
         self.rawValue = rawValue
     }
 }
 
 extension SwiftVersion {
     /// Swift 6
-    static let v6 = SwiftVersion(rawValue: "6.0.0")
+    public static let v6 = SwiftVersion(rawValue: "6.0.0")
     /// Swift 6.1
-    static let v6_1 = SwiftVersion(rawValue: "6.1.0")
+    public static let v6_1 = SwiftVersion(rawValue: "6.1.0")
     /// Swift 6.1.1
-    static let v6_1_1 = SwiftVersion(rawValue: "6.1.1")
+    public static let v6_1_1 = SwiftVersion(rawValue: "6.1.1")
     /// Swift 6.1.2
-    static let v6_1_2 = SwiftVersion(rawValue: "6.1.2")
+    public static let v6_1_2 = SwiftVersion(rawValue: "6.1.2")
     /// Swift 6.2
-    static let v6_2 = SwiftVersion(rawValue: "6.2.0")
+    public static let v6_2 = SwiftVersion(rawValue: "6.2.0")
     /// Swift 6.2.1
-    static let v6_2_1 = SwiftVersion(rawValue: "6.2.1")
+    public static let v6_2_1 = SwiftVersion(rawValue: "6.2.1")
     /// Swift 6.2.2
-    static let v6_2_2 = SwiftVersion(rawValue: "6.2.2")
+    public static let v6_2_2 = SwiftVersion(rawValue: "6.2.2")
     /// Swift 6.2.3
-    static let v6_2_3 = SwiftVersion(rawValue: "6.2.3")
+    public static let v6_2_3 = SwiftVersion(rawValue: "6.2.3")
     /// Swift 6.3
-    static let v6_3 = SwiftVersion(rawValue: "6.3.0")
+    public static let v6_3 = SwiftVersion(rawValue: "6.3.0")
 
     /// The current detected Swift compiler version, based on the currently accessible SourceKit version.
     ///
     /// - note: Override by setting the `SWIFTIOMATIC_SWIFT_VERSION` environment variable.
-    static let current: SwiftVersion = {
+    public static let current: SwiftVersion = {
         // Allow forcing the Swift version, useful in cases where SourceKit isn't available.
         if let envVersion = ProcessInfo.processInfo.environment["SWIFTIOMATIC_SWIFT_VERSION"] {
             return SwiftVersion(rawValue: envVersion)

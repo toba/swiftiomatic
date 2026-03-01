@@ -18,7 +18,7 @@ struct SyntaxViolation: Comparable, Hashable {
     /// A specific reason for the violation.
     let reason: String?
     /// The violation's severity.
-    let severity: ViolationSeverity?
+    let severity: Severity?
     /// An optional correction of the violation to be used in rewriting (see ``SwiftSyntaxCorrectableRule``). Can be
     /// left unset when creating a violation, especially if the rule is not correctable or provides a custom rewriter.
     let correction: Correction?
@@ -39,7 +39,7 @@ struct SyntaxViolation: Comparable, Hashable {
     init(
         position: AbsolutePosition,
         reason: String? = nil,
-        severity: ViolationSeverity? = nil,
+        severity: Severity? = nil,
         correction: Correction? = nil,
         confidence: Confidence = .high,
         suggestion: String? = nil,

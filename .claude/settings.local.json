@@ -65,7 +65,12 @@
       "mcp__xc-project__remove_target",
       "mcp__xc-build__clean",
       "mcp__xc-build__list_schemes",
-      "mcp__xc-swift__swift_diagnostics"
+      "mcp__xc-swift__swift_diagnostics",
+      "mcp__xc-build__set_session_defaults",
+      "mcp__xc-build__test_macos",
+      "mcp__xc-build__list_test_plan_targets",
+      "WebFetch(domain:www.swift.org)",
+      "WebFetch(domain:wwdcnotes.com)"
     ]
   },
   "enableAllProjectMcpServers": true,

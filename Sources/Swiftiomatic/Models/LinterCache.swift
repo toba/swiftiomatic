@@ -5,13 +5,13 @@ private enum LinterCacheError: Error {
     case noLocation
 }
 
-private struct FileCacheEntry: Codable {
+private struct FileCacheEntry: Codable, Sendable {
     let violations: [RuleViolation]
     let lastModification: Date
     let swiftVersion: SwiftVersion
 }
 
-private struct FileCache: Codable {
+private struct FileCache: Codable, Sendable {
     var entries: [String: FileCacheEntry]
 
     static var empty: Self {
@@ -20,14 +20,14 @@ private struct FileCache: Codable {
 }
 
 /// A persisted cache for storing and retrieving linter results.
-final class LinterCache {
+final class LinterCache: Sendable {
     private typealias Encoder = PropertyListEncoder
     private typealias Decoder = PropertyListDecoder
     private typealias Cache = [String: FileCache]
 
     private static let fileExtension = "plist"
 
-    private struct CacheState {
+    private struct CacheState: Sendable {
         var readCache: Cache
         var writeCache: Cache
     }

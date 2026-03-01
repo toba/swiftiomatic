@@ -43,7 +43,7 @@ struct FileNameConfiguration: SeverityBasedRuleConfiguration {
 
 extension FileNameConfiguration {
   func shouldExclude(filePath: String) -> Bool {
-    let fileName = filePath.bridge().lastPathComponent
+    let fileName = (filePath as NSString).lastPathComponent
     if excluded.contains(fileName) {
       return true
     }

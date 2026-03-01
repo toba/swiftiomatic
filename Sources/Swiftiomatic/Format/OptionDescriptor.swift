@@ -582,7 +582,7 @@ struct OptionDescriptorCatalog: @unchecked Sendable {
         },
         toArgument: { $0 == "\t" ? "tab" : String($0.count) },
     )
-    let linebreak = OptionDescriptor(
+    let lineBreak = OptionDescriptor(
         argumentName: "linebreaks",
         displayName: "Linebreak Character",
         help: "Linebreak character to use:",

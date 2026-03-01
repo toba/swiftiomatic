@@ -1,5 +1,5 @@
 /// A configuration value for a rule to allow users to modify its behavior
-package protocol RuleConfiguration: Equatable, Sendable {
+public protocol RuleConfiguration: Equatable, Sendable {
   /// The type of the rule that uses this configuration
   associatedtype Parent: Rule
 
@@ -14,7 +14,7 @@ package protocol RuleConfiguration: Equatable, Sendable {
   /// - Throws: ``SwiftiomaticError`` if the configuration is not in the expected format.
   mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError)
 
-  /// Run a sanity check on the configuration and perform optional postprocessing
+  /// Run a sanity check on the configuration and perform optional post-processing
   mutating func validate() throws(SwiftiomaticError)
 }
 
@@ -26,7 +26,7 @@ protocol SeverityBasedRuleConfiguration: RuleConfiguration {
 
 extension SeverityBasedRuleConfiguration {
   /// The severity of a rule
-  var severity: ViolationSeverity {
+  var severity: Severity {
     severityConfiguration.severity
   }
 

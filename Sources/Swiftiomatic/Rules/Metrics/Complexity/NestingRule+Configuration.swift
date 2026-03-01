@@ -1,10 +1,10 @@
 struct NestingConfiguration: RuleConfiguration {
-  typealias Severity = SeverityLevelsConfiguration<Parent>
+  typealias SeverityLevels = SeverityLevelsConfiguration<Parent>
 
   @ConfigurationElement(key: "type_level")
-  private(set) var typeLevel = Severity(warning: 1)
+  private(set) var typeLevel = SeverityLevels(warning: 1)
   @ConfigurationElement(key: "function_level")
-  private(set) var functionLevel = Severity(warning: 2)
+  private(set) var functionLevel = SeverityLevels(warning: 2)
   @ConfigurationElement(key: "check_nesting_in_closures_and_statements")
   private(set) var checkNestingInClosuresAndStatements = true
   @ConfigurationElement(key: "always_allow_one_type_in_functions")
@@ -14,7 +14,7 @@ struct NestingConfiguration: RuleConfiguration {
   @ConfigurationElement(key: "ignore_coding_keys")
   private(set) var ignoreCodingKeys = false
 
-  func severity(with config: Severity, for level: Int) -> ViolationSeverity? {
+  func severity(with config: SeverityLevels, for level: Int) -> Severity? {
     if let error = config.error, level > error {
       return .error
     }
@@ -24,7 +24,7 @@ struct NestingConfiguration: RuleConfiguration {
     return nil
   }
 
-  func threshold(with config: Severity, for severity: ViolationSeverity) -> Int {
+  func threshold(with config: SeverityLevels, for severity: Severity) -> Int {
     switch severity {
     case .error: return config.error ?? config.warning
     case .warning: return config.warning

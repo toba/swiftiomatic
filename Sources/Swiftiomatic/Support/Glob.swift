@@ -81,7 +81,7 @@ enum Glob {
         do {
             directories = try fileManager.subpathsOfDirectory(atPath: searchPath)
                 .compactMap { subpath in
-                    let fullPath = firstPart.bridge().appendingPathComponent(subpath)
+                    let fullPath = (firstPart as NSString).appendingPathComponent(subpath)
                     guard isDirectory(path: fullPath) else { return nil }
                     return fullPath
                 }
@@ -107,7 +107,7 @@ enum Glob {
                 partiallyResolvedPattern =
                     lastPart.starts(with: "/") ? String(lastPart.dropFirst()) : lastPart
             } else {
-                partiallyResolvedPattern = directory.bridge().appendingPathComponent(lastPart)
+                partiallyResolvedPattern = (directory as NSString).appendingPathComponent(lastPart)
             }
             results.append(contentsOf: expandGlobstar(pattern: partiallyResolvedPattern))
         }

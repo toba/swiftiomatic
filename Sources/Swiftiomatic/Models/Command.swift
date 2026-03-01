@@ -13,7 +13,7 @@ struct Command: Equatable {
 
         /// - returns: The inverse action that can cancel out the current action, restoring the engine's
         ///            state prior to the current action.
-        package func inverse() -> Self {
+        public func inverse() -> Self {
             switch self {
                 case .enable: return .disable
                 case .disable: return .enable
@@ -89,7 +89,7 @@ struct Command: Equatable {
     ///   - line: The line in the source file where this command is defined.
     ///   - range: The range of the command in the line (0-based).
     init(commandString: String, line: Int, range: Range<Int>) {
-        let scanner = Scanner(string: commandString)
+        let scanner = Scanner(string: commandString.trimmingCharacters(in: .whitespacesAndNewlines))
         _ = scanner.scanString("sm:")
         // (enable|disable)(:previous|:this|:next)
         guard let actionAndModifierString = scanner.scanUpToString(" ") else {
@@ -150,7 +150,7 @@ struct Command: Equatable {
     /// If the command doesn't have a modifier, it is returned as-is.
     ///
     /// - returns: The expanded commands.
-    package func expand() -> [Self] {
+    public func expand() -> [Self] {
         guard let modifier else {
             return [self]
         }

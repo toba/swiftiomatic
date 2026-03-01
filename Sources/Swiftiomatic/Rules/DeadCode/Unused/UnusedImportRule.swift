@@ -38,12 +38,12 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
     var contents = file.stringView.nsString
     var numberOfCorrections = 0
     for range in matches.reversed() {
-      contents = contents.replacingCharacters(in: range, with: "").bridge()
+      contents = contents.replacingCharacters(in: range, with: "") as NSString
       numberOfCorrections += 1
     }
 
     if numberOfCorrections > 0 {
-      file.write(contents.bridge())
+      file.write(contents as String)
     }
 
     guard configuration.requireExplicitImports else {
@@ -297,9 +297,9 @@ extension SwiftSource {
 
   fileprivate func offsetPerLine() -> [Int: Int64] {
     Dictionary(
-      uniqueKeysWithValues: contents.bridge()
+      uniqueKeysWithValues: contents
         .components(separatedBy: "\n")
-        .map { Int64($0.bridge().lengthOfBytes(using: .utf8)) }
+        .map { Int64($0.utf8.count) }
         .reduce(into: [0]) { result, length in
           let newLineCharacterLength = Int64(1)
           let lineLength = length + newLineCharacterLength

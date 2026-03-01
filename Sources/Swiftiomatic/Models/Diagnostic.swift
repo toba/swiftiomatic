@@ -10,7 +10,7 @@ public struct Diagnostic: Codable, Sendable, Comparable {
     public let source: DiagnosticSource
 
     /// Warning or error.
-    public let severity: DiagnosticSeverity
+    public let severity: Severity
 
     /// Confidence in the finding.
     public let confidence: Confidence
@@ -54,10 +54,4 @@ public enum DiagnosticSource: String, CaseIterable, Codable, Sendable {
             case .format: "Format"
         }
     }
-}
-
-/// Diagnostic severity — warning or error.
-public enum DiagnosticSeverity: String, Codable, Sendable, CaseIterable, Comparable {
-    case warning
-    case error
 }

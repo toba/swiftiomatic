@@ -72,7 +72,7 @@ struct PeriodSpacingRule: SyntaxOnlyRule, OptInRule, SubstitutionCorrectableRule
       .compactMap { (range: ByteRange) -> [Range<String.Index>]? in
         guard let searchRange = file.stringView.byteRangeToStringRange(range)
         else { return nil }
-        return regex(#"\.[^\S\r\n]{2,}"#)
+        return regex(#"\.[ \t]{2,}"#)
           .matches(in: str, range: searchRange)
           .compactMap { result -> Range<String.Index>? in
             // Skip the period and first space, keep remaining extra spaces

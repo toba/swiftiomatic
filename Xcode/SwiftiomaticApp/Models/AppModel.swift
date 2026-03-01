@@ -1,6 +1,7 @@
-import Foundation
+import AppKit
 import Observation
 import Swiftiomatic
+import UniformTypeIdentifiers
 
 @Observable
 @MainActor

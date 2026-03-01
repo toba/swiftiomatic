@@ -109,6 +109,133 @@ This project follows specific DocC patterns. See [references/swiftiomatic-conven
 - How to document rules and analysis categories
 - Cross-referencing between rule types and configuration
 
+## Metadata Directives
+
+Use `@Metadata` at the top of an article (after the title) to control page behavior and appearance:
+
+```markdown
+# My Sample Project
+
+@Metadata {
+    @PageKind(sampleCode)
+    @CallToAction(url: "https://github.com/org/repo", purpose: link)
+    @PageImage(purpose: card, source: "project-card", alt: "Screenshot of the project")
+    @PageColor(green)
+}
+
+Summary sentence.
+```
+
+### @PageKind
+
+Sets the page type and navigator icon. Values: `article` (default for `.md` files), `sampleCode`.
+
+Sample code pages display "Sample Code" as the role heading (eyebrow text above the title) and get a distinct sidebar icon.
+
+### @CallToAction
+
+Adds a prominent button in the page header. Use with sample code pages to link to the source repo or download.
+
+| Parameter | Description |
+|-----------|-------------|
+| `url` | External URL (use for repo links) |
+| `file` | Local file path relative to the `.docc` bundle (use for downloads) |
+| `purpose` | Default label: `link` → "Visit", `download` → "Download" |
+| `label` | Custom button text (overrides `purpose` label) |
+
+One of `url` or `file` required. One of `purpose` or `label` required. Only one `@CallToAction` per page.
+
+```markdown
+@Metadata {
+    @CallToAction(url: "https://github.com/org/repo", label: "View on GitHub")
+}
+```
+
+### @PageImage
+
+Sets the card image shown when the page appears in a `@Links` grid. Also used as the page's icon.
+
+```markdown
+@PageImage(purpose: card, source: "my-image", alt: "Description")
+```
+
+The `source` references an image file in the `Resources/` directory (without extension). Supports `@2x` and `~dark` variants.
+
+### @PageColor
+
+Sets the accent color for the page. Built-in colors: `blue` (default), `green`, `yellow`, `orange`, `purple`, `red`.
+
+```markdown
+@PageColor(green)
+```
+
+## @Links Directive
+
+Feature documentation pages with styled link collections anywhere on a page — outside the `## Topics` section.
+
+```markdown
+@Links(visualStyle: detailedGrid) {
+    - <doc:SampleProject1>
+    - <doc:SampleProject2>
+    - <doc:GettingStartedGuide>
+}
+```
+
+### visualStyle Options
+
+| Style | Shows | Best for |
+|-------|-------|----------|
+| `list` | Title + abstract (matches Topics style) | General link lists |
+| `compactGrid` | Card image + title only | Visual galleries, sample code collections |
+| `detailedGrid` | Card image + title + abstract | Featured content with descriptions |
+
+Card images come from `@PageImage(purpose: card, ...)` on the linked page. Pages without a card image still work but show a placeholder.
+
+The directive can only contain `<doc:>` links — no headings or prose inside the block.
+
+## Sample Code Page Template
+
+A complete sample code page combining these directives:
+
+```markdown
+# Building a Custom Linter
+
+@Metadata {
+    @PageKind(sampleCode)
+    @CallToAction(url: "https://github.com/org/custom-linter", purpose: link)
+    @PageImage(purpose: card, source: "custom-linter-card", alt: "Custom linter running in Xcode")
+    @PageColor(purple)
+}
+
+Learn how to build a custom Swift linter using Swiftiomatic's rule API.
+
+## Overview
+
+This sample project demonstrates creating rules, configuring severity,
+and integrating with Xcode's build system.
+
+## Topics
+
+### Essentials
+- <doc:CreatingYourFirstRule>
+- ``Rule``
+- ``RuleConfiguration``
+```
+
+### Featuring Sample Code from a Landing Page
+
+On Main.md or a category page, use `@Links` to showcase sample projects:
+
+```markdown
+## Featured Sample Code
+
+@Links(visualStyle: compactGrid) {
+    - <doc:BuildingACustomLinter>
+    - <doc:IntegratingWithXcode>
+    - <doc:WritingFormatRules>
+}
+```
+
 ## Layout Directives
 
 For rich layouts beyond standard Markdown:
@@ -134,6 +261,20 @@ For rich layouts beyond standard Markdown:
     }
 }
 ```
+
+## What NOT to Use DocC For
+
+**Rule documentation** (examples, triggering/non-triggering code, corrections) must stay in the Swift type system — not DocC. The `RuleDescription` and `FormatRule` types carry structured data that DocC cannot express:
+
+- `nonTriggeringExamples` / `triggeringExamples` arrays of `Example` with per-example configuration overrides and test metadata (`shouldTestMultiByteOffsets`, `shouldTestWrappingInComment`, etc.)
+- `corrections` dictionary mapping before→after code for auto-fix validation
+- FormatRule `examples` closures with string interpolation of runtime values (e.g. `VisibilityCategory.defaultOrdering(...)`)
+- `options` / `sharedOptions` arrays consumed by `generate-docs` and CLI `--help`
+
+This data is consumed programmatically at runtime (CLI help, `generate-docs` markdown output, test harnesses). DocC is a compile-time documentation system that produces HTML — it cannot serve these use cases.
+
+**Use DocC for:** module-level overviews, conceptual articles, API symbol documentation, guides.
+**Use RuleDescription/FormatRule for:** per-rule examples, configuration docs, triggering/non-triggering code.
 
 ## Common Issues
 

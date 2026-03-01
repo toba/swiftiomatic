@@ -61,7 +61,7 @@ struct MissingDocsConfiguration: RuleConfiguration {
     var parameters: [RuleParameter<AccessControlLevel>] = []
 
     for (key, value) in dict {
-      guard let severity = ViolationSeverity(rawValue: key) else {
+      guard let severity = Severity(rawValue: key) else {
         continue
       }
 

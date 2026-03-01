@@ -4,16 +4,16 @@ import Foundation
 ///
 /// Wraps a set of ``FormatRule`` values and ``FormatOptions`` into a
 /// reusable, thread-safe entry point for formatting or linting operations.
-package struct FormatEngine: Sendable {
-    package let rules: [FormatRule]
-    package let options: FormatOptions
+public struct FormatEngine: Sendable {
+    public let rules: [FormatRule]
+    public let options: FormatOptions
 
     /// Creates an engine with the given rules and options
     ///
     /// - Parameters:
     ///   - rules: The format rules to apply. Defaults to ``FormatRules/default``.
     ///   - options: The formatting options to use. Defaults to ``FormatOptions/default``.
-    package init(
+    public init(
         rules: [FormatRule] = FormatRules.default,
         options: FormatOptions = .default,
     ) {
@@ -25,7 +25,7 @@ package struct FormatEngine: Sendable {
     ///
     /// - Parameters:
     ///   - source: The Swift source code string to format.
-    package func format(_ source: String) throws -> String {
+    public func format(_ source: String) throws -> String {
         let tokens = tokenize(source)
         let output = try applyRules(
             rules,
@@ -41,7 +41,7 @@ package struct FormatEngine: Sendable {
     ///
     /// - Parameters:
     ///   - source: The Swift source code string to lint.
-    package func lint(_ source: String) throws -> [Formatter.Change] {
+    public func lint(_ source: String) throws -> [Formatter.Change] {
         let tokens = tokenize(source)
         return try applyRules(rules, to: tokens, with: options, trackChanges: true, range: nil)
             .changes
@@ -52,7 +52,7 @@ package struct FormatEngine: Sendable {
     /// - Parameters:
     ///   - source: The Swift source code string to lint.
     ///   - filePath: The file path included in each reported ``Formatter/Change``.
-    package func lint(_ source: String, filePath: String) throws -> [Formatter.Change] {
+    public func lint(_ source: String, filePath: String) throws -> [Formatter.Change] {
         var opts = options
         opts.fileInfo = FileInfo(filePath: filePath)
         let tokens = tokenize(source)
@@ -65,7 +65,7 @@ package struct FormatEngine: Sendable {
     ///   - enable: Rule names to add to the default set.
     ///   - disable: Rule names to remove from the active set.
     ///   - options: The formatting options to use.
-    package init(
+    public init(
         enable: [String] = [],
         disable: [String] = [],
         options: FormatOptions = .default,
