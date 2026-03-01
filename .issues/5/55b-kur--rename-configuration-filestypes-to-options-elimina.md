@@ -6,6 +6,10 @@ type: epic
 priority: normal
 created_at: 2026-03-01T22:44:17Z
 updated_at: 2026-03-01T23:51:33Z
+sync:
+    github:
+        issue_number: "131"
+        synced_at: "2026-03-01T23:56:35Z"
 ---
 
 Multi-step refactoring to establish correct naming convention and consolidate rule metadata.

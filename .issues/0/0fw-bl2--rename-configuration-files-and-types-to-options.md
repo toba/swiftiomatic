@@ -10,7 +10,7 @@ parent: 55b-kur
 sync:
     github:
         issue_number: "130"
-        synced_at: "2026-03-01T22:41:02Z"
+        synced_at: "2026-03-01T23:56:36Z"
 ---
 
 Rename all rule `+Configuration` files to `+Options` and their contained types similarly.
