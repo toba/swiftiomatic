@@ -37,7 +37,7 @@ struct RuleList: Sendable {
         for rule in rules {
             let identifier = rule.identifier
             tmpList[identifier] = rule
-            for alias in rule.description.deprecatedAliases { // TODO: migrate to configuration
+            for alias in rule.ruleDeprecatedAliases {
                 tmpAliases[alias] = identifier
             }
             tmpAliases[identifier] = identifier
@@ -103,7 +103,7 @@ extension RuleList: Equatable {
             return false
         }
         for key in lhsKeys {
-            if lhs.rules[key]!.description != rhs.rules[key]!.description {
+            if lhs.rules[key]!.identifier != rhs.rules[key]!.identifier {
                 return false
             }
         }

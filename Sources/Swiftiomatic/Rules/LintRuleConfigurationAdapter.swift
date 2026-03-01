@@ -9,9 +9,9 @@ struct LintRuleConfigurationAdapter: RuleConfiguration {
     }
 
     var id: String { ruleType.identifier }
-    var name: String { ruleType.description.name } // TODO: migrate to configuration
-    var summary: String { ruleType.description.description } // TODO: migrate to configuration
-    var rationale: String? { ruleType.description.rationale } // TODO: migrate to configuration
+    var name: String { ruleType.ruleName }
+    var summary: String { ruleType.ruleSummary }
+    var rationale: String? { ruleType.ruleRationale }
     var scope: Scope { ruleType.ruleScope }
 
     var isCorrectable: Bool {
@@ -21,13 +21,13 @@ struct LintRuleConfigurationAdapter: RuleConfiguration {
     var isOptIn: Bool { ruleType.isOptIn }
 
     var isDeprecated: Bool {
-        let desc = ruleType.description
-        return !desc.deprecatedAliases.isEmpty && desc.deprecatedAliases.contains(desc.identifier)
+        let aliases = ruleType.ruleDeprecatedAliases
+        return !aliases.isEmpty && aliases.contains(ruleType.identifier)
     }
 
     var deprecationMessage: String? { nil }
-    var requiresSourceKit: Bool { ruleType.description.requiresSourceKit } // TODO: migrate to configuration
-    var requiresCompilerArguments: Bool { ruleType.description.requiresCompilerArguments } // TODO: migrate to configuration
+    var requiresSourceKit: Bool { ruleType.runsWithSourceKit }
+    var requiresCompilerArguments: Bool { ruleType.runsWithCompilerArguments }
 
     var isCrossFile: Bool {
         ruleType is any CollectingRuleMarker.Type
@@ -38,14 +38,13 @@ struct LintRuleConfigurationAdapter: RuleConfiguration {
     }
 
     var examples: RuleExamples {
-        let desc = ruleType.description
-        let nonTriggering = desc.nonTriggeringExamples.map {
+        let nonTriggering = ruleType.ruleNonTriggeringExamples.map {
             CodeExample(code: $0.code)
         }
-        let triggering = desc.triggeringExamples.map {
+        let triggering = ruleType.ruleTriggeringExamples.map {
             CodeExample(code: $0.code)
         }
-        let corrections = desc.corrections.map { before, after in
+        let corrections = ruleType.ruleCorrections.map { before, after in
             CorrectionExample(
                 before: before.code,
                 after: after.code,
@@ -66,7 +65,7 @@ struct LintRuleConfigurationAdapter: RuleConfiguration {
     }
 
     var relatedRuleIDs: [String] {
-        Array(ruleType.description.deprecatedAliases) // TODO: migrate to configuration
+        Array(ruleType.ruleDeprecatedAliases)
     }
 }
 

@@ -58,7 +58,7 @@ extension Configuration {
         do {
             allRulesWrapped = try ruleList.allRulesWrapped(configurationDict: dict)
         } catch let RuleListError.duplicatedConfigurations(ruleType) {
-            let aliases = ruleType.description.deprecatedAliases.map { "'\($0)'" } // TODO: migrate to configuration
+            let aliases = ruleType.ruleDeprecatedAliases.map { "'\($0)'" }
                 .joined(separator: ", ")
             let identifier = ruleType.identifier
             throw SwiftiomaticError.genericWarning(
@@ -128,7 +128,7 @@ extension Configuration {
         // Deprecation warning for rules
         let deprecatedRulesIdentifiers = ruleList.rules.flatMap {
             identifier, rule -> [(String, String)] in
-            rule.description.deprecatedAliases.map { ($0, identifier) } // TODO: migrate to configuration
+            rule.ruleDeprecatedAliases.map { ($0, identifier) }
         }
 
         let userProvidedRuleIDs = Set(disabledRules + optInRules + onlyRules)
@@ -206,7 +206,7 @@ extension Configuration {
 
     private static func warnAboutMisplacedAnalyzerRules(optInRules: [String], ruleList: RuleList) {
         let analyzerRules = ruleList.rules
-            .filter { $0.value.description.requiresCompilerArguments } // TODO: migrate to configuration
+            .filter { $0.value.runsWithCompilerArguments }
             .map(\.key)
         Set(analyzerRules).intersection(optInRules)
             .sorted()

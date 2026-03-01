@@ -25,7 +25,7 @@ import Testing
       }
     }
 
-    let result = await violations(Example("_ = 0"), config: try #require(Spec.configuration))
+    let result = await violations(Example("_ = 0"), config: try #require(Spec.testConfig))
     #expect(!result.isEmpty)
   }
 
@@ -55,13 +55,14 @@ import Testing
     }
 
     let inputs = ["foo", "bar", "baz"]
-    let allViolations = await inputs.violations(config: try #require(Spec.configuration))
+    let allViolations = await inputs.violations(config: try #require(Spec.testConfig))
     #expect(allViolations.count == inputs.count)
   }
 
   @Test func collectsAnalyzerFiles() async throws {
     struct Spec: MockCollectingRule, AnalyzerRule {
       var options = SeverityConfiguration<Self>(.warning)
+      static let configuration = AnalyzerMockConfiguration()
       static let description = RuleDescription(
         identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
         isOptIn: true, requiresCompilerArguments: true, requiresFileOnDisk: true,
@@ -89,7 +90,7 @@ import Testing
 
     let analyzerResult = await violations(
       Example("_ = 0"),
-      config: try #require(Spec.configuration),
+      config: try #require(Spec.testConfig),
       requiresFileOnDisk: true,
     )
     #expect(!analyzerResult.isEmpty)
@@ -129,6 +130,7 @@ import Testing
 
     struct AnalyzerSpec: MockCollectingRule, AnalyzerRule, CorrectableRule {
       var options = SeverityConfiguration<Self>(.warning)
+      static let configuration = AnalyzerMockConfiguration()
       static let description = RuleDescription(
         identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
         isOptIn: true, requiresCompilerArguments: true, requiresFileOnDisk: true,
@@ -172,27 +174,39 @@ import Testing
     }
 
     let inputs = ["foo", "baz"]
-    let specCorrections = await inputs.corrections(config: try #require(Spec.configuration))
+    let specCorrections = await inputs.corrections(config: try #require(Spec.testConfig))
     #expect(specCorrections.count == 1)
     let analyzerCorrections = await inputs.corrections(
-      config: try #require(AnalyzerSpec.configuration),
+      config: try #require(AnalyzerSpec.testConfig),
       requiresFileOnDisk: true,
     )
     #expect(analyzerCorrections.count == 1)
   }
 }
 
+private struct AnalyzerMockConfiguration: RuleConfiguration {
+  let id = "mock_test_rule_for_swiftlint_tests"
+  let name = ""
+  let summary = ""
+  let isOptIn = true
+  let requiresCompilerArguments = true
+  let requiresFileOnDisk = true
+}
+
 private protocol MockCollectingRule: CollectingRule {}
 extension MockCollectingRule {
   @RuleOptionsDescriptionBuilder
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
+  static var configuration: TestMockRuleConfiguration {
+    TestMockRuleConfiguration(id: "mock_test_rule_for_swiftlint_tests")
+  }
   static var description: RuleDescription {
     RuleDescription(
       identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
     )
   }
 
-  static var configuration: Configuration? {
+  static var testConfig: Configuration? {
     Configuration(rulesMode: .onlyConfiguration([identifier]), ruleList: RuleList(rules: self))
   }
 

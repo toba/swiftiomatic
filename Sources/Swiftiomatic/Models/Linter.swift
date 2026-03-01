@@ -286,9 +286,9 @@ struct Linter: @unchecked Sendable {
 
         let rules = configuration.rules.filter { rule in
             if compilerArguments.isEmpty {
-                return !type(of: rule).description.requiresCompilerArguments // TODO: migrate to configuration
+                return !type(of: rule).runsWithCompilerArguments
             }
-            return type(of: rule).description.requiresCompilerArguments || rule is SuperfluousDisableCommandRule // TODO: migrate to configuration
+            return type(of: rule).runsWithCompilerArguments || rule is SuperfluousDisableCommandRule
         }
         self.rules = rules
         isCollecting = rules.contains(where: { $0 is any CollectingRuleMarker })

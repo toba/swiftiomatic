@@ -69,7 +69,7 @@ extension Configuration {
                     let allOptInRules = RuleRegistry.shared.list.rules
                         .compactMap { ruleID, ruleType in
                             ruleType.isOptIn
-                                && !ruleType.description.requiresCompilerArguments ? ruleID : nil // TODO: migrate requiresCompilerArguments
+                                && !ruleType.runsWithCompilerArguments ? ruleID : nil
                         }
                     effectiveOptInRules = Array(Set(allOptInRules + optInRules))
                 } else {
@@ -80,7 +80,7 @@ extension Configuration {
                 if analyzerRules.contains(RuleIdentifier.all.stringRepresentation) {
                     let allAnalyzerRules = RuleRegistry.shared.list.rules
                         .compactMap { ruleID, ruleType in
-                            ruleType.description.requiresCompilerArguments ? ruleID : nil // TODO: migrate to configuration
+                            ruleType.runsWithCompilerArguments ? ruleID : nil
                         }
                     effectiveAnalyzerRules = allAnalyzerRules
                 } else {

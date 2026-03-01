@@ -6,6 +6,7 @@ import Testing
   fileprivate struct RuleMock1: Rule {
     var options = SeverityConfiguration<Self>(.warning)
     var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
+    static let configuration = TestMockRuleConfiguration(id: "RuleMock1")
     static let description = RuleDescription(
       identifier: "RuleMock1", name: "",
       description: "",
@@ -22,6 +23,7 @@ import Testing
   fileprivate struct RuleMock2: Rule {
     var options = SeverityConfiguration<Self>(.warning)
     var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
+    static let configuration = TestMockRuleConfiguration(id: "RuleMock2")
     static let description = RuleDescription(
       identifier: "RuleMock2", name: "",
       description: "",
@@ -38,6 +40,7 @@ import Testing
   fileprivate struct RuleWithLevelsMock2: Rule {
     var options = SeverityLevelsConfiguration<Self>(warning: 2, error: 3)
 
+    static let configuration = TestMockRuleConfiguration(id: "violation_level_mock2")
     static let description = RuleDescription(
       identifier: "violation_level_mock2",
       name: "",

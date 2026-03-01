@@ -63,7 +63,7 @@ public struct Region: Equatable, Sendable {
     ///
     /// - Returns: Deprecated rule aliases.
     func deprecatedAliasesDisabling(rule: some Rule) -> Set<String> {
-        let identifiers = type(of: rule).description.deprecatedAliases // TODO: migrate to configuration
+        let identifiers = type(of: rule).ruleDeprecatedAliases
         return Set(disabledRuleIdentifiers.map(\.stringRepresentation)).intersection(identifiers)
     }
 

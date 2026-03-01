@@ -6,15 +6,13 @@ public protocol Rule: Sendable {
     associatedtype OptionsType: RuleOptions
 
     /// The type of the unified metadata configuration for this rule
-    associatedtype ConfigurationType: RuleConfiguration = RuleDescriptionAdapter
+    associatedtype ConfigurationType: RuleConfiguration
 
-    /// A verbose description of many of this rule's properties
-    ///
-    /// - Note: Deprecated. Migrate to ``configuration`` instead.
-    static var description: RuleDescription { get }
-
-    /// Unified metadata for this rule, replacing ``description``
+    /// Unified metadata for this rule
     static var configuration: ConfigurationType { get }
+
+    /// Type-erased configuration, accessible through `any Rule.Type` existentials
+    static var anyConfiguration: any RuleConfiguration { get }
 
     /// This rule's configuration
     var options: OptionsType { get set }
@@ -164,47 +162,112 @@ extension Rule {
             case .all:
                 true
             case let .single(identifier: id):
-                Self.configuration.allIdentifiers.contains(id)
-                    && Self.configuration.allIdentifiers.contains(violation.ruleIdentifier)
+                Self.allIdentifiers.contains(id)
+                    && Self.allIdentifiers.contains(violation.ruleIdentifier)
         }
     }
 
     func isEnabled(in region: Region, for ruleID: String) -> Bool {
-        !Self.configuration.allIdentifiers.contains(ruleID) || region.isRuleEnabled(self)
+        !Self.allIdentifiers.contains(ruleID) || region.isRuleEnabled(self)
     }
 }
 
 extension Rule {
-    /// Default `configuration` bridges from the legacy ``description`` property
-    static var configuration: RuleDescriptionAdapter {
-        RuleDescriptionAdapter(
-            description,
-            isCorrectable: self is any CorrectableRule.Type,
-            isCrossFile: self is any CollectingRuleMarker.Type,
-            canEnrichAsync: self is any AsyncEnrichableRule.Type,
+    /// Type-erased configuration built from the typed ``configuration``
+    static var anyConfiguration: any RuleConfiguration {
+        configuration
+    }
+
+    /// Default ``RuleDescription`` synthesized from ``configuration`` for test compatibility
+    static var description: RuleDescription {
+        let config = configuration
+        return RuleDescription(
+            identifier: config.id,
+            name: config.name,
+            description: config.summary,
+            rationale: config.rationale,
+            scope: config.scope,
+            isOptIn: config.isOptIn,
+            requiresSourceKit: config.requiresSourceKit,
+            requiresCompilerArguments: config.requiresCompilerArguments,
+            nonTriggeringExamples: config.nonTriggeringExamples,
+            triggeringExamples: config.triggeringExamples,
+            corrections: config.corrections,
+            deprecatedAliases: config.deprecatedAliases,
+            requiresFileOnDisk: config.requiresFileOnDisk,
         )
     }
 
     /// The rule's unique identifier
     static var identifier: String {
-        configuration.id
+        anyConfiguration.id
     }
 
     /// All identifiers this rule responds to (current + deprecated aliases)
     ///
     /// Accessible through `any Rule.Type` without associated type constraints.
     static var allIdentifiers: [String] {
-        description.allIdentifiers
+        anyConfiguration.allIdentifiers
     }
 
     /// Whether this rule is opt-in (not enabled by default)
     static var isOptIn: Bool {
-        description.isOptIn
+        anyConfiguration.isOptIn
     }
 
     /// The scope where this rule participates
     static var ruleScope: Scope {
-        description.scope
+        anyConfiguration.scope
+    }
+
+    /// Human-readable display name
+    static var ruleName: String {
+        anyConfiguration.name
+    }
+
+    /// Brief description of what the rule checks
+    static var ruleSummary: String {
+        anyConfiguration.summary
+    }
+
+    /// Detailed rationale in Markdown
+    static var ruleRationale: String? {
+        anyConfiguration.rationale
+    }
+
+    /// Previous identifiers for backwards-compatible disable commands
+    static var ruleDeprecatedAliases: Set<String> {
+        anyConfiguration.deprecatedAliases
+    }
+
+    /// Whether this rule requires compiler arguments (analyzer rules)
+    static var runsWithCompilerArguments: Bool {
+        anyConfiguration.requiresCompilerArguments
+    }
+
+    /// Whether this rule requires SourceKit to operate
+    static var runsWithSourceKit: Bool {
+        anyConfiguration.requiresSourceKit
+    }
+
+    /// The oldest Swift version supported by this rule
+    static var ruleMinSwiftVersion: SwiftVersion {
+        anyConfiguration.minSwiftVersion
+    }
+
+    /// Non-triggering examples for testing and documentation
+    static var ruleNonTriggeringExamples: [Example] {
+        anyConfiguration.nonTriggeringExamples
+    }
+
+    /// Triggering examples for testing and documentation
+    static var ruleTriggeringExamples: [Example] {
+        anyConfiguration.triggeringExamples
+    }
+
+    /// Correction pairs for testing and documentation
+    static var ruleCorrections: [Example: Example] {
+        anyConfiguration.corrections
     }
 }
 
@@ -319,7 +382,7 @@ protocol SyntaxOnlyRule: Rule {}
 extension Rule {
     /// Whether this rule requires SourceKit to operate
     var requiresSourceKit: Bool {
-        Self.configuration.requiresSourceKit
+        Self.runsWithSourceKit
     }
 }
 

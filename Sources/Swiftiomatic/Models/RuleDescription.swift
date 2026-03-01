@@ -132,46 +132,7 @@ public struct RuleDescription: Equatable, Sendable {
     }
 }
 
-// MARK: - Bridge to RuleConfiguration
-
-/// Wraps a ``RuleDescription`` to conform to ``RuleConfiguration``.
-///
-/// Used as the default `ConfigurationType` during migration. Rules that have
-/// not yet moved to a dedicated `[Name]Configuration` struct get this adapter
-/// automatically via the default `Rule.configuration` implementation.
-public struct RuleDescriptionAdapter: RuleConfiguration {
-    private let desc: RuleDescription
-    private let _isCorrectable: Bool
-    private let _isCrossFile: Bool
-    private let _canEnrichAsync: Bool
-
-    init(_ desc: RuleDescription, isCorrectable: Bool = false, isCrossFile: Bool = false, canEnrichAsync: Bool = false) {
-        self.desc = desc
-        self._isCorrectable = isCorrectable
-        self._isCrossFile = isCrossFile
-        self._canEnrichAsync = canEnrichAsync
-    }
-
-    public var id: String { desc.identifier }
-    public var name: String { desc.name }
-    public var summary: String { desc.description }
-    public var rationale: String? { desc.rationale }
-    public var scope: Scope { desc.scope }
-    public var isCorrectable: Bool { _isCorrectable || desc.isCorrectable }
-    public var isOptIn: Bool { desc.isOptIn }
-    public var requiresSourceKit: Bool { desc.requiresSourceKit }
-    public var requiresCompilerArguments: Bool { desc.requiresCompilerArguments }
-    public var isCrossFile: Bool { _isCrossFile }
-    public var canEnrichAsync: Bool { _canEnrichAsync }
-    public var deprecatedAliases: Set<String> { desc.deprecatedAliases }
-    public var minSwiftVersion: SwiftVersion { desc.minSwiftVersion }
-    public var requiresFileOnDisk: Bool { desc.requiresFileOnDisk }
-    public var nonTriggeringExamples: [Example] { desc.nonTriggeringExamples }
-    public var triggeringExamples: [Example] { desc.triggeringExamples }
-    public var corrections: [Example: Example] { desc.corrections }
-}
-
-private extension String {
+extension String {
     var formattedRationale: String {
         formattedRationale(forConsole: false)
     }

@@ -307,7 +307,7 @@ private func assertCorrection(
 ) async {
   let (cleanedBefore, _) = cleanedContentsAndMarkerOffsets(from: before.code)
   let file = SwiftSource.testFile(withContents: cleanedBefore, persistToDisk: true)
-  let includeCompilerArguments = config.rules.contains(where: { type(of: $0).description.requiresCompilerArguments })
+  let includeCompilerArguments = config.rules.contains(where: { type(of: $0).runsWithCompilerArguments })
   let compilerArguments = includeCompilerArguments ? file.makeCompilerArguments() : []
   let storage = RuleStorage()
   let collector = Linter(file: file, configuration: config, compilerArguments: compilerArguments)

@@ -1,5 +1,18 @@
 @testable import Swiftiomatic
 
+/// A minimal ``RuleConfiguration`` for test mock rules
+struct TestMockRuleConfiguration: RuleConfiguration {
+  let id: String
+  let name: String
+  let summary: String
+
+  init(id: String, name: String = "", summary: String = "") {
+    self.id = id
+    self.name = name
+    self.summary = summary
+  }
+}
+
 struct MockRuleConfiguration: RuleConfiguration {
   let id = "MockRule"
   let name = ""

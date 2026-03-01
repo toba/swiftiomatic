@@ -36,7 +36,7 @@ public enum RuleResolver {
       }
 
       // Skip analyzer rules when we don't have compiler arguments
-      if skipAnalyzerRules, ruleType.description.requiresCompilerArguments { // TODO: migrate to configuration
+      if skipAnalyzerRules, ruleType.runsWithCompilerArguments {
         return nil
       }
 

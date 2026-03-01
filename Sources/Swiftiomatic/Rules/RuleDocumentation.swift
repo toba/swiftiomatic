@@ -6,13 +6,13 @@ struct RuleDocumentation {
     var isOptInRule: Bool { ruleType.isOptIn }
 
     /// Whether this rule requires compiler arguments
-    var isAnalyzerRule: Bool { ruleType.description.requiresCompilerArguments } // TODO: migrate to configuration
+    var isAnalyzerRule: Bool { ruleType.runsWithCompilerArguments }
 
     /// Whether this rule is a linter rule (non-analyzer)
     var isLinterRule: Bool { !isAnalyzerRule }
 
     /// Whether this rule uses SourceKit
-    var usesSourceKit: Bool { ruleType.description.requiresSourceKit } // TODO: migrate to configuration
+    var usesSourceKit: Bool { ruleType.runsWithSourceKit }
 
     /// Whether this rule is disabled by default
     var isDisabledByDefault: Bool { ruleType.isOptIn }
@@ -27,7 +27,7 @@ struct RuleDocumentation {
     init(_ ruleType: any Rule.Type) { self.ruleType = ruleType }
 
     /// The name of the documented rule
-    var ruleName: String { ruleType.description.name } // TODO: migrate to configuration
+    var ruleName: String { ruleType.ruleName }
 
     /// The identifier of the documented rule
     var ruleIdentifier: String { ruleType.identifier }
@@ -103,8 +103,8 @@ private func detailsSummary(_ rule: some Rule) -> String {
     * **Enabled by default:** \(type(of: rule).isOptIn ? "No" : "Yes")
     * **Supports autocorrection:** \(rule is any CorrectableRule ? "Yes" : "No")
     * **Scope:** \(type(of: rule).ruleScope)
-    * **Analyzer rule:** \(type(of: rule).description.requiresCompilerArguments ? "Yes" : "No")
-    * **Minimum Swift compiler version:** \(type(of: rule).description.minSwiftVersion.rawValue)
+    * **Analyzer rule:** \(type(of: rule).runsWithCompilerArguments ? "Yes" : "No")
+    * **Minimum Swift compiler version:** \(type(of: rule).ruleMinSwiftVersion.rawValue)
     """
     let description = rule.createConfigurationDescription()
     if description.hasContent {

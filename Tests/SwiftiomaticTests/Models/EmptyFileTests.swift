@@ -41,6 +41,10 @@ private struct RuleMock<ShouldLintEmptyFiles: ShouldLintEmptyFilesProtocol>: Cor
 {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static var configuration: TestMockRuleConfiguration {
+    TestMockRuleConfiguration(id: "rule_mock<\(ShouldLintEmptyFiles.self)>")
+  }
+
   static var description: RuleDescription {
     RuleDescription(
       identifier: "rule_mock<\(ShouldLintEmptyFiles.self)>",
