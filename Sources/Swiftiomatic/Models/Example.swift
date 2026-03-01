@@ -19,13 +19,13 @@ struct Example: Sendable {
     /// Whether the example should be tested by prepending multibyte grapheme clusters
     ///
     /// - SeeAlso: addEmoji(_:)
-    private(set) var testMultiByteOffsets: Bool
+    private(set) var shouldTestMultiByteOffsets: Bool
     /// Whether tests shall verify that the example wrapped in a comment doesn't trigger
-    package private(set) var testWrappingInComment: Bool
+    package private(set) var shouldTestWrappingInComment: Bool
     /// Whether tests shall verify that the example wrapped into a string doesn't trigger
-    package private(set) var testWrappingInString: Bool
+    package private(set) var shouldTestWrappingInString: Bool
     /// Whether tests shall verify that the disabled rule (comment in the example) doesn't trigger
-    package private(set) var testDisableCommand: Bool
+    package private(set) var shouldTestDisableCommand: Bool
     /// The path to the file where the example was created
     private(set) var file: StaticString
     /// The line in the file where the example was created
@@ -37,7 +37,7 @@ struct Example: Sendable {
     /// why a rule is applied and where not. Complex examples with rarely used language constructs or
     /// pathological use cases which are indeed important to test but not helpful for understanding can be
     /// hidden from the documentation with this option.
-    package let excludeFromDocumentation: Bool
+    package let isExcludedFromDocumentation: Bool
 
     /// Specifies whether the test example should be the only example run during the current test case execution.
     package var isFocused: Bool
@@ -46,38 +46,40 @@ struct Example: Sendable {
 extension Example {
     /// Create a new Example with the specified code, file, and line.
     /// - Parameters:
-    ///   - code:                 The contents of the example.
-    ///   - configuration:        The untyped configuration to apply to the rule, if deviating from the default
-    ///                           configuration.
-    ///   - testMultibyteOffsets: Whether the example should be tested by prepending multibyte grapheme clusters.
-    ///   - testWrappingInComment:Whether test shall verify that the example wrapped in a comment doesn't trigger.
-    ///   - testWrappingInString: Whether tests shall verify that the example wrapped into a string doesn't trigger.
-    ///   - testDisableCommand:   Whether tests shall verify that the disabled rule (comment in the example) doesn't
-    ///                           trigger.
-    ///   - file:                 The path to the file where the example is located.
-    ///                           Defaults to the file where this initializer is called.
-    ///   - line:                 The line in the file where the example is located.
-    ///                           Defaults to the line where this initializer is called.
+    ///   - code:                          The contents of the example.
+    ///   - configuration:                 The untyped configuration to apply to the rule, if deviating from the default
+    ///                                    configuration.
+    ///   - shouldTestMultiByteOffsets:     Whether the example should be tested by prepending multibyte grapheme clusters.
+    ///   - shouldTestWrappingInComment:    Whether test shall verify that the example wrapped in a comment doesn't
+    ///                                    trigger.
+    ///   - shouldTestWrappingInString:     Whether tests shall verify that the example wrapped into a string doesn't
+    ///                                    trigger.
+    ///   - shouldTestDisableCommand:       Whether tests shall verify that the disabled rule (comment in the example)
+    ///                                    doesn't trigger.
+    ///   - file:                          The path to the file where the example is located.
+    ///                                    Defaults to the file where this initializer is called.
+    ///   - line:                          The line in the file where the example is located.
+    ///                                    Defaults to the line where this initializer is called.
     init(
         _ code: String,
         configuration: [String: any Sendable]? = nil,
-        testMultiByteOffsets: Bool = true,
-        testWrappingInComment: Bool = true,
-        testWrappingInString: Bool = true,
-        testDisableCommand: Bool = true,
+        shouldTestMultiByteOffsets: Bool = true,
+        shouldTestWrappingInComment: Bool = true,
+        shouldTestWrappingInString: Bool = true,
+        shouldTestDisableCommand: Bool = true,
         file: StaticString = #filePath,
         line: UInt = #line,
-        excludeFromDocumentation: Bool = false,
+        isExcludedFromDocumentation: Bool = false,
     ) {
         self.code = code
         self.configuration = configuration
-        self.testMultiByteOffsets = testMultiByteOffsets
+        self.shouldTestMultiByteOffsets = shouldTestMultiByteOffsets
         self.file = file
         self.line = line
-        self.excludeFromDocumentation = excludeFromDocumentation
-        self.testWrappingInComment = testWrappingInComment
-        self.testWrappingInString = testWrappingInString
-        self.testDisableCommand = testDisableCommand
+        self.isExcludedFromDocumentation = isExcludedFromDocumentation
+        self.shouldTestWrappingInComment = shouldTestWrappingInComment
+        self.shouldTestWrappingInString = shouldTestWrappingInString
+        self.shouldTestDisableCommand = shouldTestDisableCommand
         isFocused = false
     }
 
@@ -96,35 +98,32 @@ extension Example {
 }
 
 extension Example {
-    func skipWrappingInCommentTest() -> Self {
+    /// Returns a copy with the given boolean property set to the specified value.
+    private func setting(_ keyPath: WritableKeyPath<Self, Bool>, to value: Bool) -> Self {
         var new = self
-        new.testWrappingInComment = false
+        new[keyPath: keyPath] = value
         return new
+    }
+
+    func skipWrappingInCommentTest() -> Self {
+        setting(\.shouldTestWrappingInComment, to: false)
     }
 
     func skipWrappingInStringTest() -> Self {
-        var new = self
-        new.testWrappingInString = false
-        return new
+        setting(\.shouldTestWrappingInString, to: false)
     }
 
     func skipMultiByteOffsetTest() -> Self {
-        var new = self
-        new.testMultiByteOffsets = false
-        return new
+        setting(\.shouldTestMultiByteOffsets, to: false)
     }
 
     func skipDisableCommandTest() -> Self {
-        var new = self
-        new.testDisableCommand = false
-        return new
+        setting(\.shouldTestDisableCommand, to: false)
     }
 
     /// Makes the current example focused. This is for debugging purposes only.
     func focused() -> Example { // sm:disable:this unused_declaration
-        var new = self
-        new.isFocused = true
-        return new
+        setting(\.isFocused, to: true)
     }
 }
 

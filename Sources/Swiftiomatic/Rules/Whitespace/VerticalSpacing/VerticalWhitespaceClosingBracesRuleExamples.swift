@@ -31,7 +31,7 @@ enum VerticalWhitespaceClosingBracesRuleExamples {
         // do something
         // do something
       }
-      """, configuration: beforeTrivialLinesConfiguration, excludeFromDocumentation: true,
+      """, configuration: beforeTrivialLinesConfiguration, isExcludedFromDocumentation: true,
     ),
   ]
 

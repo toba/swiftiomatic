@@ -33,7 +33,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
         await verifyRule(
             description, ruleConfiguration: ["required_string": "**Header"],
             stringDoesNotViolate: false, skipCommentTests: true,
-            skipDisableCommandTests: true, testMultiByteOffsets: false,
+            skipDisableCommandTests: true, shouldTestMultiByteOffsets: false,
             testShebang: false,
         )
     }
@@ -55,7 +55,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
         await verifyRule(
             description, ruleConfiguration: ["required_pattern": "\\d{4} Realm"],
             stringDoesNotViolate: false, skipCommentTests: true,
-            testMultiByteOffsets: false,
+            shouldTestMultiByteOffsets: false,
         )
     }
 
@@ -74,7 +74,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
         await verifyRule(
             description, ruleConfiguration: config,
             stringDoesNotViolate: false, skipCommentTests: true,
-            testMultiByteOffsets: false,
+            shouldTestMultiByteOffsets: false,
         )
     }
 
@@ -137,7 +137,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
 
         await verifyRule(
             description, ruleConfiguration: ["forbidden_pattern": "[tT]ests"],
-            skipCommentTests: true, testMultiByteOffsets: false,
+            skipCommentTests: true, shouldTestMultiByteOffsets: false,
         )
     }
 
@@ -259,7 +259,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
                 """#, // The empty line at the end is important since YAML adds it as well in `|` blocks.
             ],
             skipCommentTests: true,
-            testMultiByteOffsets: false,
+            shouldTestMultiByteOffsets: false,
         )
     }
 
@@ -297,7 +297,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
                 """#, // The empty line at the end is important since YAML adds it as well in `|` blocks.
             ],
             skipCommentTests: true,
-            testMultiByteOffsets: false,
+            shouldTestMultiByteOffsets: false,
         )
     }
 }

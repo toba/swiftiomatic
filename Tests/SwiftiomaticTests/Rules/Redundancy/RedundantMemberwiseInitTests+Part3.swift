@@ -15,7 +15,7 @@ extension RedundantMemberwiseInitTests {
         let options = FormatOptions(preferSynthesizedInitForInternalStructs: .always)
         testFormatting(
             for: input, rule: .redundantMemberwiseInit, options: options,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -113,7 +113,7 @@ extension RedundantMemberwiseInitTests {
         """
         let options = FormatOptions(preferSynthesizedInitForInternalStructs: .always)
         testFormatting(
-            for: input, rule: .redundantMemberwiseInit, options: options, exclude: [.redundantSelf],
+            for: input, rule: .redundantMemberwiseInit, options: options,
         )
     }
 

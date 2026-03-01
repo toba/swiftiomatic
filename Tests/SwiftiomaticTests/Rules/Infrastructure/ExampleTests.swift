@@ -23,9 +23,9 @@ import Testing
     }
 
     @Test func multiByteOffsets() {
-        #expect(Example("").testMultiByteOffsets)
-        #expect(Example("", testMultiByteOffsets: true).testMultiByteOffsets)
-        #expect(!(Example("", testMultiByteOffsets: false).testMultiByteOffsets))
+        #expect(Example("").shouldTestMultiByteOffsets)
+        #expect(Example("", shouldTestMultiByteOffsets: true).shouldTestMultiByteOffsets)
+        #expect(!(Example("", shouldTestMultiByteOffsets: false).shouldTestMultiByteOffsets))
     }
 
     @Test func removingViolationMarkers() {

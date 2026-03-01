@@ -34,18 +34,18 @@ struct PeriodSpacingRule: SyntaxOnlyRule, OptInRule, SubstitutionCorrectableRule
     triggeringExamples: [
       Example(
         "/* Only god knows why. ↓ This symbol does nothing. */",
-        testWrappingInComment: false,
+        shouldTestWrappingInComment: false,
       ),
       Example(
         "// Only god knows why. ↓ This symbol does nothing.",
-        testWrappingInComment: false,
+        shouldTestWrappingInComment: false,
       ),
-      Example("// Single. Double. ↓ End.", testWrappingInComment: false),
-      Example("// Single. Double. ↓ Triple. ↓  End.", testWrappingInComment: false),
-      Example("// Triple. ↓  Quad. ↓   End.", testWrappingInComment: false),
+      Example("// Single. Double. ↓ End.", shouldTestWrappingInComment: false),
+      Example("// Single. Double. ↓ Triple. ↓  End.", shouldTestWrappingInComment: false),
+      Example("// Triple. ↓  Quad. ↓   End.", shouldTestWrappingInComment: false),
       Example(
         "///   - code: Identifier of the error. ↓ Integer.",
-        testWrappingInComment: false,
+        shouldTestWrappingInComment: false,
       ),
     ],
     corrections: [

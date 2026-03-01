@@ -182,7 +182,7 @@ enum OpeningBraceRuleExamples {
           return _swift_stdlib_threadLocalStorageGet().assumingMemoryBound(
               to: _ThreadLocalStorage.self)
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -200,7 +200,7 @@ enum OpeningBraceRuleExamples {
       func run_Array_method2x(_ N: Int) {
 
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -215,7 +215,7 @@ enum OpeningBraceRuleExamples {
              print("Brackets")
          }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """

@@ -68,7 +68,7 @@ enum UnusedImportRuleExamples {
             "allowed_transitive_imports": ["Foundation"],
           ] as [String: any Sendable]
         ]
-      ], excludeFromDocumentation: true,
+      ], isExcludedFromDocumentation: true,
     ),
   ]
 
@@ -254,7 +254,7 @@ enum UnusedImportRuleExamples {
             "allowed_transitive_imports": ["CoreFoundation", "Dispatch"],
           ] as [String: any Sendable]
         ],
-      ] as [String: any Sendable], testMultiByteOffsets: false,
+      ] as [String: any Sendable], shouldTestMultiByteOffsets: false,
     ):
       Example(
         """
@@ -271,7 +271,7 @@ enum UnusedImportRuleExamples {
       """,
       configuration: [
         "require_explicit_imports": true
-      ], testMultiByteOffsets: false,
+      ], shouldTestMultiByteOffsets: false,
     ):
       Example(
         """
@@ -315,7 +315,7 @@ enum UnusedImportRuleExamples {
       """,
       configuration: [
         "require_explicit_imports": true
-      ], testMultiByteOffsets: false,
+      ], shouldTestMultiByteOffsets: false,
     ):
       Example(
         """

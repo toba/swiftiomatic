@@ -109,7 +109,7 @@ enum EmptyXCTestMethodRuleExamples {
       enum E {
           override func foo(a: Int) {}
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
   ]
 

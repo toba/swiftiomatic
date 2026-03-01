@@ -97,7 +97,6 @@ extension TrailingCommasTests {
         let options = FormatOptions(trailingCommas: .always, swiftVersion: "6.2")
         testFormatting(
             for: input, output, rule: .trailingCommas, options: options,
-            exclude: [.redundantReturn],
         )
     }
 
@@ -124,7 +123,6 @@ extension TrailingCommasTests {
         let options = FormatOptions(trailingCommas: .always, swiftVersion: "6.2")
         testFormatting(
             for: input, output, rule: .trailingCommas, options: options,
-            exclude: [.redundantReturn],
         )
     }
 
@@ -147,7 +145,7 @@ extension TrailingCommasTests {
         let options = FormatOptions(trailingCommas: .always, swiftVersion: "6.2")
         testFormatting(
             for: input, output, rule: .trailingCommas, options: options,
-            exclude: [.redundantReturn, .propertyTypes],
+            exclude: [.propertyTypes],
         )
     }
 

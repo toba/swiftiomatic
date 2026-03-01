@@ -58,7 +58,7 @@ struct UnusedSetterValueRule: Rule {
         """
         protocol Foo {
             var bar: Bool { get set }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
@@ -70,7 +70,7 @@ struct UnusedSetterValueRule: Rule {
             }
             set {}
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [

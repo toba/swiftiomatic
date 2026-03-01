@@ -15,7 +15,7 @@ package final class RuleStorage: CustomStringConvertible, Sendable {
     /// Creates a `RuleStorage` with no initial stored data.
     package init() {}
 
-    /// Collects file info for a given rule into the storage.s
+    /// Collects file info for a given rule into the storage.
     ///
     /// - parameter info: The file information to store.
     /// - parameter file: The file for which this information pertains to.

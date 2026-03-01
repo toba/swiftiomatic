@@ -252,7 +252,7 @@ import Testing
         let output = """
         if case .some(Any?.some(let foo)) = bar else {}
         """
-        testFormatting(for: input, output, rule: .typeSugar, exclude: [.hoistPatternLet])
+        testFormatting(for: input, output, rule: .typeSugar)
     }
 
     @Test func switchCaseOptionalNotReplaced() {

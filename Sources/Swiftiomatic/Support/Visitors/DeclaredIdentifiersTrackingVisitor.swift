@@ -45,7 +45,7 @@ enum IdentifierDeclaration: Hashable {
 }
 
 /// A specialized `ViolationCollectingVisitor` that tracks declared identifiers per scope while traversing the AST.
-class DeclaredIdentifiersTrackingVisitor<Configuration: RuleConfiguration>:
+final class DeclaredIdentifiersTrackingVisitor<Configuration: RuleConfiguration>:
     ViolationCollectingVisitor<Configuration>
 {
     /// A type that remembers the declared identifiers (in order) up to the current position in the code.

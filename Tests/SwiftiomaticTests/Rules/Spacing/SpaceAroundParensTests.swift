@@ -222,7 +222,7 @@ import Testing
         { [weak self] () -> Void in }
         """
         testFormatting(
-            for: input, output, rule: .spaceAroundParens, exclude: [.redundantVoidReturnType],
+            for: input, output, rule: .spaceAroundParens
         )
     }
 
@@ -234,7 +234,7 @@ import Testing
         { [weak self] () throws -> Void in }
         """
         testFormatting(
-            for: input, output, rule: .spaceAroundParens, exclude: [.redundantVoidReturnType],
+            for: input, output, rule: .spaceAroundParens
         )
     }
 
@@ -246,7 +246,7 @@ import Testing
         Foo<Bar>(0) { [weak self] () -> Void in }
         """
         testFormatting(
-            for: input, output, rule: .spaceAroundParens, exclude: [.redundantVoidReturnType],
+            for: input, output, rule: .spaceAroundParens
         )
     }
 
@@ -258,7 +258,7 @@ import Testing
         { [weak self] () throws(Foo) -> Void in }
         """
         testFormatting(
-            for: input, output, rule: .spaceAroundParens, exclude: [.redundantVoidReturnType],
+            for: input, output, rule: .spaceAroundParens
         )
     }
 

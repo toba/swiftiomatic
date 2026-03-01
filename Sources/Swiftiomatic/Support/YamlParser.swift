@@ -16,7 +16,7 @@ enum YamlParser {
     static func parse(
         _ yaml: String,
         env: [String: String] = ProcessInfo.processInfo.environment,
-    ) throws -> [String: Any] {
+    ) throws(Issue) -> [String: Any] {
         do {
             return try Yams.load(
                 yaml: yaml, .default,

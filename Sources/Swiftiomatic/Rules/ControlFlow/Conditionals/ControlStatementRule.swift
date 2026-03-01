@@ -28,7 +28,7 @@ struct ControlStatementRule: Rule {
       Example("if (f() { g() {} }) {}"),
       Example("if (a + f() {} == 1) {}"),
       Example("if ({ true }()) {}"),
-      Example("if ({if i < 1 { true } else { false }}()) {}", excludeFromDocumentation: true),
+      Example("if ({if i < 1 { true } else { false }}()) {}", isExcludedFromDocumentation: true),
     ],
     triggeringExamples: [
       Example("↓if (condition) {}"),

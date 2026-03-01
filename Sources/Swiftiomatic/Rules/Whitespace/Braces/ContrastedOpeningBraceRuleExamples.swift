@@ -245,7 +245,7 @@ enum ContrastedOpeningBraceRuleExamples {
              print("Brackets")
          }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """

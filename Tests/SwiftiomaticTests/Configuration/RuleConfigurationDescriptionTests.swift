@@ -33,11 +33,11 @@ import Testing
         var set: Set<Int> = [1, 2, 3]
         @ConfigurationElement(key: "set_of_doubles")
         var setOfDoubles: Set<Double> = [1, 2, 3, 4.7]
-        @ConfigurationElement(inline: true)
+        @ConfigurationElement(isInline: true)
         var severityConfig = SeverityConfiguration<Parent>(.error)
         @ConfigurationElement(key: "SEVERITY")
         var renamedSeverityConfig = SeverityConfiguration<Parent>(.warning)
-        @ConfigurationElement(inline: true)
+        @ConfigurationElement(isInline: true)
         var inlinedSeverityLevels = SeverityLevelsConfiguration<Parent>(warning: 1, error: nil)
         @ConfigurationElement(key: "levels")
         var nestedSeverityLevels = SeverityLevelsConfiguration<Parent>(warning: 3, error: 2)

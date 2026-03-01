@@ -18,7 +18,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -62,7 +62,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -79,7 +79,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent, .propertyTypes],
+            exclude: [.trailingSpace, .indent, .propertyTypes],
         )
     }
 
@@ -97,7 +97,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -135,7 +135,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -154,7 +154,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -173,7 +173,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -192,7 +192,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -215,7 +215,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -236,7 +236,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent, .wrapArguments],
+            exclude: [.trailingSpace, .indent, .wrapArguments],
         )
     }
 
@@ -566,7 +566,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, output, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -584,7 +584,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -603,7 +603,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -622,7 +622,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -640,7 +640,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -658,7 +658,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -678,7 +678,7 @@ extension RedundantMemberwiseInitTests {
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
             exclude: [
-                .redundantSelf, .trailingSpace, .indent, .wrapConditionalBodies,
+                .trailingSpace, .indent, .wrapConditionalBodies,
                 .blankLinesAfterGuardStatements,
             ],
         )
@@ -698,7 +698,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -805,7 +805,7 @@ extension RedundantMemberwiseInitTests {
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -822,7 +822,7 @@ extension RedundantMemberwiseInitTests {
         let options = FormatOptions(preferSynthesizedInitForInternalStructs: .always)
         testFormatting(
             for: input, rule: .redundantMemberwiseInit, options: options,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 

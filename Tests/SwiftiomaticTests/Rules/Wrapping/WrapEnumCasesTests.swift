@@ -184,8 +184,7 @@ import Testing
         }
         """
         testFormatting(
-            for: input, rule: .wrapEnumCases,
-            exclude: [.hoistPatternLet],
+            for: input, rule: .wrapEnumCases
         )
     }
 

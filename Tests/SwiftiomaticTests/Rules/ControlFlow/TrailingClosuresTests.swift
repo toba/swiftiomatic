@@ -76,14 +76,14 @@ import Testing
         let output = """
         Foo.init { foo = bar }
         """
-        testFormatting(for: input, output, rule: .trailingClosures, exclude: [.redundantInit])
+        testFormatting(for: input, output, rule: .trailingClosures)
     }
 
     @Test func namedInitClosureArgumentNotMadeTrailing() {
         let input = """
         Foo.init(bar: { foo = bar })
         """
-        testFormatting(for: input, rule: .trailingClosures, exclude: [.redundantInit])
+        testFormatting(for: input, rule: .trailingClosures)
     }
 
     @Test func noRemoveParensAroundClosureFollowedByOpeningBrace() {

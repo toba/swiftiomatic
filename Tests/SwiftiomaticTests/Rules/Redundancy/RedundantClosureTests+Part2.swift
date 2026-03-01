@@ -170,7 +170,7 @@ extension RedundantClosureTests {
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
             for: input, output, rule: .redundantClosure, options: options,
-            exclude: [.redundantReturn, .indent],
+            exclude: [.indent],
         )
     }
 
@@ -200,7 +200,7 @@ extension RedundantClosureTests {
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
             for: input, output, rule: .redundantClosure, options: options,
-            exclude: [.redundantReturn, .indent],
+            exclude: [.indent],
         )
     }
 
@@ -230,7 +230,7 @@ extension RedundantClosureTests {
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
             for: input, output, rule: .redundantClosure, options: options,
-            exclude: [.redundantReturn, .indent],
+            exclude: [.indent],
         )
     }
 
@@ -260,7 +260,7 @@ extension RedundantClosureTests {
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
             for: input, output, rule: .redundantClosure, options: options,
-            exclude: [.redundantReturn, .indent],
+            exclude: [.indent],
         )
     }
 
@@ -290,7 +290,7 @@ extension RedundantClosureTests {
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
             for: input, [output], rules: [.redundantClosure],
-            options: options, exclude: [.redundantReturn, .indent],
+            options: options, exclude: [.indent],
         )
     }
 
@@ -501,7 +501,7 @@ extension RedundantClosureTests {
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
             for: input, output, rule: .redundantClosure, options: options,
-            exclude: [.redundantReturn, .blankLinesBetweenScopes, .propertyTypes],
+            exclude: [.blankLinesBetweenScopes, .propertyTypes],
         )
     }
 
@@ -524,25 +524,11 @@ extension RedundantClosureTests {
         }()
         """
 
-        let output = """
-        enum MyEnum {
-            case a
-            case b
-        }
-        let myEnum = MyEnum.a
-        let test: Int = switch myEnum {
-            case .a:
-                0
-            case .b:
-                1
-            }
-        """
-
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
-            for: input, [output],
+            for: input,
             rules: [
-                .redundantReturn, .conditionalAssignment,
+                .conditionalAssignment,
                 .redundantClosure,
             ],
             options: options,

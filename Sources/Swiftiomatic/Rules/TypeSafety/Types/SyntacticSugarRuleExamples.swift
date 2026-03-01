@@ -34,7 +34,7 @@ enum SyntacticSugarRuleExamples {
     Example("let a = Swift.Optional<String?>.none"),
     Example(
       "func f() -> [Array<Int>.Index] { [Array<Int>.Index]() }",
-      excludeFromDocumentation: true,
+      isExcludedFromDocumentation: true,
     ),
   ]
 

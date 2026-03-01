@@ -5,7 +5,7 @@ import Testing
     @Test func leadingWhitespace() async {
         await verifyRule(
             LeadingWhitespaceRule.description, skipDisableCommandTests: true,
-            testMultiByteOffsets: false, testShebang: false,
+            shouldTestMultiByteOffsets: false, testShebang: false,
         )
     }
 

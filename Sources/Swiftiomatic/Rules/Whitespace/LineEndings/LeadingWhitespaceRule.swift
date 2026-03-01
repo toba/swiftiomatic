@@ -15,7 +15,7 @@ struct LeadingWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
       Example(" //"),
     ].skipMultiByteOffsetTests().skipDisableCommandTests(),
     corrections: [
-      Example("\n //", testMultiByteOffsets: false): Example("//")
+      Example("\n //", shouldTestMultiByteOffsets: false): Example("//")
     ],
   )
 

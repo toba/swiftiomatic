@@ -43,7 +43,7 @@ struct UnavailableConditionRule: Rule {
         } else if i < 2, #available(macOS 11.0, *) {
           print("something else")
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [

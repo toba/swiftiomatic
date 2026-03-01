@@ -24,7 +24,7 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
         registerFilter(name) { any, args throws -> Any? in
             doSomething(any, args)
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [
@@ -66,7 +66,7 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
         registerFilter(name) { ↓(any, args) throws -> Any? in
             doSomething(any, args)
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     corrections: [

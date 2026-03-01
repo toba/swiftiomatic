@@ -6,7 +6,6 @@ extension FormatRule {
       Removes redundant closures bodies, containing a single statement,
       which are called immediately.
       """,
-    orderAfter: [.redundantReturn],
   ) { formatter in
     formatter.forEach(.startOfScope("{")) { closureStartIndex, _ in
       var startIndex = closureStartIndex

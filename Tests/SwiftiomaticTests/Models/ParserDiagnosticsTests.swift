@@ -26,7 +26,7 @@ import Testing
         )
         await verifyCorrections(
             ruleDescription, config: config, disableCommands: [],
-            testMultiByteOffsets: false, parserDiagnosticsDisabledForTests: false,
+            shouldTestMultiByteOffsets: false, parserDiagnosticsDisabledForTests: false,
         )
     }
 
@@ -52,7 +52,7 @@ import Testing
         )
         await verifyCorrections(
             ruleDescription, config: config, disableCommands: [],
-            testMultiByteOffsets: false, parserDiagnosticsDisabledForTests: false,
+            shouldTestMultiByteOffsets: false, parserDiagnosticsDisabledForTests: false,
         )
     }
 

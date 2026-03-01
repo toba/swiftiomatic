@@ -60,9 +60,9 @@ struct WeakDelegateRule: Rule {
                 return appDelegate.bar
             }
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
-      Example("private var appDelegate: String?", excludeFromDocumentation: true),
+      Example("private var appDelegate: String?", isExcludedFromDocumentation: true),
     ],
     triggeringExamples: [
       Example("class Foo {\n  ↓var delegate: SomeProtocol?\n}"),

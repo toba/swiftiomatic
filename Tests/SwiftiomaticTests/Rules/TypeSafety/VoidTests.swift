@@ -70,7 +70,7 @@ import Testing
         let input = """
         { (_: Void) -> Void in }
         """
-        testFormatting(for: input, rule: .void, exclude: [.redundantVoidReturnType])
+        testFormatting(for: input, rule: .void)
     }
 
     @Test func funcWithAnonymousVoidArgumentNotStripped() {
@@ -159,7 +159,7 @@ import Testing
         let output = """
         { () -> Void in }
         """
-        testFormatting(for: input, output, rule: .void, exclude: [.redundantVoidReturnType])
+        testFormatting(for: input, output, rule: .void)
     }
 
     @Test func anonymousVoidClosureNotChanged() {
@@ -319,7 +319,7 @@ import Testing
         """
         let options = FormatOptions(useVoid: false)
         testFormatting(
-            for: input, output, rule: .void, options: options, exclude: [.redundantVoidReturnType],
+            for: input, output, rule: .void, options: options
         )
     }
 

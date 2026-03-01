@@ -25,7 +25,7 @@ struct RedundantSetAccessControlRule: Rule {
         fileprivate class A {
           public fileprivate(set) var value: Int
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """

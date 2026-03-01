@@ -60,7 +60,7 @@ struct SuperfluousElseRule: Rule {
         } else {
             return 3
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """

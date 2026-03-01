@@ -126,7 +126,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -145,7 +145,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -163,7 +163,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -181,7 +181,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -199,7 +199,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -246,7 +246,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -274,7 +274,6 @@ import Testing
             for: input,
             output,
             rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf],
         )
     }
 
@@ -292,7 +291,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -312,7 +311,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -330,7 +329,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -366,7 +365,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -429,7 +428,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -450,7 +449,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -469,7 +468,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -489,7 +488,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -509,7 +508,7 @@ import Testing
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
             exclude: [
-                .redundantSelf, .trailingSpace, .indent, .blankLinesAfterGuardStatements,
+                .trailingSpace, .indent, .blankLinesAfterGuardStatements,
                 .wrapConditionalBodies,
             ],
         )
@@ -531,7 +530,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -553,7 +552,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -571,7 +570,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -591,7 +590,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -609,7 +608,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -627,7 +626,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -645,7 +644,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -669,7 +668,7 @@ import Testing
         """
         testFormatting(
             for: input, output, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -687,7 +686,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -705,7 +704,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -728,7 +727,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -756,7 +755,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 
@@ -794,7 +793,7 @@ import Testing
         """
         testFormatting(
             for: input, rule: .redundantMemberwiseInit,
-            exclude: [.redundantSelf, .trailingSpace, .indent],
+            exclude: [.trailingSpace, .indent],
         )
     }
 

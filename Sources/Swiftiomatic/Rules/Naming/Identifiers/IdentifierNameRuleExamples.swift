@@ -57,12 +57,12 @@ enum IdentifierNameRuleExamples {
     Example(
       "func ↓IsOperator(name: String) -> Bool",
       configuration: ["validates_start_with_lowercase": "warning"],
-      excludeFromDocumentation: true,
+      isExcludedFromDocumentation: true,
     ),
     Example(
       "enum Foo { case ↓MyEnum }",
       configuration: ["validates_start_with_lowercase": "error"],
-      excludeFromDocumentation: true,
+      isExcludedFromDocumentation: true,
     ),
     Example("if let ↓_x {}"),
     Example("guard var ↓x = x else {}"),

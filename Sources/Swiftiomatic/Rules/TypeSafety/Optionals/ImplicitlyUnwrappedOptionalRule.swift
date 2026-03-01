@@ -21,7 +21,7 @@ struct ImplicitlyUnwrappedOptionalRule: Rule {
             weak var bar: SomeObject!
         }
         """, configuration: ["mode": "all_except_iboutlets"],
-        excludeFromDocumentation: true,
+        isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [

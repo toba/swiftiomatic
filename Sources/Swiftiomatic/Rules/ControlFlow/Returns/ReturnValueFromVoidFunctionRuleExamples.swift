@@ -69,7 +69,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
               }
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -179,7 +179,7 @@ enum ReturnValueFromVoidFunctionRuleExamples {
           }
         }
       }
-      """#, excludeFromDocumentation: true,
+      """#, isExcludedFromDocumentation: true,
     ),
   ]
 

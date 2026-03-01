@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// A SwiftSyntax `SyntaxVisitor` that produces absolute positions where violations should be reported.
-class ViolationCollectingVisitor<Configuration: RuleConfiguration>: SyntaxVisitor {
+final class ViolationCollectingVisitor<Configuration: RuleConfiguration>: SyntaxVisitor {
     /// A rule's configuration.
     let configuration: Configuration
     /// The file from which the traversed syntax tree stems from.
@@ -31,46 +31,46 @@ class ViolationCollectingVisitor<Configuration: RuleConfiguration>: SyntaxVisito
     }
 
     override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
-        shallSkip(node)
+        shouldSkip(node)
     }
 
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        shallSkip(node)
+        shouldSkip(node)
     }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        shallSkip(node)
+        shouldSkip(node)
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        shallSkip(node)
+        shouldSkip(node)
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        shallSkip(node)
+        shouldSkip(node)
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-        shallSkip(node)
+        shouldSkip(node)
     }
 
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-        shallSkip(node)
+        shouldSkip(node)
     }
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        shallSkip(node)
+        shouldSkip(node)
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
-        shallSkip(node)
+        shouldSkip(node)
     }
 
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        shallSkip(node)
+        shouldSkip(node)
     }
 
-    private func shallSkip(_ node: some DeclSyntaxProtocol) -> SyntaxVisitorContinueKind {
+    private func shouldSkip(_ node: some DeclSyntaxProtocol) -> SyntaxVisitorContinueKind {
         skippableDeclarations
             .contains { $0 == node.syntaxNodeType } ? .skipChildren : .visitChildren
     }

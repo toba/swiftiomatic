@@ -75,7 +75,7 @@ struct SelfInPropertyInitializationRule: Rule {
             func calculateA() -> String { "A" }
             func calculateB() -> String { "B" }
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
@@ -83,7 +83,7 @@ struct SelfInPropertyInitializationRule: Rule {
             let keyPath: Any = \\String.self
             let someType: Any = String.self
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [

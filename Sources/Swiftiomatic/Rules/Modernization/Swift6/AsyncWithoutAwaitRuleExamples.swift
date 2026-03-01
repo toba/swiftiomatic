@@ -220,7 +220,7 @@ enum AsyncWithoutAwaitRuleExamples {
               b = 2
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """

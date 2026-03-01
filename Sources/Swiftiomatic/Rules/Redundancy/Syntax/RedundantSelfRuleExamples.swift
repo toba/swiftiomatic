@@ -110,7 +110,7 @@ enum RedundantSelfRuleExamples {
           }
           func f(_: () -> Void) {}
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -239,7 +239,7 @@ enum RedundantSelfRuleExamples {
               f { let g = ↓self.g() }
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -250,7 +250,7 @@ enum RedundantSelfRuleExamples {
               func g() { E.f { ↓self.g() } }
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -294,7 +294,7 @@ enum RedundantSelfRuleExamples {
               return 2
           }()
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """

@@ -115,7 +115,7 @@ enum AttributesRuleExamples {
           @Persisted(primaryKey: true) var id: Int
       }
       """#, configuration: ["attributes_with_arguments_always_on_line_above": false],
-      excludeFromDocumentation: true,
+      isExcludedFromDocumentation: true,
     ),
   ]
 
@@ -161,7 +161,7 @@ enum AttributesRuleExamples {
           )
           var entities: FetchedResults
       }
-      """#, excludeFromDocumentation: true,
+      """#, isExcludedFromDocumentation: true,
     ),
   ]
 }

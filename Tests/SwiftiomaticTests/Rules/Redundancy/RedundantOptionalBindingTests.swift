@@ -143,8 +143,7 @@ import Testing
 
         let options = FormatOptions(swiftVersion: "5.7")
         testFormatting(
-            for: input, rule: .redundantOptionalBinding, options: options,
-            exclude: [.redundantSelf],
+            for: input, rule: .redundantOptionalBinding, options: options
         )
     }
 
@@ -155,16 +154,10 @@ import Testing
         }
         """
 
-        let output = """
-        if let foo {
-            print(foo)
-        }
-        """
-
         let options = FormatOptions(swiftVersion: "5.7")
         testFormatting(
-            for: input, [output], rules: [.redundantOptionalBinding, .redundantSelf],
-            options: options,
+            for: input, rule: .redundantOptionalBinding,
+            options: options
         )
     }
 

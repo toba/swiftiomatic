@@ -95,14 +95,14 @@ enum OperatorUsageWhitespaceRuleExamples {
              >>> effect({ log.debug("Done syncing. Work was done? \(workWasDone)") })
              >>> { workWasDone ? storage.doneUpdatingMetadataAfterUpload() : succeed() }    // A closure
              >>> effect({ log.debug("Done.") })
-      """#, excludeFromDocumentation: true,
+      """#, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       func success(for item: Item) {
           item.successHandler??()
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -112,7 +112,7 @@ enum OperatorUsageWhitespaceRuleExamples {
       }
       """,
       configuration: ["allowed_no_space_operators": ["<--<"]],
-      excludeFromDocumentation: true,
+      isExcludedFromDocumentation: true,
     ),
   ]
 

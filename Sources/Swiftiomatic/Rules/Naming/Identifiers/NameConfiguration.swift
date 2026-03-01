@@ -1,6 +1,6 @@
 import Foundation
 
-struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOptionType {
+struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption {
   typealias Severity = SeverityConfiguration<Parent>
   typealias SeverityLevels = SeverityLevelsConfiguration<Parent>
   typealias StartWithLowercaseConfiguration = ChildOptionSeverityConfiguration<Parent>

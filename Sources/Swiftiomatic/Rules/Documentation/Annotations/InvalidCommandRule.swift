@@ -16,11 +16,11 @@ struct InvalidCommandRule: Rule, SyntaxOnlyRule {
       Example("//sm:disable:this unused_import"),
       Example(
         "_ = \"🤵🏼‍♀️\" // sm:disable:this unused_import",
-        excludeFromDocumentation: true,
+        isExcludedFromDocumentation: true,
       ),
       Example(
         "_ = \"🤵🏼‍♀️ 🤵🏼‍♀️\" // sm:disable:this unused_import",
-        excludeFromDocumentation: true,
+        isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [
@@ -39,7 +39,7 @@ struct InvalidCommandRule: Rule, SyntaxOnlyRule {
       Example("// ↓sm:enable: "),
       Example("// ↓sm:disable: unused_import"),
       Example("// s↓sm:disable unused_import"),
-      Example("// 🤵🏼‍♀️sm:disable unused_import", excludeFromDocumentation: true),
+      Example("// 🤵🏼‍♀️sm:disable unused_import", isExcludedFromDocumentation: true),
     ].skipWrappingInCommentTests(),
   )
 

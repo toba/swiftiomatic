@@ -56,7 +56,7 @@ struct StrictFilePrivateRule: Rule {
                 var j: Int { get }
                 var l: Int { get }
             }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
@@ -66,7 +66,7 @@ struct StrictFilePrivateRule: Rule {
             protocol P<T> {
                 func f()
             }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ]
       + ["actor", "class", "enum", "extension", "struct"].map { type in
@@ -82,7 +82,7 @@ struct StrictFilePrivateRule: Rule {
                   var i: Int { get }
                   var l: Int { get set }
               }
-          """, excludeFromDocumentation: true,
+          """, isExcludedFromDocumentation: true,
         )
       },
     triggeringExamples: [
@@ -126,7 +126,7 @@ struct StrictFilePrivateRule: Rule {
       Example(
         """
             ↓fileprivate func f() {}
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ]
       + ["actor", "class", "enum", "extension", "struct"].map { type in
@@ -149,7 +149,7 @@ struct StrictFilePrivateRule: Rule {
                   func g()
                   var j: Int { get }
               }
-          """, excludeFromDocumentation: true,
+          """, isExcludedFromDocumentation: true,
         )
       },
   )

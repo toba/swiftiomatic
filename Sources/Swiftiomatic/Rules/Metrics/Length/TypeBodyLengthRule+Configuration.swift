@@ -12,7 +12,7 @@ enum TypeBodyLengthCheckType: String, AcceptableByConfigurationElement, CaseIter
 }
 
 struct TypeBodyLengthConfiguration: SeverityLevelsBasedRuleConfiguration {
-  @ConfigurationElement(inline: true)
+  @ConfigurationElement(isInline: true)
   var severityConfiguration = SeverityLevelsConfiguration<Parent>(
     warning: 250, error: 350,
   )

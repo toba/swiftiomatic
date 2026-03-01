@@ -440,8 +440,7 @@ import Testing
         }
         """
         testFormatting(
-            for: input, rule: .unusedArguments,
-            exclude: [.hoistPatternLet],
+            for: input, rule: .unusedArguments
         )
     }
 

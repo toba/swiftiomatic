@@ -67,14 +67,14 @@ struct RuleDocumentation {
       content.append(formattedRationale)
     }
     let nonTriggeringExamples = description.nonTriggeringExamples.filter {
-      !$0.excludeFromDocumentation
+      !$0.isExcludedFromDocumentation
     }
     if nonTriggeringExamples.isNotEmpty {
       content += [h2("Non Triggering Examples")]
       content += nonTriggeringExamples.map(formattedCode)
     }
     let triggeringExamples = description.triggeringExamples
-      .filter { !$0.excludeFromDocumentation }
+      .filter { !$0.isExcludedFromDocumentation }
     if triggeringExamples.isNotEmpty {
       content += [h2("Triggering Examples")]
       content += triggeringExamples.map(formattedCode)

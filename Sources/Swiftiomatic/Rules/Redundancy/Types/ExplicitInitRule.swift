@@ -95,7 +95,7 @@ struct ExplicitInitRule: Rule {
         """
         let int = In🤓t↓
         .init(1.0)
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
@@ -103,7 +103,7 @@ struct ExplicitInitRule: Rule {
 
 
         .init(1.0)
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
@@ -111,7 +111,7 @@ struct ExplicitInitRule: Rule {
 
 
               .init(1.0)
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     corrections: [

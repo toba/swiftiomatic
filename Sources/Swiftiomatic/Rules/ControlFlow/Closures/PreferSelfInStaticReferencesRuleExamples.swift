@@ -38,7 +38,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
           var n: Int = C.k { didSet { m += 1 } }
           @GreaterThan(C.j) var m: Int
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -54,7 +54,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
           static let j = Self.T.R.i + Self.R.j
           let h = Self.T.R.i + Self.R.j
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -66,14 +66,14 @@ enum PreferSelfInStaticReferencesRuleExamples {
           }
           func g() -> Any { C.self }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       struct Record<T> {
           static func get() -> Record<T> { Record<T>() }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -81,7 +81,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
           @objc var s = ""
           @objc func f() { _ = #keyPath(C.s) }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -90,13 +90,13 @@ enum PreferSelfInStaticReferencesRuleExamples {
           let c: C = C()
           func f(c: C) -> KeyPath<C, Int> { \\Self.i }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       class C1<T> {}
       class C2: C1<C2> {}
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -104,7 +104,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
       class C2: C1<C2.C3> {
           class C3 {}
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -114,7 +114,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
               class C4 {}
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -125,7 +125,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
               let s2 = S1<S1>()
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
   ]
 
@@ -215,7 +215,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
               }
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -255,7 +255,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
           }
           func g(a: [↓S]) -> [↓S] { a }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -265,7 +265,7 @@ enum PreferSelfInStaticReferencesRuleExamples {
               child = (input as! T).child
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
   ]
 

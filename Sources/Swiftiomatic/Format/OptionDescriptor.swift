@@ -1,7 +1,7 @@
 import Foundation
 
 final class OptionDescriptor {
-    enum ArgumentType: EnumAssociable {
+    enum ArgumentType {
         case binary(true: String, false: String)
         case `enum`([String])
         case text

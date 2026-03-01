@@ -97,7 +97,7 @@ enum UnneededEscapingRuleExamples {
           completions[0] = completion
           arrayOfCompletions = completions
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -105,7 +105,7 @@ enum UnneededEscapingRuleExamples {
       func array(completion: @escaping () -> Void) {
           arrayOfCompletions[0] = completion
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -113,7 +113,7 @@ enum UnneededEscapingRuleExamples {
       public func _setTestSuiteFailedCallback(_ callback: @escaping () -> Void) {
           _testSuiteFailedCallback = callback
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -121,21 +121,21 @@ enum UnneededEscapingRuleExamples {
           var cs = [() -> Void]()
           cs[0] = c
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       func f(c: @escaping () -> Void) {
           var cs = [c]
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       func f(c: @escaping () -> Void) {
           var cs = [1: c]
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """

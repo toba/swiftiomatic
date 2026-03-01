@@ -23,8 +23,8 @@ struct ExplicitTopLevelACLRule: Rule {
       Example("internal func a() {}"),
       Example("extension A: Equatable {}"),
       Example("extension A {}"),
-      Example("f { func f() {} }", excludeFromDocumentation: true),
-      Example("do { func f() {} }", excludeFromDocumentation: true),
+      Example("f { func f() {} }", isExcludedFromDocumentation: true),
+      Example("do { func f() {} }", isExcludedFromDocumentation: true),
     ],
     triggeringExamples: [
       Example("↓enum A {}"),

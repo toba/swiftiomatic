@@ -93,7 +93,7 @@ struct RuleList: Sendable {
 extension RuleList: Equatable {
     static func == (lhs: RuleList, rhs: RuleList) -> Bool {
         lhs.list.map(\.key) == rhs.list.map(\.key)
-            && lhs.list.map { $0.value.description } == rhs.list.map { $0.value.description }
+            && lhs.list.map(\.value.description) == rhs.list.map(\.value.description)
             && lhs.aliases == rhs.aliases
     }
 }

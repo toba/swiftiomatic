@@ -17,7 +17,7 @@ import Testing
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
             for: input, rule: .redundantClosure, options: options,
-            exclude: [.redundantReturn, .propertyTypes],
+            exclude: [.propertyTypes],
         )
     }
 
@@ -70,7 +70,7 @@ import Testing
 
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
-            for: input, [output], rules: [.redundantReturn, .redundantClosure],
+            for: input, [output], rules: [.redundantClosure],
             options: options, exclude: [.indent, .wrapMultilineConditionalAssignment],
         )
     }
@@ -108,7 +108,7 @@ import Testing
         }
         """
 
-        testFormatting(for: input, [output], rules: [.redundantReturn, .redundantClosure])
+        testFormatting(for: input, [output], rules: [.redundantClosure])
     }
 
     @Test func keepsClosureThatIsNotCalled() {
@@ -178,7 +178,7 @@ import Testing
         testFormatting(
             for: input, [output],
             rules: [
-                .redundantReturn, .redundantClosure,
+                .redundantClosure,
                 .semicolons,
             ], exclude: [.propertyTypes],
         )
@@ -384,7 +384,6 @@ import Testing
 
         testFormatting(
             for: input, rule: .redundantClosure,
-            exclude: [.redundantReturn],
         )
     }
 
@@ -479,18 +478,11 @@ import Testing
             }
         }()
         """
-        let output = """
-        let user2: User? = if let data2 = defaults.data(forKey: defaultsKey) {
-                try PropertyListDecoder().decode(User.self, from: data2)
-            } else {
-                nil
-            }
-        """
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
-            for: input, [output],
+            for: input,
             rules: [
-                .redundantReturn, .conditionalAssignment,
+                .conditionalAssignment,
                 .redundantClosure,
             ],
             options: options, exclude: [.indent, .wrapMultilineConditionalAssignment],
@@ -507,18 +499,11 @@ import Testing
             }
         }()
         """
-        let output = """
-        let user2: User? = if let data2 = defaults.data(forKey: defaultsKey) {
-                try await PropertyListDecoder().decode(User.self, from: data2)
-            } else {
-                nil
-            }
-        """
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
-            for: input, [output],
+            for: input,
             rules: [
-                .redundantReturn, .conditionalAssignment,
+                .conditionalAssignment,
                 .redundantClosure,
             ],
             options: options, exclude: [.indent, .wrapMultilineConditionalAssignment],

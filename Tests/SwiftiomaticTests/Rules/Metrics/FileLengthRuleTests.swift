@@ -5,7 +5,7 @@ import Testing
     @Test func fileLengthWithDefaultConfiguration() async {
         await verifyRule(
             FileLengthRule.description, commentDoesNotViolate: false,
-            testMultiByteOffsets: false, testShebang: false,
+            shouldTestMultiByteOffsets: false, testShebang: false,
         )
     }
 
@@ -25,7 +25,7 @@ import Testing
 
         await verifyRule(
             description, ruleConfiguration: ["ignore_comment_only_lines": true],
-            testMultiByteOffsets: false, testShebang: false,
+            shouldTestMultiByteOffsets: false, testShebang: false,
         )
     }
 }

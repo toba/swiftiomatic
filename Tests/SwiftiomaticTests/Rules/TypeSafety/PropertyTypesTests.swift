@@ -17,15 +17,15 @@ import Testing
         """
 
         let output = """
-        let foo = Foo()
+        let foo = Foo.init()
         let bar = Bar.staticBar
         let baaz = Baaz.Example.default
         let quux = Quux.quuxBulder(foo: .foo, bar: .bar)
 
-        let dictionary = [Foo: Bar]()
-        let array = [Foo]()
-        let genericType = MyGenericType<Foo, Bar>()
-        let underscoredType = _Foo()
+        let dictionary = [Foo: Bar].init()
+        let array = [Foo].init()
+        let genericType = MyGenericType<Foo, Bar>.init()
+        let underscoredType = _Foo.init()
         let lowercaseType = c_type.init()
         """
 
@@ -33,7 +33,7 @@ import Testing
         testFormatting(
             for: input,
             [output],
-            rules: [.propertyTypes, .redundantInit],
+            rules: [.propertyTypes],
             options: options,
         )
     }
@@ -116,9 +116,9 @@ import Testing
                 let bar = Bar.staticBar
                 let quux = Quux.quuxBulder(foo: .foo, bar: .bar)
 
-                let dictionary = [Foo: Bar]()
-                let array = [Foo]()
-                let genericType = MyGenericType<Foo, Bar>()
+                let dictionary = [Foo: Bar].init()
+                let array = [Foo].init()
+                let genericType = MyGenericType<Foo, Bar>.init()
             }
         }
         """
@@ -127,7 +127,7 @@ import Testing
         testFormatting(
             for: input,
             [output],
-            rules: [.propertyTypes, .redundantInit],
+            rules: [.propertyTypes],
             options: options,
         )
     }
@@ -248,14 +248,14 @@ import Testing
         let foo: Foo = .init()
 
         func bar() {
-            let baaz = Baaz()
-            let baaz = Baaz()
+            let baaz = Baaz.init()
+            let baaz = Baaz.init()
         }
         """
 
         let options = FormatOptions(propertyTypes: .inferLocalsOnly)
         testFormatting(
-            for: input, [output], rules: [.redundantType, .propertyTypes, .redundantInit],
+            for: input, [output], rules: [.redundantType, .propertyTypes],
             options: options,
         )
     }
@@ -287,9 +287,9 @@ import Testing
         let output = """
         let foo =
             if condition {
-                Foo(bar)
+                Foo.init(bar)
             } else {
-                Foo(baaz)
+                Foo.init(baaz)
             }
         """
 
@@ -299,7 +299,7 @@ import Testing
         testFormatting(
             for: input,
             [output],
-            rules: [.propertyTypes, .redundantInit],
+            rules: [.propertyTypes],
             options: options,
         )
     }
@@ -319,9 +319,9 @@ import Testing
         let foo =
             switch condition {
             case true:
-                Foo(bar)
+                Foo.init(bar)
             case false:
-                Foo(baaz)
+                Foo.init(baaz)
             }
         """
 
@@ -331,7 +331,7 @@ import Testing
         testFormatting(
             for: input,
             [output],
-            rules: [.propertyTypes, .redundantInit],
+            rules: [.propertyTypes],
             options: options,
         )
     }
@@ -536,7 +536,7 @@ import Testing
             preservedPropertyTypes: ["init"],
         )
         testFormatting(
-            for: input, output, rule: .propertyTypes, options: options, exclude: [.redundantInit],
+            for: input, output, rule: .propertyTypes, options: options,
         )
     }
 
@@ -571,26 +571,26 @@ import Testing
         let output = """
         foo {
             let bar = Bar()
-            let baaz = Baaz()
+            let baaz = Baaz.init()
         }
 
         foo(bar: bar, baaz: baaz, quux: {
             let bar = Bar()
-            let baaz = Baaz()
+            let baaz = Baaz.init()
         })
 
         foo {
             let bar = Bar()
-            let baaz = Baaz()
+            let baaz = Baaz.init()
         } bar: {
             let bar = Bar()
-            let baaz = Baaz()
+            let baaz = Baaz.init()
         }
 
         class Foo {
             let foo: Foo = .bar {
                 let baaz = Baaz()
-                let baaz = Baaz()
+                let baaz = Baaz.init()
             }
         }
         """
@@ -599,7 +599,7 @@ import Testing
         testFormatting(
             for: input,
             [output],
-            rules: [.propertyTypes, .redundantInit],
+            rules: [.propertyTypes],
             options: options,
         )
     }

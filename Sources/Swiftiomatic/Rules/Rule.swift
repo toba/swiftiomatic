@@ -143,8 +143,7 @@ extension Rule {
   /// The cache description which will be used to determine if a previous
   /// cached value is still valid given the new cache value.
   var cacheDescription: String {
-    (self as? any CacheDescriptionProvider)?.cacheDescription
-      ?? createConfigurationDescription().oneLiner()
+    createConfigurationDescription().oneLiner()
   }
 
   func createConfigurationDescription(exclusiveOptions: Set<String> = [])

@@ -333,7 +333,7 @@ extension String {
 private func testCorrection(
     _ correction: (Example, Example),
     configuration: Configuration,
-    testMultiByteOffsets: Bool,
+    shouldTestMultiByteOffsets: Bool,
 ) async {
     var config = configuration
     if let correctionConfiguration = correction.0.configuration,
@@ -349,7 +349,7 @@ private func testCorrection(
     }
 
     await assertCorrection(correction.0, expected: correction.1, config: config)
-    if testMultiByteOffsets, correction.0.testMultiByteOffsets {
+    if shouldTestMultiByteOffsets, correction.0.shouldTestMultiByteOffsets {
         await assertCorrection(addEmoji(correction.0), expected: addEmoji(correction.1), config: config)
     }
 }
@@ -408,7 +408,7 @@ func verifyRule(
     skipCommentTests: Bool = false,
     skipStringTests: Bool = false,
     skipDisableCommandTests: Bool = false,
-    testMultiByteOffsets: Bool = true,
+    shouldTestMultiByteOffsets: Bool = true,
     testShebang: Bool = true,
     sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
@@ -442,7 +442,7 @@ func verifyRule(
         skipCommentTests: skipCommentTests,
         skipStringTests: skipStringTests,
         disableCommands: disableCommands,
-        testMultiByteOffsets: testMultiByteOffsets,
+        shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
         testShebang: testShebang,
         sourceLocation: sourceLocation,
     )
@@ -450,7 +450,7 @@ func verifyRule(
         ruleDescription,
         config: config,
         disableCommands: disableCommands,
-        testMultiByteOffsets: testMultiByteOffsets,
+        shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
     )
 }
 
@@ -464,7 +464,7 @@ func verifyLint(
     skipCommentTests: Bool = false,
     skipStringTests: Bool = false,
     disableCommands: [String] = [],
-    testMultiByteOffsets: Bool = true,
+    shouldTestMultiByteOffsets: Bool = true,
     testShebang: Bool = true,
     sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
@@ -488,23 +488,23 @@ func verifyLint(
     // Skip expensive variant tests in fast mode
     guard !fastTests else { return }
 
-    if testMultiByteOffsets {
+    if shouldTestMultiByteOffsets {
         await verify(
-            triggers: triggers.filter(\.testMultiByteOffsets).map(addEmoji),
-            nonTriggers: nonTriggers.filter(\.testMultiByteOffsets).map(addEmoji),
+            triggers: triggers.filter(\.shouldTestMultiByteOffsets).map(addEmoji),
+            nonTriggers: nonTriggers.filter(\.shouldTestMultiByteOffsets).map(addEmoji),
         )
     }
 
     if testShebang {
         await verify(
-            triggers: triggers.filter(\.testMultiByteOffsets).map(addShebang),
-            nonTriggers: nonTriggers.filter(\.testMultiByteOffsets).map(addShebang),
+            triggers: triggers.filter(\.shouldTestMultiByteOffsets).map(addShebang),
+            nonTriggers: nonTriggers.filter(\.shouldTestMultiByteOffsets).map(addShebang),
         )
     }
 
     // Comment doesn't violate
     if !skipCommentTests {
-        let triggersToCheck = triggers.filter(\.testWrappingInComment)
+        let triggersToCheck = triggers.filter(\.shouldTestWrappingInComment)
         var commentViolationCount = 0
         for trigger in triggersToCheck {
             commentViolationCount += await makeViolations(trigger.with(code: "/*\n  " + trigger.code + "\n */")).count
@@ -518,7 +518,7 @@ func verifyLint(
 
     // String doesn't violate
     if !skipStringTests {
-        let triggersToCheck = triggers.filter(\.testWrappingInString)
+        let triggersToCheck = triggers.filter(\.shouldTestWrappingInString)
         var stringViolationCount = 0
         for trigger in triggersToCheck {
             stringViolationCount += await makeViolations(trigger.with(code: trigger.code.toStringLiteral())).count
@@ -534,7 +534,7 @@ func verifyLint(
     for command in disableCommands {
         let disabledTriggers =
             triggers
-                .filter(\.testDisableCommand)
+                .filter(\.shouldTestDisableCommand)
                 .map { $0.with(code: command + $0.code) }
 
         for trigger in disabledTriggers {
@@ -579,7 +579,7 @@ func verifyCorrections(
     _ ruleDescription: RuleDescription,
     config: Configuration,
     disableCommands: [String],
-    testMultiByteOffsets: Bool,
+    shouldTestMultiByteOffsets: Bool,
     parserDiagnosticsDisabledForTests: Bool = true,
 ) async {
     let ruleDescription = ruleDescription.focused()
@@ -590,7 +590,7 @@ func verifyCorrections(
             await testCorrection(
                 correction,
                 configuration: config,
-                testMultiByteOffsets: !fastTests && testMultiByteOffsets,
+                shouldTestMultiByteOffsets: !fastTests && shouldTestMultiByteOffsets,
             )
         }
         // make sure strings that don't trigger aren't corrected
@@ -598,7 +598,7 @@ func verifyCorrections(
             await testCorrection(
                 (nonTriggeringExample, nonTriggeringExample),
                 configuration: config,
-                testMultiByteOffsets: !fastTests && testMultiByteOffsets,
+                shouldTestMultiByteOffsets: !fastTests && shouldTestMultiByteOffsets,
             )
         }
 

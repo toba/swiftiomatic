@@ -4,7 +4,6 @@ extension FormatRule {
   /// Remove redundant explicit memberwise initializers from structs
   static let redundantMemberwiseInit = FormatRule(
     help: "Remove explicit internal memberwise initializers that are redundant.",
-    orderAfter: [.redundantInit],
     options: ["prefer-synthesized-init-for-internal-structs"],
   ) { formatter in
     // Parse all struct declarations

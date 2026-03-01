@@ -30,7 +30,7 @@ enum MarkRuleExamples {
 
         ///  //marketingOptIn
       struct T {}
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     issue1749Example,
   ]

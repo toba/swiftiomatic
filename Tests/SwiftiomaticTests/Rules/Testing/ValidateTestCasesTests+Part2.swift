@@ -267,7 +267,7 @@ extension ValidateTestCasesTests {
 
         // Should not modify parameterized tests - they already have @Test
         testFormatting(
-            for: input, rule: .validateTestCases, exclude: [.unusedArguments, .redundantThrows],
+            for: input, rule: .validateTestCases, exclude: [.unusedArguments],
         )
     }
 

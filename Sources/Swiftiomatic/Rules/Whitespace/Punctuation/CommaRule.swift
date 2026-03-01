@@ -27,7 +27,7 @@ struct CommaRule: CorrectableRule, SyntaxOnlyRule {
           /// appends after an existing message ("<expectation> (use beNil() to match nils)")
           case appends(ExpectationMessage, /* Appended Message */ String)
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [

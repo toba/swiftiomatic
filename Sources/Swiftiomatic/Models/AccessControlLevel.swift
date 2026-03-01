@@ -49,19 +49,8 @@ enum AccessControlLevel: String, CustomStringConvertible, Sendable {
     }
 }
 
-extension AccessControlLevel: Comparable {
-    private var priority: Int {
-        switch self {
-            case .private: return 1
-            case .fileprivate: return 2
-            case .internal: return 3
-            case .package: return 4
-            case .public: return 5
-            case .open: return 6
-        }
-    }
-
+extension AccessControlLevel: CaseIterable, Comparable {
     static func < (lhs: AccessControlLevel, rhs: AccessControlLevel) -> Bool {
-        lhs.priority < rhs.priority
+        allCases.firstIndex(of: lhs)! < allCases.firstIndex(of: rhs)!
     }
 }

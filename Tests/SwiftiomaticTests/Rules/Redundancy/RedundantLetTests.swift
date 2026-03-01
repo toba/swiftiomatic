@@ -26,7 +26,7 @@ import Testing
         let output = """
         if case .foo(_) = bar {}
         """
-        testFormatting(for: input, output, rule: .redundantLet, exclude: [.redundantPattern])
+        testFormatting(for: input, output, rule: .redundantLet)
     }
 
     @Test func removeRedundantVarsInCase() {

@@ -57,18 +57,11 @@ package enum Source: String, CaseIterable, Codable, Sendable {
 }
 
 /// Diagnostic severity — warning or error.
-package enum DiagnosticSeverity: String, Codable, Sendable, Comparable {
+package enum DiagnosticSeverity: String, Codable, Sendable, CaseIterable, Comparable {
     case warning
     case error
 
-    private var rank: Int {
-        switch self {
-            case .warning: 0
-            case .error: 1
-        }
-    }
-
     package static func < (lhs: DiagnosticSeverity, rhs: DiagnosticSeverity) -> Bool {
-        lhs.rank < rhs.rank
+        allCases.firstIndex(of: lhs)! < allCases.firstIndex(of: rhs)!
     }
 }

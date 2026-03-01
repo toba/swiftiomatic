@@ -58,7 +58,7 @@ struct MultilineArgumentsBracketsRule: Rule {
         views.append(ViewModel(title: "MacBook", subtitle: "M1", action: { [weak self] in
             print("action tapped")
         }))
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
@@ -200,7 +200,7 @@ struct MultilineArgumentsBracketsRule: Rule {
             title: "MacBook", subtitle: "M1", action: { [weak self] in
             print("action tapped")
         }↓))
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
   )

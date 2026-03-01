@@ -3,9 +3,6 @@ import Foundation
 extension FormatRule {
   static let redundantOptionalBinding = FormatRule(
     help: "Remove redundant identifiers in optional binding conditions.",
-    // We can convert `if let foo = self.foo` to just `if let foo`,
-    // but only if `redundantSelf` can first remove the `self.`.
-    orderAfter: [.redundantSelf],
   ) { formatter in
     formatter.forEachToken { i, token in
       // `if let foo` conditions were added in Swift 5.7 (SE-0345)

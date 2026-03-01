@@ -52,7 +52,7 @@ struct FunctionDefaultParameterAtEndRule: Rule {
       Example(
         """
         func expect<T>(file: String = #file, _ expression: @autoclosure () -> (() throws -> T)) -> Expectation<T> {}
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example("func foo(bar: Int, baz: Int = 0, z: () -> Void) {}"),
       Example("func foo(bar: Int, baz: Int = 0, z: () -> Void, x: Int = 0) {}"),

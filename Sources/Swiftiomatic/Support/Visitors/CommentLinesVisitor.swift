@@ -32,7 +32,12 @@ final class CommentLinesVisitor: SyntaxVisitor {
     }
 
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
-        processTrivia(token.leadingTrivia, endingAt: token.positionAfterSkippingLeadingTrivia)
+        let leading = TriviaLineCollector.collectLines(
+            from: token.leadingTrivia,
+            endingAt: token.positionAfterSkippingLeadingTrivia,
+            using: locationConverter,
+        )
+        linesWithComments.formUnion(leading.commentLines)
 
         // Mark lines with actual code tokens (not comments).
         if token.tokenKind != .endOfFile {
@@ -41,27 +46,13 @@ final class CommentLinesVisitor: SyntaxVisitor {
             linesWithCode.insert(tokenLine)
         }
 
-        processTrivia(token.trailingTrivia, endingAt: token.endPosition)
+        let trailing = TriviaLineCollector.collectLines(
+            from: token.trailingTrivia,
+            endingAt: token.endPosition,
+            using: locationConverter,
+        )
+        linesWithComments.formUnion(trailing.commentLines)
+
         return .visitChildren
-    }
-
-    private func processTrivia(_ trivia: Trivia, endingAt endPosition: AbsolutePosition) {
-        var currentPosition = endPosition
-
-        for piece in trivia.reversed() {
-            currentPosition -= piece.sourceLength
-
-            switch piece {
-                case .lineComment, .blockComment, .docLineComment, .docBlockComment:
-                    // Collect all lines that this comment spans.
-                    let commentStartLine = locationConverter.location(for: currentPosition).line
-                    let commentEndLine = locationConverter
-                        .location(for: currentPosition + piece.sourceLength)
-                        .line
-                    linesWithComments.formUnion(commentStartLine ... commentEndLine)
-                default:
-                    break
-            }
-        }
     }
 }

@@ -143,7 +143,7 @@ import Testing
         enum E { static func foo() { Self.init().bar() } }
         """
         testFormatting(
-            for: input, rule: .redundantStaticSelf, exclude: [.redundantInit, .wrapFunctionBodies],
+            for: input, rule: .redundantStaticSelf, exclude: [.wrapFunctionBodies],
         )
     }
 

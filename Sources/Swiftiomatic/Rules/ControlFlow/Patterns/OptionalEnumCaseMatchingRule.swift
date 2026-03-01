@@ -51,7 +51,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
         case .none:
           break
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [

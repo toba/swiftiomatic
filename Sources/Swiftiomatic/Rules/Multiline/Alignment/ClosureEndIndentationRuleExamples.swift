@@ -77,7 +77,7 @@ enum ClosureEndIndentationRuleExamples {
           }
           .prop().method {
           }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """

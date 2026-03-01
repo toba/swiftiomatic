@@ -24,7 +24,7 @@ import Testing
 
         testFormatting(
             for: input, rule: .sortSwitchCases,
-            exclude: [.redundantSelf, .blankLinesAfterGuardStatements],
+            exclude: [.blankLinesAfterGuardStatements],
         )
     }
 

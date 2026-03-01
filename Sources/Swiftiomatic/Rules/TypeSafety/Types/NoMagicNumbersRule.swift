@@ -148,47 +148,47 @@ struct NoMagicNumbersRule: Rule {
       Example(
         """
         let yourColor: UIColor = UIColor(hue: 0.9, saturation: 0.6, brightness: 0.333334, alpha: 1.0)
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
         let systemColor = UIColor(displayP3Red: 0.3, green: 0.8, blue: 0.5, alpha: 0.75)
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
         func createColor() -> UIColor {
             return UIColor(white: 0.5, alpha: 0.8)
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
         let memberColor = UIColor.init(red: 0.5, green: 0.3, blue: 0.9, alpha: 1.0)
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
         func createMemberColor() -> UIColor {
             return UIColor.init(hue: 0.2, saturation: 0.8, brightness: 0.7, alpha: 0.5)
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         "let a = b + 2", configuration: ["allowed_numbers": [2]],
-        excludeFromDocumentation: true,
+        isExcludedFromDocumentation: true,
       ),
       Example(
         "let a = b + 2", configuration: ["allowed_numbers": [2.0]],
-        excludeFromDocumentation: true,
+        isExcludedFromDocumentation: true,
       ),
       Example(
         "let a = b + 1", configuration: ["allowed_numbers": [2.0]],
-        excludeFromDocumentation: true,
+        isExcludedFromDocumentation: true,
       ),
       Example(
         "let a = b + 2.5", configuration: ["allowed_numbers": [2.5]],
-        excludeFromDocumentation: true,
+        isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [
@@ -240,7 +240,7 @@ struct NoMagicNumbersRule: Rule {
       ),
       Example(
         "let a = b + ↓3", configuration: ["allowed_numbers": [2.0]],
-        excludeFromDocumentation: true,
+        isExcludedFromDocumentation: true,
       ),
     ],
   )

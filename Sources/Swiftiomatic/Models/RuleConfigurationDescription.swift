@@ -242,7 +242,7 @@ extension OptionType: Documentable {
 
 /// A result builder creating configuration descriptions.
 @resultBuilder
-struct RuleConfigurationDescriptionBuilder {
+enum RuleConfigurationDescriptionBuilder {
     /// :nodoc:
     typealias Description = RuleConfigurationDescription
 
@@ -381,7 +381,7 @@ extension AcceptableByConfigurationElement {
 /// absolutely clear that there is an error in the YAML configuration passed in. Since it may be used in a nested
 /// context and doesn't know about the outer configuration, it's not always clear if a certain key-value is really
 /// unacceptable.
-protocol InlinableOptionType: AcceptableByConfigurationElement {}
+protocol InlinableOption: AcceptableByConfigurationElement {}
 
 /// A single parameter of a rule configuration.
 ///
@@ -400,11 +400,11 @@ protocol InlinableOptionType: AcceptableByConfigurationElement {}
 /// var property = true
 /// ```
 ///
-/// If the wrapped element is an ``InlinableOptionType``, there are three ways to represent it in the documentation:
+/// If the wrapped element is an ``InlinableOption``, there are three ways to represent it in the documentation:
 ///
-/// 1. It can be inlined into the parent configuration. For that, add the parameter `inline: true`. E.g.
+/// 1. It can be inlined into the parent configuration. For that, add the parameter `isInline: true`. E.g.
 ///    ```swift
-///    @ConfigurationElement(inline: true)
+///    @ConfigurationElement(isInline: true)
 ///    var levels = SeverityLevelsConfiguration(warning: 1, error: 2)
 ///    ```
 ///    will be documented as a linear list:
@@ -412,7 +412,7 @@ protocol InlinableOptionType: AcceptableByConfigurationElement {}
 ///    warning: 1
 ///    error: 2
 ///    ```
-/// 2. It can be represented as a separate nested configuration. In this case, it must not have set the `inline` flag to
+/// 2. It can be represented as a separate nested configuration. In this case, it must not have set the `isInline` flag to
 /// `true`. E.g.
 ///    ```swift
 ///    @ConfigurationElement
@@ -467,7 +467,7 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
     var key: String
 
     /// Whether this configuration element will be inlined into its description.
-    let inline: Bool
+    let isInline: Bool
 
     private let deprecationNotice: DeprecationNotice?
     private let postprocessor: @Sendable (inout T) -> Void
@@ -491,7 +491,7 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
         self.init(
             wrappedValue: value,
             key: key,
-            inline: false,
+            isInline: false,
             deprecationNotice: deprecationNotice,
             postprocessor: postprocessor,
         )
@@ -507,41 +507,41 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
     /// - Parameters:
     ///   - key: Optional name of the option. If not specified, it will be inferred from the attributed property.
     init<Wrapped>(key: String) where T == Wrapped? {
-        self.init(wrappedValue: nil, key: key, inline: false)
+        self.init(wrappedValue: nil, key: key, isInline: false)
     }
 
-    /// Constructor for an ``InlinableOptionType`` without a key.
+    /// Constructor for an ``InlinableOption`` without a key.
     ///
     /// - Parameters:
     ///   - value: Value to be wrapped.
-    ///   - inline: If `true`, the option will be handled as it would be part of its parent. All of its options
-    ///             will be inlined. Otherwise, it will be treated as a normal nested configuration with its name
-    ///             inferred from the name of the attributed property.
-    init(wrappedValue value: T, inline: Bool) where T: InlinableOptionType {
-        assert(inline, "Only 'inline: true' is allowed at the moment.")
-        self.init(wrappedValue: value, key: "", inline: inline)
+    ///   - isInline: If `true`, the option will be handled as it would be part of its parent. All of its options
+    ///               will be inlined. Otherwise, it will be treated as a normal nested configuration with its name
+    ///               inferred from the name of the attributed property.
+    init(wrappedValue value: T, isInline: Bool) where T: InlinableOption {
+        assert(isInline, "Only 'isInline: true' is allowed at the moment.")
+        self.init(wrappedValue: value, key: "", isInline: isInline)
     }
 
-    /// Constructor for an ``InlinableOptionType`` with a name. The configuration will explicitly not be inlined.
+    /// Constructor for an ``InlinableOption`` with a name. The configuration will explicitly not be inlined.
     ///
     /// - Parameters:
     ///   - value: Value to be wrapped.
     ///   - key: Name of the option.
-    init(wrappedValue value: T, key: String) where T: InlinableOptionType {
-        self.init(wrappedValue: value, key: key, inline: false)
+    init(wrappedValue value: T, key: String) where T: InlinableOption {
+        self.init(wrappedValue: value, key: key, isInline: false)
     }
 
     private init(
         wrappedValue: T,
         key: String,
-        inline: Bool,
+        isInline: Bool,
         deprecationNotice: DeprecationNotice? = nil,
         postprocessor: @escaping @Sendable (inout T) -> Void = { _ in },
     ) {
         // sm:disable:previous no_empty_block
         self.wrappedValue = wrappedValue
         self.key = key
-        self.inline = inline
+        self.isInline = isInline
         self.deprecationNotice = deprecationNotice
         self.postprocessor = postprocessor
     }
@@ -558,6 +558,18 @@ extension ConfigurationElement: AnyConfigurationElement {
 }
 
 // MARK: AcceptableByConfigurationElement conformances
+
+/// Default `init(fromAny:context:)` for types where the YAML value maps directly to `Self` via casting.
+private protocol DirectlyCastableConfigurationElement: AcceptableByConfigurationElement {}
+
+extension DirectlyCastableConfigurationElement {
+    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+        guard let value = value as? Self else {
+            throw .invalidConfiguration(ruleID: ruleID)
+        }
+        self = value
+    }
+}
 
 extension Optional: AcceptableByConfigurationElement
     where Wrapped: AcceptableByConfigurationElement
@@ -586,29 +598,15 @@ struct Symbol: Equatable, AcceptableByConfigurationElement {
     }
 }
 
-extension Bool: AcceptableByConfigurationElement {
+extension Bool: AcceptableByConfigurationElement, DirectlyCastableConfigurationElement {
     func asOption() -> OptionType {
         .flag(self)
     }
-
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
-        guard let value = value as? Self else {
-            throw .invalidConfiguration(ruleID: ruleID)
-        }
-        self = value
-    }
 }
 
-extension String: AcceptableByConfigurationElement {
+extension String: AcceptableByConfigurationElement, DirectlyCastableConfigurationElement {
     func asOption() -> OptionType {
         .string(self)
-    }
-
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
-        guard let value = value as? Self else {
-            throw .invalidConfiguration(ruleID: ruleID)
-        }
-        self = value
     }
 }
 
@@ -637,16 +635,9 @@ extension Set: AcceptableByConfigurationElement
     }
 }
 
-extension Int: AcceptableByConfigurationElement {
+extension Int: AcceptableByConfigurationElement, DirectlyCastableConfigurationElement {
     func asOption() -> OptionType {
         .integer(self)
-    }
-
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
-        guard let value = value as? Self else {
-            throw .invalidConfiguration(ruleID: ruleID)
-        }
-        self = value
     }
 }
 

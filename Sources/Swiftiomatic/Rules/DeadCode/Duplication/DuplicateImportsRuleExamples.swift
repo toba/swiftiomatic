@@ -203,7 +203,7 @@ enum DuplicateImportsRuleExamples {
         ↓import A.B
         import A
 
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ): Example(
         """
         import A
@@ -216,7 +216,7 @@ enum DuplicateImportsRuleExamples {
         ↓import A.B.C.D
         ↓import A.B.C.E
 
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ): Example(
         """
         import A.B.C
@@ -229,7 +229,7 @@ enum DuplicateImportsRuleExamples {
         import A
         ↓import A.B
 
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ): Example(
         """
         import A
@@ -242,7 +242,7 @@ enum DuplicateImportsRuleExamples {
         import A
         ↓import A.B.C
 
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ): Example(
         """
         import A
@@ -255,7 +255,7 @@ enum DuplicateImportsRuleExamples {
         ↓import A.B.C
         ↓import A.B
 
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ): Example(
         """
         import A
@@ -266,7 +266,7 @@ enum DuplicateImportsRuleExamples {
         """
         import CoreImage.CIFilterBuiltins
         import CoreImage.CIFilterBuiltins
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ): Example(
         """
         import CoreImage.CIFilterBuiltins
@@ -297,7 +297,7 @@ enum DuplicateImportsRuleExamples {
         import A
         ↓import \(importKind) A.B.Foo
 
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       )
     }.forEach {
       corrections[$0] = Example(
@@ -314,7 +314,7 @@ enum DuplicateImportsRuleExamples {
         import A.B
         ↓import \(importKind) A.B.Foo
 
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       )
     }.forEach {
       corrections[$0] = Example(

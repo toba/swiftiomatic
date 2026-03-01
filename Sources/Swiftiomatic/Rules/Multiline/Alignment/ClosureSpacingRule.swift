@@ -12,17 +12,17 @@ struct ClosureSpacingRule: Rule {
       Example("[].filter { $0.contains(location) }"),
       Example("extension UITableViewCell: ReusableView { }"),
       Example("extension UITableViewCell: ReusableView {}"),
-      Example(#"let r = /\{\}/"#, excludeFromDocumentation: true),
+      Example(#"let r = /\{\}/"#, isExcludedFromDocumentation: true),
       Example(
         """
         var tapped: (UITapGestureRecognizer) -> Void = { _ in /* no-op */ }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
         let test1 = func1(arg: { /* do nothing */ })
         let test2 = func1 { /* do nothing */ }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [
@@ -34,7 +34,7 @@ struct ClosureSpacingRule: Rule {
       Example(
         """
         var tapped: (UITapGestureRecognizer) -> Void = ↓{ _ in /* no-op */  }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     corrections: [

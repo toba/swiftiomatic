@@ -660,7 +660,7 @@ extension NoGuardInTestsTests {
         testFormatting(
             for: input, rule: .noGuardInTests,
             exclude: [
-                .blankLinesAfterGuardStatements, .hoistPatternLet, .elseOnSameLine,
+                .blankLinesAfterGuardStatements, .elseOnSameLine,
                 .wrapMultilineStatementBraces,
             ],
         )

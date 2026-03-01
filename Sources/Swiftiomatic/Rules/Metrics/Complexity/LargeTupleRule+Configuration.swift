@@ -1,5 +1,5 @@
 struct LargeTupleConfiguration: RuleConfiguration {
-  @ConfigurationElement(inline: true)
+  @ConfigurationElement(isInline: true)
   var severityConfiguration = SeverityLevelsConfiguration<Parent>(
     warning: 2,
     error: 3,

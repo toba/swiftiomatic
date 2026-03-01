@@ -102,7 +102,7 @@ struct RedundantDiscardableLetRule: Rule {
             Text("Hello, World!")
         }
         """, configuration: ["ignore_swiftui_view_bodies": true],
-        excludeFromDocumentation: true,
+        isExcludedFromDocumentation: true,
       ),
       Example(
         """
@@ -114,7 +114,7 @@ struct RedundantDiscardableLetRule: Rule {
             Text("Hello, World!")
         }
         """, configuration: ["ignore_swiftui_view_bodies": true],
-        excludeFromDocumentation: true,
+        isExcludedFromDocumentation: true,
       ),
     ],
     corrections: [

@@ -16,7 +16,7 @@ import Testing
         }
         """
 
-        testFormatting(for: input, output, rule: .redundantProperty, exclude: [.redundantReturn])
+        testFormatting(for: input, output, rule: .redundantProperty)
     }
 
     @Test func removesRedundantPropertyWithIfExpression() {
@@ -35,7 +35,7 @@ import Testing
 
         let output = """
         func foo() -> Foo {
-            if condition {
+            return if condition {
                 Foo.foo()
             } else {
                 Foo.bar()
@@ -45,7 +45,7 @@ import Testing
 
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
-            for: input, [output], rules: [.redundantProperty, .redundantReturn, .indent],
+            for: input, [output], rules: [.redundantProperty, .indent],
             options: options,
         )
     }
@@ -67,7 +67,7 @@ import Testing
 
         let output = """
         func foo() -> Foo {
-            switch condition {
+            return switch condition {
             case true:
                 Foo(bar)
             case false:
@@ -79,7 +79,7 @@ import Testing
         let options = FormatOptions(swiftVersion: "5.9")
         testFormatting(
             for: input, [output],
-            rules: [.conditionalAssignment, .redundantProperty, .redundantReturn, .indent],
+            rules: [.conditionalAssignment, .redundantProperty, .indent],
             options: options,
         )
     }
@@ -94,13 +94,12 @@ import Testing
 
         let output = """
         func bar() -> Bar {
-            return Bar(baaz: baaz, quux: quux)
+            return Bar.init(baaz: baaz, quux: quux)
         }
         """
 
         testFormatting(
-            for: input, [output], rules: [.propertyTypes, .redundantProperty, .redundantInit],
-            exclude: [.redundantReturn],
+            for: input, [output], rules: [.propertyTypes, .redundantProperty],
         )
     }
 
@@ -122,7 +121,7 @@ import Testing
         }
         """
 
-        testFormatting(for: input, output, rule: .redundantProperty, exclude: [.redundantReturn])
+        testFormatting(for: input, output, rule: .redundantProperty)
     }
 
     @Test func removesRedundantPropertyFollowingOtherProperty() {

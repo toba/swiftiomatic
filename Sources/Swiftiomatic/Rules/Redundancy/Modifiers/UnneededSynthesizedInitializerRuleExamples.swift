@@ -275,7 +275,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
           }
           #endif
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -286,7 +286,7 @@ enum UnneededSynthesizedInitializerRuleExamples {
 
           init() {}
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """

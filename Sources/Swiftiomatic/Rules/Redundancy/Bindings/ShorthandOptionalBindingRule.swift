@@ -24,7 +24,7 @@ struct ShorthandOptionalBindingRule: Rule {
         if let i,
            var i = a,
            j > 0 {}
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [
@@ -42,7 +42,7 @@ struct ShorthandOptionalBindingRule: Rule {
         if ↓let i = i,
            ↓var j = j,
            j > 0 {}
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """

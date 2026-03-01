@@ -1,7 +1,7 @@
 /// The magnitude of a `RuleViolation`.
 package enum ViolationSeverity: String, AcceptableByConfigurationElement, Comparable, CaseIterable,
     Codable,
-    Sendable, InlinableOptionType
+    Sendable, InlinableOption
 {
     /// Non-fatal. Non-fatal severity.
     case warning

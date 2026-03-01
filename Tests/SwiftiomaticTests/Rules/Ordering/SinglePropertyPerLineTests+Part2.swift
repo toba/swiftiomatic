@@ -199,7 +199,7 @@ extension SinglePropertyPerLineTests {
             return
         }
         """
-        testFormatting(for: input, rule: .singlePropertyPerLine, exclude: [.hoistPatternLet])
+        testFormatting(for: input, rule: .singlePropertyPerLine)
     }
 
     @Test func ifLetWithMultipleConditions() {
@@ -226,7 +226,7 @@ extension SinglePropertyPerLineTests {
         }
         """
         testFormatting(
-            for: input, rule: .singlePropertyPerLine, exclude: [.hoistPatternLet, .wrapSwitchCases],
+            for: input, rule: .singlePropertyPerLine, exclude: [.wrapSwitchCases],
         )
     }
 
@@ -238,7 +238,7 @@ extension SinglePropertyPerLineTests {
         }
         """
         testFormatting(
-            for: input, rule: .singlePropertyPerLine, exclude: [.hoistPatternLet, .wrapSwitchCases],
+            for: input, rule: .singlePropertyPerLine, exclude: [.wrapSwitchCases],
         )
     }
 
@@ -249,7 +249,7 @@ extension SinglePropertyPerLineTests {
             break
         }
         """
-        testFormatting(for: input, rule: .singlePropertyPerLine, exclude: [.hoistPatternLet])
+        testFormatting(for: input, rule: .singlePropertyPerLine)
     }
 
     @Test func enumWithProtocolConformanceListFollowingProperty() {

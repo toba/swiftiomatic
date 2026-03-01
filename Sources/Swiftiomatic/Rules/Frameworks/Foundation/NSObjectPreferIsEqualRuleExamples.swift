@@ -83,7 +83,7 @@ enum NSObjectPreferIsEqualRuleExamples {
               }
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     // Enum inside nested class inheriting from NSObject
     Example(
@@ -101,7 +101,7 @@ enum NSObjectPreferIsEqualRuleExamples {
               }
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
   ]
 
@@ -186,7 +186,7 @@ enum NSObjectPreferIsEqualRuleExamples {
               }
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
   ]
 }

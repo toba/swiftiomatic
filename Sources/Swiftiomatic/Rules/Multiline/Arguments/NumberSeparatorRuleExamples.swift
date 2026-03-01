@@ -20,13 +20,13 @@ enum NumberSeparatorRuleExamples {
         Example(
           """
           let color = #colorLiteral(red: 0.3543982506, green: 0.318749547, blue: 0.6367015243, alpha: 1)
-          """, excludeFromDocumentation: true,
+          """, isExcludedFromDocumentation: true,
         ),
         Example(
           """
           let color = #colorLiteral(red: 0.354_398_250_6, green: 0.318_749_547, blue: 0.636_701_524_3, alpha: 1)
           """, configuration: ["minimum_fraction_length": 3],
-          excludeFromDocumentation: true,
+          isExcludedFromDocumentation: true,
         ),
       ]
     }

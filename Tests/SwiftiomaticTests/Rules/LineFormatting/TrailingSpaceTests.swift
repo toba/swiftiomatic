@@ -83,7 +83,7 @@ import Testing
             2,
         ]
         """
-        testFormatting(for: input, output, rule: .trailingSpace, exclude: [.redundantSelf])
+        testFormatting(for: input, output, rule: .trailingSpace)
     }
 
     @Test func multilineStringWithTrailingSpaces() {

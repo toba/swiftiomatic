@@ -75,7 +75,7 @@ enum MissingDocsRuleExamples {
       #else
       public func f() async {}
       #endif
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -87,7 +87,7 @@ enum MissingDocsRuleExamples {
       #else
       public func f() async {}
       #endif
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
   ]
 
@@ -228,7 +228,7 @@ enum MissingDocsRuleExamples {
               init(_ i: Int) { self = .A }
           }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     // Nested types inherit the ACL from the declaring extension.
     Example(
@@ -250,7 +250,7 @@ enum MissingDocsRuleExamples {
           }
           static ↓var a: Int { 1 }
       }
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -273,7 +273,7 @@ enum MissingDocsRuleExamples {
       public func f() {}
       public ↓func g() {}
       #endif
-      """, excludeFromDocumentation: true,
+      """, isExcludedFromDocumentation: true,
     ),
   ]
 }

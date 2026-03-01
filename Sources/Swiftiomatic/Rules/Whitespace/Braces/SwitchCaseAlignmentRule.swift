@@ -33,7 +33,7 @@ struct SwitchCaseAlignmentRule: Rule {
             }
           }
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       )
     ],
     triggeringExamples: Examples(indentedCases: false).triggeringExamples,

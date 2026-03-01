@@ -57,7 +57,7 @@ struct TrailingClosureRule: Rule {
         for n in list {
             n.forEach(↓{ print($0) })
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example("foo.map(↓{ $0 + 1 })", configuration: onlySingleMutedConfig),
     ],

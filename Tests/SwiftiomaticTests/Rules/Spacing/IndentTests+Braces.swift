@@ -292,8 +292,7 @@ extension IndentTests {
         """
         let options = FormatOptions(allmanBraces: true)
         testFormatting(
-            for: input, rule: .indent, options: options,
-            exclude: [.redundantReturn],
+            for: input, rule: .indent, options: options
         )
     }
 

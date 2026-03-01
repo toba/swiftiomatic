@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 
 /// All possible issues which are printed as warnings by default.
 package enum Issue: LocalizedError, Equatable {
@@ -73,7 +74,11 @@ package enum Issue: LocalizedError, Equatable {
     case yamlParsing(String)
 
     /// Flag to enable warnings for deprecations being printed to the console. Printing is enabled by default.
-    package nonisolated(unsafe) static var printDeprecationWarnings = true
+    private static let _printDeprecationWarnings = Mutex(true)
+    package static var printDeprecationWarnings: Bool {
+        get { _printDeprecationWarnings.withLock { $0 } }
+        set { _printDeprecationWarnings.withLock { $0 = newValue } }
+    }
 
     @TaskLocal private static var printQueueContinuation: AsyncStream<String>.Continuation?
 

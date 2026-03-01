@@ -37,7 +37,7 @@ struct UnusedEnumeratedRule: Rule {
             let (i, e) = $0
             print(i)
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
     ],
     triggeringExamples: [
@@ -79,7 +79,7 @@ struct UnusedEnumeratedRule: Rule {
             }
             return $0
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """
@@ -87,7 +87,7 @@ struct UnusedEnumeratedRule: Rule {
             $1.forEach { print($0) }
             return $1
         }
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       ),
       Example(
         """

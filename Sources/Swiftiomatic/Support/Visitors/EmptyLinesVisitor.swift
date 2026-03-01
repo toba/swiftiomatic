@@ -32,7 +32,11 @@ final class EmptyLinesVisitor: SyntaxVisitor {
     }
 
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
-        processTrivia(token.leadingTrivia, endingAt: token.positionAfterSkippingLeadingTrivia)
+        applyTriviaResult(TriviaLineCollector.collectLines(
+            from: token.leadingTrivia,
+            endingAt: token.positionAfterSkippingLeadingTrivia,
+            using: locationConverter,
+        ))
 
         // Mark lines with actual code tokens (not comments).
         if token.tokenKind != .endOfFile {
@@ -50,35 +54,22 @@ final class EmptyLinesVisitor: SyntaxVisitor {
             }
         }
 
-        processTrivia(token.trailingTrivia, endingAt: token.endPosition)
+        applyTriviaResult(TriviaLineCollector.collectLines(
+            from: token.trailingTrivia,
+            endingAt: token.endPosition,
+            using: locationConverter,
+        ))
 
         return .visitChildren
     }
 
-    private func processTrivia(_ trivia: Trivia, endingAt endPosition: AbsolutePosition) {
-        var currentPosition = endPosition
-
-        for piece in trivia.reversed() {
-            currentPosition -= piece.sourceLength
-
-            switch piece {
-                case .lineComment, .blockComment, .docLineComment, .docBlockComment:
-                    // Collect all lines that this comment spans.
-                    let commentStartLine = locationConverter.location(for: currentPosition).line
-                    let commentEndLine = locationConverter
-                        .location(for: currentPosition + piece.sourceLength)
-                        .line
-                    linesWithContent.formUnion(commentStartLine ... commentEndLine)
-                    lastLine = max(lastLine, commentEndLine)
-                case .newlines:
-                    // Track the last line even for newlines
-                    let newlineEndLine = locationConverter
-                        .location(for: currentPosition + piece.sourceLength)
-                        .line
-                    lastLine = max(lastLine, newlineEndLine)
-                default:
-                    break
-            }
+    private func applyTriviaResult(_ result: TriviaLineCollector.Result) {
+        linesWithContent.formUnion(result.commentLines)
+        if let maxCommentLine = result.commentLines.max() {
+            lastLine = max(lastLine, maxCommentLine)
+        }
+        if let maxNewlineLine = result.maxNewlineLine {
+            lastLine = max(lastLine, maxNewlineLine)
         }
     }
 }

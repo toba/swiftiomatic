@@ -1,5 +1,5 @@
 struct FileLengthConfiguration: RuleConfiguration {
-  @ConfigurationElement(inline: true)
+  @ConfigurationElement(isInline: true)
   var severityConfiguration = SeverityLevelsConfiguration<Parent>(
     warning: 400, error: 1000,
   )

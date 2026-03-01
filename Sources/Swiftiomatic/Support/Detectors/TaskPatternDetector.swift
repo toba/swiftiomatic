@@ -34,7 +34,7 @@ enum TaskPatternDetector {
     }
 
     /// The kind of scope enclosing a node.
-    enum EnclosingScope {
+    enum EnclosingScope: CustomStringConvertible {
         case `deinit`
         case viewDidDisappear
         case general
@@ -79,7 +79,7 @@ enum TaskPatternDetector {
 }
 
 /// A lightweight visitor that checks if a syntax subtree contains a Task {} call.
-final class TaskFinder: SyntaxVisitor, @unchecked Sendable {
+final class TaskFinder: SyntaxVisitor {
     var foundTask = false
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {

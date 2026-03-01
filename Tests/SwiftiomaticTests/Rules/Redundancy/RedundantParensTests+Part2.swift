@@ -70,7 +70,7 @@ extension RedundantParensTests {
         case Foo.bar(let baz):
         }
         """
-        testFormatting(for: input, output, rule: .redundantParens, exclude: [.hoistPatternLet])
+        testFormatting(for: input, output, rule: .redundantParens)
     }
 
     @Test func guardParensRemoved() {

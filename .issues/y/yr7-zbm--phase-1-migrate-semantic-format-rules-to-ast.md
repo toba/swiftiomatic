@@ -5,33 +5,33 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-01T00:58:57Z
-updated_at: 2026-03-01T01:29:21Z
+updated_at: 2026-03-01T04:17:14Z
 parent: aku-gm2
 sync:
     github:
         issue_number: "98"
-        synced_at: "2026-03-01T01:41:12Z"
+        synced_at: "2026-03-01T04:54:04Z"
 ---
 
 Migrate rules that perform semantic/structural analysis from token-based closures to SwiftSyntaxRule / SwiftSyntaxCorrectableRule. These rules are fighting the flat token model — they parse declarations, track scopes, and resolve references, all of which swift-syntax provides natively.
 
 ## Redundancy rules (28)
 
-- [ ] redundantReturn
-- [ ] redundantSelf
-- [ ] redundantInit
-- [ ] redundantGet
-- [ ] redundantLet
-- [ ] redundantLetError
-- [ ] redundantNilInit
-- [ ] redundantBreak
+- [x] redundantReturn
+- [x] redundantSelf
+- [x] redundantInit
+- [x] redundantGet
+- [x] redundantLet
+- [x] redundantLetError
+- [x] redundantNilInit
+- [x] redundantBreak
 - [ ] redundantParens
-- [ ] redundantPattern
+- [x] redundantPattern
 - [ ] redundantBackticks
-- [ ] redundantAsync
-- [ ] redundantThrows
-- [ ] redundantTypedThrows
-- [ ] redundantVoidReturnType
+- [x] redundantAsync
+- [x] redundantThrows
+- [x] redundantTypedThrows
+- [x] redundantVoidReturnType
 - [ ] redundantType
 - [ ] redundantRawValues
 - [ ] redundantProperty
@@ -49,7 +49,7 @@ Migrate rules that perform semantic/structural analysis from token-based closure
 
 ## Hoisting rules (3)
 
-- [ ] hoistPatternLet
+- [x] hoistPatternLet
 - [ ] hoistTry
 - [ ] hoistAwait
 

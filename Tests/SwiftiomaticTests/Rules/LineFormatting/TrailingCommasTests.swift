@@ -667,7 +667,6 @@ import Testing
         let options = FormatOptions(trailingCommas: .always, swiftVersion: "6.1")
         testFormatting(
             for: input, output, rule: .trailingCommas, options: options,
-            exclude: [.redundantReturn],
         )
     }
 
@@ -694,7 +693,6 @@ import Testing
         let options = FormatOptions(trailingCommas: .always, swiftVersion: "6.1")
         testFormatting(
             for: input, output, rule: .trailingCommas, options: options,
-            exclude: [.redundantReturn],
         )
     }
 
@@ -717,7 +715,7 @@ import Testing
         let options = FormatOptions(trailingCommas: .always, swiftVersion: "6.1")
         testFormatting(
             for: input, output, rule: .trailingCommas, options: options,
-            exclude: [.redundantReturn, .propertyTypes],
+            exclude: [.propertyTypes],
         )
     }
 

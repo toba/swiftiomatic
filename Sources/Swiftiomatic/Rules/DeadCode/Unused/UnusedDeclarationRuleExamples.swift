@@ -264,7 +264,7 @@ enum UnusedDeclarationRuleExamples {
         \($0) ↓FooImpl {}
         extension FooImpl {}
         extension FooImpl: Foo {}
-        """, excludeFromDocumentation: true,
+        """, isExcludedFromDocumentation: true,
       )
     } + platformSpecificTriggeringExamples
 

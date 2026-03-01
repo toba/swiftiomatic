@@ -223,8 +223,7 @@ import Testing
         """
         let options = FormatOptions(swiftVersion: "4")
         testFormatting(
-            for: input, output, rule: .redundantFileprivate, options: options,
-            exclude: [.redundantSelf],
+            for: input, output, rule: .redundantFileprivate, options: options
         )
     }
 
