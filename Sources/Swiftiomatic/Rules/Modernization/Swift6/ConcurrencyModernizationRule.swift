@@ -199,7 +199,8 @@ extension ConcurrencyModernizationRule {
                   "\(callee) wraps a single async call — the continuation wrapper may be unnecessary",
                 severity: .warning,
                 confidence: .medium,
-                suggestion: "Call the async function directly instead of wrapping in a continuation",
+                suggestion:
+                  "Call the async function directly instead of wrapping in a continuation",
               ),
             )
           }

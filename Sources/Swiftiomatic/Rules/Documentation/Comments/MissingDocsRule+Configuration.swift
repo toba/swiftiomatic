@@ -43,7 +43,8 @@ struct MissingDocsConfiguration: RuleConfiguration {
       self.excludesTrivialInit = excludesTrivialInit
     }
 
-    if let evaluateEffectiveAccessControlLevel = configuration[$evaluateEffectiveAccessControlLevel.key]
+    if let evaluateEffectiveAccessControlLevel = configuration[
+      $evaluateEffectiveAccessControlLevel.key]
       as? Bool
     {
       self.evaluateEffectiveAccessControlLevel = evaluateEffectiveAccessControlLevel

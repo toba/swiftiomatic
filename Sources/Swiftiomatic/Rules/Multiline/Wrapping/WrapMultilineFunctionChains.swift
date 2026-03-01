@@ -148,7 +148,7 @@ extension Formatter {
           break walk
         }
 
-      case let .operator(op, opType)
+      case .operator(let op, let opType)
       where (op == "." && opType == .infix) || (op == "?" && opType == .postfix):
         // Property access or infix chaining operator.
         if op == "." {
@@ -223,7 +223,7 @@ extension Formatter {
           break walk
         }
 
-      case let .operator(op, opType)
+      case .operator(let op, let opType)
       where (op == "." && opType == .infix) || (op == "?" && opType == .postfix):
         if op == "." {
           dots.append(nextIndex)

@@ -8,7 +8,8 @@ struct CaseIterableUsageRule: CollectingRule, OptInRule {
   static let description = RuleDescription(
     identifier: "case_iterable_usage",
     name: "CaseIterable Usage",
-    description: "Enums conforming to CaseIterable without any .allCases references may have unnecessary conformance",
+    description:
+      "Enums conforming to CaseIterable without any .allCases references may have unnecessary conformance",
     scope: .suggest,
     nonTriggeringExamples: [
       Example(
@@ -97,7 +98,7 @@ private final class CaseIterableCollector: SyntaxVisitor {
 
   override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
     if let inheritance = node.inheritanceClause {
-      let types = inheritance.inheritedTypes.map { $0.type.trimmedDescription }
+      let types = inheritance.inheritedTypes.map(\.type.trimmedDescription)
       if types.contains("CaseIterable") {
         let loc = node.startLocation(
           converter: .init(fileName: filePath, tree: node.root),

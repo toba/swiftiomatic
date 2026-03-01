@@ -204,7 +204,8 @@ extension ConvenienceTypeRule {
     }
   }
 
-  fileprivate final class ConvenienceTypeCheckVisitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class ConvenienceTypeCheckVisitor: ViolationCollectingVisitor<ConfigurationType>
+  {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }

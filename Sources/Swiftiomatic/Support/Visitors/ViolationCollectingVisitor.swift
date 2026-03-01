@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// A SwiftSyntax `SyntaxVisitor` that produces absolute positions where violations should be reported.
-final class ViolationCollectingVisitor<Configuration: RuleConfiguration>: SyntaxVisitor {
+class ViolationCollectingVisitor<Configuration: RuleConfiguration>: SyntaxVisitor {
     /// A rule's configuration.
     let configuration: Configuration
     /// The file from which the traversed syntax tree stems from.

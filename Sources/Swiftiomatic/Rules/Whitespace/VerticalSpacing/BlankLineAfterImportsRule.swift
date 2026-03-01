@@ -1,0 +1,135 @@
+import SwiftSyntax
+
+struct BlankLineAfterImportsRule: Rule {
+  var configuration = SeverityConfiguration<Self>(.warning)
+
+  static let description = RuleDescription(
+    identifier: "blank_line_after_imports",
+    name: "Blank Line After Imports",
+    description: "There should be a blank line after import statements",
+    scope: .format,
+    nonTriggeringExamples: [
+      Example(
+        """
+        import Foundation
+
+        class Foo {}
+        """),
+      Example(
+        """
+        import Foundation
+        import UIKit
+
+        class Foo {}
+        """),
+    ],
+    triggeringExamples: [
+      Example(
+        """
+        import Foundation
+        ↓class Foo {}
+        """)
+    ],
+    corrections: [
+      Example("import Foundation\n↓class Foo {}"): Example("import Foundation\n\nclass Foo {}")
+    ],
+  )
+}
+
+extension BlankLineAfterImportsRule: SwiftSyntaxCorrectableRule {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    Visitor(configuration: configuration, file: file)
+  }
+
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+    Rewriter(configuration: configuration, file: file)
+  }
+}
+
+extension BlankLineAfterImportsRule {
+  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    override func visitPost(_ node: SourceFileSyntax) {
+      let statements = node.statements
+      var lastImportIndex: SyntaxChildrenIndex?
+
+      for (index, item) in zip(statements.indices, statements) {
+        if item.item.is(ImportDeclSyntax.self) {
+          lastImportIndex = index
+        }
+      }
+
+      guard let lastImportIndex else { return }
+
+      // Check if there's a non-import statement after the last import
+      let nextIndex = statements.index(after: lastImportIndex)
+      guard nextIndex < statements.endIndex else { return }
+      let nextItem = statements[nextIndex]
+
+      // Skip if the next item is also an import
+      if nextItem.item.is(ImportDeclSyntax.self) { return }
+
+      // Check if the next item's leading trivia contains a blank line
+      let trivia = nextItem.leadingTrivia
+      var newlineCount = 0
+      for piece in trivia {
+        switch piece {
+        case .newlines(let count):
+          newlineCount += count
+        case .carriageReturns(let count), .carriageReturnLineFeeds(let count):
+          newlineCount += count
+        default:
+          break
+        }
+      }
+
+      // Need at least 2 newlines (one for end of import line, one for blank line)
+      if newlineCount < 2 {
+        violations.append(nextItem.positionAfterSkippingLeadingTrivia)
+      }
+    }
+  }
+
+  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+      let statements = node.statements
+      var lastImportIndex: SyntaxChildrenIndex?
+
+      for (index, item) in zip(statements.indices, statements) {
+        if item.item.is(ImportDeclSyntax.self) {
+          lastImportIndex = index
+        }
+      }
+
+      guard let lastImportIndex else { return super.visit(node) }
+
+      let nextIndex = statements.index(after: lastImportIndex)
+      guard nextIndex < statements.endIndex else { return super.visit(node) }
+      let nextItem = statements[nextIndex]
+
+      if nextItem.item.is(ImportDeclSyntax.self) { return super.visit(node) }
+
+      let trivia = nextItem.leadingTrivia
+      var newlineCount = 0
+      for piece in trivia {
+        switch piece {
+        case .newlines(let count), .carriageReturns(let count), .carriageReturnLineFeeds(let count):
+          newlineCount += count
+        default:
+          break
+        }
+      }
+
+      if newlineCount < 2 {
+        numberOfCorrections += 1
+        let newTrivia = Trivia.newlines(1) + trivia
+        let newItem = nextItem.with(\.leadingTrivia, newTrivia)
+        var newStatements = Array(statements)
+        let arrayIndex = statements.distance(from: statements.startIndex, to: nextIndex)
+        newStatements[arrayIndex] = newItem
+        let newList = CodeBlockItemListSyntax(newStatements)
+        return super.visit(node.with(\.statements, newList))
+      }
+      return super.visit(node)
+    }
+  }
+}

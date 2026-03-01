@@ -33,7 +33,8 @@ final class File: Sendable {
     var contents: String {
         get {
             state.withLock { s in
-                s.ensureContents(path: path!)
+                guard let path else { return s.contents ?? "" }
+                return s.ensureContents(path: path)
             }
         }
         set {
@@ -54,7 +55,12 @@ final class File: Sendable {
     var stringView: StringView {
         state.withLock { s in
             if s.stringView == nil {
-                let text = s.ensureContents(path: path!)
+                guard let path else {
+                    let view = StringView(s.contents ?? "")
+                    s.stringView = view
+                    return view
+                }
+                let text = s.ensureContents(path: path)
                 s.stringView = StringView(text)
             }
             return s.stringView!

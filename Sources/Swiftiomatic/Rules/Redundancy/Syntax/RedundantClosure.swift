@@ -128,7 +128,7 @@ extension FormatRule {
             potentialStartOfExpressionContainingClosure = startOfScope
           case (nil, let .some(assignmentBeforeClosure)):
             potentialStartOfExpressionContainingClosure = assignmentBeforeClosure
-          case let (.some(startOfScope), .some(assignmentBeforeClosure)):
+          case (.some(let startOfScope), .some(let assignmentBeforeClosure)):
             potentialStartOfExpressionContainingClosure = max(
               startOfScope,
               assignmentBeforeClosure,

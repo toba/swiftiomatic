@@ -14,7 +14,7 @@ struct GenericConsolidationRule: Rule {
       Example("var delegate: any Delegate"),
     ],
     triggeringExamples: [
-      Example("func process(_ items: ↓any Collection) { for item in items { } }"),
+      Example("func process(_ items: ↓any Collection) { for item in items { } }")
     ],
   )
 }
@@ -60,8 +60,9 @@ extension GenericConsolidationRule {
       let typeStr = node.type.trimmedDescription
 
       // Detect `some Collection` where only Sequence operations are used
-      guard typeStr.hasPrefix("some Collection") || typeStr.hasPrefix("some BidirectionalCollection")
-        || typeStr.hasPrefix("some RandomAccessCollection")
+      guard
+        typeStr.hasPrefix("some Collection") || typeStr.hasPrefix("some BidirectionalCollection")
+          || typeStr.hasPrefix("some RandomAccessCollection")
       else { return }
 
       // Walk up to the function and check body usage
@@ -82,7 +83,8 @@ extension GenericConsolidationRule {
       if !usesCollectionOps {
         let currentConstraint =
           typeStr.hasPrefix("some Collection")
-          ? "Collection" : typeStr.hasPrefix("some BidirectionalCollection")
+          ? "Collection"
+          : typeStr.hasPrefix("some BidirectionalCollection")
             ? "BidirectionalCollection" : "RandomAccessCollection"
         violations.append(
           SyntaxViolation(

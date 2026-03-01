@@ -2,7 +2,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 /// Visitor that collects violations when legacy functions are called.
-final class LegacyFunctionVisitor<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
+class LegacyFunctionVisitor<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
     Configuration,
 > {
     @usableFromInline let legacyFunctions: [String: LegacyFunctionRewriteStrategy]
@@ -51,7 +51,7 @@ enum LegacyFunctionRewriteStrategy: Sendable {
 }
 
 /// Rewriter that corrects legacy function calls to their modern equivalents.
-final class LegacyFunctionRewriter<Configuration: RuleConfiguration>: ViolationCollectingRewriter<
+class LegacyFunctionRewriter<Configuration: RuleConfiguration>: ViolationCollectingRewriter<
     Configuration,
 > {
     @usableFromInline let legacyFunctions: [String: LegacyFunctionRewriteStrategy]

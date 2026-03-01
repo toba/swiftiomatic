@@ -315,7 +315,7 @@ private struct CorrectingContext<R: Rule> {
       correctViolations(violation.children)
       replaceCharacters(in: leftRange, with: "[")
 
-    case let .dictionary(commaStart, commaEnd):
+    case .dictionary(let commaStart, let commaEnd):
       replaceCharacters(in: rightRange, with: "]")
       guard let commaRange = stringView.NSRange(start: commaStart, end: commaEnd)
       else { return }

@@ -174,9 +174,10 @@ extension BalancedXCTestLifecycleRule {
   }
 }
 
-private final class SetupTearDownVisitor<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
-  Configuration,
->
+private final class SetupTearDownVisitor<Configuration: RuleConfiguration>:
+  ViolationCollectingVisitor<
+    Configuration,
+  >
 {
   override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
     .all

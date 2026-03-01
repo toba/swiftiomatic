@@ -1,15 +1,15 @@
 ---
 # yqv-1qo
 title: Fix all swift-review findings in Configuration/
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-03-01T03:17:24Z
-updated_at: 2026-03-01T03:23:33Z
+updated_at: 2026-03-01T06:03:34Z
 sync:
     github:
         issue_number: "113"
-        synced_at: "2026-03-01T03:57:23Z"
+        synced_at: "2026-03-01T06:13:19Z"
 ---
 
 Fix all findings from swift-review analysis of Sources/Swiftiomatic/Configuration/ files.

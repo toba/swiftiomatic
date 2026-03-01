@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// A visitor that collects style violations for all available code blocks.
-final class CodeBlockVisitor<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
+class CodeBlockVisitor<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
     Configuration,
 > {
     @inlinable

@@ -242,7 +242,8 @@ extension PerformanceAntiPatternsRule {
             "Collection parameter '\(node.firstName.text)' could potentially accept Span for non-owning access",
           severity: .warning,
           confidence: .low,
-          suggestion: "Consider Span<Element> for read-only, non-owning buffer access (macOS 26.0+)",
+          suggestion:
+            "Consider Span<Element> for read-only, non-owning buffer access (macOS 26.0+)",
         ),
       )
     }

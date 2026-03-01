@@ -144,7 +144,9 @@ extension StringView {
   }
 }
 
-private func binaryOffsets(file: SwiftSource, compilerArguments: [String]) throws(Request.Error) -> [ByteCount] {
+private func binaryOffsets(file: SwiftSource, compilerArguments: [String]) throws(Request.Error)
+  -> [ByteCount]
+{
   let absoluteFile = file.path!.absolutePathRepresentation()
   let index = try Request.index(file: absoluteFile, arguments: compilerArguments)
     .sendIfNotDisabled()

@@ -80,7 +80,7 @@ extension ModifierOrderRule {
         switch change {
         case .remove(let offset, _, _):
           newModifiers.remove(at: offset)
-        case let .insert(offset, element, _):
+        case .insert(let offset, let element, _):
           let prevModifier = prevModifiers[offset]
           newModifiers.insert(
             element.with(\.leadingTrivia, prevModifier.leadingTrivia),

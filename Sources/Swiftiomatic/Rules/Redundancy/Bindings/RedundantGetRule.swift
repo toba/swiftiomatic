@@ -156,8 +156,9 @@ extension AccessorBlockSyntax {
     // Must not have effectSpecifiers (async/throws)
     guard getter.effectSpecifiers == nil else { return false }
     // Must be inside a computed property or subscript, not a function
-    guard parent?.is(PatternBindingSyntax.self) == true
-      || parent?.is(SubscriptDeclSyntax.self) == true
+    guard
+      parent?.is(PatternBindingSyntax.self) == true
+        || parent?.is(SubscriptDeclSyntax.self) == true
     else {
       return false
     }

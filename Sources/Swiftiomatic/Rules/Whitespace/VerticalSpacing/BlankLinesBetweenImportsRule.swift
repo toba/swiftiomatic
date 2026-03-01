@@ -1,0 +1,125 @@
+import SwiftSyntax
+
+struct BlankLinesBetweenImportsRule: Rule {
+  var configuration = SeverityConfiguration<Self>(.warning)
+
+  static let description = RuleDescription(
+    identifier: "blank_lines_between_imports",
+    name: "Blank Lines Between Imports",
+    description: "There should be no blank lines between import statements",
+    scope: .format,
+    nonTriggeringExamples: [
+      Example(
+        """
+        import A
+        import B
+        import C
+        """)
+    ],
+    triggeringExamples: [
+      Example(
+        """
+        import A
+
+        ↓import B
+        """)
+    ],
+    corrections: [
+      Example("import A\n\n↓import B"): Example("import A\nimport B")
+    ],
+  )
+}
+
+extension BlankLinesBetweenImportsRule: SwiftSyntaxCorrectableRule {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    Visitor(configuration: configuration, file: file)
+  }
+
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+    Rewriter(configuration: configuration, file: file)
+  }
+}
+
+extension BlankLinesBetweenImportsRule {
+  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    override func visitPost(_ node: SourceFileSyntax) {
+      var prevWasImport = false
+      for item in node.statements {
+        let isImport = item.item.is(ImportDeclSyntax.self)
+        if isImport, prevWasImport {
+          // Check if there are blank lines between this and previous import
+          let trivia = item.leadingTrivia
+          var newlineCount = 0
+          for piece in trivia {
+            switch piece {
+            case .newlines(let count):
+              newlineCount += count
+            case .carriageReturns(let count), .carriageReturnLineFeeds(let count):
+              newlineCount += count
+            default:
+              break
+            }
+          }
+          if newlineCount > 1 {
+            violations.append(item.positionAfterSkippingLeadingTrivia)
+          }
+        }
+        prevWasImport = isImport
+      }
+    }
+  }
+
+  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+    override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+      var newStatements = [CodeBlockItemSyntax]()
+      var prevWasImport = false
+      var changed = false
+
+      for item in node.statements {
+        let isImport = item.item.is(ImportDeclSyntax.self)
+        if isImport, prevWasImport {
+          let trivia = item.leadingTrivia
+          var newlineCount = 0
+          for piece in trivia {
+            switch piece {
+            case .newlines(let count), .carriageReturns(let count),
+              .carriageReturnLineFeeds(let count):
+              newlineCount += count
+            default:
+              break
+            }
+          }
+          if newlineCount > 1 {
+            numberOfCorrections += 1
+            // Replace blank lines with a single newline, preserving non-newline trivia
+            var newPieces = [TriviaPiece]()
+            var addedNewline = false
+            for piece in trivia {
+              switch piece {
+              case .newlines, .carriageReturns, .carriageReturnLineFeeds:
+                if !addedNewline {
+                  newPieces.append(.newlines(1))
+                  addedNewline = true
+                }
+              default:
+                newPieces.append(piece)
+              }
+            }
+            let newItem = item.with(\.leadingTrivia, Trivia(pieces: newPieces))
+            newStatements.append(newItem)
+            changed = true
+            prevWasImport = isImport
+            continue
+          }
+        }
+        newStatements.append(item)
+        prevWasImport = isImport
+      }
+
+      if changed {
+        return super.visit(node.with(\.statements, CodeBlockItemListSyntax(newStatements)))
+      }
+      return super.visit(node)
+    }
+  }
+}

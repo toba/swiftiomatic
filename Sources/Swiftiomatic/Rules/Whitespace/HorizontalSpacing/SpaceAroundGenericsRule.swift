@@ -1,0 +1,89 @@
+import SwiftSyntax
+
+struct SpaceAroundGenericsRule: Rule {
+  var configuration = SeverityConfiguration<Self>(.warning)
+
+  static let description = RuleDescription(
+    identifier: "space_around_generics",
+    name: "Space Around Generics",
+    description: "There should be no space between an identifier and opening angle bracket",
+    scope: .format,
+    nonTriggeringExamples: [
+      Example("let a: Array<Int> = []"),
+      Example("func foo<T>() {}"),
+      Example("class Foo<T> {}"),
+    ],
+    triggeringExamples: [
+      Example("let a: Array↓ <Int> = []"),
+      Example("func foo↓ <T>() {}"),
+    ],
+    corrections: [
+      Example("let a: Array↓ <Int> = []"): Example("let a: Array<Int> = []")
+    ],
+  )
+}
+
+extension SpaceAroundGenericsRule: SwiftSyntaxCorrectableRule {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    Visitor(configuration: configuration, file: file)
+  }
+
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+    Rewriter(configuration: configuration, file: file)
+  }
+}
+
+extension SpaceAroundGenericsRule {
+  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
+      guard token.tokenKind == .leftAngle else { return .visitChildren }
+
+      // Check if preceded by a space after an identifier
+      guard let prevToken = token.previousToken(viewMode: .sourceAccurate),
+        prevToken.tokenKind.isIdentifierOrKeyword
+      else { return .visitChildren }
+
+      if prevToken.trailingTrivia.containsSpacesNotNewlines {
+        violations.append(prevToken.endPositionBeforeTrailingTrivia)
+      }
+      return .visitChildren
+    }
+  }
+
+  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+    override func visit(_ token: TokenSyntax) -> TokenSyntax {
+      guard token.tokenKind == .leftAngle else { return super.visit(token) }
+      guard let prevToken = token.previousToken(viewMode: .sourceAccurate),
+        prevToken.tokenKind.isIdentifierOrKeyword
+      else { return super.visit(token) }
+
+      if token.leadingTrivia.containsSpacesNotNewlines {
+        numberOfCorrections += 1
+        return super.visit(token.with(\.leadingTrivia, Trivia()))
+      }
+      return super.visit(token)
+    }
+  }
+}
+
+extension Trivia {
+  fileprivate var containsSpacesNotNewlines: Bool {
+    let hasSpaces = contains {
+      switch $0 {
+      case .spaces, .tabs: true
+      default: false
+      }
+    }
+    return hasSpaces && !containsNewlines()
+  }
+}
+
+extension TokenKind {
+  fileprivate var isIdentifierOrKeyword: Bool {
+    switch self {
+    case .identifier: true
+    case .keyword: true
+    default: false
+    }
+  }
+}

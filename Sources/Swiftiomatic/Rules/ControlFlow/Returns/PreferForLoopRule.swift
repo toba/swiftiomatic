@@ -1,0 +1,74 @@
+import SwiftSyntax
+
+struct PreferForLoopRule: Rule {
+  var configuration = SeverityConfiguration<Self>(.warning)
+
+  static let description = RuleDescription(
+    identifier: "prefer_for_loop",
+    name: "Prefer For Loop",
+    description:
+      "`.forEach { }` calls can be replaced with `for ... in` loops for better readability",
+    scope: .suggest,
+    nonTriggeringExamples: [
+      Example(
+        """
+        for item in items {
+          process(item)
+        }
+        """,
+      ),
+      Example("items.map { $0.name }"),
+      Example("items.filter { $0.isActive }.forEach { process($0) }"),
+    ],
+    triggeringExamples: [
+      Example(
+        """
+        items.↓forEach { item in
+          process(item)
+        }
+        """,
+      ),
+      Example(
+        """
+        items.↓forEach {
+          process($0)
+        }
+        """,
+      ),
+    ],
+  )
+}
+
+extension PreferForLoopRule: SwiftSyntaxRule {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    Visitor(configuration: configuration, file: file)
+  }
+}
+
+extension PreferForLoopRule {
+  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    override func visitPost(_ node: FunctionCallExprSyntax) {
+      // Looking for `.forEach { ... }` or `.forEach({ ... })`
+      guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
+        memberAccess.declName.baseName.text == "forEach"
+      else { return }
+
+      // Must have a trailing closure or a single closure argument
+      let hasClosure =
+        node.trailingClosure != nil
+        || (node.arguments.count == 1
+          && node.arguments.first?.expression.is(ClosureExprSyntax.self) == true)
+      guard hasClosure else { return }
+
+      // Skip if part of a chain (e.g. items.filter { ... }.forEach { ... })
+      if let base = memberAccess.base,
+        base.as(FunctionCallExprSyntax.self)?.calledExpression.as(MemberAccessExprSyntax.self)
+          != nil
+      {
+        return
+      }
+
+      violations.append(memberAccess.declName.positionAfterSkippingLeadingTrivia)
+    }
+  }
+}

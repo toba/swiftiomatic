@@ -129,7 +129,9 @@ extension Swift62ModernizationRule {
           if let call = stmt.item.as(FunctionCallExprSyntax.self) { return call }
           if let ret = stmt.item.as(ReturnStmtSyntax.self),
             let call = ret.expression?.as(FunctionCallExprSyntax.self)
-          { return call }
+          {
+            return call
+          }
           return nil
         }
         let passesContext = calls.filter { call in
@@ -174,7 +176,7 @@ extension Swift62ModernizationRule {
       if let tupleType = node.type.as(TupleTypeSyntax.self) {
         let elements = tupleType.elements
         if elements.count >= 3 {
-          let types = elements.map { $0.type.trimmedDescription }
+          let types = elements.map(\.type.trimmedDescription)
           let allSame = types.allSatisfy { $0 == types[0] }
           if allSame {
             violations.append(

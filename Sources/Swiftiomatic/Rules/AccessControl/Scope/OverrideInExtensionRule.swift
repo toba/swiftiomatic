@@ -103,7 +103,8 @@ extension OverrideInExtensionRule {
     }
   }
 
-  fileprivate final class ClassNameCollectingVisitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class ClassNameCollectingVisitor: ViolationCollectingVisitor<ConfigurationType>
+  {
     private(set) var classNames: Set<String> = []
 
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
