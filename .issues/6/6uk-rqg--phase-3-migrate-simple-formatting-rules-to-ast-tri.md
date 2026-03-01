@@ -3,11 +3,16 @@
 title: 'Phase 3: Migrate simple formatting rules to AST trivia'
 status: ready
 type: task
+priority: normal
 created_at: 2026-03-01T00:59:59Z
 updated_at: 2026-03-01T00:59:59Z
 parent: aku-gm2
 blocked_by:
     - cu8-swk
+sync:
+    github:
+        issue_number: "84"
+        synced_at: "2026-03-01T01:01:47Z"
 ---
 
 Migrate whitespace, spacing, and blank line rules to swift-syntax trivia manipulation. These rules operate on horizontal/vertical whitespace — they map to leading/trailing trivia on TokenSyntax nodes.

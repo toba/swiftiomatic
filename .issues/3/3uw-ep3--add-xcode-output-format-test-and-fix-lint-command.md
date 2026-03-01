@@ -6,6 +6,10 @@ type: bug
 priority: normal
 created_at: 2026-03-01T00:36:48Z
 updated_at: 2026-03-01T00:41:55Z
+sync:
+    github:
+        issue_number: "61"
+        synced_at: "2026-03-01T01:01:40Z"
 ---
 
 The `lint` command (alias of Analyze) uses `TextFormatter.format()` for text output, which produces human-readable grouped output with confidence markers. This format is NOT parsed by Xcode.

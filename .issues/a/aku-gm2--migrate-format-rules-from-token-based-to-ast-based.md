@@ -3,8 +3,13 @@
 title: Migrate format rules from token-based to AST-based (swift-syntax)
 status: ready
 type: epic
+priority: normal
 created_at: 2026-03-01T00:58:44Z
 updated_at: 2026-03-01T00:58:44Z
+sync:
+    github:
+        issue_number: "45"
+        synced_at: "2026-03-01T01:01:36Z"
 ---
 
 Migrate FormatRule closures from the custom tokenizer to swift-syntax SyntaxVisitor/SyntaxRewriter, eliminating the need to maintain two parallel rule systems.

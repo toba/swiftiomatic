@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-02-28T16:29:47Z
 updated_at: 2026-02-28T20:40:44Z
 parent: uac-wbq
+sync:
+    github:
+        issue_number: "78"
+        synced_at: "2026-03-01T01:01:45Z"
 ---
 
 Create a `RulesRegistered` SuiteTrait using `TestScoping` that replaces the identical `init() { RuleRegistry.registerAllRulesOnce() }` boilerplate in **104 test files**.

@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-02-28T16:19:41Z
 updated_at: 2026-02-28T16:35:37Z
+sync:
+    github:
+        issue_number: "22"
+        synced_at: "2026-03-01T01:01:32Z"
 ---
 
 Replace separate Scan + Lint CLI commands with a single unified Analyze command that runs both suggest checks and lint rules through the Analyzer.

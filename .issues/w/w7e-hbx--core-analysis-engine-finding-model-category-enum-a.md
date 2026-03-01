@@ -9,6 +9,10 @@ updated_at: 2026-02-27T21:49:41Z
 parent: 52u-0w0
 blocked_by:
     - v1g-3vl
+sync:
+    github:
+        issue_number: "66"
+        synced_at: "2026-03-01T01:01:43Z"
 ---
 
 Build the core types that all checks depend on.

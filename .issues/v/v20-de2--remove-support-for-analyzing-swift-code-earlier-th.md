@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T00:13:29Z
 updated_at: 2026-02-28T00:29:11Z
+sync:
+    github:
+        issue_number: "25"
+        synced_at: "2026-03-01T01:01:35Z"
 ---
 
 Swiftiomatic should only support analyzing, formatting, and linting Swift 6.2+ code. Remove all handling for earlier Swift language versions in the analysis targets.

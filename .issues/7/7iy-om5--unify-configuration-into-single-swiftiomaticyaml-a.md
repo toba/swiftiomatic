@@ -6,6 +6,10 @@ type: feature
 priority: high
 created_at: 2026-02-28T16:50:59Z
 updated_at: 2026-02-28T18:02:49Z
+sync:
+    github:
+        issue_number: "15"
+        synced_at: "2026-03-01T01:01:31Z"
 ---
 
 ## Goal

@@ -9,6 +9,10 @@ updated_at: 2026-02-27T21:50:03Z
 parent: 52u-0w0
 blocked_by:
     - w7e-hbx
+sync:
+    github:
+        issue_number: "67"
+        synced_at: "2026-03-01T01:01:43Z"
 ---
 
 SyntaxVisitor for the remaining §8 checks that benefit from AST but are simpler.

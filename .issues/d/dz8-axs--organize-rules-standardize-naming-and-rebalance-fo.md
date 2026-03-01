@@ -6,6 +6,10 @@ type: epic
 priority: normal
 created_at: 2026-02-28T16:42:39Z
 updated_at: 2026-02-28T17:53:21Z
+sync:
+    github:
+        issue_number: "40"
+        synced_at: "2026-03-01T01:01:36Z"
 ---
 
 ## Problem

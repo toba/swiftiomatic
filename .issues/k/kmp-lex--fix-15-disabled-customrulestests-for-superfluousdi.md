@@ -6,6 +6,10 @@ type: bug
 priority: normal
 created_at: 2026-02-28T15:27:52Z
 updated_at: 2026-02-28T17:06:07Z
+sync:
+    github:
+        issue_number: "4"
+        synced_at: "2026-03-01T01:01:29Z"
 ---
 
 15 tests in `Tests/SwiftiomaticTests/LintTests/Framework/CustomRulesTests.swift` are disabled with:

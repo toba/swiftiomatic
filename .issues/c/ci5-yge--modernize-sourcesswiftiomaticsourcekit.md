@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T17:25:38Z
 updated_at: 2026-02-28T18:18:52Z
+sync:
+    github:
+        issue_number: "64"
+        synced_at: "2026-03-01T01:01:40Z"
 ---
 
 Swift review findings for the SourceKit/ vendored module. Ordered by priority.

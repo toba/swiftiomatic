@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 struct TypedThrowsRule: Rule {
@@ -71,6 +72,8 @@ extension TypedThrowsRule: AsyncEnrichableRule {
 extension TypedThrowsRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
+      checkResultReturnType(node)
+
       guard let throwsClause = node.signature.effectSpecifiers?.throwsClause,
         throwsClause.type == nil,
         let body = node.body
@@ -95,6 +98,83 @@ extension TypedThrowsRule {
           suggestion: "func \(funcName)(...) throws(\(errorType))",
         ),
       )
+    }
+
+    // Check for Result<T, E> return type on non-throwing functions
+    private func checkResultReturnType(_ node: FunctionDeclSyntax) {
+      // Only interested in non-throwing functions
+      guard node.signature.effectSpecifiers?.throwsClause == nil else { return }
+
+      let returnTypeStr = node.signature.returnClause?.type.trimmedDescription ?? ""
+      guard returnTypeStr.hasPrefix("Result<"),
+        returnTypeStr.hasSuffix(">")
+      else { return }
+
+      // Extract the error type from Result<Success, Failure>
+      let inner = String(returnTypeStr.dropFirst("Result<".count).dropLast(1))
+      let genericArgs = inner.split(separator: ",", maxSplits: 1).map {
+        $0.trimmingCharacters(in: .whitespaces)
+      }
+      guard genericArgs.count == 2 else { return }
+      let successType = genericArgs[0]
+      let errorType = genericArgs[1]
+      guard errorType != "Error" && errorType != "any Error" else { return }
+
+      let funcName = node.name.text
+      violations.append(
+        SyntaxViolation(
+          position: node.positionAfterSkippingLeadingTrivia,
+          reason:
+            "Function '\(funcName)' returns Result<\(successType), \(errorType)> — consider throws(\(errorType)) -> \(successType) instead",
+          severity: .warning,
+          confidence: .low,
+          suggestion: "func \(funcName)(...) throws(\(errorType)) -> \(successType)",
+        ),
+      )
+    }
+
+    override func visitPost(_ node: CatchClauseSyntax) {
+      // Detect `catch let error as SpecificType` — suggests the enclosing function should use typed throws
+      let catchItems = node.catchItems
+      guard catchItems.count == 1,
+        let item = catchItems.first,
+        let pattern = item.pattern
+      else { return }
+
+      // `catch let error as Type` parses as ValueBindingPattern > ExpressionPattern > AsExpr
+      // Use trimmedDescription as a pragmatic fallback for all AST shapes
+      let patternStr = pattern.trimmedDescription
+      guard patternStr.contains(" as ") else { return }
+
+      // Extract the type name after the last " as "
+      guard let asRange = patternStr.range(of: " as ", options: .backwards) else { return }
+      let errorType = String(patternStr[asRange.upperBound...])
+
+      // Walk up to find enclosing function
+      var current: Syntax? = Syntax(node)
+      while let parent = current?.parent {
+        if let funcDecl = parent.as(FunctionDeclSyntax.self) {
+          if let throwsClause = funcDecl.signature.effectSpecifiers?.throwsClause,
+            throwsClause.type == nil
+          {
+            violations.append(
+              SyntaxViolation(
+                position: node.positionAfterSkippingLeadingTrivia,
+                reason:
+                  "Catch clause downcasts to '\(errorType)' — function '\(funcDecl.name.text)' may benefit from typed throws",
+                severity: .warning,
+                confidence: .medium,
+                suggestion: "func \(funcDecl.name.text)(...) throws(\(errorType))",
+              ),
+            )
+          }
+          break
+        }
+        if parent.as(ClosureExprSyntax.self) != nil {
+          break  // Don't cross closure boundaries
+        }
+        current = parent
+      }
     }
 
     override func visitPost(_ node: InitializerDeclSyntax) {

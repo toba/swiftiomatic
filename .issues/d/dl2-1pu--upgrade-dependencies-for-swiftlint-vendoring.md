@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-02-27T22:59:25Z
 updated_at: 2026-02-27T23:33:06Z
 parent: 5nn-red
+sync:
+    github:
+        issue_number: "87"
+        synced_at: "2026-03-01T01:01:46Z"
 ---
 
 Update Package.swift dependencies to match SwiftLint 0.63.2:

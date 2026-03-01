@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-02-27T21:32:15Z
 updated_at: 2026-02-27T21:44:12Z
 parent: 52u-0w0
+sync:
+    github:
+        issue_number: "106"
+        synced_at: "2026-03-01T01:41:14Z"
 ---
 
 Set up the Swift package skeleton.

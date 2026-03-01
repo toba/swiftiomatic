@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T22:10:43Z
 updated_at: 2026-02-28T23:07:18Z
+sync:
+    github:
+        issue_number: "11"
+        synced_at: "2026-03-01T01:01:30Z"
 ---
 
 Remove vestigial suggest-engine abstractions that are never used:

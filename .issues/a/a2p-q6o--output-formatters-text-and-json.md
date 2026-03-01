@@ -9,6 +9,10 @@ updated_at: 2026-02-27T21:49:56Z
 parent: 52u-0w0
 blocked_by:
     - w7e-hbx
+sync:
+    github:
+        issue_number: "90"
+        synced_at: "2026-03-01T01:01:46Z"
 ---
 
 Implement output formatters for the analysis results.

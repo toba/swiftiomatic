@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-03-01T00:48:26Z
 updated_at: 2026-03-01T01:00:00Z
+sync:
+    github:
+        issue_number: "14"
+        synced_at: "2026-03-01T01:01:31Z"
 ---
 
 - [x] Rename RuleEngine → Source (enum + field)

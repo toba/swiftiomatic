@@ -8,6 +8,10 @@ created_at: 2026-02-28T05:48:09Z
 updated_at: 2026-02-28T15:30:59Z
 blocked_by:
     - 0na-1xs
+sync:
+    github:
+        issue_number: "34"
+        synced_at: "2026-03-01T01:01:35Z"
 ---
 
 ## Problem

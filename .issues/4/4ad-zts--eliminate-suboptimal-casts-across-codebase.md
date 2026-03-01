@@ -3,8 +3,13 @@
 title: Eliminate suboptimal casts across codebase
 status: completed
 type: task
+priority: normal
 created_at: 2026-02-28T20:53:49Z
 updated_at: 2026-02-28T20:53:49Z
+sync:
+    github:
+        issue_number: "62"
+        synced_at: "2026-03-01T01:01:40Z"
 ---
 
 Replace NSString bridging casts, force casts, and ObjC API casts with modern Swift/URL equivalents.

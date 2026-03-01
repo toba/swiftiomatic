@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-03-01T00:13:31Z
 updated_at: 2026-03-01T00:23:36Z
+sync:
+    github:
+        issue_number: "13"
+        synced_at: "2026-03-01T01:01:31Z"
 ---
 
 Add a `generate-docs` subcommand that writes rule documentation as markdown files to a specified output directory.

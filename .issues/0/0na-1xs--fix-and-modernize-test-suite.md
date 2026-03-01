@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T04:27:46Z
 updated_at: 2026-02-28T05:47:08Z
+sync:
+    github:
+        issue_number: "39"
+        synced_at: "2026-03-01T01:01:36Z"
 ---
 
 ## Tasks

@@ -27,6 +27,9 @@ todo:
     path: .issues
     default_status: ready
     default_type: task
+    sync:
+        github:
+            repo: toba/swiftiomatic
 citations:
     - repo: swiftlang/swift-syntax
       branch: main

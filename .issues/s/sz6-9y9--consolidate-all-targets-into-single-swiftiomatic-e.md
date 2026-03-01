@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-27T23:58:22Z
 updated_at: 2026-02-28T00:15:00Z
+sync:
+    github:
+        issue_number: "23"
+        synced_at: "2026-03-01T01:01:33Z"
 ---
 
 Merge 8 targets into single executable target. Keep SwiftLintCoreMacros and DyldWarningWorkaround separate.

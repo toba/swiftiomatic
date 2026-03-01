@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T22:48:11Z
 updated_at: 2026-02-28T22:49:54Z
+sync:
+    github:
+        issue_number: "30"
+        synced_at: "2026-03-01T01:01:34Z"
 ---
 
 With the removal of nested/merged config file support, the in-memory `cachedConfigurationsByIdentifier` cache in `Configuration+Cache.swift` is no longer valuable — there's only ever one config, so the dictionary lookup is pointless overhead.

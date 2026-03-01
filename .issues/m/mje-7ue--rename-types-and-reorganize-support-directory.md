@@ -3,8 +3,13 @@
 title: Rename types and reorganize Support/ directory
 status: completed
 type: task
+priority: normal
 created_at: 2026-02-28T20:31:39Z
 updated_at: 2026-02-28T20:31:39Z
+sync:
+    github:
+        issue_number: "55"
+        synced_at: "2026-03-01T01:01:39Z"
 ---
 
 ## Type Renames

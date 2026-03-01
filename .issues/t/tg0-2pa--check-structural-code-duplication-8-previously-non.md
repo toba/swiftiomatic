@@ -9,6 +9,10 @@ updated_at: 2026-02-27T21:55:08Z
 parent: 52u-0w0
 blocked_by:
     - w7e-hbx
+sync:
+    github:
+        issue_number: "93"
+        synced_at: "2026-03-01T01:01:50Z"
 ---
 
 SyntaxVisitor that detects structural code duplication — the #1 gap grep cannot address.

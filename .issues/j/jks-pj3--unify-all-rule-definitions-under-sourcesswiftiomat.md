@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-02-28T02:24:12Z
 updated_at: 2026-02-28T02:53:54Z
+sync:
+    github:
+        issue_number: "49"
+        synced_at: "2026-03-01T01:01:40Z"
 ---
 
 Move ALL rule definitions into `Sources/Swiftiomatic/Rules/`. The Format/, Lint/, and Suggest/ directories become pure orchestration — they decide what to do with rule output (JSON for agents, Xcode format, auto-fix files), but don't define rules.

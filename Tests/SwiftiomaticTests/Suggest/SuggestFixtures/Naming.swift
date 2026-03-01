@@ -23,3 +23,16 @@ struct GoodWidget {
 protocol Providable {
     func provideData() -> Data
 }
+
+// Should flag: mutating method with -ed suffix
+extension Array {
+    mutating func sorted() { }
+}
+
+// Should NOT flag: non-mutating with -ed suffix (correct convention)
+extension Array {
+    func reversed() -> [Element] { [] }
+}
+
+import Foundation
+typealias Data = Foundation.Data

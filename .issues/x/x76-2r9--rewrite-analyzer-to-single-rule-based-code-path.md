@@ -11,6 +11,10 @@ blocked_by:
     - b7i-7ys
     - 5w8-efc
     - bgn-y3w
+sync:
+    github:
+        issue_number: "69"
+        synced_at: "2026-03-01T01:01:42Z"
 ---
 
 After all Checks are merged into Rules, collapse the Analyzer's dual code paths into one.

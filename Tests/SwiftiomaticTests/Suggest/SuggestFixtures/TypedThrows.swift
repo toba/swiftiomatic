@@ -31,3 +31,22 @@ func fetchAndParse() throws {
 func safeParse(_: String) -> String? {
     nil
 }
+
+// Should flag: catch let error as SpecificType
+func catchAsPattern() throws {
+    do {
+        try parse("")
+    } catch let error as ParseError {
+        throw error
+    }
+}
+
+// Should flag: Result<T, E> return type on non-throwing function
+func fetchResult() -> Result<String, ParseError> {
+    .success("ok")
+}
+
+// Should NOT flag: Result<T, Error> (untyped error)
+func fetchAnyResult() -> Result<String, Error> {
+    .success("ok")
+}

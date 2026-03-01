@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-27T22:16:12Z
 updated_at: 2026-02-27T22:56:47Z
+sync:
+    github:
+        issue_number: "56"
+        synced_at: "2026-03-01T01:01:39Z"
 ---
 
 Evaluate use of SourceKit https://github.com/swiftlang/swift/tree/main/tools/SourceKit

@@ -67,6 +67,10 @@ extension SwiftVersion {
         if let envVersion = ProcessInfo.processInfo.environment["SWIFTIOMATIC_SWIFT_VERSION"] {
             return SwiftVersion(rawValue: envVersion)
         }
+        // Check BEFORE creating UID/SourceKitObject — those trigger dlopen of
+        // sourcekitdInProc.framework which spawns background threads that SIGSEGV
+        // on process exit (apple/swift#55112).
+        guard !isSourceKitDisabled else { return .compileTime }
         // This request was added in Swift 5.1
         let params: SourceKitObject = ["key.request": UID("source.request.compiler_version")]
         // Allow this specific SourceKit request outside of rule execution context

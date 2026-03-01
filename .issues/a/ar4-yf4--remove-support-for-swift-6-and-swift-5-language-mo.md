@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-27T23:33:59Z
 updated_at: 2026-02-28T01:27:53Z
+sync:
+    github:
+        issue_number: "6"
+        synced_at: "2026-03-01T01:01:29Z"
 ---
 
 Match Thesis/Core target Swift settings across all Swiftiomatic targets.

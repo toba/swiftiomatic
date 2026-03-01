@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T22:35:36Z
 updated_at: 2026-02-28T22:43:51Z
+sync:
+    github:
+        issue_number: "26"
+        synced_at: "2026-03-01T01:01:35Z"
 ---
 
 FileGraph was gutted to just `struct FileGraph: Hashable { let rootDirectory: String }` — a pointless wrapper. Inline it.

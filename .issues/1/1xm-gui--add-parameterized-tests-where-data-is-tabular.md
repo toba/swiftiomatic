@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-02-28T16:29:48Z
 updated_at: 2026-02-28T21:09:13Z
 parent: uac-wbq
+sync:
+    github:
+        issue_number: "76"
+        synced_at: "2026-03-01T01:01:44Z"
 ---
 
 Identify and convert test methods that differ only by input data into parameterized tests using `@Test(arguments:)`.

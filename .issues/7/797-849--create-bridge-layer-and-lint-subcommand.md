@@ -9,6 +9,10 @@ updated_at: 2026-02-27T23:33:06Z
 parent: 5nn-red
 blocked_by:
     - bpt-2qz
+sync:
+    github:
+        issue_number: "86"
+        synced_at: "2026-03-01T01:01:46Z"
 ---
 
 Bridge SwiftLint violations into Swiftiomatic's Finding model and add CLI subcommand.

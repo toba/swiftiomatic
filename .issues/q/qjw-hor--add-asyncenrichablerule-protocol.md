@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-02-28T17:05:21Z
 updated_at: 2026-02-28T17:21:38Z
 parent: dz8-axs
+sync:
+    github:
+        issue_number: "99"
+        synced_at: "2026-03-01T01:41:12Z"
 ---
 
 Add a new protocol to the Rule hierarchy for rules that can be enriched with async SourceKit type resolution after their synchronous validation pass.

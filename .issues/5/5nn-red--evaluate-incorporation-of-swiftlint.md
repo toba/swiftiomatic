@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-02-27T21:51:52Z
 updated_at: 2026-02-27T23:33:03Z
+sync:
+    github:
+        issue_number: "18"
+        synced_at: "2026-03-01T01:01:31Z"
 ---
 
 Evaluate incorporating SwiftLint https://github.com/realm/SwiftLint. If so, /cite it and update license and readme per /readme skill.

@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-27T23:32:40Z
 updated_at: 2026-02-27T23:37:29Z
+sync:
+    github:
+        issue_number: "37"
+        synced_at: "2026-03-01T01:01:35Z"
 ---
 
 Strip iOS/tvOS/watchOS/visionOS/Linux platform conditionals and support from the codebase. Swiftiomatic is a macOS-only CLI tool — simplify by removing any cross-platform abstractions or conditional compilation for other platforms.

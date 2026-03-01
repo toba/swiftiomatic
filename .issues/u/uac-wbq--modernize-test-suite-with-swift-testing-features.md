@@ -6,6 +6,10 @@ type: epic
 priority: normal
 created_at: 2026-02-28T16:29:06Z
 updated_at: 2026-02-28T21:26:53Z
+sync:
+    github:
+        issue_number: "3"
+        synced_at: "2026-03-01T01:01:29Z"
 ---
 
 Modernize the ~100k-line test suite to use advanced Swift Testing features. Already migrated from XCTest to basic `@Suite`/`@Test`, but no parameterization, custom traits, or TestScoping is used.

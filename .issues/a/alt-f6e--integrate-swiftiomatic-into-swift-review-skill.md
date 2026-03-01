@@ -10,6 +10,10 @@ parent: 52u-0w0
 blocked_by:
     - jaf-sl5
     - uei-wpw
+sync:
+    github:
+        issue_number: "83"
+        synced_at: "2026-03-01T01:01:44Z"
 ---
 
 Update the swift-review skill to use swiftiomatic when available, falling back to the grep scanner.

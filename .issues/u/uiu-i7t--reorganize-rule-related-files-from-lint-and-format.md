@@ -3,8 +3,13 @@
 title: Reorganize rule-related files from Lint/ and Format/ into Rules/
 status: completed
 type: task
+priority: normal
 created_at: 2026-02-28T21:01:53Z
 updated_at: 2026-02-28T21:01:53Z
+sync:
+    github:
+        issue_number: "24"
+        synced_at: "2026-03-01T01:01:33Z"
 ---
 
 Move scattered rule infrastructure files to their canonical homes:

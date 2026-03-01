@@ -152,6 +152,14 @@ package func disableSourceKitForTesting() {
     _sourceKitDisabled.withLock { $0 = true }
 }
 
+/// Whether sourcekitd has been disabled for testing.
+/// Check this **before** constructing any `UID` or `SourceKitObject` values,
+/// since those trigger `dlopen` of sourcekitdInProc.framework (which spawns
+/// background threads that SIGSEGV on process exit — apple/swift#55112).
+package var isSourceKitDisabled: Bool {
+    _sourceKitDisabled.withLock { $0 }
+}
+
 /// Serializes sourcekitd requests to avoid SIGSEGV crashes under parallel load.
 /// sourcekitd runs as a single XPC service process and is not resilient to
 /// unbounded concurrent requests (especially index/cursorinfo).

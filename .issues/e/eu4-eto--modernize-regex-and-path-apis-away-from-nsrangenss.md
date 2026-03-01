@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T19:50:33Z
 updated_at: 2026-02-28T20:19:29Z
+sync:
+    github:
+        issue_number: "10"
+        synced_at: "2026-03-01T01:01:33Z"
 ---
 
 Replace NSRegularExpression-based patterns with Swift Regex and NSString path operations with URL-based equivalents. The SourceKit/StringView interop layer (category 1) stays as-is since NSRange is the native currency there.

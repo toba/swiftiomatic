@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T19:29:02Z
 updated_at: 2026-02-28T19:52:26Z
+sync:
+    github:
+        issue_number: "47"
+        synced_at: "2026-03-01T01:01:37Z"
 ---
 
 Findings from swift-review of `Sources/Swiftiomatic/Models/` (33 files). Complete the SwiftLint→Swiftiomatic migration by fixing naming, file mismatches, and doc strings.

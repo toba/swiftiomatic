@@ -3,11 +3,16 @@
 title: 'Phase 2: Migrate organization & ordering rules to AST'
 status: ready
 type: task
+priority: normal
 created_at: 2026-03-01T00:59:45Z
 updated_at: 2026-03-01T00:59:45Z
 parent: aku-gm2
 blocked_by:
     - yr7-zbm
+sync:
+    github:
+        issue_number: "109"
+        synced_at: "2026-03-01T01:41:13Z"
 ---
 
 Migrate rules that sort, reorder, or organize declarations. These rules parse structure from tokens that swift-syntax provides as typed nodes.

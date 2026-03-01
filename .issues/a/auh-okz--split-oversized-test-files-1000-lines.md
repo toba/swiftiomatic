@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-02-28T16:30:01Z
 updated_at: 2026-02-28T21:26:39Z
 parent: uac-wbq
+sync:
+    github:
+        issue_number: "103"
+        synced_at: "2026-03-01T01:41:15Z"
 ---
 
 Split the largest test files into logical sub-files. Target ~500 lines per file. Use existing comment section headers (e.g., `// indent parens`, `// indent braces`) as natural split points.

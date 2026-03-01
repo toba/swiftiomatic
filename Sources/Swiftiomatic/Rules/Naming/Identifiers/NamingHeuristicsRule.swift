@@ -159,21 +159,90 @@ extension NamingHeuristicsRule {
 
     override func visitPost(_ node: FunctionDeclSyntax) {
       let name = node.name.text
-      guard node.modifiers.contains(where: { $0.name.text == "static" }) else { return }
-      guard let suggestion = NamingConventionChecker.factoryMethodSuggestion(for: name) else {
-        return
+
+      // Existing: factory method prefix check (static only)
+      if node.modifiers.contains(where: { $0.name.text == "static" }),
+        let suggestion = NamingConventionChecker.factoryMethodSuggestion(for: name)
+      {
+        violations.append(
+          SyntaxViolation(
+            position: node.name.positionAfterSkippingLeadingTrivia,
+            reason:
+              "Factory method '\(name)' should use 'make' prefix per Swift API Design Guidelines",
+            severity: .warning,
+            confidence: .medium,
+            suggestion: suggestion,
+          ),
+        )
       }
 
-      violations.append(
-        SyntaxViolation(
-          position: node.name.positionAfterSkippingLeadingTrivia,
-          reason:
-            "Factory method '\(name)' should use 'make' prefix per Swift API Design Guidelines",
-          severity: .warning,
-          confidence: .medium,
-          suggestion: suggestion,
-        ),
-      )
+      // Mutating/non-mutating reversed conventions (ed/ing)
+      let isMutating = node.modifiers.contains { $0.name.text == "mutating" }
+      if isMutating {
+        // Mutating methods should use base verb form (sort, append, reverse)
+        // but NOT past-tense (sorted) or gerund (sorting)
+        if name.hasSuffix("ed") || name.hasSuffix("ing") {
+          let baseName =
+            name.hasSuffix("ed")
+            ? String(name.dropLast(2))
+            : String(name.dropLast(3))
+          violations.append(
+            SyntaxViolation(
+              position: node.name.positionAfterSkippingLeadingTrivia,
+              reason:
+                "Mutating method '\(name)' uses -ed/-ing suffix — mutating methods should use imperative form",
+              severity: .warning,
+              confidence: .medium,
+              suggestion: "Rename to '\(baseName)' (imperative verb form)",
+            ),
+          )
+        }
+      } else if !node.modifiers.contains(where: { $0.name.text == "static" }) {
+        // Non-mutating instance methods that return a modified copy should use -ed/-ing
+        let returnsValue = node.signature.returnClause != nil
+        let knownMutatingVerbs: Set<String> = [
+          "sort", "reverse", "shuffle", "append", "remove", "insert",
+          "filter", "partition",
+        ]
+        if returnsValue, knownMutatingVerbs.contains(name) {
+          let edForm = name + "ed"
+          violations.append(
+            SyntaxViolation(
+              position: node.name.positionAfterSkippingLeadingTrivia,
+              reason:
+                "Non-mutating method '\(name)' that returns a value should use -ed/-ing suffix",
+              severity: .warning,
+              confidence: .low,
+              suggestion: "Rename to '\(edForm)' for the non-mutating variant",
+            ),
+          )
+        }
+      }
+
+      // First-argument label conventions
+      let params = node.signature.parameterClause.parameters
+      guard let firstParam = params.first, params.count >= 1 else { return }
+      let firstName = firstParam.firstName.text
+      let secondName = firstParam.secondName?.text
+
+      // If function name forms a grammatical phrase with the first arg, label should be omitted
+      // e.g., func contains(_ element: Element) not func contains(element: Element)
+      let phrasalVerbs: Set<String> = [
+        "contains", "append", "insert", "remove", "add", "subtract",
+        "multiply", "divide",
+      ]
+      if phrasalVerbs.contains(name), firstName != "_", secondName != "_" {
+        violations.append(
+          SyntaxViolation(
+            position: firstParam.positionAfterSkippingLeadingTrivia,
+            reason:
+              "First argument of '\(name)' forms a grammatical phrase — label should be omitted (_)",
+            severity: .warning,
+            confidence: .low,
+            suggestion: "Use _ as the external label: \(name)(_ \(secondName ?? firstName):)",
+          ),
+        )
+      }
     }
 
     private func checkBoolNaming(name: String, position: AbsolutePosition) {

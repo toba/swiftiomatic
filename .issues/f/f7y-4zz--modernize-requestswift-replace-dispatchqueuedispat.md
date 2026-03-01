@@ -3,8 +3,13 @@
 title: 'Modernize Request.swift: replace DispatchQueue/DispatchSemaphore with Mutex'
 status: completed
 type: task
+priority: normal
 created_at: 2026-02-28T20:34:20Z
 updated_at: 2026-02-28T20:34:20Z
+sync:
+    github:
+        issue_number: "32"
+        synced_at: "2026-03-01T01:01:34Z"
 ---
 
 Replace all Dispatch-based synchronization in Request.swift with modern Synchronization framework primitives.

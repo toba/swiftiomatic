@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T19:16:03Z
 updated_at: 2026-02-28T19:19:47Z
+sync:
+    github:
+        issue_number: "21"
+        synced_at: "2026-03-01T01:01:34Z"
 ---
 
 Collapse AllRules+CoreRules+Extra into Exports.swift, merge AsyncEnrichableRule into Rule.swift, extract ReasonedRuleViolation to Models/RuleViolation.swift, move [any Rule] == from CollectingRule to Rule, remove dead ConditionallySourceKitFree protocol, rename enrichAsync→enrich

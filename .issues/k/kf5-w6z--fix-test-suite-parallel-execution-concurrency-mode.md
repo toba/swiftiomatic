@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T06:01:46Z
 updated_at: 2026-02-28T16:19:43Z
+sync:
+    github:
+        issue_number: "17"
+        synced_at: "2026-03-01T01:01:31Z"
 ---
 
 ## Plan

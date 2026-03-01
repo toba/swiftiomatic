@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-02-28T01:48:33Z
 updated_at: 2026-02-28T01:48:43Z
 parent: 9q3-qlh
+sync:
+    github:
+        issue_number: "107"
+        synced_at: "2026-03-01T01:41:14Z"
 ---
 
 ## Objective

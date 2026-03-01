@@ -32,4 +32,14 @@ struct NamingTests {
         #expect(factoryFindings.contains { $0.reason.contains("newInstance") })
         #expect(!factoryFindings.contains { $0.reason.contains("makeWidget") })
     }
+
+    @Test func detectsMutatingMethodWithEdSuffix() throws {
+        let file = try #require(SwiftSource(path: fixturePath))
+        let rule = NamingHeuristicsRule()
+        let violations = rule.validate(file: file)
+
+        let mutatingFindings = violations.filter { $0.reason.contains("Mutating method") }
+        #expect(mutatingFindings.count >= 1)
+        #expect(mutatingFindings.contains { $0.reason.contains("sorted") })
+    }
 }

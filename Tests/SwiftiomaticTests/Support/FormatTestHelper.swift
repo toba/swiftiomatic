@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import Swiftiomatic
 
@@ -21,6 +22,10 @@ private let _initFormatGlobals: Void = {
     _ = FormatRules.all
     _ = Descriptors.all
 }()
+
+/// When true, skip expensive "all rules" interaction checks and lint verification.
+/// Set `SWIFTIOMATIC_FAST_TESTS=1` to enable.
+private let fastTests: Bool = ProcessInfo.processInfo.environment["SWIFTIOMATIC_FAST_TESTS"] != nil
 
 func testFormatting(
     for input: String,
@@ -67,17 +72,8 @@ func testFormatting(
     precondition(Set(exclude).intersection(rules).isEmpty, "Cannot exclude rule under test")
     let output = outputs.first ?? input
     let output2 = outputs.last ?? input
-    let defaultExclusions =
-        FormatRules.deprecated + [
-            .linebreakAtEndOfFile,
-            .organizeDeclarations,
-            .extensionAccessControl,
-            .markTypes,
-            .blockComments,
-            .unusedPrivateDeclarations,
-            .preferFinalClasses,
-        ]
-    let exclude = exclude + defaultExclusions.filter { !rules.contains($0) }
+
+    // 1. Core assertion: single-rule format produces expected output
     let formatResult: (output: String, changes: [Swiftiomatic.Formatter.Change])
     do {
         formatResult = try format(input, rules: rules, options: options)
@@ -99,14 +95,7 @@ func testFormatting(
         )
     }
 
-    do {
-        #expect(
-            try format(input, rules: FormatRules.all(except: exclude), options: options).output
-                == output2, sourceLocation: sourceLocation,
-        )
-    } catch {
-        Issue.record("Failed to format with all rules: \(error)", sourceLocation: sourceLocation)
-    }
+    // 2. Idempotence: re-formatting output with same rules produces no change
     if input != output {
         do {
             #expect(
@@ -116,6 +105,7 @@ func testFormatting(
         } catch {
             Issue.record("Failed to re-format output: \(error)", sourceLocation: sourceLocation)
         }
+        // 3. Disable command: disabled rule produces no change
         if !input.hasPrefix("#!") {
             for rule in rules {
                 let disabled = "// sm:disable \(rule)\n\(input)"
@@ -134,6 +124,31 @@ func testFormatting(
             }
         }
     }
+
+    // Skip expensive cross-rule interaction checks in fast mode
+    guard !fastTests else { return }
+
+    let defaultExclusions =
+        FormatRules.deprecated + [
+            .linebreakAtEndOfFile,
+            .organizeDeclarations,
+            .extensionAccessControl,
+            .markTypes,
+            .blockComments,
+            .unusedPrivateDeclarations,
+            .preferFinalClasses,
+        ]
+    let exclude = exclude + defaultExclusions.filter { !rules.contains($0) }
+
+    // 4. All-rules interaction: formatting with all rules produces expected output2
+    do {
+        #expect(
+            try format(input, rules: FormatRules.all(except: exclude), options: options).output
+                == output2, sourceLocation: sourceLocation,
+        )
+    } catch {
+        Issue.record("Failed to format with all rules: \(error)", sourceLocation: sourceLocation)
+    }
     if input != output2, output != output2 {
         do {
             #expect(
@@ -147,6 +162,7 @@ func testFormatting(
         }
     }
 
+    // 5. Lint verification: formatted output produces no lint warnings
     #if os(macOS)
     do {
         #expect(

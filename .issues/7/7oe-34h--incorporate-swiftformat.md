@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-27T21:46:04Z
 updated_at: 2026-02-27T22:56:47Z
+sync:
+    github:
+        issue_number: "46"
+        synced_at: "2026-03-01T01:01:37Z"
 ---
 
 Add https://github.com/nicklockwood/SwiftFormat/tree/main as a /cite source and incporate its capabilities. Update license file and readme to give credit per /readme skill.

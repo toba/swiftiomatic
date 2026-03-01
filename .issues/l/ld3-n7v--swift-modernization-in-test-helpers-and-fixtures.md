@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-02-28T16:30:01Z
 updated_at: 2026-02-28T21:20:03Z
 parent: uac-wbq
+sync:
+    github:
+        issue_number: "70"
+        synced_at: "2026-03-01T01:01:43Z"
 ---
 
 Apply modern Swift idioms to test infrastructure and helpers.

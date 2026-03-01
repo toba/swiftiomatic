@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-03-01T00:51:35Z
 updated_at: 2026-03-01T00:52:25Z
+sync:
+    github:
+        issue_number: "57"
+        synced_at: "2026-03-01T01:01:41Z"
 ---
 
 Identify all patterns the swift-review skill detects that the analyze command's rules do not yet cover.

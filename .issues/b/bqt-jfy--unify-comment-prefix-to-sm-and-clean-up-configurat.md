@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T17:05:59Z
 updated_at: 2026-02-28T17:16:33Z
+sync:
+    github:
+        issue_number: "29"
+        synced_at: "2026-03-01T01:01:34Z"
 ---
 
 Replace all inline comment prefixes:

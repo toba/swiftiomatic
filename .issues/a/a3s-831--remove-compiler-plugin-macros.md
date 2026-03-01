@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T01:28:58Z
 updated_at: 2026-02-28T01:42:06Z
+sync:
+    github:
+        issue_number: "19"
+        synced_at: "2026-03-01T01:01:32Z"
 ---
 
 Replace all macro usages (@AcceptableByConfigurationElement, @DisabledWithoutSourceKit, @AutoConfigParser, @SwiftSyntaxRule) with their expanded forms, then delete macro infrastructure.

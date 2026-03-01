@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-02-27T22:25:36Z
 updated_at: 2026-02-27T22:55:11Z
+sync:
+    github:
+        issue_number: "9"
+        synced_at: "2026-03-01T01:01:32Z"
 ---
 
 Add a format subcommand by copying SwiftFormat engine into a new Formatting target.

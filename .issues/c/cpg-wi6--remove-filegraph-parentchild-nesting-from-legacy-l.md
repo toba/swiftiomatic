@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T18:03:18Z
 updated_at: 2026-02-28T19:58:42Z
+sync:
+    github:
+        issue_number: "31"
+        synced_at: "2026-03-01T01:01:34Z"
 ---
 
 The `FileGraph` parent/child nesting is still used by the legacy lint path (`Configuration(configurationFiles:)`), which is still used by `Configuration+Merging.swift` for nested directory config discovery. This is part of the lint engine infrastructure that's still active.

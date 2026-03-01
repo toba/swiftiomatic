@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T19:07:42Z
 updated_at: 2026-02-28T19:10:11Z
+sync:
+    github:
+        issue_number: "44"
+        synced_at: "2026-03-01T01:01:37Z"
 ---
 
 - [x] git mv 5 files

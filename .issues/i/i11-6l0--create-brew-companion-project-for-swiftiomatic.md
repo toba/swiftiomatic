@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-02-27T21:36:54Z
 updated_at: 2026-03-01T00:13:27Z
 parent: 52u-0w0
+sync:
+    github:
+        issue_number: "85"
+        synced_at: "2026-03-01T01:01:48Z"
 ---
 
 Set up a Homebrew tap and formula so users can install swiftiomatic via `brew install`. Includes:

@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T23:54:24Z
 updated_at: 2026-03-01T00:13:05Z
+sync:
+    github:
+        issue_number: "53"
+        synced_at: "2026-03-01T01:01:38Z"
 ---
 
 Reorganize Tests/SwiftiomaticTests/ to mirror Sources/Swiftiomatic/ folder structure.

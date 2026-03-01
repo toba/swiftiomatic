@@ -61,18 +61,95 @@ extension Swift62ModernizationRule {
 
     override func visitPost(_ node: VariableDeclSyntax) {
       let hasWeak = node.modifiers.contains { $0.name.text == "weak" }
-      guard hasWeak, node.bindingSpecifier.tokenKind == .keyword(.var) else { return }
+      if hasWeak, node.bindingSpecifier.tokenKind == .keyword(.var) {
+        let bindingName = node.bindings.first?.pattern.trimmedDescription ?? "unknown"
+        violations.append(
+          SyntaxViolation(
+            position: node.positionAfterSkippingLeadingTrivia,
+            reason:
+              "weak var '\(bindingName)' — if never reassigned after init, use weak let (SE-0481)",
+            severity: .warning,
+            confidence: .low,
+          ),
+        )
+      }
 
-      let bindingName = node.bindings.first?.pattern.trimmedDescription ?? "unknown"
-      violations.append(
-        SyntaxViolation(
-          position: node.positionAfterSkippingLeadingTrivia,
-          reason:
-            "weak var '\(bindingName)' — if never reassigned after init, use weak let (SE-0481)",
-          severity: .warning,
-          confidence: .low,
-        ),
-      )
+      // Detect mutable static var without isolation on non-actor types
+      let hasStatic = node.modifiers.contains { $0.name.text == "static" }
+      let isVar = node.bindingSpecifier.tokenKind == .keyword(.var)
+      if hasStatic, isVar {
+        let hasIsolation = node.attributes.contains {
+          $0.trimmedDescription.contains("@MainActor")
+        }
+        let isPrivate = node.modifiers.contains {
+          $0.name.text == "private" || $0.name.text == "fileprivate"
+        }
+        // Only flag non-private static vars without isolation
+        if !hasIsolation, !isPrivate, !isInsideActor(Syntax(node)) {
+          let bindingName = node.bindings.first?.pattern.trimmedDescription ?? "unknown"
+          violations.append(
+            SyntaxViolation(
+              position: node.positionAfterSkippingLeadingTrivia,
+              reason:
+                "Mutable static var '\(bindingName)' without isolation — data race risk in concurrent contexts",
+              severity: .warning,
+              confidence: .low,
+              suggestion: "Protect with actor isolation, Mutex, or convert to @TaskLocal",
+            ),
+          )
+        }
+      }
+    }
+
+    override func visitPost(_ node: FunctionDeclSyntax) {
+      // Detect nonisolated on protocol-required methods inside @MainActor type
+      let hasNonisolated = node.modifiers.contains { $0.name.text == "nonisolated" }
+      if hasNonisolated, isInsideMainActorType(Syntax(node)) {
+        violations.append(
+          SyntaxViolation(
+            position: node.positionAfterSkippingLeadingTrivia,
+            reason:
+              "nonisolated method '\(node.name.text)' in @MainActor type — consider isolated conformances (SE-0470)",
+            severity: .warning,
+            confidence: .low,
+            suggestion: "Use @preconcurrency conformance or isolated protocol adoption",
+          ),
+        )
+      }
+
+      // Detect context parameter threading → @TaskLocal
+      let contextParamNames: Set<String> = ["context", "config", "configuration", "environment"]
+      let hasContextParam = node.signature.parameterClause.parameters.contains { param in
+        contextParamNames.contains(param.firstName.text)
+          || contextParamNames.contains(param.secondName?.text ?? "")
+      }
+      if hasContextParam, let body = node.body {
+        // Check if the context parameter is passed through to every sub-call
+        let calls = body.statements.compactMap { stmt -> FunctionCallExprSyntax? in
+          if let call = stmt.item.as(FunctionCallExprSyntax.self) { return call }
+          if let ret = stmt.item.as(ReturnStmtSyntax.self),
+            let call = ret.expression?.as(FunctionCallExprSyntax.self)
+          { return call }
+          return nil
+        }
+        let passesContext = calls.filter { call in
+          call.arguments.contains { arg in
+            contextParamNames.contains(arg.expression.trimmedDescription)
+          }
+        }
+        if calls.count >= 2, passesContext.count == calls.count {
+          violations.append(
+            SyntaxViolation(
+              position: node.positionAfterSkippingLeadingTrivia,
+              reason:
+                "Function '\(node.name.text)' threads context parameter to all callees — consider @TaskLocal",
+              severity: .warning,
+              confidence: .low,
+              suggestion: "Use @TaskLocal for implicit context propagation",
+            ),
+          )
+        }
+      }
     }
 
     override func visitPost(_ node: TypeAnnotationSyntax) {
@@ -92,6 +169,50 @@ extension Swift62ModernizationRule {
           ),
         )
       }
+
+      // Detect tuple as fixed-size buffer → InlineArray
+      if let tupleType = node.type.as(TupleTypeSyntax.self) {
+        let elements = tupleType.elements
+        if elements.count >= 3 {
+          let types = elements.map { $0.type.trimmedDescription }
+          let allSame = types.allSatisfy { $0 == types[0] }
+          if allSame {
+            violations.append(
+              SyntaxViolation(
+                position: node.positionAfterSkippingLeadingTrivia,
+                reason:
+                  "Homogeneous tuple of \(elements.count) elements — consider InlineArray<\(elements.count), \(types[0])> (SE-0453)",
+                severity: .warning,
+                confidence: .low,
+                suggestion: "InlineArray<\(elements.count), \(types[0])>",
+              ),
+            )
+          }
+        }
+      }
+    }
+
+    private func isInsideActor(_ node: Syntax) -> Bool {
+      var current: Syntax? = node
+      while let parent = current?.parent {
+        if parent.as(ActorDeclSyntax.self) != nil { return true }
+        current = parent
+      }
+      return false
+    }
+
+    private func isInsideMainActorType(_ node: Syntax) -> Bool {
+      var current: Syntax? = node
+      while let parent = current?.parent {
+        if let classDecl = parent.as(ClassDeclSyntax.self) {
+          return classDecl.attributes.contains { $0.trimmedDescription.contains("@MainActor") }
+        }
+        if let structDecl = parent.as(StructDeclSyntax.self) {
+          return structDecl.attributes.contains { $0.trimmedDescription.contains("@MainActor") }
+        }
+        current = parent
+      }
+      return false
     }
 
     override func visitPost(_ node: AccessorDeclSyntax) {

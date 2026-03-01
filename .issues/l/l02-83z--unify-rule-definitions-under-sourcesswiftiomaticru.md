@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-02-28T02:44:32Z
 updated_at: 2026-02-28T17:59:56Z
+sync:
+    github:
+        issue_number: "8"
+        synced_at: "2026-03-01T01:01:29Z"
 ---
 
 Move all rule definitions into Rules/, create unified Diagnostic output type, enhance RuleCatalog, wire commands to Diagnostic output.

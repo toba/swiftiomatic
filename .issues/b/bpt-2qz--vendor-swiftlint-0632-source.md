@@ -9,6 +9,10 @@ updated_at: 2026-02-27T23:33:06Z
 parent: 5nn-red
 blocked_by:
     - dl2-1pu
+sync:
+    github:
+        issue_number: "77"
+        synced_at: "2026-03-01T01:01:44Z"
 ---
 
 Clone SwiftLint 0.63.2 and vendor Core + BuiltInRules into Sources/SwiftLintVendored/.

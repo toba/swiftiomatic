@@ -7,6 +7,10 @@ priority: normal
 created_at: 2026-02-28T17:05:56Z
 updated_at: 2026-02-28T17:25:11Z
 parent: dz8-axs
+sync:
+    github:
+        issue_number: "91"
+        synced_at: "2026-03-01T01:01:47Z"
 ---
 
 Two cross-file Checks use custom two-pass architecture. Port their superior logic into the existing CollectingRule implementations.

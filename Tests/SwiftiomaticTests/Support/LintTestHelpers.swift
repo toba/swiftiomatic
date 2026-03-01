@@ -1,6 +1,10 @@
-import Testing
 import Foundation
+import Testing
 @testable import Swiftiomatic
+
+/// When true, skip expensive variant tests (emoji, shebang, comment, string, disable, severity).
+/// Set `SWIFTIOMATIC_FAST_TESTS=1` to enable.
+private let fastTests: Bool = ProcessInfo.processInfo.environment["SWIFTIOMATIC_FAST_TESTS"] != nil
 
 // MARK: - File Helpers
 
@@ -481,6 +485,9 @@ func verifyLint(
     )
     await verify(triggers: triggers, nonTriggers: nonTriggers)
 
+    // Skip expensive variant tests in fast mode
+    guard !fastTests else { return }
+
     if testMultiByteOffsets {
         await verify(
             triggers: triggers.filter(\.testMultiByteOffsets).map(addEmoji),
@@ -583,7 +590,7 @@ func verifyCorrections(
             await testCorrection(
                 correction,
                 configuration: config,
-                testMultiByteOffsets: testMultiByteOffsets,
+                testMultiByteOffsets: !fastTests && testMultiByteOffsets,
             )
         }
         // make sure strings that don't trigger aren't corrected
@@ -591,9 +598,12 @@ func verifyCorrections(
             await testCorrection(
                 (nonTriggeringExample, nonTriggeringExample),
                 configuration: config,
-                testMultiByteOffsets: testMultiByteOffsets,
+                testMultiByteOffsets: !fastTests && testMultiByteOffsets,
             )
         }
+
+        // Skip disable command correction tests in fast mode
+        guard !fastTests else { return }
 
         // "disable" commands do not correct
         for (before, _) in ruleDescription.corrections {

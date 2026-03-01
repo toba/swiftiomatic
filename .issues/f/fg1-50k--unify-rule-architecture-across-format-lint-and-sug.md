@@ -6,6 +6,10 @@ type: epic
 priority: normal
 created_at: 2026-02-28T00:40:27Z
 updated_at: 2026-02-28T00:57:37Z
+sync:
+    github:
+        issue_number: "50"
+        synced_at: "2026-03-01T01:01:38Z"
 ---
 
 Converge three subsystems into one rule framework. Lint's framework becomes THE rule framework. Suggest checks get ported as Lint rules. Format keeps its engine but integrates at registration/CLI level.

@@ -9,6 +9,10 @@ updated_at: 2026-02-28T17:53:21Z
 parent: dz8-axs
 blocked_by:
     - x76-2r9
+sync:
+    github:
+        issue_number: "68"
+        synced_at: "2026-03-01T01:01:43Z"
 ---
 
 Reorganize ~320 rule files from 8 uneven folders (1–110 files) into ~13 themed folders targeting 20–30 files each.

@@ -9,6 +9,10 @@ updated_at: 2026-02-27T23:33:06Z
 parent: 5nn-red
 blocked_by:
     - 797-849
+sync:
+    github:
+        issue_number: "72"
+        synced_at: "2026-03-01T01:01:43Z"
 ---
 
 Legal compliance and docs for vendored SwiftLint.

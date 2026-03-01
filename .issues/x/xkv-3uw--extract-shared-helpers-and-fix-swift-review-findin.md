@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T02:15:44Z
 updated_at: 2026-02-28T02:33:58Z
+sync:
+    github:
+        issue_number: "43"
+        synced_at: "2026-03-01T01:01:37Z"
 ---
 
 Implement the swift-review fixes plan:

@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T16:58:43Z
 updated_at: 2026-02-28T17:05:52Z
+sync:
+    github:
+        issue_number: "16"
+        synced_at: "2026-03-01T01:01:31Z"
 ---
 
 Remove the CustomRules mechanism — regex-based lint rules defined in YAML config. This contradicts the AST-only philosophy and is already non-functional (skipped in RuleLoader).

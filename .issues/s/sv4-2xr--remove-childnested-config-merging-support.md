@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T22:30:09Z
 updated_at: 2026-02-28T22:33:26Z
+sync:
+    github:
+        issue_number: "42"
+        synced_at: "2026-03-01T01:01:36Z"
 ---
 
 - [x] Delete Configuration+Merging.swift

@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 struct ConcurrencyModernizationRule: Rule {
@@ -153,6 +154,122 @@ extension ConcurrencyModernizationRule {
           ),
         )
       }
+
+      // Detect AsyncStream/AsyncThrowingStream without continuation.finish()
+      if callee == "AsyncStream" || callee == "AsyncThrowingStream" {
+        if let trailingClosure = node.trailingClosure {
+          let body = trailingClosure.statements.trimmedDescription
+          if !body.contains("continuation.finish") {
+            violations.append(
+              SyntaxViolation(
+                position: node.positionAfterSkippingLeadingTrivia,
+                reason: "\(callee) may be missing continuation.finish() call",
+                severity: .warning,
+                confidence: .high,
+                suggestion: "Add continuation.finish() in all exit paths",
+              ),
+            )
+          }
+          if !body.contains("onTermination") {
+            violations.append(
+              SyntaxViolation(
+                position: node.positionAfterSkippingLeadingTrivia,
+                reason:
+                  "\(callee) missing onTermination handler — resources may leak on cancellation",
+                severity: .warning,
+                confidence: .medium,
+                suggestion: "Set continuation.onTermination to clean up resources",
+              ),
+            )
+          }
+        }
+      }
+
+      // Detect withCheckedContinuation wrapping single async call
+      if callee == "withCheckedContinuation" || callee == "withCheckedThrowingContinuation" {
+        if let trailingClosure = node.trailingClosure {
+          let stmts = trailingClosure.statements
+          let awaitCount = stmts.trimmedDescription.countOccurrences(of: "await ")
+          let resumeCount = stmts.trimmedDescription.countOccurrences(of: "continuation.resume")
+          if awaitCount == 1, resumeCount == 1 {
+            violations.append(
+              SyntaxViolation(
+                position: node.positionAfterSkippingLeadingTrivia,
+                reason:
+                  "\(callee) wraps a single async call — the continuation wrapper may be unnecessary",
+                severity: .warning,
+                confidence: .medium,
+                suggestion: "Call the async function directly instead of wrapping in a continuation",
+              ),
+            )
+          }
+        }
+      }
+
+      // Detect OperationQueue()
+      if callee == "OperationQueue" {
+        violations.append(
+          SyntaxViolation(
+            position: node.positionAfterSkippingLeadingTrivia,
+            reason: "OperationQueue can be replaced with TaskGroup",
+            severity: .warning,
+            confidence: .medium,
+            suggestion: "Use withTaskGroup or withThrowingTaskGroup",
+          ),
+        )
+      }
+
+      // Detect Timer.scheduledTimer and DispatchSource.makeTimerSource
+      if callee.contains("Timer.scheduledTimer") || callee.contains("makeTimerSource") {
+        violations.append(
+          SyntaxViolation(
+            position: node.positionAfterSkippingLeadingTrivia,
+            reason: "Timer/DispatchSource timer can be replaced with AsyncTimerSequence",
+            severity: .warning,
+            confidence: .medium,
+            suggestion:
+              "Use AsyncTimerSequence from swift-async-algorithms or Task.sleep(for:)",
+          ),
+        )
+      }
+    }
+
+    override func visitPost(_ node: MemberAccessExprSyntax) {
+      let memberName = node.declName.baseName.text
+
+      // Detect NotificationCenter.addObserver in async context
+      if memberName == "addObserver",
+        node.base?.trimmedDescription.contains("NotificationCenter") == true,
+        isInsideAsyncContext(Syntax(node))
+      {
+        violations.append(
+          SyntaxViolation(
+            position: node.positionAfterSkippingLeadingTrivia,
+            reason:
+              "NotificationCenter.addObserver in async context — prefer .notifications(named:)",
+            severity: .warning,
+            confidence: .low,
+            suggestion: "Use NotificationCenter.default.notifications(named:) async sequence",
+          ),
+        )
+      }
+
+      // Detect OperationQueue usage
+      if memberName == "addOperation" || memberName == "addBarrierBlock" {
+        if node.base?.trimmedDescription.contains("operationQueue") == true
+          || node.base?.trimmedDescription.contains("OperationQueue") == true
+        {
+          violations.append(
+            SyntaxViolation(
+              position: node.positionAfterSkippingLeadingTrivia,
+              reason: "OperationQueue.\(memberName) can be replaced with TaskGroup",
+              severity: .warning,
+              confidence: .medium,
+              suggestion: "Use withTaskGroup or withThrowingTaskGroup",
+            ),
+          )
+        }
+      }
     }
 
     override func visitPost(_ node: ClassDeclSyntax) {
@@ -168,5 +285,33 @@ extension ConcurrencyModernizationRule {
         )
       }
     }
+
+    private func isInsideAsyncContext(_ node: Syntax) -> Bool {
+      var current: Syntax? = node
+      while let parent = current?.parent {
+        if let funcDecl = parent.as(FunctionDeclSyntax.self) {
+          return funcDecl.signature.effectSpecifiers?.asyncSpecifier != nil
+        }
+        if let closureExpr = parent.as(ClosureExprSyntax.self) {
+          // Check if the closure itself is async by looking for `async` keyword
+          let closureStr = closureExpr.signature?.trimmedDescription ?? ""
+          return closureStr.contains("async")
+        }
+        current = parent
+      }
+      return false
+    }
+  }
+}
+
+extension String {
+  fileprivate func countOccurrences(of target: String) -> Int {
+    var count = 0
+    var searchRange = startIndex..<endIndex
+    while let found = range(of: target, range: searchRange) {
+      count += 1
+      searchRange = found.upperBound..<endIndex
+    }
+    return count
   }
 }

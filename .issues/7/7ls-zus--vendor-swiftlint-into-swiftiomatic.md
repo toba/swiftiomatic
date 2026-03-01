@@ -6,6 +6,10 @@ type: epic
 priority: normal
 created_at: 2026-02-27T23:03:25Z
 updated_at: 2026-02-27T23:33:16Z
+sync:
+    github:
+        issue_number: "12"
+        synced_at: "2026-03-01T01:01:31Z"
 ---
 
 Vendor SwiftLint 0.63.2 source into Swiftiomatic as a `lint` subcommand.

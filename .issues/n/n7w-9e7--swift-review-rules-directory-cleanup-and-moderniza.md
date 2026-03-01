@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T21:33:58Z
 updated_at: 2026-02-28T22:21:57Z
+sync:
+    github:
+        issue_number: "7"
+        synced_at: "2026-03-01T01:01:29Z"
 ---
 
 Swift review findings for `Sources/Swiftiomatic/Rules/` — formatting, naming, duplication, typed throws, and dead code.

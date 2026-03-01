@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T19:30:50Z
 updated_at: 2026-02-28T19:45:34Z
+sync:
+    github:
+        issue_number: "52"
+        synced_at: "2026-03-01T01:01:38Z"
 ---
 
 Thorough swift-review of Sources/Swiftiomatic/Extensions/ — formatting, all 8 review categories, file/type naming.

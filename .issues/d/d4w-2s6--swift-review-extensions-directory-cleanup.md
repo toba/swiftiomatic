@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T19:27:28Z
 updated_at: 2026-02-28T19:48:49Z
+sync:
+    github:
+        issue_number: "48"
+        synced_at: "2026-03-01T01:01:37Z"
 ---
 
 ## Swift Review — Extensions Directory

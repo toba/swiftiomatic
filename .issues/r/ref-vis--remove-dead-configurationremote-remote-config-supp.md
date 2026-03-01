@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-02-28T19:14:14Z
 updated_at: 2026-02-28T19:17:16Z
+sync:
+    github:
+        issue_number: "63"
+        synced_at: "2026-03-01T01:01:40Z"
 ---
 
 Remove `Configuration+Remote.swift` — a SwiftLint leftover that downloads YAML config from URLs with local caching. Swiftiomatic is a local CLI tool with no remote config use case.

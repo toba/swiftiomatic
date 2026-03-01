@@ -6,6 +6,10 @@ type: feature
 priority: normal
 created_at: 2026-02-27T22:39:11Z
 updated_at: 2026-02-27T22:47:37Z
+sync:
+    github:
+        issue_number: "5"
+        synced_at: "2026-03-01T01:01:29Z"
 ---
 
 Add SourceKitService target with TypeResolver protocol and SourceKittenResolver implementation. Thread resolver through Analyzer → BaseCheck. Add CLI flags --sourcekit, --project-root, --compiler-args.
