@@ -8,7 +8,6 @@ struct UnneededOverrideRule: Rule {
     identifier: "unneeded_override",
     name: "Unneeded Overridden Functions",
     description: "Remove overridden functions that don't do anything except call their super",
-    kind: .lint,
     nonTriggeringExamples: UnneededOverrideRuleExamples.nonTriggeringExamples,
     triggeringExamples: UnneededOverrideRuleExamples.triggeringExamples,
     corrections: UnneededOverrideRuleExamples.corrections,

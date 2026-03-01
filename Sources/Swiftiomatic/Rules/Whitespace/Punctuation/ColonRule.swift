@@ -10,7 +10,6 @@ struct ColonRule: SubstitutionCorrectableRule, SyntaxOnlyRule {
     description: """
       Colons should be next to the identifier when specifying a type and next to the key in dictionary literals
       """,
-    kind: .style,
     nonTriggeringExamples: ColonRuleExamples.nonTriggeringExamples,
     triggeringExamples: ColonRuleExamples.triggeringExamples,
     corrections: ColonRuleExamples.corrections,

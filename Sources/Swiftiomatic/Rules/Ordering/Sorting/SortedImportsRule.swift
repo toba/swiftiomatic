@@ -8,7 +8,6 @@ struct SortedImportsRule: Rule {
     identifier: "sorted_imports",
     name: "Sorted Imports",
     description: "Imports should be sorted",
-    kind: .style,
     nonTriggeringExamples: SortedImportsRuleExamples.nonTriggeringExamples,
     triggeringExamples: SortedImportsRuleExamples.triggeringExamples,
     corrections: SortedImportsRuleExamples.corrections,

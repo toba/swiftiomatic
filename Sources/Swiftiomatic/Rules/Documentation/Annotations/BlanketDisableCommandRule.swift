@@ -32,7 +32,6 @@ struct BlanketDisableCommandRule: Rule, SyntaxOnlyRule {
       // sm:disable force_unwrapping
       ```
       """,
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

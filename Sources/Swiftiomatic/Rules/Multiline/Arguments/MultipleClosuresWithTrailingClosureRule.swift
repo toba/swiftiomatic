@@ -8,7 +8,6 @@ struct MultipleClosuresWithTrailingClosureRule: Rule {
     name: "Multiple Closures with Trailing Closure",
     description:
       "Trailing closure syntax should not be used when passing more than one closure argument",
-    kind: .style,
     nonTriggeringExamples: [
       Example("foo.map { $0 + 1 }"),
       Example("foo.reduce(0) { $0 + $1 }"),

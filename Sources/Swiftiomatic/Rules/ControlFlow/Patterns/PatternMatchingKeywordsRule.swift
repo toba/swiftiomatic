@@ -7,7 +7,6 @@ struct PatternMatchingKeywordsRule: Rule {
     identifier: "pattern_matching_keywords",
     name: "Pattern Matching Keywords",
     description: "Combine multiple pattern matching bindings by moving keywords out of tuples",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("default"),
       Example("case 1"),

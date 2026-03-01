@@ -8,7 +8,6 @@ struct ClosingBraceRule: Rule {
     name: "Closing Brace Spacing",
     description:
       "Closing brace with closing parenthesis should not have any whitespaces in the middle",
-    kind: .style,
     nonTriggeringExamples: [
       Example("[].map({ })"),
       Example("[].map(\n  { }\n)"),

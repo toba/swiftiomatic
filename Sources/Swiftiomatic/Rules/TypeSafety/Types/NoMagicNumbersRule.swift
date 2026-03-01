@@ -10,7 +10,6 @@ struct NoMagicNumbersRule: Rule {
     identifier: "no_magic_numbers",
     name: "No Magic Numbers",
     description: "Magic numbers should be replaced by named constants",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("var foo = 123"),
       Example("static let bar: Double = 0.123"),

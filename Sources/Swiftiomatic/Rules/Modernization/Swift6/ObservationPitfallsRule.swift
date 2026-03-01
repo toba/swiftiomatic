@@ -7,7 +7,6 @@ struct ObservationPitfallsRule: Rule {
     identifier: "observation_pitfalls",
     name: "Observation Pitfalls",
     description: "Detects common pitfalls with the Observation framework",
-    kind: .observation,
     nonTriggeringExamples: [
       Example("for await value in Observations({ [weak self] in self?.model }) { }")
     ],

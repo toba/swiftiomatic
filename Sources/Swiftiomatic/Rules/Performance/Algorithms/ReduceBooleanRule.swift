@@ -8,7 +8,6 @@ struct ReduceBooleanRule: Rule {
     name: "Reduce Boolean",
     description:
       "Prefer using `.allSatisfy()` or `.contains()` over `reduce(true)` or `reduce(false)`.",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("nums.reduce(0) { $0.0 + $0.1 }"),
       Example("nums.reduce(0.0) { $0.0 + $0.1 }"),

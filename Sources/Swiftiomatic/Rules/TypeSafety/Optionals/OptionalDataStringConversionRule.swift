@@ -8,7 +8,6 @@ struct OptionalDataStringConversionRule: Rule {
     name: "Optional Data -> String Conversion",
     description:
       "Prefer failable `String(bytes:encoding:)` initializer when converting `Data` to `String`",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("String(data: data, encoding: .utf8)"),
       Example("String(bytes: data, encoding: .utf8)"),

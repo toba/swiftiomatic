@@ -8,7 +8,6 @@ struct ConcurrencyModernizationRule: Rule {
     name: "Concurrency Modernization",
     description:
       "Flags GCD usage and legacy concurrency patterns that should use structured concurrency",
-    kind: .concurrency,
     nonTriggeringExamples: [
       Example("Task { @MainActor in update() }"),
       Example("await withTaskGroup(of: Void.self) { }"),

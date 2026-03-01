@@ -8,7 +8,6 @@ struct LowerACLThanParentRule: Rule {
     name: "Lower ACL than Parent",
     description:
       "Ensure declarations have a lower access control level than their enclosing parent",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("public struct Foo { public func bar() {} }"),
       Example("internal struct Foo { func bar() {} }"),

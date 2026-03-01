@@ -7,7 +7,6 @@ struct ImplicitGetterRule: Rule {
     identifier: "implicit_getter",
     name: "Implicit Getter",
     description: "Computed read-only properties and subscripts should avoid using the get keyword.",
-    kind: .style,
     nonTriggeringExamples: ImplicitGetterRuleExamples.nonTriggeringExamples,
     triggeringExamples: ImplicitGetterRuleExamples.triggeringExamples,
   )

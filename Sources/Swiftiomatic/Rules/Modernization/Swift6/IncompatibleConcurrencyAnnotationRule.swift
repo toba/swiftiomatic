@@ -16,7 +16,6 @@ struct IncompatibleConcurrencyAnnotationRule: Rule {
       This rule detects public declarations that require `@preconcurrency` and can automatically add
       the annotation.
       """,
-    kind: .lint,
     nonTriggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.nonTriggeringExamples,
     triggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.triggeringExamples,
     corrections: IncompatibleConcurrencyAnnotationRuleExamples.corrections,

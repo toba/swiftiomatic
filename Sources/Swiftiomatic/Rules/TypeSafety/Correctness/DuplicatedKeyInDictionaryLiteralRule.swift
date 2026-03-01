@@ -7,7 +7,6 @@ struct DuplicatedKeyInDictionaryLiteralRule: Rule {
     identifier: "duplicated_key_in_dictionary_literal",
     name: "Duplicated Key in Dictionary Literal",
     description: "Dictionary literals with duplicated keys will crash at runtime",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

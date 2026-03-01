@@ -8,7 +8,6 @@ struct NoFallthroughOnlyRule: Rule {
     name: "No Fallthrough only",
     description:
       "Fallthroughs can only be used if the `case` contains at least one other statement",
-    kind: .idiomatic,
     nonTriggeringExamples: NoFallthroughOnlyRuleExamples.nonTriggeringExamples,
     triggeringExamples: NoFallthroughOnlyRuleExamples.triggeringExamples,
   )

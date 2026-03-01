@@ -14,7 +14,6 @@ struct TypeBodyLengthRule: Rule {
     identifier: "type_body_length",
     name: "Type Body Length",
     description: "Type bodies should not span too many lines",
-    kind: .metrics,
     nonTriggeringExamples: [
       Example("actor A {}", configuration: testConfig),
       Example("class C {}", configuration: testConfig),

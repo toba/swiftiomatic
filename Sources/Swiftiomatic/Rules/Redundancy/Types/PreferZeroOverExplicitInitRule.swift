@@ -9,7 +9,6 @@ struct PreferZeroOverExplicitInitRule: Rule {
     name: "Prefer Zero Over Explicit Init",
     description:
       "Prefer `.zero` over explicit init with zero parameters (e.g. `CGPoint(x: 0, y: 0)`)",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("CGRect(x: 0, y: 0, width: 0, height: 1)"),
       Example("CGPoint(x: 0, y: -1)"),

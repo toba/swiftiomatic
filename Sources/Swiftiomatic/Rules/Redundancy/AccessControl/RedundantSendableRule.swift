@@ -7,7 +7,6 @@ struct RedundantSendableRule: Rule {
     identifier: "redundant_sendable",
     name: "Redundant Sendable",
     description: "Sendable conformance is redundant on an actor-isolated type",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("struct S: Sendable {}"),
       Example("class C: Sendable {}"),

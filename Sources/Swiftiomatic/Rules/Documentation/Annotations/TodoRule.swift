@@ -8,7 +8,6 @@ struct TodoRule: Rule {
     identifier: "todo",
     name: "Todo",
     description: "TODOs and FIXMEs should be resolved.",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("// notaTODO:"),
       Example("// notaFIXME:"),

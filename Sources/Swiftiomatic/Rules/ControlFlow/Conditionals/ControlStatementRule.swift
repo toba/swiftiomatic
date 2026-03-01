@@ -9,7 +9,6 @@ struct ControlStatementRule: Rule {
     description:
       "`if`, `for`, `guard`, `switch`, `while`, and `catch` statements shouldn't unnecessarily wrap their "
       + "conditionals or arguments in parentheses",
-    kind: .style,
     nonTriggeringExamples: [
       Example("if condition {}"),
       Example("if (a, b) == (0, 1) {}"),

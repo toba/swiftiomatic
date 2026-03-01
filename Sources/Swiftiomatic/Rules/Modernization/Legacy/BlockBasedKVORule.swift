@@ -8,7 +8,6 @@ struct BlockBasedKVORule: Rule {
     identifier: "block_based_kvo",
     name: "Block Based KVO",
     description: "Prefer the new block based KVO API with keypaths when using Swift 3.2 or later",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         #"""

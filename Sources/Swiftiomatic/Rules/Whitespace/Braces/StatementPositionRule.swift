@@ -8,7 +8,6 @@ struct StatementPositionRule: CorrectableRule {
     name: "Statement Position",
     description:
       "Else and catch should be on the same line, one space after the previous declaration",
-    kind: .style,
     nonTriggeringExamples: [
       Example("} else if {"),
       Example("} else {"),
@@ -35,7 +34,6 @@ struct StatementPositionRule: CorrectableRule {
     name: "Statement Position",
     description: "Else and catch should be on the next line, with equal indentation to the "
       + "previous declaration",
-    kind: .style,
     nonTriggeringExamples: [
       Example("  }\n  else if {"),
       Example("    }\n    else {"),

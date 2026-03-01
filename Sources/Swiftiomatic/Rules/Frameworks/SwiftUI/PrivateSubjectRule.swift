@@ -7,7 +7,6 @@ struct PrivateSubjectRule: Rule {
     identifier: "private_subject",
     name: "Private Combine Subject",
     description: "Combine Subject should be private",
-    kind: .lint,
     nonTriggeringExamples: PrivateSubjectRuleExamples.nonTriggeringExamples,
     triggeringExamples: PrivateSubjectRuleExamples.triggeringExamples,
   )

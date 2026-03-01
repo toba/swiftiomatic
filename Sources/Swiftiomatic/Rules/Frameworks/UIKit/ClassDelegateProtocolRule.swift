@@ -25,7 +25,6 @@ struct ClassDelegateProtocolRule: Rule {
       ↓protocol FooDelegate {}
       ```
       """,
-    kind: .lint,
     nonTriggeringExamples: [
       Example("protocol FooDelegate: class {}"),
       Example("protocol FooDelegate: class, BarDelegate {}"),

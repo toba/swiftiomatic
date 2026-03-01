@@ -7,7 +7,6 @@ struct JoinedDefaultParameterRule: Rule {
     identifier: "joined_default_parameter",
     name: "Joined Default Parameter",
     description: "Discouraged explicit usage of the default separator",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("let foo = bar.joined()"),
       Example("let foo = bar.joined(separator: \",\")"),

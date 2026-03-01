@@ -7,7 +7,6 @@ struct PrivateActionRule: Rule {
     identifier: "private_action",
     name: "Private Actions",
     description: "IBActions should be private",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         "class Foo {\n\t@IBAction private func barButtonTapped(_ sender: UIButton) {}\n}",

@@ -7,7 +7,6 @@ struct QuickDiscouragedCallRule: Rule {
     identifier: "quick_discouraged_call",
     name: "Quick Discouraged Call",
     description: "Discouraged call inside 'describe' and/or 'context' block.",
-    kind: .lint,
     nonTriggeringExamples: QuickDiscouragedCallRuleExamples.nonTriggeringExamples,
     triggeringExamples: QuickDiscouragedCallRuleExamples.triggeringExamples,
   )

@@ -17,7 +17,6 @@ struct PrivateSwiftUIStatePropertyRule: Rule {
     identifier: "private_swiftui_state",
     name: "Private SwiftUI State Properties",
     description: "SwiftUI state properties should be private",
-    kind: .lint,
     nonTriggeringExamples: PrivateSwiftUIStatePropertyRuleExamples.nonTriggeringExamples,
     triggeringExamples: PrivateSwiftUIStatePropertyRuleExamples.triggeringExamples,
     corrections: PrivateSwiftUIStatePropertyRuleExamples.corrections,

@@ -8,7 +8,6 @@ struct UnneededThrowsRule: Rule {
     name: "Unneeded (Re)Throws Keyword",
     description:
       "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`.",
-    kind: .lint,
     nonTriggeringExamples: UnneededThrowsRuleExamples.nonTriggeringExamples,
     triggeringExamples: UnneededThrowsRuleExamples.triggeringExamples,
     corrections: UnneededThrowsRuleExamples.corrections,

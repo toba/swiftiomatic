@@ -7,7 +7,6 @@ struct LegacyRandomRule: Rule {
     identifier: "legacy_random",
     name: "Legacy Random",
     description: "Prefer using `type.random(in:)` over legacy functions",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("Int.random(in: 0..<10)"),
       Example("Double.random(in: 8.6...111.34)"),

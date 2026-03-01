@@ -8,7 +8,6 @@ struct UnavailableConditionRule: Rule {
     name: "Unavailable Condition",
     description:
       "Use #unavailable/#available instead of #available/#unavailable with an empty body.",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

@@ -9,7 +9,6 @@ struct IdenticalOperandsRule: Rule {
     identifier: "identical_operands",
     name: "Identical Operands",
     description: "Comparing two identical operands is likely a mistake",
-    kind: .lint,
     nonTriggeringExamples: operators.flatMap { operation in
       [
         Example("1 \(operation) 2"),

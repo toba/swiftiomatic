@@ -7,7 +7,6 @@ struct DuplicateEnumCasesRule: Rule {
     identifier: "duplicate_enum_cases",
     name: "Duplicate Enum Cases",
     description: "Enum shouldn't contain multiple cases with the same name",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

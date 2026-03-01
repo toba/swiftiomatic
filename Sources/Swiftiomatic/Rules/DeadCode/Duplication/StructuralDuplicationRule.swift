@@ -10,7 +10,6 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
     name: "Structural Duplication",
     description:
       "Functions with identical AST structure are likely duplicated code that should be consolidated",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("func unique1() { print(1) }\nfunc unique2() { return 2 }")
     ],

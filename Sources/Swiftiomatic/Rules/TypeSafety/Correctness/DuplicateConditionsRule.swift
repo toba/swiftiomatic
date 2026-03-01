@@ -7,7 +7,6 @@ struct DuplicateConditionsRule: Rule {
     identifier: "duplicate_conditions",
     name: "Duplicate Conditions",
     description: "Duplicate sets of conditions in the same branch instruction should be avoided",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

@@ -8,7 +8,6 @@ struct SortedEnumCasesRule: Rule {
     identifier: "sorted_enum_cases",
     name: "Sorted Enum Cases",
     description: "Enum cases should be sorted",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

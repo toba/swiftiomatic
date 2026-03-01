@@ -10,7 +10,6 @@ struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
     identifier: "comma_inheritance",
     name: "Comma Inheritance Rule",
     description: "Use commas to separate types in inheritance lists",
-    kind: .style,
     nonTriggeringExamples: [
       Example("struct A: Codable, Equatable {}"),
       Example("enum B: Codable, Equatable {}"),

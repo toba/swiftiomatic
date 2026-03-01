@@ -11,7 +11,6 @@ struct InclusiveLanguageRule: Rule {
       Identifiers should use inclusive language that avoids discrimination against groups of people based on \
       race, gender, or socioeconomic status.
       """,
-    kind: .style,
     nonTriggeringExamples: InclusiveLanguageRuleExamples.nonTriggeringExamples,
     triggeringExamples: InclusiveLanguageRuleExamples.triggeringExamples,
   )

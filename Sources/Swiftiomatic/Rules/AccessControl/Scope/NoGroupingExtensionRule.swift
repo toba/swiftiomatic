@@ -7,7 +7,6 @@ struct NoGroupingExtensionRule: Rule {
     identifier: "no_grouping_extension",
     name: "No Grouping Extension",
     description: "Extensions shouldn't be used to group code within the same source file",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("protocol Food {}\nextension Food {}"),
       Example("class Apples {}\nextension Oranges {}"),

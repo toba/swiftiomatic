@@ -33,7 +33,6 @@ struct TrailingCommaRule: Rule {
     identifier: "trailing_comma",
     name: "Trailing Comma",
     description: "Trailing commas in arrays and dictionaries should be avoided/enforced.",
-    kind: .style,
     nonTriggeringExamples: [
       Example("let foo = [1, 2, 3]"),
       Example("let foo = []"),

@@ -13,7 +13,6 @@ struct RequiredDeinitRule: Rule {
     identifier: "required_deinit",
     name: "Required Deinit",
     description: "Classes should have an explicit deinit method",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

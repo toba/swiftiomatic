@@ -7,7 +7,6 @@ struct TestCaseAccessibilityRule: Rule {
     identifier: "test_case_accessibility",
     name: "Test Case Accessibility",
     description: "Test cases should only contain private non-test members",
-    kind: .lint,
     nonTriggeringExamples: TestCaseAccessibilityRuleExamples.nonTriggeringExamples,
     triggeringExamples: TestCaseAccessibilityRuleExamples.triggeringExamples,
     corrections: TestCaseAccessibilityRuleExamples.corrections,

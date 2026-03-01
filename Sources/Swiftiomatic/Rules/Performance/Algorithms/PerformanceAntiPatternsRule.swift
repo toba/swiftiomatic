@@ -8,7 +8,6 @@ struct PerformanceAntiPatternsRule: Rule {
     name: "Performance Anti-Patterns",
     description:
       "Detects common performance anti-patterns like Date() for benchmarking and mutation during iteration",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("let now = ContinuousClock.now"),
       Example("array.removeAll(where: { $0.isEmpty })"),

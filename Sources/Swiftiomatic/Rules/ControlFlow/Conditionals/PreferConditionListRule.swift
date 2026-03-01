@@ -29,7 +29,6 @@ struct PreferConditionListRule: Rule {
       conditions, this rule makes sure to wrap such expressions in parentheses when transforming them to
       condition list elements. The scope of the parentheses is limited to the function call itself.
       """,
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("if a, b {}"),
       Example("guard a || b && c {}"),

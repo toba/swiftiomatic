@@ -8,7 +8,6 @@ struct LocalDocCommentRule: SwiftSyntaxRule, OptInRule {
     identifier: "local_doc_comment",
     name: "Local Doc Comment",
     description: "Prefer regular comments over doc comments in local scopes",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

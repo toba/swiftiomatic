@@ -7,7 +7,6 @@ struct AgentReviewRule: Rule {
     identifier: "agent_review",
     name: "Agent Review",
     description: "Lower-confidence checks that benefit from agent verification",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("let task = Task { await work() }"),
       Example("enum AppError: LocalizedError { case failed }"),

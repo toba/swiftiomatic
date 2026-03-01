@@ -7,7 +7,6 @@ struct ForceCastRule: Rule {
     identifier: "force_cast",
     name: "Force Cast",
     description: "Force casts should be avoided",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("NSNumber() as? Int")
     ],

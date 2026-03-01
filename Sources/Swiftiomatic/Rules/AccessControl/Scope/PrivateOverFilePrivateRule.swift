@@ -7,7 +7,6 @@ struct PrivateOverFilePrivateRule: Rule {
     identifier: "private_over_fileprivate",
     name: "Private over Fileprivate",
     description: "Prefer `private` over `fileprivate` declarations",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("extension String {}"),
       Example("private extension String {}"),

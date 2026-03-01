@@ -7,7 +7,6 @@ struct ContainsOverFirstNotNilRule: Rule {
     identifier: "contains_over_first_not_nil",
     name: "Contains over First not Nil",
     description: "Prefer `contains` over `first(where:) != nil` and `firstIndex(where:) != nil`.",
-    kind: .performance,
     nonTriggeringExamples: ["first", "firstIndex"].flatMap { method in
       [
         Example("let \(method) = myList.\(method)(where: { $0 % 2 == 0 })"),

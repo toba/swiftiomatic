@@ -7,7 +7,6 @@ struct ProhibitedSuperRule: Rule {
     identifier: "prohibited_super_call",
     name: "Prohibited Calls to Super",
     description: "Some methods should not call super.",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

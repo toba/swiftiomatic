@@ -8,7 +8,6 @@ struct ReturnArrowWhitespaceRule: Rule {
     name: "Returning Whitespace",
     description: "Return arrow and return type should be separated by a single space or on a "
       + "separate line",
-    kind: .style,
     nonTriggeringExamples: [
       Example("func abc() -> Int {}"),
       Example("func abc() -> [Int] {}"),

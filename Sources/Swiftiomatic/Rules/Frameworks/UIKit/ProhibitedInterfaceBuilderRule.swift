@@ -7,7 +7,6 @@ struct ProhibitedInterfaceBuilderRule: Rule {
     identifier: "prohibited_interface_builder",
     name: "Prohibited Interface Builder",
     description: "Creating views using Interface Builder should be avoided",
-    kind: .lint,
     nonTriggeringExamples: [
       wrapExample("var label: UILabel!"),
       wrapExample("@objc func buttonTapped(_ sender: UIButton) {}"),

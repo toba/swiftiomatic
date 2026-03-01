@@ -7,7 +7,6 @@ struct MultilineCallArgumentsRule: Rule {
     identifier: "multiline_call_arguments",
     name: "Multiline Call Arguments",
     description: "Call should have each parameter on a separate line",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

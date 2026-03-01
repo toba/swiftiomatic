@@ -7,7 +7,6 @@ struct UnusedOptionalBindingRule: Rule {
     identifier: "unused_optional_binding",
     name: "Unused Optional Binding",
     description: "Prefer `!= nil` over `let _ =`",
-    kind: .style,
     nonTriggeringExamples: [
       Example("if let bar = Foo.optionalValue {}"),
       Example("if let (_, second) = getOptionalTuple() {}"),

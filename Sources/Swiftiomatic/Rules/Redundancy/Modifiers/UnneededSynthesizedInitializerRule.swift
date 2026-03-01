@@ -23,7 +23,6 @@ struct UnneededSynthesizedInitializerRule: Rule {
     name: "Unneeded Synthesized Initializer",
     description: "Default or memberwise initializers that will be automatically synthesized "
       + "do not need to be manually defined.",
-    kind: .idiomatic,
     nonTriggeringExamples: UnneededSynthesizedInitializerRuleExamples.nonTriggering,
     triggeringExamples: UnneededSynthesizedInitializerRuleExamples.triggering,
     corrections: UnneededSynthesizedInitializerRuleExamples.corrections,

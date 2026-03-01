@@ -7,7 +7,6 @@ struct SortedFirstLastRule: Rule {
     identifier: "sorted_first_last",
     name: "Min or Max over Sorted First or Last",
     description: "Prefer using `min()` or `max()` over `sorted().first` or `sorted().last`",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("let min = myList.min()"),
       Example("let min = myList.min(by: { $0 < $1 })"),

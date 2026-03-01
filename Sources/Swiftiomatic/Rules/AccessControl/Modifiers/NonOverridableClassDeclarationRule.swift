@@ -10,7 +10,6 @@ struct NonOverridableClassDeclarationRule: Rule {
       Class methods and properties in final classes should themselves be final, just as if the declarations
       are private. In both cases, they cannot be overridden. Using `final class` or `static` makes this explicit.
       """,
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

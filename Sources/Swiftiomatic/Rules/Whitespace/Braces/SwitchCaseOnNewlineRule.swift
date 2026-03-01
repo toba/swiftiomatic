@@ -19,7 +19,6 @@ struct SwitchCaseOnNewlineRule: Rule {
     identifier: "switch_case_on_newline",
     name: "Cases on Newline",
     description: "Cases inside a switch should always be on a newline",
-    kind: .style,
     nonTriggeringExamples: [
       Example("/*case 1: */return true"),
       Example("//case 1:\n return true"),

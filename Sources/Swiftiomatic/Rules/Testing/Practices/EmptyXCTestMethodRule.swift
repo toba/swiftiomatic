@@ -7,7 +7,6 @@ struct EmptyXCTestMethodRule: Rule {
     identifier: "empty_xctest_method",
     name: "Empty XCTest Method",
     description: "Empty XCTest method should be avoided",
-    kind: .lint,
     nonTriggeringExamples: EmptyXCTestMethodRuleExamples.nonTriggeringExamples,
     triggeringExamples: EmptyXCTestMethodRuleExamples.triggeringExamples,
   )

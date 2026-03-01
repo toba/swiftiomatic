@@ -8,7 +8,6 @@ struct MultilineLiteralBracketsRule: Rule {
     identifier: "multiline_literal_brackets",
     name: "Multiline Literal Brackets",
     description: "Multiline literals should have their surrounding brackets in a new line",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

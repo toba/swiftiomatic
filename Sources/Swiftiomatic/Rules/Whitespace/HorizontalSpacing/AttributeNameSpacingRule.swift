@@ -11,7 +11,6 @@ struct AttributeNameSpacingRule: Rule {
       with Swift 6 where a space between an attribute name and the opening parenthesis \
       results in a compilation error (e.g. `@MyPropertyWrapper ()`, `private (set)`).
       """,
-    kind: .style,
     nonTriggeringExamples: [
       Example("private(set) var foo: Bool = false"),
       Example("fileprivate(set) var foo: Bool = false"),

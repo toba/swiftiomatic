@@ -8,7 +8,6 @@ struct TrailingWhitespaceRule: Rule {
     identifier: "trailing_whitespace",
     name: "Trailing Whitespace",
     description: "Lines should not have trailing whitespace",
-    kind: .style,
     nonTriggeringExamples: [
       Example("let name: String\n"), Example("//\n"), Example("// \n"),
       Example("let name: String //\n"), Example("let name: String // \n"),

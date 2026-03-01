@@ -7,7 +7,6 @@ struct LargeTupleRule: Rule {
     identifier: "large_tuple",
     name: "Large Tuple",
     description: "Tuples shouldn't have too many members. Create a custom type instead.",
-    kind: .metrics,
     nonTriggeringExamples: [
       Example("let foo: (Int, Int)"),
       Example("let foo: (start: Int, end: Int)"),

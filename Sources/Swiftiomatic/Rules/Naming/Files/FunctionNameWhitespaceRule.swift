@@ -8,7 +8,6 @@ struct FunctionNameWhitespaceRule: Rule {
     name: "Function Name Whitespace",
     description:
       "There should be consistent whitespace before and after function names and generic parameters.",
-    kind: .style,
     nonTriggeringExamples: FunctionNameWhitespaceRuleExamples.nonTriggeringExamples,
     triggeringExamples: FunctionNameWhitespaceRuleExamples.triggeringExamples,
     corrections: FunctionNameWhitespaceRuleExamples.corrections,

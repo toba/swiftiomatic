@@ -9,7 +9,6 @@ struct MockRule: Rule {
         identifier: "MockRule",
         name: "",
         description: "",
-        kind: .style,
     )
 
     init() { /* conformance for test */ }
@@ -25,7 +24,6 @@ struct RuleWithLevelsMock: Rule {
         identifier: "severity_level_mock",
         name: "",
         description: "",
-        kind: .style,
         deprecatedAliases: ["mock"],
     )
 

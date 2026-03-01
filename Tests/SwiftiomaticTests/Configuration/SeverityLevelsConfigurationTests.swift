@@ -7,7 +7,6 @@ private struct MockSeverityLevelsRule: Rule {
         identifier: identifier,
         name: "Test Severity Levels",
         description: "A test rule for SeverityLevelsConfiguration",
-        kind: .style,
     )
 
     var configuration = SeverityLevelsConfiguration<Self>(warning: 12, error: nil)

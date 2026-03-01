@@ -8,7 +8,6 @@ struct NSLocalizedStringKeyRule: Rule {
     name: "NSLocalizedString Key",
     description: "Static strings should be used as key/comment"
       + " in NSLocalizedString in order for genstrings to work",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("NSLocalizedString(\"key\", comment: \"\")"),
       Example("NSLocalizedString(\"key\" + \"2\", comment: \"\")"),

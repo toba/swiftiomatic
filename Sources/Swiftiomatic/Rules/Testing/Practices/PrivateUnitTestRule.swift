@@ -8,7 +8,6 @@ struct PrivateUnitTestRule: Rule {
     identifier: "private_unit_test",
     name: "Private Unit Test",
     description: "Unit tests marked private are silently skipped",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

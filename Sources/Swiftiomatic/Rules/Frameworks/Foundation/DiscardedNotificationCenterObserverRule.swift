@@ -8,7 +8,6 @@ struct DiscardedNotificationCenterObserverRule: Rule {
     name: "Discarded Notification Center Observer",
     description: "When registering for a notification using a block, the opaque observer that is "
       + "returned should be stored so it can be removed later",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         "let foo = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }",

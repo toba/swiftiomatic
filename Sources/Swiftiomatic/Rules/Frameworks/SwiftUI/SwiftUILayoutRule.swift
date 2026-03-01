@@ -8,7 +8,6 @@ struct SwiftUILayoutRule: Rule {
     name: "SwiftUI Layout",
     description:
       "Detects SwiftUI layout composition anti-patterns like nested NavigationStack or List inside ScrollView",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("NavigationStack { List { Text(\"Hello\") } }")
     ],

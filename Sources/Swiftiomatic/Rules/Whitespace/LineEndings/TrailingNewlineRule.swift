@@ -24,7 +24,6 @@ struct TrailingNewlineRule: CorrectableRule, SyntaxOnlyRule {
     identifier: "trailing_newline",
     name: "Trailing Newline",
     description: "Files should have a single trailing newline",
-    kind: .style,
     nonTriggeringExamples: [
       Example("let a = 0\n")
     ],

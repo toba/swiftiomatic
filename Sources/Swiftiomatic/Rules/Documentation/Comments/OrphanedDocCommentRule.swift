@@ -7,7 +7,6 @@ struct OrphanedDocCommentRule: Rule {
     identifier: "orphaned_doc_comment",
     name: "Orphaned Doc Comment",
     description: "A doc comment should be attached to a declaration",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

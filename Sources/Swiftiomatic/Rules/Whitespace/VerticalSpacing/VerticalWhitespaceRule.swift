@@ -8,7 +8,6 @@ struct VerticalWhitespaceRule: Rule {
     identifier: "vertical_whitespace",
     name: "Vertical Whitespace",
     description: VerticalWhitespaceConfiguration.defaultDescriptionReason,
-    kind: .style,
     nonTriggeringExamples: [
       Example("let abc = 0\n"),
       Example("let abc = 0\n\n"),

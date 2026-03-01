@@ -3,8 +3,7 @@ extension Formatter.Change {
     func toDiagnostic() -> Diagnostic {
         Diagnostic(
             ruleID: rule.name,
-            engine: .format,
-            category: "format",
+            source: .format,
             severity: .warning,
             confidence: .high,
             file: filePath ?? "<unknown>",

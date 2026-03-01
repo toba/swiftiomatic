@@ -7,7 +7,6 @@ struct UnusedSetterValueRule: Rule {
     identifier: "unused_setter_value",
     name: "Unused Setter Value",
     description: "Setter value is not used",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

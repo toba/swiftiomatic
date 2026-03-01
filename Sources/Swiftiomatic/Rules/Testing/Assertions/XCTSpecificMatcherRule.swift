@@ -18,7 +18,6 @@ struct XCTSpecificMatcherRule: Rule {
       clear that the intention is to check equality, without needing to understand the underlying logic of the
       comparison.
       """,
-    kind: .idiomatic,
     nonTriggeringExamples: XCTSpecificMatcherRuleExamples.nonTriggeringExamples,
     triggeringExamples: XCTSpecificMatcherRuleExamples.triggeringExamples,
   )

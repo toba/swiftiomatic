@@ -5,7 +5,6 @@ struct LegacyNSGeometryFunctionsRule: Rule {
     identifier: "legacy_nsgeometry_functions",
     name: "Legacy NSGeometry Functions",
     description: "Struct extension properties and methods are preferred over legacy functions",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("rect.width"),
       Example("rect.height"),

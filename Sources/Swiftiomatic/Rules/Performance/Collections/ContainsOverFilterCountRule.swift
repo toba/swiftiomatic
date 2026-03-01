@@ -7,7 +7,6 @@ struct ContainsOverFilterCountRule: Rule {
     identifier: "contains_over_filter_count",
     name: "Contains over Filter Count",
     description: "Prefer `contains` over comparing `filter(where:).count` to 0",
-    kind: .performance,
     nonTriggeringExamples: [">", "==", "!="].flatMap { operation in
       [
         Example("let result = myList.filter(where: { $0 % 2 == 0 }).count \(operation) 1"),

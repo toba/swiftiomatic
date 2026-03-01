@@ -8,7 +8,6 @@ struct CommentSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
     identifier: "comment_spacing",
     name: "Comment Spacing",
     description: "Prefer at least one space after slashes for comments",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

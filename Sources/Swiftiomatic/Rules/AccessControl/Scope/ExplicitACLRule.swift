@@ -7,7 +7,6 @@ struct ExplicitACLRule: Rule {
     identifier: "explicit_acl",
     name: "Explicit ACL",
     description: "All declarations should specify Access Control Level keywords explicitly",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("internal enum A {}"),
       Example("public final class B {}"),

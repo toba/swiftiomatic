@@ -8,7 +8,6 @@ struct EmptyParenthesesWithTrailingClosureRule: Rule {
     name: "Empty Parentheses with Trailing Closure",
     description: "When using trailing closures, empty parentheses should be avoided "
       + "after the method call",
-    kind: .style,
     nonTriggeringExamples: [
       Example("[1, 2].map { $0 + 1 }"),
       Example("[1, 2].map({ $0 + 1 })"),

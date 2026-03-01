@@ -8,7 +8,6 @@ struct MarkRule: Rule {
     identifier: "mark",
     name: "Mark",
     description: "MARK comment should be in valid format. e.g. '// MARK: ...' or '// MARK: - ...'",
-    kind: .lint,
     nonTriggeringExamples: MarkRuleExamples.nonTriggeringExamples,
     triggeringExamples: MarkRuleExamples.triggeringExamples,
     corrections: MarkRuleExamples.corrections,

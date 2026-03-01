@@ -7,7 +7,6 @@ struct NoEmptyBlockRule: Rule {
     identifier: "no_empty_block",
     name: "No Empty Block",
     description: "Code blocks should contain at least one statement or comment",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

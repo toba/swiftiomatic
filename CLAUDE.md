@@ -6,6 +6,7 @@ AST-accurate Swift linting, formatting, and code analysis — used from Xcode, t
 
 - Always create a jig issue before beginning work
 - Update the jig issue continuously as you work
+- Always use the xc-mcp services to run tests and update projects
 - Never git stash to avoid an error — FIX the error
 
 ## How It's Used
@@ -111,8 +112,7 @@ JSON output per finding:
 ```json
 {
   "ruleID": "typed-throws",
-  "scope": "lint",
-  "category": "type-safety",
+  "source": "lint",
   "severity": "warning",
   "confidence": "high",
   "file": "Sources/Foo.swift",

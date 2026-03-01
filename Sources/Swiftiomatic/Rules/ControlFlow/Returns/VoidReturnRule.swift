@@ -8,7 +8,6 @@ struct VoidReturnRule: Rule {
     identifier: "void_return",
     name: "Void Return",
     description: "Prefer `-> Void` over `-> ()`",
-    kind: .style,
     nonTriggeringExamples: [
       Example("let abc: () -> Void = {}"),
       Example("let abc: () -> (VoidVoid) = {}"),

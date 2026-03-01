@@ -8,7 +8,6 @@ struct PreferTypeCheckingRule: Rule {
     identifier: "prefer_type_checking",
     name: "Prefer Type Checking",
     description: "Prefer `a is X` to `a as? X != nil`",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("let foo = bar as? Foo"),
       Example("bar is Foo"),

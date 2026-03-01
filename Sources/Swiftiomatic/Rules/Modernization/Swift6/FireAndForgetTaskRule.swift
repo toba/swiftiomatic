@@ -8,7 +8,6 @@ struct FireAndForgetTaskRule: Rule {
     name: "Fire and Forget Task",
     description:
       "Enhanced fire-and-forget Task detection with scope-aware severity and .onAppear+Task analysis",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("let task = Task { await work() }"),
       Example("return Task { await work() }"),

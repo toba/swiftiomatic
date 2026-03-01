@@ -7,7 +7,6 @@ struct ReduceIntoRule: Rule {
     identifier: "reduce_into",
     name: "Reduce into",
     description: "Prefer `reduce(into:_:)` over `reduce(_:_:)` for copy-on-write types",
-    kind: .performance,
     nonTriggeringExamples: [
       Example(
         """

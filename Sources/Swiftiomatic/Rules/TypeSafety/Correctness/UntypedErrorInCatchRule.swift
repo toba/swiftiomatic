@@ -7,7 +7,6 @@ struct UntypedErrorInCatchRule: Rule {
     identifier: "untyped_error_in_catch",
     name: "Untyped Error in Catch",
     description: "Catch statements should not declare error variables without type casting",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

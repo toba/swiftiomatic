@@ -9,7 +9,6 @@ struct DiscouragedNoneNameRule: Rule {
     description:
       "Enum cases and static members named `none` are discouraged as they can conflict with "
       + "`Optional<T>.none`.",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       // Should not trigger unless exactly matches "none"
       Example(

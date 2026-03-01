@@ -8,7 +8,6 @@ struct VerticalWhitespaceBetweenCasesRule: Rule {
     identifier: "vertical_whitespace_between_cases",
     name: "Vertical Whitespace Between Cases",
     description: "Include a single empty line between switch cases",
-    kind: .style,
     nonTriggeringExamples: VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
       .values.sorted() + VerticalWhitespaceBetweenCasesRuleExamples.nonTriggeringExamples,
     triggeringExamples: Array(

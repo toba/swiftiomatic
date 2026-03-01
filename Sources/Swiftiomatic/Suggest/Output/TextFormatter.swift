@@ -1,4 +1,4 @@
-/// Formats diagnostics as human-readable text grouped by rule kind.
+/// Formats diagnostics as human-readable text grouped by source.
 enum TextFormatter {
     static func format(_ diagnostics: [Diagnostic]) -> String {
         guard !diagnostics.isEmpty else {
@@ -6,17 +6,17 @@ enum TextFormatter {
         }
 
         var output = ""
-        let grouped = Dictionary(grouping: diagnostics) { $0.category }
+        let grouped = Dictionary(grouping: diagnostics) { $0.source }
 
-        // Output in RuleKind case order
-        for (sectionNumber, kind) in RuleKind.allCases.enumerated() {
-            guard let kindDiags = grouped[kind.rawValue], !kindDiags.isEmpty else {
+        // Output in Source case order
+        for (sectionNumber, source) in Source.allCases.enumerated() {
+            guard let sourceDiags = grouped[source], !sourceDiags.isEmpty else {
                 continue
             }
 
-            output += "## \(sectionNumber + 1). \(kind.displayName)\n\n"
+            output += "## \(sectionNumber + 1). \(source.displayName)\n\n"
 
-            for diag in kindDiags.sorted() {
+            for diag in sourceDiags.sorted() {
                 let confidence = confidenceMarker(diag.confidence)
                 output += "\(confidence) \(diag.file):\(diag.line):\(diag.column): "
                 output += "[\(diag.severity.rawValue)] \(diag.message)\n"
@@ -30,10 +30,10 @@ enum TextFormatter {
 
         // Summary
         output += "## Summary\n\n"
-        for (sectionNumber, kind) in RuleKind.allCases.enumerated() {
-            let count = grouped[kind.rawValue]?.count ?? 0
+        for (sectionNumber, source) in Source.allCases.enumerated() {
+            let count = grouped[source]?.count ?? 0
             if count > 0 {
-                output += "  §\(sectionNumber + 1) \(kind.displayName): \(count)\n"
+                output += "  §\(sectionNumber + 1) \(source.displayName): \(count)\n"
             }
         }
         output += "  Total: \(diagnostics.count)\n"

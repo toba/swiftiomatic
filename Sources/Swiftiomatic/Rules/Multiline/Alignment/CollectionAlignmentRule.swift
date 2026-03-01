@@ -7,7 +7,6 @@ struct CollectionAlignmentRule: Rule {
     identifier: "collection_alignment",
     name: "Collection Element Alignment",
     description: "All elements in a collection literal should be vertically aligned",
-    kind: .style,
     nonTriggeringExamples: Examples(alignColons: false).nonTriggeringExamples,
     triggeringExamples: Examples(alignColons: false).triggeringExamples,
   )

@@ -7,7 +7,6 @@ struct LastWhereRule: Rule {
     identifier: "last_where",
     name: "Last Where",
     description: "Prefer using `.last(where:)` over `.filter { }.last` in collections",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("kinds.filter(excludingKinds.contains).isEmpty && kinds.last == .identifier"),
       Example("myList.last(where: { $0 % 2 == 0 })"),

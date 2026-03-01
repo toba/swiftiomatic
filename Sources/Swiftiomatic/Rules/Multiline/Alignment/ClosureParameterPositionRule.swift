@@ -7,7 +7,6 @@ struct ClosureParameterPositionRule: Rule {
     identifier: "closure_parameter_position",
     name: "Closure Parameter Position",
     description: "Closure parameters should be on the same line as opening brace",
-    kind: .style,
     nonTriggeringExamples: [
       Example("[1, 2].map { $0 + 1 }"),
       Example("[1, 2].map({ $0 + 1 })"),

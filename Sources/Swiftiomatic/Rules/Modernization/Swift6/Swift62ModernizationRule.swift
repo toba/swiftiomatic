@@ -8,7 +8,7 @@ struct Swift62ModernizationRule: Rule {
     name: "Swift 6.2 Modernization",
     description:
       "Code that can benefit from Swift 6.2 features like @concurrent, Observations, weak let, and Span",
-    kind: .suggest,
+    scope: .suggest,
     nonTriggeringExamples: [
       Example("func work() async { }")
     ],

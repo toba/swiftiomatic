@@ -7,7 +7,6 @@ struct AsyncWithoutAwaitRule: Rule {
     identifier: "async_without_await",
     name: "Async Without Await",
     description: "Declaration should not be async if it doesn't use await",
-    kind: .lint,
     nonTriggeringExamples: AsyncWithoutAwaitRuleExamples.nonTriggeringExamples,
     triggeringExamples: AsyncWithoutAwaitRuleExamples.triggeringExamples,
     corrections: AsyncWithoutAwaitRuleExamples.corrections,

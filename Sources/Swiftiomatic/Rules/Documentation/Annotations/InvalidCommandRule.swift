@@ -7,7 +7,6 @@ struct InvalidCommandRule: Rule, SyntaxOnlyRule {
     identifier: "invalid_command",
     name: "Invalid Command",
     description: "sm: command is invalid",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("// sm:disable unused_import"),
       Example("// sm:enable unused_import"),

@@ -7,7 +7,6 @@ struct NSObjectPreferIsEqualRule: Rule {
     identifier: "nsobject_prefer_isequal",
     name: "NSObject Prefer isEqual",
     description: "NSObject subclasses should implement isEqual instead of ==",
-    kind: .lint,
     nonTriggeringExamples: NSObjectPreferIsEqualRuleExamples.nonTriggeringExamples,
     triggeringExamples: NSObjectPreferIsEqualRuleExamples.triggeringExamples,
   )

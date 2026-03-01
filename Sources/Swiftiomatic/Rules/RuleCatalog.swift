@@ -3,8 +3,7 @@ enum RuleCatalog {
   struct Entry: Codable, Sendable {
     let id: String
     let name: String
-    let engine: RuleEngine
-    let category: String
+    let source: Source
     let description: String
     let isEnabled: Bool
     let isDeprecated: Bool
@@ -13,7 +12,7 @@ enum RuleCatalog {
     let requiresSourceKit: Bool
   }
 
-  /// All rules across all engines, sorted by engine then id.
+  /// All rules across all engines, sorted by source then id.
   static func allRules() -> [Entry] {
     var entries: [Entry] = []
 
@@ -29,8 +28,7 @@ enum RuleCatalog {
         Entry(
           id: identifier,
           name: desc.name,
-          engine: .lint,
-          category: desc.kind.rawValue,
+          source: .lint,
           description: desc.description,
           isEnabled: !isOptIn,
           isDeprecated: !desc.deprecatedAliases.isEmpty
@@ -49,8 +47,7 @@ enum RuleCatalog {
         Entry(
           id: rule.name,
           name: rule.name,
-          engine: .format,
-          category: "format",
+          source: .format,
           description: stripMarkdown(rule.help),
           isEnabled: defaultRuleNames.contains(rule.name),
           isDeprecated: rule.isDeprecated,
@@ -61,7 +58,7 @@ enum RuleCatalog {
       )
     }
 
-    return entries.sorted { ($0.engine.rawValue, $0.id) < ($1.engine.rawValue, $1.id) }
+    return entries.sorted { ($0.source.rawValue, $0.id) < ($1.source.rawValue, $1.id) }
   }
 
   /// Look up a single rule by ID across all engines.
@@ -69,8 +66,8 @@ enum RuleCatalog {
     allRules().first { $0.id == id }
   }
 
-  /// All rules for a specific engine.
-  static func rules(for engine: RuleEngine) -> [Entry] {
-    allRules().filter { $0.engine == engine }
+  /// All rules for a specific source.
+  static func rules(for source: Source) -> [Entry] {
+    allRules().filter { $0.source == source }
   }
 }

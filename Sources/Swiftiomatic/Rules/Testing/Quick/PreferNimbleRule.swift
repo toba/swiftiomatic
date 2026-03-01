@@ -7,7 +7,6 @@ struct PreferNimbleRule: Rule {
     identifier: "prefer_nimble",
     name: "Prefer Nimble",
     description: "Prefer Nimble matchers over XCTAssert functions",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("expect(foo) == 1"),
       Example("expect(foo).to(equal(1))"),

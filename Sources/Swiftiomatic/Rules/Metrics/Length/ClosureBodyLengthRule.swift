@@ -16,7 +16,6 @@ struct ClosureBodyLengthRule: Rule {
 
       Possibly you could refactor your closure code and extract some of it into a function.
       """,
-    kind: .metrics,
     nonTriggeringExamples: ClosureBodyLengthRuleExamples.nonTriggeringExamples,
     triggeringExamples: ClosureBodyLengthRuleExamples.triggeringExamples,
   )

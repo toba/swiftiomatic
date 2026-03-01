@@ -7,7 +7,6 @@ struct DiscouragedDirectInitRule: Rule {
     identifier: "discouraged_direct_init",
     name: "Discouraged Direct Initialization",
     description: "Discouraged direct initialization of types that can be harmful",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("let foo = UIDevice.current"),
       Example("let foo = Bundle.main"),

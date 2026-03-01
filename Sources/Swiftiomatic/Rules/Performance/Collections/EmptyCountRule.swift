@@ -9,7 +9,6 @@ struct EmptyCountRule: Rule {
     identifier: "empty_count",
     name: "Empty Count",
     description: "Prefer checking `isEmpty` over comparing `count` to zero",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("var count = 0"),
       Example("[Int]().isEmpty"),

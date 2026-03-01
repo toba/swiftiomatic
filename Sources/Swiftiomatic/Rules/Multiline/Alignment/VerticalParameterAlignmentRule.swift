@@ -8,7 +8,6 @@ struct VerticalParameterAlignmentRule: Rule {
     name: "Vertical Parameter Alignment",
     description:
       "Function parameters should be aligned vertically if they're in multiple lines in a declaration",
-    kind: .style,
     nonTriggeringExamples: VerticalParameterAlignmentRuleExamples.nonTriggeringExamples,
     triggeringExamples: VerticalParameterAlignmentRuleExamples.triggeringExamples,
   )

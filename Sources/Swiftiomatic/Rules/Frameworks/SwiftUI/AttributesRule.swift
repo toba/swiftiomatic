@@ -26,7 +26,6 @@ struct AttributesRule: Rule {
       Swiftiomatic's rule requires attributes to be on their own lines for functions and types, but on the same line \
       for variables and imports.
       """,
-    kind: .style,
     nonTriggeringExamples: AttributesRuleExamples.nonTriggeringExamples,
     triggeringExamples: AttributesRuleExamples.triggeringExamples,
   )

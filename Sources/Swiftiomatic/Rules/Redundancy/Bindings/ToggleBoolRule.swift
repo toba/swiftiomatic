@@ -8,7 +8,6 @@ struct ToggleBoolRule: Rule {
     identifier: "toggle_bool",
     name: "Toggle Bool",
     description: "Prefer `someBool.toggle()` over `someBool = !someBool`",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("isHidden.toggle()"),
       Example("view.clipsToBounds.toggle()"),

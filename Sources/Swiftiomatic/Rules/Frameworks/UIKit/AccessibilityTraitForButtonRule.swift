@@ -21,7 +21,6 @@ struct AccessibilityTraitForButtonRule: Rule {
       the link trait instead. This rule attempts to catch uses of the SwiftUI `.onTapGesture` modifier where the \
       `.isButton` or `.isLink` trait is not explicitly applied.
       """,
-    kind: .lint,
     nonTriggeringExamples: AccessibilityTraitForButtonRuleExamples.nonTriggeringExamples,
     triggeringExamples: AccessibilityTraitForButtonRuleExamples.triggeringExamples,
   )

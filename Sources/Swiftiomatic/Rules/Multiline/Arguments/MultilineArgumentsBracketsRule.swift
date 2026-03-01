@@ -7,7 +7,6 @@ struct MultilineArgumentsBracketsRule: Rule {
     identifier: "multiline_arguments_brackets",
     name: "Multiline Arguments Brackets",
     description: "Multiline arguments should have their surrounding brackets in a new line",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

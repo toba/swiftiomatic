@@ -7,7 +7,6 @@ struct StrongIBOutletRule: Rule {
     identifier: "strong_iboutlet",
     name: "Strong IBOutlet",
     description: "@IBOutlets shouldn't be declared as weak",
-    kind: .lint,
     nonTriggeringExamples: [
       wrapExample("@IBOutlet var label: UILabel?"),
       wrapExample("weak var label: UILabel?"),

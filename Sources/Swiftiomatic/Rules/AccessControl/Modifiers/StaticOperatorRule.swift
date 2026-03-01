@@ -7,7 +7,6 @@ struct StaticOperatorRule: Rule {
     identifier: "static_operator",
     name: "Static Operator",
     description: "Operators should be declared as static functions, not free functions",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

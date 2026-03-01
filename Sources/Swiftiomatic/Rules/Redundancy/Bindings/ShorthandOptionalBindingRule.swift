@@ -7,7 +7,6 @@ struct ShorthandOptionalBindingRule: Rule {
     identifier: "shorthand_optional_binding",
     name: "Shorthand Optional Binding",
     description: "Use shorthand syntax for optional binding",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

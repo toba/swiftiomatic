@@ -8,7 +8,6 @@ struct ReturnValueFromVoidFunctionRule: Rule {
     identifier: "return_value_from_void_function",
     name: "Return Value from Void Function",
     description: "Returning values from Void functions should be avoided",
-    kind: .idiomatic,
     nonTriggeringExamples: ReturnValueFromVoidFunctionRuleExamples.nonTriggeringExamples,
     triggeringExamples: ReturnValueFromVoidFunctionRuleExamples.triggeringExamples,
   )

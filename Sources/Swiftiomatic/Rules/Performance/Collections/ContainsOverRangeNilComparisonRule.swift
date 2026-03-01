@@ -7,7 +7,6 @@ struct ContainsOverRangeNilComparisonRule: Rule {
     identifier: "contains_over_range_nil_comparison",
     name: "Contains over Range Comparison to Nil",
     description: "Prefer `contains` over `range(of:) != nil` and `range(of:) == nil`",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("let range = myString.range(of: \"Test\")"),
       Example("myString.contains(\"Test\")"),

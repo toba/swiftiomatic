@@ -7,7 +7,6 @@ struct LegacyHashingRule: Rule {
     identifier: "legacy_hashing",
     name: "Legacy Hashing",
     description: "Prefer using the `hash(into:)` function instead of overriding `hashValue`",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

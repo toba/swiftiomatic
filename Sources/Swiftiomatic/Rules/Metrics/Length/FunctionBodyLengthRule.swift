@@ -9,7 +9,6 @@ struct FunctionBodyLengthRule: Rule {
     identifier: "function_body_length",
     name: "Function Body Length",
     description: "Function bodies should not span too many lines",
-    kind: .metrics,
     nonTriggeringExamples: [
       Example("func f() {}", configuration: Self.testConfig),
       Example(

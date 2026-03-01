@@ -7,7 +7,6 @@ struct ForceUnwrappingRule: Rule {
     identifier: "force_unwrapping",
     name: "Force Unwrapping",
     description: "Force unwrapping should be avoided",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("if let url = NSURL(string: query)"),
       Example("navigationController?.pushViewController(viewController, animated: true)"),

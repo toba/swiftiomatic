@@ -128,9 +128,11 @@ struct Analyze: AsyncParsableCommand {
 
         // Output
         if quiet {
-            let grouped = Dictionary(grouping: diagnostics) { $0.category }
-            for (category, items) in grouped.sorted(by: { $0.key < $1.key }) {
-                print("\(category): \(items.count)")
+            let grouped = Dictionary(grouping: diagnostics) { $0.source }
+            for source in Source.allCases {
+                if let items = grouped[source], !items.isEmpty {
+                    print("\(source.rawValue): \(items.count)")
+                }
             }
             print("Total: \(diagnostics.count)")
         } else {
@@ -247,16 +249,16 @@ struct ListRules: ParsableCommand {
         aliases: ["list-checks"],
     )
 
-    @Option(name: .long, help: "Filter by engine: suggest, lint, or format")
-    var engine: RuleEngine?
+    @Option(name: .long, help: "Filter by source: suggest, lint, or format")
+    var source: Source?
 
     @Option(name: .long, help: "Output format: text or json")
     var format: OutputFormat = .text
 
     func run() {
         let entries: [RuleCatalog.Entry]
-        if let engine {
-            entries = RuleCatalog.rules(for: engine)
+        if let source {
+            entries = RuleCatalog.rules(for: source)
         } else {
             entries = RuleCatalog.allRules()
         }
@@ -271,7 +273,7 @@ struct ListRules: ParsableCommand {
                     if entry.isCrossFile { flags.append("cross-file") }
                     if entry.requiresSourceKit { flags.append("sourcekit") }
                     let suffix = flags.isEmpty ? "" : " (\(flags.joined(separator: ", ")))"
-                    print("[\(entry.engine.rawValue)] \(entry.id) — \(entry.name)\(suffix)")
+                    print("[\(entry.source.rawValue)] \(entry.id) — \(entry.name)\(suffix)")
                 }
                 print("\nTotal: \(entries.count) rules")
             case .json:
@@ -284,7 +286,7 @@ struct ListRules: ParsableCommand {
                 }
             case .xcode:
                 for entry in entries {
-                    print("[\(entry.engine.rawValue)] \(entry.id) — \(entry.name)")
+                    print("[\(entry.source.rawValue)] \(entry.id) — \(entry.name)")
                 }
         }
     }
@@ -321,4 +323,4 @@ enum OutputFormat: String, ExpressibleByArgument {
 }
 
 extension Confidence: ExpressibleByArgument {}
-extension RuleEngine: ExpressibleByArgument {}
+extension Source: ExpressibleByArgument {}

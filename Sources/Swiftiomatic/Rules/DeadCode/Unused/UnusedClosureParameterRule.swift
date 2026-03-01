@@ -9,7 +9,6 @@ struct UnusedClosureParameterRule: Rule {
     identifier: "unused_closure_parameter",
     name: "Unused Closure Parameter",
     description: "Unused parameter in a closure should be replaced with _",
-    kind: .lint,
     nonTriggeringExamples: UnusedClosureParameterRuleExamples.nonTriggering,
     triggeringExamples: UnusedClosureParameterRuleExamples.triggering,
     corrections: UnusedClosureParameterRuleExamples.corrections,

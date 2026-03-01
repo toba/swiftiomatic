@@ -7,7 +7,7 @@ struct TypedThrowsRule: Rule {
     identifier: "typed_throws",
     name: "Typed Throws",
     description: "Functions that throw a single error type should use typed throws",
-    kind: .suggest,
+    scope: .suggest,
     nonTriggeringExamples: [
       Example("func parse() throws(ParseError) { throw ParseError.invalid }"),
       Example("func work() throws { throw ErrorA.a; throw ErrorB.b }"),

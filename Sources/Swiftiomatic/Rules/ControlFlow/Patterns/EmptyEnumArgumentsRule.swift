@@ -38,7 +38,6 @@ struct EmptyEnumArgumentsRule: Rule {
     name: "Empty Enum Arguments",
     description:
       "Arguments can be omitted when matching enums with associated values if they are not used",
-    kind: .style,
     nonTriggeringExamples: [
       wrapInSwitch("case .bar"),
       wrapInSwitch("case .bar(let x)"),

@@ -8,7 +8,6 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
     name: "Literal Expression End Indentation",
     description:
       "Array and dictionary literal end should have the same indentation as the line that started it",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

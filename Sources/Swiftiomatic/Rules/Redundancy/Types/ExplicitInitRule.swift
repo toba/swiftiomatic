@@ -8,7 +8,6 @@ struct ExplicitInitRule: Rule {
     identifier: "explicit_init",
     name: "Explicit Init",
     description: "Explicitly calling .init() should be avoided",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

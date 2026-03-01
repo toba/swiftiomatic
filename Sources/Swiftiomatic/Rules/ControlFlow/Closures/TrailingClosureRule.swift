@@ -9,7 +9,6 @@ struct TrailingClosureRule: Rule {
     identifier: "trailing_closure",
     name: "Trailing Closure",
     description: "Trailing closure syntax should be used whenever possible",
-    kind: .style,
     nonTriggeringExamples: [
       Example("foo.map { $0 + 1 }"),
       Example("foo.bar()"),

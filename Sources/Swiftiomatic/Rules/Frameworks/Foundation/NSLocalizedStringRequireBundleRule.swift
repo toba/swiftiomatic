@@ -8,7 +8,6 @@ struct NSLocalizedStringRequireBundleRule: Rule {
     name: "NSLocalizedString Require Bundle",
     description:
       "Calls to NSLocalizedString should specify the bundle which contains the strings file",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

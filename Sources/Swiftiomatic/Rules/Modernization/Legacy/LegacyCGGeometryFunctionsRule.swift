@@ -5,7 +5,6 @@ struct LegacyCGGeometryFunctionsRule: Rule {
     identifier: "legacy_cggeometry_functions",
     name: "Legacy CGGeometry Functions",
     description: "Struct extension properties and methods are preferred over legacy functions",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("rect.width"),
       Example("rect.height"),

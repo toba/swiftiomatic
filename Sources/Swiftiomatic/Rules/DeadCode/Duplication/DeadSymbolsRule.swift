@@ -9,7 +9,6 @@ struct DeadSymbolsRule: CollectingRule, OptInRule {
     identifier: "dead_symbols",
     name: "Dead Symbols",
     description: "Private symbols with no references are likely dead code",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

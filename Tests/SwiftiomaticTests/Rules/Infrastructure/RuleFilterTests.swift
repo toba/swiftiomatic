@@ -125,7 +125,7 @@ private struct RuleMock1: Rule {
 
     static let description = RuleDescription(
         identifier: "RuleMock1", name: "",
-        description: "", kind: .style,
+        description: "",
     )
 
     init() { /* conformance for test */ }
@@ -142,7 +142,7 @@ private struct RuleMock2: Rule {
 
     static let description = RuleDescription(
         identifier: "RuleMock2", name: "",
-        description: "", kind: .style,
+        description: "",
     )
 
     init() { /* conformance for test */ }
@@ -159,7 +159,7 @@ private struct CorrectableRuleMock: CorrectableRule {
 
     static let description = RuleDescription(
         identifier: "CorrectableRuleMock", name: "",
-        description: "", kind: .style,
+        description: "",
     )
 
     init() { /* conformance for test */ }

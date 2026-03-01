@@ -9,7 +9,6 @@ struct ConvenienceTypeRule: Rule {
     description:
       "Types used for hosting only static members should be implemented as a caseless enum "
       + "to avoid instantiation",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

@@ -9,7 +9,6 @@ struct CompilerProtocolInitRule: Rule {
     description:
       "The initializers declared in compiler protocols such as `ExpressibleByArrayLiteral` "
       + "shouldn't be called directly.",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("let set: Set<Int> = [1, 2]"),
       Example("let set = Set(array)"),

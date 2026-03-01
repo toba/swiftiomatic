@@ -23,7 +23,6 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
     identifier: "unused_declaration",
     name: "Unused Declaration",
     description: "Declarations should be referenced at least once within all files linted",
-    kind: .lint,
     nonTriggeringExamples: UnusedDeclarationRuleExamples.nonTriggeringExamples,
     triggeringExamples: UnusedDeclarationRuleExamples.triggeringExamples,
     requiresFileOnDisk: true,

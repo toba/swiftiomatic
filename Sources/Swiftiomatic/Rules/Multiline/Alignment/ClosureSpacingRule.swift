@@ -7,7 +7,6 @@ struct ClosureSpacingRule: Rule {
     identifier: "closure_spacing",
     name: "Closure Spacing",
     description: "Closure expressions should have a single space inside each brace",
-    kind: .style,
     nonTriggeringExamples: [
       Example("[].map ({ $0.description })"),
       Example("[].filter { $0.contains(location) }"),

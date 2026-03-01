@@ -7,7 +7,6 @@ struct LetVarWhitespaceRule: Rule {
     identifier: "let_var_whitespace",
     name: "Variable Declaration Whitespace",
     description: "Variable declarations should be separated from other statements by a blank line",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

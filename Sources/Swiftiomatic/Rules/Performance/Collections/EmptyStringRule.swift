@@ -7,7 +7,6 @@ struct EmptyStringRule: Rule {
     identifier: "empty_string",
     name: "Empty String",
     description: "Prefer checking `isEmpty` over comparing `string` to an empty string literal",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("myString.isEmpty"),
       Example("!myString.isEmpty"),

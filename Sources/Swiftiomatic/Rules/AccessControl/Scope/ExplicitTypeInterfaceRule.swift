@@ -7,7 +7,6 @@ struct ExplicitTypeInterfaceRule: Rule {
     identifier: "explicit_type_interface",
     name: "Explicit Type Interface",
     description: "Properties should have a type interface",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

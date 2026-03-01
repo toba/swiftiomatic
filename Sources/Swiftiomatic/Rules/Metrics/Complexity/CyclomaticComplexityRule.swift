@@ -8,7 +8,6 @@ struct CyclomaticComplexityRule: Rule {
     identifier: "cyclomatic_complexity",
     name: "Cyclomatic Complexity",
     description: "Complexity of function bodies should be limited.",
-    kind: .metrics,
     nonTriggeringExamples: [
       Example(
         """

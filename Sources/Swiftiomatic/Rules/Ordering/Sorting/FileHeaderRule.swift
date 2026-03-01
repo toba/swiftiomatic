@@ -10,7 +10,6 @@ struct FileHeaderRule: Rule {
     description: "Header comments should be consistent with project patterns. "
       + "The CURRENT_FILENAME placeholder can optionally be used in the "
       + "required and forbidden patterns. It will be replaced by the real file name.",
-    kind: .style,
     nonTriggeringExamples: [
       Example("let foo = \"Copyright\""),
       Example("let foo = 2 // Copyright"),

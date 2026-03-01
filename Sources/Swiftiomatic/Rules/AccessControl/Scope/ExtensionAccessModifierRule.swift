@@ -7,7 +7,6 @@ struct ExtensionAccessModifierRule: Rule {
     identifier: "extension_access_modifier",
     name: "Extension Access Modifier",
     description: "Prefer to use extension access modifiers",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

@@ -9,7 +9,6 @@ struct NonOptionalStringDataConversionRule: Rule {
     identifier: "non_optional_string_data_conversion",
     name: "Non-optional String -> Data Conversion",
     description: "Prefer non-optional `Data(_:)` initializer when converting `String` to `Data`",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("Data(\"foo\".utf8)"),
       Example("Data(string.utf8)"),

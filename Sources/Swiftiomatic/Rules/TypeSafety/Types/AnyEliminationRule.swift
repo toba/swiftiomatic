@@ -8,7 +8,7 @@ struct AnyEliminationRule: Rule {
     name: "Any Elimination",
     description:
       "Usage of Any/AnyObject erases type safety and should be replaced with specific types or generics",
-    kind: .suggest,
+    scope: .suggest,
     nonTriggeringExamples: [
       Example("var name: String = \"\""),
       Example("func process(_ item: Codable) {}"),

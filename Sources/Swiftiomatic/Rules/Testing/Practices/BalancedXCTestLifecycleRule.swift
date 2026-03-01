@@ -17,7 +17,6 @@ struct BalancedXCTestLifecycleRule: Rule {
       The `tearDown` method should be used to cleanup or reset any resources that could \
       otherwise have any effects on subsequent tests, and to free up any instance variables.
       """,
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         #"""

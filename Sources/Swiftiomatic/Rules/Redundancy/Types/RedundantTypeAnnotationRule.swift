@@ -7,7 +7,6 @@ struct RedundantTypeAnnotationRule: Rule {
     identifier: "redundant_type_annotation",
     name: "Redundant Type Annotation",
     description: "Variables should not have redundant type annotation",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("var url = URL()"),
       Example("var url: CustomStringConvertible = URL()"),

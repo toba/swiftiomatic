@@ -7,7 +7,6 @@ struct DiscouragedObjectLiteralRule: Rule {
     identifier: "discouraged_object_literal",
     name: "Discouraged Object Literal",
     description: "Prefer initializers over object literals",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("let image = UIImage(named: aVariable)"),
       Example("let image = UIImage(named: \"interpolated \\(variable)\")"),

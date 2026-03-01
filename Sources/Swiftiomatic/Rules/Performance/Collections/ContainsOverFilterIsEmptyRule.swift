@@ -7,7 +7,6 @@ struct ContainsOverFilterIsEmptyRule: Rule {
     identifier: "contains_over_filter_is_empty",
     name: "Contains over Filter is Empty",
     description: "Prefer `contains` over using `filter(where:).isEmpty`",
-    kind: .performance,
     nonTriggeringExamples: [">", "==", "!="].flatMap { operation in
       [
         Example("let result = myList.filter(where: { $0 % 2 == 0 }).count \(operation) 1"),

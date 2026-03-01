@@ -7,10 +7,7 @@ struct Diagnostic: Codable, Sendable, Comparable {
     let ruleID: String
 
     /// Which engine produced this diagnostic.
-    let engine: RuleEngine
-
-    /// Category mapping to swift-review sections (e.g. "typed-throws", "performance").
-    let category: String
+    let source: Source
 
     /// Warning or error.
     let severity: DiagnosticSeverity
@@ -44,10 +41,19 @@ struct Diagnostic: Codable, Sendable, Comparable {
 }
 
 /// Which analysis engine produced a diagnostic.
-enum RuleEngine: String, Codable, Sendable {
+enum Source: String, CaseIterable, Codable, Sendable {
     case suggest
     case lint
     case format
+
+    /// Human-readable display name for text output.
+    var displayName: String {
+        switch self {
+            case .suggest: "Suggestions"
+            case .lint: "Lint"
+            case .format: "Format"
+        }
+    }
 }
 
 /// Diagnostic severity — warning or error.

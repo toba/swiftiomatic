@@ -7,7 +7,6 @@ struct FlatMapOverMapReduceRule: Rule {
     identifier: "flatmap_over_map_reduce",
     name: "Flat Map over Map Reduce",
     description: "Prefer `flatMap` over `map` followed by `reduce([], +)`",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("let foo = bar.map { $0.count }.reduce(0, +)"),
       Example("let foo = bar.flatMap { $0.array }"),

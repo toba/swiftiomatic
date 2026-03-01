@@ -7,7 +7,6 @@ struct ForceTryRule: Rule {
     identifier: "force_try",
     name: "Force Try",
     description: "Force tries should be avoided",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

@@ -7,7 +7,6 @@ struct UnownedVariableCaptureRule: Rule {
     identifier: "unowned_variable_capture",
     name: "Unowned Variable Capture",
     description: "Prefer capturing references as weak to avoid potential crashes",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("foo { [weak self] in _ }"),
       Example("foo { [weak self] param in _ }"),

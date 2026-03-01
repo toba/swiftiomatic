@@ -7,7 +7,6 @@ struct FallthroughRule: Rule {
     identifier: "fallthrough",
     name: "Fallthrough",
     description: "Fallthrough should be avoided",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

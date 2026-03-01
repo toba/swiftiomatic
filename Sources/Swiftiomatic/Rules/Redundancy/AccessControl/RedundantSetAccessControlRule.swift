@@ -8,7 +8,6 @@ struct RedundantSetAccessControlRule: Rule {
     name: "Redundant Access Control for Setter",
     description: "Property setter access level shouldn't be explicit if "
       + "it's the same as the variable access level",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("private(set) public var foo: Int"),
       Example("public let foo: Int"),

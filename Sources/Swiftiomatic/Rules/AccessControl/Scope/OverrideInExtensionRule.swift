@@ -7,7 +7,6 @@ struct OverrideInExtensionRule: OptInRule, SwiftSyntaxRule {
     identifier: "override_in_extension",
     name: "Override in Extension",
     description: "Extensions shouldn't override declarations",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("extension Person {\n  var age: Int { return 42 }\n}"),
       Example("extension Person {\n  func celebrateBirthday() {}\n}"),

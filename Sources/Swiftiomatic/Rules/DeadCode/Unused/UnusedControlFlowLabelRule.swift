@@ -7,7 +7,6 @@ struct UnusedControlFlowLabelRule: Rule {
     identifier: "unused_control_flow_label",
     name: "Unused Control Flow Label",
     description: "Unused control flow label should be removed",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("loop: while true { break loop }"),
       Example("loop: while true { continue loop }"),

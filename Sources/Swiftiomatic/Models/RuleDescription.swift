@@ -19,8 +19,8 @@ struct RuleDescription: Equatable, Sendable {
     /// to the console.
     let rationale: String?
 
-    /// The `RuleKind` that best categorizes this rule.
-    let kind: RuleKind
+    /// Where this rule participates in the analysis pipeline.
+    let scope: Scope
 
     /// Swift source examples that do not trigger a violation for this rule. Used for documentation purposes to inform
     /// users of various samples of code that are considered valid by this rule. Should be valid Swift syntax but is not
@@ -84,7 +84,7 @@ struct RuleDescription: Equatable, Sendable {
     /// - parameter identifier:            Sets the description's `identifier` property.
     /// - parameter name:                  Sets the description's `name` property.
     /// - parameter description:           Sets the description's `description` property.
-    /// - parameter kind:                  Sets the description's `kind` property.
+    /// - parameter scope:                 Sets the description's `scope` property.
     /// - parameter minSwiftVersion:       Sets the description's `minSwiftVersion` property.
     /// - parameter nonTriggeringExamples: Sets the description's `nonTriggeringExamples` property.
     /// - parameter triggeringExamples:    Sets the description's `triggeringExamples` property.
@@ -96,7 +96,7 @@ struct RuleDescription: Equatable, Sendable {
         name: String,
         description: String,
         rationale: String? = nil,
-        kind: RuleKind,
+        scope: Scope = .lint,
         minSwiftVersion: SwiftVersion = .six,
         nonTriggeringExamples: [Example] = [],
         triggeringExamples: [Example] = [],
@@ -108,7 +108,7 @@ struct RuleDescription: Equatable, Sendable {
         self.name = name
         self.description = description
         self.rationale = rationale
-        self.kind = kind
+        self.scope = scope
         self.nonTriggeringExamples = nonTriggeringExamples
         self.triggeringExamples = triggeringExamples
         self.corrections = corrections

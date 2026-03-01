@@ -8,7 +8,6 @@ struct UnneededEscapingRule: Rule {
     identifier: "unneeded_escaping",
     name: "Unneeded Escaping",
     description: "The `@escaping` attribute should only be used when the closure actually escapes.",
-    kind: .lint,
     nonTriggeringExamples: UnneededEscapingRuleExamples.nonTriggeringExamples,
     triggeringExamples: UnneededEscapingRuleExamples.triggeringExamples,
     corrections: UnneededEscapingRuleExamples.corrections,

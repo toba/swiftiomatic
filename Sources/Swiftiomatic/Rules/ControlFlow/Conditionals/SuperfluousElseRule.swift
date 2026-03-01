@@ -9,7 +9,6 @@ struct SuperfluousElseRule: Rule {
     name: "Superfluous Else",
     description:
       "Else branches should be avoided when the previous if-block exits the current scope",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

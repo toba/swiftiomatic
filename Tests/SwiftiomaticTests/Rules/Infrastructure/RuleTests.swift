@@ -7,7 +7,7 @@ import Testing
         var configurationDescription: some Documentable { RuleConfigurationOption.noOptions }
         static let description = RuleDescription(
             identifier: "RuleMock1", name: "",
-            description: "", kind: .style,
+            description: "",
         )
 
         init() { /* conformance for test */ }
@@ -23,7 +23,7 @@ import Testing
         var configurationDescription: some Documentable { RuleConfigurationOption.noOptions }
         static let description = RuleDescription(
             identifier: "RuleMock2", name: "",
-            description: "", kind: .style,
+            description: "",
         )
 
         init() { /* conformance for test */ }
@@ -40,7 +40,7 @@ import Testing
         static let description = RuleDescription(
             identifier: "violation_level_mock2",
             name: "",
-            description: "", kind: .style,
+            description: "",
         )
 
         init() { /* conformance for test */ }

@@ -13,8 +13,7 @@ import Testing
     ) -> Diagnostic {
         Diagnostic(
             ruleID: ruleID,
-            engine: .lint,
-            category: "test",
+            source: .lint,
             severity: severity,
             confidence: .high,
             file: file,

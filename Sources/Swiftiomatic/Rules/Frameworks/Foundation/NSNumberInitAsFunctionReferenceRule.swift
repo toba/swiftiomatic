@@ -10,7 +10,6 @@ struct NSNumberInitAsFunctionReferenceRule: Rule {
     description:
       "Passing `NSNumber.init` or `NSDecimalNumber.init` as a function reference is dangerous "
       + "as it can cause the wrong initializer to be used, causing crashes; use `.init(value:)` instead",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("[0, 0.2].map(NSNumber.init(value:))"),
       Example("let value = NSNumber.init(value: 0.0)"),

@@ -12,7 +12,6 @@ struct IdentifierNameRule: Rule {
       + "In an exception to the above, variable names may start with a capital letter "
       + "when they are declared as static. Variable names should not be too "
       + "long or too short.",
-    kind: .style,
     nonTriggeringExamples: IdentifierNameRuleExamples.nonTriggeringExamples,
     triggeringExamples: IdentifierNameRuleExamples.triggeringExamples,
     deprecatedAliases: ["variable_name"],

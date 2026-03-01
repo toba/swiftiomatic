@@ -8,7 +8,6 @@ struct LegacyMultipleRule: Rule {
     name: "Legacy Multiple",
     description:
       "Prefer using the `isMultiple(of:)` function instead of using the remainder operator (`%`)",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         "cell.contentView.backgroundColor = indexPath.row.isMultiple(of: 2) ? .gray : .white",

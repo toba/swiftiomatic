@@ -8,7 +8,6 @@ struct NimbleOperatorRule: Rule {
     identifier: "nimble_operator",
     name: "Nimble Operator",
     description: "Prefer Nimble operator overloads over free matcher functions",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("expect(seagull.squawk) != \"Hi!\""),
       Example("expect(\"Hi!\") == \"Hi!\""),

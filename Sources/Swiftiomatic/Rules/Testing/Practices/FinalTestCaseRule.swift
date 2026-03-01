@@ -7,7 +7,6 @@ struct FinalTestCaseRule: Rule {
     identifier: "final_test_case",
     name: "Final Test Case",
     description: "Test cases should be final",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("final class Test: XCTestCase {}"),
       Example("open class Test: XCTestCase {}"),

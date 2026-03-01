@@ -8,7 +8,6 @@ struct ComputedAccessorsOrderRule: Rule {
     name: "Computed Accessors Order",
     description:
       "Getter and setters in computed properties and subscripts should be in a consistent order.",
-    kind: .style,
     nonTriggeringExamples: ComputedAccessorsOrderRuleExamples.nonTriggeringExamples,
     triggeringExamples: ComputedAccessorsOrderRuleExamples.triggeringExamples,
   )

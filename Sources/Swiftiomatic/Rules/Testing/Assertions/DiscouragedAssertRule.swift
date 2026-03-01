@@ -7,7 +7,6 @@ struct DiscouragedAssertRule: Rule {
     identifier: "discouraged_assert",
     name: "Discouraged Assert",
     description: "Prefer `assertionFailure()` and/or `preconditionFailure()` over `assert(false)`",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(#"assert(true)"#),
       Example(#"assert(true, "foobar")"#),

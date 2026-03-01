@@ -7,7 +7,6 @@ struct MissingDocsRule: Rule {
     identifier: "missing_docs",
     name: "Missing Docs",
     description: "Declarations should be documented.",
-    kind: .lint,
     nonTriggeringExamples: MissingDocsRuleExamples.nonTriggeringExamples,
     triggeringExamples: MissingDocsRuleExamples.triggeringExamples,
   )

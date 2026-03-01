@@ -10,7 +10,6 @@ struct DeploymentTargetRule: Rule {
     name: "Deployment Target",
     description: "Availability checks or attributes shouldn't be using older versions "
       + "that are satisfied by the deployment target.",
-    kind: .lint,
     nonTriggeringExamples: DeploymentTargetRuleExamples.nonTriggeringExamples,
     triggeringExamples: DeploymentTargetRuleExamples.triggeringExamples,
   )

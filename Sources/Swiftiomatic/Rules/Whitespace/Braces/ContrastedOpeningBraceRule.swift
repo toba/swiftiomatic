@@ -15,7 +15,6 @@ struct ContrastedOpeningBraceRule: Rule {
       after the declaration to contrast the code block from the rest of the declaration. Comments between the \
       declaration and the opening brace are respected. Check out the `opening_brace` rule for a different style.
       """,
-    kind: .style,
     nonTriggeringExamples: ContrastedOpeningBraceRuleExamples.nonTriggeringExamples,
     triggeringExamples: ContrastedOpeningBraceRuleExamples.triggeringExamples,
     corrections: ContrastedOpeningBraceRuleExamples.corrections,

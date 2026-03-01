@@ -8,7 +8,6 @@ struct NestingRule: Rule {
     name: "Nesting",
     description:
       "Types should be nested at most 1 level deep, and functions should be nested at most 2 levels deep.",
-    kind: .metrics,
     nonTriggeringExamples: NestingRuleExamples.nonTriggeringExamples,
     triggeringExamples: NestingRuleExamples.triggeringExamples,
   )

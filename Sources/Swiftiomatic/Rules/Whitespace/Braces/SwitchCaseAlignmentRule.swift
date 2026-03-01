@@ -10,7 +10,6 @@ struct SwitchCaseAlignmentRule: Rule {
       Case statements should vertically align with their closing brace, or indented if configured \
       otherwise.
       """,
-    kind: .style,
     nonTriggeringExamples: Examples(indentedCases: false).nonTriggeringExamples + [
       Example(
         """

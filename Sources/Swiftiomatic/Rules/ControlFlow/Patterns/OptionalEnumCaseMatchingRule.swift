@@ -8,7 +8,6 @@ struct OptionalEnumCaseMatchingRule: Rule {
     name: "Optional Enum Case Match",
     description:
       "Matching an enum case against an optional enum without '?' is supported on Swift 5.1 and above",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

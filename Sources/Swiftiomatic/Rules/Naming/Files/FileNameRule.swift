@@ -8,7 +8,6 @@ struct FileNameRule: OptInRule, SyntaxOnlyRule {
     identifier: "file_name",
     name: "File Name",
     description: "File name should match a type or extension declared in the file (if any)",
-    kind: .idiomatic,
   )
 
   func validate(file: SwiftSource) -> [RuleViolation] {

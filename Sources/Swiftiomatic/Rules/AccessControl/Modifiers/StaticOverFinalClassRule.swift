@@ -11,7 +11,6 @@ struct StaticOverFinalClassRule: Rule {
       in child classes due to its context being final. Likewise, the compiler complains \
       about `open` being used in `final` classes.
       """,
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

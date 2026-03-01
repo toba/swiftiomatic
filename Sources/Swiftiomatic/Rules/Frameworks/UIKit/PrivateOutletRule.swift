@@ -7,7 +7,6 @@ struct PrivateOutletRule: Rule {
     identifier: "private_outlet",
     name: "Private Outlets",
     description: "IBOutlets should be private to avoid leaking UIKit to higher layers",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("class Foo { @IBOutlet private var label: UILabel? }"),
       Example("class Foo { @IBOutlet private var label: UILabel! }"),

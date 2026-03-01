@@ -7,7 +7,6 @@ struct DynamicInlineRule: Rule {
     identifier: "dynamic_inline",
     name: "Dynamic Inline",
     description: "Avoid using 'dynamic' and '@inline(__always)' together",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("class C {\ndynamic func f() {}}"),
       Example("class C {\n@inline(__always) func f() {}}"),

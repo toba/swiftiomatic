@@ -121,7 +121,7 @@ private func detailsSummary(_ rule: some Rule) -> String {
     * **Identifier:** `\(type(of: rule).identifier)`
     * **Enabled by default:** \(rule is any OptInRule ? "No" : "Yes")
     * **Supports autocorrection:** \(rule is any CorrectableRule ? "Yes" : "No")
-    * **Kind:** \(type(of: rule).description.kind)
+    * **Scope:** \(type(of: rule).description.scope)
     * **Analyzer rule:** \(rule is any AnalyzerRule ? "Yes" : "No")
     * **Minimum Swift compiler version:** \(type(of: rule).description.minSwiftVersion.rawValue)
     """

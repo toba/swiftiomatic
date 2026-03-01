@@ -19,7 +19,6 @@ struct PreferKeyPathRule: Rule {
       Note: Swift 5 doesn't support identity key path conversions (`{ $0 }` -> `(\\.self)`) and so
       Swiftiomatic disregards `ignore_identity_closures: false` if it runs on a Swift <6 project.
       """,
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("f {}"),
       Example("f { $0 }"),

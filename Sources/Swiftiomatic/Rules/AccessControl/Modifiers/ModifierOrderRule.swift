@@ -7,7 +7,6 @@ struct ModifierOrderRule: Rule {
     identifier: "modifier_order",
     name: "Modifier Order",
     description: "Modifier order should be consistent.",
-    kind: .style,
     nonTriggeringExamples: ModifierOrderRuleExamples.nonTriggeringExamples,
     triggeringExamples: ModifierOrderRuleExamples.triggeringExamples,
   )

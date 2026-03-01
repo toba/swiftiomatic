@@ -7,7 +7,6 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
     identifier: "unneeded_parentheses_in_closure_argument",
     name: "Unneeded Parentheses in Closure Argument",
     description: "Parentheses are not needed when declaring closure arguments",
-    kind: .style,
     nonTriggeringExamples: [
       Example("let foo = { (bar: Int) in }"),
       Example("let foo = { bar, _  in }"),

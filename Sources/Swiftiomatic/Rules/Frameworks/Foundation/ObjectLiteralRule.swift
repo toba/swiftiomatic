@@ -7,7 +7,6 @@ struct ObjectLiteralRule: Rule {
     identifier: "object_literal",
     name: "Object Literal",
     description: "Prefer object literals over image and color inits",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("let image = #imageLiteral(resourceName: \"image.jpg\")"),
       Example(

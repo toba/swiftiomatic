@@ -8,7 +8,6 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
     identifier: "prefer_self_type_over_type_of_self",
     name: "Prefer Self Type Over Type of Self",
     description: "Prefer `Self` over `type(of: self)` when accessing properties or calling methods",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

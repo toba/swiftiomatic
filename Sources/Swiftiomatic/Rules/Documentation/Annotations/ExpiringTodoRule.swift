@@ -23,7 +23,6 @@ struct ExpiringTodoRule: Rule {
     identifier: "expiring_todo",
     name: "Expiring Todo",
     description: "TODOs and FIXMEs should be resolved prior to their expiry date.",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("// notaTODO:"),
       Example("// notaFIXME:"),

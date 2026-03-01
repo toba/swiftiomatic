@@ -7,7 +7,6 @@ struct MultilineParametersBracketsRule: OptInRule {
     identifier: "multiline_parameters_brackets",
     name: "Multiline Parameters Brackets",
     description: "Multiline parameters should have their surrounding brackets in a new line",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

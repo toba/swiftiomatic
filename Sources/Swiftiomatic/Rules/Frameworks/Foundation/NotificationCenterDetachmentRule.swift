@@ -7,7 +7,6 @@ struct NotificationCenterDetachmentRule: Rule {
     identifier: "notification_center_detachment",
     name: "Notification Center Detachment",
     description: "An object should only remove itself as an observer in `deinit`",
-    kind: .lint,
     nonTriggeringExamples: NotificationCenterDetachmentRuleExamples.nonTriggeringExamples,
     triggeringExamples: NotificationCenterDetachmentRuleExamples.triggeringExamples,
   )

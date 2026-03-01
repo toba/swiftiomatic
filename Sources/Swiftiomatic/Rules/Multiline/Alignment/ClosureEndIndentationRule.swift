@@ -7,7 +7,6 @@ struct ClosureEndIndentationRule: Rule {
     identifier: "closure_end_indentation",
     name: "Closure End Indentation",
     description: "Closure end should have the same indentation as the line that started it.",
-    kind: .style,
     nonTriggeringExamples: ClosureEndIndentationRuleExamples.nonTriggeringExamples,
     triggeringExamples: ClosureEndIndentationRuleExamples.triggeringExamples,
     corrections: ClosureEndIndentationRuleExamples.corrections,

@@ -7,7 +7,6 @@ struct DirectReturnRule: Rule {
     identifier: "direct_return",
     name: "Direct Return",
     description: "Directly return the expression instead of assigning it to a variable first",
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

@@ -9,7 +9,6 @@ struct NamingHeuristicsRule: Rule {
     name: "Naming Heuristics",
     description:
       "Checks names against Swift API Design Guidelines: Bool assertions, protocol suffixes, factory prefixes",
-    kind: .style,
     nonTriggeringExamples: [
       Example("var isEnabled: Bool = true"),
       Example("var hasContent: Bool = false"),

@@ -7,7 +7,6 @@ struct SingleTestClassRule: SyntaxOnlyRule, OptInRule {
     identifier: "single_test_class",
     name: "Single Test Class",
     description: "Test files should contain a single QuickSpec or XCTestCase class.",
-    kind: .style,
     nonTriggeringExamples: [
       Example("class FooTests {  }"),
       Example("class FooTests: QuickSpec {  }"),

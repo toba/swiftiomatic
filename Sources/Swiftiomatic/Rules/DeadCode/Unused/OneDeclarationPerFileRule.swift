@@ -7,7 +7,6 @@ struct OneDeclarationPerFileRule: Rule {
     identifier: "one_declaration_per_file",
     name: "One Declaration per File",
     description: "Only a single declaration is allowed in a file",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

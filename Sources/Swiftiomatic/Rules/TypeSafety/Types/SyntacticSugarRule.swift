@@ -8,7 +8,6 @@ struct SyntacticSugarRule: CorrectableRule, SyntaxOnlyRule {
     identifier: "syntactic_sugar",
     name: "Syntactic Sugar",
     description: "Shorthand syntactic sugar should be used, i.e. [Int] instead of Array<Int>.",
-    kind: .idiomatic,
     nonTriggeringExamples: SyntacticSugarRuleExamples.nonTriggering,
     triggeringExamples: SyntacticSugarRuleExamples.triggering,
     corrections: SyntacticSugarRuleExamples.corrections,

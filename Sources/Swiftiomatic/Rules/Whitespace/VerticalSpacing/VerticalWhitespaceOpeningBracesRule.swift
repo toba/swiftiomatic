@@ -182,7 +182,6 @@ extension VerticalWhitespaceOpeningBracesRule: OptInRule {
     identifier: "vertical_whitespace_opening_braces",
     name: "Vertical Whitespace after Opening Braces",
     description: "Don't include vertical whitespace (empty line) after opening braces",
-    kind: .style,
     nonTriggeringExamples: (violatingToValidExamples.values + nonTriggeringExamples).sorted(),
     triggeringExamples: Array(violatingToValidExamples.keys).sorted(),
     corrections: violatingToValidExamples.removingViolationMarkers(),

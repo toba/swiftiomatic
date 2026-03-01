@@ -7,7 +7,6 @@ struct UnusedEnumeratedRule: Rule {
     identifier: "unused_enumerated",
     name: "Unused Enumerated",
     description: "When the index or the item is not used, `.enumerated()` can be removed.",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("for (idx, foo) in bar.enumerated() { }"),
       Example("for (_, foo) in bar.enumerated().something() { }"),

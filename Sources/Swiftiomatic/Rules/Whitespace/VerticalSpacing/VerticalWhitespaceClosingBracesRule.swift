@@ -7,7 +7,6 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule, OptInRule {
     identifier: "vertical_whitespace_closing_braces",
     name: "Vertical Whitespace before Closing Braces",
     description: "Don't include vertical whitespace (empty line) before closing braces",
-    kind: .style,
     nonTriggeringExamples: VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples
       .values.sorted() + VerticalWhitespaceClosingBracesRuleExamples.nonTriggeringExamples,
     triggeringExamples: Array(

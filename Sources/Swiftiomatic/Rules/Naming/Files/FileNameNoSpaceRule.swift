@@ -7,7 +7,6 @@ struct FileNameNoSpaceRule: OptInRule, SyntaxOnlyRule {
     identifier: "file_name_no_space",
     name: "File Name no Space",
     description: "File name should not contain any whitespace",
-    kind: .idiomatic,
   )
 
   func validate(file: SwiftSource) -> [RuleViolation] {

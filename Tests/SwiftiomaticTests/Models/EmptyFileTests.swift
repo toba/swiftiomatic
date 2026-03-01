@@ -45,7 +45,6 @@ private struct RuleMock<ShouldLintEmptyFiles: ShouldLintEmptyFilesProtocol>: Cor
             identifier: "rule_mock<\(ShouldLintEmptyFiles.self)>",
             name: "",
             description: "",
-            kind: .style,
             deprecatedAliases: ["mock"],
         )
     }

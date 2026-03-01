@@ -8,7 +8,6 @@ struct RedundantSelfRule: Rule {
     identifier: "redundant_self",
     name: "Redundant Self",
     description: "Explicit use of 'self' is not required",
-    kind: .style,
     nonTriggeringExamples: RedundantSelfRuleExamples.nonTriggeringExamples,
     triggeringExamples: RedundantSelfRuleExamples.triggeringExamples,
     corrections: RedundantSelfRuleExamples.corrections,

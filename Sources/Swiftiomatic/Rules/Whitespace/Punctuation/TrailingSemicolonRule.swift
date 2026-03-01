@@ -7,7 +7,6 @@ struct TrailingSemicolonRule: Rule {
     identifier: "trailing_semicolon",
     name: "Trailing Semicolon",
     description: "Lines should not have trailing semicolons",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("let a = 0"),
       Example("let a = 0; let b = 0"),

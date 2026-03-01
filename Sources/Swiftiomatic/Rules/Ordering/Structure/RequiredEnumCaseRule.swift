@@ -78,7 +78,6 @@ struct RequiredEnumCaseRule: Rule {
     identifier: "required_enum_case",
     name: "Required Enum Case",
     description: "Enums conforming to a specified protocol must implement a specific case(s).",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

@@ -8,7 +8,6 @@ struct CommaRule: CorrectableRule, SyntaxOnlyRule {
     identifier: "comma",
     name: "Comma Spacing",
     description: "There should be no space before and one after any comma",
-    kind: .style,
     nonTriggeringExamples: [
       Example("func abc(a: String, b: String) { }"),
       Example("abc(a: \"string\", b: \"string\""),

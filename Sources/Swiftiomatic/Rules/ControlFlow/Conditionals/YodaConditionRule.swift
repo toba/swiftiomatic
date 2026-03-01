@@ -8,7 +8,6 @@ struct YodaConditionRule: Rule {
     name: "Yoda Condition",
     description:
       "The constant literal should be placed on the right-hand side of the comparison operator",
-    kind: .lint,
     nonTriggeringExamples: [
       Example("if foo == 42 {}"),
       Example("if foo <= 42.42 {}"),

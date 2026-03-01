@@ -7,7 +7,6 @@ struct ForWhereRule: Rule {
     identifier: "for_where",
     name: "Prefer For-Where",
     description: "`where` clauses are preferred over a single `if` inside a `for`",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

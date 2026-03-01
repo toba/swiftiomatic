@@ -7,7 +7,6 @@ struct ImplicitOptionalInitializationRule: Rule {
     identifier: "implicit_optional_initialization",
     name: "Implicit Optional Initialization",
     description: "Optionals should be consistently initialized, either with `= nil` or without.",
-    kind: .style,
     nonTriggeringExamples: ImplicitOptionalInitializationRuleExamples.nonTriggeringExamples,
     triggeringExamples: ImplicitOptionalInitializationRuleExamples.triggeringExamples,
     corrections: ImplicitOptionalInitializationRuleExamples.corrections,

@@ -7,7 +7,6 @@ struct LeadingWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
     identifier: "leading_whitespace",
     name: "Leading Whitespace",
     description: "Files should not contain leading whitespace",
-    kind: .style,
     nonTriggeringExamples: [
       Example("//")
     ],

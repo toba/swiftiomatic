@@ -7,7 +7,6 @@ struct ImplicitlyUnwrappedOptionalRule: Rule {
     identifier: "implicitly_unwrapped_optional",
     name: "Implicitly Unwrapped Optional",
     description: "Implicitly unwrapped optionals should be avoided when possible",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("@IBOutlet private var label: UILabel!"),
       Example("@IBOutlet var label: UILabel!"),

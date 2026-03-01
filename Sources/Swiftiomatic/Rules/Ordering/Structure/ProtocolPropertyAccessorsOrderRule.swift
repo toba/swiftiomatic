@@ -8,7 +8,6 @@ struct ProtocolPropertyAccessorsOrderRule: Rule {
     name: "Protocol Property Accessors Order",
     description:
       "When declaring properties in protocols, the order of accessors should be `get set`",
-    kind: .style,
     nonTriggeringExamples: [
       Example("protocol Foo {\n var bar: String { get set }\n }"),
       Example("protocol Foo {\n var bar: String { get }\n }"),

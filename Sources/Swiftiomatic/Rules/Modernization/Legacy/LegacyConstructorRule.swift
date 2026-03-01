@@ -7,7 +7,6 @@ struct LegacyConstructorRule: Rule {
     identifier: "legacy_constructor",
     name: "Legacy Constructor",
     description: "Swift constructors are preferred over legacy convenience functions",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("CGPoint(x: 10, y: 10)"),
       Example("CGPoint(x: xValue, y: yValue)"),

@@ -7,7 +7,6 @@ struct TypeContentsOrderRule: Rule {
     identifier: "type_contents_order",
     name: "Type Contents Order",
     description: "Specifies the order of subtypes, properties, methods & more within a type.",
-    kind: .style,
     nonTriggeringExamples: TypeContentsOrderRuleExamples.nonTriggeringExamples,
     triggeringExamples: TypeContentsOrderRuleExamples.triggeringExamples,
   )

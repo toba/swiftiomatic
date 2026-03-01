@@ -7,7 +7,6 @@ struct FunctionDefaultParameterAtEndRule: Rule {
     identifier: "function_default_parameter_at_end",
     name: "Function Default Parameter at End",
     description: "Prefer to locate parameters with defaults toward the end of the parameter list",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("func foo(baz: String, bar: Int = 0) {}"),
       Example("func foo(x: String, y: Int = 0, z: CGFloat = 0) {}"),

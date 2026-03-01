@@ -7,7 +7,6 @@ struct StrictFilePrivateRule: Rule {
     identifier: "strict_fileprivate",
     name: "Strict Fileprivate",
     description: "`fileprivate` should be avoided",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("extension String {}"),
       Example("private extension String {}"),

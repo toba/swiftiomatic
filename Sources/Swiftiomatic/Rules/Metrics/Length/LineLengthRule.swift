@@ -8,7 +8,6 @@ struct LineLengthRule: Rule {
     identifier: "line_length",
     name: "Line Length",
     description: "Lines should not span too many characters.",
-    kind: .metrics,
     nonTriggeringExamples: [
       Example(String(repeating: "/", count: 120) + ""),
       Example(

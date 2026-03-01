@@ -11,7 +11,6 @@ struct UnusedParameterRule: Rule {
       marked by the Swift compiler. Since unused parameters are code smells, they should either be removed \
       or replaced/shadowed by a wildcard '_' to indicate that they are being deliberately disregarded.
       """,
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

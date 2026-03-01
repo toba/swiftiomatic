@@ -21,11 +21,11 @@ enum DiagnosticDeduplicator {
 
   /// Remove lint diagnostics that overlap with active format diagnostics.
   static func deduplicate(_ diagnostics: [Diagnostic]) -> [Diagnostic] {
-    let activeFormatRules = Set(diagnostics.filter { $0.engine == .format }.map(\.ruleID))
+    let activeFormatRules = Set(diagnostics.filter { $0.source == .format }.map(\.ruleID))
     guard !activeFormatRules.isEmpty else { return diagnostics }
 
     return diagnostics.filter { d in
-      if d.engine == .lint,
+      if d.source == .lint,
         let formatEquivalent = lintSupersededByFormat[d.ruleID],
         activeFormatRules.contains(formatEquivalent)
       {

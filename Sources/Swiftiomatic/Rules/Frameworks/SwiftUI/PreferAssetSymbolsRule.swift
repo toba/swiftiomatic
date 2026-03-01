@@ -12,7 +12,6 @@ struct PreferAssetSymbolsRule: Rule {
       arguments. Since Xcode 15, Xcode generates codes for images in the Asset Catalog. Usage of these codes \
       and system icons from SF Symbols avoid typos and allow for compile-time checking.
       """,
-    kind: .idiomatic,
     nonTriggeringExamples: [
       // UIKit - using asset symbols
       Example("UIImage(resource: .someImage)"),

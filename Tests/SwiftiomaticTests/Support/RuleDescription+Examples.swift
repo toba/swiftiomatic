@@ -10,7 +10,7 @@ extension RuleDescription {
             identifier: identifier,
             name: name,
             description: description,
-            kind: kind,
+            scope: scope,
             nonTriggeringExamples: nonTriggeringExamples ?? self.nonTriggeringExamples,
             triggeringExamples: triggeringExamples ?? self.triggeringExamples,
             corrections: corrections ?? self.corrections,

@@ -35,7 +35,6 @@ struct LegacyObjcTypeRule: Rule {
     identifier: "legacy_objc_type",
     name: "Legacy Objective-C Reference Type",
     description: "Prefer Swift value types to bridged Objective-C reference types",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("var array = Array<Int>()"),
       Example("var calendar: Calendar? = nil"),

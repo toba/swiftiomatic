@@ -20,7 +20,6 @@ struct AccessibilityLabelForImageRule: Rule, OptInRule {
       not accessibility elements. Known false positives for Images created in a separate function from where they \
       have accessibility properties applied.
       """,
-    kind: .lint,
     nonTriggeringExamples: AccessibilityLabelForImageRuleExamples.nonTriggeringExamples,
     triggeringExamples: AccessibilityLabelForImageRuleExamples.triggeringExamples,
   )

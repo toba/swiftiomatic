@@ -7,7 +7,6 @@ struct FirstWhereRule: Rule {
     identifier: "first_where",
     name: "First Where",
     description: "Prefer using `.first(where:)` over `.filter { }.first` in collections",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("kinds.filter(excludingKinds.contains).isEmpty && kinds.first == .identifier"),
       Example("myList.first(where: { $0 % 2 == 0 })"),

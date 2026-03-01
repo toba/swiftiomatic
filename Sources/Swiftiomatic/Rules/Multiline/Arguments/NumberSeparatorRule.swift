@@ -12,7 +12,6 @@ struct NumberSeparatorRule: Rule {
       other words, there should be an underscore after every 3 digits in the integral as well as the fractional \
       part of a number.
       """,
-    kind: .style,
     nonTriggeringExamples: NumberSeparatorRuleExamples.nonTriggeringExamples,
     triggeringExamples: NumberSeparatorRuleExamples.triggeringExamples,
     corrections: NumberSeparatorRuleExamples.corrections,

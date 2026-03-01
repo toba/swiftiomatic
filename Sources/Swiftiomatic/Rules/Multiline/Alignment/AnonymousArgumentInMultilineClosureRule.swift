@@ -24,7 +24,6 @@ struct AnonymousArgumentInMultilineClosureRule: Rule {
       }
       ```
       """,
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example("closure { $0 }"),
       Example("closure { print($0) }"),

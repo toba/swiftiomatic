@@ -12,7 +12,6 @@ struct UnhandledThrowingTaskRule: Rule {
       See this forum thread for more details: \
       https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066
       """,
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

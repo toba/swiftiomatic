@@ -9,7 +9,6 @@ struct SelfBindingRule: Rule {
     identifier: "self_binding",
     name: "Self Binding",
     description: "Re-bind `self` to a consistent identifier name.",
-    kind: .style,
     nonTriggeringExamples: [
       Example("if let self = self { return }"),
       Example("guard let self = self else { return }"),

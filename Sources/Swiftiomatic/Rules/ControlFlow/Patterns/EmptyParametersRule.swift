@@ -7,7 +7,6 @@ struct EmptyParametersRule: Rule {
     identifier: "empty_parameters",
     name: "Empty Parameters",
     description: "Prefer `() -> ` over `Void -> `",
-    kind: .style,
     nonTriggeringExamples: [
       Example("let abc: () -> Void = {}"),
       Example("func foo(completion: () -> Void)"),

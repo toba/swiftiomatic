@@ -7,7 +7,6 @@ struct MultilineArgumentsRule: Rule {
     identifier: "multiline_arguments",
     name: "Multiline Arguments",
     description: "Arguments should be either on the same line, or one per line",
-    kind: .style,
     nonTriggeringExamples: MultilineArgumentsRuleExamples.nonTriggeringExamples,
     triggeringExamples: MultilineArgumentsRuleExamples.triggeringExamples,
   )

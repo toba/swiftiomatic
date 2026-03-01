@@ -11,7 +11,6 @@ struct ShorthandArgumentRule: Rule {
       away from the beginning of the closure. Optionally, while usage of a single shorthand argument is okay, \
       more than one or complex ones with field accesses might increase the risk of obfuscation.
       """,
-    kind: .style,
     nonTriggeringExamples: [
       Example(
         """

@@ -7,7 +7,6 @@ struct ConditionalReturnsOnNewlineRule: Rule {
     identifier: "conditional_returns_on_newline",
     name: "Conditional Returns on Newline",
     description: "Conditional statements should always return on the next line",
-    kind: .style,
     nonTriggeringExamples: [
       Example("guard true else {\n return true\n}"),
       Example("guard true,\n let x = true else {\n return true\n}"),

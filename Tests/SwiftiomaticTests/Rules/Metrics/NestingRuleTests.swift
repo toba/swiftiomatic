@@ -225,7 +225,6 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
             identifier: NestingRule.identifier,
             name: NestingRule.description.name,
             description: NestingRule.description.description,
-            kind: .metrics,
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: triggeringExamples,
         )
@@ -559,7 +558,6 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
             identifier: NestingRule.identifier,
             name: NestingRule.description.name,
             description: NestingRule.description.description,
-            kind: .metrics,
             nonTriggeringExamples: nonTriggeringExamples,
             triggeringExamples: triggeringExamples,
         )

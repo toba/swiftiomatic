@@ -39,7 +39,6 @@ struct ArrayInitRule: Rule {
       may be picked up as false positives by the `array_init` rule. If your codebase contains constructs like this, \
       consider using the `typesafe_array_init` analyzer rule instead.
       """,
-    kind: .lint,
     nonTriggeringExamples: [
       Example("Array(foo)"),
       Example("foo.map { $0.0 }"),

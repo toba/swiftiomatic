@@ -7,7 +7,6 @@ struct OverriddenSuperCallRule: Rule {
     identifier: "overridden_super_call",
     name: "Overridden Method Calls Super",
     description: "Some overridden methods should always call super.",
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

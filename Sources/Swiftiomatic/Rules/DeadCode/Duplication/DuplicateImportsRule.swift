@@ -16,7 +16,6 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
     identifier: "duplicate_imports",
     name: "Duplicate Imports",
     description: "Imports should be unique",
-    kind: .idiomatic,
     nonTriggeringExamples: DuplicateImportsRuleExamples.nonTriggeringExamples,
     triggeringExamples: DuplicateImportsRuleExamples.triggeringExamples,
     corrections: DuplicateImportsRuleExamples.corrections,

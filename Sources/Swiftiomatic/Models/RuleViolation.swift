@@ -99,12 +99,10 @@ struct RuleViolation: CustomStringConvertible, Codable, Hashable {
     /// Convert to the unified Diagnostic output type.
     func toDiagnostic() -> Diagnostic {
         let ruleType = RuleRegistry.shared.rule(forID: ruleIdentifier)
-        let ruleKind = ruleType?.description.kind.rawValue ?? "lint"
         let isCorrectableType = ruleType.map { $0 is any CorrectableRule.Type } ?? false
         return Diagnostic(
             ruleID: ruleIdentifier,
-            engine: .lint,
-            category: ruleKind,
+            source: .lint,
             severity: severity == .error ? .error : .warning,
             confidence: confidence ?? .high,
             file: location.file ?? "<unknown>",

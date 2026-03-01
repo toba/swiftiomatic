@@ -7,7 +7,6 @@ struct FileLengthRule: Rule {
     identifier: "file_length",
     name: "File Length",
     description: "Files should not span too many lines.",
-    kind: .metrics,
     nonTriggeringExamples: [
       Example(repeatElement("print(\"swiftlint\")\n", count: 399).joined())
     ],

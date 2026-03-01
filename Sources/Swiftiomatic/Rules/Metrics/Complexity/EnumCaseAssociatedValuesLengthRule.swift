@@ -7,7 +7,6 @@ struct EnumCaseAssociatedValuesLengthRule: Rule {
     identifier: "enum_case_associated_values_count",
     name: "Enum Case Associated Values Count",
     description: "The number of associated values in an enum case should be low.",
-    kind: .metrics,
     nonTriggeringExamples: [
       Example(
         """

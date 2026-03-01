@@ -9,7 +9,6 @@ struct ValidIBInspectableRule: Rule {
     description: """
       @IBInspectable should be applied to variables only, have its type explicit and be of a supported type
       """,
-    kind: .lint,
     nonTriggeringExamples: [
       Example(
         """

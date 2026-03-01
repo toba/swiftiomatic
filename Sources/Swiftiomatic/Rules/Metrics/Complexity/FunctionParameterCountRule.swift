@@ -7,7 +7,6 @@ struct FunctionParameterCountRule: Rule {
     identifier: "function_parameter_count",
     name: "Function Parameter Count",
     description: "Number of function parameters should be low.",
-    kind: .metrics,
     nonTriggeringExamples: [
       Example("init(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
       Example("init (a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),

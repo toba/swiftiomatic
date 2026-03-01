@@ -7,7 +7,6 @@ struct ImplicitReturnRule: Rule {
     identifier: "implicit_return",
     name: "Implicit Return",
     description: "Prefer implicit returns in closures, functions and getters",
-    kind: .style,
     nonTriggeringExamples: ImplicitReturnRuleExamples.nonTriggeringExamples,
     triggeringExamples: ImplicitReturnRuleExamples.triggeringExamples,
     corrections: ImplicitReturnRuleExamples.corrections,

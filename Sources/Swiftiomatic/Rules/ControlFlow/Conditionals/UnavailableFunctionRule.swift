@@ -7,7 +7,6 @@ struct UnavailableFunctionRule: Rule {
     identifier: "unavailable_function",
     name: "Unavailable Function",
     description: "Unimplemented functions should be marked as unavailable",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

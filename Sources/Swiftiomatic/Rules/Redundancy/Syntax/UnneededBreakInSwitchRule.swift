@@ -24,7 +24,6 @@ struct UnneededBreakInSwitchRule: Rule {
     identifier: "unneeded_break_in_switch",
     name: "Unneeded Break in Switch",
     description: "Avoid using unneeded break statements",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       embedInSwitch("break"),
       embedInSwitch("break", case: "default"),

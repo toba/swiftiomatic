@@ -12,7 +12,6 @@ struct TypeNameRule: Rule {
       3 and 40 characters in length.
       Private types may start with an underscore.
       """,
-    kind: .idiomatic,
     nonTriggeringExamples: TypeNameRuleExamples.nonTriggeringExamples,
     triggeringExamples: TypeNameRuleExamples.triggeringExamples,
   )

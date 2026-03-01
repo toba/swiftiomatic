@@ -11,7 +11,6 @@ struct FileTypesOrderRule: OptInRule {
     identifier: "file_types_order",
     name: "File Types Order",
     description: "Specifies how the types within a file should be ordered.",
-    kind: .style,
     nonTriggeringExamples: FileTypesOrderRuleExamples.nonTriggeringExamples,
     triggeringExamples: FileTypesOrderRuleExamples.triggeringExamples,
   )

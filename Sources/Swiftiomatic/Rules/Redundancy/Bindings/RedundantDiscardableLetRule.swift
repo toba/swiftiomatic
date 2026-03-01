@@ -7,7 +7,6 @@ struct RedundantDiscardableLetRule: Rule {
     identifier: "redundant_discardable_let",
     name: "Redundant Discardable Let",
     description: "Prefer `_ = foo()` over `let _ = foo()` when discarding a result from a function",
-    kind: .style,
     nonTriggeringExamples: [
       Example("_ = foo()"),
       Example("if let _ = foo() { }"),

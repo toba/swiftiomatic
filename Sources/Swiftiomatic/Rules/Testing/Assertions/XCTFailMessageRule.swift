@@ -7,7 +7,6 @@ struct XCTFailMessageRule: Rule {
     identifier: "xctfail_message",
     name: "XCTFail Message",
     description: "An XCTFail call should include a description of the assertion",
-    kind: .idiomatic,
     nonTriggeringExamples: [
       Example(
         """

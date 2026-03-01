@@ -7,7 +7,6 @@ struct DiscouragedOptionalBooleanRule: Rule {
     identifier: "discouraged_optional_boolean",
     name: "Discouraged Optional Boolean",
     description: "Prefer non-optional booleans over optional booleans",
-    kind: .idiomatic,
     nonTriggeringExamples: DiscouragedOptionalBooleanRuleExamples.nonTriggeringExamples,
     triggeringExamples: DiscouragedOptionalBooleanRuleExamples.triggeringExamples,
   )

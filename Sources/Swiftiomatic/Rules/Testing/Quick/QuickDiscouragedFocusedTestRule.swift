@@ -7,7 +7,6 @@ struct QuickDiscouragedFocusedTestRule: Rule {
     identifier: "quick_discouraged_focused_test",
     name: "Quick Discouraged Focused Test",
     description: "Non-focused tests won't run as long as this test is focused",
-    kind: .lint,
     nonTriggeringExamples: QuickDiscouragedFocusedTestRuleExamples.nonTriggeringExamples,
     triggeringExamples: QuickDiscouragedFocusedTestRuleExamples.triggeringExamples,
   )

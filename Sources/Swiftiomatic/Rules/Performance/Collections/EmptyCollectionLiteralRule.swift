@@ -8,7 +8,6 @@ struct EmptyCollectionLiteralRule: Rule {
     name: "Empty Collection Literal",
     description:
       "Prefer checking `isEmpty` over comparing collection to an empty array or dictionary literal",
-    kind: .performance,
     nonTriggeringExamples: [
       Example("myArray = []"),
       Example("myArray.isEmpty"),

@@ -177,7 +177,6 @@ extension MockCollectingRule {
     static var description: RuleDescription {
         RuleDescription(
             identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
-            kind: .lint,
         )
     }
 

@@ -8,7 +8,6 @@ struct ShorthandOperatorRule: Rule {
     name: "Shorthand Operator",
     description:
       "Prefer shorthand operators (+=, -=, *=, /=) over doing the operation and assigning",
-    kind: .style,
     nonTriggeringExamples: [
       Example("foo -= 1"),
       Example("foo += variable"),
