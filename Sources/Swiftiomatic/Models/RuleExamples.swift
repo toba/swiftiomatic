@@ -25,6 +25,9 @@ public struct RuleExamples: Sendable, Codable, Hashable {
         self.diffMarkdown = diffMarkdown
     }
 
+    /// An empty container with no examples
+    public static let empty = RuleExamples()
+
     /// Whether this container has any examples at all
     public var isEmpty: Bool {
         nonTriggering.isEmpty && triggering.isEmpty && corrections.isEmpty && diffMarkdown == nil

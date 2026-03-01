@@ -5,8 +5,16 @@ public protocol Rule: Sendable {
     /// The type of the configuration used to configure this rule
     associatedtype OptionsType: RuleOptions
 
+    /// The type of the unified metadata configuration for this rule
+    associatedtype ConfigurationType: RuleConfiguration = RuleDescriptionAdapter
+
     /// A verbose description of many of this rule's properties
+    ///
+    /// - Note: Deprecated. Migrate to ``configuration`` instead.
     static var description: RuleDescription { get }
+
+    /// Unified metadata for this rule, replacing ``description``
+    static var configuration: ConfigurationType { get }
 
     /// This rule's configuration
     var options: OptionsType { get set }
@@ -167,6 +175,16 @@ extension Rule {
 }
 
 extension Rule {
+    /// Default `configuration` bridges from the legacy ``description`` property
+    static var configuration: RuleDescriptionAdapter {
+        RuleDescriptionAdapter(
+            description,
+            isCorrectable: self is any CorrectableRule.Type,
+            isCrossFile: self is any CollectingRuleMarker.Type,
+            canEnrichAsync: self is any AsyncEnrichableRule.Type,
+        )
+    }
+
     /// The rule's unique identifier, equivalent to ``RuleDescription/identifier``
     static var identifier: String {
         description.identifier

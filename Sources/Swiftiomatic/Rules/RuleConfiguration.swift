@@ -51,3 +51,21 @@ public protocol RuleConfiguration: Sendable, Identifiable where ID == String {
     /// Identifiers of related rules
     var relatedRuleIDs: [String] { get }
 }
+
+// MARK: - Defaults
+
+extension RuleConfiguration {
+    public var rationale: String? { nil }
+    public var scope: Scope { .lint }
+    public var isCorrectable: Bool { false }
+    public var isOptIn: Bool { false }
+    public var isDeprecated: Bool { false }
+    public var deprecationMessage: String? { nil }
+    public var requiresSourceKit: Bool { false }
+    public var requiresCompilerArguments: Bool { false }
+    public var isCrossFile: Bool { false }
+    public var canEnrichAsync: Bool { false }
+    public var examples: RuleExamples { .empty }
+    public var configurationOptions: [ConfigOptionDescriptor] { [] }
+    public var relatedRuleIDs: [String] { [] }
+}
