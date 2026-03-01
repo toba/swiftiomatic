@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct LetVarWhitespaceRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "let_var_whitespace",
@@ -278,7 +278,7 @@ struct LetVarWhitespaceRule {
 
 extension LetVarWhitespaceRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

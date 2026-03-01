@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct PrivateOverFilePrivateRule {
-  var configuration = PrivateOverFilePrivateConfiguration()
+  var options = PrivateOverFilePrivateOptions()
 
   static let description = RuleDescription(
     identifier: "private_over_fileprivate",
@@ -90,7 +90,7 @@ struct PrivateOverFilePrivateRule {
 
 extension PrivateOverFilePrivateRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

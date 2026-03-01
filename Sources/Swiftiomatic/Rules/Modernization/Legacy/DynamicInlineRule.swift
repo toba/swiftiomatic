@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct DynamicInlineRule {
-  var configuration = SeverityConfiguration<Self>(.error)
+  var options = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
     identifier: "dynamic_inline",
@@ -24,7 +24,7 @@ struct DynamicInlineRule {
 
 extension DynamicInlineRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

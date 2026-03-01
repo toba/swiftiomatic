@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ComputedAccessorsOrderRule {
-  var configuration = ComputedAccessorsOrderConfiguration()
+  var options = ComputedAccessorsOrderOptions()
 
   static let description = RuleDescription(
     identifier: "computed_accessors_order",
@@ -15,7 +15,7 @@ struct ComputedAccessorsOrderRule {
 
 extension ComputedAccessorsOrderRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 
@@ -58,7 +58,7 @@ extension ComputedAccessorsOrderRule {
 }
 
 extension AccessorBlockSyntax {
-  fileprivate var order: ComputedAccessorsOrderConfiguration.Order? {
+  fileprivate var order: ComputedAccessorsOrderOptions.Order? {
     guard accessorsList.count == 2, accessorsList.map(\.body).allSatisfy({ $0 != nil }) else {
       return nil
     }

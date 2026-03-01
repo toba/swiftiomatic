@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ExtensionAccessControlRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "extension_access_control",
@@ -42,7 +42,7 @@ struct ExtensionAccessControlRule {
 
 extension ExtensionAccessControlRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

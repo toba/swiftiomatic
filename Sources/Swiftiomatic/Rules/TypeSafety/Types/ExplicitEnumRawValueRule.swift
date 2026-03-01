@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ExplicitEnumRawValueRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "explicit_enum_raw_value",
@@ -102,7 +102,7 @@ struct ExplicitEnumRawValueRule {
 
 extension ExplicitEnumRawValueRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

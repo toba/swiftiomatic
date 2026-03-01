@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct AccessibilityLabelForImageRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "accessibility_label_for_image",
@@ -28,7 +28,7 @@ struct AccessibilityLabelForImageRule {
 
 extension AccessibilityLabelForImageRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct OperatorUsageWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
-  var configuration = OperatorUsageWhitespaceConfiguration()
+  var options = OperatorUsageWhitespaceOptions()
 
   static let description = RuleDescription(
     identifier: "operator_usage_whitespace",
@@ -18,7 +18,7 @@ struct OperatorUsageWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
     violationRanges(file: file).map { range, _ in
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severityConfiguration.severity,
+        severity: options.severityConfiguration.severity,
         location: Location(file: file, byteOffset: range.location),
       )
     }
@@ -26,11 +26,11 @@ struct OperatorUsageWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
 
   private func violationRanges(file: SwiftSource) -> [(ByteRange, String)] {
     OperatorUsageWhitespaceVisitor(
-      allowedNoSpaceOperators: configuration.allowedNoSpaceOperators,
+      allowedNoSpaceOperators: options.allowedNoSpaceOperators,
     )
     .walk(file: file, handler: \.violationRanges)
     .filter { byteRange, _ in
-      !configuration.skipAlignedConstants || !isAlignedConstant(in: byteRange, file: file)
+      !options.skipAlignedConstants || !isAlignedConstant(in: byteRange, file: file)
     }.sorted { lhs, rhs in
       lhs.0.location < rhs.0.location
     }
@@ -97,7 +97,7 @@ struct OperatorUsageWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
     }
 
     // Look around for assignment operator in lines around
-    let lineIndexesAround = (1...configuration.linesLookAround)
+    let lineIndexesAround = (1...options.linesLookAround)
       .flatMap { [lineIndex + $0, lineIndex - $0] }
 
     func isValidIndex(_ idx: Int) -> Bool {

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ExplicitTypeInterfaceRule {
-  var configuration = ExplicitTypeInterfaceConfiguration()
+  var options = ExplicitTypeInterfaceOptions()
 
   static let description = RuleDescription(
     identifier: "explicit_type_interface",
@@ -94,7 +94,7 @@ struct ExplicitTypeInterfaceRule {
 
 extension ExplicitTypeInterfaceRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

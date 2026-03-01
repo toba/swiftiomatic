@@ -2,7 +2,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct IncompatibleConcurrencyAnnotationRule {
-  var configuration = IncompatibleConcurrencyAnnotationConfiguration()
+  var options = IncompatibleConcurrencyAnnotationOptions()
 
   static let description = RuleDescription(
     identifier: "incompatible_concurrency_annotation",
@@ -25,11 +25,11 @@ struct IncompatibleConcurrencyAnnotationRule {
 
 extension IncompatibleConcurrencyAnnotationRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

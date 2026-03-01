@@ -2,7 +2,7 @@ import SwiftOperators
 import SwiftSyntax
 
 struct XCTSpecificMatcherRule {
-  var configuration = XCTSpecificMatcherConfiguration()
+  var options = XCTSpecificMatcherOptions()
 
   static let description = RuleDescription(
     identifier: "xct_specific_matcher",
@@ -26,7 +26,7 @@ struct XCTSpecificMatcherRule {
 
 extension XCTSpecificMatcherRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -2,7 +2,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct LegacyConstantRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "legacy_constant",
@@ -16,11 +16,11 @@ struct LegacyConstantRule {
 
 extension LegacyConstantRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

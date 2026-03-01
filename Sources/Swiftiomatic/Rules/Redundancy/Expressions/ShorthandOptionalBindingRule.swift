@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ShorthandOptionalBindingRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "shorthand_optional_binding",
@@ -113,11 +113,11 @@ struct ShorthandOptionalBindingRule {
 
 extension ShorthandOptionalBindingRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

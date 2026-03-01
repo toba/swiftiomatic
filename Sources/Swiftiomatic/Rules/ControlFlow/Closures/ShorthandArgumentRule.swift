@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ShorthandArgumentRule {
-  var configuration = ShorthandArgumentConfiguration()
+  var options = ShorthandArgumentOptions()
 
   static let description = RuleDescription(
     identifier: "shorthand_argument",
@@ -89,7 +89,7 @@ struct ShorthandArgumentRule {
 
 extension ShorthandArgumentRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

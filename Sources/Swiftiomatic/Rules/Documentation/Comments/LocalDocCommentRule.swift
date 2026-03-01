@@ -2,7 +2,7 @@ import SwiftIDEUtils
 import SwiftSyntax
 
 struct LocalDocCommentRule: SwiftSyntaxRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "local_doc_comment",
@@ -52,7 +52,7 @@ struct LocalDocCommentRule: SwiftSyntaxRule {
 
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(
-      configuration: configuration,
+      configuration: options,
       file: file,
       classifications: file.syntaxClassifications.filter { $0.kind != .none },
     )

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct StrictFilePrivateRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "strict_fileprivate",
@@ -158,7 +158,7 @@ struct StrictFilePrivateRule {
 
 extension StrictFilePrivateRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

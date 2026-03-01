@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct BlockCommentsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "block_comments",
@@ -35,7 +35,7 @@ struct BlockCommentsRule {
 
 extension BlockCommentsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -4,11 +4,11 @@ import Testing
 
 @Suite(.rulesRegistered, .disabled("requires sourcekitd")) struct IndentationWidthRuleTests {
   @Test func invalidIndentation() async throws {
-    let defaultValue = IndentationWidthConfiguration().indentationWidth
+    let defaultValue = IndentationWidthOptions().indentationWidth
 
     for indentation in [0, -1, -5] {
       let console = try await Console.captureConsole {
-        var testee = IndentationWidthConfiguration()
+        var testee = IndentationWidthOptions()
         try testee.apply(configuration: ["indentation_width": indentation])
 
         // Value remains the default.

@@ -3,7 +3,7 @@ import Testing
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct FunctionNameWhitespaceRuleTests {
-  private typealias GenericSpacingType = FunctionNameWhitespaceConfiguration.GenericSpacingType
+  private typealias GenericSpacingType = FunctionNameWhitespaceOptions.GenericSpacingType
 
   private static let operatorWhitespaceViolationReason =
     "Operators should be surrounded by a single whitespace when defining them"

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct AccessibilityTraitForButtonRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "accessibility_trait_for_button",
@@ -29,7 +29,7 @@ struct AccessibilityTraitForButtonRule {
 
 extension AccessibilityTraitForButtonRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

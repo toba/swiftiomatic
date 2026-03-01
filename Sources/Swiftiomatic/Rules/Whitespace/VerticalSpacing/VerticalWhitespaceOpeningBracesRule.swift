@@ -7,7 +7,7 @@ extension SwiftSource {
 }
 
 struct VerticalWhitespaceOpeningBracesRule: Rule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   private static let nonTriggeringExamples = [
     Example("[1, 2].map { $0 }.foo()"),
@@ -200,7 +200,7 @@ extension VerticalWhitespaceOpeningBracesRule {
 
       return RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, stringIndex: violationIndex),
       )
     }

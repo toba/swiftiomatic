@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct TestCaseAccessibilityRule {
-  var configuration = TestCaseAccessibilityConfiguration()
+  var options = TestCaseAccessibilityOptions()
 
   static let description = RuleDescription(
     identifier: "test_case_accessibility",
@@ -16,7 +16,7 @@ struct TestCaseAccessibilityRule {
 
 extension TestCaseAccessibilityRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

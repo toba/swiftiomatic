@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct GenericConsolidationRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "generic_consolidation",
@@ -22,7 +22,7 @@ struct GenericConsolidationRule {
 
 extension GenericConsolidationRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

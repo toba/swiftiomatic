@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ProhibitedInterfaceBuilderRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "prohibited_interface_builder",
@@ -21,7 +21,7 @@ struct ProhibitedInterfaceBuilderRule {
 
 extension ProhibitedInterfaceBuilderRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

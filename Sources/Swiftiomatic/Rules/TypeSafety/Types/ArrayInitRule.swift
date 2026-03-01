@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ArrayInitRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "array_init",
@@ -92,7 +92,7 @@ struct ArrayInitRule {
 
 extension ArrayInitRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct SortTypealiasesRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "sort_typealiases",
@@ -20,7 +20,7 @@ struct SortTypealiasesRule {
 
 extension SortTypealiasesRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

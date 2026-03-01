@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct ConcurrencyModernizationRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "concurrency_modernization",
@@ -24,7 +24,7 @@ struct ConcurrencyModernizationRule {
 
 extension ConcurrencyModernizationRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 
@@ -58,7 +58,7 @@ extension ConcurrencyModernizationRule: AsyncEnrichableRule {
         violations.append(
           RuleViolation(
             ruleDescription: Self.description,
-            severity: configuration.severity,
+            severity: options.severity,
             location: Location(file: filePath, line: query.line, column: query.column),
             reason: "DispatchQueue.async can be replaced with structured concurrency",
             confidence: .high,

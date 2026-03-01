@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct IdenticalOperandsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   private static let operators = ["==", "!=", "===", "!==", ">", ">=", "<", "<="]
 
@@ -84,7 +84,7 @@ struct IdenticalOperandsRule {
 
 extension IdenticalOperandsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

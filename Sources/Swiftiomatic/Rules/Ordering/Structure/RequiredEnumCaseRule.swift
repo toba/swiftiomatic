@@ -68,7 +68,7 @@ import SwiftSyntax
 /// }
 /// ````
 struct RequiredEnumCaseRule {
-  var configuration = RequiredEnumCaseConfiguration()
+  var options = RequiredEnumCaseOptions()
 
   private static let exampleConfiguration = [
     "NetworkResponsable": ["success": "warning", "error": "warning", "notConnected": "warning"]
@@ -150,7 +150,7 @@ struct RequiredEnumCaseRule {
 
 extension RequiredEnumCaseRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

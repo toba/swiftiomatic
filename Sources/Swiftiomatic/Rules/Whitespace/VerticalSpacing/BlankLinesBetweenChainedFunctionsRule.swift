@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct BlankLinesBetweenChainedFunctionsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "blank_lines_between_chained_functions",
@@ -31,7 +31,7 @@ struct BlankLinesBetweenChainedFunctionsRule {
 
 extension BlankLinesBetweenChainedFunctionsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct SortedImportsRule {
-  var configuration = SortedImportsConfiguration()
+  var options = SortedImportsOptions()
 
   static let description = RuleDescription(
     identifier: "sorted_imports",
@@ -17,11 +17,11 @@ struct SortedImportsRule {
 
 extension SortedImportsRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 
@@ -225,7 +225,7 @@ private struct Import: Comparable {
 
   static func from(
     importDecl: ImportDeclSyntax,
-    grouping: SortedImportsConfiguration.Grouping,
+    grouping: SortedImportsOptions.Grouping,
     locationConverter: SourceLocationConverter,
   ) -> Self {
     let attributes: [String] =

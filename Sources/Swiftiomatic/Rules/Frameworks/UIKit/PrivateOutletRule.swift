@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct PrivateOutletRule {
-  var configuration = PrivateOutletConfiguration()
+  var options = PrivateOutletOptions()
 
   static let description = RuleDescription(
     identifier: "private_outlet",
@@ -81,7 +81,7 @@ struct PrivateOutletRule {
 
 extension PrivateOutletRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

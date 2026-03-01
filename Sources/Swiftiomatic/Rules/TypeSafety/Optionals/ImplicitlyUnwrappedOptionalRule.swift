@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ImplicitlyUnwrappedOptionalRule {
-  var configuration = ImplicitlyUnwrappedOptionalConfiguration()
+  var options = ImplicitlyUnwrappedOptionalOptions()
 
   static let description = RuleDescription(
     identifier: "implicitly_unwrapped_optional",
@@ -49,7 +49,7 @@ struct ImplicitlyUnwrappedOptionalRule {
 
 extension ImplicitlyUnwrappedOptionalRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

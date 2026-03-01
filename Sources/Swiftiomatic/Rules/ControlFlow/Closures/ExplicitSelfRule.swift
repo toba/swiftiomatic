@@ -1,7 +1,7 @@
 import Foundation
 
 struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "explicit_self",
@@ -20,7 +20,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
     violationRanges(in: file, compilerArguments: compilerArguments).map {
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, characterOffset: $0.location),
       )
     }

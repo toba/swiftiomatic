@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ContainsOverRangeNilComparisonRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "contains_over_range_nil_comparison",
@@ -24,7 +24,7 @@ struct ContainsOverRangeNilComparisonRule {
 
 extension ContainsOverRangeNilComparisonRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

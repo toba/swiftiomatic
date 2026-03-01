@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct NestingRule {
-  var configuration = NestingConfiguration()
+  var options = NestingOptions()
 
   static let description = RuleDescription(
     identifier: "nesting",
@@ -15,7 +15,7 @@ struct NestingRule {
 
 extension NestingRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

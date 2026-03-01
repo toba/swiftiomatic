@@ -2,7 +2,7 @@ import SwiftLexicalLookup
 import SwiftSyntax
 
 struct UnneededEscapingRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "unneeded_escaping",
@@ -17,7 +17,7 @@ struct UnneededEscapingRule {
 
 extension UnneededEscapingRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

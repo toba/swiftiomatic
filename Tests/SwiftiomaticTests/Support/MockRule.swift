@@ -3,7 +3,7 @@
 struct MockRule: Rule {
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "MockRule",
@@ -18,7 +18,7 @@ struct MockRule: Rule {
 }
 
 struct RuleWithLevelsMock: Rule {
-  var configuration = SeverityLevelsConfiguration<Self>(warning: 2, error: 3)
+  var options = SeverityLevelsConfiguration<Self>(warning: 2, error: 3)
 
   static let description = RuleDescription(
     identifier: "severity_level_mock",
@@ -40,7 +40,7 @@ struct RuleWithLevelsMock: Rule {
     } else {
       throw SwiftiomaticError.invalidConfiguration(ruleID: Self.identifier)
     }
-    try self.configuration.apply(configuration: normalized)
+    try self.options.apply(configuration: normalized)
   }
 
   func validate(file _: SwiftSource) -> [RuleViolation] { [] }

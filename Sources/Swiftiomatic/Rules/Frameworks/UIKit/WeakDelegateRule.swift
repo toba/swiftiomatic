@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct WeakDelegateRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "weak_delegate",
@@ -84,7 +84,7 @@ struct WeakDelegateRule {
 
 extension WeakDelegateRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct SinglePropertyPerLineRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "single_property_per_line",
@@ -27,7 +27,7 @@ struct SinglePropertyPerLineRule {
 
 extension SinglePropertyPerLineRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

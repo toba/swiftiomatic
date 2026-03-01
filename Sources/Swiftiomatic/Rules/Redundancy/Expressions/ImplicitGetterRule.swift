@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ImplicitGetterRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "implicit_getter",
@@ -14,7 +14,7 @@ struct ImplicitGetterRule {
 
 extension ImplicitGetterRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

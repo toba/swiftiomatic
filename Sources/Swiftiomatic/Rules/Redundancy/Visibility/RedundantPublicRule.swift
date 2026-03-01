@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct RedundantPublicRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "redundant_public",
@@ -45,7 +45,7 @@ struct RedundantPublicRule {
 
 extension RedundantPublicRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

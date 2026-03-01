@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct SwiftTestingTestCaseNamesRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "swift_testing_test_case_names",
@@ -30,7 +30,7 @@ struct SwiftTestingTestCaseNamesRule {
 
 extension SwiftTestingTestCaseNamesRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

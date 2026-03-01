@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct BlockBasedKVORule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "block_based_kvo",
@@ -42,7 +42,7 @@ struct BlockBasedKVORule {
 
 extension BlockBasedKVORule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

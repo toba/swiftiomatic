@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ConditionalReturnsOnNewlineRule {
-  var configuration = ConditionalReturnsOnNewlineConfiguration()
+  var options = ConditionalReturnsOnNewlineOptions()
 
   static let description = RuleDescription(
     identifier: "conditional_returns_on_newline",
@@ -39,7 +39,7 @@ struct ConditionalReturnsOnNewlineRule {
 
 extension ConditionalReturnsOnNewlineRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

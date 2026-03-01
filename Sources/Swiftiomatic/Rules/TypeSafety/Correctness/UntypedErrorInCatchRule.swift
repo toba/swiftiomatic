@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct UntypedErrorInCatchRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "untyped_error_in_catch",
@@ -119,11 +119,11 @@ struct UntypedErrorInCatchRule {
 
 extension UntypedErrorInCatchRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

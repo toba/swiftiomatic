@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct FunctionNameWhitespaceRule {
-  var configuration = FunctionNameWhitespaceConfiguration()
+  var options = FunctionNameWhitespaceOptions()
 
   static let description = RuleDescription(
     identifier: "function_name_whitespace",
@@ -17,7 +17,7 @@ struct FunctionNameWhitespaceRule {
 
 extension FunctionNameWhitespaceRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

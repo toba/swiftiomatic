@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct CollectionAlignmentRule {
-  var configuration = CollectionAlignmentConfiguration()
+  var options = CollectionAlignmentOptions()
 
   static let description = RuleDescription(
     identifier: "collection_alignment",
@@ -15,7 +15,7 @@ struct CollectionAlignmentRule {
 
 extension CollectionAlignmentRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

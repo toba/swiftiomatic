@@ -17,7 +17,7 @@ struct IndentationWidthRule: Rule {
 
   // MARK: - Properties
 
-  var configuration = IndentationWidthConfiguration()
+  var options = IndentationWidthOptions()
 
   static let description = RuleDescription(
     identifier: "indentation_width",
@@ -75,15 +75,15 @@ struct IndentationWidthRule: Rule {
         violations.append(
           RuleViolation(
             ruleDescription: Self.description,
-            severity: configuration.severityConfiguration.severity,
+            severity: options.severityConfiguration.severity,
             location: Location(file: file, characterOffset: line.range.location),
             reason: "Code should be indented with tabs or "
-              + "\(configuration.indentationWidth) spaces, but not both in the same line",
+              + "\(options.indentationWidth) spaces, but not both in the same line",
           ),
         )
 
         // Model this line's indentation using spaces (although it's tabs & spaces) to let parsing continue
-        indentation = .spaces(spaceCount + tabCount * configuration.indentationWidth)
+        indentation = .spaces(spaceCount + tabCount * options.indentationWidth)
       } else if tabCount != 0 {
         indentation = .tabs(tabCount)
       } else {
@@ -99,7 +99,7 @@ struct IndentationWidthRule: Rule {
           violations.append(
             RuleViolation(
               ruleDescription: Self.description,
-              severity: configuration.severityConfiguration.severity,
+              severity: options.severityConfiguration.severity,
               location: Location(file: file, characterOffset: line.range.location),
               reason: "The first line shall not be indented",
             ),
@@ -118,15 +118,15 @@ struct IndentationWidthRule: Rule {
         let isIndentation =
           previousLineIndentations.last.map {
             indentation
-              .spacesEquivalent(indentationWidth: configuration.indentationWidth)
-              >= $0.spacesEquivalent(indentationWidth: configuration.indentationWidth)
+              .spacesEquivalent(indentationWidth: options.indentationWidth)
+              >= $0.spacesEquivalent(indentationWidth: options.indentationWidth)
           } ?? true
 
-        let indentWidth = configuration.indentationWidth
+        let indentWidth = options.indentationWidth
         violations.append(
           RuleViolation(
             ruleDescription: Self.description,
-            severity: configuration.severityConfiguration.severity,
+            severity: options.severityConfiguration.severity,
             location: Location(file: file, characterOffset: line.range.location),
             reason: isIndentation
               ? "Code should be indented using one tab or \(indentWidth) spaces"
@@ -152,7 +152,7 @@ struct IndentationWidthRule: Rule {
   }
 
   private func ignoreCompilerDirective(line: Line, in file: SwiftSource) -> Bool {
-    if configuration.includeCompilerDirectives {
+    if options.includeCompilerDirectives {
       return false
     }
     if file.syntaxMap.tokens(inByteRange: line.byteRange).kinds.first == .buildconfigKeyword {
@@ -162,7 +162,7 @@ struct IndentationWidthRule: Rule {
   }
 
   private func ignoreComment(line: Line, in file: SwiftSource) -> Bool {
-    if configuration.includeComments {
+    if options.includeComments {
       return false
     }
     let syntaxKindsInLine = Set(file.syntaxMap.tokens(inByteRange: line.byteRange).kinds)
@@ -175,7 +175,7 @@ struct IndentationWidthRule: Rule {
   }
 
   private func ignoreMultilineStrings(line: Line, in file: SwiftSource) -> Bool {
-    if configuration.includeMultilineStrings {
+    if options.includeMultilineStrings {
       return false
     }
 
@@ -207,18 +207,18 @@ struct IndentationWidthRule: Rule {
     comparingTo lastIndentation: Indentation
   ) -> Bool {
     let currentSpaceEquivalent = indentation.spacesEquivalent(
-      indentationWidth: configuration.indentationWidth,
+      indentationWidth: options.indentationWidth,
     )
     let lastSpaceEquivalent = lastIndentation.spacesEquivalent(
-      indentationWidth: configuration.indentationWidth,
+      indentationWidth: options.indentationWidth,
     )
 
     return
       // Allow indent by indentationWidth
-      currentSpaceEquivalent == lastSpaceEquivalent + configuration.indentationWidth
+      currentSpaceEquivalent == lastSpaceEquivalent + options.indentationWidth
       || ((lastSpaceEquivalent - currentSpaceEquivalent) >= 0
         && (lastSpaceEquivalent - currentSpaceEquivalent).isMultiple(
-          of: configuration.indentationWidth,
+          of: options.indentationWidth,
         ))  // Allow unindent if it stays in the grid
   }
 }

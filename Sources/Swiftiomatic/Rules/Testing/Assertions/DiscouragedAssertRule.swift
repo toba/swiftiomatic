@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct DiscouragedAssertRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "discouraged_assert",
@@ -26,7 +26,7 @@ struct DiscouragedAssertRule {
 
 extension DiscouragedAssertRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct RedundantVoidReturnRule {
-  var configuration = RedundantVoidReturnConfiguration()
+  var options = RedundantVoidReturnOptions()
 
   static let description = RuleDescription(
     identifier: "redundant_void_return",
@@ -86,11 +86,11 @@ struct RedundantVoidReturnRule {
 
 extension RedundantVoidReturnRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

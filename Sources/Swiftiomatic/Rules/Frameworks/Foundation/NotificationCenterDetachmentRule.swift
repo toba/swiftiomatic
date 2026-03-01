@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct NotificationCenterDetachmentRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "notification_center_detachment",
@@ -14,7 +14,7 @@ struct NotificationCenterDetachmentRule {
 
 extension NotificationCenterDetachmentRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

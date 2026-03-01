@@ -1,7 +1,7 @@
 import Foundation
 
 struct MultilineParametersBracketsRule: Rule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "multiline_parameters_brackets",
@@ -195,7 +195,7 @@ struct MultilineParametersBracketsRule: Rule {
     let matchNSRange = NSRange(invalidMatch.range, in: prefix)
     return RuleViolation(
       ruleDescription: Self.description,
-      severity: configuration.severity,
+      severity: options.severity,
       location: Location(file: file, characterOffset: matchNSRange.location + 1),
     )
   }
@@ -224,7 +224,7 @@ struct MultilineParametersBracketsRule: Rule {
     let characterOffset = lastParamRange.upperBound + matchNSRange.upperBound - 1
     return RuleViolation(
       ruleDescription: Self.description,
-      severity: configuration.severity,
+      severity: options.severity,
       location: Location(file: file, characterOffset: characterOffset),
     )
   }

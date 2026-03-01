@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct IdentifierNameRule {
-  var configuration = IdentifierNameConfiguration()
+  var options = IdentifierNameOptions()
 
   static let description = RuleDescription(
     identifier: "identifier_name",
@@ -20,7 +20,7 @@ struct IdentifierNameRule {
 
 extension IdentifierNameRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

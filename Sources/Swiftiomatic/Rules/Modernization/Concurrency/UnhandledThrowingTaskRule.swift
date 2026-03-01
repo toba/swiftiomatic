@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct UnhandledThrowingTaskRule {
-  var configuration = SeverityConfiguration<Self>(.error)
+  var options = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
     identifier: "unhandled_throwing_task",
@@ -237,7 +237,7 @@ struct UnhandledThrowingTaskRule {
 
 extension UnhandledThrowingTaskRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

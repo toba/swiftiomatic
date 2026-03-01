@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct TypeContentsOrderRule {
-  var configuration = TypeContentsOrderConfiguration()
+  var options = TypeContentsOrderOptions()
 
   static let description = RuleDescription(
     identifier: "type_contents_order",
@@ -15,7 +15,7 @@ struct TypeContentsOrderRule {
 
 extension TypeContentsOrderRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

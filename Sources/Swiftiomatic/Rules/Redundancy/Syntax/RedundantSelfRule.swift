@@ -2,7 +2,7 @@
 @_spi(RawSyntax) import SwiftSyntax
 
 struct RedundantSelfRule {
-  var configuration = RedundantSelfConfiguration()
+  var options = RedundantSelfOptions()
 
   static let description = RuleDescription(
     identifier: "redundant_self",
@@ -18,7 +18,7 @@ struct RedundantSelfRule {
 
 extension RedundantSelfRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

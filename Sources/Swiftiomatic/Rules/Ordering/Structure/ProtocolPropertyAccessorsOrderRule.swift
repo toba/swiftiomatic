@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ProtocolPropertyAccessorsOrderRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "protocol_property_accessors_order",
@@ -25,11 +25,11 @@ struct ProtocolPropertyAccessorsOrderRule {
 
 extension ProtocolPropertyAccessorsOrderRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import Foundation
 
 struct StatementPositionRule: CorrectableRule {
-  var configuration = StatementPositionConfiguration()
+  var options = StatementPositionOptions()
 
   static let description = RuleDescription(
     identifier: "statement_position",
@@ -59,7 +59,7 @@ struct StatementPositionRule: CorrectableRule {
   )
 
   func validate(file: SwiftSource) -> [RuleViolation] {
-    switch configuration.statementMode {
+    switch options.statementMode {
     case .default:
       return defaultValidate(file: file)
     case .uncuddledElse:
@@ -68,7 +68,7 @@ struct StatementPositionRule: CorrectableRule {
   }
 
   func correct(file: SwiftSource) -> Int {
-    switch configuration.statementMode {
+    switch options.statementMode {
     case .default:
       defaultCorrect(file: file)
     case .uncuddledElse:
@@ -88,7 +88,7 @@ extension StatementPositionRule {
     defaultViolationRanges(in: file, matching: Self.defaultPattern).compactMap { range in
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, stringIndex: range.lowerBound),
       )
     }
@@ -126,7 +126,7 @@ extension StatementPositionRule {
     uncuddledViolationRanges(in: file).compactMap { range in
       RuleViolation(
         ruleDescription: Self.uncuddledDescription,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, stringIndex: range.lowerBound),
       )
     }

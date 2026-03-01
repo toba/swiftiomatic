@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct GenericTypeNameRule {
-  var configuration = NameConfiguration<Self>(
+  var options = NameOptions<Self>(
     minLengthWarning: 1,
     minLengthError: 0,
     maxLengthWarning: 20,
@@ -57,7 +57,7 @@ struct GenericTypeNameRule {
 
 extension GenericTypeNameRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

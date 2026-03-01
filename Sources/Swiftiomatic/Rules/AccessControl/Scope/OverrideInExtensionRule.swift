@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct OverrideInExtensionRule: SwiftSyntaxRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "override_in_extension",
@@ -48,11 +48,11 @@ struct OverrideInExtensionRule: SwiftSyntaxRule {
 
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     let allowedExtensions = ClassNameCollectingVisitor(
-      configuration: configuration,
+      configuration: options,
       file: file,
     ).walk(tree: file.syntaxTree, handler: \.classNames)
     return Visitor(
-      configuration: configuration,
+      configuration: options,
       file: file,
       allowedExtensions: allowedExtensions,
     )

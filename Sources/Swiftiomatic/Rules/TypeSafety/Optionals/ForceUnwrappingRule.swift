@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ForceUnwrappingRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "force_unwrapping",
@@ -80,7 +80,7 @@ struct ForceUnwrappingRule {
 
 extension ForceUnwrappingRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct RawValueForCamelCasedCodableEnumRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "raw_value_for_camel_cased_codable_enum",
@@ -118,7 +118,7 @@ struct RawValueForCamelCasedCodableEnumRule {
 
 extension RawValueForCamelCasedCodableEnumRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

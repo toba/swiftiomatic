@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct SwitchCaseAlignmentRule {
-  var configuration = SwitchCaseAlignmentConfiguration()
+  var options = SwitchCaseAlignmentOptions()
 
   static let description = RuleDescription(
     identifier: "switch_case_alignment",
@@ -42,7 +42,7 @@ struct SwitchCaseAlignmentRule {
 
 extension SwitchCaseAlignmentRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

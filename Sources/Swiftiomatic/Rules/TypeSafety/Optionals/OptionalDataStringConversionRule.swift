@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct OptionalDataStringConversionRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "optional_data_string_conversion",
@@ -23,7 +23,7 @@ struct OptionalDataStringConversionRule {
 
 extension OptionalDataStringConversionRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

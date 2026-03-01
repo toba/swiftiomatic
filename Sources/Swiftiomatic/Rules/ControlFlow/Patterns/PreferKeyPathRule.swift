@@ -2,7 +2,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct PreferKeyPathRule {
-  var configuration = PreferKeyPathConfiguration()
+  var options = PreferKeyPathOptions()
 
   private static let extendedMode = ["restrict_to_standard_functions": false]
   private static let ignoreIdentity = ["ignore_identity_closures": true]
@@ -106,11 +106,11 @@ struct PreferKeyPathRule {
 
 extension PreferKeyPathRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

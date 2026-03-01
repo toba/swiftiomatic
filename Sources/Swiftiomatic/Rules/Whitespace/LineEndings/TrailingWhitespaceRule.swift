@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct TrailingWhitespaceRule {
-  var configuration = TrailingWhitespaceConfiguration()
+  var options = TrailingWhitespaceOptions()
 
   static let description = RuleDescription(
     identifier: "trailing_whitespace",
@@ -33,7 +33,7 @@ struct TrailingWhitespaceRule {
 
 extension TrailingWhitespaceRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct NumberSeparatorRule {
-  var configuration = NumberSeparatorConfiguration()
+  var options = NumberSeparatorOptions()
 
   static let description = RuleDescription(
     identifier: "number_separator",
@@ -28,11 +28,11 @@ struct NumberSeparatorRule {
 
 extension NumberSeparatorRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 
@@ -92,7 +92,7 @@ extension NumberSeparatorRule {
 }
 
 private protocol NumberSeparatorValidator {
-  var configuration: NumberSeparatorConfiguration { get }
+  var configuration: NumberSeparatorOptions { get }
 }
 
 private enum NumberSeparatorViolation {

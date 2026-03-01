@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct DuplicateEnumCasesRule {
-  var configuration = SeverityConfiguration<Self>(.error)
+  var options = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
     identifier: "duplicate_enum_cases",
@@ -67,7 +67,7 @@ struct DuplicateEnumCasesRule {
 
 extension DuplicateEnumCasesRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

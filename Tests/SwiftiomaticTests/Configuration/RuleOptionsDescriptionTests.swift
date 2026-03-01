@@ -6,26 +6,26 @@ import Testing
   private struct MockConfiguration: RuleOptions {
     typealias Parent = MockRule
 
-    @ConfigurationElement(key: "flag")
+    @OptionElement(key: "flag")
     var flag = true
-    @ConfigurationElement(key: "string")
+    @OptionElement(key: "string")
     var string = "value"
-    @ConfigurationElement(key: "symbol")
+    @OptionElement(key: "symbol")
     var symbol = try! Symbol(fromAny: "value", context: "rule")
-    @ConfigurationElement(key: "integer")
+    @OptionElement(key: "integer")
     var integer = 2
-    @ConfigurationElement(key: "null")
+    @OptionElement(key: "null")
     var null: Int?
-    @ConfigurationElement(key: "my_double")
+    @OptionElement(key: "my_double")
     var myDouble = 2.1
-    @ConfigurationElement(key: "severity")
+    @OptionElement(key: "severity")
     var severity = Severity.warning
-    @ConfigurationElement(
+    @OptionElement(
       key: "list",
       postprocessor: { list in list = list.map { $0.uppercased() } },
     )
     var list = ["string1", "string2"]
-    @ConfigurationElement(
+    @OptionElement(
       key: "set",
       deprecationNotice: .suggestAlternative(
         ruleID: "my_rule",
@@ -33,15 +33,15 @@ import Testing
       ),
     )
     var set: Set<Int> = [1, 2, 3]
-    @ConfigurationElement(key: "set_of_doubles")
+    @OptionElement(key: "set_of_doubles")
     var setOfDoubles: Set<Double> = [1, 2, 3, 4.7]
-    @ConfigurationElement(isInline: true)
+    @OptionElement(isInline: true)
     var severityConfig = SeverityConfiguration<Parent>(.error)
-    @ConfigurationElement(key: "SEVERITY")
+    @OptionElement(key: "SEVERITY")
     var renamedSeverityConfig = SeverityConfiguration<Parent>(.warning)
-    @ConfigurationElement(isInline: true)
+    @OptionElement(isInline: true)
     var inlinedSeverityLevels = SeverityLevelsConfiguration<Parent>(warning: 1, error: nil)
-    @ConfigurationElement(key: "levels")
+    @OptionElement(key: "levels")
     var nestedSeverityLevels = SeverityLevelsConfiguration<Parent>(warning: 3, error: 2)
 
     mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
@@ -320,7 +320,7 @@ import Testing
         "visible" => .flag(true)
       }
 
-      @ConfigurationElement(key: "invisible")
+      @OptionElement(key: "invisible")
       var invisible = true
 
       mutating func apply(configuration _: [String: Any]) { /* conformance for test */  }

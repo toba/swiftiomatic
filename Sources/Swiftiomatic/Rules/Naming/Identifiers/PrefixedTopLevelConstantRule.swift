@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct PrefixedTopLevelConstantRule {
-  var configuration = PrefixedTopLevelConstantConfiguration()
+  var options = PrefixedTopLevelConstantOptions()
 
   static let description = RuleDescription(
     identifier: "prefixed_toplevel_constant",
@@ -100,7 +100,7 @@ struct PrefixedTopLevelConstantRule {
 
 extension PrefixedTopLevelConstantRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct FirstWhereRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "first_where",
@@ -37,7 +37,7 @@ struct FirstWhereRule {
 
 extension FirstWhereRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

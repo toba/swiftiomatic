@@ -2,7 +2,7 @@ import Foundation
 import SwiftIDEUtils
 
 struct CommentSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "comment_spacing",
@@ -193,7 +193,7 @@ struct CommentSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
     violationRanges(in: file).map { range in
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, stringIndex: range.lowerBound),
       )
     }

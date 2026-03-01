@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct NoFallthroughOnlyRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "no_fallthrough_only",
@@ -15,7 +15,7 @@ struct NoFallthroughOnlyRule {
 
 extension NoFallthroughOnlyRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

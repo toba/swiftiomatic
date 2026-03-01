@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct TrailingCommaRule {
-  var configuration = TrailingCommaConfiguration()
+  var options = TrailingCommaOptions()
 
   private static let triggeringExamples: [Example] = [
     Example("let foo = [1, 2, 3↓,]"),
@@ -50,11 +50,11 @@ struct TrailingCommaRule {
 
 extension TrailingCommaRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

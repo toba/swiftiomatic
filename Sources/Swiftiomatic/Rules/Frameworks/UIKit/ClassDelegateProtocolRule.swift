@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ClassDelegateProtocolRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "class_delegate_protocol",
@@ -57,7 +57,7 @@ struct ClassDelegateProtocolRule {
 
 extension ClassDelegateProtocolRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

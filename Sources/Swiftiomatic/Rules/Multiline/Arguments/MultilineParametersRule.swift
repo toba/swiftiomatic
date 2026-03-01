@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct MultilineParametersRule {
-  var configuration = MultilineParametersConfiguration()
+  var options = MultilineParametersOptions()
 
   static let description = RuleDescription(
     identifier: "multiline_parameters",
@@ -16,7 +16,7 @@ struct MultilineParametersRule {
 
 extension MultilineParametersRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

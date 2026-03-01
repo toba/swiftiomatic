@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct FileLengthRule {
-  var configuration = FileLengthConfiguration()
+  var options = FileLengthOptions()
 
   static let description = RuleDescription(
     identifier: "file_length",
@@ -20,7 +20,7 @@ struct FileLengthRule {
 
 extension FileLengthRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

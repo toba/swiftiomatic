@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct NoEmptyBlockRule {
-  var configuration = NoEmptyBlockConfiguration()
+  var options = NoEmptyBlockOptions()
 
   static let description = RuleDescription(
     identifier: "no_empty_block",
@@ -178,7 +178,7 @@ struct NoEmptyBlockRule {
 
 extension NoEmptyBlockRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 
@@ -215,7 +215,7 @@ extension NoEmptyBlockRule {
 }
 
 extension CodeBlockSyntax {
-  fileprivate var codeBlockType: NoEmptyBlockConfiguration.CodeBlockType? {
+  fileprivate var codeBlockType: NoEmptyBlockOptions.CodeBlockType? {
     switch parent?.kind {
     case .functionDecl, .accessorDecl:
       .functionBodies

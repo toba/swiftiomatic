@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct PreferAssetSymbolsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "prefer_asset_symbols",
@@ -47,7 +47,7 @@ struct PreferAssetSymbolsRule {
 
 extension PreferAssetSymbolsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

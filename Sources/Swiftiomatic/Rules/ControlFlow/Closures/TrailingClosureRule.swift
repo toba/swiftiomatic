@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct TrailingClosureRule {
-  var configuration = TrailingClosureConfiguration()
+  var options = TrailingClosureOptions()
 
   private static let onlySingleMutedConfig = ["only_single_muted_parameter": true]
 
@@ -178,11 +178,11 @@ struct TrailingClosureRule {
 
 extension TrailingClosureRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

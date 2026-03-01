@@ -3,7 +3,7 @@ import Testing
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct RuleOptionsTests {
-  private let defaultNestingConfiguration = NestingConfiguration(
+  private let defaultNestingOptions = NestingOptions(
     typeLevel: SeverityLevelsConfiguration(warning: 0),
     functionLevel: SeverityLevelsConfiguration(warning: 0),
   )
@@ -20,7 +20,7 @@ import Testing
         "check_nesting_in_closures_and_statements": false,
         "always_allow_one_type_in_functions": true,
       ] as [String: any Sendable]
-    var nestingConfig = defaultNestingConfiguration
+    var nestingConfig = defaultNestingOptions
     do {
       try nestingConfig.apply(configuration: config)
       #expect(nestingConfig.typeLevel.warning == 7)
@@ -36,14 +36,14 @@ import Testing
 
   @Test func nestingConfigurationThrowsOnBadConfig() {
     let config: [String: Any] = ["type_level": "not_a_number"]
-    var nestingConfig = defaultNestingConfiguration
+    var nestingConfig = defaultNestingOptions
     checkError(SwiftiomaticError.invalidConfiguration(ruleID: NestingRule.identifier)) {
       try nestingConfig.apply(configuration: config)
     }
   }
 
   @Test func severityWorksAsOnlyParameter() throws {
-    var config = AttributesConfiguration()
+    var config = AttributesOptions()
     #expect(config.severity == .warning)
     try config.apply(configuration: ["severity": "error"])
     #expect(config.severity == .error)
@@ -122,7 +122,7 @@ import Testing
 
   @Test func trailingWhitespaceConfigurationThrowsOnBadConfig() {
     let config: [String: Any] = ["severity": "unknown"]
-    var configuration = TrailingWhitespaceConfiguration(
+    var configuration = TrailingWhitespaceOptions(
       ignoresEmptyLines: false,
       ignoresComments: true,
       ignoresLiterals: false,
@@ -133,14 +133,14 @@ import Testing
   }
 
   @Test func trailingWhitespaceConfigurationInitializerSetsIgnoresEmptyLines() {
-    let configuration1 = TrailingWhitespaceConfiguration(
+    let configuration1 = TrailingWhitespaceOptions(
       ignoresEmptyLines: false,
       ignoresComments: true,
       ignoresLiterals: false,
     )
     #expect(!(configuration1.ignoresEmptyLines))
 
-    let configuration2 = TrailingWhitespaceConfiguration(
+    let configuration2 = TrailingWhitespaceOptions(
       ignoresEmptyLines: true,
       ignoresComments: true,
       ignoresLiterals: false,
@@ -149,14 +149,14 @@ import Testing
   }
 
   @Test func trailingWhitespaceConfigurationInitializerSetsIgnoresComments() {
-    let configuration1 = TrailingWhitespaceConfiguration(
+    let configuration1 = TrailingWhitespaceOptions(
       ignoresEmptyLines: false,
       ignoresComments: true,
       ignoresLiterals: false,
     )
     #expect(configuration1.ignoresComments)
 
-    let configuration2 = TrailingWhitespaceConfiguration(
+    let configuration2 = TrailingWhitespaceOptions(
       ignoresEmptyLines: false,
       ignoresComments: false,
       ignoresLiterals: false,
@@ -165,7 +165,7 @@ import Testing
   }
 
   @Test func trailingWhitespaceConfigurationApplyConfigurationSetsIgnoresEmptyLines() {
-    var configuration = TrailingWhitespaceConfiguration(
+    var configuration = TrailingWhitespaceOptions(
       ignoresEmptyLines: false,
       ignoresComments: true,
       ignoresLiterals: false,
@@ -184,7 +184,7 @@ import Testing
   }
 
   @Test func trailingWhitespaceConfigurationApplyConfigurationSetsIgnoresComments() {
-    var configuration = TrailingWhitespaceConfiguration(
+    var configuration = TrailingWhitespaceOptions(
       ignoresEmptyLines: false,
       ignoresComments: true,
       ignoresLiterals: false,
@@ -203,26 +203,26 @@ import Testing
   }
 
   @Test func trailingWhitespaceConfigurationCompares() {
-    let configuration1 = TrailingWhitespaceConfiguration(
+    let configuration1 = TrailingWhitespaceOptions(
       ignoresEmptyLines: false,
       ignoresComments: true,
       ignoresLiterals: false,
     )
-    let configuration2 = TrailingWhitespaceConfiguration(
+    let configuration2 = TrailingWhitespaceOptions(
       ignoresEmptyLines: true,
       ignoresComments: true,
       ignoresLiterals: false,
     )
     #expect(configuration1 != configuration2)
 
-    let configuration3 = TrailingWhitespaceConfiguration(
+    let configuration3 = TrailingWhitespaceOptions(
       ignoresEmptyLines: true,
       ignoresComments: true,
       ignoresLiterals: false,
     )
     #expect(configuration2 == configuration3)
 
-    let configuration4 = TrailingWhitespaceConfiguration(
+    let configuration4 = TrailingWhitespaceOptions(
       ignoresEmptyLines: false,
       ignoresComments: false,
       ignoresLiterals: false,
@@ -230,7 +230,7 @@ import Testing
 
     #expect(configuration1 != configuration4)
 
-    let configuration5 = TrailingWhitespaceConfiguration(
+    let configuration5 = TrailingWhitespaceOptions(
       ignoresEmptyLines: true,
       ignoresComments: false,
       ignoresLiterals: false,
@@ -240,7 +240,7 @@ import Testing
   }
 
   @Test func trailingWhitespaceConfigurationApplyConfigurationUpdatesSeverityConfiguration() {
-    var configuration = TrailingWhitespaceConfiguration(
+    var configuration = TrailingWhitespaceOptions(
       severityConfiguration: .warning,
       ignoresEmptyLines: false,
       ignoresComments: true,
@@ -255,7 +255,7 @@ import Testing
   }
 
   @Test func overriddenSuperCallConfigurationFromDictionary() {
-    var configuration = OverriddenSuperCallConfiguration()
+    var configuration = OverriddenSuperCallOptions()
     #expect(configuration.resolvedMethodNames.contains("viewWillAppear(_:)"))
 
     let conf1 = ["severity": "error", "excluded": "viewWillAppear(_:)"]
@@ -306,7 +306,7 @@ import Testing
   }
 
   @Test func modifierOrderConfigurationFromDictionary() throws {
-    var configuration = ModifierOrderConfiguration()
+    var configuration = ModifierOrderOptions()
     let config: [String: Any] = [
       "severity": "warning",
       "preferred_modifier_order": [
@@ -343,7 +343,7 @@ import Testing
   }
 
   @Test func modifierOrderConfigurationThrowsOnUnrecognizedModifierGroup() {
-    var configuration = ModifierOrderConfiguration()
+    var configuration = ModifierOrderOptions()
     let config =
       [
         "severity": "warning",
@@ -356,7 +356,7 @@ import Testing
   }
 
   @Test func modifierOrderConfigurationThrowsOnNonModifiableGroup() {
-    var configuration = ModifierOrderConfiguration()
+    var configuration = ModifierOrderOptions()
     let config =
       [
         "severity": "warning",
@@ -368,7 +368,7 @@ import Testing
   }
 
   @Test func computedAccessorsOrderRuleOptions() throws {
-    var configuration = ComputedAccessorsOrderConfiguration()
+    var configuration = ComputedAccessorsOrderOptions()
     let config = ["severity": "error", "order": "set_get"]
     try configuration.apply(configuration: config)
 

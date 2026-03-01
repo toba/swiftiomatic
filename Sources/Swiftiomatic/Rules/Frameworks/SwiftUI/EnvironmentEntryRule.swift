@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct EnvironmentEntryRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "environment_entry",
@@ -32,7 +32,7 @@ struct EnvironmentEntryRule {
 
 extension EnvironmentEntryRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

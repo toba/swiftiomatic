@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct PreferFinalClassesRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "prefer_final_classes",
@@ -28,7 +28,7 @@ struct PreferFinalClassesRule {
 
 extension PreferFinalClassesRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

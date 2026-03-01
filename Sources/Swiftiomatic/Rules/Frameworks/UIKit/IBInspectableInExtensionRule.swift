@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct IBInspectableInExtensionRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "ibinspectable_in_extension",
@@ -31,7 +31,7 @@ struct IBInspectableInExtensionRule {
 
 extension IBInspectableInExtensionRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -136,7 +136,7 @@ import Testing
 
   private func violations(in code: String, config: [String: Any] = [:]) -> [String] {
     var rule = NumberSeparatorRule()
-    try? rule.configuration.apply(configuration: config)
+    try? rule.options.apply(configuration: config)
     let visitor = rule.makeVisitor(file: SwiftSource(contents: ""))
     visitor.walk(Parser.parse(source: "let a = " + code))
     return visitor.violations.compactMap(\.reason)

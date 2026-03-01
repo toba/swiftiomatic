@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct NSLocalizedStringKeyRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "nslocalizedstring_key",
@@ -38,7 +38,7 @@ struct NSLocalizedStringKeyRule {
 
 extension NSLocalizedStringKeyRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ProhibitedSuperRule {
-  var configuration = ProhibitedSuperConfiguration()
+  var options = ProhibitedSuperOptions()
 
   static let description = RuleDescription(
     identifier: "prohibited_super_call",
@@ -87,7 +87,7 @@ struct ProhibitedSuperRule {
 
 extension ProhibitedSuperRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

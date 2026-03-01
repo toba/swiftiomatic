@@ -13,7 +13,7 @@ private func wrapInSwitch(_ str: String, file: StaticString = #filePath, line: U
 }
 
 struct SwitchCaseOnNewlineRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "switch_case_on_newline",
@@ -71,7 +71,7 @@ struct SwitchCaseOnNewlineRule {
 
 extension SwitchCaseOnNewlineRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

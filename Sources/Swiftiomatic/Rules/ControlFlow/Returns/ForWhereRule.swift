@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ForWhereRule {
-  var configuration = ForWhereConfiguration()
+  var options = ForWhereOptions()
 
   static let description = RuleDescription(
     identifier: "for_where",
@@ -150,7 +150,7 @@ struct ForWhereRule {
 
 extension ForWhereRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

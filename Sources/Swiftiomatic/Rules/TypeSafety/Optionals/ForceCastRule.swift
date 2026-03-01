@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ForceCastRule {
-  var configuration = SeverityConfiguration<Self>(.error)
+  var options = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
     identifier: "force_cast",
@@ -16,7 +16,7 @@ struct ForceCastRule {
 
 extension ForceCastRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

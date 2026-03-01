@@ -29,7 +29,7 @@ private let legacyObjcTypes = [
 ]
 
 struct LegacyObjcTypeRule {
-  var configuration = LegacyObjcTypeConfiguration()
+  var options = LegacyObjcTypeOptions()
 
   static let description = RuleDescription(
     identifier: "legacy_objc_type",
@@ -81,7 +81,7 @@ struct LegacyObjcTypeRule {
 
 extension LegacyObjcTypeRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ObjectLiteralRule {
-  var configuration = ObjectLiteralConfiguration<Self>()
+  var options = ObjectLiteralOptions<Self>()
 
   static let description = RuleDescription(
     identifier: "object_literal",
@@ -40,7 +40,7 @@ struct ObjectLiteralRule {
 
 extension ObjectLiteralRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

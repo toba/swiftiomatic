@@ -39,7 +39,7 @@ private struct DontLintEmptyFiles: ShouldLintEmptyFilesProtocol {
 private struct RuleMock<ShouldLintEmptyFiles: ShouldLintEmptyFilesProtocol>: CorrectableRule,
   SyntaxOnlyRule
 {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static var description: RuleDescription {
     RuleDescription(

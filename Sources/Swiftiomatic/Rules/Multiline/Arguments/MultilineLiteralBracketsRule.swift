@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct MultilineLiteralBracketsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "multiline_literal_brackets",
@@ -139,7 +139,7 @@ struct MultilineLiteralBracketsRule {
 
 extension MultilineLiteralBracketsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

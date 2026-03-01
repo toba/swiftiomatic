@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ContainsOverFilterIsEmptyRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "contains_over_filter_is_empty",
@@ -29,7 +29,7 @@ struct ContainsOverFilterIsEmptyRule {
 
 extension ContainsOverFilterIsEmptyRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

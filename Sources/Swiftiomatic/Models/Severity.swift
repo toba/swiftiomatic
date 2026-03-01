@@ -14,4 +14,4 @@ public enum Severity: String, Comparable, CaseIterable, Codable, Sendable {
 
 // MARK: - Configuration Conformances
 
-extension Severity: AcceptableByConfigurationElement, InlinableOption {}
+extension Severity: AcceptableByOptionElement, InlinableOption {}

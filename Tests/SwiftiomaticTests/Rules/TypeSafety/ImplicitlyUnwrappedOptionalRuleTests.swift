@@ -5,8 +5,8 @@ import Testing
 @Suite(.rulesRegistered) struct ImplicitlyUnwrappedOptionalRuleTests {
   @Test func implicitlyUnwrappedOptionalRuleDefaultConfiguration() {
     let rule = ImplicitlyUnwrappedOptionalRule()
-    #expect(rule.configuration.mode == .allExceptIBOutlets)
-    #expect(rule.configuration.severity == .warning)
+    #expect(rule.options.mode == .allExceptIBOutlets)
+    #expect(rule.options.severity == .warning)
   }
 
   @Test func implicitlyUnwrappedOptionalRuleWarnsOnOutletsInAllMode() async {

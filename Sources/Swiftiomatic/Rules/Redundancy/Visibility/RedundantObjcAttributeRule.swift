@@ -6,7 +6,7 @@ private let attributeNamesImplyingObjc: Set<String> = [
 ]
 
 struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "redundant_objc_attribute",
@@ -25,7 +25,7 @@ struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule 
         }
       }
     }
-    return Visitor(configuration: configuration, file: file)
+    return Visitor(configuration: options, file: file)
   }
 
   func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {

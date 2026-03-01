@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ReturnArrowWhitespaceRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "return_arrow_whitespace",
@@ -56,7 +56,7 @@ struct ReturnArrowWhitespaceRule {
 
 extension ReturnArrowWhitespaceRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

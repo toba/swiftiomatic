@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct OrphanedDocCommentRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "orphaned_doc_comment",
@@ -87,7 +87,7 @@ struct OrphanedDocCommentRule {
 
 extension OrphanedDocCommentRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

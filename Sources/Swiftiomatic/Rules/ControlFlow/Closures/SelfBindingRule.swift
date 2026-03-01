@@ -3,7 +3,7 @@ import SwiftSyntax
 // MARK: - SelfBindingRule
 
 struct SelfBindingRule {
-  var configuration = SelfBindingConfiguration()
+  var options = SelfBindingOptions()
 
   static let description = RuleDescription(
     identifier: "self_binding",
@@ -64,11 +64,11 @@ struct SelfBindingRule {
 
 extension SelfBindingRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

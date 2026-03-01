@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ImplicitOptionalInitializationRule {
-  var configuration = ImplicitOptionalInitializationConfiguration()
+  var options = ImplicitOptionalInitializationOptions()
 
   static let description = RuleDescription(
     identifier: "implicit_optional_initialization",
@@ -16,11 +16,11 @@ struct ImplicitOptionalInitializationRule {
 
 extension ImplicitOptionalInitializationRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 
@@ -85,7 +85,7 @@ extension ImplicitOptionalInitializationRule {
 
 extension PatternBindingSyntax {
   fileprivate func violationPosition(
-    for style: ImplicitOptionalInitializationConfiguration.Style,
+    for style: ImplicitOptionalInitializationOptions.Style,
   ) -> AbsolutePosition? {
     guard
       let parent = parent?.parent?.as(VariableDeclSyntax.self),

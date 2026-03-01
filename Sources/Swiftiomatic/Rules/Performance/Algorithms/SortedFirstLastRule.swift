@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct SortedFirstLastRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "sorted_first_last",
@@ -49,7 +49,7 @@ struct SortedFirstLastRule {
 
 extension SortedFirstLastRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

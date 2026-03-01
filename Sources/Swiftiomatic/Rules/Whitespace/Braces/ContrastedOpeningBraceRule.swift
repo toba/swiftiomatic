@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct ContrastedOpeningBraceRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "contrasted_opening_brace",
@@ -24,7 +24,7 @@ struct ContrastedOpeningBraceRule {
 
 extension ContrastedOpeningBraceRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

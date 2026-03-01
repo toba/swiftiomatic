@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct UnusedSetterValueRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "unused_setter_value",
@@ -153,7 +153,7 @@ struct UnusedSetterValueRule {
 
 extension UnusedSetterValueRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

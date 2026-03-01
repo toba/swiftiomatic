@@ -5,7 +5,7 @@ import Testing
 @Suite(.rulesRegistered) struct CollectingRuleTests {
   @Test func collectsIntoStorage() async throws {
     struct Spec: MockCollectingRule {
-      var configuration = SeverityConfiguration<Self>(.warning)
+      var options = SeverityConfiguration<Self>(.warning)
 
       func collectInfo(for _: SwiftSource) -> Int {
         42
@@ -31,7 +31,7 @@ import Testing
 
   @Test func collectsAllFiles() async throws {
     struct Spec: MockCollectingRule {
-      var configuration = SeverityConfiguration<Self>(.warning)
+      var options = SeverityConfiguration<Self>(.warning)
 
       func collectInfo(for file: SwiftSource) -> String {
         file.contents
@@ -61,7 +61,7 @@ import Testing
 
   @Test func collectsAnalyzerFiles() async throws {
     struct Spec: MockCollectingRule, AnalyzerRule {
-      var configuration = SeverityConfiguration<Self>(.warning)
+      var options = SeverityConfiguration<Self>(.warning)
       static let description = RuleDescription(
         identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
         isOptIn: true, requiresCompilerArguments: true, requiresFileOnDisk: true,
@@ -97,7 +97,7 @@ import Testing
 
   @Test func corrects() async throws {
     struct Spec: MockCollectingRule, CorrectableRule {
-      var configuration = SeverityConfiguration<Self>(.warning)
+      var options = SeverityConfiguration<Self>(.warning)
 
       func collectInfo(for file: SwiftSource) -> String {
         file.contents
@@ -128,7 +128,7 @@ import Testing
     }
 
     struct AnalyzerSpec: MockCollectingRule, AnalyzerRule, CorrectableRule {
-      var configuration = SeverityConfiguration<Self>(.warning)
+      var options = SeverityConfiguration<Self>(.warning)
       static let description = RuleDescription(
         identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
         isOptIn: true, requiresCompilerArguments: true, requiresFileOnDisk: true,

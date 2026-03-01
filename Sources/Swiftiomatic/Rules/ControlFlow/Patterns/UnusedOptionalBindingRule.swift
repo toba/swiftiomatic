@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct UnusedOptionalBindingRule {
-  var configuration = UnusedOptionalBindingConfiguration()
+  var options = UnusedOptionalBindingOptions()
 
   static let description = RuleDescription(
     identifier: "unused_optional_binding",
@@ -31,7 +31,7 @@ struct UnusedOptionalBindingRule {
 
 extension UnusedOptionalBindingRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -12,7 +12,7 @@ struct SeverityConfiguration<Parent: Rule>: SeverityBasedRuleOptions, InlinableO
         Self(.warning)
     }
 
-    @ConfigurationElement(key: "severity")
+    @OptionElement(key: "severity")
     var severity = Severity.warning
 
     var severityConfiguration: Self {

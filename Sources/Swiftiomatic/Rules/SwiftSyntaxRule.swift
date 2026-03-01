@@ -32,7 +32,7 @@ extension SwiftSyntaxRule where OptionsType: SeverityBasedRuleOptions {
   func makeViolation(file: SwiftSource, violation: SyntaxViolation) -> RuleViolation {
     RuleViolation(
       ruleDescription: Self.description,
-      severity: violation.severity ?? configuration.severity,
+      severity: violation.severity ?? options.severity,
       location: Location(file: file, position: violation.position),
       reason: violation.reason,
       confidence: violation.confidence,

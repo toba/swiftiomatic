@@ -9,7 +9,7 @@ public protocol Rule: Sendable {
     static var description: RuleDescription { get }
 
     /// This rule's configuration
-    var configuration: OptionsType { get set }
+    var options: OptionsType { get set }
 
     /// Whether this rule should be used on empty files, defaults to `false`
     var shouldLintEmptyFiles: Bool { get }
@@ -114,7 +114,7 @@ extension Rule {
         } else {
             throw SwiftiomaticError.invalidConfiguration(ruleID: Self.identifier)
         }
-        try self.configuration.apply(configuration: normalized)
+        try self.options.apply(configuration: normalized)
     }
 
     func validate(file: SwiftSource, using _: RuleStorage, compilerArguments: [String])
@@ -129,7 +129,7 @@ extension Rule {
 
     func isEqualTo(_ rule: some Rule) -> Bool {
         if let rule = rule as? Self {
-            return configuration == rule.configuration
+            return options == rule.options
         }
         return false
     }
@@ -147,7 +147,7 @@ extension Rule {
         -> RuleOptionsDescription
     {
         RuleOptionsDescription.from(
-            configuration: configuration, exclusiveOptions: exclusiveOptions,
+            configuration: options, exclusiveOptions: exclusiveOptions,
         )
     }
 

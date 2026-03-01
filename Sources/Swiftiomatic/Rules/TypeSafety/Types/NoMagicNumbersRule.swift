@@ -4,7 +4,7 @@ import Foundation
 import SwiftSyntax
 
 struct NoMagicNumbersRule {
-  var configuration = NoMagicNumbersConfiguration()
+  var options = NoMagicNumbersOptions()
 
   static let description = RuleDescription(
     identifier: "no_magic_numbers",
@@ -249,7 +249,7 @@ struct NoMagicNumbersRule {
 
 extension NoMagicNumbersRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

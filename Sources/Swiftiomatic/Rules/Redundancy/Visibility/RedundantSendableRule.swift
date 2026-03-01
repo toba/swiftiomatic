@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct RedundantSendableRule {
-  var configuration = RedundantSendableConfiguration()
+  var options = RedundantSendableOptions()
 
   static let description = RuleDescription(
     identifier: "redundant_sendable",
@@ -53,11 +53,11 @@ struct RedundantSendableRule {
 
 extension RedundantSendableRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct SortedEnumCasesRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "sorted_enum_cases",
@@ -141,7 +141,7 @@ struct SortedEnumCasesRule {
 
 extension SortedEnumCasesRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

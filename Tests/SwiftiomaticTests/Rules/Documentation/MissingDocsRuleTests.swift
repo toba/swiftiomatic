@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct MissingDocsRuleTests {
   @Test func descriptionEmpty() {
-    let configuration = MissingDocsConfiguration()
+    let configuration = MissingDocsOptions()
     #expect(
       configuration.parameterDescription?.oneLiner()
         == "warning: [open, public]; excludes_extensions: true; "
@@ -14,7 +14,7 @@ import Testing
   }
 
   @Test func descriptionExcludesFalse() {
-    let configuration = MissingDocsConfiguration(
+    let configuration = MissingDocsOptions(
       excludesExtensions: false, excludesInheritedTypes: false,
     )
     #expect(
@@ -26,7 +26,7 @@ import Testing
   }
 
   @Test func descriptionExcludesExtensionsFalseExcludesInheritedTypesTrue() {
-    let configuration = MissingDocsConfiguration(
+    let configuration = MissingDocsOptions(
       excludesExtensions: false, excludesInheritedTypes: true,
     )
     #expect(
@@ -38,7 +38,7 @@ import Testing
   }
 
   @Test func descriptionExcludesExtensionsTrueExcludesInheritedTypesFalse() {
-    let configuration = MissingDocsConfiguration(
+    let configuration = MissingDocsOptions(
       excludesExtensions: true,
       excludesInheritedTypes: false,
       evaluateEffectiveAccessControlLevel: true,
@@ -52,7 +52,7 @@ import Testing
   }
 
   @Test func descriptionSingleServety() {
-    let configuration = MissingDocsConfiguration(
+    let configuration = MissingDocsOptions(
       parameters: [RuleParameter<AccessControlLevel>(severity: .error, value: .open)],
     )
     #expect(
@@ -63,7 +63,7 @@ import Testing
   }
 
   @Test func descriptionMultipleSeverities() {
-    let configuration = MissingDocsConfiguration(
+    let configuration = MissingDocsOptions(
       parameters: [
         RuleParameter<AccessControlLevel>(severity: .error, value: .open),
         RuleParameter<AccessControlLevel>(severity: .warning, value: .public),
@@ -78,7 +78,7 @@ import Testing
   }
 
   @Test func descriptionMultipleAcls() {
-    let configuration = MissingDocsConfiguration(
+    let configuration = MissingDocsOptions(
       parameters: [
         RuleParameter<AccessControlLevel>(severity: .warning, value: .open),
         RuleParameter<AccessControlLevel>(severity: .warning, value: .public),
@@ -93,7 +93,7 @@ import Testing
   }
 
   @Test func descriptionExcludesTrivialInitTrue() {
-    let configuration = MissingDocsConfiguration(excludesTrivialInit: true)
+    let configuration = MissingDocsOptions(excludesTrivialInit: true)
     #expect(
       configuration.parameterDescription?.oneLiner()
         == "warning: [open, public]; excludes_extensions: true; "
@@ -103,7 +103,7 @@ import Testing
   }
 
   @Test func parsingSingleServety() {
-    var configuration = MissingDocsConfiguration()
+    var configuration = MissingDocsOptions()
     try? configuration.apply(configuration: ["warning": "open"])
     #expect(
       configuration.parameters == [
@@ -113,7 +113,7 @@ import Testing
   }
 
   @Test func parsingMultipleSeverities() {
-    var configuration = MissingDocsConfiguration()
+    var configuration = MissingDocsOptions()
     try? configuration.apply(configuration: ["warning": "public", "error": "open"])
     #expect(
       configuration.parameters.sorted { $0.value.rawValue > $1.value.rawValue } == [
@@ -124,7 +124,7 @@ import Testing
   }
 
   @Test func parsingMultipleAcls() {
-    var configuration = MissingDocsConfiguration()
+    var configuration = MissingDocsOptions()
     try? configuration.apply(configuration: ["warning": ["public", "open"]])
     #expect(
       configuration.parameters.sorted { $0.value.rawValue > $1.value.rawValue } == [
@@ -137,14 +137,14 @@ import Testing
   }
 
   @Test func invalidServety() {
-    var configuration = MissingDocsConfiguration()
+    var configuration = MissingDocsOptions()
     #expect(throws: (any Error).self) {
       try configuration.apply(configuration: ["warning": ["public", "closed"]])
     }
   }
 
   @Test func invalidAcl() {
-    var configuration = MissingDocsConfiguration()
+    var configuration = MissingDocsOptions()
     try? configuration.apply(configuration: ["debug": ["public", "open"]])
     #expect(configuration.excludesExtensions)
     #expect(configuration.excludesInheritedTypes)
@@ -157,7 +157,7 @@ import Testing
   }
 
   @Test func invalidDuplicateAcl() {
-    var configuration = MissingDocsConfiguration()
+    var configuration = MissingDocsOptions()
     #expect(throws: (any Error).self) {
       try configuration.apply(configuration: [
         "warning": ["public", "open"] as Any, "error": "public",
@@ -166,7 +166,7 @@ import Testing
   }
 
   @Test func excludesFalse() {
-    var configuration = MissingDocsConfiguration()
+    var configuration = MissingDocsOptions()
     try? configuration.apply(configuration: [
       "excludes_extensions": false, "excludes_inherited_types": false,
     ])
@@ -181,7 +181,7 @@ import Testing
   }
 
   @Test func excludesExtensionsFalseExcludesInheritedTypesTrue() {
-    var configuration = MissingDocsConfiguration()
+    var configuration = MissingDocsOptions()
     try? configuration.apply(configuration: [
       "excludes_extensions": false, "excludes_inherited_types": true,
     ])
@@ -196,7 +196,7 @@ import Testing
   }
 
   @Test func excludesExtensionsTrueExcludesInheritedTypesFalse() {
-    var configuration = MissingDocsConfiguration()
+    var configuration = MissingDocsOptions()
     try? configuration.apply(configuration: [
       "excludes_extensions": true, "excludes_inherited_types": false,
     ])
@@ -211,7 +211,7 @@ import Testing
   }
 
   @Test func excludesExtensionsTrueExcludesInheritedTypesFalseWithParameters() {
-    var configuration = MissingDocsConfiguration()
+    var configuration = MissingDocsOptions()
     try? configuration.apply(
       configuration: [
         "excludes_extensions": true,

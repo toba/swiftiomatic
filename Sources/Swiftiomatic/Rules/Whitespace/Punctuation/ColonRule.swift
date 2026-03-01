@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct ColonRule: SubstitutionCorrectableRule, SyntaxOnlyRule {
-  var configuration = ColonConfiguration()
+  var options = ColonOptions()
 
   static let description = RuleDescription(
     identifier: "colon",
@@ -19,7 +19,7 @@ struct ColonRule: SubstitutionCorrectableRule, SyntaxOnlyRule {
     violationRanges(in: file).map { range in
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severityConfiguration.severity,
+        severity: options.severityConfiguration.severity,
         location: Location(file: file, stringIndex: range.lowerBound),
       )
     }
@@ -38,7 +38,7 @@ struct ColonRule: SubstitutionCorrectableRule, SyntaxOnlyRule {
       .windowsOfThreeTokens()
       .compactMap { previous, current, next -> ByteRange? in
         if current.tokenKind != .colon
-          || !configuration.applyToDictionaries
+          || !options.applyToDictionaries
             && dictionaryPositions
               .contains(current.position)
           || positionsToSkip.contains(current.position)
@@ -72,7 +72,7 @@ struct ColonRule: SubstitutionCorrectableRule, SyntaxOnlyRule {
           }
 
           let flexibleRightSpacing =
-            configuration.flexibleRightSpacing
+            options.flexibleRightSpacing
             || caseStatementPositions
               .contains(current.position)
           if flexibleRightSpacing, current.trailingTrivia.isNotEmpty {

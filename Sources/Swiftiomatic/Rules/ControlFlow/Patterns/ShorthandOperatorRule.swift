@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ShorthandOperatorRule {
-  var configuration = SeverityConfiguration<Self>(.error)
+  var options = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
     identifier: "shorthand_operator",
@@ -44,7 +44,7 @@ struct ShorthandOperatorRule {
 
 extension ShorthandOperatorRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

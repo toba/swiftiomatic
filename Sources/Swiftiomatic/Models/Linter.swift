@@ -60,7 +60,7 @@ extension Rule {
                 superfluousDisableCommandViolations.append(
                     RuleViolation(
                         ruleDescription: type(of: superfluousDisableCommandRule).description,
-                        severity: superfluousDisableCommandRule.configuration.severity,
+                        severity: superfluousDisableCommandRule.options.severity,
                         location: region.start,
                         reason: reason,
                     ),
@@ -505,7 +505,7 @@ struct CollectedLinter: @unchecked Sendable {
             }.map { id in
                 RuleViolation(
                     ruleDescription: type(of: superfluousDisableCommandRule).description,
-                    severity: superfluousDisableCommandRule.configuration.severity,
+                    severity: superfluousDisableCommandRule.options.severity,
                     location: region.start,
                     reason:
                     superfluousDisableCommandRule

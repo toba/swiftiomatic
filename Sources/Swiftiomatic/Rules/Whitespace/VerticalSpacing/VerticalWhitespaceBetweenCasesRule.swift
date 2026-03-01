@@ -2,7 +2,7 @@ import SwiftBasicFormat
 import SwiftSyntax
 
 struct VerticalWhitespaceBetweenCasesRule {
-  var configuration = VerticalWhitespaceBetweenCasesConfiguration()
+  var options = VerticalWhitespaceBetweenCasesOptions()
 
   static let description = RuleDescription(
     identifier: "vertical_whitespace_between_cases",
@@ -21,7 +21,7 @@ struct VerticalWhitespaceBetweenCasesRule {
 
 extension VerticalWhitespaceBetweenCasesRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

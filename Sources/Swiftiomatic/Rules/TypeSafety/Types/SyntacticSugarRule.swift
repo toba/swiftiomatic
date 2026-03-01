@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct SyntacticSugarRule: CorrectableRule, SyntaxOnlyRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "syntactic_sugar",
@@ -20,7 +20,7 @@ struct SyntacticSugarRule: CorrectableRule, SyntaxOnlyRule {
     }.map { violation in
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, byteOffset: ByteCount(violation.position)),
         reason: violation.type.violationReason,
       )

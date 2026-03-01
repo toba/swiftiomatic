@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct RedundantTypeAnnotationRule {
-  var configuration = RedundantTypeAnnotationConfiguration()
+  var options = RedundantTypeAnnotationOptions()
 
   static let description = RuleDescription(
     identifier: "redundant_type_annotation",
@@ -246,7 +246,7 @@ struct RedundantTypeAnnotationRule {
 
 extension RedundantTypeAnnotationRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 
@@ -344,7 +344,7 @@ extension SyntaxKind {
   }
 }
 
-extension RedundantTypeAnnotationConfiguration {
+extension RedundantTypeAnnotationOptions {
   func shouldSkipRuleCheck(for varDecl: VariableDeclSyntax) -> Bool {
     if ignoreAttributes.contains(where: { varDecl.attributes.contains(attributeNamed: $0) }) {
       return true

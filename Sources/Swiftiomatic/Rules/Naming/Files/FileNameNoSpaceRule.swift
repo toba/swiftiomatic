@@ -1,7 +1,7 @@
 import Foundation
 
 struct FileNameNoSpaceRule: SyntaxOnlyRule {
-  var configuration = FileNameNoSpaceConfiguration()
+  var options = FileNameNoSpaceOptions()
 
   static let description = RuleDescription(
     identifier: "file_name_no_space",
@@ -13,7 +13,7 @@ struct FileNameNoSpaceRule: SyntaxOnlyRule {
   func validate(file: SwiftSource) -> [RuleViolation] {
     guard let filePath = file.path,
       case let fileName = (filePath as NSString).lastPathComponent,
-      !configuration.excluded.contains(fileName),
+      !options.excluded.contains(fileName),
       fileName.rangeOfCharacter(from: .whitespaces) != nil
     else {
       return []
@@ -22,7 +22,7 @@ struct FileNameNoSpaceRule: SyntaxOnlyRule {
     return [
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: filePath, line: 1),
       )
     ]

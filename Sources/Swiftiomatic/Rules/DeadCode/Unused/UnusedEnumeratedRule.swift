@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct UnusedEnumeratedRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "unused_enumerated",
@@ -102,7 +102,7 @@ struct UnusedEnumeratedRule {
 
 extension UnusedEnumeratedRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

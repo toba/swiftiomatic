@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct UnavailableFunctionRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "unavailable_function",
@@ -87,7 +87,7 @@ struct UnavailableFunctionRule {
 
 extension UnavailableFunctionRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

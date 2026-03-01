@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct PrivateUnitTestRule {
-  var configuration = PrivateUnitTestConfiguration()
+  var options = PrivateUnitTestOptions()
 
   static let description = RuleDescription(
     identifier: "private_unit_test",
@@ -157,11 +157,11 @@ struct PrivateUnitTestRule {
 
 extension PrivateUnitTestRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

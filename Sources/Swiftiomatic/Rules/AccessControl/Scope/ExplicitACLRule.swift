@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ExplicitACLRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "explicit_acl",
@@ -126,7 +126,7 @@ struct ExplicitACLRule {
 
 extension ExplicitACLRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

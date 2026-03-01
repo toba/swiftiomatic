@@ -3,7 +3,7 @@ import SwiftSyntax
 struct ClosureBodyLengthRule {
   private static let defaultWarningThreshold = 30
 
-  var configuration = SeverityLevelsConfiguration<Self>(
+  var options = SeverityLevelsConfiguration<Self>(
     warning: Self.defaultWarningThreshold, error: 100,
   )
 
@@ -24,7 +24,7 @@ struct ClosureBodyLengthRule {
 
 extension ClosureBodyLengthRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

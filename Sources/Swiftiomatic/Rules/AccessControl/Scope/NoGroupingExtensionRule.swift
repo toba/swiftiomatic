@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct NoGroupingExtensionRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "no_grouping_extension",
@@ -22,7 +22,7 @@ struct NoGroupingExtensionRule {
   )
 
   func validate(file: SwiftSource) -> [RuleViolation] {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
       .walk(tree: file.syntaxTree) { visitor in
         visitor.extensionDeclarations.compactMap { decl in
           guard visitor.typeDeclarations.contains(decl.name) else {
@@ -39,7 +39,7 @@ struct NoGroupingExtensionRule {
 
 extension NoGroupingExtensionRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

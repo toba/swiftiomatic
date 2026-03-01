@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct TypeBodyLengthRule {
-  var configuration = TypeBodyLengthConfiguration()
+  var options = TypeBodyLengthOptions()
 
   private static let testConfig = ["warning": 2] as [String: any Sendable]
   private static let testConfigWithAllTypes = testConfig.merging(
@@ -120,7 +120,7 @@ struct TypeBodyLengthRule {
 
 extension TypeBodyLengthRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

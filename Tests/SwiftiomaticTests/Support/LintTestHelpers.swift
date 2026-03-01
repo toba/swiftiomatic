@@ -579,7 +579,7 @@ func verifyLint(
 
   // Severity can be changed
   let ruleType = RuleRegistry.shared.rule(forID: ruleDescription.identifier)
-  if ruleType?.init().configuration is (any SeverityBasedRuleOptions),
+  if ruleType?.init().options is (any SeverityBasedRuleOptions),
     let example = triggers.first(where: { $0.configuration == nil })
   {
     let withWarning = Example(example.code, configuration: ["severity": "warning"])

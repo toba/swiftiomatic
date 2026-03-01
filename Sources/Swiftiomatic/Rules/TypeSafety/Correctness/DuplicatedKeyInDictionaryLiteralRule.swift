@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct DuplicatedKeyInDictionaryLiteralRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "duplicated_key_in_dictionary_literal",
@@ -97,7 +97,7 @@ struct DuplicatedKeyInDictionaryLiteralRule {
 
 extension DuplicatedKeyInDictionaryLiteralRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

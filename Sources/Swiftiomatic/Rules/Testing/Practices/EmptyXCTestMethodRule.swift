@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct EmptyXCTestMethodRule {
-  var configuration = EmptyXCTestMethodConfiguration()
+  var options = EmptyXCTestMethodOptions()
 
   static let description = RuleDescription(
     identifier: "empty_xctest_method",
@@ -15,7 +15,7 @@ struct EmptyXCTestMethodRule {
 
 extension EmptyXCTestMethodRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import Foundation
 
 struct TypesafeArrayInitRule: AnalyzerRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "typesafe_array_init",

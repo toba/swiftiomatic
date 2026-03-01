@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct NoExtensionAccessModifierRule {
-  var configuration = SeverityConfiguration<Self>(.error)
+  var options = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
     identifier: "no_extension_access_modifier",
@@ -25,7 +25,7 @@ struct NoExtensionAccessModifierRule {
 
 extension NoExtensionAccessModifierRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

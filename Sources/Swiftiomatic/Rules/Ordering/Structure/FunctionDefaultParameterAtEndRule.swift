@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct FunctionDefaultParameterAtEndRule {
-  var configuration = FunctionDefaultParameterAtEndConfiguration()
+  var options = FunctionDefaultParameterAtEndOptions()
 
   static let description = RuleDescription(
     identifier: "function_default_parameter_at_end",
@@ -76,7 +76,7 @@ struct FunctionDefaultParameterAtEndRule {
 
 extension FunctionDefaultParameterAtEndRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

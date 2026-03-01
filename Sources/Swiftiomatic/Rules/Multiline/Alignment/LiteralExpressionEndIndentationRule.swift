@@ -1,7 +1,7 @@
 import Foundation
 
 struct LiteralExpressionEndIndentationRule: Rule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "literal_expression_end_indentation",
@@ -177,7 +177,7 @@ struct LiteralExpressionEndIndentationRule: Rule {
 
     return RuleViolation(
       ruleDescription: Self.description,
-      severity: configuration.severity,
+      severity: options.severity,
       location: Location(file: file, byteOffset: violation.endOffset),
       reason: reason,
     )

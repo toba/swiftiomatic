@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct UnneededThrowsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "unneeded_throws_rethrows",
@@ -17,7 +17,7 @@ struct UnneededThrowsRule {
 
 extension UnneededThrowsRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

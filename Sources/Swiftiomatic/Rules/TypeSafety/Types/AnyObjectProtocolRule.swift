@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct AnyObjectProtocolRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "any_object_protocol",
@@ -20,7 +20,7 @@ struct AnyObjectProtocolRule {
 
 extension AnyObjectProtocolRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

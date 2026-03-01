@@ -3,7 +3,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct EmptyCountRule {
-  var configuration = EmptyCountConfiguration()
+  var options = EmptyCountOptions()
 
   static let description = RuleDescription(
     identifier: "empty_count",
@@ -122,11 +122,11 @@ struct EmptyCountRule {
 
 extension EmptyCountRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

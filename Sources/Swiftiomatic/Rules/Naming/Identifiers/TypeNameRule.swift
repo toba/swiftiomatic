@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct TypeNameRule {
-  var configuration = TypeNameConfiguration()
+  var options = TypeNameOptions()
 
   static let description = RuleDescription(
     identifier: "type_name",
@@ -19,7 +19,7 @@ struct TypeNameRule {
 
 extension TypeNameRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

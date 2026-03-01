@@ -1,9 +1,9 @@
 import SwiftSyntax
 
 struct DeploymentTargetRule {
-  fileprivate typealias Version = DeploymentTargetConfiguration.Version
+  fileprivate typealias Version = DeploymentTargetOptions.Version
 
-  var configuration = DeploymentTargetConfiguration()
+  var options = DeploymentTargetOptions()
 
   static let description = RuleDescription(
     identifier: "deployment_target",
@@ -17,7 +17,7 @@ struct DeploymentTargetRule {
 
 extension DeploymentTargetRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 
@@ -117,7 +117,7 @@ extension DeploymentTargetRule {
       version versionString: String,
       violationType: AvailabilityType,
     ) -> String? {
-      guard let platform = DeploymentTargetConfiguration.Platform(rawValue: platform.text),
+      guard let platform = DeploymentTargetOptions.Platform(rawValue: platform.text),
         let minVersion = platformToConfiguredMinVersion[platform.rawValue]
       else {
         return nil

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct FileMacroRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "file_macro",
@@ -20,7 +20,7 @@ struct FileMacroRule {
 
 extension FileMacroRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

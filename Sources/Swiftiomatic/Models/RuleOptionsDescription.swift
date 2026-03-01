@@ -59,7 +59,7 @@ public struct RuleOptionsDescription: Equatable, Sendable {
             .flatMap { child in
                 // Property wrappers have names prefixed by an underscore.
                 if child.label?.starts(with: "_") == true,
-                   let element = child.value as? any AnyConfigurationElement
+                   let element = child.value as? any AnyOptionElement
                 {
                     return element.description.options
                 }
@@ -312,12 +312,12 @@ extension OptionType {
 // MARK: Property wrapper
 
 /// Type of a configuration parameter wrapper.
-private protocol AnyConfigurationElement {
+private protocol AnyOptionElement {
     var description: RuleOptionsDescription { get }
 }
 
 /// Type of an object that can be used as a configuration element.
-protocol AcceptableByConfigurationElement {
+protocol AcceptableByOptionElement {
     /// Initializer taking a value from a configuration to create an element of `Self`.
     ///
     /// - Parameters:
@@ -346,7 +346,7 @@ protocol AcceptableByConfigurationElement {
     mutating func apply(_ value: Any, ruleID: String) throws(SwiftiomaticError)
 }
 
-extension AcceptableByConfigurationElement where Self: RawRepresentable, RawValue == String {
+extension AcceptableByOptionElement where Self: RawRepresentable, RawValue == String {
     func asOption() -> OptionType {
         .symbol(rawValue)
     }
@@ -361,7 +361,7 @@ extension AcceptableByConfigurationElement where Self: RawRepresentable, RawValu
 }
 
 /// Default implementations which are shortcuts applicable for most of the types conforming to the protocol.
-extension AcceptableByConfigurationElement {
+extension AcceptableByOptionElement {
     func asDescription(with key: String) -> RuleOptionsDescription {
         RuleOptionsDescription(options: [key => asOption()])
     }
@@ -373,7 +373,7 @@ extension AcceptableByConfigurationElement {
 
 /// An option type that can appear inlined into its using configuration.
 ///
-/// The ``ConfigurationElement`` must opt into this behavior. In this case, the option does not have a key. This is
+/// The ``OptionElement`` must opt into this behavior. In this case, the option does not have a key. This is
 /// almost exclusively useful for common ``RuleOptions``s that are used in many other rules as child
 /// configurations.
 ///
@@ -381,13 +381,13 @@ extension AcceptableByConfigurationElement {
 /// absolutely clear that there is an error in the YAML configuration passed in. Since it may be used in a nested
 /// context and doesn't know about the outer configuration, it's not always clear if a certain key-value is really
 /// unacceptable.
-protocol InlinableOption: AcceptableByConfigurationElement {}
+protocol InlinableOption: AcceptableByOptionElement {}
 
 /// A single parameter of a rule configuration.
 ///
 /// Apply it to a simple (e.g. boolean) property like
 /// ```swift
-/// @ConfigurationElement
+/// @OptionElement
 /// var property = true
 /// ```
 /// to add a (boolean) option to a configuration. The name of the option will be inferred from the name of the property.
@@ -396,7 +396,7 @@ protocol InlinableOption: AcceptableByConfigurationElement {}
 ///
 /// This mechanism may be overwritten with an explicitly set key:
 /// ```swift
-/// @ConfigurationElement(key: "foo_bar")
+/// @OptionElement(key: "foo_bar")
 /// var property = true
 /// ```
 ///
@@ -404,7 +404,7 @@ protocol InlinableOption: AcceptableByConfigurationElement {}
 ///
 /// 1. It can be inlined into the parent configuration. For that, add the parameter `isInline: true`. E.g.
 ///    ```swift
-///    @ConfigurationElement(isInline: true)
+///    @OptionElement(isInline: true)
 ///    var levels = SeverityLevelsConfiguration(warning: 1, error: 2)
 ///    ```
 ///    will be documented as a linear list:
@@ -415,7 +415,7 @@ protocol InlinableOption: AcceptableByConfigurationElement {}
 /// 2. It can be represented as a separate nested configuration. In this case, it must not have set the `isInline` flag to
 /// `true`. E.g.
 ///    ```swift
-///    @ConfigurationElement
+///    @OptionElement
 ///    var levels = SeverityLevelsConfiguration(warning: 1, error: 2)
 ///    ```
 ///    will have a nested configuration section:
@@ -425,7 +425,7 @@ protocol InlinableOption: AcceptableByConfigurationElement {}
 ///    ```
 /// 3. As mentioned in the beginning, the implicit key inference mechanism can be overruled by specifying a `key` as in:
 ///    ```swift
-///    @ConfigurationElement(key: "foo")
+///    @OptionElement(key: "foo")
 ///    var levels = SeverityLevelsConfiguration(warning: 1, error: 2)
 ///    ```
 ///    It will appear in the documentation as:
@@ -435,7 +435,7 @@ protocol InlinableOption: AcceptableByConfigurationElement {}
 ///    ```
 ///
 @propertyWrapper
-struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Sendable>: Equatable,
+struct OptionElement<T: AcceptableByOptionElement & Equatable & Sendable>: Equatable,
     Sendable
 {
     /// A deprecation notice.
@@ -551,18 +551,18 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
     }
 }
 
-extension ConfigurationElement: AnyConfigurationElement {
+extension OptionElement: AnyOptionElement {
     fileprivate var description: RuleOptionsDescription {
         wrappedValue.asDescription(with: key)
     }
 }
 
-// MARK: AcceptableByConfigurationElement conformances
+// MARK: AcceptableByOptionElement conformances
 
 /// Default `init(fromAny:context:)` for types where the YAML value maps directly to `Self` via casting.
-private protocol DirectlyCastableConfigurationElement: AcceptableByConfigurationElement {}
+private protocol DirectlyCastableOptionElement: AcceptableByOptionElement {}
 
-extension DirectlyCastableConfigurationElement {
+extension DirectlyCastableOptionElement {
     init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
         guard let value = value as? Self else {
             throw .invalidConfiguration(ruleID: ruleID)
@@ -571,8 +571,8 @@ extension DirectlyCastableConfigurationElement {
     }
 }
 
-extension Optional: AcceptableByConfigurationElement
-    where Wrapped: AcceptableByConfigurationElement
+extension Optional: AcceptableByOptionElement
+    where Wrapped: AcceptableByOptionElement
 {
     func asOption() -> OptionType {
         self?.asOption() ?? .empty
@@ -583,7 +583,7 @@ extension Optional: AcceptableByConfigurationElement
     }
 }
 
-struct Symbol: Equatable, AcceptableByConfigurationElement {
+struct Symbol: Equatable, AcceptableByOptionElement {
     let value: String
 
     func asOption() -> OptionType {
@@ -598,19 +598,19 @@ struct Symbol: Equatable, AcceptableByConfigurationElement {
     }
 }
 
-extension Bool: AcceptableByConfigurationElement, DirectlyCastableConfigurationElement {
+extension Bool: AcceptableByOptionElement, DirectlyCastableOptionElement {
     func asOption() -> OptionType {
         .flag(self)
     }
 }
 
-extension String: AcceptableByConfigurationElement, DirectlyCastableConfigurationElement {
+extension String: AcceptableByOptionElement, DirectlyCastableOptionElement {
     func asOption() -> OptionType {
         .string(self)
     }
 }
 
-extension Array: AcceptableByConfigurationElement where Element: AcceptableByConfigurationElement {
+extension Array: AcceptableByOptionElement where Element: AcceptableByOptionElement {
     func asOption() -> OptionType {
         .list(map { $0.asOption() })
     }
@@ -623,8 +623,8 @@ extension Array: AcceptableByConfigurationElement where Element: AcceptableByCon
     }
 }
 
-extension Set: AcceptableByConfigurationElement
-    where Element: AcceptableByConfigurationElement & Comparable
+extension Set: AcceptableByOptionElement
+    where Element: AcceptableByOptionElement & Comparable
 {
     func asOption() -> OptionType {
         sorted().asOption()
@@ -635,13 +635,13 @@ extension Set: AcceptableByConfigurationElement
     }
 }
 
-extension Int: AcceptableByConfigurationElement, DirectlyCastableConfigurationElement {
+extension Int: AcceptableByOptionElement, DirectlyCastableOptionElement {
     func asOption() -> OptionType {
         .integer(self)
     }
 }
 
-extension Double: AcceptableByConfigurationElement {
+extension Double: AcceptableByOptionElement {
     func asOption() -> OptionType {
         .float(self)
     }
@@ -657,7 +657,7 @@ extension Double: AcceptableByConfigurationElement {
     }
 }
 
-extension CachedRegex: AcceptableByConfigurationElement {
+extension CachedRegex: AcceptableByOptionElement {
     func asOption() -> OptionType {
         .string(pattern)
     }
@@ -672,7 +672,7 @@ extension CachedRegex: AcceptableByConfigurationElement {
 
 // MARK: RuleOptions conformances
 
-extension AcceptableByConfigurationElement where Self: RuleOptions {
+extension AcceptableByOptionElement where Self: RuleOptions {
     func asOption() -> OptionType {
         .nested(.from(configuration: self))
     }

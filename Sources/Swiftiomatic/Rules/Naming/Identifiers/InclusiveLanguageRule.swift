@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct InclusiveLanguageRule {
-  var configuration = InclusiveLanguageConfiguration()
+  var options = InclusiveLanguageOptions()
 
   static let description = RuleDescription(
     identifier: "inclusive_language",
@@ -18,7 +18,7 @@ struct InclusiveLanguageRule {
 
 extension InclusiveLanguageRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

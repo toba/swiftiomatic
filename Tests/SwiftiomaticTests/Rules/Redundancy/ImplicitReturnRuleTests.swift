@@ -87,7 +87,7 @@ import Testing
     nonTriggeringExamples: [Example],
     triggeringExamples: [Example],
     corrections: [Example: Example],
-    kind: ImplicitReturnConfiguration.ReturnKind,
+    kind: ImplicitReturnOptions.ReturnKind,
   ) async {
     let description = ImplicitReturnRule.description
       .with(nonTriggeringExamples: nonTriggeringExamples.removingViolationMarker())

@@ -3,7 +3,7 @@ import SwiftSyntax
 struct DeadSymbolsRule: CollectingRule {
   typealias FileInfo = SymbolContribution
 
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "dead_symbols",
@@ -58,7 +58,7 @@ struct DeadSymbolsRule: CollectingRule {
       .map { decl in
         RuleViolation(
           ruleDescription: Self.description,
-          severity: configuration.severity,
+          severity: options.severity,
           location: Location(file: filePath, line: decl.line, column: decl.column),
           reason: "Dead private \(decl.kind): '\(decl.name)' — no references found",
           confidence: .medium,

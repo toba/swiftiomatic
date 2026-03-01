@@ -3,7 +3,7 @@ import Foundation
 private let moduleToLog = ProcessInfo.processInfo.environment["SWIFTIOMATIC_LOG_MODULE_USAGE"]
 
 struct UnusedImportRule: CorrectableRule, AnalyzerRule {
-  var configuration = UnusedImportConfiguration()
+  var options = UnusedImportOptions()
 
   static let description = RuleDescription(
     identifier: "unused_import",
@@ -22,7 +22,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
     importUsage(in: file, compilerArguments: compilerArguments).map { importUsage in
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(
           file: file,
           characterOffset: importUsage.violationRange?.location ?? 1,
@@ -49,7 +49,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
       file.write(contents as String)
     }
 
-    guard configuration.requireExplicitImports else {
+    guard options.requireExplicitImports else {
       return numberOfCorrections
     }
 
@@ -105,14 +105,14 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
 
     return file.getImportUsage(
       compilerArguments: compilerArguments,
-      configuration: configuration,
+      configuration: options,
     )
   }
 }
 
 extension SwiftSource {
   fileprivate func getImportUsage(
-    compilerArguments: [String], configuration: UnusedImportConfiguration,
+    compilerArguments: [String], configuration: UnusedImportOptions,
   ) -> [ImportUsage] {
     var (
       imports,

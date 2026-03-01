@@ -170,7 +170,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
     requiresFileOnDisk: true,
   )
 
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   func collectInfo(for file: SwiftSource, compilerArguments: [String]) -> Self.FileInfo {
     file.declaredVariables(compilerArguments: compilerArguments)
@@ -188,7 +188,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
       .map {
         RuleViolation(
           ruleDescription: Self.description,
-          severity: configuration.severity,
+          severity: options.severity,
           location: Location(file: file, byteOffset: $0.offset),
         )
       }

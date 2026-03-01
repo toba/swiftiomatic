@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct OrganizeDeclarationsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "organize_declarations",
@@ -36,7 +36,7 @@ struct OrganizeDeclarationsRule {
 
 extension OrganizeDeclarationsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

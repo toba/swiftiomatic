@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct DocCommentsBeforeModifiersRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "doc_comments_before_modifiers",
@@ -37,7 +37,7 @@ struct DocCommentsBeforeModifiersRule {
 
 extension DocCommentsBeforeModifiersRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct HeaderFileNameRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "header_file_name",
@@ -32,7 +32,7 @@ struct HeaderFileNameRule {
 
 extension HeaderFileNameRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

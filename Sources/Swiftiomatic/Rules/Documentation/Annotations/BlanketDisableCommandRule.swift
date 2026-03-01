@@ -1,7 +1,7 @@
 import Foundation
 
 struct BlanketDisableCommandRule: Rule, SyntaxOnlyRule {
-  var configuration = BlanketDisableCommandConfiguration()
+  var options = BlanketDisableCommandOptions()
 
   static let description = RuleDescription(
     identifier: "blanket_disable_command",
@@ -141,7 +141,7 @@ struct BlanketDisableCommandRule: Rule, SyntaxOnlyRule {
   ) -> RuleViolation {
     RuleViolation(
       ruleDescription: Self.description,
-      severity: configuration.severity,
+      severity: options.severity,
       location: command.location(of: ruleIdentifier, in: file),
       reason: reason,
     )
@@ -179,8 +179,8 @@ struct BlanketDisableCommandRule: Rule, SyntaxOnlyRule {
     disabledRuleIdentifiers: Set<RuleIdentifier>,
     ruleIdentifierToCommandMap: [RuleIdentifier: Command],
   ) -> [RuleViolation] {
-    let allowedRuleIdentifiers = configuration.allowedRuleIdentifiers.union(
-      configuration.alwaysBlanketDisableRuleIdentifiers,
+    let allowedRuleIdentifiers = options.allowedRuleIdentifiers.union(
+      options.alwaysBlanketDisableRuleIdentifiers,
     )
     return disabledRuleIdentifiers.compactMap { disabledRuleIdentifier in
       if allowedRuleIdentifiers.contains(disabledRuleIdentifier.stringRepresentation) {
@@ -204,7 +204,7 @@ struct BlanketDisableCommandRule: Rule, SyntaxOnlyRule {
   private func validateAlwaysBlanketDisable(file: SwiftSource) -> [RuleViolation] {
     var violations: [RuleViolation] = []
 
-    guard configuration.alwaysBlanketDisableRuleIdentifiers.isEmpty == false else {
+    guard options.alwaysBlanketDisableRuleIdentifiers.isEmpty == false else {
       return []
     }
 
@@ -213,7 +213,7 @@ struct BlanketDisableCommandRule: Rule, SyntaxOnlyRule {
         command.ruleIdentifiers
           .map(\.stringRepresentation))
       let intersection = ruleIdentifiers.intersection(
-        configuration.alwaysBlanketDisableRuleIdentifiers,
+        options.alwaysBlanketDisableRuleIdentifiers,
       )
       if command.action == .enable {
         violations.append(

@@ -1,7 +1,7 @@
 import Foundation
 
 struct InvalidCommandRule: Rule, SyntaxOnlyRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "invalid_command",
@@ -73,7 +73,7 @@ struct InvalidCommandRule: Rule, SyntaxOnlyRule {
   {
     RuleViolation(
       ruleDescription: Self.description,
-      severity: configuration.severity,
+      severity: options.severity,
       location: Location(
         file: file.path,
         line: command.line,

@@ -2,7 +2,7 @@ import Foundation
 import SwiftIDEUtils
 
 struct PeriodSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "period_spacing",
@@ -90,7 +90,7 @@ struct PeriodSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
     violationRanges(in: file).map { range in
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, stringIndex: range.lowerBound),
       )
     }

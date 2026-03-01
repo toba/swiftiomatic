@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct FileNameRule: SyntaxOnlyRule {
-  var configuration = FileNameConfiguration()
+  var options = FileNameOptions()
 
   static let description = RuleDescription(
     identifier: "file_name",
@@ -13,13 +13,13 @@ struct FileNameRule: SyntaxOnlyRule {
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     guard let filePath = file.path,
-      !configuration.shouldExclude(filePath: filePath)
+      !options.shouldExclude(filePath: filePath)
     else {
       return []
     }
 
-    let prefixRegex = regex("\\A(?:\(configuration.prefixPattern))")
-    let suffixRegex = regex("(?:\(configuration.suffixPattern))\\z")
+    let prefixRegex = regex("\\A(?:\(options.prefixPattern))")
+    let suffixRegex = regex("(?:\(options.suffixPattern))\\z")
 
     let fileName = (filePath as NSString).lastPathComponent
     var typeInFileName = (fileName as NSString).deletingPathExtension
@@ -44,11 +44,11 @@ struct FileNameRule: SyntaxOnlyRule {
 
     // Process nested type separator
     let allDeclaredTypeNames = TypeNameCollectingVisitor(
-      requireFullyQualifiedNames: configuration.requireFullyQualifiedNames,
+      requireFullyQualifiedNames: options.requireFullyQualifiedNames,
     )
     .walk(tree: file.syntaxTree, handler: \.names)
     .map {
-      $0.replacingOccurrences(of: ".", with: configuration.nestedTypeSeparator)
+      $0.replacingOccurrences(of: ".", with: options.nestedTypeSeparator)
     }
 
     guard allDeclaredTypeNames.isNotEmpty, !allDeclaredTypeNames.contains(typeInFileName) else {
@@ -58,7 +58,7 @@ struct FileNameRule: SyntaxOnlyRule {
     return [
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: filePath, line: 1),
       )
     ]

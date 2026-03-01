@@ -41,7 +41,7 @@ import Testing
   }
 
   @Test func expiredCustomDelimiters() async {
-    let ruleConfig = ExpiringTodoConfiguration(
+    let ruleConfig = ExpiringTodoOptions(
       dateDelimiters: .init(opening: "<", closing: ">"),
     )
     let example = Example("fatalError() // TODO: <\(dateString(for: .expired))> Implement")
@@ -51,7 +51,7 @@ import Testing
   }
 
   @Test func expiredCustomSeparator() async {
-    let ruleConfig = ExpiringTodoConfiguration(
+    let ruleConfig = ExpiringTodoOptions(
       dateFormat: "MM-dd-yyyy",
       dateSeparator: "-",
     )
@@ -64,7 +64,7 @@ import Testing
   }
 
   @Test func expiredCustomFormat() async {
-    let ruleConfig = ExpiringTodoConfiguration(dateFormat: "yyyy/MM/dd")
+    let ruleConfig = ExpiringTodoOptions(dateFormat: "yyyy/MM/dd")
     let example = Example(
       "fatalError() // TODO: [\(dateString(for: .expired, format: ruleConfig.dateFormat))] Implement",
     )
@@ -131,7 +131,7 @@ import Testing
   }
 
   @Test func badExpiryTodoFormat() async {
-    let ruleConfig = ExpiringTodoConfiguration(
+    let ruleConfig = ExpiringTodoOptions(
       dateFormat: "dd/yyyy/MM",
     )
     let example = Example("fatalError() // TODO: [31/01/2020] Implement")
@@ -140,10 +140,10 @@ import Testing
     #expect(violations.first?.reason == "Expiring TODO/FIXME is incorrectly formatted")
   }
 
-  private func violations(_ example: Example, _ config: ExpiringTodoConfiguration? = nil)
+  private func violations(_ example: Example, _ config: ExpiringTodoOptions? = nil)
     async -> [RuleViolation]
   {
-    let config = config ?? ExpiringTodoConfiguration()
+    let config = config ?? ExpiringTodoOptions()
     let serializedConfig =
       [
         "expired_severity": config.expiredSeverity.severity.rawValue,
@@ -169,12 +169,12 @@ import Testing
     -> String
   {
     let formatter = DateFormatter()
-    formatter.dateFormat = format ?? ExpiringTodoConfiguration().dateFormat
+    formatter.dateFormat = format ?? ExpiringTodoOptions().dateFormat
     return formatter.string(from: date(for: status))
   }
 
   private func date(for status: ExpiringTodoRule.ExpiryViolationLevel) -> Date {
-    let ruleConfiguration = ExpiringTodoRule().configuration
+    let ruleConfiguration = ExpiringTodoRule().options
 
     let daysToAdvance: Int
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct Swift62ModernizationRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "swift62_modernization",
@@ -22,7 +22,7 @@ struct Swift62ModernizationRule {
 
 extension Swift62ModernizationRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

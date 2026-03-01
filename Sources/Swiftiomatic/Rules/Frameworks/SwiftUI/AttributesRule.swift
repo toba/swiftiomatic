@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct AttributesRule {
-  var configuration = AttributesConfiguration()
+  var options = AttributesOptions()
 
   static let description = RuleDescription(
     identifier: "attributes",
@@ -34,7 +34,7 @@ struct AttributesRule {
 
 extension AttributesRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 
@@ -189,7 +189,7 @@ private struct RuleHelper {
 
 extension AttributeListSyntax {
   fileprivate func attributesAndPlacements(
-    configuration: AttributesConfiguration, shouldBeOnSameLine: Bool,
+    configuration: AttributesOptions, shouldBeOnSameLine: Bool,
   )
     -> [(AttributeSyntax, AttributePlacement)]
   {

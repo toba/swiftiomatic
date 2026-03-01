@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct LineLengthRule {
-  var configuration = LineLengthConfiguration()
+  var options = LineLengthOptions()
 
   static let description = RuleDescription(
     identifier: "line_length",
@@ -35,7 +35,7 @@ struct LineLengthRule {
 
 extension LineLengthRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

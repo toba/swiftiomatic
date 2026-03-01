@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct YodaConditionRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "yoda_condition",
@@ -39,7 +39,7 @@ struct YodaConditionRule {
 
 extension YodaConditionRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

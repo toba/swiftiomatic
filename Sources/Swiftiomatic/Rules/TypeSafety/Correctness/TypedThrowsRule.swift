@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct TypedThrowsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "typed_throws",
@@ -23,7 +23,7 @@ struct TypedThrowsRule {
 
 extension TypedThrowsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 
@@ -55,7 +55,7 @@ extension TypedThrowsRule: AsyncEnrichableRule {
         violations.append(
           RuleViolation(
             ruleDescription: Self.description,
-            severity: configuration.severity,
+            severity: options.severity,
             location: Location(file: filePath, line: query.line, column: query.column),
             reason:
               "\(query.label) throws only '\(errorType)' but declares untyped 'throws'",

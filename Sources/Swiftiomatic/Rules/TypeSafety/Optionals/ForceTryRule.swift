@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ForceTryRule {
-  var configuration = SeverityConfiguration<Self>(.error)
+  var options = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
     identifier: "force_try",
@@ -30,7 +30,7 @@ struct ForceTryRule {
 
 extension ForceTryRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

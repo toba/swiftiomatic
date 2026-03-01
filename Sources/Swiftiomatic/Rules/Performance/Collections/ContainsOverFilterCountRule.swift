@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ContainsOverFilterCountRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "contains_over_filter_count",
@@ -31,7 +31,7 @@ struct ContainsOverFilterCountRule {
 
 extension ContainsOverFilterCountRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

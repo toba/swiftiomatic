@@ -1,7 +1,7 @@
 import Foundation
 
 struct LeadingWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "leading_whitespace",
@@ -30,7 +30,7 @@ struct LeadingWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
     return [
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file.path, line: 1),
       )
     ]

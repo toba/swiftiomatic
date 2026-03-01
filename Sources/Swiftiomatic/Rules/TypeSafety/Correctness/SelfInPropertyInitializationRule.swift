@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct SelfInPropertyInitializationRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "self_in_property_initialization",
@@ -115,7 +115,7 @@ struct SelfInPropertyInitializationRule {
 
 extension SelfInPropertyInitializationRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

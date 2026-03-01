@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct OverriddenSuperCallRule {
-  var configuration = OverriddenSuperCallConfiguration()
+  var options = OverriddenSuperCallOptions()
 
   static let description = RuleDescription(
     identifier: "overridden_super_call",
@@ -93,7 +93,7 @@ struct OverriddenSuperCallRule {
 
 extension OverriddenSuperCallRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

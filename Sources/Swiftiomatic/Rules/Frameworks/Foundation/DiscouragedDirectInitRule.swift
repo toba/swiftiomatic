@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct DiscouragedDirectInitRule {
-  var configuration = DiscouragedDirectInitConfiguration()
+  var options = DiscouragedDirectInitOptions()
 
   static let description = RuleDescription(
     identifier: "discouraged_direct_init",
@@ -39,7 +39,7 @@ struct DiscouragedDirectInitRule {
 
 extension DiscouragedDirectInitRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

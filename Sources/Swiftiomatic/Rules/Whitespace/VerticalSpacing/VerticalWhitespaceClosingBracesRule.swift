@@ -1,7 +1,7 @@
 import Foundation
 
 struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
-  var configuration = VerticalWhitespaceClosingBracesConfiguration()
+  var options = VerticalWhitespaceClosingBracesOptions()
 
   static let description = RuleDescription(
     identifier: "vertical_whitespace_closing_braces",
@@ -21,7 +21,7 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
   private let trivialLinePattern = "((?:\\n[ \\t]*)+)(\\n[ \\t)}\\]]*$)"
 
   func validate(file: SwiftSource) -> [RuleViolation] {
-    let pattern = configuration.onlyEnforceBeforeTrivialLines ? trivialLinePattern : pattern
+    let pattern = options.onlyEnforceBeforeTrivialLines ? trivialLinePattern : pattern
 
     let patternRegex = regex(pattern)
 
@@ -34,14 +34,14 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
 
       return RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severityConfiguration.severity,
+        severity: options.severityConfiguration.severity,
         location: Location(file: file, stringIndex: violationIndex),
       )
     }
   }
 
   func correct(file: SwiftSource) -> Int {
-    let pattern = configuration.onlyEnforceBeforeTrivialLines ? trivialLinePattern : pattern
+    let pattern = options.onlyEnforceBeforeTrivialLines ? trivialLinePattern : pattern
     let violatingRanges = file.ruleEnabled(
       violatingRanges: file.violatingRanges(for: pattern), for: self,
     )

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct DiscouragedOptionalBooleanRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "discouraged_optional_boolean",
@@ -15,7 +15,7 @@ struct DiscouragedOptionalBooleanRule {
 
 extension DiscouragedOptionalBooleanRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct MultipleClosuresWithTrailingClosureRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "multiple_closures_with_trailing_closure",
@@ -42,7 +42,7 @@ struct MultipleClosuresWithTrailingClosureRule {
 
 extension MultipleClosuresWithTrailingClosureRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct SortDeclarationsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "sort_declarations",
@@ -37,7 +37,7 @@ struct SortDeclarationsRule {
 
 extension SortDeclarationsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

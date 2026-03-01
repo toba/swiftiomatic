@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct CommaRule: CorrectableRule, SyntaxOnlyRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "comma",
@@ -114,7 +114,7 @@ struct CommaRule: CorrectableRule, SyntaxOnlyRule {
     violationRanges(in: file).map {
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, byteOffset: $0.0.location),
       )
     }

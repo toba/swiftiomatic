@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct VerticalParameterAlignmentRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "vertical_parameter_alignment",
@@ -15,7 +15,7 @@ struct VerticalParameterAlignmentRule {
 
 extension VerticalParameterAlignmentRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

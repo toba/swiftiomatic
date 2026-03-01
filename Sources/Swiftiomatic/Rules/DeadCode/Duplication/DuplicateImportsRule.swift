@@ -3,7 +3,7 @@ import SwiftSyntax
 // MARK: - Rule
 
 struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   /// List of all possible import kinds
   static let importKinds = [
@@ -25,7 +25,7 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
     file.duplicateImportsViolationPositions().map { position in
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, position: position),
       )
     }
@@ -36,7 +36,7 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct RedundantFileprivateRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "redundant_fileprivate",
@@ -38,7 +38,7 @@ struct RedundantFileprivateRule {
 
 extension RedundantFileprivateRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

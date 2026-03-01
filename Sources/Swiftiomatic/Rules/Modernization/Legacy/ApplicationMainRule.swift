@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ApplicationMainRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "application_main",
@@ -28,7 +28,7 @@ struct ApplicationMainRule {
 
 extension ApplicationMainRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

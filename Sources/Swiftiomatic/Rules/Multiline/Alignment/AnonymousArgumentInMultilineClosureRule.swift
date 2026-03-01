@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct AnonymousArgumentInMultilineClosureRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "anonymous_argument_in_multiline_closure",
@@ -57,7 +57,7 @@ struct AnonymousArgumentInMultilineClosureRule {
 
 extension AnonymousArgumentInMultilineClosureRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

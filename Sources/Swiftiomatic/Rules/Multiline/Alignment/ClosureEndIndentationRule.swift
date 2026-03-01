@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ClosureEndIndentationRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "closure_end_indentation",
@@ -16,7 +16,7 @@ struct ClosureEndIndentationRule {
 
 extension ClosureEndIndentationRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct BlankLinesAfterGuardStatementsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "blank_lines_after_guard_statements",
@@ -36,7 +36,7 @@ struct BlankLinesAfterGuardStatementsRule {
 
 extension BlankLinesAfterGuardStatementsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

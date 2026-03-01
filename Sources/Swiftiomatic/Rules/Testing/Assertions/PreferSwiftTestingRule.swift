@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct PreferSwiftTestingRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "prefer_swift_testing",
@@ -40,7 +40,7 @@ struct PreferSwiftTestingRule {
 
 extension PreferSwiftTestingRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

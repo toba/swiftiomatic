@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct BalancedXCTestLifecycleRule {
-  var configuration = BalancedXCTestLifecycleConfiguration()
+  var options = BalancedXCTestLifecycleOptions()
 
   static let description = RuleDescription(
     identifier: "balanced_xctest_lifecycle",
@@ -145,7 +145,7 @@ struct BalancedXCTestLifecycleRule {
 
 extension BalancedXCTestLifecycleRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

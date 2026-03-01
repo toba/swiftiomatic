@@ -1,7 +1,7 @@
 import Foundation
 
 struct MultilineFunctionChainsRule: SourceKitASTRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "multiline_function_chains",
@@ -128,7 +128,7 @@ struct MultilineFunctionChainsRule: SourceKitASTRule {
     violatingOffsets(file: file, kind: kind, dictionary: dictionary).map { offset in
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, characterOffset: offset),
       )
     }

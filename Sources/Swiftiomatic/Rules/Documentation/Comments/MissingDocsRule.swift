@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct MissingDocsRule {
-  var configuration = MissingDocsConfiguration()
+  var options = MissingDocsOptions()
 
   static let description = RuleDescription(
     identifier: "missing_docs",
@@ -15,7 +15,7 @@ struct MissingDocsRule {
 
 extension MissingDocsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

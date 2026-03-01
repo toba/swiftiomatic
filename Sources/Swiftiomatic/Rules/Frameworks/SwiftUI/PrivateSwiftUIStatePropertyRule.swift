@@ -11,7 +11,7 @@ import SwiftSyntax
 /// Declare state and state objects as private to prevent setting them from a memberwise initializer,
 /// which can conflict with the storage management that SwiftUI provides:
 struct PrivateSwiftUIStatePropertyRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "private_swiftui_state",
@@ -26,11 +26,11 @@ struct PrivateSwiftUIStatePropertyRule {
 
 extension PrivateSwiftUIStatePropertyRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

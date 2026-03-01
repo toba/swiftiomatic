@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct CompilerProtocolInitRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "compiler_protocol_init",
@@ -24,7 +24,7 @@ struct CompilerProtocolInitRule {
 
 extension CompilerProtocolInitRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

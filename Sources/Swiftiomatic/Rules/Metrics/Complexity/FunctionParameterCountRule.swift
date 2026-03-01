@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct FunctionParameterCountRule {
-  var configuration = FunctionParameterCountConfiguration()
+  var options = FunctionParameterCountOptions()
 
   static let description = RuleDescription(
     identifier: "function_parameter_count",
@@ -43,7 +43,7 @@ struct FunctionParameterCountRule {
 
 extension FunctionParameterCountRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

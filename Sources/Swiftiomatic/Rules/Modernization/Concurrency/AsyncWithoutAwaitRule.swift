@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct AsyncWithoutAwaitRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "async_without_await",
@@ -16,7 +16,7 @@ struct AsyncWithoutAwaitRule {
 
 extension AsyncWithoutAwaitRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

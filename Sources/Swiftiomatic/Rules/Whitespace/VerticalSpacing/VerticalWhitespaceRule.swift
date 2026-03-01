@@ -2,12 +2,12 @@ import Foundation
 import SwiftSyntax
 
 struct VerticalWhitespaceRule {
-  var configuration = VerticalWhitespaceConfiguration()
+  var options = VerticalWhitespaceOptions()
 
   static let description = RuleDescription(
     identifier: "vertical_whitespace",
     name: "Vertical Whitespace",
-    description: VerticalWhitespaceConfiguration.defaultDescriptionReason,
+    description: VerticalWhitespaceOptions.defaultDescriptionReason,
     nonTriggeringExamples: [
       Example("let abc = 0\n"),
       Example("let abc = 0\n\n"),
@@ -54,11 +54,11 @@ struct VerticalWhitespaceRule {
 
 extension VerticalWhitespaceRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

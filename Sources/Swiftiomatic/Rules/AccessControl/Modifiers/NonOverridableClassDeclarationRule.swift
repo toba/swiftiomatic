@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct NonOverridableClassDeclarationRule {
-    var configuration = NonOverridableClassDeclarationConfiguration()
+    var options = NonOverridableClassDeclarationOptions()
 
     static let description = RuleDescription(
         identifier: "non_overridable_class_declaration",
@@ -124,7 +124,7 @@ struct NonOverridableClassDeclarationRule {
 
 extension NonOverridableClassDeclarationRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-        Visitor(configuration: configuration, file: file)
+        Visitor(configuration: options, file: file)
     }
 }
 

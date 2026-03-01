@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct NonOptionalStringDataConversionRule {
-  var configuration = NonOptionalStringDataConversionConfiguration()
+  var options = NonOptionalStringDataConversionOptions()
 
   private static let variablesIncluded = ["include_variables": true]
 
@@ -33,7 +33,7 @@ struct NonOptionalStringDataConversionRule {
 
 extension NonOptionalStringDataConversionRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

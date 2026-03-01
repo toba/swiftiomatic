@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct DocCommentsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "doc_comments",
@@ -47,7 +47,7 @@ struct DocCommentsRule {
 
 extension DocCommentsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

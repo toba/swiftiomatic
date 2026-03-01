@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct ReduceIntoRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "reduce_into",
@@ -143,7 +143,7 @@ struct ReduceIntoRule {
 
 extension ReduceIntoRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

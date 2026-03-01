@@ -4,7 +4,7 @@ import SwiftSyntax
 struct CommaInheritanceRule: SubstitutionCorrectableRule,
   SyntaxOnlyRule
 {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "comma_inheritance",
@@ -78,7 +78,7 @@ struct CommaInheritanceRule: SubstitutionCorrectableRule,
     violationRanges(in: file).map {
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, stringIndex: $0.lowerBound),
       )
     }

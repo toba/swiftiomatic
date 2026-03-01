@@ -18,7 +18,7 @@ extension String {
 }
 
 struct TrailingNewlineRule: CorrectableRule, SyntaxOnlyRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "trailing_newline",
@@ -45,7 +45,7 @@ struct TrailingNewlineRule: CorrectableRule, SyntaxOnlyRule {
     return [
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file.path, line: max(file.lines.count, 1)),
       )
     ]

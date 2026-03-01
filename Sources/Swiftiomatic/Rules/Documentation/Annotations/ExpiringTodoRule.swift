@@ -44,12 +44,12 @@ struct ExpiringTodoRule {
     ].skipWrappingInCommentTests(),
   )
 
-  var configuration = ExpiringTodoConfiguration()
+  var options = ExpiringTodoOptions()
 }
 
 extension ExpiringTodoRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

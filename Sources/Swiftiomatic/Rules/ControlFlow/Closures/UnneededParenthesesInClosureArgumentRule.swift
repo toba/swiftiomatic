@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct UnneededParenthesesInClosureArgumentRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "unneeded_parentheses_in_closure_argument",
@@ -89,11 +89,11 @@ struct UnneededParenthesesInClosureArgumentRule {
 
 extension UnneededParenthesesInClosureArgumentRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: configuration, file: file)
+    Rewriter(configuration: options, file: file)
   }
 }
 

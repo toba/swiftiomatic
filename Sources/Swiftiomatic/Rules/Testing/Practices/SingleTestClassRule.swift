@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct SingleTestClassRule: SyntaxOnlyRule {
-  var configuration = SingleTestClassConfiguration()
+  var options = SingleTestClassOptions()
 
   static let description = RuleDescription(
     identifier: "single_test_class",
@@ -64,7 +64,7 @@ struct SingleTestClassRule: SyntaxOnlyRule {
   )
 
   func validate(file: SwiftSource) -> [RuleViolation] {
-    let classes = Visitor(configuration: configuration, file: file)
+    let classes = Visitor(configuration: options, file: file)
       .walk(tree: file.syntaxTree, handler: \.violations)
 
     guard classes.count > 1 else { return [] }
@@ -72,7 +72,7 @@ struct SingleTestClassRule: SyntaxOnlyRule {
     return classes.map { position in
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severity,
+        severity: options.severity,
         location: Location(file: file, position: position.position),
         reason: "\(classes.count) test classes found in this file",
       )

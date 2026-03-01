@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct AnyEliminationRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "any_elimination",
@@ -24,7 +24,7 @@ struct AnyEliminationRule {
 
 extension AnyEliminationRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 
@@ -54,7 +54,7 @@ extension AnyEliminationRule: AsyncEnrichableRule {
         violations.append(
           RuleViolation(
             ruleDescription: Self.description,
-            severity: configuration.severity,
+            severity: options.severity,
             location: Location(file: filePath, line: query.line, column: query.column),
             reason: "Type '\(query.typeStr)' resolves to 'Any' — type safety is erased",
             confidence: .high,

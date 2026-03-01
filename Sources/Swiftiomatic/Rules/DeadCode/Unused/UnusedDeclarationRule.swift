@@ -17,7 +17,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
 
   typealias FileInfo = FileUSRs
 
-  var configuration = UnusedDeclarationConfiguration()
+  var options = UnusedDeclarationOptions()
 
   static let description = RuleDescription(
     identifier: "unused_declaration",
@@ -57,7 +57,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
         index: index,
         editorOpen: editorOpen,
         compilerArguments: compilerArguments,
-        configuration: configuration,
+        configuration: options,
       ),
     )
   }
@@ -76,7 +76,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
     .map {
       RuleViolation(
         ruleDescription: Self.description,
-        severity: configuration.severityConfiguration.severity,
+        severity: options.severityConfiguration.severity,
         location: Location(file: file, byteOffset: $0),
       )
     }
@@ -133,7 +133,7 @@ extension SwiftSource {
     index: SourceKitDictionary,
     editorOpen: SourceKitDictionary,
     compilerArguments: [String],
-    configuration: UnusedDeclarationConfiguration,
+    configuration: UnusedDeclarationOptions,
   ) -> Set<UnusedDeclarationRule.DeclaredUSR> {
     Set(
       index.traverseEntitiesDepthFirst { _, indexEntity in
@@ -150,7 +150,7 @@ extension SwiftSource {
     indexEntity: SourceKitDictionary,
     editorOpen: SourceKitDictionary,
     compilerArguments: [String],
-    configuration: UnusedDeclarationConfiguration,
+    configuration: UnusedDeclarationOptions,
   ) -> UnusedDeclarationRule.DeclaredUSR? {
     // Skip initializers, deinit, enum cases and subscripts since we can't reliably detect if they're used.
     let declarationKindsToSkip: Set<SwiftDeclarationKind> = [

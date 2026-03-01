@@ -1,11 +1,11 @@
 import Foundation
 
 private typealias FileTypeOffset = (
-  fileType: FileTypesOrderConfiguration.FileType, offset: ByteCount,
+  fileType: FileTypesOrderOptions.FileType, offset: ByteCount,
 )
 
 struct FileTypesOrderRule: Rule {
-  var configuration = FileTypesOrderConfiguration()
+  var options = FileTypesOrderOptions()
 
   static let description = RuleDescription(
     identifier: "file_types_order",
@@ -66,7 +66,7 @@ struct FileTypesOrderRule: Rule {
     var violations = [RuleViolation]()
 
     var lastMatchingIndex = -1
-    for expectedTypes in configuration.order {
+    for expectedTypes in options.order {
       var potentialViolatingIndexes = [Int]()
 
       let startIndex = lastMatchingIndex + 1
@@ -91,7 +91,7 @@ struct FileTypesOrderRule: Rule {
 
         let ruleViolation = RuleViolation(
           ruleDescription: Self.description,
-          severity: configuration.severityConfiguration.severity,
+          severity: options.severityConfiguration.severity,
           location: Location(file: file, byteOffset: fileTypeOffset.offset),
           reason:
             "\(article) '\(fileType)' should not be placed amongst the file type(s) '\(expected)'",
@@ -187,7 +187,7 @@ extension SourceKitDictionary {
 }
 
 extension [SourceKitDictionary] {
-  fileprivate func offsets(for fileType: FileTypesOrderConfiguration.FileType) -> [FileTypeOffset] {
+  fileprivate func offsets(for fileType: FileTypesOrderOptions.FileType) -> [FileTypeOffset] {
     compactMap { substructure in
       guard let offset = substructure.offset else { return nil }
       return (fileType, offset)

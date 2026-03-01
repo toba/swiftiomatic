@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct FileHeaderRule {
-  var configuration = FileHeaderConfiguration()
+  var options = FileHeaderOptions()
 
   static let description = RuleDescription(
     identifier: "file_header",
@@ -36,7 +36,7 @@ struct FileHeaderRule {
 
 extension FileHeaderRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

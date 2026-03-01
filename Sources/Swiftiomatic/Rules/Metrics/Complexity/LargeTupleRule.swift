@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct LargeTupleRule {
-  var configuration = LargeTupleConfiguration()
+  var options = LargeTupleOptions()
 
   static let description = RuleDescription(
     identifier: "large_tuple",
@@ -86,7 +86,7 @@ struct LargeTupleRule {
 
 extension LargeTupleRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

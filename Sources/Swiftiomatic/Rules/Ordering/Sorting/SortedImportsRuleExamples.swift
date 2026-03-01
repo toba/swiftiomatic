@@ -1,5 +1,5 @@
 enum SortedImportsRuleExamples {
-  private static let groupByAttributesConfiguration = ["grouping": "attributes"]
+  private static let groupByAttributesOptions = ["grouping": "attributes"]
 
   static let nonTriggeringExamples = [
     Example(
@@ -84,32 +84,32 @@ enum SortedImportsRuleExamples {
       """
       @testable import AAA
         @testable import BBB
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       @testable import BBB
         import AAA
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       @_exported import BBB
         @testable import AAA
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       @_exported @testable import BBB
         import AAA
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       @_exported @testable import BBB
         public import BBB
         import AAA
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -119,19 +119,19 @@ enum SortedImportsRuleExamples {
       fileprivate import CCC
       private import BBB
       import AAA
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       @_exported @testable public import BBB
       @_exported @testable private import BBB
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
       @_exported public import BBB
       @_exported @testable import BBB
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
   ].skipMultiByteOffsetTests()
 
@@ -183,37 +183,37 @@ enum SortedImportsRuleExamples {
       """
         @testable import BBB
       @testable import ↓AAA
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
         import AAA
       @testable import ↓BBB
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
         import BBB
       @testable import ↓AAA
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
         @testable import AAA
       @_exported import ↓BBB
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
         import AAA
       @_exported @testable import ↓BBB
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
         import AAA
         public import ↓BBB
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
     Example(
       """
@@ -223,7 +223,7 @@ enum SortedImportsRuleExamples {
         internal import ↓DDD
         package import ↓EEE
         public import ↓FFF
-      """, configuration: groupByAttributesConfiguration, isExcludedFromDocumentation: true,
+      """, configuration: groupByAttributesOptions, isExcludedFromDocumentation: true,
     ),
   ]
 
@@ -413,7 +413,7 @@ enum SortedImportsRuleExamples {
       """
         @testable import BBB
       @testable import AAA
-      """, configuration: groupByAttributesConfiguration, shouldTestMultiByteOffsets: false,
+      """, configuration: groupByAttributesOptions, shouldTestMultiByteOffsets: false,
     ): Example(
       """
       @testable import AAA
@@ -424,7 +424,7 @@ enum SortedImportsRuleExamples {
       """
         import AAA
       @testable import BBB
-      """, configuration: groupByAttributesConfiguration, shouldTestMultiByteOffsets: false,
+      """, configuration: groupByAttributesOptions, shouldTestMultiByteOffsets: false,
     ): Example(
       """
       @testable import BBB
@@ -435,7 +435,7 @@ enum SortedImportsRuleExamples {
       """
         import BBB
       @testable import AAA
-      """, configuration: groupByAttributesConfiguration, shouldTestMultiByteOffsets: false,
+      """, configuration: groupByAttributesOptions, shouldTestMultiByteOffsets: false,
     ): Example(
       """
       @testable import AAA
@@ -446,7 +446,7 @@ enum SortedImportsRuleExamples {
       """
         @testable import AAA
       @_exported import BBB
-      """, configuration: groupByAttributesConfiguration, shouldTestMultiByteOffsets: false,
+      """, configuration: groupByAttributesOptions, shouldTestMultiByteOffsets: false,
     ): Example(
       """
       @_exported import BBB
@@ -457,7 +457,7 @@ enum SortedImportsRuleExamples {
       """
         import AAA
       @_exported @testable import BBB
-      """, configuration: groupByAttributesConfiguration, shouldTestMultiByteOffsets: false,
+      """, configuration: groupByAttributesOptions, shouldTestMultiByteOffsets: false,
     ): Example(
       """
       @_exported @testable import BBB
@@ -468,7 +468,7 @@ enum SortedImportsRuleExamples {
       """
         public import AAA
       @_exported @testable import BBB
-      """, configuration: groupByAttributesConfiguration, shouldTestMultiByteOffsets: false,
+      """, configuration: groupByAttributesOptions, shouldTestMultiByteOffsets: false,
     ): Example(
       """
       @_exported @testable import BBB
@@ -484,7 +484,7 @@ enum SortedImportsRuleExamples {
       package import EEE
       // A comment that needs to be shifted along with the import
       public import FFF
-      """, configuration: groupByAttributesConfiguration, shouldTestMultiByteOffsets: false,
+      """, configuration: groupByAttributesOptions, shouldTestMultiByteOffsets: false,
     ): Example(
       """
       // A comment that needs to be shifted along with the import

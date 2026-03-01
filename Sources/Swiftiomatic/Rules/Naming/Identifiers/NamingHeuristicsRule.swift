@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct NamingHeuristicsRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "naming_heuristics",
@@ -24,7 +24,7 @@ struct NamingHeuristicsRule {
 
 extension NamingHeuristicsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 
@@ -69,7 +69,7 @@ extension NamingHeuristicsRule: AsyncEnrichableRule {
         violations.append(
           RuleViolation(
             ruleDescription: Self.description,
-            severity: configuration.severity,
+            severity: options.severity,
             location: Location(
               file: filePath, line: candidate.line, column: candidate.column,
             ),

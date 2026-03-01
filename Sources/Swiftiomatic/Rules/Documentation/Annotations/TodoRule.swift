@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct TodoRule {
-  var configuration = TodoConfiguration()
+  var options = TodoOptions()
 
   static let description = RuleDescription(
     identifier: "todo",
@@ -27,7 +27,7 @@ struct TodoRule {
 
 extension TodoRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

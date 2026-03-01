@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 
 struct OpeningBraceRule {
-  var configuration = OpeningBraceConfiguration()
+  var options = OpeningBraceOptions()
 
   static let description = RuleDescription(
     identifier: "opening_brace",
@@ -23,7 +23,7 @@ struct OpeningBraceRule {
 
 extension OpeningBraceRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

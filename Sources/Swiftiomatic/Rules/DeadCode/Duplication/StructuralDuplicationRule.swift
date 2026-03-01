@@ -3,7 +3,7 @@ import SwiftSyntax
 struct StructuralDuplicationRule: CollectingRule {
   typealias FileInfo = [FunctionFingerprint]
 
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "structural_duplication",
@@ -51,7 +51,7 @@ struct StructuralDuplicationRule: CollectingRule {
         violations.append(
           RuleViolation(
             ruleDescription: Self.description,
-            severity: configuration.severity,
+            severity: options.severity,
             location: Location(file: filePath, line: member.line, column: 1),
             reason: "Function '\(member.name)' is structurally identical to \(peers)",
             confidence: confidence,

@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct OneDeclarationPerFileRule {
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "one_declaration_per_file",
@@ -53,7 +53,7 @@ struct OneDeclarationPerFileRule {
 
 extension OneDeclarationPerFileRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

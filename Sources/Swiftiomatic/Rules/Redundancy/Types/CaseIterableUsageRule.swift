@@ -3,7 +3,7 @@ import SwiftSyntax
 struct CaseIterableUsageRule: CollectingRule {
   typealias FileInfo = CaseIterableContribution
 
-  var configuration = SeverityConfiguration<Self>(.warning)
+  var options = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "case_iterable_usage",
@@ -64,7 +64,7 @@ struct CaseIterableUsageRule: CollectingRule {
       .map { decl in
         RuleViolation(
           ruleDescription: Self.description,
-          severity: configuration.severity,
+          severity: options.severity,
           location: Location(file: filePath, line: decl.line, column: decl.column),
           reason:
             "Enum '\(decl.name)' conforms to CaseIterable but .allCases is never referenced",

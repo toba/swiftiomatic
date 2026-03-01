@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct StaticOperatorRule {
-    var configuration = SeverityConfiguration<Self>(.warning)
+    var options = SeverityConfiguration<Self>(.warning)
 
     static let description = RuleDescription(
         identifier: "static_operator",
@@ -95,7 +95,7 @@ struct StaticOperatorRule {
 
 extension StaticOperatorRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-        Visitor(configuration: configuration, file: file)
+        Visitor(configuration: options, file: file)
     }
 }
 

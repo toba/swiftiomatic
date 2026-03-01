@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct RedundantDiscardableLetRule {
-  var configuration = RedundantDiscardableLetConfiguration()
+  var options = RedundantDiscardableLetOptions()
 
   static let description = RuleDescription(
     identifier: "redundant_discardable_let",
@@ -181,7 +181,7 @@ struct RedundantDiscardableLetRule {
 
 extension RedundantDiscardableLetRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

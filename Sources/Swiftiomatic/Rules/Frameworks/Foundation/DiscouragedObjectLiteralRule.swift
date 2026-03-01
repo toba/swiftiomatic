@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct DiscouragedObjectLiteralRule {
-  var configuration = DiscouragedObjectLiteralConfiguration()
+  var options = DiscouragedObjectLiteralOptions()
 
   static let description = RuleDescription(
     identifier: "discouraged_object_literal",
@@ -27,7 +27,7 @@ struct DiscouragedObjectLiteralRule {
 
 extension DiscouragedObjectLiteralRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 

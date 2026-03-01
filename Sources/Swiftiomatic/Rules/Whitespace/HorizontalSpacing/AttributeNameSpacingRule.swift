@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 struct AttributeNameSpacingRule {
-  var configuration = SeverityConfiguration<Self>(.error)
+  var options = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
     identifier: "attribute_name_spacing",
@@ -95,7 +95,7 @@ struct AttributeNameSpacingRule {
 
 extension AttributeNameSpacingRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: configuration, file: file)
+    Visitor(configuration: options, file: file)
   }
 }
 
