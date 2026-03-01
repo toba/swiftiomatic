@@ -5,7 +5,8 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-03-01T22:10:46Z
-updated_at: 2026-03-01T22:40:00Z
+updated_at: 2026-03-01T22:44:21Z
+parent: 55b-kur
 sync:
     github:
         issue_number: "130"
