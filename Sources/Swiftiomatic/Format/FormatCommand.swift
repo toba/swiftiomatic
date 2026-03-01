@@ -110,6 +110,10 @@ struct FormatCommand: ParsableCommand {
                 }
             case .json:
                 try print(DiagnosticFormatter.formatJSON(sorted))
+            case .xcode:
+                if !sorted.isEmpty {
+                    print(DiagnosticFormatter.formatXcode(sorted))
+                }
         }
 
         if !sorted.isEmpty {

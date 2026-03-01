@@ -139,6 +139,8 @@ struct Analyze: AsyncParsableCommand {
                     print(TextFormatter.format(diagnostics))
                 case .json:
                     try print(DiagnosticFormatter.formatJSON(diagnostics))
+                case .xcode:
+                    print(DiagnosticFormatter.formatXcode(diagnostics))
             }
         }
 
@@ -280,6 +282,10 @@ struct ListRules: ParsableCommand {
                 {
                     print(json)
                 }
+            case .xcode:
+                for entry in entries {
+                    print("[\(entry.engine.rawValue)] \(entry.id) — \(entry.name)")
+                }
         }
     }
 }
@@ -311,6 +317,7 @@ struct GenerateDocs: ParsableCommand {
 enum OutputFormat: String, ExpressibleByArgument {
     case text
     case json
+    case xcode
 }
 
 extension Confidence: ExpressibleByArgument {}
