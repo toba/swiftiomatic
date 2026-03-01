@@ -55,7 +55,10 @@
       "mcp__xc-swift__swift_format",
       "mcp__xc-swift__swift_lint",
       "mcp__xc-build__build_macos",
-      "mcp__xc-build__discover_projs"
+      "mcp__xc-build__discover_projs",
+      "WebFetch(domain:realm.github.io)",
+      "mcp__xc-swift__swift_package_run",
+      "Bash(swift run:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

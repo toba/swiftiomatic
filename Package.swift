@@ -50,9 +50,10 @@ let package = Package(
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ],
             resources: [
-                .copy("Fixtures"),
-                .copy("FormatTests/BadConfig"),
-                .copy("RuleTests/BuiltInRules/BuiltInRulesResources"),
+                .copy("Suggest/SuggestFixtures"),
+                .copy("Configuration/ConfigFixtures"),
+                .copy("Format/BadConfig"),
+                .copy("Rules/Resources"),
             ],
             swiftSettings: [
                 .swiftLanguageMode(.v6),

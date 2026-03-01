@@ -6,7 +6,7 @@ struct SwiftiomaticCLI: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "AST-based Swift code analysis and formatting",
         version: "0.2.0",
-        subcommands: [Analyze.self, FormatCommand.self, ListRules.self],
+        subcommands: [Analyze.self, FormatCommand.self, ListRules.self, GenerateDocs.self],
         defaultSubcommand: Analyze.self,
     )
 }
@@ -281,6 +281,28 @@ struct ListRules: ParsableCommand {
                     print(json)
                 }
         }
+    }
+}
+
+// MARK: - Generate Docs
+
+struct GenerateDocs: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "generate-docs",
+        abstract: "Generate rule documentation as Markdown files",
+    )
+
+    @Argument(help: "Output directory for generated documentation")
+    var outputDir: String
+
+    func run() throws {
+        RuleRegistry.registerAllRulesOnce()
+        let docs = RuleListDocumentation(RuleRegistry.shared.list)
+        let url = URL(filePath: outputDir)
+        try docs.write(to: url)
+
+        let count = RuleRegistry.shared.list.list.count
+        print("Generated documentation for \(count) rules in \(outputDir)/")
     }
 }
 

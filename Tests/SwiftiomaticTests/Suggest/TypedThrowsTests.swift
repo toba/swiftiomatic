@@ -7,7 +7,7 @@ struct TypedThrowsTests {
     let fixturePath: String = {
         URL(filePath: #filePath)
             .deletingLastPathComponent()
-            .appendingPathComponent("Fixtures/TypedThrows.swift")
+            .appendingPathComponent("SuggestFixtures/TypedThrows.swift")
             .path
     }()
 

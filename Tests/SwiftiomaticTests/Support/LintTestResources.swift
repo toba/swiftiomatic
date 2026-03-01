@@ -2,21 +2,24 @@ import Foundation
 @testable import Swiftiomatic
 
 enum TestResources {
-    /// Maps parent directory names to their resource subdirectory names.
-    private static let resourceDirNames: [String: String] = [
-        "BuiltInRules": "BuiltInRulesResources",
-        "LintTests": "Fixtures",
-    ]
-
     static func path(_ calleePath: String = #filePath) -> String {
-        let parentDir = URL(filePath: calleePath, directoryHint: .notDirectory)
-            .deletingLastPathComponent()
+        let calleeURL = URL(filePath: calleePath, directoryHint: .notDirectory)
+        let parentDir = calleeURL.deletingLastPathComponent()
         let dirName = parentDir.lastPathComponent
-        let resourceDir = resourceDirNames[dirName] ?? "Resources"
-        return
-            parentDir
-                .appendingPathComponent(resourceDir)
-                .path
-                .absolutePathStandardized()
+
+        if dirName == "Configuration" {
+            return parentDir.appendingPathComponent("ConfigFixtures")
+                .path.absolutePathStandardized()
+        }
+
+        // For Rules sub-folders (Naming, Ordering, etc.), go up to Rules/Resources/
+        let grandparent = parentDir.deletingLastPathComponent()
+        if grandparent.lastPathComponent == "Rules" {
+            return grandparent.appendingPathComponent("Resources")
+                .path.absolutePathStandardized()
+        }
+
+        return parentDir.appendingPathComponent("Resources")
+            .path.absolutePathStandardized()
     }
 }

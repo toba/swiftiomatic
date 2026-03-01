@@ -7,7 +7,7 @@ struct NamingTests {
     let fixturePath: String = {
         URL(filePath: #filePath)
             .deletingLastPathComponent()
-            .appendingPathComponent("Fixtures/Naming.swift")
+            .appendingPathComponent("SuggestFixtures/Naming.swift")
             .path
     }()
 

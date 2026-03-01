@@ -7,7 +7,7 @@ struct AgentReviewTests {
     let fixturePath: String = {
         URL(filePath: #filePath)
             .deletingLastPathComponent()
-            .appendingPathComponent("Fixtures/AgentReview.swift")
+            .appendingPathComponent("SuggestFixtures/AgentReview.swift")
             .path
     }()
 
