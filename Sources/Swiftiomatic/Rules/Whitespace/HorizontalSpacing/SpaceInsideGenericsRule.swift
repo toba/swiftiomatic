@@ -37,11 +37,11 @@ extension SpaceInsideGenericsRule {
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
       switch token.tokenKind {
       case .leftAngle:
-        if token.trailingTrivia.containsSpaces {
+        if token.trailingTrivia.containsHorizontalWhitespace {
           violations.append(token.positionAfterSkippingLeadingTrivia)
         }
       case .rightAngle:
-        if token.leadingTrivia.containsSpaces,
+        if token.leadingTrivia.containsHorizontalWhitespace,
           !token.leadingTrivia.containsNewlines()
         {
           violations.append(token.positionAfterSkippingLeadingTrivia)
@@ -57,12 +57,12 @@ extension SpaceInsideGenericsRule {
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
       switch token.tokenKind {
       case .leftAngle:
-        if token.trailingTrivia.containsSpaces {
+        if token.trailingTrivia.containsHorizontalWhitespace {
           numberOfCorrections += 1
           return super.visit(token.with(\.trailingTrivia, Trivia()))
         }
       case .rightAngle:
-        if token.leadingTrivia.containsSpaces,
+        if token.leadingTrivia.containsHorizontalWhitespace,
           !token.leadingTrivia.containsNewlines()
         {
           numberOfCorrections += 1
@@ -72,19 +72,6 @@ extension SpaceInsideGenericsRule {
         break
       }
       return super.visit(token)
-    }
-  }
-}
-
-extension Trivia {
-  fileprivate var containsSpaces: Bool {
-    contains {
-      switch $0 {
-      case .spaces, .tabs:
-        true
-      default:
-        false
-      }
     }
   }
 }

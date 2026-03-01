@@ -59,19 +59,7 @@ extension BlankLinesAfterGuardStatementsRule {
 
         // Check if next item is a closing brace or operator (skip)
         // Check for blank line
-        let trivia = nextItem.leadingTrivia
-        var newlineCount = 0
-        for piece in trivia {
-          switch piece {
-          case .newlines(let count):
-            newlineCount += count
-          case .carriageReturns(let count), .carriageReturnLineFeeds(let count):
-            newlineCount += count
-          default:
-            break
-          }
-        }
-        if newlineCount < 2 {
+        if nextItem.leadingTrivia.newlineCount < 2 {
           violations.append(nextItem.positionAfterSkippingLeadingTrivia)
         }
       }

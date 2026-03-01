@@ -33,48 +33,39 @@ extension TodoRule: SwiftSyntaxRule {
 
 extension TodoRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    private lazy var keywordRegex: RegularExpression = {
+      let searchKeywords = configuration.only.map(\.rawValue).joined(separator: "|")
+      return regex(#"\b((?:\#(searchKeywords))(?::|\b))"#)
+    }()
+
     override func visitPost(_ node: TokenSyntax) {
-      let leadingViolations = node.leadingTrivia.violations(
-        offset: node.position,
-        for: configuration.only,
-      )
-      let trailingViolations = node.trailingTrivia.violations(
-        offset: node.endPositionBeforeTrailingTrivia,
-        for: configuration.only,
-      )
+      let leadingViolations = violations(
+        in: node.leadingTrivia, offset: node.position)
+      let trailingViolations = violations(
+        in: node.trailingTrivia, offset: node.endPositionBeforeTrailingTrivia)
       violations.append(contentsOf: leadingViolations + trailingViolations)
     }
-  }
-}
 
-extension Trivia {
-  fileprivate func violations(
-    offset: AbsolutePosition,
-    for todoKeywords: [TodoConfiguration.TodoKeyword],
-  ) -> [SyntaxViolation] {
-    var position = offset
-    var violations = [SyntaxViolation]()
-    for piece in self {
-      violations.append(contentsOf: piece.violations(offset: position, for: todoKeywords))
-      position += piece.sourceLength
+    private func violations(in trivia: Trivia, offset: AbsolutePosition) -> [SyntaxViolation] {
+      var position = offset
+      var result = [SyntaxViolation]()
+      for piece in trivia {
+        result.append(contentsOf: violations(in: piece, offset: position))
+        position += piece.sourceLength
+      }
+      return result
     }
-    return violations
-  }
-}
 
-extension TriviaPiece {
-  fileprivate func violations(
-    offset: AbsolutePosition,
-    for todoKeywords: [TodoConfiguration.TodoKeyword],
-  ) -> [SyntaxViolation] {
-    switch self {
-    case .blockComment(let comment),
-      .lineComment(let comment),
-      .docBlockComment(let comment),
-      .docLineComment(let comment):
-      // Construct a regex string considering only keywords.
-      let searchKeywords = todoKeywords.map(\.rawValue).joined(separator: "|")
-      let matches = regex(#"\b((?:\#(searchKeywords))(?::|\b))"#)
+    private func violations(in piece: TriviaPiece, offset: AbsolutePosition) -> [SyntaxViolation] {
+      let comment: String
+      switch piece {
+      case .blockComment(let text), .lineComment(let text),
+        .docBlockComment(let text), .docLineComment(let text):
+        comment = text
+      default:
+        return []
+      }
+      let matches = keywordRegex
         .matches(in: comment, range: comment.bridge().fullNSRange)
       return matches.reduce(into: []) { violations, match in
         guard let sub = match.output[1].substring else { return }
@@ -104,8 +95,6 @@ extension TriviaPiece {
         )
         violations.append(violation)
       }
-    default:
-      return []
     }
   }
 }

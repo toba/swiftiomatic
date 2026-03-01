@@ -197,8 +197,9 @@ extension SwiftSource {
       if SourceKitSyntaxKind.kindsWithoutModuleInfo.contains(tokenKind) {
         continue
       }
+      guard let path else { continue }
       let cursorInfoRequest = Request.cursorInfoWithoutSymbolGraph(
-        file: path!, offset: token.offset, arguments: compilerArguments,
+        file: path, offset: token.offset, arguments: compilerArguments,
       )
       guard
         let cursorInfo = (try? cursorInfoRequest.sendIfNotDisabled()).map(
@@ -245,8 +246,9 @@ extension SwiftSource {
   fileprivate func operatorImports(arguments: [String], processedTokenOffsets: Set<ByteCount>)
     -> Set<String>
   {
+    guard let path else { return [] }
     guard
-      let index = (try? Request.index(file: path!, arguments: arguments).sendIfNotDisabled())
+      let index = (try? Request.index(file: path, arguments: arguments).sendIfNotDisabled())
         .map(SourceKitDictionary.init)
     else {
       Issue.indexingError(path: path, ruleID: UnusedImportRule.identifier).print()
@@ -268,7 +270,7 @@ extension SwiftSource {
         guard !processedTokenOffsets.contains(ByteCount(offset)) else { continue }
 
         let cursorInfoRequest = Request.cursorInfoWithoutSymbolGraph(
-          file: path!, offset: ByteCount(offset), arguments: arguments,
+          file: path, offset: ByteCount(offset), arguments: arguments,
         )
         guard
           let cursorInfo = (try? cursorInfoRequest.sendIfNotDisabled())

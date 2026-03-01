@@ -320,7 +320,6 @@ extension Formatter {
         )
       case .startOfScope("{"):
         guard let endIndex = endOfScope(at: i) else {
-          fatalError("Expected }", at: i)
           return
         }
         if isStartOfClosure(at: i) {
@@ -349,14 +348,9 @@ extension Formatter {
       case .endOfScope("case"), .endOfScope("default"):
         pushLocals()
         guard let colonIndex = index(of: .startOfScope(":"), after: i) else {
-          fatalError("Expected :", at: i)
           return
         }
         guard let endIndex = endOfScope(at: colonIndex) else {
-          fatalError(
-            "Expected end of case statement",
-            at: colonIndex,
-          )
           return
         }
         removeUsed(

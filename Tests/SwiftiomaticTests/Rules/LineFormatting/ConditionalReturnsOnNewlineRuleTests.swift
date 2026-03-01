@@ -1,30 +1,31 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct ConditionalReturnsOnNewlineRuleTests {
-    @Test func conditionalReturnsOnNewlineWithIfOnly() async {
-        // Test with `if_only` set to true
-        let nonTriggeringExamples = [
-            Example("guard true else {\n return true\n}"),
-            Example("guard true,\n let x = true else {\n return true\n}"),
-            Example("if true else {\n return true\n}"),
-            Example("if true,\n let x = true else {\n return true\n}"),
-            Example("if textField.returnKeyType == .Next {"),
-            Example("if true { // return }"),
-            Example("/*if true { */ return }"),
-            Example("guard true else { return }"),
-        ]
-        let triggeringExamples = [
-            Example("↓if true { return }"),
-            Example("↓if true { break } else { return }"),
-            Example("↓if true { break } else {       return }"),
-            Example("↓if true { return \"YES\" } else { return \"NO\" }"),
-        ]
+  @Test func conditionalReturnsOnNewlineWithIfOnly() async {
+    // Test with `if_only` set to true
+    let nonTriggeringExamples = [
+      Example("guard true else {\n return true\n}"),
+      Example("guard true,\n let x = true else {\n return true\n}"),
+      Example("if true else {\n return true\n}"),
+      Example("if true,\n let x = true else {\n return true\n}"),
+      Example("if textField.returnKeyType == .Next {"),
+      Example("if true { // return }"),
+      Example("/*if true { */ return }"),
+      Example("guard true else { return }"),
+    ]
+    let triggeringExamples = [
+      Example("↓if true { return }"),
+      Example("↓if true { break } else { return }"),
+      Example("↓if true { break } else {       return }"),
+      Example("↓if true { return \"YES\" } else { return \"NO\" }"),
+    ]
 
-        let description = ConditionalReturnsOnNewlineRule.description
-            .with(triggeringExamples: triggeringExamples)
-            .with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = ConditionalReturnsOnNewlineRule.description
+      .with(triggeringExamples: triggeringExamples)
+      .with(nonTriggeringExamples: nonTriggeringExamples)
 
-        await verifyRule(description, ruleConfiguration: ["if_only": true])
-    }
+    await verifyRule(description, ruleConfiguration: ["if_only": true])
+  }
 }

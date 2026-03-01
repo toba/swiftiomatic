@@ -43,6 +43,24 @@ extension Trivia {
     var withoutTrailingIndentation: Trivia {
         Trivia(pieces: reversed().drop(while: \.isHorizontalWhitespace).reversed())
     }
+
+    var newlineCount: Int {
+        reduce(into: 0) { count, piece in
+            switch piece {
+                case .newlines(let n), .carriageReturns(let n), .carriageReturnLineFeeds(let n):
+                    count += n
+                default: break
+            }
+        }
+    }
+
+    var isHorizontalWhitespaceOnly: Bool {
+        isNotEmpty && allSatisfy(\.isHorizontalWhitespace)
+    }
+
+    var containsHorizontalWhitespace: Bool {
+        contains(where: \.isHorizontalWhitespace)
+    }
 }
 
 extension TriviaPiece {

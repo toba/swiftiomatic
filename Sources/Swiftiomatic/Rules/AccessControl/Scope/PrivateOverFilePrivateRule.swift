@@ -101,44 +101,48 @@ extension PrivateOverFilePrivateRule {
     }
 
     override func visitPost(_ node: ActorDeclSyntax) {
-      visit(withModifier: node)
+      checkModifier(on: node)
     }
 
     override func visitPost(_ node: ClassDeclSyntax) {
-      visit(withModifier: node)
+      checkModifier(on: node)
     }
 
     override func visitPost(_ node: EnumDeclSyntax) {
-      visit(withModifier: node)
+      checkModifier(on: node)
     }
 
     override func visitPost(_ node: ExtensionDeclSyntax) {
       if configuration.validateExtensions {
-        visit(withModifier: node)
+        checkModifier(on: node)
       }
     }
 
     override func visitPost(_ node: FunctionDeclSyntax) {
-      visit(withModifier: node)
+      checkModifier(on: node)
     }
 
     override func visitPost(_ node: ProtocolDeclSyntax) {
-      visit(withModifier: node)
+      checkModifier(on: node)
     }
 
     override func visitPost(_ node: StructDeclSyntax) {
-      visit(withModifier: node)
+      checkModifier(on: node)
     }
 
     override func visitPost(_ node: TypeAliasDeclSyntax) {
-      visit(withModifier: node)
+      checkModifier(on: node)
+    }
+
+    override func visitPost(_ node: InitializerDeclSyntax) {
+      checkModifier(on: node)
     }
 
     override func visitPost(_ node: VariableDeclSyntax) {
-      visit(withModifier: node)
+      checkModifier(on: node)
     }
 
-    private func visit(withModifier node: some WithModifiersSyntax) {
+    private func checkModifier(on node: some WithModifiersSyntax) {
       if let modifier = node.modifiers
         .first(where: { $0.name.tokenKind == .keyword(.fileprivate) })
       {

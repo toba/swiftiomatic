@@ -89,7 +89,7 @@ extension EnumNamespacesRule {
       }
 
       // Skip if has attributes
-      guard !attributes.contains(where: { _ in true }) else { return }
+      guard attributes.isEmpty else { return }
 
       // Must have at least one member
       guard !members.isEmpty else { return }

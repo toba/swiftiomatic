@@ -171,7 +171,7 @@ extension UnusedSetterValueRule {
       let variableName = node.parameters?.name.text ?? "newValue"
       let visitor = NewValueUsageVisitor(variableName: variableName)
       if !visitor.walk(tree: node, handler: \.isVariableUsed) {
-        if Syntax(node).closestVariableOrSubscript()?.modifiers?
+        if Syntax(node).closestVariableOrSubscript()?.modifiers
           .contains(keyword: .override)
           == true,
           let body = node.body, body.statements.isEmpty
@@ -202,31 +202,14 @@ private final class NewValueUsageVisitor: SyntaxVisitor {
 }
 
 extension Syntax {
-  fileprivate func closestVariableOrSubscript() -> Either<SubscriptDeclSyntax, VariableDeclSyntax>?
-  {
+  fileprivate func closestVariableOrSubscript() -> (any WithModifiersSyntax)? {
     if let subscriptDecl = `as`(SubscriptDeclSyntax.self) {
-      return .left(subscriptDecl)
+      return subscriptDecl
     }
     if let variableDecl = `as`(VariableDeclSyntax.self) {
-      return .right(variableDecl)
+      return variableDecl
     }
 
     return parent?.closestVariableOrSubscript()
-  }
-}
-
-private enum Either<L, R> {
-  case left(L)
-  case right(R)
-}
-
-extension Either<SubscriptDeclSyntax, VariableDeclSyntax> {
-  fileprivate var modifiers: DeclModifierListSyntax? {
-    switch self {
-    case .left(let left):
-      return left.modifiers
-    case .right(let right):
-      return right.modifiers
-    }
   }
 }

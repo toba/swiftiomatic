@@ -66,19 +66,16 @@ extension GenericConsolidationRule {
       else { return }
 
       // Walk up to the function and check body usage
-      guard let funcDecl = findEnclosingFunction(Syntax(node)),
+      guard let funcDecl = node.nearestAncestor(ofType: FunctionDeclSyntax.self),
         let body = funcDecl.body
       else { return }
 
       let paramName = node.secondName?.text ?? node.firstName.text
-      let bodyStr = body.statements.trimmedDescription
 
-      // Check if only Sequence-level operations are used
-      let collectionOnlyOps = [
-        "\(paramName)[", "\(paramName).index", "\(paramName).count",
-        "\(paramName).subscript", "\(paramName).startIndex", "\(paramName).endIndex",
-      ]
-      let usesCollectionOps = collectionOnlyOps.contains { bodyStr.contains($0) }
+      // Check if Collection-specific operations are used via AST walk
+      let walker = CollectionOpWalker(paramName: paramName, viewMode: .sourceAccurate)
+      walker.walk(body)
+      let usesCollectionOps = walker.found
 
       if !usesCollectionOps {
         let currentConstraint =
@@ -98,14 +95,37 @@ extension GenericConsolidationRule {
         )
       }
     }
+  }
+}
 
-    private func findEnclosingFunction(_ node: Syntax) -> FunctionDeclSyntax? {
-      var current: Syntax? = node
-      while let parent = current?.parent {
-        if let funcDecl = parent.as(FunctionDeclSyntax.self) { return funcDecl }
-        current = parent
-      }
-      return nil
+private final class CollectionOpWalker: SyntaxVisitor {
+  let paramName: String
+  var found = false
+
+  private static let collectionMembers: Set<String> = [
+    "index", "count", "subscript", "startIndex", "endIndex",
+  ]
+
+  init(paramName: String, viewMode: SyntaxTreeViewMode) {
+    self.paramName = paramName
+    super.init(viewMode: viewMode)
+  }
+
+  override func visit(_ node: SubscriptCallExprSyntax) -> SyntaxVisitorContinueKind {
+    if node.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == paramName {
+      found = true
+      return .skipChildren
     }
+    return .visitChildren
+  }
+
+  override func visit(_ node: MemberAccessExprSyntax) -> SyntaxVisitorContinueKind {
+    if node.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == paramName,
+      Self.collectionMembers.contains(node.declName.baseName.text)
+    {
+      found = true
+      return .skipChildren
+    }
+    return .visitChildren
   }
 }

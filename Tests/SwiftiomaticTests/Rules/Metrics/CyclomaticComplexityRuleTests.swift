@@ -1,79 +1,80 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct CyclomaticComplexityRuleTests {
-    private var complexSwitchExample: Example {
-        var example = "func switcheroo() {\n"
-        example += "    switch foo {\n"
-        for index in 0 ... 30 {
-            example += "  case \(index):   print(\"\(index)\")\n"
-        }
-        example += "    }\n"
-        example += "}\n"
-        return Example(example)
+  private var complexSwitchExample: Example {
+    var example = "func switcheroo() {\n"
+    example += "    switch foo {\n"
+    for index in 0...30 {
+      example += "  case \(index):   print(\"\(index)\")\n"
+    }
+    example += "    }\n"
+    example += "}\n"
+    return Example(example)
+  }
+
+  private var complexSwitchInitExample: Example {
+    var example = "init() {\n"
+    example += "    switch foo {\n"
+    for index in 0...30 {
+      example += "  case \(index):   print(\"\(index)\")\n"
+    }
+    example += "    }\n"
+    example += "}\n"
+    return Example(example)
+  }
+
+  private var complexIfExample: Example {
+    let nest = 22
+    var example = "func nestThoseIfs() {\n"
+    for index in 0...nest {
+      let indent = String(repeating: "    ", count: index + 1)
+      example += indent + "if false != true {\n"
+      example += indent + "   print \"\\(i)\"\n"
     }
 
-    private var complexSwitchInitExample: Example {
-        var example = "init() {\n"
-        example += "    switch foo {\n"
-        for index in 0 ... 30 {
-            example += "  case \(index):   print(\"\(index)\")\n"
-        }
-        example += "    }\n"
-        example += "}\n"
-        return Example(example)
+    for index in (0...nest).reversed() {
+      let indent = String(repeating: "    ", count: index + 1)
+      example += indent + "}\n"
     }
+    example += "}\n"
+    return Example(example)
+  }
 
-    private var complexIfExample: Example {
-        let nest = 22
-        var example = "func nestThoseIfs() {\n"
-        for index in 0 ... nest {
-            let indent = String(repeating: "    ", count: index + 1)
-            example += indent + "if false != true {\n"
-            example += indent + "   print \"\\(i)\"\n"
-        }
+  @Test func cyclomaticComplexity() async {
+    await verifyRule(
+      CyclomaticComplexityRule.description, commentDoesNotViolate: true,
+      stringDoesNotViolate: true,
+    )
+  }
 
-        for index in (0 ... nest).reversed() {
-            let indent = String(repeating: "    ", count: index + 1)
-            example += indent + "}\n"
-        }
-        example += "}\n"
-        return Example(example)
-    }
+  @Test func ignoresCaseStatementsConfigurationEnabled() async {
+    let baseDescription = CyclomaticComplexityRule.description
+    let triggeringExamples = [complexIfExample]
+    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + [complexSwitchExample]
 
-    @Test func cyclomaticComplexity() async {
-        await verifyRule(
-            CyclomaticComplexityRule.description, commentDoesNotViolate: true,
-            stringDoesNotViolate: true,
-        )
-    }
+    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+      .with(triggeringExamples: triggeringExamples)
 
-    @Test func ignoresCaseStatementsConfigurationEnabled() async {
-        let baseDescription = CyclomaticComplexityRule.description
-        let triggeringExamples = [complexIfExample]
-        let nonTriggeringExamples = baseDescription.nonTriggeringExamples + [complexSwitchExample]
+    await verifyRule(
+      description, ruleConfiguration: ["ignores_case_statements": true],
+      commentDoesNotViolate: true, stringDoesNotViolate: true,
+    )
+  }
 
-        let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-            .with(triggeringExamples: triggeringExamples)
+  @Test func ignoresCaseStatementsConfigurationDisabled() async {
+    let baseDescription = CyclomaticComplexityRule.description
+    let triggeringExamples =
+      baseDescription.triggeringExamples + [complexSwitchExample, complexSwitchInitExample]
+    let nonTriggeringExamples = baseDescription.nonTriggeringExamples
 
-        await verifyRule(
-            description, ruleConfiguration: ["ignores_case_statements": true],
-            commentDoesNotViolate: true, stringDoesNotViolate: true,
-        )
-    }
+    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+      .with(triggeringExamples: triggeringExamples)
 
-    @Test func ignoresCaseStatementsConfigurationDisabled() async {
-        let baseDescription = CyclomaticComplexityRule.description
-        let triggeringExamples =
-            baseDescription.triggeringExamples + [complexSwitchExample, complexSwitchInitExample]
-        let nonTriggeringExamples = baseDescription.nonTriggeringExamples
-
-        let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-            .with(triggeringExamples: triggeringExamples)
-
-        await verifyRule(
-            description, ruleConfiguration: ["ignores_case_statements": false],
-            commentDoesNotViolate: true, stringDoesNotViolate: true,
-        )
-    }
+    await verifyRule(
+      description, ruleConfiguration: ["ignores_case_statements": false],
+      commentDoesNotViolate: true, stringDoesNotViolate: true,
+    )
+  }
 }

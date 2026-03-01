@@ -1,28 +1,29 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct SwitchCaseAlignmentRuleTests {
-    @Test func switchCaseAlignmentWithoutIndentedCases() async {
-        let baseDescription = SwitchCaseAlignmentRule.description
-        let examples = SwitchCaseAlignmentRule.Examples(indentedCases: false)
+  @Test func switchCaseAlignmentWithoutIndentedCases() async {
+    let baseDescription = SwitchCaseAlignmentRule.description
+    let examples = SwitchCaseAlignmentRule.Examples(indentedCases: false)
 
-        let description = baseDescription.with(
-            nonTriggeringExamples: examples.nonTriggeringExamples,
-            triggeringExamples: examples.triggeringExamples,
-        )
+    let description = baseDescription.with(
+      nonTriggeringExamples: examples.nonTriggeringExamples,
+      triggeringExamples: examples.triggeringExamples,
+    )
 
-        await verifyRule(description)
-    }
+    await verifyRule(description)
+  }
 
-    @Test func switchCaseAlignmentWithIndentedCases() async {
-        let baseDescription = SwitchCaseAlignmentRule.description
-        let examples = SwitchCaseAlignmentRule.Examples(indentedCases: true)
+  @Test func switchCaseAlignmentWithIndentedCases() async {
+    let baseDescription = SwitchCaseAlignmentRule.description
+    let examples = SwitchCaseAlignmentRule.Examples(indentedCases: true)
 
-        let description = baseDescription.with(
-            nonTriggeringExamples: examples.nonTriggeringExamples,
-            triggeringExamples: examples.triggeringExamples,
-        )
+    let description = baseDescription.with(
+      nonTriggeringExamples: examples.nonTriggeringExamples,
+      triggeringExamples: examples.triggeringExamples,
+    )
 
-        await verifyRule(description, ruleConfiguration: ["indented_cases": true])
-    }
+    await verifyRule(description, ruleConfiguration: ["indented_cases": true])
+  }
 }

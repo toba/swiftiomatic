@@ -43,7 +43,7 @@ extension SpaceAroundGenericsRule {
         prevToken.tokenKind.isIdentifierOrKeyword
       else { return .visitChildren }
 
-      if prevToken.trailingTrivia.containsSpacesNotNewlines {
+      if prevToken.trailingTrivia.containsHorizontalWhitespace {
         violations.append(prevToken.endPositionBeforeTrailingTrivia)
       }
       return .visitChildren
@@ -57,24 +57,12 @@ extension SpaceAroundGenericsRule {
         prevToken.tokenKind.isIdentifierOrKeyword
       else { return super.visit(token) }
 
-      if token.leadingTrivia.containsSpacesNotNewlines {
+      if token.leadingTrivia.containsHorizontalWhitespace {
         numberOfCorrections += 1
         return super.visit(token.with(\.leadingTrivia, Trivia()))
       }
       return super.visit(token)
     }
-  }
-}
-
-extension Trivia {
-  fileprivate var containsSpacesNotNewlines: Bool {
-    let hasSpaces = contains {
-      switch $0 {
-      case .spaces, .tabs: true
-      default: false
-      }
-    }
-    return hasSpaces && !containsNewlines()
   }
 }
 

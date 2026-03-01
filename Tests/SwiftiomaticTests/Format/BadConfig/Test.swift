@@ -1,4 +1,3 @@
-//Badly formatted code
-func
-  foo(bar: Int)
+// Badly formatted code
+func foo(bar: Int)
 {}

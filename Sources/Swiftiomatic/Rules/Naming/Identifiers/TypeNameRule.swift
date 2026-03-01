@@ -102,7 +102,7 @@ extension TypeNameRule {
       let name =
         originalName
         .strippingBackticks()
-        .strippingLeadingUnderscoreIfPrivate(modifiers: modifiers)
+        .strippingLeadingUnderscore(ifPrivate: modifiers.containsPrivateOrFileprivate())
         .strippingTrailingSwiftUIPreviewProvider(inheritedTypes: inheritedTypes)
       if !nameConfiguration.containsOnlyAllowedCharacters(name: name) {
         return SyntaxViolation(
@@ -155,12 +155,8 @@ extension String {
     return substring(from: 0, length: lastPreviewsIndex)
   }
 
-  fileprivate func strippingLeadingUnderscoreIfPrivate(modifiers: DeclModifierListSyntax) -> String
-  {
-    if first == "_", modifiers.containsPrivateOrFileprivate() {
-      return String(self[index(after: startIndex)...])
-    }
-    return self
+  func strippingLeadingUnderscore(ifPrivate isPrivate: Bool) -> String {
+    isPrivate && first == "_" ? String(self[index(after: startIndex)...]) : self
   }
 }
 

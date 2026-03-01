@@ -1,3 +1,4 @@
+import Foundation
 import SwiftSyntax
 
 struct AcronymsRule: Rule {
@@ -51,7 +52,10 @@ extension AcronymsRule {
       guard name.first?.isLetter == true else { return }
 
       for acronym in Self.commonAcronyms {
-        if name.contains(acronym) {
+        guard let range = name.range(of: acronym) else { continue }
+        // Ensure word boundary: next char must be uppercase, end-of-string, or absent
+        let afterEnd = range.upperBound
+        if afterEnd == name.endIndex || name[afterEnd].isUppercase {
           violations.append(token.positionAfterSkippingLeadingTrivia)
           return
         }

@@ -55,20 +55,7 @@ extension BlankLinesBetweenChainedFunctionsRule {
       }
 
       // Check if leading trivia has blank lines
-      let trivia = token.leadingTrivia
-      var newlineCount = 0
-      for piece in trivia {
-        switch piece {
-        case .newlines(let count):
-          newlineCount += count
-        case .carriageReturns(let count), .carriageReturnLineFeeds(let count):
-          newlineCount += count
-        default:
-          break
-        }
-      }
-
-      if newlineCount > 1 {
+      if token.leadingTrivia.newlineCount > 1 {
         violations.append(token.positionAfterSkippingLeadingTrivia)
       }
       return .visitChildren

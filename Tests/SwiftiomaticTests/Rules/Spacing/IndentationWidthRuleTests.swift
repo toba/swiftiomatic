@@ -1,361 +1,362 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered, .disabled("requires sourcekitd")) struct IndentationWidthRuleTests {
-    @Test func invalidIndentation() async throws {
-        let defaultValue = IndentationWidthConfiguration().indentationWidth
+  @Test func invalidIndentation() async throws {
+    let defaultValue = IndentationWidthConfiguration().indentationWidth
 
-        for indentation in [0, -1, -5] {
-            let console = try await Issue.captureConsole {
-                var testee = IndentationWidthConfiguration()
-                try testee.apply(configuration: ["indentation_width": indentation])
+    for indentation in [0, -1, -5] {
+      let console = try await Issue.captureConsole {
+        var testee = IndentationWidthConfiguration()
+        try testee.apply(configuration: ["indentation_width": indentation])
 
-                // Value remains the default.
-                #expect(testee.indentationWidth == defaultValue)
+        // Value remains the default.
+        #expect(testee.indentationWidth == defaultValue)
+      }
+      #expect(
+        console
+          == "warning: Invalid configuration for 'indentation_width' rule. Falling back to default.",
+      )
+    }
+  }
+
+  /// It's not okay to have the first line indented.
+  @Test func firstLineIndentation() async {
+    await assert1Violation(in: "    firstLine")
+    await assert1Violation(in: "   firstLine")
+    await assert1Violation(in: " firstLine")
+    await assert1Violation(in: "\tfirstLine")
+
+    await assertNoViolation(in: "firstLine")
+  }
+
+  /// It's not okay to indent using both tabs and spaces in one line.
+  @Test func mixedTabSpaceIndentation() async {
+    // Expect 2 violations as secondLine is also indented by 8 spaces (which isn't valid)
+    await assertViolations(in: "firstLine\n\t    secondLine", equals: 2)
+    await assertViolations(in: "firstLine\n    \tsecondLine", equals: 2)
+  }
+
+  /// It's okay to indent using either tabs or spaces in different lines.
+  @Test func mixedTabsAndSpacesIndentation() async {
+    await assertNoViolation(in: "firstLine\n\tsecondLine\n        thirdLine")
+    await assertNoViolation(in: "firstLine\n    secondLine\n\t\tthirdLine")
+    await assertNoViolation(in: "firstLine\n\tsecondLine\n        thirdLine\n\t\t\tfourthLine")
+  }
+
+  /// It's okay to keep the same indentation.
+  @Test func keepingIndentation() async {
+    await assertNoViolation(in: "firstLine\nsecondLine")
+    await assertNoViolation(in: "firstLine    \nsecondLine\n    thirdLine")
+    await assertNoViolation(in: "firstLine\t\nsecondLine\n\tthirdLine")
+  }
+
+  /// It's only okay to indent using one tab or indentationWidth spaces.
+  @Test func indentationLength() async {
+    await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 1)
+    await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 2)
+    await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 3)
+    await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 4)
+    await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 5)
+    await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 6)
+    await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 7)
+    await assert1Violation(in: "firstLine\n\t\tsecondLine")
+    await assert1Violation(in: "firstLine\n\t\t\tsecondLine")
+    await assert1Violation(in: "firstLine\n\t\t\t\t\t\tsecondLine")
+
+    await assertNoViolation(in: "firstLine\n\tsecondLine")
+    await assertNoViolation(in: "firstLine\n secondLine", indentationWidth: 1)
+    await assertNoViolation(in: "firstLine\n  secondLine", indentationWidth: 2)
+    await assertNoViolation(in: "firstLine\n   secondLine", indentationWidth: 3)
+    await assertNoViolation(in: "firstLine\n    secondLine", indentationWidth: 4)
+    await assertNoViolation(in: "firstLine\n     secondLine", indentationWidth: 5)
+    await assertNoViolation(in: "firstLine\n      secondLine", indentationWidth: 6)
+    await assertNoViolation(in: "firstLine\n       secondLine", indentationWidth: 7)
+    await assertNoViolation(in: "firstLine\n        secondLine", indentationWidth: 8)
+  }
+
+  /// It's okay to unindent indentationWidth * (1, 2, 3, ...) - x iff x == 0.
+  @Test func unindentation() async {
+    await assert1Violation(in: "firstLine\n    secondLine\n        thirdLine\n fourthLine")
+    await assert1Violation(in: "firstLine\n    secondLine\n        thirdLine\n  fourthLine")
+    await assert1Violation(in: "firstLine\n    secondLine\n        thirdLine\n   fourthLine")
+    await assert1Violation(in: "firstLine\n    secondLine\n    thirdLine\n   fourthLine")
+
+    await assertNoViolation(in: "firstLine\n    secondLine\n        thirdLine\nfourthLine")
+    await assertNoViolation(in: "firstLine\n    secondLine\n    thirdLine\nfourthLine")
+    await assertNoViolation(
+      in: "firstLine\n\tsecondLine\n\t\tthirdLine\n\t\t\tfourthLine\nfifthLine")
+  }
+
+  /// It's okay to have empty lines between iff the following indentations obey the rules.
+  @Test func emptyLinesBetween() async {
+    await assertNoViolation(in: "firstLine\n\tsecondLine\n\n\tfourthLine")
+    await assertNoViolation(in: "firstLine\n\tsecondLine\n \n\tfourthLine")
+    await assertNoViolation(in: "firstLine\n\tsecondLine\n           \n\tfourthLine")
+    await assertNoViolation(in: "firstLine\n\tsecondLine\n\n    fourthLine")
+    await assertNoViolation(in: "firstLine\n\tsecondLine\n \n    fourthLine")
+    await assertNoViolation(in: "firstLine\n\tsecondLine\n           \n    fourthLine")
+
+    await assert1Violation(in: "firstLine\n\tsecondLine\n\n\t\t\tfourthLine")
+    await assert1Violation(in: "firstLine\n\tsecondLine\n \n\t\t\tfourthLine")
+    await assert1Violation(in: "firstLine\n\tsecondLine\n           \n\t\t\tfourthLine")
+    await assert1Violation(in: "firstLine\n\tsecondLine\n\n            fourthLine")
+    await assert1Violation(in: "firstLine\n\tsecondLine\n \n            fourthLine")
+    await assert1Violation(in: "firstLine\n\tsecondLine\n           \n            fourthLine")
+  }
+
+  @Test func brackets() async {
+    await assertNoViolation(
+      in: "firstLine\n    [\n        .thirdLine\n    ]\nfifthLine",
+      includeComments: true,
+    )
+
+    await assertNoViolation(
+      in: "firstLine\n    [\n        .thirdLine\n    ]\nfifthLine",
+      includeComments: false,
+    )
+
+    await assertNoViolation(
+      in: "firstLine\n    (\n        .thirdLine\n    )\nfifthLine",
+      includeComments: true,
+    )
+
+    await assertNoViolation(
+      in: "firstLine\n    (\n        .thirdLine\n    )\nfifthLine",
+      includeComments: false,
+    )
+  }
+
+  /// It's okay to have comments not following the indentation pattern iff the configuration allows this.
+  @Test func commentLines() async {
+    await assert1Violation(
+      in: "firstLine\n\tsecondLine\n\t\tthirdLine\n//test\n\t\tfourthLine",
+      includeComments: true,
+    )
+    await assertViolations(
+      in: "firstLine\n\tsecondLine\n\t\tthirdLine\n//test\n // test\n//test\n\t\tfourthLine",
+      equals: 2,
+      includeComments: true,
+    )
+    await assertViolations(
+      in:
+        "firstLine\n\tsecondLine\n\t\tthirdLine\n/*test\n  bad indent...\n test*/\n\t\tfourthLine",
+      equals: 3,
+      includeComments: true,
+    )
+
+    await assertNoViolation(
+      in: "firstLine\n\tsecondLine\n\t\tthirdLine\n//test\n\t\tfourthLine",
+      includeComments: false,
+    )
+    await assertNoViolation(
+      in: "firstLine\n\tsecondLine\n\t\tthirdLine\n//test\n // test\n//test\n\t\tfourthLine",
+      includeComments: false,
+    )
+    await assertNoViolation(
+      in:
+        "firstLine\n\tsecondLine\n\t\tthirdLine\n/*test\n  bad indent...\n test*/\n\t\tfourthLine",
+      includeComments: false,
+    )
+  }
+
+  /// Duplicate warnings for one actual indentation issue should be avoided.
+  @Test func duplicateWarningAvoidanceMechanism() async {
+    // thirdLine is indented correctly, yet not in-line with the badly indented secondLine. This should be allowed.
+    await assert1Violation(in: "firstLine\n secondLine\nthirdLine")
+
+    // thirdLine is indented correctly, yet not in-line with the badly indented secondLine. This should be allowed.
+    await assert1Violation(in: "firstLine\n     secondLine\n    thirdLine")
+
+    // thirdLine is indented badly, yet in-line with the badly indented secondLine. This should be allowed.
+    await assert1Violation(in: "firstLine\n     secondLine\n     thirdLine")
+
+    // This pattern should go on indefinitely...
+    await assert1Violation(in: "firstLine\n     secondLine\n     thirdLine\n    fourthLine")
+    await assert1Violation(in: "firstLine\n     secondLine\n     thirdLine\n     fourthLine")
+
+    // Still, this won't disable multiple line warnings in one file if suitable...
+    await assertViolations(in: "firstLine\n     secondLine\nthirdLine\n     fourthLine", equals: 2)
+    await assertViolations(
+      in: "firstLine\n     secondLine\n    thirdLine\n     fourthLine",
+      equals: 2,
+    )
+    await assertViolations(
+      in: "firstLine\n     secondLine\n     thirdLine\nfourthLine\n     fifthLine", equals: 2,
+    )
+    await assertViolations(
+      in: "firstLine\n     secondLine\n     thirdLine\n    fourthLine\n     fifthLine",
+      equals: 2,
+    )
+  }
+
+  @Test func ignoredCompilerDirectives() async {
+    await assertNoViolation(
+      in: """
+        struct S {
+                        #if os(iOS)
+            var i: Int = 0
+        #endif
+            var j: Int = 0
+
+            func reset() {
+            #if os(iOS)
+                i = 0
+                        #endif
+                j = 0
             }
-            #expect(
-                console
-                    ==
-                    "warning: Invalid configuration for 'indentation_width' rule. Falling back to default.",
-            )
         }
-    }
+        """, includeCompilerDirectives: false,
+    )
 
-    /// It's not okay to have the first line indented.
-    @Test func firstLineIndentation() async {
-        await assert1Violation(in: "    firstLine")
-        await assert1Violation(in: "   firstLine")
-        await assert1Violation(in: " firstLine")
-        await assert1Violation(in: "\tfirstLine")
-
-        await assertNoViolation(in: "firstLine")
-    }
-
-    /// It's not okay to indent using both tabs and spaces in one line.
-    @Test func mixedTabSpaceIndentation() async {
-        // Expect 2 violations as secondLine is also indented by 8 spaces (which isn't valid)
-        await assertViolations(in: "firstLine\n\t    secondLine", equals: 2)
-        await assertViolations(in: "firstLine\n    \tsecondLine", equals: 2)
-    }
-
-    /// It's okay to indent using either tabs or spaces in different lines.
-    @Test func mixedTabsAndSpacesIndentation() async {
-        await assertNoViolation(in: "firstLine\n\tsecondLine\n        thirdLine")
-        await assertNoViolation(in: "firstLine\n    secondLine\n\t\tthirdLine")
-        await assertNoViolation(in: "firstLine\n\tsecondLine\n        thirdLine\n\t\t\tfourthLine")
-    }
-
-    /// It's okay to keep the same indentation.
-    @Test func keepingIndentation() async {
-        await assertNoViolation(in: "firstLine\nsecondLine")
-        await assertNoViolation(in: "firstLine    \nsecondLine\n    thirdLine")
-        await assertNoViolation(in: "firstLine\t\nsecondLine\n\tthirdLine")
-    }
-
-    /// It's only okay to indent using one tab or indentationWidth spaces.
-    @Test func indentationLength() async {
-        await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 1)
-        await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 2)
-        await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 3)
-        await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 4)
-        await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 5)
-        await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 6)
-        await assert1Violation(in: "firstLine\n        secondLine", indentationWidth: 7)
-        await assert1Violation(in: "firstLine\n\t\tsecondLine")
-        await assert1Violation(in: "firstLine\n\t\t\tsecondLine")
-        await assert1Violation(in: "firstLine\n\t\t\t\t\t\tsecondLine")
-
-        await assertNoViolation(in: "firstLine\n\tsecondLine")
-        await assertNoViolation(in: "firstLine\n secondLine", indentationWidth: 1)
-        await assertNoViolation(in: "firstLine\n  secondLine", indentationWidth: 2)
-        await assertNoViolation(in: "firstLine\n   secondLine", indentationWidth: 3)
-        await assertNoViolation(in: "firstLine\n    secondLine", indentationWidth: 4)
-        await assertNoViolation(in: "firstLine\n     secondLine", indentationWidth: 5)
-        await assertNoViolation(in: "firstLine\n      secondLine", indentationWidth: 6)
-        await assertNoViolation(in: "firstLine\n       secondLine", indentationWidth: 7)
-        await assertNoViolation(in: "firstLine\n        secondLine", indentationWidth: 8)
-    }
-
-    /// It's okay to unindent indentationWidth * (1, 2, 3, ...) - x iff x == 0.
-    @Test func unindentation() async {
-        await assert1Violation(in: "firstLine\n    secondLine\n        thirdLine\n fourthLine")
-        await assert1Violation(in: "firstLine\n    secondLine\n        thirdLine\n  fourthLine")
-        await assert1Violation(in: "firstLine\n    secondLine\n        thirdLine\n   fourthLine")
-        await assert1Violation(in: "firstLine\n    secondLine\n    thirdLine\n   fourthLine")
-
-        await assertNoViolation(in: "firstLine\n    secondLine\n        thirdLine\nfourthLine")
-        await assertNoViolation(in: "firstLine\n    secondLine\n    thirdLine\nfourthLine")
-        await assertNoViolation(in: "firstLine\n\tsecondLine\n\t\tthirdLine\n\t\t\tfourthLine\nfifthLine")
-    }
-
-    /// It's okay to have empty lines between iff the following indentations obey the rules.
-    @Test func emptyLinesBetween() async {
-        await assertNoViolation(in: "firstLine\n\tsecondLine\n\n\tfourthLine")
-        await assertNoViolation(in: "firstLine\n\tsecondLine\n \n\tfourthLine")
-        await assertNoViolation(in: "firstLine\n\tsecondLine\n           \n\tfourthLine")
-        await assertNoViolation(in: "firstLine\n\tsecondLine\n\n    fourthLine")
-        await assertNoViolation(in: "firstLine\n\tsecondLine\n \n    fourthLine")
-        await assertNoViolation(in: "firstLine\n\tsecondLine\n           \n    fourthLine")
-
-        await assert1Violation(in: "firstLine\n\tsecondLine\n\n\t\t\tfourthLine")
-        await assert1Violation(in: "firstLine\n\tsecondLine\n \n\t\t\tfourthLine")
-        await assert1Violation(in: "firstLine\n\tsecondLine\n           \n\t\t\tfourthLine")
-        await assert1Violation(in: "firstLine\n\tsecondLine\n\n            fourthLine")
-        await assert1Violation(in: "firstLine\n\tsecondLine\n \n            fourthLine")
-        await assert1Violation(in: "firstLine\n\tsecondLine\n           \n            fourthLine")
-    }
-
-    @Test func brackets() async {
-        await assertNoViolation(
-            in: "firstLine\n    [\n        .thirdLine\n    ]\nfifthLine",
-            includeComments: true,
-        )
-
-        await assertNoViolation(
-            in: "firstLine\n    [\n        .thirdLine\n    ]\nfifthLine",
-            includeComments: false,
-        )
-
-        await assertNoViolation(
-            in: "firstLine\n    (\n        .thirdLine\n    )\nfifthLine",
-            includeComments: true,
-        )
-
-        await assertNoViolation(
-            in: "firstLine\n    (\n        .thirdLine\n    )\nfifthLine",
-            includeComments: false,
-        )
-    }
-
-    /// It's okay to have comments not following the indentation pattern iff the configuration allows this.
-    @Test func commentLines() async {
-        await assert1Violation(
-            in: "firstLine\n\tsecondLine\n\t\tthirdLine\n//test\n\t\tfourthLine",
-            includeComments: true,
-        )
-        await assertViolations(
-            in: "firstLine\n\tsecondLine\n\t\tthirdLine\n//test\n // test\n//test\n\t\tfourthLine",
-            equals: 2,
-            includeComments: true,
-        )
-        await assertViolations(
-            in:
-            "firstLine\n\tsecondLine\n\t\tthirdLine\n/*test\n  bad indent...\n test*/\n\t\tfourthLine",
-            equals: 3,
-            includeComments: true,
-        )
-
-        await assertNoViolation(
-            in: "firstLine\n\tsecondLine\n\t\tthirdLine\n//test\n\t\tfourthLine",
-            includeComments: false,
-        )
-        await assertNoViolation(
-            in: "firstLine\n\tsecondLine\n\t\tthirdLine\n//test\n // test\n//test\n\t\tfourthLine",
-            includeComments: false,
-        )
-        await assertNoViolation(
-            in:
-            "firstLine\n\tsecondLine\n\t\tthirdLine\n/*test\n  bad indent...\n test*/\n\t\tfourthLine",
-            includeComments: false,
-        )
-    }
-
-    /// Duplicate warnings for one actual indentation issue should be avoided.
-    @Test func duplicateWarningAvoidanceMechanism() async {
-        // thirdLine is indented correctly, yet not in-line with the badly indented secondLine. This should be allowed.
-        await assert1Violation(in: "firstLine\n secondLine\nthirdLine")
-
-        // thirdLine is indented correctly, yet not in-line with the badly indented secondLine. This should be allowed.
-        await assert1Violation(in: "firstLine\n     secondLine\n    thirdLine")
-
-        // thirdLine is indented badly, yet in-line with the badly indented secondLine. This should be allowed.
-        await assert1Violation(in: "firstLine\n     secondLine\n     thirdLine")
-
-        // This pattern should go on indefinitely...
-        await assert1Violation(in: "firstLine\n     secondLine\n     thirdLine\n    fourthLine")
-        await assert1Violation(in: "firstLine\n     secondLine\n     thirdLine\n     fourthLine")
-
-        // Still, this won't disable multiple line warnings in one file if suitable...
-        await assertViolations(in: "firstLine\n     secondLine\nthirdLine\n     fourthLine", equals: 2)
-        await assertViolations(
-            in: "firstLine\n     secondLine\n    thirdLine\n     fourthLine",
-            equals: 2,
-        )
-        await assertViolations(
-            in: "firstLine\n     secondLine\n     thirdLine\nfourthLine\n     fifthLine", equals: 2,
-        )
-        await assertViolations(
-            in: "firstLine\n     secondLine\n     thirdLine\n    fourthLine\n     fifthLine",
-            equals: 2,
-        )
-    }
-
-    @Test func ignoredCompilerDirectives() async {
-        await assertNoViolation(
-            in: """
-            struct S {
-                            #if os(iOS)
+    await assertNoViolation(
+      in: """
+        struct S {
+            #if os(iOS)
                 var i: Int = 0
             #endif
-                var j: Int = 0
+            var j: Int = 0
 
-                func reset() {
+            func reset() {
                 #if os(iOS)
                     i = 0
-                            #endif
-                    j = 0
-                }
-            }
-            """, includeCompilerDirectives: false,
-        )
-
-        await assertNoViolation(
-            in: """
-            struct S {
-                #if os(iOS)
-                    var i: Int = 0
                 #endif
-                var j: Int = 0
-
-                func reset() {
-                    #if os(iOS)
-                        i = 0
-                    #endif
-                    j = 0
-                }
+                j = 0
             }
-            """, includeCompilerDirectives: true,
-        )
-    }
-
-    @Test func includeMultilineStrings() async {
-        let example0 = #"""
-        let x = """
-            string1
-                string2
-              string3
-            """
-        """#
-        await assertNoViolation(in: example0, includeMultilineStrings: false)
-        await assert1Violation(in: example0, includeMultilineStrings: true)
-
-        let example1 = #"""
-        let x = """
-            string1
-                string2
-              string3
-             string4
-            """
-        """#
-        await assertNoViolation(in: example1, includeMultilineStrings: false)
-        await assertViolations(in: example1, equals: 2, includeMultilineStrings: true)
-
-        let example2 = ##"""
-        let x = #"""
-            string1
-           """#
-        """##
-        await assert1Violation(in: example2, includeMultilineStrings: false)
-        await assert1Violation(in: example2, includeMultilineStrings: true)
-
-        let example3 = """
-        let x = [
-            "key": [
-                ["nestedKey": "string"],
-            ],
-        ]
-        """
-        await assertNoViolation(in: example3, includeMultilineStrings: false)
-        await assertNoViolation(in: example3, includeMultilineStrings: true)
-
-        let example4 = #"""
-        func test() -> String {
-            """
-            ▿ Type:
-              - property: \(123) + \(456)
-            \(true)
-            """
         }
-        """#
-        await assertNoViolation(in: example4, includeMultilineStrings: false)
-        await assert1Violation(in: example4, includeMultilineStrings: true)
+        """, includeCompilerDirectives: true,
+    )
+  }
+
+  @Test func includeMultilineStrings() async {
+    let example0 = #"""
+      let x = """
+          string1
+              string2
+            string3
+          """
+      """#
+    await assertNoViolation(in: example0, includeMultilineStrings: false)
+    await assert1Violation(in: example0, includeMultilineStrings: true)
+
+    let example1 = #"""
+      let x = """
+          string1
+              string2
+            string3
+           string4
+          """
+      """#
+    await assertNoViolation(in: example1, includeMultilineStrings: false)
+    await assertViolations(in: example1, equals: 2, includeMultilineStrings: true)
+
+    let example2 = ##"""
+      let x = #"""
+          string1
+         """#
+      """##
+    await assert1Violation(in: example2, includeMultilineStrings: false)
+    await assert1Violation(in: example2, includeMultilineStrings: true)
+
+    let example3 = """
+      let x = [
+          "key": [
+              ["nestedKey": "string"],
+          ],
+      ]
+      """
+    await assertNoViolation(in: example3, includeMultilineStrings: false)
+    await assertNoViolation(in: example3, includeMultilineStrings: true)
+
+    let example4 = #"""
+      func test() -> String {
+          """
+          ▿ Type:
+            - property: \(123) + \(456)
+          \(true)
+          """
+      }
+      """#
+    await assertNoViolation(in: example4, includeMultilineStrings: false)
+    await assert1Violation(in: example4, includeMultilineStrings: true)
+  }
+
+  // MARK: Helpers
+
+  private func countViolations(
+    in example: Example,
+    indentationWidth: Int? = nil,
+    includeComments: Bool = true,
+    includeCompilerDirectives: Bool = true,
+    includeMultilineStrings: Bool = true,
+  ) async -> Int {
+    var configDict: [String: Any] = [:]
+    if let indentationWidth {
+      configDict["indentation_width"] = indentationWidth
+    }
+    configDict["include_comments"] = includeComments
+    configDict["include_compiler_directives"] = includeCompilerDirectives
+    configDict["include_multiline_strings"] = includeMultilineStrings
+
+    guard let config = makeConfig(configDict, IndentationWidthRule.identifier) else {
+      Issue.record("Unable to create rule configuration.")
+      return 0
     }
 
-    // MARK: Helpers
+    return await violations(example.with(code: example.code + "\n"), config: config).count
+  }
 
-    private func countViolations(
-        in example: Example,
-        indentationWidth: Int? = nil,
-        includeComments: Bool = true,
-        includeCompilerDirectives: Bool = true,
-        includeMultilineStrings: Bool = true,
-    ) async -> Int {
-        var configDict: [String: Any] = [:]
-        if let indentationWidth {
-            configDict["indentation_width"] = indentationWidth
-        }
-        configDict["include_comments"] = includeComments
-        configDict["include_compiler_directives"] = includeCompilerDirectives
-        configDict["include_multiline_strings"] = includeMultilineStrings
+  private func assertViolations(
+    in string: String,
+    equals expectedCount: Int,
+    indentationWidth: Int? = nil,
+    includeComments: Bool = true,
+    includeCompilerDirectives: Bool = true,
+    includeMultilineStrings: Bool = true,
+  ) async {
+    #expect(
+      await countViolations(
+        in: Example(string),
+        indentationWidth: indentationWidth,
+        includeComments: includeComments,
+        includeCompilerDirectives: includeCompilerDirectives,
+        includeMultilineStrings: includeMultilineStrings,
+      ) == expectedCount,
+    )
+  }
 
-        guard let config = makeConfig(configDict, IndentationWidthRule.identifier) else {
-            Issue.record("Unable to create rule configuration.")
-            return 0
-        }
+  private func assertNoViolation(
+    in string: String,
+    indentationWidth: Int? = nil,
+    includeComments: Bool = true,
+    includeCompilerDirectives: Bool = true,
+    includeMultilineStrings: Bool = true,
+  ) async {
+    await assertViolations(
+      in: string,
+      equals: 0,
+      indentationWidth: indentationWidth,
+      includeComments: includeComments,
+      includeCompilerDirectives: includeCompilerDirectives,
+      includeMultilineStrings: includeMultilineStrings,
+    )
+  }
 
-        return await violations(example.with(code: example.code + "\n"), config: config).count
-    }
-
-    private func assertViolations(
-        in string: String,
-        equals expectedCount: Int,
-        indentationWidth: Int? = nil,
-        includeComments: Bool = true,
-        includeCompilerDirectives: Bool = true,
-        includeMultilineStrings: Bool = true,
-    ) async {
-        #expect(
-            await countViolations(
-                in: Example(string),
-                indentationWidth: indentationWidth,
-                includeComments: includeComments,
-                includeCompilerDirectives: includeCompilerDirectives,
-                includeMultilineStrings: includeMultilineStrings,
-            ) == expectedCount,
-        )
-    }
-
-    private func assertNoViolation(
-        in string: String,
-        indentationWidth: Int? = nil,
-        includeComments: Bool = true,
-        includeCompilerDirectives: Bool = true,
-        includeMultilineStrings: Bool = true,
-    ) async {
-        await assertViolations(
-            in: string,
-            equals: 0,
-            indentationWidth: indentationWidth,
-            includeComments: includeComments,
-            includeCompilerDirectives: includeCompilerDirectives,
-            includeMultilineStrings: includeMultilineStrings,
-        )
-    }
-
-    private func assert1Violation(
-        in string: String,
-        indentationWidth: Int? = nil,
-        includeComments: Bool = true,
-        includeCompilerDirectives: Bool = true,
-        includeMultilineStrings: Bool = true,
-    ) async {
-        await assertViolations(
-            in: string,
-            equals: 1,
-            indentationWidth: indentationWidth,
-            includeComments: includeComments,
-            includeCompilerDirectives: includeCompilerDirectives,
-            includeMultilineStrings: includeMultilineStrings,
-        )
-    }
+  private func assert1Violation(
+    in string: String,
+    indentationWidth: Int? = nil,
+    includeComments: Bool = true,
+    includeCompilerDirectives: Bool = true,
+    includeMultilineStrings: Bool = true,
+  ) async {
+    await assertViolations(
+      in: string,
+      equals: 1,
+      indentationWidth: indentationWidth,
+      includeComments: includeComments,
+      includeCompilerDirectives: includeCompilerDirectives,
+      includeMultilineStrings: includeMultilineStrings,
+    )
+  }
 }

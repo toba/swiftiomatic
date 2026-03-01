@@ -85,7 +85,7 @@ extension GenericTypeNameRule {
           ),
         )
       } else if let caseCheckSeverity = configuration.validatesStartWithLowercase.severity,
-        !String(name[name.startIndex]).isUppercase
+        name.first?.isUppercase != true
       {
         violations.append(
           SyntaxViolation(

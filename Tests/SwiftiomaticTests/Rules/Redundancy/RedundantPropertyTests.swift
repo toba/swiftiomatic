@@ -1,183 +1,184 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite struct RedundantPropertyTests {
-    @Test func removesRedundantProperty() {
-        let input = """
-        func foo() -> Foo {
-            let foo = Foo(bar: bar, baaz: baaz)
-            return foo
-        }
-        """
+  @Test func removesRedundantProperty() {
+    let input = """
+      func foo() -> Foo {
+          let foo = Foo(bar: bar, baaz: baaz)
+          return foo
+      }
+      """
 
-        let output = """
-        func foo() -> Foo {
-            return Foo(bar: bar, baaz: baaz)
-        }
-        """
+    let output = """
+      func foo() -> Foo {
+          return Foo(bar: bar, baaz: baaz)
+      }
+      """
 
-        testFormatting(for: input, output, rule: .redundantProperty)
-    }
+    testFormatting(for: input, output, rule: .redundantProperty)
+  }
 
-    @Test func removesRedundantPropertyWithIfExpression() {
-        let input = """
-        func foo() -> Foo {
-            let foo =
-                if condition {
-                    Foo.foo()
-                } else {
-                    Foo.bar()
-                }
+  @Test func removesRedundantPropertyWithIfExpression() {
+    let input = """
+      func foo() -> Foo {
+          let foo =
+              if condition {
+                  Foo.foo()
+              } else {
+                  Foo.bar()
+              }
 
-            return foo
-        }
-        """
+          return foo
+      }
+      """
 
-        let output = """
-        func foo() -> Foo {
-            return if condition {
-                Foo.foo()
-            } else {
-                Foo.bar()
-            }
-        }
-        """
+    let output = """
+      func foo() -> Foo {
+          return if condition {
+              Foo.foo()
+          } else {
+              Foo.bar()
+          }
+      }
+      """
 
-        let options = FormatOptions(swiftVersion: "5.9")
-        testFormatting(
-            for: input, [output], rules: [.redundantProperty, .indent],
-            options: options,
-        )
-    }
+    let options = FormatOptions(swiftVersion: "5.9")
+    testFormatting(
+      for: input, [output], rules: [.redundantProperty, .indent],
+      options: options,
+    )
+  }
 
-    @Test func removesRedundantPropertyWithSwitchExpression() {
-        let input = """
-        func foo() -> Foo {
-            let foo: Foo
-            switch condition {
-            case true:
-                foo = Foo(bar)
-            case false:
-                foo = Foo(baaz)
-            }
+  @Test func removesRedundantPropertyWithSwitchExpression() {
+    let input = """
+      func foo() -> Foo {
+          let foo: Foo
+          switch condition {
+          case true:
+              foo = Foo(bar)
+          case false:
+              foo = Foo(baaz)
+          }
 
-            return foo
-        }
-        """
+          return foo
+      }
+      """
 
-        let output = """
-        func foo() -> Foo {
-            return switch condition {
-            case true:
-                Foo(bar)
-            case false:
-                Foo(baaz)
-            }
-        }
-        """
+    let output = """
+      func foo() -> Foo {
+          return switch condition {
+          case true:
+              Foo(bar)
+          case false:
+              Foo(baaz)
+          }
+      }
+      """
 
-        let options = FormatOptions(swiftVersion: "5.9")
-        testFormatting(
-            for: input, [output],
-            rules: [.conditionalAssignment, .redundantProperty, .indent],
-            options: options,
-        )
-    }
+    let options = FormatOptions(swiftVersion: "5.9")
+    testFormatting(
+      for: input, [output],
+      rules: [.conditionalAssignment, .redundantProperty, .indent],
+      options: options,
+    )
+  }
 
-    @Test func removesRedundantPropertyWithPreferInferredType() {
-        let input = """
-        func bar() -> Bar {
-            let bar: Bar = .init(baaz: baaz, quux: quux)
-            return bar
-        }
-        """
+  @Test func removesRedundantPropertyWithPreferInferredType() {
+    let input = """
+      func bar() -> Bar {
+          let bar: Bar = .init(baaz: baaz, quux: quux)
+          return bar
+      }
+      """
 
-        let output = """
-        func bar() -> Bar {
-            return Bar.init(baaz: baaz, quux: quux)
-        }
-        """
+    let output = """
+      func bar() -> Bar {
+          return Bar.init(baaz: baaz, quux: quux)
+      }
+      """
 
-        testFormatting(
-            for: input, [output], rules: [.propertyTypes, .redundantProperty],
-        )
-    }
+    testFormatting(
+      for: input, [output], rules: [.propertyTypes, .redundantProperty],
+    )
+  }
 
-    @Test func removesRedundantPropertyWithComments() {
-        let input = """
-        func foo() -> Foo {
-            // There's a comment before this property
-            let foo = Foo(bar: bar, baaz: baaz)
-            // And there's a comment after the property
-            return foo
-        }
-        """
+  @Test func removesRedundantPropertyWithComments() {
+    let input = """
+      func foo() -> Foo {
+          // There's a comment before this property
+          let foo = Foo(bar: bar, baaz: baaz)
+          // And there's a comment after the property
+          return foo
+      }
+      """
 
-        let output = """
-        func foo() -> Foo {
-            // There's a comment before this property
-            return Foo(bar: bar, baaz: baaz)
-            // And there's a comment after the property
-        }
-        """
+    let output = """
+      func foo() -> Foo {
+          // There's a comment before this property
+          return Foo(bar: bar, baaz: baaz)
+          // And there's a comment after the property
+      }
+      """
 
-        testFormatting(for: input, output, rule: .redundantProperty)
-    }
+    testFormatting(for: input, output, rule: .redundantProperty)
+  }
 
-    @Test func removesRedundantPropertyFollowingOtherProperty() {
-        let input = """
-        func foo() -> Foo {
-            let bar = Bar(baaz: baaz)
-            let foo = Foo(bar: bar)
-            return foo
-        }
-        """
+  @Test func removesRedundantPropertyFollowingOtherProperty() {
+    let input = """
+      func foo() -> Foo {
+          let bar = Bar(baaz: baaz)
+          let foo = Foo(bar: bar)
+          return foo
+      }
+      """
 
-        let output = """
-        func foo() -> Foo {
-            let bar = Bar(baaz: baaz)
-            return Foo(bar: bar)
-        }
-        """
+    let output = """
+      func foo() -> Foo {
+          let bar = Bar(baaz: baaz)
+          return Foo(bar: bar)
+      }
+      """
 
-        testFormatting(for: input, output, rule: .redundantProperty)
-    }
+    testFormatting(for: input, output, rule: .redundantProperty)
+  }
 
-    @Test func preservesPropertyWhereReturnIsNotRedundant() {
-        let input = """
-        func foo() -> Foo {
-            let foo = Foo(bar: bar, baaz: baaz)
-            return foo.with(quux: quux)
-        }
+  @Test func preservesPropertyWhereReturnIsNotRedundant() {
+    let input = """
+      func foo() -> Foo {
+          let foo = Foo(bar: bar, baaz: baaz)
+          return foo.with(quux: quux)
+      }
 
-        func bar() -> Foo {
-            let bar = Bar(baaz: baaz)
-            return bar.baaz
-        }
+      func bar() -> Foo {
+          let bar = Bar(baaz: baaz)
+          return bar.baaz
+      }
 
-        func baaz() -> Foo {
-            let bar = Bar(baaz: baaz)
-            print(bar)
-            return bar
-        }
-        """
+      func baaz() -> Foo {
+          let bar = Bar(baaz: baaz)
+          print(bar)
+          return bar
+      }
+      """
 
-        testFormatting(for: input, rule: .redundantProperty)
-    }
+    testFormatting(for: input, rule: .redundantProperty)
+  }
 
-    @Test func preservesUnwrapConditionInIfStatement() {
-        let input = """
-        func foo() -> Foo {
-            let foo = Foo(bar: bar, baaz: baaz)
+  @Test func preservesUnwrapConditionInIfStatement() {
+    let input = """
+      func foo() -> Foo {
+          let foo = Foo(bar: bar, baaz: baaz)
 
-            if let foo = foo.nestedFoo {
-                print(foo)
-            }
+          if let foo = foo.nestedFoo {
+              print(foo)
+          }
 
-            return foo
-        }
-        """
+          return foo
+      }
+      """
 
-        testFormatting(for: input, rule: .redundantProperty)
-    }
+    testFormatting(for: input, rule: .redundantProperty)
+  }
 }

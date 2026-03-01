@@ -1,190 +1,191 @@
-import Testing
 import SwiftSyntax
+import Testing
+
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct EmptyLinesVisitorTests {
-    @Test func emptyFile() {
-        #expect(emptyLines(in: "") == [])
-    }
+  @Test func emptyFile() {
+    #expect(emptyLines(in: "") == [])
+  }
 
-    @Test func singleLineOfCode() {
-        #expect(emptyLines(in: "let x = 1") == [])
-    }
+  @Test func singleLineOfCode() {
+    #expect(emptyLines(in: "let x = 1") == [])
+  }
 
-    @Test func singleEmptyLine() {
-        let contents = """
-        let x = 1
+  @Test func singleEmptyLine() {
+    let contents = """
+      let x = 1
 
-        let y = 2
-        """
-        #expect(emptyLines(in: contents) == [2])
-    }
+      let y = 2
+      """
+    #expect(emptyLines(in: contents) == [2])
+  }
 
-    @Test func multipleEmptyLines() {
-        let contents = """
-        let x = 1
-
-
-        let y = 2
-        """
-        #expect(emptyLines(in: contents) == [2, 3])
-    }
-
-    @Test func emptyLinesWithWhitespace() {
-        let contents = """
-        let x = 1
-        \t
-
-        let y = 2
-        """
-        #expect(emptyLines(in: contents) == [2, 3])
-    }
-
-    @Test func noEmptyLines() {
-        let contents = """
-        let x = 1
-        let y = 2
-        let z = 3
-        """
-        #expect(emptyLines(in: contents) == [])
-    }
-
-    @Test func emptyLinesWithComments() {
-        let contents = """
-        // Comment
-
-        let x = 1
-
-        // Another comment
-        """
-        #expect(emptyLines(in: contents) == [2, 4])
-    }
-
-    @Test func emptyLinesWithBlockComments() {
-        let contents = """
-        /*
-         * Block comment
-         */
-
-        let x = 1
-        """
-        #expect(emptyLines(in: contents) == [4])
-    }
-
-    @Test func trailingEmptyLines() {
-        let contents = """
-        let x = 1
+  @Test func multipleEmptyLines() {
+    let contents = """
+      let x = 1
 
 
-        """
-        #expect(emptyLines(in: contents) == [2, 3])
-    }
+      let y = 2
+      """
+    #expect(emptyLines(in: contents) == [2, 3])
+  }
 
-    @Test func leadingEmptyLines() {
-        let contents = """
+  @Test func emptyLinesWithWhitespace() {
+    let contents = """
+      let x = 1
+      \t
 
+      let y = 2
+      """
+    #expect(emptyLines(in: contents) == [2, 3])
+  }
 
-        let x = 1
-        """
-        #expect(emptyLines(in: contents) == [1, 2])
-    }
+  @Test func noEmptyLines() {
+    let contents = """
+      let x = 1
+      let y = 2
+      let z = 3
+      """
+    #expect(emptyLines(in: contents) == [])
+  }
 
-    @Test func complexExample() {
-        let contents = """
-        // Header comment
+  @Test func emptyLinesWithComments() {
+    let contents = """
+      // Comment
 
-        import Foundation
+      let x = 1
 
-        /// Documentation for the class
+      // Another comment
+      """
+    #expect(emptyLines(in: contents) == [2, 4])
+  }
 
-        class TestClass {
+  @Test func emptyLinesWithBlockComments() {
+    let contents = """
+      /*
+       * Block comment
+       */
 
-            // Property comment
-            let property: String = "value"
+      let x = 1
+      """
+    #expect(emptyLines(in: contents) == [4])
+  }
 
-            /**
-            * Block documentation comment
-            * for the function
-            */
-
-            func test() {
-
-                // Function body comment
-                print("test")
-
-            }
-
-        }
-
-        // Trailing comment
-
-        """
-        #expect(emptyLines(in: contents) == [2, 4, 6, 8, 11, 16, 18, 21, 23, 25, 27])
-    }
-
-    @Test func mixedEmptyLinesAndContent() {
-        let contents = """
-        let a = 1
-
-        let b = 2
-
-        // Comment
-
-        let c = 3
-
-        """
-        #expect(emptyLines(in: contents) == [2, 4, 6, 8])
-    }
-
-    @Test func onlyEmptyLines() {
-        let contents = """
+  @Test func trailingEmptyLines() {
+    let contents = """
+      let x = 1
 
 
+      """
+    #expect(emptyLines(in: contents) == [2, 3])
+  }
 
-        """
-        #expect(emptyLines(in: contents) == [1, 2, 3])
-    }
+  @Test func leadingEmptyLines() {
+    let contents = """
 
-    @Test func emptyLinesInMultilineString() {
-        let contents = """
-        let str = \"\"\"
-        Line 1
 
-        Line 3
-        \"\"\"
+      let x = 1
+      """
+    #expect(emptyLines(in: contents) == [1, 2])
+  }
 
-        let x = 1
-        """
-        #expect(emptyLines(in: contents) == [6])
-    }
+  @Test func complexExample() {
+    let contents = """
+      // Header comment
 
-    @Test func lineNumberAccuracy() {
-        let contents = """
-        let x = 1
+      import Foundation
 
-        // Line 3 comment
+      /// Documentation for the class
 
-        /* Line 5 block
-           Line 6 continuation */
+      class TestClass {
 
-        let z = 3
+          // Property comment
+          let property: String = "value"
 
-        """
+          /**
+          * Block documentation comment
+          * for the function
+          */
 
-        #expect(emptyLines(in: contents) == [2, 4, 7, 9])
-    }
+          func test() {
 
-    @Test func noTrailingNewline() {
-        let contents = "let x = 1"
-        #expect(emptyLines(in: contents) == [])
-    }
+              // Function body comment
+              print("test")
 
-    @Test func onlyWhitespace() {
-        let contents = "\t\n    \n  \t  "
-        #expect(emptyLines(in: contents) == [1, 2, 3])
-    }
+          }
 
-    private func emptyLines(in contents: String) -> [Int] {
-        EmptyLinesVisitor.emptyLines(in: SwiftSource(contents: contents)).sorted()
-    }
+      }
+
+      // Trailing comment
+
+      """
+    #expect(emptyLines(in: contents) == [2, 4, 6, 8, 11, 16, 18, 21, 23, 25, 27])
+  }
+
+  @Test func mixedEmptyLinesAndContent() {
+    let contents = """
+      let a = 1
+
+      let b = 2
+
+      // Comment
+
+      let c = 3
+
+      """
+    #expect(emptyLines(in: contents) == [2, 4, 6, 8])
+  }
+
+  @Test func onlyEmptyLines() {
+    let contents = """
+
+
+
+      """
+    #expect(emptyLines(in: contents) == [1, 2, 3])
+  }
+
+  @Test func emptyLinesInMultilineString() {
+    let contents = """
+      let str = \"\"\"
+      Line 1
+
+      Line 3
+      \"\"\"
+
+      let x = 1
+      """
+    #expect(emptyLines(in: contents) == [6])
+  }
+
+  @Test func lineNumberAccuracy() {
+    let contents = """
+      let x = 1
+
+      // Line 3 comment
+
+      /* Line 5 block
+         Line 6 continuation */
+
+      let z = 3
+
+      """
+
+    #expect(emptyLines(in: contents) == [2, 4, 7, 9])
+  }
+
+  @Test func noTrailingNewline() {
+    let contents = "let x = 1"
+    #expect(emptyLines(in: contents) == [])
+  }
+
+  @Test func onlyWhitespace() {
+    let contents = "\t\n    \n  \t  "
+    #expect(emptyLines(in: contents) == [1, 2, 3])
+  }
+
+  private func emptyLines(in contents: String) -> [Int] {
+    EmptyLinesVisitor.emptyLines(in: SwiftSource(contents: contents)).sorted()
+  }
 }

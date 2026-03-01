@@ -29,6 +29,16 @@ extension NamingHeuristicsRule: SwiftSyntaxRule {
 
 extension NamingHeuristicsRule: OptInRule {}
 
+extension NamingHeuristicsRule {
+  static func boolNamingReason(_ name: String) -> String {
+    "Bool property '\(name)' doesn't read as an assertion"
+  }
+
+  static func boolNamingSuggestion(_ name: String) -> String {
+    "Consider a name like 'is\(name.capitalized)' or 'has\(name.capitalized)'"
+  }
+}
+
 extension NamingHeuristicsRule: AsyncEnrichableRule {
   func enrich(
     file: SwiftSource,
@@ -62,10 +72,9 @@ extension NamingHeuristicsRule: AsyncEnrichableRule {
             location: Location(
               file: filePath, line: candidate.line, character: candidate.column,
             ),
-            reason: "Bool property '\(candidate.name)' doesn't read as an assertion",
+            reason: Self.boolNamingReason(candidate.name),
             confidence: .low,
-            suggestion:
-              "Consider a name like 'is\(candidate.name.capitalized)' or 'has\(candidate.name.capitalized)'",
+            suggestion: Self.boolNamingSuggestion(candidate.name),
           ),
         )
       }
@@ -250,10 +259,10 @@ extension NamingHeuristicsRule {
         violations.append(
           SyntaxViolation(
             position: position,
-            reason: "Bool property '\(name)' doesn't read as an assertion",
+            reason: NamingHeuristicsRule.boolNamingReason(name),
             severity: .warning,
             confidence: .low,
-            suggestion: "Consider a name like 'is\(name.capitalized)' or 'has\(name.capitalized)'",
+            suggestion: NamingHeuristicsRule.boolNamingSuggestion(name),
           ),
         )
       }

@@ -99,20 +99,16 @@ extension ProhibitedSuperRule {
     }
 
     override func visitPost(_ node: FunctionDeclSyntax) {
-      guard let body = node.body,
-        node.modifiers.contains(keyword: .override),
-        !node.modifiers.containsStaticOrClass,
-        case let name = node.resolvedName,
-        configuration.resolvedMethodNames.contains(name),
-        node.numberOfCallsToSuper() > 0
+      guard let ctx = node.superCallContext(matchingMethodNames: configuration.resolvedMethodNames),
+        ctx.callCount > 0
       else {
         return
       }
 
       violations.append(
         SyntaxViolation(
-          position: body.leftBrace.endPositionBeforeTrailingTrivia,
-          reason: "Method '\(name)' should not call to super function",
+          position: ctx.body.leftBrace.endPositionBeforeTrailingTrivia,
+          reason: "Method '\(ctx.name)' should not call to super function",
         ),
       )
     }

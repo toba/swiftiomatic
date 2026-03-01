@@ -38,12 +38,12 @@ extension SpaceInsideBracketsRule {
       switch token.tokenKind {
       case .leftSquare:
         // Check if trailing trivia has spaces (no linebreak means inline)
-        if token.trailingTrivia.hasSpacesOnly {
+        if token.trailingTrivia.isHorizontalWhitespaceOnly {
           violations.append(token.endPositionBeforeTrailingTrivia)
         }
       case .rightSquare:
         // Check if leading trivia has only spaces (not preceded by linebreak or comment)
-        if token.leadingTrivia.hasSpacesOnly {
+        if token.leadingTrivia.isHorizontalWhitespaceOnly {
           violations.append(token.positionAfterSkippingLeadingTrivia)
         }
       default:
@@ -57,12 +57,12 @@ extension SpaceInsideBracketsRule {
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
       switch token.tokenKind {
       case .leftSquare:
-        if token.trailingTrivia.hasSpacesOnly {
+        if token.trailingTrivia.isHorizontalWhitespaceOnly {
           numberOfCorrections += 1
           return super.visit(token.with(\.trailingTrivia, Trivia()))
         }
       case .rightSquare:
-        if token.leadingTrivia.hasSpacesOnly {
+        if token.leadingTrivia.isHorizontalWhitespaceOnly {
           numberOfCorrections += 1
           return super.visit(token.with(\.leadingTrivia, Trivia()))
         }
@@ -70,20 +70,6 @@ extension SpaceInsideBracketsRule {
         break
       }
       return super.visit(token)
-    }
-  }
-}
-
-extension Trivia {
-  fileprivate var hasSpacesOnly: Bool {
-    guard !isEmpty else { return false }
-    return allSatisfy {
-      switch $0 {
-      case .spaces, .tabs:
-        true
-      default:
-        false
-      }
     }
   }
 }

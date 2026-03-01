@@ -1,906 +1,907 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite struct OrganizeDeclarationsTests {
-    @Test func organizeClassDeclarationsIntoCategories() {
-        let input = """
-        public class Foo {
-            private func privateMethod() {}
+  @Test func organizeClassDeclarationsIntoCategories() {
+    let input = """
+      public class Foo {
+          private func privateMethod() {}
 
-            private let bar = 1
-            public let baz = 1
-            open var quack = 2
-            package func packageMethod() {}
-            var quux = 2
+          private let bar = 1
+          public let baz = 1
+          open var quack = 2
+          package func packageMethod() {}
+          var quux = 2
 
-            /// `open` is the only visibility keyword that
-            /// can also be used as an identifier.
-            var open = 10
+          /// `open` is the only visibility keyword that
+          /// can also be used as an identifier.
+          var open = 10
 
-            /*
-             * Block comment
-             */
+          /*
+           * Block comment
+           */
 
-            init() {}
+          init() {}
 
-            /// Doc comment
-            public func publicMethod() {}
+          /// Doc comment
+          public func publicMethod() {}
 
-            #if DEBUG
-                private var foo: Foo? { nil }
-            #endif
-        }
+          #if DEBUG
+              private var foo: Foo? { nil }
+          #endif
+      }
 
-        enum Bar {
-            private var bar: Bar { Bar() }
-            case enumCase
-        }
-        """
+      enum Bar {
+          private var bar: Bar { Bar() }
+          case enumCase
+      }
+      """
 
-        let output = """
-        public class Foo {
+    let output = """
+      public class Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            /*
-             * Block comment
-             */
+          /*
+           * Block comment
+           */
 
-            init() {}
+          init() {}
 
-            // MARK: Open
+          // MARK: Open
 
-            open var quack = 2
+          open var quack = 2
 
-            // MARK: Public
+          // MARK: Public
 
-            public let baz = 1
+          public let baz = 1
 
-            /// Doc comment
-            public func publicMethod() {}
+          /// Doc comment
+          public func publicMethod() {}
 
-            // MARK: Package
+          // MARK: Package
 
-            package func packageMethod() {}
+          package func packageMethod() {}
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var quux = 2
+          var quux = 2
 
-            /// `open` is the only visibility keyword that
-            /// can also be used as an identifier.
-            var open = 10
+          /// `open` is the only visibility keyword that
+          /// can also be used as an identifier.
+          var open = 10
 
-            // MARK: Private
+          // MARK: Private
 
-            private let bar = 1
+          private let bar = 1
 
-            #if DEBUG
-                private var foo: Foo? { nil }
-            #endif
+          #if DEBUG
+              private var foo: Foo? { nil }
+          #endif
 
-            private func privateMethod() {}
+          private func privateMethod() {}
 
-        }
+      }
 
-        enum Bar {
-            case enumCase
+      enum Bar {
+          case enumCase
 
-            // MARK: Private
+          // MARK: Private
 
-            private var bar: Bar { Bar() }
-        }
-        """
+          private var bar: Bar { Bar() }
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .wrapPropertyBodies],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .wrapPropertyBodies],
+    )
+  }
 
-    @Test func organizeClassDeclarationsIntoCategoriesWithCustomTypeOrder() {
-        let input = """
-        public class Foo {
-            private func privateMethod() {}
+  @Test func organizeClassDeclarationsIntoCategoriesWithCustomTypeOrder() {
+    let input = """
+      public class Foo {
+          private func privateMethod() {}
 
-            private let bar = 1
-            public let baz = 1
-            open var quack = 2
-            package func packageMethod() {}
-            var quux = 2
+          private let bar = 1
+          public let baz = 1
+          open var quack = 2
+          package func packageMethod() {}
+          var quux = 2
 
-            /// `open` is the only visibility keyword that
-            /// can also be used as an identifier.
-            var open = 10
+          /// `open` is the only visibility keyword that
+          /// can also be used as an identifier.
+          var open = 10
 
-            /*
-             * Block comment
-             */
+          /*
+           * Block comment
+           */
 
-            init() {}
+          init() {}
 
-            /// Doc comment
-            public func publicMethod() {}
+          /// Doc comment
+          public func publicMethod() {}
 
-            #if DEBUG
-                private var foo: Foo? { nil }
-            #endif
-        }
+          #if DEBUG
+              private var foo: Foo? { nil }
+          #endif
+      }
 
-        enum Bar {
-            private var bar: Bar { Bar() }
-            case enumCase
-        }
-        """
+      enum Bar {
+          private var bar: Bar { Bar() }
+          case enumCase
+      }
+      """
 
-        let output = """
-        public class Foo {
+    let output = """
+      public class Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            /*
-             * Block comment
-             */
+          /*
+           * Block comment
+           */
 
-            init() {}
+          init() {}
 
-            // MARK: Open
+          // MARK: Open
 
-            open var quack = 2
+          open var quack = 2
 
-            // MARK: Public
+          // MARK: Public
 
-            public let baz = 1
+          public let baz = 1
 
-            /// Doc comment
-            public func publicMethod() {}
+          /// Doc comment
+          public func publicMethod() {}
 
-            // MARK: Package
+          // MARK: Package
 
-            package func packageMethod() {}
+          package func packageMethod() {}
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var quux = 2
+          var quux = 2
 
-            /// `open` is the only visibility keyword that
-            /// can also be used as an identifier.
-            var open = 10
+          /// `open` is the only visibility keyword that
+          /// can also be used as an identifier.
+          var open = 10
 
-            // MARK: Private
+          // MARK: Private
 
-            private let bar = 1
+          private let bar = 1
 
-            #if DEBUG
-                private var foo: Foo? { nil }
-            #endif
+          #if DEBUG
+              private var foo: Foo? { nil }
+          #endif
 
-            private func privateMethod() {}
+          private func privateMethod() {}
 
-        }
+      }
 
-        enum Bar {
-            case enumCase
+      enum Bar {
+          case enumCase
 
-            // MARK: Private
+          // MARK: Private
 
-            private var bar: Bar { Bar() }
-        }
-        """
+          private var bar: Bar { Bar() }
+      }
+      """
 
-        // The configuration used in Airbnb's Swift Style Guide,
-        // as defined here: https://github.com/airbnb/swift#subsection-organization
-        let airbnbVisibilityOrder = """
-        beforeMarks,instanceLifecycle,open,public,package,internal,private,fileprivate
-        """
-        let airbnbTypeOrder = """
-        nestedType,staticProperty,staticPropertyWithBody,classPropertyWithBody,instanceProperty,instancePropertyWithBody,staticMethod,classMethod,instanceMethod
-        """
+    // The configuration used in Airbnb's Swift Style Guide,
+    // as defined here: https://github.com/airbnb/swift#subsection-organization
+    let airbnbVisibilityOrder = """
+      beforeMarks,instanceLifecycle,open,public,package,internal,private,fileprivate
+      """
+    let airbnbTypeOrder = """
+      nestedType,staticProperty,staticPropertyWithBody,classPropertyWithBody,instanceProperty,instancePropertyWithBody,staticMethod,classMethod,instanceMethod
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(
-                visibilityOrder: airbnbVisibilityOrder.components(separatedBy: ","),
-                typeOrder: airbnbTypeOrder.components(separatedBy: ","),
-            ),
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .wrapPropertyBodies],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(
+        visibilityOrder: airbnbVisibilityOrder.components(separatedBy: ","),
+        typeOrder: airbnbTypeOrder.components(separatedBy: ","),
+      ),
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .wrapPropertyBodies],
+    )
+  }
 
-    @Test func organizeClassDeclarationsIntoCategoriesInTypeOrder() {
-        let input = """
-        public class Foo {
-            private func privateMethod() {}
+  @Test func organizeClassDeclarationsIntoCategoriesInTypeOrder() {
+    let input = """
+      public class Foo {
+          private func privateMethod() {}
 
-            private let bar = 1
-            public let baz = 1
-            open var quack = 2
-            package func packageMethod() {}
-            var quux = 2
+          private let bar = 1
+          public let baz = 1
+          open var quack = 2
+          package func packageMethod() {}
+          var quux = 2
 
-            /// `open` is the only visibility keyword that
-            /// can also be used as an identifier.
-            var open = 10
+          /// `open` is the only visibility keyword that
+          /// can also be used as an identifier.
+          var open = 10
 
-            /*
-             * Block comment
-             */
+          /*
+           * Block comment
+           */
 
-            init() {}
+          init() {}
 
-            /// Doc comment
-            public func publicMethod() {}
-        }
-        """
+          /// Doc comment
+          public func publicMethod() {}
+      }
+      """
 
-        let output = """
-        public class Foo {
+    let output = """
+      public class Foo {
 
-            // MARK: Properties
+          // MARK: Properties
 
-            open var quack = 2
+          open var quack = 2
 
-            public let baz = 1
+          public let baz = 1
 
-            var quux = 2
+          var quux = 2
 
-            /// `open` is the only visibility keyword that
-            /// can also be used as an identifier.
-            var open = 10
+          /// `open` is the only visibility keyword that
+          /// can also be used as an identifier.
+          var open = 10
 
-            private let bar = 1
+          private let bar = 1
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            /*
-             * Block comment
-             */
+          /*
+           * Block comment
+           */
 
-            init() {}
+          init() {}
 
-            // MARK: Functions
+          // MARK: Functions
 
-            /// Doc comment
-            public func publicMethod() {}
+          /// Doc comment
+          public func publicMethod() {}
 
-            package func packageMethod() {}
+          package func packageMethod() {}
 
-            private func privateMethod() {}
+          private func privateMethod() {}
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(categoryMarkComment: "MARK: %c", organizationMode: .type),
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(categoryMarkComment: "MARK: %c", organizationMode: .type),
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
+    )
+  }
 
-    @Test func organizeTypeWithOverridenFieldsInVisibilityOrder() {
-        let input = """
-        class Test {
+  @Test func organizeTypeWithOverridenFieldsInVisibilityOrder() {
+    let input = """
+      class Test {
 
-            override var b: Any? { nil }
+          override var b: Any? { nil }
 
-            var a = ""
+          var a = ""
 
-            override func bar() -> Bar {
-                Bar()
-            }
+          override func bar() -> Bar {
+              Bar()
+          }
 
-            func foo() -> Foo {
-                Foo()
-            }
+          func foo() -> Foo {
+              Foo()
+          }
 
-            func baaz() -> Baaz {
-                Baaz()
-            }
+          func baaz() -> Baaz {
+              Baaz()
+          }
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, rule: .organizeDeclarations,
-            exclude: [
-                .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .sortImports,
-                .wrapPropertyBodies,
-            ],
-        )
-    }
+    testFormatting(
+      for: input, rule: .organizeDeclarations,
+      exclude: [
+        .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .sortImports,
+        .wrapPropertyBodies,
+      ],
+    )
+  }
 
-    @Test func organizeTypeWithOverridenFieldsInTypeOrder() {
-        let input = """
-        class Test {
+  @Test func organizeTypeWithOverridenFieldsInTypeOrder() {
+    let input = """
+      class Test {
 
-            var a = ""
+          var a = ""
 
-            override var b: Any? { nil }
+          override var b: Any? { nil }
 
-            func foo() -> Foo {
-                Foo()
-            }
+          func foo() -> Foo {
+              Foo()
+          }
 
-            override func bar() -> Bar {
-                Bar()
-            }
+          override func bar() -> Bar {
+              Bar()
+          }
 
-            func baaz() -> Baaz {
-                Baaz()
-            }
+          func baaz() -> Baaz {
+              Baaz()
+          }
 
-        }
-        """
+      }
+      """
 
-        let output = """
-        class Test {
+    let output = """
+      class Test {
 
-            // MARK: Overridden Properties
+          // MARK: Overridden Properties
 
-            override var b: Any? { nil }
+          override var b: Any? { nil }
 
-            // MARK: Properties
+          // MARK: Properties
 
-            var a = ""
+          var a = ""
 
-            // MARK: Overridden Functions
+          // MARK: Overridden Functions
 
-            override func bar() -> Bar {
-                Bar()
-            }
+          override func bar() -> Bar {
+              Bar()
+          }
 
-            // MARK: Functions
+          // MARK: Functions
 
-            func foo() -> Foo {
-                Foo()
-            }
+          func foo() -> Foo {
+              Foo()
+          }
 
-            func baaz() -> Baaz {
-                Baaz()
-            }
+          func baaz() -> Baaz {
+              Baaz()
+          }
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(organizationMode: .type),
-            exclude: [
-                .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .sortImports,
-                .wrapPropertyBodies,
-            ],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(organizationMode: .type),
+      exclude: [
+        .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .sortImports,
+        .wrapPropertyBodies,
+      ],
+    )
+  }
 
-    @Test func organizeTypeWithSwiftUIMethodInVisibilityOrder() {
-        let input = """
-        class Test {
+  @Test func organizeTypeWithSwiftUIMethodInVisibilityOrder() {
+    let input = """
+      class Test {
 
-            func bar() -> some View {
-                EmptyView()
-            }
+          func bar() -> some View {
+              EmptyView()
+          }
 
-            func foo() -> Foo {
-                Foo()
-            }
+          func foo() -> Foo {
+              Foo()
+          }
 
-            func baaz() -> Baaz {
-                Baaz()
-            }
+          func baaz() -> Baaz {
+              Baaz()
+          }
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, rule: .organizeDeclarations,
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .sortImports],
-        )
-    }
+    testFormatting(
+      for: input, rule: .organizeDeclarations,
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .sortImports],
+    )
+  }
 
-    @Test func organizeSwiftUIViewInTypeOrder() {
-        let input = """
-        struct ContentView: View {
+  @Test func organizeSwiftUIViewInTypeOrder() {
+    let input = """
+      struct ContentView: View {
 
-            private var label: String
+          private var label: String
 
-            @State
-            var isOn: Bool = false
+          @State
+          var isOn: Bool = false
 
-            @ViewBuilder
-            private var toggle: some View {
-                Toggle(label, isOn: $isOn)
-                    .fixedSize()
-            }
+          @ViewBuilder
+          private var toggle: some View {
+              Toggle(label, isOn: $isOn)
+                  .fixedSize()
+          }
 
-            init(label: String) {
-                self.label = label
-            }
+          init(label: String) {
+              self.label = label
+          }
 
-            @ViewBuilder
-            var body: some View {
-                toggle
-            }
-        }
-        """
+          @ViewBuilder
+          var body: some View {
+              toggle
+          }
+      }
+      """
 
-        let output = """
-        struct ContentView: View {
+    let output = """
+      struct ContentView: View {
 
-            // MARK: SwiftUI Properties
+          // MARK: SwiftUI Properties
 
-            @State
-            var isOn: Bool = false
+          @State
+          var isOn: Bool = false
 
-            // MARK: Properties
+          // MARK: Properties
 
-            private var label: String
+          private var label: String
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init(label: String) {
-                self.label = label
-            }
+          init(label: String) {
+              self.label = label
+          }
 
-            // MARK: Content Properties
+          // MARK: Content Properties
 
-            @ViewBuilder
-            var body: some View {
-                toggle
-            }
+          @ViewBuilder
+          var body: some View {
+              toggle
+          }
 
-            @ViewBuilder
-            private var toggle: some View {
-                Toggle(label, isOn: $isOn)
-                    .fixedSize()
-            }
+          @ViewBuilder
+          private var toggle: some View {
+              Toggle(label, isOn: $isOn)
+                  .fixedSize()
+          }
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(categoryMarkComment: "MARK: %c", organizationMode: .type),
-            exclude: [
-                .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .privateStateVariables,
-                .redundantViewBuilder,
-            ],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(categoryMarkComment: "MARK: %c", organizationMode: .type),
+      exclude: [
+        .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .privateStateVariables,
+        .redundantViewBuilder,
+      ],
+    )
+  }
 
-    @Test func organizeSwiftUIViewModifierInTypeOrder() {
-        let input = """
-        struct Modifier: ViewModifier {
+  @Test func organizeSwiftUIViewModifierInTypeOrder() {
+    let input = """
+      struct Modifier: ViewModifier {
 
-            private var label: String
+          private var label: String
 
-            @State
-            var isOn: Bool = false
+          @State
+          var isOn: Bool = false
 
-            @ViewBuilder
-            private var toggle: some View {
-                Toggle(label, isOn: $isOn)
-                    .fixedSize()
-            }
+          @ViewBuilder
+          private var toggle: some View {
+              Toggle(label, isOn: $isOn)
+                  .fixedSize()
+          }
 
-            func body(content: Content) -> some View {
-                content
-                    .overlay {
-                        toggle
-                    }
-            }
+          func body(content: Content) -> some View {
+              content
+                  .overlay {
+                      toggle
+                  }
+          }
 
-            init(label: String) {
-                self.label = label
-            }
-        }
-        """
+          init(label: String) {
+              self.label = label
+          }
+      }
+      """
 
-        let output = """
-        struct Modifier: ViewModifier {
+    let output = """
+      struct Modifier: ViewModifier {
 
-            // MARK: SwiftUI Properties
+          // MARK: SwiftUI Properties
 
-            @State
-            var isOn: Bool = false
+          @State
+          var isOn: Bool = false
 
-            // MARK: Properties
+          // MARK: Properties
 
-            private var label: String
+          private var label: String
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init(label: String) {
-                self.label = label
-            }
+          init(label: String) {
+              self.label = label
+          }
 
-            // MARK: Content Properties
+          // MARK: Content Properties
 
-            @ViewBuilder
-            private var toggle: some View {
-                Toggle(label, isOn: $isOn)
-                    .fixedSize()
-            }
+          @ViewBuilder
+          private var toggle: some View {
+              Toggle(label, isOn: $isOn)
+                  .fixedSize()
+          }
 
-            // MARK: Content Methods
+          // MARK: Content Methods
 
-            func body(content: Content) -> some View {
-                content
-                    .overlay {
-                        toggle
-                    }
-            }
+          func body(content: Content) -> some View {
+              content
+                  .overlay {
+                      toggle
+                  }
+          }
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(categoryMarkComment: "MARK: %c", organizationMode: .type),
-            exclude: [
-                .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .privateStateVariables,
-                .redundantViewBuilder,
-            ],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(categoryMarkComment: "MARK: %c", organizationMode: .type),
+      exclude: [
+        .blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .privateStateVariables,
+        .redundantViewBuilder,
+      ],
+    )
+  }
 
-    @Test func customOrganizationInVisibilityOrder() {
-        let input = """
-        public class Foo {
-            public func bar() {}
-            func baz() {}
-            private func quux() {}
-        }
-        """
+  @Test func customOrganizationInVisibilityOrder() {
+    let input = """
+      public class Foo {
+          public func bar() {}
+          func baz() {}
+          private func quux() {}
+      }
+      """
 
-        let output = """
-        public class Foo {
+    let output = """
+      public class Foo {
 
-            // MARK: Private
+          // MARK: Private
 
-            private func quux() {}
+          private func quux() {}
 
-            // MARK: Internal
+          // MARK: Internal
 
-            func baz() {}
+          func baz() {}
 
-            // MARK: Public
+          // MARK: Public
 
-            public func bar() {}
-        }
-        """
+          public func bar() {}
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(
-                visibilityOrder: ["private", "internal", "public"],
-                typeOrder: DeclarationType.allCases.map(\.rawValue),
-            ),
-            exclude: [.blankLinesAtStartOfScope, .privateStateVariables],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(
+        visibilityOrder: ["private", "internal", "public"],
+        typeOrder: DeclarationType.allCases.map(\.rawValue),
+      ),
+      exclude: [.blankLinesAtStartOfScope, .privateStateVariables],
+    )
+  }
 
-    @Test func customOrganizationInVisibilityOrderWithParametrizedTypeOrder() {
-        let input = """
-        public class Foo {
+  @Test func customOrganizationInVisibilityOrderWithParametrizedTypeOrder() {
+    let input = """
+      public class Foo {
 
-            // MARK: Private
+          // MARK: Private
 
-            private func quux() {}
+          private func quux() {}
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var baaz: Baaz
+          var baaz: Baaz
 
-            func baz() {}
+          func baz() {}
 
-            // MARK: Public
+          // MARK: Public
 
-            public func bar() {}
-        }
-        """
+          public func bar() {}
+      }
+      """
 
-        let output = """
-        public class Foo {
+    let output = """
+      public class Foo {
 
-            // MARK: Private
+          // MARK: Private
 
-            private func quux() {}
+          private func quux() {}
 
-            // MARK: Internal
+          // MARK: Internal
 
-            func baz() {}
+          func baz() {}
 
-            var baaz: Baaz
+          var baaz: Baaz
 
-            // MARK: Public
+          // MARK: Public
 
-            public func bar() {}
-        }
-        """
+          public func bar() {}
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(
-                visibilityOrder: ["private", "internal", "public"],
-                typeOrder: [
-                    "beforeMarks", "nestedType", "instanceLifecycle", "instanceMethod",
-                    "instanceProperty",
-                ],
-            ),
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(
+        visibilityOrder: ["private", "internal", "public"],
+        typeOrder: [
+          "beforeMarks", "nestedType", "instanceLifecycle", "instanceMethod",
+          "instanceProperty",
+        ],
+      ),
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func customOrganizationInTypeOrder() {
-        let input = """
-        public class Foo {
-            private func quux() {}
-            var baaz: Baaz
-            func baz() {}
-            init()
-            override public func baar()
-            public func bar() {}
-        }
-        """
+  @Test func customOrganizationInTypeOrder() {
+    let input = """
+      public class Foo {
+          private func quux() {}
+          var baaz: Baaz
+          func baz() {}
+          init()
+          override public func baar()
+          public func bar() {}
+      }
+      """
 
-        let output = """
-        public class Foo {
+    let output = """
+      public class Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init()
+          init()
 
-            // MARK: Functions
+          // MARK: Functions
 
-            public func bar() {}
+          public func bar() {}
 
-            func baz() {}
+          func baz() {}
 
-            private func quux() {}
+          private func quux() {}
 
-            // MARK: Properties
+          // MARK: Properties
 
-            var baaz: Baaz
+          var baaz: Baaz
 
-            // MARK: Overridden Functions
+          // MARK: Overridden Functions
 
-            override public func baar()
-        }
-        """
+          override public func baar()
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(
-                organizationMode: .type,
-                typeOrder: [
-                    "beforeMarks", "instanceLifecycle", "instanceMethod", "nestedType",
-                    "instanceProperty",
-                    "overriddenMethod",
-                ],
-            ),
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(
+        organizationMode: .type,
+        typeOrder: [
+          "beforeMarks", "instanceLifecycle", "instanceMethod", "nestedType",
+          "instanceProperty",
+          "overriddenMethod",
+        ],
+      ),
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func organizeDeclarationsIgnoresNotDefinedCategories() {
-        let input = """
-        public class Foo {
-            private func quux() {}
-            var baaz: Baaz
-            func baz() {}
-            init()
-            override public func baar()
-            public func bar() {}
-        }
-        """
+  @Test func organizeDeclarationsIgnoresNotDefinedCategories() {
+    let input = """
+      public class Foo {
+          private func quux() {}
+          var baaz: Baaz
+          func baz() {}
+          init()
+          override public func baar()
+          public func bar() {}
+      }
+      """
 
-        let output = """
-        public class Foo {
+    let output = """
+      public class Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init()
+          init()
 
-            // MARK: Functions
+          // MARK: Functions
 
-            override public func baar()
-            public func bar() {}
+          override public func baar()
+          public func bar() {}
 
-            func baz() {}
+          func baz() {}
 
-            private func quux() {}
+          private func quux() {}
 
-            // MARK: Properties
+          // MARK: Properties
 
-            var baaz: Baaz
-        }
-        """
+          var baaz: Baaz
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(
-                organizationMode: .type,
-                typeOrder: [
-                    "beforeMarks", "nestedType", "instanceLifecycle", "instanceMethod",
-                    "instanceProperty",
-                ],
-            ),
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(
+        organizationMode: .type,
+        typeOrder: [
+          "beforeMarks", "nestedType", "instanceLifecycle", "instanceMethod",
+          "instanceProperty",
+        ],
+      ),
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func customOrganizationInTypeOrderWithParametrizedVisibilityOrder() {
-        let input = """
-        public class Foo {
-            private func quux() {}
-            var baaz: Baaz
-            private var fooo: Fooo
-            func baz() {}
-            init()
-            override public func baar()
-            public func bar() {}
-        }
-        """
+  @Test func customOrganizationInTypeOrderWithParametrizedVisibilityOrder() {
+    let input = """
+      public class Foo {
+          private func quux() {}
+          var baaz: Baaz
+          private var fooo: Fooo
+          func baz() {}
+          init()
+          override public func baar()
+          public func bar() {}
+      }
+      """
 
-        let output = """
-        public class Foo {
+    let output = """
+      public class Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init()
+          init()
 
-            // MARK: Functions
+          // MARK: Functions
 
-            private func quux() {}
+          private func quux() {}
 
-            func baz() {}
+          func baz() {}
 
-            public func bar() {}
+          public func bar() {}
 
-            // MARK: Properties
+          // MARK: Properties
 
-            private var fooo: Fooo
+          private var fooo: Fooo
 
-            var baaz: Baaz
+          var baaz: Baaz
 
-            // MARK: Overridden Functions
+          // MARK: Overridden Functions
 
-            override public func baar()
-        }
-        """
+          override public func baar()
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(
-                organizationMode: .type,
-                visibilityOrder: ["private", "internal", "public"],
-                typeOrder: [
-                    "beforeMarks", "nestedType", "instanceLifecycle", "instanceMethod",
-                    "instanceProperty",
-                    "overriddenMethod",
-                ],
-            ),
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(
+        organizationMode: .type,
+        visibilityOrder: ["private", "internal", "public"],
+        typeOrder: [
+          "beforeMarks", "nestedType", "instanceLifecycle", "instanceMethod",
+          "instanceProperty",
+          "overriddenMethod",
+        ],
+      ),
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func customDeclarationTypeUsedAsTopLevelCategory() {
-        let input = """
-        class Test {
-            private let foo = "foo"
-            func bar() {}
-        }
-        """
+  @Test func customDeclarationTypeUsedAsTopLevelCategory() {
+    let input = """
+      class Test {
+          private let foo = "foo"
+          func bar() {}
+      }
+      """
 
-        let output = """
-        class Test {
+    let output = """
+      class Test {
 
-            // MARK: Functions
+          // MARK: Functions
 
-            func bar() {}
+          func bar() {}
 
-            // MARK: Private
+          // MARK: Private
 
-            private let foo = "foo"
-        }
-        """
+          private let foo = "foo"
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(
-                organizationMode: .visibility,
-                visibilityOrder: ["instanceMethod"] + Visibility.allCases.map(\.rawValue),
-                typeOrder: DeclarationType.allCases.map(\.rawValue)
-                    .filter { $0 != "instanceMethod" },
-            ),
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(
+        organizationMode: .visibility,
+        visibilityOrder: ["instanceMethod"] + Visibility.allCases.map(\.rawValue),
+        typeOrder: DeclarationType.allCases.map(\.rawValue)
+          .filter { $0 != "instanceMethod" },
+      ),
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func visibilityModeWithoutInstanceLifecycle() {
-        let input = """
-        class Test {
-            init() {}
-            private func bar() {}
-        }
-        """
+  @Test func visibilityModeWithoutInstanceLifecycle() {
+    let input = """
+      class Test {
+          init() {}
+          private func bar() {}
+      }
+      """
 
-        let output = """
-        class Test {
+    let output = """
+      class Test {
 
-            // MARK: Internal
+          // MARK: Internal
 
-            init() {}
+          init() {}
 
-            // MARK: Private
+          // MARK: Private
 
-            private func bar() {}
-        }
-        """
+          private func bar() {}
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(
-                organizationMode: .visibility,
-                visibilityOrder: Visibility.allCases.map(\.rawValue),
-                typeOrder: DeclarationType.allCases.map(\.rawValue),
-            ),
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(
+        organizationMode: .visibility,
+        visibilityOrder: Visibility.allCases.map(\.rawValue),
+        typeOrder: DeclarationType.allCases.map(\.rawValue),
+      ),
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func customCategoryNamesInVisibilityOrder() {
-        let input = """
-        public class Foo {
-            public var bar: Bar
-            init(bar: Bar) {
-                self.bar = bar
-            }
-            func baaz() {}
-        }
-        """
+  @Test func customCategoryNamesInVisibilityOrder() {
+    let input = """
+      public class Foo {
+          public var bar: Bar
+          init(bar: Bar) {
+              self.bar = bar
+          }
+          func baaz() {}
+      }
+      """
 
-        let output = """
-        public class Foo {
+    let output = """
+      public class Foo {
 
-            // MARK: Init
+          // MARK: Init
 
-            init(bar: Bar) {
-                self.bar = bar
-            }
+          init(bar: Bar) {
+              self.bar = bar
+          }
 
-            // MARK: Public_Group
+          // MARK: Public_Group
 
-            public var bar: Bar
+          public var bar: Bar
 
-            // MARK: Internal
+          // MARK: Internal
 
-            func baaz() {}
-        }
-        """
+          func baaz() {}
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(
-                organizationMode: .visibility,
-                customVisibilityMarks: ["instanceLifecycle:Init", "public:Public_Group"],
-            ),
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(
+        organizationMode: .visibility,
+        customVisibilityMarks: ["instanceLifecycle:Init", "public:Public_Group"],
+      ),
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
 }

@@ -66,7 +66,7 @@ extension SortImportsRule {
 
       for statement in node.statements {
         if let importDecl = statement.item.as(ImportDeclSyntax.self) {
-          let moduleName = importDecl.path.map(\.name.text).joined(separator: ".")
+          let moduleName = importDecl.moduleName
           currentGroup.append(
             ImportInfo(
               moduleName: moduleName,
@@ -103,12 +103,8 @@ extension SortImportsRule {
         if groupEnd - groupStart > 1 {
           var group = Array(statements[groupStart..<groupEnd])
           let sorted = group.sorted { lhs, rhs in
-            let lhsName =
-              (lhs.item.as(ImportDeclSyntax.self)?.path.map(\.name.text).joined(separator: "."))
-              ?? ""
-            let rhsName =
-              (rhs.item.as(ImportDeclSyntax.self)?.path.map(\.name.text).joined(separator: "."))
-              ?? ""
+            let lhsName = lhs.item.as(ImportDeclSyntax.self)?.moduleName ?? ""
+            let rhsName = rhs.item.as(ImportDeclSyntax.self)?.moduleName ?? ""
             return lhsName.localizedCaseInsensitiveCompare(rhsName) == .orderedAscending
           }
 
@@ -121,10 +117,10 @@ extension SortImportsRule {
           }
 
           let originalNames = statements[groupStart..<groupEnd].map {
-            $0.item.as(ImportDeclSyntax.self)?.path.map(\.name.text).joined(separator: ".") ?? ""
+            $0.item.as(ImportDeclSyntax.self)?.moduleName ?? ""
           }
           let sortedNames = group.map {
-            $0.item.as(ImportDeclSyntax.self)?.path.map(\.name.text).joined(separator: ".") ?? ""
+            $0.item.as(ImportDeclSyntax.self)?.moduleName ?? ""
           }
 
           if originalNames != sortedNames {
@@ -149,5 +145,11 @@ extension SortImportsRule {
   private struct ImportInfo {
     let moduleName: String
     let position: AbsolutePosition
+  }
+}
+
+extension ImportDeclSyntax {
+  fileprivate var moduleName: String {
+    path.map(\.name.text).joined(separator: ".")
   }
 }

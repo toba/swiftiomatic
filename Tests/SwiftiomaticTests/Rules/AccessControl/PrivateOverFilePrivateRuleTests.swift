@@ -1,38 +1,39 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct PrivateOverFilePrivateRuleTests {
-    @Test func privateOverFilePrivateValidatingExtensions() async {
-        let baseDescription = PrivateOverFilePrivateRule.description
-        let triggeringExamples =
-            baseDescription.triggeringExamples + [
-                Example("↓fileprivate extension String {}"),
-                Example("↓fileprivate \n extension String {}"),
-                Example("↓fileprivate extension \n String {}"),
-            ]
-        let corrections = [
-            Example("↓fileprivate extension String {}"): Example("private extension String {}"),
-            Example("↓fileprivate \n extension String {}"): Example(
-                "private \n extension String {}",
-            ),
-            Example("↓fileprivate extension \n String {}"): Example(
-                "private extension \n String {}",
-            ),
-        ]
+  @Test func privateOverFilePrivateValidatingExtensions() async {
+    let baseDescription = PrivateOverFilePrivateRule.description
+    let triggeringExamples =
+      baseDescription.triggeringExamples + [
+        Example("↓fileprivate extension String {}"),
+        Example("↓fileprivate \n extension String {}"),
+        Example("↓fileprivate extension \n String {}"),
+      ]
+    let corrections = [
+      Example("↓fileprivate extension String {}"): Example("private extension String {}"),
+      Example("↓fileprivate \n extension String {}"): Example(
+        "private \n extension String {}",
+      ),
+      Example("↓fileprivate extension \n String {}"): Example(
+        "private extension \n String {}",
+      ),
+    ]
 
-        let description = baseDescription.with(nonTriggeringExamples: [])
-            .with(triggeringExamples: triggeringExamples).with(corrections: corrections)
-        await verifyRule(description, ruleConfiguration: ["validate_extensions": true])
-    }
+    let description = baseDescription.with(nonTriggeringExamples: [])
+      .with(triggeringExamples: triggeringExamples).with(corrections: corrections)
+    await verifyRule(description, ruleConfiguration: ["validate_extensions": true])
+  }
 
-    @Test func privateOverFilePrivateNotValidatingExtensions() async {
-        let baseDescription = PrivateOverFilePrivateRule.description
-        let nonTriggeringExamples =
-            baseDescription.nonTriggeringExamples + [
-                Example("fileprivate extension String {}"),
-            ]
+  @Test func privateOverFilePrivateNotValidatingExtensions() async {
+    let baseDescription = PrivateOverFilePrivateRule.description
+    let nonTriggeringExamples =
+      baseDescription.nonTriggeringExamples + [
+        Example("fileprivate extension String {}")
+      ]
 
-        let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-        await verifyRule(description, ruleConfiguration: ["validate_extensions": false])
-    }
+    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+    await verifyRule(description, ruleConfiguration: ["validate_extensions": false])
+  }
 }

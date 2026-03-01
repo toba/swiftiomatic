@@ -1,188 +1,192 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct CollectingRuleTests {
-    @Test func collectsIntoStorage() async throws {
-        struct Spec: MockCollectingRule {
-            var configuration = SeverityConfiguration<Self>(.warning)
+  @Test func collectsIntoStorage() async throws {
+    struct Spec: MockCollectingRule {
+      var configuration = SeverityConfiguration<Self>(.warning)
 
-            func collectInfo(for _: SwiftSource) -> Int {
-                42
-            }
+      func collectInfo(for _: SwiftSource) -> Int {
+        42
+      }
 
-            func validate(file: SwiftSource,
-                          collectedInfo: [SwiftSource: Int]) -> [RuleViolation]
-            {
-                #expect(collectedInfo[file] == 42)
-                return [
-                    RuleViolation(
-                        ruleDescription: Self.description,
-                        location: Location(file: file, byteOffset: 0),
-                    ),
-                ]
-            }
-        }
-
-        let result = await violations(Example("_ = 0"), config: try #require(Spec.configuration))
-        #expect(!result.isEmpty)
+      func validate(
+        file: SwiftSource,
+        collectedInfo: [SwiftSource: Int]
+      ) -> [RuleViolation] {
+        #expect(collectedInfo[file] == 42)
+        return [
+          RuleViolation(
+            ruleDescription: Self.description,
+            location: Location(file: file, byteOffset: 0),
+          )
+        ]
+      }
     }
 
-    @Test func collectsAllFiles() async throws {
-        struct Spec: MockCollectingRule {
-            var configuration = SeverityConfiguration<Self>(.warning)
+    let result = await violations(Example("_ = 0"), config: try #require(Spec.configuration))
+    #expect(!result.isEmpty)
+  }
 
-            func collectInfo(for file: SwiftSource) -> String {
-                file.contents
-            }
+  @Test func collectsAllFiles() async throws {
+    struct Spec: MockCollectingRule {
+      var configuration = SeverityConfiguration<Self>(.warning)
 
-            func validate(file: SwiftSource,
-                          collectedInfo: [SwiftSource: String]) -> [RuleViolation]
-            {
-                let values = collectedInfo.values
-                #expect(values.contains("foo"))
-                #expect(values.contains("bar"))
-                #expect(values.contains("baz"))
-                return [
-                    RuleViolation(
-                        ruleDescription: Self.description,
-                        location: Location(file: file, byteOffset: 0),
-                    ),
-                ]
-            }
-        }
+      func collectInfo(for file: SwiftSource) -> String {
+        file.contents
+      }
 
-        let inputs = ["foo", "bar", "baz"]
-        let allViolations = await inputs.violations(config: try #require(Spec.configuration))
-        #expect(allViolations.count == inputs.count)
+      func validate(
+        file: SwiftSource,
+        collectedInfo: [SwiftSource: String]
+      ) -> [RuleViolation] {
+        let values = collectedInfo.values
+        #expect(values.contains("foo"))
+        #expect(values.contains("bar"))
+        #expect(values.contains("baz"))
+        return [
+          RuleViolation(
+            ruleDescription: Self.description,
+            location: Location(file: file, byteOffset: 0),
+          )
+        ]
+      }
     }
 
-    @Test func collectsAnalyzerFiles() async throws {
-        struct Spec: MockCollectingRule, AnalyzerRule {
-            var configuration = SeverityConfiguration<Self>(.warning)
+    let inputs = ["foo", "bar", "baz"]
+    let allViolations = await inputs.violations(config: try #require(Spec.configuration))
+    #expect(allViolations.count == inputs.count)
+  }
 
-            func collectInfo(for _: SwiftSource, compilerArguments: [String]) -> [String] {
-                compilerArguments
-            }
+  @Test func collectsAnalyzerFiles() async throws {
+    struct Spec: MockCollectingRule, AnalyzerRule {
+      var configuration = SeverityConfiguration<Self>(.warning)
 
-            func validate(
-                file: SwiftSource, collectedInfo: [SwiftSource: [String]],
-                compilerArguments: [String],
+      func collectInfo(for _: SwiftSource, compilerArguments: [String]) -> [String] {
+        compilerArguments
+      }
+
+      func validate(
+        file: SwiftSource, collectedInfo: [SwiftSource: [String]],
+        compilerArguments: [String],
+      )
+        -> [RuleViolation]
+      {
+        #expect(collectedInfo[file] == compilerArguments)
+        return [
+          RuleViolation(
+            ruleDescription: Self.description,
+            location: Location(file: file, byteOffset: 0),
+          )
+        ]
+      }
+    }
+
+    let analyzerResult = await violations(
+      Example("_ = 0"),
+      config: try #require(Spec.configuration),
+      requiresFileOnDisk: true,
+    )
+    #expect(!analyzerResult.isEmpty)
+  }
+
+  @Test func corrects() async throws {
+    struct Spec: MockCollectingRule, CorrectableRule {
+      var configuration = SeverityConfiguration<Self>(.warning)
+
+      func collectInfo(for file: SwiftSource) -> String {
+        file.contents
+      }
+
+      func validate(
+        file: SwiftSource,
+        collectedInfo: [SwiftSource: String]
+      ) -> [RuleViolation] {
+        if collectedInfo[file] == "baz" {
+          return [
+            RuleViolation(
+              ruleDescription: Self.description,
+              location: Location(file: file, byteOffset: 2),
             )
-                -> [RuleViolation]
-            {
-                #expect(collectedInfo[file] == compilerArguments)
-                return [
-                    RuleViolation(
-                        ruleDescription: Self.description,
-                        location: Location(file: file, byteOffset: 0),
-                    ),
-                ]
-            }
+          ]
         }
+        return []
+      }
 
-        let analyzerResult = await violations(
-            Example("_ = 0"),
-            config: try #require(Spec.configuration),
-            requiresFileOnDisk: true,
-        )
-        #expect(!analyzerResult.isEmpty)
+      func correct(file: SwiftSource, collectedInfo: [SwiftSource: String]) -> Int {
+        collectedInfo[file] == "baz" ? 1 : 0
+      }
+
+      func correct(file: SwiftSource) -> Int {
+        correct(file: file, collectedInfo: [file: collectInfo(for: file)])
+      }
     }
 
-    @Test func corrects() async throws {
-        struct Spec: MockCollectingRule, CorrectableRule {
-            var configuration = SeverityConfiguration<Self>(.warning)
+    struct AnalyzerSpec: MockCollectingRule, AnalyzerRule, CorrectableRule {
+      var configuration = SeverityConfiguration<Self>(.warning)
 
-            func collectInfo(for file: SwiftSource) -> String {
-                file.contents
-            }
+      func collectInfo(for file: SwiftSource) -> String {
+        file.contents
+      }
 
-            func validate(file: SwiftSource,
-                          collectedInfo: [SwiftSource: String]) -> [RuleViolation]
-            {
-                if collectedInfo[file] == "baz" {
-                    return [
-                        RuleViolation(
-                            ruleDescription: Self.description,
-                            location: Location(file: file, byteOffset: 2),
-                        ),
-                    ]
-                }
-                return []
-            }
-
-            func correct(file: SwiftSource, collectedInfo: [SwiftSource: String]) -> Int {
-                collectedInfo[file] == "baz" ? 1 : 0
-            }
-
-            func correct(file: SwiftSource) -> Int {
-                correct(file: file, collectedInfo: [file: collectInfo(for: file)])
-            }
-        }
-
-        struct AnalyzerSpec: MockCollectingRule, AnalyzerRule, CorrectableRule {
-            var configuration = SeverityConfiguration<Self>(.warning)
-
-            func collectInfo(for file: SwiftSource) -> String {
-                file.contents
-            }
-
-            func validate(
-                file: SwiftSource, collectedInfo: [SwiftSource: String],
-                compilerArguments _: [String],
+      func validate(
+        file: SwiftSource, collectedInfo: [SwiftSource: String],
+        compilerArguments _: [String],
+      )
+        -> [RuleViolation]
+      {
+        collectedInfo[file] == "baz"
+          ? [
+            .init(
+              ruleDescription: Spec.description,
+              location: Location(file: file, byteOffset: 2),
             )
-                -> [RuleViolation]
-            {
-                collectedInfo[file] == "baz"
-                    ? [
-                        .init(
-                            ruleDescription: Spec.description,
-                            location: Location(file: file, byteOffset: 2),
-                        ),
-                    ]
-                    : []
-            }
+          ]
+          : []
+      }
 
-            func correct(
-                file: SwiftSource,
-                collectedInfo: [SwiftSource: String],
-                compilerArguments _: [String],
-            ) -> Int {
-                collectedInfo[file] == "baz" ? 1 : 0
-            }
+      func correct(
+        file: SwiftSource,
+        collectedInfo: [SwiftSource: String],
+        compilerArguments _: [String],
+      ) -> Int {
+        collectedInfo[file] == "baz" ? 1 : 0
+      }
 
-            func correct(file: SwiftSource) -> Int {
-                correct(
-                    file: file,
-                    collectedInfo: [file: collectInfo(for: file)],
-                    compilerArguments: [],
-                )
-            }
-        }
-
-        let inputs = ["foo", "baz"]
-        let specCorrections = await inputs.corrections(config: try #require(Spec.configuration))
-        #expect(specCorrections.count == 1)
-        let analyzerCorrections = await inputs.corrections(
-            config: try #require(AnalyzerSpec.configuration),
-            requiresFileOnDisk: true,
+      func correct(file: SwiftSource) -> Int {
+        correct(
+          file: file,
+          collectedInfo: [file: collectInfo(for: file)],
+          compilerArguments: [],
         )
-        #expect(analyzerCorrections.count == 1)
+      }
     }
+
+    let inputs = ["foo", "baz"]
+    let specCorrections = await inputs.corrections(config: try #require(Spec.configuration))
+    #expect(specCorrections.count == 1)
+    let analyzerCorrections = await inputs.corrections(
+      config: try #require(AnalyzerSpec.configuration),
+      requiresFileOnDisk: true,
+    )
+    #expect(analyzerCorrections.count == 1)
+  }
 }
 
 private protocol MockCollectingRule: CollectingRule {}
 extension MockCollectingRule {
-    @RuleConfigurationDescriptionBuilder
-    var configurationDescription: some Documentable { RuleConfigurationOption.noOptions }
-    static var description: RuleDescription {
-        RuleDescription(
-            identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
-        )
-    }
+  @RuleConfigurationDescriptionBuilder
+  var configurationDescription: some Documentable { RuleConfigurationOption.noOptions }
+  static var description: RuleDescription {
+    RuleDescription(
+      identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
+    )
+  }
 
-    static var configuration: Configuration? {
-        Configuration(rulesMode: .onlyConfiguration([identifier]), ruleList: RuleList(rules: self))
-    }
+  static var configuration: Configuration? {
+    Configuration(rulesMode: .onlyConfiguration([identifier]), ruleList: RuleList(rules: self))
+  }
 
-    init(configuration _: Any) { self.init() }
+  init(configuration _: Any) { self.init() }
 }

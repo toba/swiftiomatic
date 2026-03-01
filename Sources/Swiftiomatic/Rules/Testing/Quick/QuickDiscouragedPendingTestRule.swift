@@ -45,23 +45,6 @@ extension QuickDiscouragedPendingTestRule {
   }
 }
 
-extension ClassDeclSyntax {
-  fileprivate var containsInheritance: Bool {
-    guard let inheritanceList = inheritanceClause?.inheritedTypes else {
-      return false
-    }
-
-    return inheritanceList.isNotEmpty
-  }
-}
-
-extension FunctionDeclSyntax {
-  fileprivate var isSpecFunction: Bool {
-    name.tokenKind == .identifier("spec") && signature.parameterClause.parameters.isEmpty
-      && modifiers.contains(keyword: .override)
-  }
-}
-
 private enum QuickPendingCallKind: String {
   case pending
   case xdescribe

@@ -1,917 +1,919 @@
 import Testing
+
 @testable import Swiftiomatic
 
 extension OrganizeDeclarationsTests {
-    @Test func organizesNestedTypesWithinConditionalCompilationBlock() {
-        let input = """
-        public struct Foo {
+  @Test func organizesNestedTypesWithinConditionalCompilationBlock() {
+    let input = """
+      public struct Foo {
 
-            public var bar = "bar"
-            var baz = "baz"
+          public var bar = "bar"
+          var baz = "baz"
 
-            #if DEBUG
-            public struct DebugFoo {
-                init() {}
-                var debugBar = "debug"
-            }
+          #if DEBUG
+          public struct DebugFoo {
+              init() {}
+              var debugBar = "debug"
+          }
 
-            static let debugFoo = DebugFoo()
+          static let debugFoo = DebugFoo()
 
-            private let other = "other"
-            #endif
+          private let other = "other"
+          #endif
 
-            init() {}
+          init() {}
 
-            var quuz = "quux"
+          var quuz = "quux"
 
-            #if DEBUG
-            struct Test {
-                let foo: Bar
-            }
-            #endif
-        }
-        """
+          #if DEBUG
+          struct Test {
+              let foo: Bar
+          }
+          #endif
+      }
+      """
 
-        let output = """
-        public struct Foo {
+    let output = """
+      public struct Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init() {}
+          init() {}
 
-            // MARK: Public
+          // MARK: Public
 
-            #if DEBUG
-            public struct DebugFoo {
+          #if DEBUG
+          public struct DebugFoo {
 
-                // MARK: Lifecycle
+              // MARK: Lifecycle
 
-                init() {}
+              init() {}
 
-                // MARK: Internal
+              // MARK: Internal
 
-                var debugBar = "debug"
-            }
+              var debugBar = "debug"
+          }
 
-            static let debugFoo = DebugFoo()
+          static let debugFoo = DebugFoo()
 
-            private let other = "other"
-            #endif
+          private let other = "other"
+          #endif
 
-            public var bar = "bar"
+          public var bar = "bar"
 
-            // MARK: Internal
+          // MARK: Internal
 
-            #if DEBUG
-            struct Test {
-                let foo: Bar
-            }
-            #endif
+          #if DEBUG
+          struct Test {
+              let foo: Bar
+          }
+          #endif
 
-            var baz = "baz"
+          var baz = "baz"
 
-            var quuz = "quux"
+          var quuz = "quux"
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, output, rule: .organizeDeclarations,
-            options: FormatOptions(ifdefIndent: .noIndent),
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .propertyTypes],
-        )
-    }
+    testFormatting(
+      for: input, output, rule: .organizeDeclarations,
+      options: FormatOptions(ifdefIndent: .noIndent),
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .propertyTypes],
+    )
+  }
 
-    @Test func organizesTypeBelowSymbolImport() {
-        let input = """
-        import protocol SomeModule.SomeProtocol
-        import class SomeModule.SomeClass
-        import enum SomeModule.SomeEnum
-        import struct SomeModule.SomeStruct
-        import typealias SomeModule.SomeTypealias
-        import let SomeModule.SomeGlobalConstant
-        import var SomeModule.SomeGlobalVariable
-        import func SomeModule.SomeFunc
+  @Test func organizesTypeBelowSymbolImport() {
+    let input = """
+      import protocol SomeModule.SomeProtocol
+      import class SomeModule.SomeClass
+      import enum SomeModule.SomeEnum
+      import struct SomeModule.SomeStruct
+      import typealias SomeModule.SomeTypealias
+      import let SomeModule.SomeGlobalConstant
+      import var SomeModule.SomeGlobalVariable
+      import func SomeModule.SomeFunc
 
-        public struct Foo {
-            init() {}
-            public func instanceMethod() {}
-        }
-        """
+      public struct Foo {
+          init() {}
+          public func instanceMethod() {}
+      }
+      """
 
-        let output = """
-        import protocol SomeModule.SomeProtocol
-        import class SomeModule.SomeClass
-        import enum SomeModule.SomeEnum
-        import struct SomeModule.SomeStruct
-        import typealias SomeModule.SomeTypealias
-        import let SomeModule.SomeGlobalConstant
-        import var SomeModule.SomeGlobalVariable
-        import func SomeModule.SomeFunc
+    let output = """
+      import protocol SomeModule.SomeProtocol
+      import class SomeModule.SomeClass
+      import enum SomeModule.SomeEnum
+      import struct SomeModule.SomeStruct
+      import typealias SomeModule.SomeTypealias
+      import let SomeModule.SomeGlobalConstant
+      import var SomeModule.SomeGlobalVariable
+      import func SomeModule.SomeFunc
 
-        public struct Foo {
+      public struct Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init() {}
+          init() {}
 
-            // MARK: Public
+          // MARK: Public
 
-            public func instanceMethod() {}
-        }
-        """
+          public func instanceMethod() {}
+      }
+      """
 
-        testFormatting(
-            for: input, output, rule: .organizeDeclarations,
-            exclude: [.blankLinesAtStartOfScope, .sortImports],
-        )
-    }
+    testFormatting(
+      for: input, output, rule: .organizeDeclarations,
+      exclude: [.blankLinesAtStartOfScope, .sortImports],
+    )
+  }
 
-    @Test func doesNotBreakStructSynthesizedMemberwiseInitializer() {
-        let input = """
-        public struct Foo {
-            
-            let foo: Foo
-            @State var bar: Bar?
-            @ObservedObject var baaz: Baaz
-            public let quux: Quux
+  @Test func doesNotBreakStructSynthesizedMemberwiseInitializer() {
+    let input = """
+      public struct Foo {
+          
+          let foo: Foo
+          @State var bar: Bar?
+          @ObservedObject var baaz: Baaz
+          public let quux: Quux
 
-            public var content: some View {
-                foo
-            }
-        }
+          public var content: some View {
+              foo
+          }
+      }
 
-        Foo(foo: 1, bar: 2, baaz: 3, quux: 4)
-        """
+      Foo(foo: 1, bar: 2, baaz: 3, quux: 4)
+      """
 
-        let output = """
-        public struct Foo {
+    let output = """
+      public struct Foo {
 
-            // MARK: Public
+          // MARK: Public
 
-            public var content: some View {
-                foo
-            }
+          public var content: some View {
+              foo
+          }
 
-            // MARK: Internal
+          // MARK: Internal
 
-            let foo: Foo
+          let foo: Foo
 
-            @State var bar: Bar?
-            @ObservedObject var baaz: Baaz
+          @State var bar: Bar?
+          @ObservedObject var baaz: Baaz
 
-            public let quux: Quux
+          public let quux: Quux
 
-        }
+      }
 
-        Foo(foo: 1, bar: 2, baaz: 3, quux: 4)
-        """
+      Foo(foo: 1, bar: 2, baaz: 3, quux: 4)
+      """
 
-        testFormatting(
-            for: input, [output], rules: [.organizeDeclarations, .consecutiveBlankLines],
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .privateStateVariables],
-        )
-    }
+    testFormatting(
+      for: input, [output], rules: [.organizeDeclarations, .consecutiveBlankLines],
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope, .privateStateVariables],
+    )
+  }
 
-    @Test func organizesStructPropertiesThatDontBreakMemberwiseInitializer() {
-        let input = """
-        public struct Foo {
-            var computed: String {
-                let didSet = "didSet"
-                let willSet = "willSet"
-                return didSet + willSet
-            }
+  @Test func organizesStructPropertiesThatDontBreakMemberwiseInitializer() {
+    let input = """
+      public struct Foo {
+          var computed: String {
+              let didSet = "didSet"
+              let willSet = "willSet"
+              return didSet + willSet
+          }
 
-            private func instanceMethod() {}
-            public let bar: Int
-            var baz: Int
-            var quux: Int {
-                didSet {}
-            }
-        }
+          private func instanceMethod() {}
+          public let bar: Int
+          var baz: Int
+          var quux: Int {
+              didSet {}
+          }
+      }
 
-        Foo(bar: 1, baz: 2, quux: 3)
-        """
+      Foo(bar: 1, baz: 2, quux: 3)
+      """
 
-        let output = """
-        public struct Foo {
+    let output = """
+      public struct Foo {
 
-            // MARK: Public
+          // MARK: Public
 
-            public let bar: Int
+          public let bar: Int
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var baz: Int
+          var baz: Int
 
-            var computed: String {
-                let didSet = "didSet"
-                let willSet = "willSet"
-                return didSet + willSet
-            }
+          var computed: String {
+              let didSet = "didSet"
+              let willSet = "willSet"
+              return didSet + willSet
+          }
 
-            var quux: Int {
-                didSet {}
-            }
+          var quux: Int {
+              didSet {}
+          }
 
-            // MARK: Private
+          // MARK: Private
 
-            private func instanceMethod() {}
-        }
+          private func instanceMethod() {}
+      }
 
-        Foo(bar: 1, baz: 2, quux: 3)
-        """
+      Foo(bar: 1, baz: 2, quux: 3)
+      """
 
-        testFormatting(
-            for: input, output, rule: .organizeDeclarations,
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output, rule: .organizeDeclarations,
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func preservesCategoryMarksInStructWithIncorrectSubcategoryOrdering() {
-        let input = """
-        public struct Foo {
+  @Test func preservesCategoryMarksInStructWithIncorrectSubcategoryOrdering() {
+    let input = """
+      public struct Foo {
 
-            // MARK: Public
+          // MARK: Public
 
-            public let quux: Int
+          public let quux: Int
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var bar: Int {
-                didSet {}
-            }
+          var bar: Int {
+              didSet {}
+          }
 
-            var baz: Int
-        }
+          var baz: Int
+      }
 
-        Foo(bar: 1, baz: 2, quux: 3)
-        """
+      Foo(bar: 1, baz: 2, quux: 3)
+      """
 
-        testFormatting(
-            for: input, rule: .organizeDeclarations,
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, rule: .organizeDeclarations,
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func preservesCommentsAtBottomOfCategory() {
-        let input = """
-        public struct Foo {
+  @Test func preservesCommentsAtBottomOfCategory() {
+    let input = """
+      public struct Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init() {}
+          init() {}
 
-            // Important comment at end of section!
+          // Important comment at end of section!
 
-            // MARK: Public
+          // MARK: Public
 
-            public let bar = 1
-        }
-        """
+          public let bar = 1
+      }
+      """
 
-        testFormatting(
-            for: input, rule: .organizeDeclarations,
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, rule: .organizeDeclarations,
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func preservesCommentsAtBottomOfCategoryWhenReorganizing() {
-        let input = """
-        public struct Foo {
+  @Test func preservesCommentsAtBottomOfCategoryWhenReorganizing() {
+    let input = """
+      public struct Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init() {}
+          init() {}
 
-            // Important comment at end of section!
+          // Important comment at end of section!
 
-            // MARK: Internal
+          // MARK: Internal
 
-            // Important comment at start of section!
+          // Important comment at start of section!
 
-            var baz = 1
+          var baz = 1
 
-            public let bar = 1
-        }
-        """
+          public let bar = 1
+      }
+      """
 
-        let output = """
-        public struct Foo {
+    let output = """
+      public struct Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init() {}
+          init() {}
 
-            // Important comment at end of section!
+          // Important comment at end of section!
 
-            // MARK: Public
+          // MARK: Public
 
-            public let bar = 1
+          public let bar = 1
 
-            // MARK: Internal
+          // MARK: Internal
 
-            // Important comment at start of section!
+          // Important comment at start of section!
 
-            var baz = 1
+          var baz = 1
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, output, rule: .organizeDeclarations,
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output, rule: .organizeDeclarations,
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
+    )
+  }
 
-    @Test func doesNotRemoveCategorySeparatorsFromBodyNotBeingOrganized() {
-        let input = """
-        public struct Foo {
+  @Test func doesNotRemoveCategorySeparatorsFromBodyNotBeingOrganized() {
+    let input = """
+      public struct Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init() {}
+          init() {}
 
-            // MARK: Public
+          // MARK: Public
 
-            public var bar = 10
-        }
+          public var bar = 10
+      }
 
-        extension Foo {
+      extension Foo {
 
-            // MARK: Public
+          // MARK: Public
 
-            public var baz: Int { 20 }
+          public var baz: Int { 20 }
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var quux: Int { 30 }
-        }
-        """
+          var quux: Int { 30 }
+      }
+      """
 
-        testFormatting(
-            for: input, rule: .organizeDeclarations,
-            options: FormatOptions(organizeStructThreshold: 20),
-            exclude: [.blankLinesAtStartOfScope, .wrapPropertyBodies],
-        )
-    }
+    testFormatting(
+      for: input, rule: .organizeDeclarations,
+      options: FormatOptions(organizeStructThreshold: 20),
+      exclude: [.blankLinesAtStartOfScope, .wrapPropertyBodies],
+    )
+  }
 
-    @Test func parsesPropertiesWithBodies() {
-        let input = """
-        class Foo {
-            // Instance properties without bodies:
+  @Test func parsesPropertiesWithBodies() {
+    let input = """
+      class Foo {
+          // Instance properties without bodies:
 
-            let propertyWithoutBody1 = 10
+          let propertyWithoutBody1 = 10
 
-            let propertyWithoutBody2: String = {
-                "bar"
-            }()
+          let propertyWithoutBody2: String = {
+              "bar"
+          }()
 
-            let propertyWithoutBody3: () -> String = {
-                "bar"
-            }
+          let propertyWithoutBody3: () -> String = {
+              "bar"
+          }
 
-            // Instance properties with bodies:
+          // Instance properties with bodies:
 
-            var withBody1: String {
-                "bar"
-            }
+          var withBody1: String {
+              "bar"
+          }
 
-            var withBody2: String {
-                didSet { print("didSet") }
-            }
+          var withBody2: String {
+              didSet { print("didSet") }
+          }
 
-            var withBody3: String = "bar" {
-                didSet { print("didSet") }
-            }
+          var withBody3: String = "bar" {
+              didSet { print("didSet") }
+          }
 
-            var withBody4: String = "bar" {
-                didSet { print("didSet") }
-            }
+          var withBody4: String = "bar" {
+              didSet { print("didSet") }
+          }
 
-            var withBody5: () -> String = { "bar" } {
-                didSet { print("didSet") }
-            }
+          var withBody5: () -> String = { "bar" } {
+              didSet { print("didSet") }
+          }
 
-            var withBody6: String = { "bar" }() {
-                didSet { print("didSet") }
-            }
-        }
-        """
+          var withBody6: String = { "bar" }() {
+              didSet { print("didSet") }
+          }
+      }
+      """
 
-        testFormatting(
-            for: input, rule: .organizeDeclarations, exclude: [
-                .redundantClosure,
-                .wrapPropertyBodies,
-            ],
-        )
-    }
+    testFormatting(
+      for: input, rule: .organizeDeclarations,
+      exclude: [
+        .redundantClosure,
+        .wrapPropertyBodies,
+      ],
+    )
+  }
 
-    @Test func funcWithNestedInitNotTreatedAsLifecycle() {
-        let input = """
-        public struct Foo {
+  @Test func funcWithNestedInitNotTreatedAsLifecycle() {
+    let input = """
+      public struct Foo {
 
-            // MARK: Public
+          // MARK: Public
 
-            public func baz() {}
+          public func baz() {}
 
-            // MARK: Internal
+          // MARK: Internal
 
-            func bar() {
-                class NestedClass {
-                    init() {}
-                }
+          func bar() {
+              class NestedClass {
+                  init() {}
+              }
 
-                // ...
-            }
-        }
-        """
+              // ...
+          }
+      }
+      """
 
-        testFormatting(
-            for: input, rule: .organizeDeclarations,
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, rule: .organizeDeclarations,
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func organizeRuleNotConfusedByClassProtocol() {
-        let input = """
-        protocol Foo: class {
-            func foo()
-        }
+  @Test func organizeRuleNotConfusedByClassProtocol() {
+    let input = """
+      protocol Foo: class {
+          func foo()
+      }
 
-        class Bar {
-            // MARK: Fileprivate
+      class Bar {
+          // MARK: Fileprivate
 
-            private var baz: Int
+          private var baz: Int
 
-            // MARK: Private
+          // MARK: Private
 
-            private let quux: String
-        }
-        """
+          private let quux: String
+      }
+      """
 
-        let output = """
-        protocol Foo: class {
-            func foo()
-        }
+    let output = """
+      protocol Foo: class {
+          func foo()
+      }
 
-        class Bar {
-            private var baz: Int
+      class Bar {
+          private var baz: Int
 
-            private let quux: String
-        }
-        """
+          private let quux: String
+      }
+      """
 
-        testFormatting(
-            for: input, output, rule: .organizeDeclarations,
-            exclude: [.blankLinesAtStartOfScope],
-        )
-    }
+    testFormatting(
+      for: input, output, rule: .organizeDeclarations,
+      exclude: [.blankLinesAtStartOfScope],
+    )
+  }
 
-    @Test func organizeClassDeclarationsIntoCategoriesWithNoBlankLineAfterMark() {
-        let input = """
-        public class Foo {
-            private func privateMethod() {}
+  @Test func organizeClassDeclarationsIntoCategoriesWithNoBlankLineAfterMark() {
+    let input = """
+      public class Foo {
+          private func privateMethod() {}
 
-            private let bar = 1
-            public let baz = 1
-            open var quack = 2
-            var quux = 2
+          private let bar = 1
+          public let baz = 1
+          open var quack = 2
+          var quux = 2
 
-            init() {}
+          init() {}
 
-            /// Doc comment
-            public func publicMethod() {}
-        }
-        """
+          /// Doc comment
+          public func publicMethod() {}
+      }
+      """
 
-        let output = """
-        public class Foo {
+    let output = """
+      public class Foo {
 
-            // MARK: Lifecycle
-            init() {}
+          // MARK: Lifecycle
+          init() {}
 
-            // MARK: Open
-            open var quack = 2
+          // MARK: Open
+          open var quack = 2
 
-            // MARK: Public
-            public let baz = 1
+          // MARK: Public
+          public let baz = 1
 
-            /// Doc comment
-            public func publicMethod() {}
+          /// Doc comment
+          public func publicMethod() {}
 
-            // MARK: Internal
-            var quux = 2
+          // MARK: Internal
+          var quux = 2
 
-            // MARK: Private
-            private let bar = 1
+          // MARK: Private
+          private let bar = 1
 
-            private func privateMethod() {}
+          private func privateMethod() {}
 
-        }
-        """
-        let options = FormatOptions(lineAfterMarks: false)
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: options,
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
-        )
-    }
+      }
+      """
+    let options = FormatOptions(lineAfterMarks: false)
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: options,
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
+    )
+  }
 
-    @Test func organizeWithNoCategoryMarks_noSpacesBetweenDeclarations() {
-        let input = """
-        public class Foo {
-            private func privateMethod() {}
-            private let bar = 1
-            public let baz = 1
-        }
-        """
+  @Test func organizeWithNoCategoryMarks_noSpacesBetweenDeclarations() {
+    let input = """
+      public class Foo {
+          private func privateMethod() {}
+          private let bar = 1
+          public let baz = 1
+      }
+      """
 
-        let output = """
-        public class Foo {
-            public let baz = 1
+    let output = """
+      public class Foo {
+          public let baz = 1
 
-            private let bar = 1
+          private let bar = 1
 
-            private func privateMethod() {}
-        }
-        """
+          private func privateMethod() {}
+      }
+      """
 
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(markCategories: false),
-        )
-    }
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(markCategories: false),
+    )
+  }
 
-    @Test func organizeWithNoCategoryMarks_withSpacesBetweenDeclarations() {
-        let input = """
-        public class Foo {
-            private func privateMethod() {}
+  @Test func organizeWithNoCategoryMarks_withSpacesBetweenDeclarations() {
+    let input = """
+      public class Foo {
+          private func privateMethod() {}
 
-            private let bar = 1
+          private let bar = 1
 
-            public let baz = 1
+          public let baz = 1
 
-            private func anotherPrivateMethod() {}
-        }
-        """
+          private func anotherPrivateMethod() {}
+      }
+      """
 
-        let output = """
-        public class Foo {
-            public let baz = 1
+    let output = """
+      public class Foo {
+          public let baz = 1
 
-            private let bar = 1
+          private let bar = 1
 
-            private func privateMethod() {}
+          private func privateMethod() {}
 
-            private func anotherPrivateMethod() {}
-        }
-        """
+          private func anotherPrivateMethod() {}
+      }
+      """
 
-        // easy to start with?
-        testFormatting(
-            for: input, output,
-            rule: .organizeDeclarations,
-            options: FormatOptions(markCategories: false),
-        )
-    }
+    // easy to start with?
+    testFormatting(
+      for: input, output,
+      rule: .organizeDeclarations,
+      options: FormatOptions(markCategories: false),
+    )
+  }
 
-    @Test func organizeConditionalInitDeclaration() {
-        let input = """
-        class Foo {
+  @Test func organizeConditionalInitDeclaration() {
+    let input = """
+      class Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init() {}
+          init() {}
 
-            #if DEBUG
-            init() {
-                print("Debug")
-            }
-            #endif
+          #if DEBUG
+          init() {
+              print("Debug")
+          }
+          #endif
 
-            // MARK: Internal
+          // MARK: Internal
 
-            func test() {}
-        }
-        """
+          func test() {}
+      }
+      """
 
-        testFormatting(
-            for: input, rule: .organizeDeclarations, options: FormatOptions(ifdefIndent: .noIndent),
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
-        )
-    }
+    testFormatting(
+      for: input, rule: .organizeDeclarations, options: FormatOptions(ifdefIndent: .noIndent),
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
+    )
+  }
 
-    @Test func organizeConditionalPublicFunction() {
-        let input = """
-        public class Foo {
+  @Test func organizeConditionalPublicFunction() {
+    let input = """
+      public class Foo {
 
-            // MARK: Lifecycle
+          // MARK: Lifecycle
 
-            init() {}
+          init() {}
 
-            // MARK: Public
+          // MARK: Public
 
-            #if DEBUG
-            public func publicTest() {}
-            #endif
+          #if DEBUG
+          public func publicTest() {}
+          #endif
 
-            // MARK: Internal
+          // MARK: Internal
 
-            func internalTest() {}
-        }
-        """
+          func internalTest() {}
+      }
+      """
 
-        testFormatting(
-            for: input, rule: .organizeDeclarations, options: FormatOptions(ifdefIndent: .noIndent),
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
-        )
-    }
+    testFormatting(
+      for: input, rule: .organizeDeclarations, options: FormatOptions(ifdefIndent: .noIndent),
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
+    )
+  }
 
-    @Test func doesNotConflictWithOrganizeDeclarations() {
-        let input = """
-        // sm:sort
-        enum FeatureFlags {
-            case barFeature
-            case fooFeature
-            case upsellA
-            case upsellB
+  @Test func doesNotConflictWithOrganizeDeclarations() {
+    let input = """
+      // sm:sort
+      enum FeatureFlags {
+          case barFeature
+          case fooFeature
+          case upsellA
+          case upsellB
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var anUnsortedProperty: Foo {
-                Foo()
-            }
+          var anUnsortedProperty: Foo {
+              Foo()
+          }
 
-            var unsortedProperty: Foo {
-                Foo()
-            }
-        }
-        """
+          var unsortedProperty: Foo {
+              Foo()
+          }
+      }
+      """
 
-        testFormatting(for: input, rule: .organizeDeclarations)
-    }
+    testFormatting(for: input, rule: .organizeDeclarations)
+  }
 
-    @Test func sortsWithinOrganizeDeclarations() {
-        let input = """
-        // sm:sort
-        enum FeatureFlags {
-            case fooFeature
-            case barFeature
-            case upsellB
-            case upsellA
+  @Test func sortsWithinOrganizeDeclarations() {
+    let input = """
+      // sm:sort
+      enum FeatureFlags {
+          case fooFeature
+          case barFeature
+          case upsellB
+          case upsellA
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var sortedProperty: Foo {
-                Foo()
-            }
+          var sortedProperty: Foo {
+              Foo()
+          }
 
-            var aSortedProperty: Foo {
-                Foo()
-            }
-        }
-        """
+          var aSortedProperty: Foo {
+              Foo()
+          }
+      }
+      """
 
-        let output = """
-        // sm:sort
-        enum FeatureFlags {
-            case barFeature
-            case fooFeature
-            case upsellA
+    let output = """
+      // sm:sort
+      enum FeatureFlags {
+          case barFeature
+          case fooFeature
+          case upsellA
 
-            case upsellB
+          case upsellB
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var aSortedProperty: Foo {
-                Foo()
-            }
+          var aSortedProperty: Foo {
+              Foo()
+          }
 
-            var sortedProperty: Foo {
-                Foo()
-            }
+          var sortedProperty: Foo {
+              Foo()
+          }
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, [output],
-            rules: [.organizeDeclarations, .blankLinesBetweenScopes],
-            exclude: [.blankLinesAtEndOfScope],
-        )
-    }
+    testFormatting(
+      for: input, [output],
+      rules: [.organizeDeclarations, .blankLinesBetweenScopes],
+      exclude: [.blankLinesAtEndOfScope],
+    )
+  }
 
-    @Test func sortsWithinOrganizeDeclarationsByClassName() {
-        let input = """
-        enum FeatureFlags {
-            case fooFeature
-            case barFeature
-            case upsellB
-            case upsellA
+  @Test func sortsWithinOrganizeDeclarationsByClassName() {
+    let input = """
+      enum FeatureFlags {
+          case fooFeature
+          case barFeature
+          case upsellB
+          case upsellA
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var sortedProperty: Foo {
-                Foo()
-            }
+          var sortedProperty: Foo {
+              Foo()
+          }
 
-            var aSortedProperty: Foo {
-                Foo()
-            }
-        }
-        """
+          var aSortedProperty: Foo {
+              Foo()
+          }
+      }
+      """
 
-        let output = """
-        enum FeatureFlags {
-            case barFeature
-            case fooFeature
-            case upsellA
+    let output = """
+      enum FeatureFlags {
+          case barFeature
+          case fooFeature
+          case upsellA
 
-            case upsellB
+          case upsellB
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var aSortedProperty: Foo {
-                Foo()
-            }
+          var aSortedProperty: Foo {
+              Foo()
+          }
 
-            var sortedProperty: Foo {
-                Foo()
-            }
+          var sortedProperty: Foo {
+              Foo()
+          }
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, [output],
-            rules: [.organizeDeclarations, .blankLinesBetweenScopes],
-            options: .init(alphabeticallySortedDeclarationPatterns: ["FeatureFlags"]),
-            exclude: [.blankLinesAtEndOfScope],
-        )
-    }
+    testFormatting(
+      for: input, [output],
+      rules: [.organizeDeclarations, .blankLinesBetweenScopes],
+      options: .init(alphabeticallySortedDeclarationPatterns: ["FeatureFlags"]),
+      exclude: [.blankLinesAtEndOfScope],
+    )
+  }
 
-    @Test func sortsWithinOrganizeDeclarationsByPartialClassName() {
-        let input = """
-        enum FeatureFlags {
-            case fooFeature
-            case barFeature
-            case upsellB
-            case upsellA
+  @Test func sortsWithinOrganizeDeclarationsByPartialClassName() {
+    let input = """
+      enum FeatureFlags {
+          case fooFeature
+          case barFeature
+          case upsellB
+          case upsellA
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var sortedProperty: Foo {
-                Foo()
-            }
+          var sortedProperty: Foo {
+              Foo()
+          }
 
-            var aSortedProperty: Foo {
-                Foo()
-            }
-        }
-        """
+          var aSortedProperty: Foo {
+              Foo()
+          }
+      }
+      """
 
-        let output = """
-        enum FeatureFlags {
-            case barFeature
-            case fooFeature
-            case upsellA
+    let output = """
+      enum FeatureFlags {
+          case barFeature
+          case fooFeature
+          case upsellA
 
-            case upsellB
+          case upsellB
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var aSortedProperty: Foo {
-                Foo()
-            }
+          var aSortedProperty: Foo {
+              Foo()
+          }
 
-            var sortedProperty: Foo {
-                Foo()
-            }
+          var sortedProperty: Foo {
+              Foo()
+          }
 
-        }
-        """
+      }
+      """
 
-        testFormatting(
-            for: input, [output],
-            rules: [.organizeDeclarations, .blankLinesBetweenScopes],
-            options: .init(alphabeticallySortedDeclarationPatterns: ["ureFla"]),
-            exclude: [.blankLinesAtEndOfScope],
-        )
-    }
+    testFormatting(
+      for: input, [output],
+      rules: [.organizeDeclarations, .blankLinesBetweenScopes],
+      options: .init(alphabeticallySortedDeclarationPatterns: ["ureFla"]),
+      exclude: [.blankLinesAtEndOfScope],
+    )
+  }
 
-    @Test func dontSortsWithinOrganizeDeclarationsByClassNameInComment() {
-        let input = """
-        /// Comment
-        enum FeatureFlags {
-            case fooFeature
-            case barFeature
-            case upsellB
-            case upsellA
+  @Test func dontSortsWithinOrganizeDeclarationsByClassNameInComment() {
+    let input = """
+      /// Comment
+      enum FeatureFlags {
+          case fooFeature
+          case barFeature
+          case upsellB
+          case upsellA
 
-            // MARK: Internal
+          // MARK: Internal
 
-            var sortedProperty: Foo {
-                Foo()
-            }
+          var sortedProperty: Foo {
+              Foo()
+          }
 
-            var aSortedProperty: Foo {
-                Foo()
-            }
-        }
-        """
+          var aSortedProperty: Foo {
+              Foo()
+          }
+      }
+      """
 
-        testFormatting(
-            for: input,
-            rules: [.organizeDeclarations, .blankLinesBetweenScopes],
-            options: .init(alphabeticallySortedDeclarationPatterns: ["Comment"]),
-            exclude: [.blankLinesAtEndOfScope],
-        )
-    }
+    testFormatting(
+      for: input,
+      rules: [.organizeDeclarations, .blankLinesBetweenScopes],
+      options: .init(alphabeticallySortedDeclarationPatterns: ["Comment"]),
+      exclude: [.blankLinesAtEndOfScope],
+    )
+  }
 
-    @Test func organizeDeclarationsSortUsesLocalizedCompare() {
-        let input = """
-        // sm:sort
-        enum FeatureFlags {
-            case upsella
-            case upsellA
-            case upsellb
-            case upsellB
-        }
-        """
+  @Test func organizeDeclarationsSortUsesLocalizedCompare() {
+    let input = """
+      // sm:sort
+      enum FeatureFlags {
+          case upsella
+          case upsellA
+          case upsellb
+          case upsellB
+      }
+      """
 
-        testFormatting(for: input, rule: .organizeDeclarations)
-    }
+    testFormatting(for: input, rule: .organizeDeclarations)
+  }
 
-    @Test func sortDeclarationsSortsExtensionBody() {
-        let input = """
-        public enum Namespace {}
+  @Test func sortDeclarationsSortsExtensionBody() {
+    let input = """
+      public enum Namespace {}
 
-        // sm:sort
-        extension Namespace {
-            static let foo = "foo"
-            public static let bar = "bar"
-            static let baaz = "baaz"
-        }
-        """
+      // sm:sort
+      extension Namespace {
+          static let foo = "foo"
+          public static let bar = "bar"
+          static let baaz = "baaz"
+      }
+      """
 
-        let output = """
-        public enum Namespace {}
+    let output = """
+      public enum Namespace {}
 
-        // sm:sort
-        extension Namespace {
-            static let baaz = "baaz"
-            public static let bar = "bar"
-            static let foo = "foo"
-        }
-        """
+      // sm:sort
+      extension Namespace {
+          static let baaz = "baaz"
+          public static let bar = "bar"
+          static let foo = "foo"
+      }
+      """
 
-        // organizeTypes doesn't include "extension". So even though the
-        // organizeDeclarations rule is enabled, the extension should be
-        // sorted by the sortDeclarations rule.
-        let options = FormatOptions(organizeTypes: ["class"])
-        testFormatting(
-            for: input, [output], rules: [.sortDeclarations, .organizeDeclarations],
-            options: options,
-        )
-    }
+    // organizeTypes doesn't include "extension". So even though the
+    // organizeDeclarations rule is enabled, the extension should be
+    // sorted by the sortDeclarations rule.
+    let options = FormatOptions(organizeTypes: ["class"])
+    testFormatting(
+      for: input, [output], rules: [.sortDeclarations, .organizeDeclarations],
+      options: options,
+    )
+  }
 
-    @Test func organizeDeclarationsSortsExtensionBody() {
-        let input = """
-        public enum Namespace {}
+  @Test func organizeDeclarationsSortsExtensionBody() {
+    let input = """
+      public enum Namespace {}
 
-        // sm:sort
-        extension Namespace {
-            static let foo = "foo"
-            public static let bar = "bar"
-            static let baaz = "baaz"
-        }
-        """
+      // sm:sort
+      extension Namespace {
+          static let foo = "foo"
+          public static let bar = "bar"
+          static let baaz = "baaz"
+      }
+      """
 
-        let output = """
-        public enum Namespace {}
+    let output = """
+      public enum Namespace {}
 
-        // sm:sort
-        extension Namespace {
+      // sm:sort
+      extension Namespace {
 
-            // MARK: Public
+          // MARK: Public
 
-            public static let bar = "bar"
+          public static let bar = "bar"
 
-            // MARK: Internal
+          // MARK: Internal
 
-            static let baaz = "baaz"
-            static let foo = "foo"
-        }
-        """
+          static let baaz = "baaz"
+          static let foo = "foo"
+      }
+      """
 
-        let options = FormatOptions(organizeTypes: ["extension"])
-        testFormatting(
-            for: input, output, rule: .organizeDeclarations, options: options,
-            exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
-        )
-    }
+    let options = FormatOptions(organizeTypes: ["extension"])
+    testFormatting(
+      for: input, output, rule: .organizeDeclarations, options: options,
+      exclude: [.blankLinesAtStartOfScope, .blankLinesAtEndOfScope],
+    )
+  }
 
 }

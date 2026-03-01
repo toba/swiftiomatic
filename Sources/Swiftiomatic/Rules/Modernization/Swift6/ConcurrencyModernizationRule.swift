@@ -288,17 +288,11 @@ extension ConcurrencyModernizationRule {
     }
 
     private func isInsideAsyncContext(_ node: Syntax) -> Bool {
-      var current: Syntax? = node
-      while let parent = current?.parent {
-        if let funcDecl = parent.as(FunctionDeclSyntax.self) {
-          return funcDecl.signature.effectSpecifiers?.asyncSpecifier != nil
-        }
-        if let closureExpr = parent.as(ClosureExprSyntax.self) {
-          // Check if the closure itself is async by looking for `async` keyword
-          let closureStr = closureExpr.signature?.trimmedDescription ?? ""
-          return closureStr.contains("async")
-        }
-        current = parent
+      if let funcDecl = node.nearestAncestor(ofType: FunctionDeclSyntax.self) {
+        return funcDecl.signature.effectSpecifiers?.asyncSpecifier != nil
+      }
+      if let closureExpr = node.nearestAncestor(ofType: ClosureExprSyntax.self) {
+        return closureExpr.signature?.effectSpecifiers?.asyncSpecifier != nil
       }
       return false
     }

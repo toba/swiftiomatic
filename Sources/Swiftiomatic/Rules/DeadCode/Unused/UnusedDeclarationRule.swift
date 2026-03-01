@@ -241,8 +241,9 @@ extension SwiftSource {
   fileprivate func cursorInfo(at byteOffset: ByteCount, compilerArguments: [String])
     -> SourceKitDictionary?
   {
+    guard let path else { return nil }
     let request = Request.cursorInfoWithoutSymbolGraph(
-      file: path!, offset: byteOffset, arguments: compilerArguments,
+      file: path, offset: byteOffset, arguments: compilerArguments,
     )
     return (try? request.sendIfNotDisabled()).map(SourceKitDictionary.init)
   }

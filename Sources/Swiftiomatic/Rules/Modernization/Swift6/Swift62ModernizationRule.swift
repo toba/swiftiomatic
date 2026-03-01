@@ -195,24 +195,20 @@ extension Swift62ModernizationRule {
     }
 
     private func isInsideActor(_ node: Syntax) -> Bool {
-      var current: Syntax? = node
-      while let parent = current?.parent {
-        if parent.as(ActorDeclSyntax.self) != nil { return true }
-        current = parent
-      }
-      return false
+      node.nearestAncestor(ofType: ActorDeclSyntax.self) != nil
     }
 
     private func isInsideMainActorType(_ node: Syntax) -> Bool {
-      var current: Syntax? = node
-      while let parent = current?.parent {
-        if let classDecl = parent.as(ClassDeclSyntax.self) {
-          return classDecl.attributes.contains { $0.trimmedDescription.contains("@MainActor") }
+      func hasMainActorAttribute(_ attributes: AttributeListSyntax) -> Bool {
+        attributes.contains { attr in
+          attr.as(AttributeSyntax.self)?.attributeName.trimmedDescription == "MainActor"
         }
-        if let structDecl = parent.as(StructDeclSyntax.self) {
-          return structDecl.attributes.contains { $0.trimmedDescription.contains("@MainActor") }
-        }
-        current = parent
+      }
+      if let classDecl = node.nearestAncestor(ofType: ClassDeclSyntax.self) {
+        return hasMainActorAttribute(classDecl.attributes)
+      }
+      if let structDecl = node.nearestAncestor(ofType: StructDeclSyntax.self) {
+        return hasMainActorAttribute(structDecl.attributes)
       }
       return false
     }

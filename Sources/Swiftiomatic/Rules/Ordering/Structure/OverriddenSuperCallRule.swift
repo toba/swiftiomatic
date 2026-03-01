@@ -105,28 +105,23 @@ extension OverriddenSuperCallRule {
     }
 
     override func visitPost(_ node: FunctionDeclSyntax) {
-      guard let body = node.body,
-        node.modifiers.contains(keyword: .override),
-        !node.modifiers.containsStaticOrClass,
-        case let name = node.resolvedName,
-        configuration.resolvedMethodNames.contains(name)
+      guard let ctx = node.superCallContext(matchingMethodNames: configuration.resolvedMethodNames)
       else {
         return
       }
 
-      let superCallsCount = node.numberOfCallsToSuper()
-      if superCallsCount == 0 {
+      if ctx.callCount == 0 {
         violations.append(
           SyntaxViolation(
-            position: body.leftBrace.endPositionBeforeTrailingTrivia,
-            reason: "Method '\(name)' should call to super function",
+            position: ctx.body.leftBrace.endPositionBeforeTrailingTrivia,
+            reason: "Method '\(ctx.name)' should call to super function",
           ),
         )
-      } else if superCallsCount > 1 {
+      } else if ctx.callCount > 1 {
         violations.append(
           SyntaxViolation(
-            position: body.leftBrace.endPositionBeforeTrailingTrivia,
-            reason: "Method '\(name)' should call to super only once",
+            position: ctx.body.leftBrace.endPositionBeforeTrailingTrivia,
+            reason: "Method '\(ctx.name)' should call to super only once",
           ),
         )
       }

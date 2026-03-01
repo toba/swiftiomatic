@@ -251,10 +251,7 @@ extension FunctionDeclSyntax {
   }
 
   fileprivate var isTestMethod: Bool {
-    name.text.hasPrefix("test")
-      && signature.parameterClause.parameters.isEmpty
-      && signature.returnClause == nil
-      && (modifiers.isEmpty || !modifiers.contains(keyword: .static))
+    isDiscoverableTestMethod
   }
 }
 

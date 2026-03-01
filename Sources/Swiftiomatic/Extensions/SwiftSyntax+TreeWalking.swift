@@ -16,6 +16,15 @@ extension TreeWalking {
 }
 
 extension SyntaxProtocol {
+  func nearestAncestor<T: SyntaxProtocol>(ofType _: T.Type) -> T? {
+    var current: Syntax? = parent
+    while let node = current {
+      if let typed = node.as(T.self) { return typed }
+      current = node.parent
+    }
+    return nil
+  }
+
   func windowsOfThreeTokens() -> [(TokenSyntax, TokenSyntax, TokenSyntax)] {
     Array(tokens(viewMode: .sourceAccurate))
       .windows(ofCount: 3)

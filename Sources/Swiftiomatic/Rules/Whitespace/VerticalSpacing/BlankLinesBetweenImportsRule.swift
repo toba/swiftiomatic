@@ -48,19 +48,7 @@ extension BlankLinesBetweenImportsRule {
         let isImport = item.item.is(ImportDeclSyntax.self)
         if isImport, prevWasImport {
           // Check if there are blank lines between this and previous import
-          let trivia = item.leadingTrivia
-          var newlineCount = 0
-          for piece in trivia {
-            switch piece {
-            case .newlines(let count):
-              newlineCount += count
-            case .carriageReturns(let count), .carriageReturnLineFeeds(let count):
-              newlineCount += count
-            default:
-              break
-            }
-          }
-          if newlineCount > 1 {
+          if item.leadingTrivia.newlineCount > 1 {
             violations.append(item.positionAfterSkippingLeadingTrivia)
           }
         }
@@ -78,23 +66,12 @@ extension BlankLinesBetweenImportsRule {
       for item in node.statements {
         let isImport = item.item.is(ImportDeclSyntax.self)
         if isImport, prevWasImport {
-          let trivia = item.leadingTrivia
-          var newlineCount = 0
-          for piece in trivia {
-            switch piece {
-            case .newlines(let count), .carriageReturns(let count),
-              .carriageReturnLineFeeds(let count):
-              newlineCount += count
-            default:
-              break
-            }
-          }
-          if newlineCount > 1 {
+          if item.leadingTrivia.newlineCount > 1 {
             numberOfCorrections += 1
             // Replace blank lines with a single newline, preserving non-newline trivia
             var newPieces = [TriviaPiece]()
             var addedNewline = false
-            for piece in trivia {
+            for piece in item.leadingTrivia {
               switch piece {
               case .newlines, .carriageReturns, .carriageReturnLineFeeds:
                 if !addedNewline {

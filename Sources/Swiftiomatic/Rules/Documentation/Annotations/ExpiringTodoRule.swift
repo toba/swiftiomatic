@@ -64,7 +64,7 @@ extension ExpiringTodoRule {
                 .dateSeparator)\d{1,4})\#
         \\#(configuration.dateDelimiters.closing)
         """#
-      return Swiftiomatic.regex(pattern)
+      return regex(pattern)
     }()
 
     override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
@@ -146,11 +146,15 @@ extension ExpiringTodoRule {
       }
     }
 
-    private func parseDate(dateString: String) -> Date? {
+    private lazy var dateFormatter: DateFormatter = {
       let formatter = DateFormatter()
       formatter.calendar = .current
       formatter.dateFormat = configuration.dateFormat
-      return formatter.date(from: dateString)
+      return formatter
+    }()
+
+    private func parseDate(dateString: String) -> Date? {
+      dateFormatter.date(from: dateString)
     }
 
     private func getSeverity(for violationLevel: ExpiryViolationLevel) -> ViolationSeverity? {

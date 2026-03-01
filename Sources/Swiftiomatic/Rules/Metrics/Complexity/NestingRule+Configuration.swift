@@ -10,7 +10,7 @@ struct NestingConfiguration: RuleConfiguration {
   @ConfigurationElement(key: "always_allow_one_type_in_functions")
   private(set) var alwaysAllowOneTypeInFunctions = false
   @ConfigurationElement(key: "ignore_typealiases_and_associatedtypes")
-  private(set) var ignoreTypealiasesAndAssociatedtypes = false
+  private(set) var ignoreTypealiasesAndAssociatedTypes = false
   @ConfigurationElement(key: "ignore_coding_keys")
   private(set) var ignoreCodingKeys = false
 
@@ -45,8 +45,8 @@ struct NestingConfiguration: RuleConfiguration {
     if let value = configuration[$alwaysAllowOneTypeInFunctions.key] {
       try alwaysAllowOneTypeInFunctions.apply(value, ruleID: Parent.identifier)
     }
-    if let value = configuration[$ignoreTypealiasesAndAssociatedtypes.key] {
-      try ignoreTypealiasesAndAssociatedtypes.apply(value, ruleID: Parent.identifier)
+    if let value = configuration[$ignoreTypealiasesAndAssociatedTypes.key] {
+      try ignoreTypealiasesAndAssociatedTypes.apply(value, ruleID: Parent.identifier)
     }
     if let value = configuration[$ignoreCodingKeys.key] {
       try ignoreCodingKeys.apply(value, ruleID: Parent.identifier)

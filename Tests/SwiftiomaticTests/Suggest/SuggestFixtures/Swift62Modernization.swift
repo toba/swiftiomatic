@@ -13,41 +13,41 @@ let smallTuple: (Int, Int) = (1, 2)
 
 // Should flag: static var without isolation
 struct GlobalState {
-    static var counter: Int = 0
-    static var name: String = ""
+  static var counter: Int = 0
+  static var name: String = ""
 }
 
 // Should NOT flag: private static var
 struct PrivateGlobalState {
-    private static var counter: Int = 0
+  private static var counter: Int = 0
 }
 
 // Should flag: nonisolated in @MainActor type
 @MainActor
 class ViewModel {
-    nonisolated func hashValue() -> Int { 0 }
+  nonisolated func hashValue() -> Int { 0 }
 }
 
 // Should NOT flag: method without nonisolated
 @MainActor
 class GoodViewModel {
-    func update() { }
+  func update() {}
 }
 
 // Should flag: context parameter threaded through all calls
 func processRequest(context: RequestContext) {
-    validate(context: context)
-    transform(context: context)
+  validate(context: context)
+  transform(context: context)
 }
 
-func validate(context: RequestContext) { }
-func transform(context: RequestContext) { }
-struct RequestContext { }
+func validate(context: RequestContext) {}
+func transform(context: RequestContext) {}
+struct RequestContext {}
 
 // Should NOT flag: context param not threaded to all calls
 func partialContext(context: RequestContext) {
-    validate(context: context)
-    doSomethingElse()
+  validate(context: context)
+  doSomethingElse()
 }
 
-func doSomethingElse() { }
+func doSomethingElse() {}

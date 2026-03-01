@@ -186,8 +186,7 @@ extension LineLengthRule {
 
 // MARK: - Helper Visitors for Pre-computation
 
-/// Visitor to find lines spanned by function declaration signatures
-private final class FunctionLineVisitor: SyntaxVisitor {
+private class LineCollectingVisitor: SyntaxVisitor {
   let locationConverter: SourceLocationConverter
   var lines = Set<Int>()
 
@@ -196,6 +195,16 @@ private final class FunctionLineVisitor: SyntaxVisitor {
     super.init(viewMode: .sourceAccurate)
   }
 
+  func collectLines(from startPosition: AbsolutePosition, to endPosition: AbsolutePosition) {
+    let startLine = locationConverter.location(for: startPosition).line
+    let endLine = locationConverter.location(for: endPosition).line
+    for line in startLine...endLine {
+      lines.insert(line)
+    }
+  }
+}
+
+private final class FunctionLineVisitor: LineCollectingVisitor {
   override func visitPost(_ node: FunctionDeclSyntax) {
     collectLines(
       from: node.positionAfterSkippingLeadingTrivia,
@@ -219,67 +228,35 @@ private final class FunctionLineVisitor: SyntaxVisitor {
         ?? node.returnClause.endPositionBeforeTrailingTrivia,
     )
   }
-
-  private func collectLines(
-    from startPosition: AbsolutePosition,
-    to endPosition: AbsolutePosition,
-  ) {
-    let startLocation = locationConverter.location(for: startPosition)
-    let endLocation = locationConverter.location(for: endPosition)
-    for line in startLocation.line...endLocation.line {
-      lines.insert(line)
-    }
-  }
 }
 
-/// Visitor to find lines with interpolated strings
-private final class InterpolatedStringLineVisitor: SyntaxVisitor {
-  let locationConverter: SourceLocationConverter
-  var lines = Set<Int>()
-
-  init(locationConverter: SourceLocationConverter) {
-    self.locationConverter = locationConverter
-    super.init(viewMode: .sourceAccurate)
-  }
-
+private final class InterpolatedStringLineVisitor: LineCollectingVisitor {
   override func visitPost(_ node: ExpressionSegmentSyntax) {
-    // ExpressionSegmentSyntax is the interpolation inside a string
-    let startLocation = locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
-    let endLocation = locationConverter.location(for: node.endPositionBeforeTrailingTrivia)
-    for line in startLocation.line...endLocation.line {
-      lines.insert(line)
-    }
+    collectLines(
+      from: node.positionAfterSkippingLeadingTrivia,
+      to: node.endPositionBeforeTrailingTrivia,
+    )
   }
 }
 
-/// Visitor to find lines with regex literals
-private final class RegexLiteralVisitor: SyntaxVisitor {
-  let locationConverter: SourceLocationConverter
-  var lines = Set<Int>()
-
-  init(locationConverter: SourceLocationConverter) {
-    self.locationConverter = locationConverter
-    super.init(viewMode: .sourceAccurate)
-  }
-
+private final class RegexLiteralVisitor: LineCollectingVisitor {
   override func visitPost(_ node: RegexLiteralExprSyntax) {
-    let startLocation = locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
-    let endLocation = locationConverter.location(for: node.endPositionBeforeTrailingTrivia)
-    for line in startLocation.line...endLocation.line {
-      lines.insert(line)
-    }
+    collectLines(
+      from: node.positionAfterSkippingLeadingTrivia,
+      to: node.endPositionBeforeTrailingTrivia,
+    )
   }
 }
+
+private let urlDetector: NSDataDetector? = {
+  try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+}()
 
 extension String {
   fileprivate var strippingURLs: String {
-    let range = fullNSRange
-    let types = NSTextCheckingResult.CheckingType.link.rawValue
-    guard let urlDetector = try? NSDataDetector(types: types) else {
-      return self
-    }
+    guard let urlDetector else { return self }
     return urlDetector.stringByReplacingMatches(
-      in: self, options: [], range: range, withTemplate: "",
+      in: self, options: [], range: fullNSRange, withTemplate: "",
     )
   }
 }

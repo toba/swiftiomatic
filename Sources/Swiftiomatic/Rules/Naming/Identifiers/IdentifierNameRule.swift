@@ -233,7 +233,7 @@ private enum NamedDeclType: CustomStringConvertible {
     return
       name
       .trimmingCharacters(in: CharacterSet(charactersIn: "`"))
-      .strippingLeadingUnderscore(if: isPrivate)
+      .strippingLeadingUnderscore(ifPrivate: isPrivate)
   }
 }
 
@@ -250,9 +250,6 @@ extension String {
     return secondCharacter.isLowercase
   }
 
-  fileprivate func strippingLeadingUnderscore(if isPrivate: Bool) -> Self {
-    isPrivate && first == "_" ? allButFirstCharacter : self
-  }
 
   fileprivate var leadingDollarStripped: Self {
     first == "$" ? allButFirstCharacter : self

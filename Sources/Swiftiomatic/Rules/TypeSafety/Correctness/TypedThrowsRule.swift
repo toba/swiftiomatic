@@ -74,29 +74,13 @@ extension TypedThrowsRule {
     override func visitPost(_ node: FunctionDeclSyntax) {
       checkResultReturnType(node)
 
-      guard let throwsClause = node.signature.effectSpecifiers?.throwsClause,
-        throwsClause.type == nil,
-        let body = node.body
-      else { return }
-
-      let collector = ThrowCollector(viewMode: .sourceAccurate)
-      collector.walk(body)
-
-      guard !collector.thrownTypes.isEmpty,
-        !collector.thrownTypes.contains("__unknown__"),
-        collector.thrownTypes.count == 1,
-        let errorType = collector.thrownTypes.first
-      else { return }
-
       let funcName = node.name.text
-      violations.append(
-        SyntaxViolation(
-          position: node.positionAfterSkippingLeadingTrivia,
-          reason: "Function '\(funcName)' throws only '\(errorType)' but declares untyped 'throws'",
-          severity: .warning,
-          confidence: collector.hasRethrows ? .medium : .high,
-          suggestion: "func \(funcName)(...) throws(\(errorType))",
-        ),
+      checkThrowsClause(
+        throwsClause: node.signature.effectSpecifiers?.throwsClause,
+        body: node.body,
+        label: "Function '\(funcName)'",
+        suggestionPrefix: "func \(funcName)(...) ",
+        position: node.positionAfterSkippingLeadingTrivia,
       )
     }
 
@@ -178,9 +162,24 @@ extension TypedThrowsRule {
     }
 
     override func visitPost(_ node: InitializerDeclSyntax) {
-      guard let throwsClause = node.signature.effectSpecifiers?.throwsClause,
-        throwsClause.type == nil,
-        let body = node.body
+      checkThrowsClause(
+        throwsClause: node.signature.effectSpecifiers?.throwsClause,
+        body: node.body,
+        label: "Initializer",
+        suggestionPrefix: "init(...) ",
+        position: node.positionAfterSkippingLeadingTrivia,
+      )
+    }
+
+    private func checkThrowsClause(
+      throwsClause: ThrowsClauseSyntax?,
+      body: CodeBlockSyntax?,
+      label: String,
+      suggestionPrefix: String,
+      position: AbsolutePosition,
+    ) {
+      guard let throwsClause, throwsClause.type == nil,
+        let body
       else { return }
 
       let collector = ThrowCollector(viewMode: .sourceAccurate)
@@ -194,11 +193,11 @@ extension TypedThrowsRule {
 
       violations.append(
         SyntaxViolation(
-          position: node.positionAfterSkippingLeadingTrivia,
-          reason: "Initializer throws only '\(errorType)' but declares untyped 'throws'",
+          position: position,
+          reason: "\(label) throws only '\(errorType)' but declares untyped 'throws'",
           severity: .warning,
           confidence: collector.hasRethrows ? .medium : .high,
-          suggestion: "init(...) throws(\(errorType))",
+          suggestion: "\(suggestionPrefix)throws(\(errorType))",
         ),
       )
     }
@@ -219,47 +218,38 @@ extension TypedThrowsRule {
     var queries: [UnknownThrowQuery] = []
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-      guard let throwsClause = node.signature.effectSpecifiers?.throwsClause,
-        throwsClause.type == nil,
-        let body = node.body
-      else { return .visitChildren }
-
-      let collector = ThrowCollector(viewMode: .sourceAccurate)
-      collector.walk(body)
-
-      guard !collector.thrownTypes.isEmpty,
-        collector.thrownTypes.contains("__unknown__"),
-        !collector.unknownOffsets.isEmpty
-      else { return .visitChildren }
-
-      let knownTypes = collector.thrownTypes.subtracting(["__unknown__"])
       let funcName = node.name.text
-
-      for offset in collector.unknownOffsets {
-        let loc = node.startLocation(
-          converter: .init(fileName: "", tree: node.root),
-        )
-        queries.append(
-          UnknownThrowQuery(
-            offset: offset,
-            line: loc.line,
-            column: loc.column,
-            knownTypes: knownTypes,
-            hasRethrows: collector.hasRethrows,
-            label: "Function '\(funcName)'",
-            suggestionPrefix: "func \(funcName)(...) ",
-          ),
-        )
-      }
-
+      collectUnknownThrowQueries(
+        throwsClause: node.signature.effectSpecifiers?.throwsClause,
+        body: node.body,
+        node: Syntax(node),
+        label: "Function '\(funcName)'",
+        suggestionPrefix: "func \(funcName)(...) ",
+      )
       return .visitChildren
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-      guard let throwsClause = node.signature.effectSpecifiers?.throwsClause,
-        throwsClause.type == nil,
-        let body = node.body
-      else { return .visitChildren }
+      collectUnknownThrowQueries(
+        throwsClause: node.signature.effectSpecifiers?.throwsClause,
+        body: node.body,
+        node: Syntax(node),
+        label: "Initializer",
+        suggestionPrefix: "init(...) ",
+      )
+      return .visitChildren
+    }
+
+    private func collectUnknownThrowQueries(
+      throwsClause: ThrowsClauseSyntax?,
+      body: CodeBlockSyntax?,
+      node: Syntax,
+      label: String,
+      suggestionPrefix: String,
+    ) {
+      guard let throwsClause, throwsClause.type == nil,
+        let body
+      else { return }
 
       let collector = ThrowCollector(viewMode: .sourceAccurate)
       collector.walk(body)
@@ -267,7 +257,7 @@ extension TypedThrowsRule {
       guard !collector.thrownTypes.isEmpty,
         collector.thrownTypes.contains("__unknown__"),
         !collector.unknownOffsets.isEmpty
-      else { return .visitChildren }
+      else { return }
 
       let knownTypes = collector.thrownTypes.subtracting(["__unknown__"])
 
@@ -282,13 +272,11 @@ extension TypedThrowsRule {
             column: loc.column,
             knownTypes: knownTypes,
             hasRethrows: collector.hasRethrows,
-            label: "Initializer",
-            suggestionPrefix: "init(...) ",
+            label: label,
+            suggestionPrefix: suggestionPrefix,
           ),
         )
       }
-
-      return .visitChildren
     }
   }
 }

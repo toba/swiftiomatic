@@ -62,7 +62,7 @@ extension SpaceAroundParensRule {
       }
 
       let trivia = leftParen.leadingTrivia
-      if trivia.containsSpacesOnly, !trivia.containsNewlines() {
+      if trivia.isHorizontalWhitespaceOnly, !trivia.containsNewlines() {
         violations.append(prevToken.endPositionBeforeTrailingTrivia)
       }
     }
@@ -81,24 +81,12 @@ extension SpaceAroundParensRule {
         return super.visit(node)
       }
 
-      if leftParen.leadingTrivia.containsSpacesOnly, !leftParen.leadingTrivia.containsNewlines() {
+      if leftParen.leadingTrivia.isHorizontalWhitespaceOnly, !leftParen.leadingTrivia.containsNewlines() {
         numberOfCorrections += 1
         let newParen = leftParen.with(\.leadingTrivia, Trivia())
         return super.visit(node.with(\.leftParen, newParen))
       }
       return super.visit(node)
-    }
-  }
-}
-
-extension Trivia {
-  fileprivate var containsSpacesOnly: Bool {
-    guard !isEmpty else { return false }
-    return allSatisfy {
-      switch $0 {
-      case .spaces, .tabs: true
-      default: false
-      }
     }
   }
 }

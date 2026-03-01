@@ -58,7 +58,12 @@
       "mcp__xc-build__discover_projs",
       "WebFetch(domain:realm.github.io)",
       "mcp__xc-swift__swift_package_run",
-      "Bash(swift run:*)"
+      "Bash(swift run:*)",
+      "mcp__xc-project__set_build_setting",
+      "mcp__xc-project__list_swift_packages",
+      "mcp__xc-project__get_build_settings",
+      "mcp__xc-project__remove_target",
+      "mcp__xc-build__clean"
     ]
   },
   "enableAllProjectMcpServers": true,

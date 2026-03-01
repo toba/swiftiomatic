@@ -92,19 +92,7 @@ extension BlankLinesBetweenScopesRule {
     }
 
     private func checkBlankLineBefore(_ node: some SyntaxProtocol) {
-      let trivia = node.leadingTrivia
-      var newlineCount = 0
-      for piece in trivia {
-        switch piece {
-        case .newlines(let count):
-          newlineCount += count
-        case .carriageReturns(let count), .carriageReturnLineFeeds(let count):
-          newlineCount += count
-        default:
-          break
-        }
-      }
-      if newlineCount < 2 {
+      if node.leadingTrivia.newlineCount < 2 {
         violations.append(node.positionAfterSkippingLeadingTrivia)
       }
     }

@@ -1,173 +1,175 @@
 import Testing
+
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered, .disabled("requires sourcekitd")) struct FileTypesOrderRuleTests {
-    @Test func fileTypesOrderReversedOrder() async {
-        // Test with reversed `order` entries
-        let nonTriggeringExamples = [
-            Example(FileTypesOrderRuleExamples.defaultOrderParts.reversed()
-                .joined(separator: "\n\n")),
+  @Test func fileTypesOrderReversedOrder() async {
+    // Test with reversed `order` entries
+    let nonTriggeringExamples = [
+      Example(
+        FileTypesOrderRuleExamples.defaultOrderParts.reversed()
+          .joined(separator: "\n\n"))
+    ]
+    let triggeringExamples = [
+      Example(
+        """
+        // Supporting Types
+        ↓protocol TestViewControllerDelegate {
+            func didPressTrackedButton()
+        }
+
+        class TestViewController: UIViewController {}
+        """,
+      ),
+      Example(
+        """
+        ↓class TestViewController: UIViewController {}
+
+        // Extensions
+        extension TestViewController: UITableViewDataSource {
+            func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+                return 1
+            }
+
+            func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+                return UITableViewCell()
+            }
+        }
+        """,
+      ),
+      Example(
+        """
+        // Supporting Types
+        ↓protocol TestViewControllerDelegate {
+            func didPressTrackedButton()
+        }
+
+        class TestViewController: UIViewController {}
+
+        // Supporting Types
+        protocol TestViewControllerDelegate {
+            func didPressTrackedButton()
+        }
+        """,
+      ),
+      Example(
+        """
+        ↓struct ContentView: View {
+           var body: some View {
+               Text("Hello, World!")
+           }
+        }
+
+        struct ContentView_Previews: PreviewProvider {
+           static var previews: some View { ContentView() }
+        }
+        """,
+      ),
+      Example(
+        """
+        ↓struct ContentView: View {
+           var body: some View {
+               Text("Hello, World!")
+           }
+        }
+
+        struct ContentView_LibraryContent: LibraryContentProvider {
+            var views: [LibraryItem] {
+                LibraryItem(ContentView())
+            }
+        }
+        """,
+      ),
+    ]
+
+    let reversedOrderDescription = FileTypesOrderRule.description
+      .with(triggeringExamples: triggeringExamples)
+      .with(nonTriggeringExamples: nonTriggeringExamples)
+
+    await verifyRule(
+      reversedOrderDescription,
+      ruleConfiguration: [
+        "order": [
+          "library_content_provider", "preview_provider", "extension", "main_type",
+          "supporting_type",
         ]
-        let triggeringExamples = [
-            Example(
-                """
-                // Supporting Types
-                ↓protocol TestViewControllerDelegate {
-                    func didPressTrackedButton()
-                }
+      ],
+    )
+  }
 
-                class TestViewController: UIViewController {}
-                """,
-            ),
-            Example(
-                """
-                ↓class TestViewController: UIViewController {}
+  @Test func fileTypesOrderGroupedOrder() async {
+    // Test with grouped `order` entries
+    let nonTriggeringExamples = [
+      Example(
+        """
+        class TestViewController: UIViewController {}
 
-                // Extensions
-                extension TestViewController: UITableViewDataSource {
-                    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-                        return 1
-                    }
+        // Supporting Type
+        protocol TestViewControllerDelegate {
+            func didPressTrackedButton()
+        }
 
-                    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-                        return UITableViewCell()
-                    }
-                }
-                """,
-            ),
-            Example(
-                """
-                // Supporting Types
-                ↓protocol TestViewControllerDelegate {
-                    func didPressTrackedButton()
-                }
+        // Extension
+        extension TestViewController: UITableViewDataSource {
+            func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+                return 1
+            }
+        }
 
-                class TestViewController: UIViewController {}
+        // Supporting Type
+        protocol TestViewControllerDelegate2 {
+            func didPressTrackedButton()
+        }
 
-                // Supporting Types
-                protocol TestViewControllerDelegate {
-                    func didPressTrackedButton()
-                }
-                """,
-            ),
-            Example(
-                """
-                ↓struct ContentView: View {
-                   var body: some View {
-                       Text("Hello, World!")
-                   }
-                }
+        // Extension
+        extension TestViewController: UITableViewDelegate {
+            func someMethod() {}
+        }
+        """,
+      )
+    ]
+    let triggeringExamples = [
+      Example(
+        """
+        // Supporting Types
+        ↓protocol TestViewControllerDelegate {
+            func didPressTrackedButton()
+        }
 
-                struct ContentView_Previews: PreviewProvider {
-                   static var previews: some View { ContentView() }
-                }
-                """,
-            ),
-            Example(
-                """
-                ↓struct ContentView: View {
-                   var body: some View {
-                       Text("Hello, World!")
-                   }
-                }
+        class TestViewController: UIViewController {}
+        """,
+      ),
+      Example(
+        """
+        // Extensions
+        ↓extension TestViewController: UITableViewDataSource {
+            func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+                return 1
+            }
 
-                struct ContentView_LibraryContent: LibraryContentProvider {
-                    var views: [LibraryItem] {
-                        LibraryItem(ContentView())
-                    }
-                }
-                """,
-            ),
-        ]
+            func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+                return UITableViewCell()
+            }
+        }
 
-        let reversedOrderDescription = FileTypesOrderRule.description
-            .with(triggeringExamples: triggeringExamples)
-            .with(nonTriggeringExamples: nonTriggeringExamples)
+        class TestViewController: UIViewController {}
+        """,
+      ),
+    ]
 
-        await verifyRule(
-            reversedOrderDescription,
-            ruleConfiguration: [
-                "order": [
-                    "library_content_provider", "preview_provider", "extension", "main_type",
-                    "supporting_type",
-                ],
-            ],
-        )
-    }
+    let groupedOrderDescription = FileTypesOrderRule.description
+      .with(triggeringExamples: triggeringExamples)
+      .with(nonTriggeringExamples: nonTriggeringExamples)
 
-    @Test func fileTypesOrderGroupedOrder() async {
-        // Test with grouped `order` entries
-        let nonTriggeringExamples = [
-            Example(
-                """
-                class TestViewController: UIViewController {}
-
-                // Supporting Type
-                protocol TestViewControllerDelegate {
-                    func didPressTrackedButton()
-                }
-
-                // Extension
-                extension TestViewController: UITableViewDataSource {
-                    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-                        return 1
-                    }
-                }
-
-                // Supporting Type
-                protocol TestViewControllerDelegate2 {
-                    func didPressTrackedButton()
-                }
-
-                // Extension
-                extension TestViewController: UITableViewDelegate {
-                    func someMethod() {}
-                }
-                """,
-            ),
-        ]
-        let triggeringExamples = [
-            Example(
-                """
-                // Supporting Types
-                ↓protocol TestViewControllerDelegate {
-                    func didPressTrackedButton()
-                }
-
-                class TestViewController: UIViewController {}
-                """,
-            ),
-            Example(
-                """
-                // Extensions
-                ↓extension TestViewController: UITableViewDataSource {
-                    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-                        return 1
-                    }
-
-                    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-                        return UITableViewCell()
-                    }
-                }
-
-                class TestViewController: UIViewController {}
-                """,
-            ),
-        ]
-
-        let groupedOrderDescription = FileTypesOrderRule.description
-            .with(triggeringExamples: triggeringExamples)
-            .with(nonTriggeringExamples: nonTriggeringExamples)
-
-        await verifyRule(
-            groupedOrderDescription,
-            ruleConfiguration: [
-                "order": [
-                    "main_type",
-                    ["extension", "supporting_type"] as Any,
-                    "preview_provider",
-                ] as Any,
-            ],
-        )
-    }
+    await verifyRule(
+      groupedOrderDescription,
+      ruleConfiguration: [
+        "order": [
+          "main_type",
+          ["extension", "supporting_type"] as Any,
+          "preview_provider",
+        ] as Any
+      ],
+    )
+  }
 }

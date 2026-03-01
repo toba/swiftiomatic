@@ -132,8 +132,8 @@ extension ExplicitACLRule: SwiftSyntaxRule {
 extension ExplicitACLRule: OptInRule {}
 
 private enum CheckACLState {
-  case yes
-  case no  // sm:disable:this identifier_name
+  case required
+  case inherited
 }
 
 extension ExplicitACLRule {
@@ -152,7 +152,7 @@ extension ExplicitACLRule {
 
     override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
       collectViolations(decl: node, token: node.actorKeyword)
-      declScope.push(.yes)
+      declScope.push(.required)
       return node.modifiers.containsPrivateOrFileprivate() ? .skipChildren : .visitChildren
     }
 
@@ -162,7 +162,7 @@ extension ExplicitACLRule {
 
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
       collectViolations(decl: node, token: node.classKeyword)
-      declScope.push(.yes)
+      declScope.push(.required)
       return node.modifiers.containsPrivateOrFileprivate() ? .skipChildren : .visitChildren
     }
 
@@ -179,7 +179,7 @@ extension ExplicitACLRule {
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-      declScope.push(node.modifiers.accessLevelModifier != nil ? .no : .yes)
+      declScope.push(node.modifiers.accessLevelModifier != nil ? .inherited : .required)
       return node.modifiers.containsPrivateOrFileprivate() ? .skipChildren : .visitChildren
     }
 
@@ -189,7 +189,7 @@ extension ExplicitACLRule {
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
       collectViolations(decl: node, token: node.enumKeyword)
-      declScope.push(.yes)
+      declScope.push(.required)
       return node.modifiers.containsPrivateOrFileprivate() ? .skipChildren : .visitChildren
     }
 
@@ -211,7 +211,7 @@ extension ExplicitACLRule {
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
       collectViolations(decl: node, token: node.structKeyword)
-      declScope.push(.yes)
+      declScope.push(.required)
       return node.modifiers.containsPrivateOrFileprivate() ? .skipChildren : .visitChildren
     }
 
@@ -233,7 +233,7 @@ extension ExplicitACLRule {
 
     private func collectViolations(decl: some WithModifiersSyntax, token: TokenSyntax) {
       let aclModifiers = decl.modifiers.filter { $0.asAccessLevelModifier != nil }
-      if declScope.peek() != .no,
+      if declScope.peek() != .inherited,
         aclModifiers.isEmpty || aclModifiers.allSatisfy({ $0.detail != nil })
       {
         violations.append(token.positionAfterSkippingLeadingTrivia)

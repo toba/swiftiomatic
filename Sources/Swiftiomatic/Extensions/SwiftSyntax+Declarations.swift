@@ -156,6 +156,27 @@ extension FunctionDeclSyntax {
     return SuperCallVisitor(expectedFunctionName: name.text)
       .walk(tree: body, handler: \.superCallsCount)
   }
+
+  /// Checks whether this function is an override of a method whose resolved name
+  /// appears in `methodNames`. Returns the resolved name, body, and super-call count
+  /// if all conditions are met; returns `nil` otherwise.
+  ///
+  /// Shared guard logic used by `OverriddenSuperCallRule` and `ProhibitedSuperRule`.
+  func superCallContext(
+    matchingMethodNames methodNames: [String]
+  ) -> (name: String, body: CodeBlockSyntax, callCount: Int)? {
+    guard let body,
+      modifiers.contains(keyword: .override),
+      !modifiers.containsStaticOrClass
+    else {
+      return nil
+    }
+    let name = resolvedName
+    guard methodNames.contains(name) else {
+      return nil
+    }
+    return (name, body, numberOfCallsToSuper())
+  }
 }
 
 extension AccessorBlockSyntax {

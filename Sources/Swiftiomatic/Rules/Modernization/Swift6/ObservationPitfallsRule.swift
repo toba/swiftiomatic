@@ -11,7 +11,13 @@ struct ObservationPitfallsRule: Rule {
       Example("for await value in Observations({ [weak self] in self?.model }) { }")
     ],
     triggeringExamples: [
-      Example("↓withObservationTracking { observe() }")
+      Example(
+        """
+        for await value in ↓Observations({ self.model }) {
+            print(value)
+        }
+        """,
+      )
     ],
   )
 }
@@ -26,21 +32,6 @@ extension ObservationPitfallsRule: OptInRule {}
 
 extension ObservationPitfallsRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
-    override func visitPost(_ node: FunctionCallExprSyntax) {
-      if node.calledExpression.trimmedDescription == "withObservationTracking" {
-        violations.append(
-          SyntaxViolation(
-            position: node.positionAfterSkippingLeadingTrivia,
-            reason:
-              "withObservationTracking with recursive onChange — consider Observations AsyncSequence",
-            severity: .warning,
-            confidence: .medium,
-            suggestion: "Replace with `for await value in Observations { ... }`",
-          ),
-        )
-      }
-    }
-
     override func visitPost(_ node: ForStmtSyntax) {
       guard let callExpr = node.sequence.as(FunctionCallExprSyntax.self),
         callExpr.calledExpression.trimmedDescription == "Observations"

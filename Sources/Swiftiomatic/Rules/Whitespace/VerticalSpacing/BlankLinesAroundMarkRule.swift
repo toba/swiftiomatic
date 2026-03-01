@@ -58,23 +58,12 @@ extension BlankLinesAroundMarkRule {
             }
 
             // Check blank line after MARK
-            let remainingTrivia = Array(leading.dropFirst(index + 1))
-            var newlinesAfter = 0
-            for afterPiece in remainingTrivia {
-              switch afterPiece {
-              case .newlines(let count), .carriageReturns(let count),
-                .carriageReturnLineFeeds(let count):
-                newlinesAfter += count
-              case .spaces, .tabs:
-                break
-              default:
-                break
-              }
-            }
-            // Also count the newline that ends the comment line
-            // The token after this trivia should have sufficient spacing
-            if newlinesAfter < 2, token.nextToken(viewMode: .sourceAccurate) != nil {
-              // Don't double-flag — the "before" violation is enough
+            let remainingTrivia = Trivia(pieces: Array(leading.dropFirst(index + 1)))
+            if remainingTrivia.newlineCount < 2,
+              token.nextToken(viewMode: .sourceAccurate) != nil
+            {
+              violations.append(
+                position.advanced(by: piece.sourceLength.utf8Length))
             }
           }
           newlineCountBeforeMark = 0

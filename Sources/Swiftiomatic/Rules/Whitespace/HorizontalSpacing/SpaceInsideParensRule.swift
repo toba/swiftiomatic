@@ -37,11 +37,11 @@ extension SpaceInsideParensRule {
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
       switch token.tokenKind {
       case .leftParen:
-        if hasOnlySpaces(token.trailingTrivia) {
+        if token.trailingTrivia.isHorizontalWhitespaceOnly {
           violations.append(token.endPositionBeforeTrailingTrivia)
         }
       case .rightParen:
-        if hasOnlySpaces(token.leadingTrivia) {
+        if token.leadingTrivia.isHorizontalWhitespaceOnly {
           violations.append(token.positionAfterSkippingLeadingTrivia)
         }
       default:
@@ -49,30 +49,18 @@ extension SpaceInsideParensRule {
       }
       return .visitChildren
     }
-
-    private func hasOnlySpaces(_ trivia: Trivia) -> Bool {
-      guard !trivia.isEmpty else { return false }
-      return trivia.allSatisfy {
-        switch $0 {
-        case .spaces, .tabs:
-          true
-        default:
-          false
-        }
-      }
-    }
   }
 
   fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
       switch token.tokenKind {
       case .leftParen:
-        if hasOnlySpaces(token.trailingTrivia) {
+        if token.trailingTrivia.isHorizontalWhitespaceOnly {
           numberOfCorrections += 1
           return super.visit(token.with(\.trailingTrivia, Trivia()))
         }
       case .rightParen:
-        if hasOnlySpaces(token.leadingTrivia) {
+        if token.leadingTrivia.isHorizontalWhitespaceOnly {
           numberOfCorrections += 1
           return super.visit(token.with(\.leadingTrivia, Trivia()))
         }
@@ -80,18 +68,6 @@ extension SpaceInsideParensRule {
         break
       }
       return super.visit(token)
-    }
-
-    private func hasOnlySpaces(_ trivia: Trivia) -> Bool {
-      guard !trivia.isEmpty else { return false }
-      return trivia.allSatisfy {
-        switch $0 {
-        case .spaces, .tabs:
-          true
-        default:
-          false
-        }
-      }
     }
   }
 }

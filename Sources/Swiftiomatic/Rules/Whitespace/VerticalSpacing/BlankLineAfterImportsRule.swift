@@ -68,22 +68,8 @@ extension BlankLineAfterImportsRule {
       // Skip if the next item is also an import
       if nextItem.item.is(ImportDeclSyntax.self) { return }
 
-      // Check if the next item's leading trivia contains a blank line
-      let trivia = nextItem.leadingTrivia
-      var newlineCount = 0
-      for piece in trivia {
-        switch piece {
-        case .newlines(let count):
-          newlineCount += count
-        case .carriageReturns(let count), .carriageReturnLineFeeds(let count):
-          newlineCount += count
-        default:
-          break
-        }
-      }
-
       // Need at least 2 newlines (one for end of import line, one for blank line)
-      if newlineCount < 2 {
+      if nextItem.leadingTrivia.newlineCount < 2 {
         violations.append(nextItem.positionAfterSkippingLeadingTrivia)
       }
     }
@@ -108,20 +94,9 @@ extension BlankLineAfterImportsRule {
 
       if nextItem.item.is(ImportDeclSyntax.self) { return super.visit(node) }
 
-      let trivia = nextItem.leadingTrivia
-      var newlineCount = 0
-      for piece in trivia {
-        switch piece {
-        case .newlines(let count), .carriageReturns(let count), .carriageReturnLineFeeds(let count):
-          newlineCount += count
-        default:
-          break
-        }
-      }
-
-      if newlineCount < 2 {
+      if nextItem.leadingTrivia.newlineCount < 2 {
         numberOfCorrections += 1
-        let newTrivia = Trivia.newlines(1) + trivia
+        let newTrivia = Trivia.newlines(1) + nextItem.leadingTrivia
         let newItem = nextItem.with(\.leadingTrivia, newTrivia)
         var newStatements = Array(statements)
         let arrayIndex = statements.distance(from: statements.startIndex, to: nextIndex)

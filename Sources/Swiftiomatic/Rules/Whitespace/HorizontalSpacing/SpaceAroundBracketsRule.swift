@@ -41,7 +41,7 @@ extension SpaceAroundBracketsRule {
       let leftBracket = node.leftSquare
       guard let prevToken = leftBracket.previousToken(viewMode: .sourceAccurate) else { return }
 
-      if prevToken.trailingTrivia.hasSpacesNotNewlines,
+      if prevToken.trailingTrivia.containsHorizontalWhitespace,
         !prevToken.trailingTrivia.containsNewlines()
       {
         violations.append(prevToken.endPositionBeforeTrailingTrivia)
@@ -50,35 +50,20 @@ extension SpaceAroundBracketsRule {
   }
 
   fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
-    override func visit(_ node: SubscriptCallExprSyntax) -> ExprSyntax {
-      let leftBracket = node.leftSquare
-      guard let prevToken = leftBracket.previousToken(viewMode: .sourceAccurate) else {
-        return super.visit(node)
-      }
-
-      if prevToken.trailingTrivia.hasSpacesNotNewlines,
-        !prevToken.trailingTrivia.containsNewlines()
+    override func visit(_ token: TokenSyntax) -> TokenSyntax {
+      // Strip trailing horizontal whitespace from callee token before `[` in subscript calls
+      if token.trailingTrivia.containsHorizontalWhitespace,
+        !token.trailingTrivia.containsNewlines(),
+        let nextToken = token.nextToken(viewMode: .sourceAccurate),
+        nextToken.tokenKind == .leftSquare,
+        nextToken.parent?.parent?.is(SubscriptCallExprSyntax.self) == true
       {
         numberOfCorrections += 1
-        // Remove space from the previous token's trailing trivia
-        // We need to modify the parent tree, so we modify the left bracket's leading trivia
-        let newLeftBracket = leftBracket.with(\.leadingTrivia, Trivia())
-        let newNode = node.with(\.leftSquare, newLeftBracket)
-        return super.visit(newNode)
+        let strippedTrivia = Trivia(
+          pieces: token.trailingTrivia.filter { !$0.isHorizontalWhitespace })
+        return super.visit(token.with(\.trailingTrivia, strippedTrivia))
       }
-      return super.visit(node)
+      return super.visit(token)
     }
-  }
-}
-
-extension Trivia {
-  fileprivate var hasSpacesNotNewlines: Bool {
-    let hasSpace = contains {
-      switch $0 {
-      case .spaces, .tabs: true
-      default: false
-      }
-    }
-    return hasSpace && !containsNewlines()
   }
 }
