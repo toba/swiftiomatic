@@ -1,6 +1,15 @@
 import Foundation
 
 extension SwiftSource {
+  /// Build the list of ``Region`` values derived from enable/disable commands in this source file
+  ///
+  /// Regions represent contiguous spans of source where a specific set of rules is disabled.
+  /// Adjacent commands with overlapping ranges are merged so that the returned regions
+  /// never overlap.
+  ///
+  /// - Parameters:
+  ///   - restrictingRuleIdentifiers: When non-`nil`, only commands targeting these identifiers
+  ///     are considered. Pass `nil` to include all commands.
   func regions(restrictingRuleIdentifiers: Set<RuleIdentifier>? = nil) -> [Region] {
     var regions = [Region]()
     var disabledRules = Set<RuleIdentifier>()
@@ -51,6 +60,11 @@ extension SwiftSource {
     return regions
   }
 
+  /// Return the expanded enable/disable commands found in this source file
+  ///
+  /// - Parameters:
+  ///   - range: When non-`nil`, only commands whose location falls within this
+  ///     character range are returned. Pass `nil` to return all commands.
   func commands(in range: NSRange? = nil) -> [Command] {
     guard let range else {
       return
@@ -71,6 +85,10 @@ extension SwiftSource {
       .flatMap { $0.expand() }
   }
 
+  /// Compute the ``Location`` just before the next command, or end-of-file when there is none
+  ///
+  /// - Parameters:
+  ///   - command: The next command in sequence, or `nil` if there is no subsequent command.
   private func endOf(next command: Command?) -> Location {
     guard let nextCommand = command else {
       return Location(file: path, line: .max, column: .max)

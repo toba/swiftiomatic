@@ -67,7 +67,7 @@ extension FormatRule {
     sharedOptions: ["linebreaks"],
   ) { formatter in
     _ = formatter.options.importGrouping
-    _ = formatter.options.linebreak
+    _ = formatter.options.lineBreak
     FormatRule.sortImports.apply(with: formatter)
   } examples: {
     nil

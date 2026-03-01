@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-/// A configuration that's based on warning and error thresholds for violations.
+/// A rule configuration that defines warning and error thresholds for line-count violations
 protocol SeverityLevelsBasedRuleConfiguration<Parent>: RuleConfiguration {
-    /// The severity configuration that defines the thresholds for warning and error severities.
+    /// The severity thresholds for warning and error levels
     var severityConfiguration: SeverityLevelsConfiguration<Parent> { get }
 }
 
@@ -12,7 +12,11 @@ extension SeverityLevelsConfiguration: SeverityLevelsBasedRuleConfiguration {
     }
 }
 
-/// Violation visitor customized to collect violations of code blocks that exceed a specified number of lines.
+/// Collects violations for code blocks that exceed a configured line-count threshold
+///
+/// Line counts exclude comments and whitespace. Subclasses call
+/// ``registerViolations(leftBrace:rightBrace:violationNode:objectName:)`` from
+/// their `visitPost` overrides.
 class BodyLengthVisitor<
     LevelConfig: SeverityLevelsBasedRuleConfiguration,
 >: ViolationCollectingVisitor<

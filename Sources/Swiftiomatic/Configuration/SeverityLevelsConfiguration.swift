@@ -1,22 +1,23 @@
-/// A rule configuration that allows specifying thresholds for `warning` and `error` severities.
+/// A rule configuration that allows specifying thresholds for `warning` and `error` severities
 struct SeverityLevelsConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption, Sendable {
-    /// The threshold for a violation to be a warning.
+    /// The threshold for a violation to be a warning
     @ConfigurationElement(key: "warning")
     var warning = 12
-    /// The threshold for a violation to be an error.
+    /// The threshold for a violation to be an error
     @ConfigurationElement(key: "error")
     var error: Int?
 
-    /// Create a `SeverityLevelsConfiguration` based on the specified `warning` and `error` thresholds.
+    /// Create a ``SeverityLevelsConfiguration`` with the specified thresholds
     ///
-    /// - parameter warning: The threshold for a violation to be a warning.
-    /// - parameter error:   The threshold for a violation to be an error.
+    /// - Parameters:
+    ///   - warning: The threshold for a violation to be a warning.
+    ///   - error: The threshold for a violation to be an error.
     init(warning: Int, error: Int? = nil) {
         self.warning = warning
         self.error = error
     }
 
-    /// The rule parameters that define the thresholds that should map to each severity.
+    /// The rule parameters that define the thresholds that should map to each severity
     var params: [RuleParameter<Int>] {
         if let error {
             return [

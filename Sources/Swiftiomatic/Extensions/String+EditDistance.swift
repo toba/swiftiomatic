@@ -4,12 +4,20 @@
 import Foundation
 
 extension Array where Element: Equatable {
+    /// Formats raw-representable values as a human-readable list with a default annotation
+    ///
+    /// - Parameters:
+    ///   - defaultValue: The element to mark as `"(default)"` in the output, if any.
     func formattedList(default defaultValue: Element? = nil) -> String
         where Element: RawRepresentable, Element.RawValue: Equatable
     {
         map(\.rawValue).formattedList(default: defaultValue?.rawValue)
     }
 
+    /// Formats equatable values as a human-readable list with a default annotation
+    ///
+    /// - Parameters:
+    ///   - default: The element to mark as `"(default)"` in the output, if any.
     func formattedList(default: Element? = nil) -> String {
         if let `default` {
             assert(contains(where: { $0 == `default` }))
@@ -28,6 +36,10 @@ extension Array where Element: Equatable {
 }
 
 extension Array where Element: StringProtocol {
+    /// Joins elements with commas and a final separator word (e.g. `"or"`, `"and"`)
+    ///
+    /// - Parameters:
+    ///   - lastSeparator: The word placed before the last element (e.g. `"or"`).
     func formattedList(lastSeparator: String) -> String {
         switch count {
             case 0:
@@ -43,6 +55,10 @@ extension Array where Element: StringProtocol {
 }
 
 extension String {
+    /// Returns the single closest match from `options`, or `nil` if ambiguous or no match is close enough
+    ///
+    /// - Parameters:
+    ///   - options: Candidate strings to match against.
     func bestMatch(in options: [String]) -> String? {
         let matches = bestMatches(in: options)
         guard let best = matches.first else {
@@ -54,6 +70,10 @@ extension String {
         return best
     }
 
+    /// Returns candidate strings sorted by edit distance, filtering out distant mismatches
+    ///
+    /// - Parameters:
+    ///   - options: Candidate strings to rank against this string.
     func bestMatches(in options: [String]) -> [String] {
         let lowercaseQuery = lowercased()
         return
@@ -76,6 +96,10 @@ extension String {
                 .map(\.0)
     }
 
+    /// Computes the Damerau-Levenshtein edit distance to another string
+    ///
+    /// - Parameters:
+    ///   - other: The string to compare against.
     func editDistance(from other: String) -> Int {
         let lhs = Array(self)
         let rhs = Array(other)
@@ -114,7 +138,10 @@ extension String {
     }
 }
 
-/// Legacy free-function wrapper — prefer `.commaDelimitedItems` property.
+/// Legacy free-function wrapper -- prefer ``String/commaDelimitedItems``
+///
+/// - Parameters:
+///   - string: A comma-separated string to split.
 func parseCommaDelimitedList(_ string: String) -> [String] {
     string.commaDelimitedItems
 }

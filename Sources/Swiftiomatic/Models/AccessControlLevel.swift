@@ -17,7 +17,8 @@ enum AccessControlLevel: String, CustomStringConvertible, Sendable {
 
     /// Initializes an access control level by its Swift source keyword value.
     ///
-    /// - parameter value: The value used to describe this level in Swift source code.
+    /// - Parameters:
+    ///   - value: The value used to describe this level in Swift source code.
     init?(description value: String) {
         switch value {
             case "private": self = .private
@@ -32,7 +33,8 @@ enum AccessControlLevel: String, CustomStringConvertible, Sendable {
 
     /// Initializes an access control level by its SourceKit unique identifier.
     ///
-    /// - parameter value: The value used by SourceKit to refer to this access control level.
+    /// - Parameters:
+    ///   - value: The value used by SourceKit to refer to this access control level.
     init?(identifier value: String) {
         self.init(rawValue: value)
     }

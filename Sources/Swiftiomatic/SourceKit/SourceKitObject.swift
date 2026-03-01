@@ -3,7 +3,9 @@ import SourceKitC
 
 // MARK: - SourceKitObjectConvertible
 
+/// A type that can be converted into a ``SourceKitObject`` for use in sourcekitd requests
 protocol SourceKitObjectConvertible {
+    /// The sourcekitd request object representation, or `nil` if conversion fails
     var sourceKitObject: SourceKitObject? { get }
 }
 
@@ -56,11 +58,18 @@ extension UID: SourceKitObjectConvertible {
 
 // MARK: - SourceKitObject
 
-/// Swift representation of sourcekitd_object_t
+/// Swift wrapper around `sourcekitd_object_t` with automatic memory management
+///
+/// Retains child objects to prevent premature deallocation and releases
+/// the underlying C object on `deinit`.
 final class SourceKitObject {
     fileprivate let sourcekitdObject: sourcekitd_object_t
     private var children: [SourceKitObject?]
 
+    /// Create a request object from a YAML string representation
+    ///
+    /// - Parameters:
+    ///   - yaml: The YAML-formatted request string.
     init(yaml: String) {
         sourcekitdObject = sourcekitd_request_create_from_yaml(yaml, nil)!
         children = []
@@ -75,6 +84,11 @@ final class SourceKitObject {
         sourcekitd_request_release(sourcekitdObject)
     }
 
+    /// Set a value in this dictionary-type request object
+    ///
+    /// - Parameters:
+    ///   - value: The value to set.
+    ///   - key: The ``UID`` key to associate the value with.
     func updateValue(_ value: SourceKitObjectConvertible, forKey key: UID) {
         precondition(value.sourceKitObject != nil)
         let sourceKitObject = value.sourceKitObject
@@ -84,16 +98,27 @@ final class SourceKitObject {
         )
     }
 
+    /// Set a value in this dictionary-type request object using a string key
+    ///
+    /// - Parameters:
+    ///   - value: The value to set.
+    ///   - key: The string key (converted to a ``UID``).
     func updateValue(_ value: SourceKitObjectConvertible, forKey key: String) {
         updateValue(value, forKey: UID(key))
     }
 
+    /// Set a value in this dictionary-type request object using a `RawRepresentable` key
+    ///
+    /// - Parameters:
+    ///   - value: The value to set.
+    ///   - key: The raw-representable key whose `rawValue` is converted to a ``UID``.
     func updateValue<T: RawRepresentable>(_ value: SourceKitObjectConvertible, forKey key: T)
         where T.RawValue == String
     {
         updateValue(value, forKey: UID(key.rawValue))
     }
 
+    /// Send this request synchronously and return the raw response
     func sendSync() -> sourcekitd_response_t? {
         sourcekitd_send_request_sync(sourcekitdObject)
     }

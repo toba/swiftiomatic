@@ -2,12 +2,11 @@ import Foundation
 
 // https://developer.apple.com/library/ios/documentation/Swift/Conceptual/Swift_Programming_Language/LexicalStructure.html
 
-/// Used to speed up matching
-/// Note: Any, Self, self, super, nil, true and false have been omitted deliberately, as they
-/// behave like identifiers. So too have context-specific keywords such as the following:
-/// any, associativity, async, convenience, didSet, dynamic, final, get, indirect, infix, lazy,
-/// left, mutating, none, nonmutating, open, optional, override, postfix, precedence,
-/// prefix, Protocol, required, right, set, some, any, of, Type, unowned, weak, willSet
+/// Reserved Swift keywords used for fast token matching
+///
+/// `Any`, `Self`, `self`, `super`, `nil`, `true`, and `false` are omitted
+/// because they behave like identifiers. Context-specific keywords such as
+/// `async`, `lazy`, `mutating`, `some`, etc. are also excluded.
 let swiftKeywords = Set([
     "let", "return", "func", "var", "if", "public", "as", "else", "in", "import",
     "class", "try", "guard", "case", "for", "init", "extension", "private", "static",
@@ -20,9 +19,7 @@ let swiftKeywords = Set([
 
 extension String {
     /// Is this string a reserved keyword in Swift?
-    var isSwiftKeyword: Bool {
-        swiftKeywords.contains(self)
-    }
+    var isSwiftKeyword: Bool { swiftKeywords.contains(self) }
 
     /// Is a keyword when used in a type position?
     var isKeywordInTypeContext: Bool {
@@ -30,9 +27,7 @@ extension String {
     }
 
     /// Is this a macro name or conditional compilation directive?
-    var isMacroOrCompilerDirective: Bool {
-        hasPrefix("#")
-    }
+    var isMacroOrCompilerDirective: Bool { hasPrefix("#") }
 
     /// Is this a macro name?
     var isMacro: Bool {
@@ -57,10 +52,9 @@ extension String {
     /// Returns comment directive prefix (MARK:, TODO:, sm:, etc)?
     var commentDirective: String? {
         let parts = split(separator: ":")
-        guard parts.count > 1 else {
-            return nil
-        }
+        guard parts.count > 1 else { return nil }
         let exclude = ["note", "warning"]
+
         guard !parts[0].contains(" "), !exclude.contains(parts[0].lowercased()),
               !parts[1].hasPrefix("//")
         else {
@@ -70,7 +64,7 @@ extension String {
     }
 }
 
-/// Classes of token used for matching
+/// Categories of ``Token`` used for pattern matching in ``Formatter`` queries
 enum TokenType {
     case space
     case comment
@@ -103,7 +97,7 @@ enum TokenType {
     case nonSpaceOrCommentOrLineBreak
 }
 
-/// Numeric literal types
+/// The base of a numeric literal token
 enum NumberType: String {
     case integer
     case decimal
@@ -112,7 +106,7 @@ enum NumberType: String {
     case hex
 }
 
-/// Operator/operator types
+/// The fixity of an operator token
 enum OperatorType: String {
     case none
     case infix
@@ -120,10 +114,10 @@ enum OperatorType: String {
     case postfix
 }
 
-/// Original line number for token
+/// The original 1-based line number of a token before formatting
 typealias OriginalLine = Int
 
-/// All token types
+/// A single lexical token produced by the Swift tokenizer
 enum Token: Hashable {
     case number(String, NumberType)
     case lineBreak(String, OriginalLine)
@@ -174,6 +168,7 @@ private extension Token {
 }
 
 extension Token {
+    /// Metadata about a string or regex delimiter token
     struct StringDelimiterType {
         var isRegex: Bool
         var isMultiline: Bool
@@ -227,7 +222,10 @@ extension Token {
         }
     }
 
-    /// Returns the width (in characters) of the token
+    /// Returns the visual column width of this token
+    ///
+    /// - Parameters:
+    ///   - tabWidth: The number of columns a tab character occupies.
     func columnWidth(tabWidth: Int) -> Int {
         switch self {
             case let .space(string), let .stringBody(string), let .commentBody(string):
@@ -287,9 +285,7 @@ extension Token {
                 }
                 return String(output)
             case let .identifier(string):
-                if string.hasPrefix("$") {
-                    return String(string.dropFirst())
-                }
+                if string.hasPrefix("$") { return String(string.dropFirst()) }
                 return string.replacingOccurrences(of: "`", with: "")
             case let .number(string, .integer), let .number(string, .decimal):
                 return string.replacingOccurrences(of: "_", with: "")
@@ -308,7 +304,10 @@ extension Token {
         }
     }
 
-    /// Test if token is of the specified type
+    /// Tests whether this token matches the given ``TokenType`` category
+    ///
+    /// - Parameters:
+    ///   - type: The token category to test against.
     func `is`(_ type: TokenType) -> Bool {
         switch type {
             case .space: isSpace

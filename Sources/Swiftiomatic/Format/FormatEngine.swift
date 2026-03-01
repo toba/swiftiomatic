@@ -1,10 +1,18 @@
 import Foundation
 
-/// A configured formatting engine that can format or lint Swift source code.
+/// A configured formatting engine that can format or lint Swift source code
+///
+/// Wraps a set of ``FormatRule`` values and ``FormatOptions`` into a
+/// reusable, thread-safe entry point for formatting or linting operations.
 package struct FormatEngine: Sendable {
     package let rules: [FormatRule]
     package let options: FormatOptions
 
+    /// Creates an engine with the given rules and options
+    ///
+    /// - Parameters:
+    ///   - rules: The format rules to apply. Defaults to ``FormatRules/default``.
+    ///   - options: The formatting options to use. Defaults to ``FormatOptions/default``.
     package init(
         rules: [FormatRule] = FormatRules.default,
         options: FormatOptions = .default,
@@ -13,7 +21,10 @@ package struct FormatEngine: Sendable {
         self.options = options
     }
 
-    /// Format Swift source code, returning the formatted output.
+    /// Formats Swift source code and returns the formatted output
+    ///
+    /// - Parameters:
+    ///   - source: The Swift source code string to format.
     package func format(_ source: String) throws -> String {
         let tokens = tokenize(source)
         let output = try applyRules(
@@ -26,14 +37,21 @@ package struct FormatEngine: Sendable {
         return sourceCode(for: output.tokens)
     }
 
-    /// Lint Swift source code, returning changes that would be made.
+    /// Lints Swift source code and returns the changes that would be made
+    ///
+    /// - Parameters:
+    ///   - source: The Swift source code string to lint.
     package func lint(_ source: String) throws -> [Formatter.Change] {
         let tokens = tokenize(source)
         return try applyRules(rules, to: tokens, with: options, trackChanges: true, range: nil)
             .changes
     }
 
-    /// Lint Swift source code with a file path for diagnostic output.
+    /// Lints Swift source code with a file path for diagnostic output
+    ///
+    /// - Parameters:
+    ///   - source: The Swift source code string to lint.
+    ///   - filePath: The file path included in each reported ``Formatter/Change``.
     package func lint(_ source: String, filePath: String) throws -> [Formatter.Change] {
         var opts = options
         opts.fileInfo = FileInfo(filePath: filePath)
@@ -41,7 +59,12 @@ package struct FormatEngine: Sendable {
         return try applyRules(rules, to: tokens, with: opts, trackChanges: true, range: nil).changes
     }
 
-    /// Build an engine with specific rule overrides.
+    /// Creates an engine by selectively enabling or disabling rules by name
+    ///
+    /// - Parameters:
+    ///   - enable: Rule names to add to the default set.
+    ///   - disable: Rule names to remove from the active set.
+    ///   - options: The formatting options to use.
     package init(
         enable: [String] = [],
         disable: [String] = [],

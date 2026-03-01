@@ -1,6 +1,11 @@
 import Foundation
 
+/// Describes a single CLI-configurable formatting option
+///
+/// Each descriptor maps a command-line argument name to a ``FormatOptions``
+/// property, with validation, serialization, and help-text generation.
 final class OptionDescriptor {
+    /// The kind of value this option accepts on the command line
     enum ArgumentType {
         case binary(true: String, false: String)
         case `enum`([String])
@@ -23,6 +28,10 @@ final class OptionDescriptor {
         fromOptions(FormatOptions.default)
     }
 
+    /// Validates that the given string is an acceptable value for this option
+    ///
+    /// - Parameters:
+    ///   - arg: The argument string to validate.
     func validateArgument(_ arg: String) -> Bool {
         var options = FormatOptions.default
         return (try? toOptions(arg, &options)) != nil
@@ -97,7 +106,10 @@ extension OptionDescriptor {
     }
 
     /// Mark an option as having been renamed
-    /// Note: this only affects the documentation, and not its behavior
+    /// This only affects the documentation, not the runtime behavior.
+    ///
+    /// - Parameters:
+    ///   - newArgumentName: The new CLI argument name this option was renamed to.
     func renamed(to newArgumentName: String) -> OptionDescriptor {
         .init(
             argumentName: argumentName,
@@ -574,7 +586,7 @@ struct OptionDescriptorCatalog: @unchecked Sendable {
         argumentName: "linebreaks",
         displayName: "Linebreak Character",
         help: "Linebreak character to use:",
-        keyPath: \.linebreak,
+        keyPath: \.lineBreak,
         options: ["cr": "\r", "crlf": "\r\n", "lf": "\n"],
     )
     let semicolons = OptionDescriptor(

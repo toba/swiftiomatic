@@ -1,11 +1,15 @@
-/// This allows SourceKit request handling to determine certain properties without
+/// Task-local storage for the currently executing rule
+///
+/// Allows SourceKit request handling to determine certain properties without
 /// modifying function signatures throughout the codebase.
 enum CurrentRule {
-    /// A task-local value that holds the identifier of the currently executing rule, e.g., to check whether the rule
-    /// is allowed to make SourceKit requests.
+    /// The identifier of the currently executing rule
+    ///
+    /// Used to check whether the active rule is allowed to make SourceKit requests.
     @TaskLocal static var identifier: String?
 
-    /// Allows specific SourceKit requests to be made outside of rule execution context.
-    /// This should only be used for essential operations like getting the Swift version.
+    /// Bypasses the rule-context requirement for SourceKit requests
+    ///
+    /// Should only be set for essential operations like querying the Swift version.
     @TaskLocal static var allowSourceKitRequestWithoutRule = false
 }

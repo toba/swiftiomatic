@@ -27,9 +27,10 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
 
     /// Creates a `Location` by specifying its properties directly.
     ///
-    /// - parameter file:      The file path on disk for this location.
-    /// - parameter line:      The line offset in the file for this location. 1-indexed.
-    /// - parameter column: The column offset in the file for this location. 1-indexed.
+    /// - Parameters:
+    ///   - file: The file path on disk for this location.
+    ///   - line: The line offset in the file for this location. 1-indexed.
+    ///   - column: The column offset in the file for this location. 1-indexed.
     init(file: String?, line: Int? = nil, column: Int? = nil) {
         self.file = file
         self.line = line
@@ -39,8 +40,9 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
     /// Creates a `Location` based on a `SwiftSource` and a byte-offset into the file.
     /// Fails if the specified offset was not a valid location in the file.
     ///
-    /// - parameter file:   The file for this location.
-    /// - parameter offset: The offset in bytes into the file for this location.
+    /// - Parameters:
+    ///   - file: The file for this location.
+    ///   - offset: The offset in bytes into the file for this location.
     init(file: SwiftSource, byteOffset offset: ByteCount) {
         self.file = file.path
         if let lineAndCharacter = file.stringView.lineAndCharacter(forByteOffset: offset) {
@@ -55,8 +57,9 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
     /// Creates a `Location` based on a `SwiftSource` and a SwiftSyntax `AbsolutePosition` into the file.
     /// Fails if the specified offset was not a valid location in the file.
     ///
-    /// - parameter file:     The file for this location.
-    /// - parameter position: The absolute position returned from SwiftSyntax.
+    /// - Parameters:
+    ///   - file: The file for this location.
+    ///   - position: The absolute position returned from SwiftSyntax.
     init(file: SwiftSource, position: AbsolutePosition) {
         self.init(file: file, byteOffset: ByteCount(position.utf8Offset))
     }
@@ -64,8 +67,9 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
     /// Creates a `Location` based on a `SwiftSource` and a UTF8 character-offset into the file.
     /// Fails if the specified offset was not a valid location in the file.
     ///
-    /// - parameter file:   The file for this location.
-    /// - parameter offset: The offset in UTF8 fragments into the file for this location.
+    /// - Parameters:
+    ///   - file: The file for this location.
+    ///   - offset: The offset in UTF8 fragments into the file for this location.
     init(file: SwiftSource, characterOffset offset: Int) {
         self.file = file.path
         if let lineAndCharacter = file.stringView.lineAndCharacter(forCharacterOffset: offset) {
@@ -79,8 +83,9 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
 
     /// Creates a `Location` based on a `SwiftSource` and a `String.Index` into the file contents.
     ///
-    /// - parameter file:  The file for this location.
-    /// - parameter index: An index into the file's contents string.
+    /// - Parameters:
+    ///   - file: The file for this location.
+    ///   - index: An index into the file's contents string.
     init(file: SwiftSource, stringIndex index: String.Index) {
         let offset = file.contents.utf16.distance(
             from: file.contents.utf16.startIndex, to: index,

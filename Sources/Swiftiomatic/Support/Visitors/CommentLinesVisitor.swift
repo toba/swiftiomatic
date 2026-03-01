@@ -1,30 +1,32 @@
 import SwiftSyntax
 
-/// Visitor to find lines that contain only comments.
+/// Finds source lines that contain only comments (and whitespace)
 final class CommentLinesVisitor: SyntaxVisitor {
     private let locationConverter: SourceLocationConverter
 
     private var linesWithComments = Set<Int>()
 
-    /// Lines that contain actual code (not comments).
+    /// Lines that contain actual code (not comments)
     private(set) var linesWithCode = Set<Int>()
 
-    /// Lines that contain only comments (and whitespace).
+    /// Lines that contain only comments and whitespace
     var commentOnlyLines: Set<Int> {
         linesWithComments.subtracting(linesWithCode)
     }
 
-    /// Initializer.
+    /// Creates a visitor with the given location converter
     ///
-    /// - Parameter locationConverter: The location converter to use for mapping positions to line numbers.
+    /// - Parameters:
+    ///   - locationConverter: The converter for mapping positions to line numbers.
     init(locationConverter: SourceLocationConverter) {
         self.locationConverter = locationConverter
         super.init(viewMode: .sourceAccurate)
     }
 
-    /// Compute all comment-only lines in the given file.
+    /// Computes all comment-only lines in the given file
     ///
-    /// - Parameter file: The source file to analyze.
+    /// - Parameters:
+    ///   - file: The source file to analyze.
     /// - Returns: A set of line numbers that contain only comments.
     static func commentLines(in file: SwiftSource) -> Set<Int> {
         CommentLinesVisitor(locationConverter: file.locationConverter)

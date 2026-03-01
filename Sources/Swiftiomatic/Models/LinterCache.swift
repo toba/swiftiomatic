@@ -49,8 +49,9 @@ final class LinterCache {
 
     /// Creates a `LinterCache` by specifying a configuration and a file manager.
     ///
-    /// - parameter configuration: The configuration for which this cache will be used.
-    /// - parameter fileManager:   The file manager to use to read lintable file information.
+    /// - Parameters:
+    ///   - configuration: The configuration for which this cache will be used.
+    ///   - fileManager: The file manager to use to read lintable file information.
     init(
         configuration: Configuration,
         fileManager: some LintableFileDiscovering = FileManager.default,

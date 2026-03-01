@@ -55,7 +55,7 @@ extension FormatRule {
         for (index, property) in multiplePropertyDecl.properties.enumerated() {
           // Add newline and indentation before each declaration except the first
           if index > 0 {
-            allReplacementTokens.append(.lineBreak(formatter.options.linebreak, 1))
+            allReplacementTokens.append(.lineBreak(formatter.options.lineBreak, 1))
 
             let indent = formatter.currentIndentForLine(at: i)
             if !indent.isEmpty {
@@ -125,7 +125,7 @@ extension FormatRule {
         for (index, identifier) in tupleDecl.identifiers.enumerated() {
           // Add newline and indentation before each declaration except the first
           if index > 0 {
-            allReplacementTokens.append(.lineBreak(formatter.options.linebreak, 1))
+            allReplacementTokens.append(.lineBreak(formatter.options.lineBreak, 1))
 
             let indent = formatter.currentIndentForLine(at: i)
             if !indent.isEmpty {

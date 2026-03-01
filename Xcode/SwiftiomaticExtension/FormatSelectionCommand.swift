@@ -7,15 +7,19 @@ final class FormatSelectionCommand: NSObject, XCSourceEditorCommand {
         completionHandler: @escaping (Error?) -> Void
     ) {
         let buffer = invocation.buffer
-        let selections = buffer.selections
 
-        guard let selection = selections.firstObject as? XCSourceTextRange else {
-            completionHandler(nil)
+        guard buffer.isSwiftSource else {
+            completionHandler(FormatCommandError.unsupportedContentType(buffer.contentUTI))
+            return
+        }
+
+        guard let selection = buffer.selections.firstObject as? XCSourceTextRange else {
+            completionHandler(FormatCommandError.noSelection)
             return
         }
 
         let startLine = selection.start.line
-        let endLine = selection.end.line
+        let endLine = min(selection.end.line, buffer.lines.count - 1)
 
         // Collect selected lines
         var selectedLines: [String] = []
@@ -28,7 +32,9 @@ final class FormatSelectionCommand: NSObject, XCSourceEditorCommand {
         let source = selectedLines.joined()
 
         do {
-            let formatted = try SwiftiomaticLib.format(source)
+            let config = loadConfiguration()
+            let formatted = try SwiftiomaticLib.format(source, configuration: config)
+
             guard formatted != source else {
                 completionHandler(nil)
                 return
@@ -37,26 +43,28 @@ final class FormatSelectionCommand: NSObject, XCSourceEditorCommand {
             let newLines = formatted.components(separatedBy: "\n")
 
             // Replace the selected range with formatted lines
-            let range = NSRange(location: startLine, length: endLine - startLine + 1)
-            let indexSet = IndexSet(integersIn: range.location ..< range.location + range.length)
+            let indexSet = IndexSet(integersIn: startLine ... endLine)
             buffer.lines.removeObjects(at: indexSet)
 
             for (offset, line) in newLines.enumerated() {
                 buffer.lines.insert(line, at: startLine + offset)
             }
 
-            // Update selection to cover the new range
-            let newEnd = XCSourceTextPosition(line: startLine + newLines.count - 1, column: 0)
+            // Restore selection covering the new range
+            let newEnd = XCSourceTextPosition(
+                line: min(startLine + newLines.count - 1, buffer.lines.count - 1),
+                column: 0
+            )
             let newSelection = XCSourceTextRange(
                 start: XCSourceTextPosition(line: startLine, column: 0),
                 end: newEnd
             )
-            selections.removeAllObjects()
-            selections.add(newSelection)
+            buffer.selections.removeAllObjects()
+            buffer.selections.add(newSelection)
 
             completionHandler(nil)
         } catch {
-            completionHandler(error)
+            completionHandler(FormatCommandError.formatFailed(underlying: error))
         }
     }
 }

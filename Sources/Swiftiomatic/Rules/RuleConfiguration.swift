@@ -1,37 +1,39 @@
-/// A configuration value for a rule to allow users to modify its behavior.
+/// A configuration value for a rule to allow users to modify its behavior
 package protocol RuleConfiguration: Equatable, Sendable {
-  /// The type of the rule that's using this configuration.
+  /// The type of the rule that uses this configuration
   associatedtype Parent: Rule
 
-  /// A description for this configuration's parameters. It can be built using the annotated result builder.
+  /// A description for this configuration's parameters, built using the annotated result builder
   @RuleConfigurationDescriptionBuilder
   var parameterDescription: RuleConfigurationDescription? { get }
 
-  /// Apply an untyped configuration to the current value.
+  /// Apply an untyped configuration to the current value
   ///
-  /// - parameter configuration: The untyped configuration value to apply.
-  ///
-  /// - throws: Throws if the configuration is not in the expected format.
+  /// - Parameters:
+  ///   - configuration: The untyped configuration value to apply.
+  /// - Throws: ``SwiftiomaticError`` if the configuration is not in the expected format.
   mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError)
 
-  /// Run a sanity check on the configuration, perform optional postprocessing steps and/or warn about potential
-  /// issues.
+  /// Run a sanity check on the configuration and perform optional postprocessing
   mutating func validate() throws(SwiftiomaticError)
 }
 
-/// A configuration for a rule that allows to configure at least the severity.
+/// A configuration for a rule that allows configuring at least the severity
 protocol SeverityBasedRuleConfiguration: RuleConfiguration {
-  /// The configuration of a rule's severity.
+  /// The configuration of a rule's severity
   var severityConfiguration: SeverityConfiguration<Parent> { get set }
 }
 
 extension SeverityBasedRuleConfiguration {
-  /// The severity of a rule.
+  /// The severity of a rule
   var severity: ViolationSeverity {
     severityConfiguration.severity
   }
 
-  /// Apply severity from the configuration if present, silently ignoring when absent.
+  /// Apply severity from the configuration if present, silently ignoring when absent
+  ///
+  /// - Parameters:
+  ///   - configuration: The untyped configuration dictionary.
   mutating func applySeverityIfPresent(_ configuration: [String: Any]) throws(SwiftiomaticError) {
     do {
       try severityConfiguration.apply(configuration, ruleID: Parent.identifier)
@@ -53,12 +55,15 @@ extension RuleConfiguration {
 }
 
 extension RuleConfiguration {
-  /// All keys supported by this configuration.
+  /// All keys supported by this configuration
   var supportedKeys: Set<String> {
     Set(RuleConfigurationDescription.from(configuration: self).allowedKeys())
   }
 
-  /// Emit a warning for any unrecognized keys in the configuration.
+  /// Emit a warning for any unrecognized keys in the configuration
+  ///
+  /// - Parameters:
+  ///   - configuration: The configuration dictionary to check for unknown keys.
   func warnAboutUnknownKeys(in configuration: [String: Any]) {
     if !supportedKeys.isSuperset(of: configuration.keys) {
       let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)

@@ -1,4 +1,4 @@
-/// Syntax kind values.
+/// SourceKit syntax token kinds from `source.lang.swift.syntaxtype.*` UIDs
 enum SourceKitSyntaxKind: String, CaseIterable {
     case argument = "source.lang.swift.syntaxtype.argument"
     case attributeBuiltin = "source.lang.swift.syntaxtype.attribute.builtin"
@@ -22,5 +22,6 @@ enum SourceKitSyntaxKind: String, CaseIterable {
     case poundDirectiveKeyword = "source.lang.swift.syntaxtype.pounddirective.keyword"
     case `operator` = "source.lang.swift.syntaxtype.operator"
 
+    /// Syntax kinds that represent documentation comment content
     static let docComments: [SourceKitSyntaxKind] = [.commentURL, .docComment, .docCommentField]
 }

@@ -13,36 +13,40 @@ package struct Region: Equatable, Sendable {
 
     /// Whether the specific location is contained in this region.
     ///
-    /// - parameter location: The location to check for containment.
+    /// - Parameters:
+    ///   - location: The location to check for containment.
     ///
-    /// - returns: True if the specific location is contained in this region.
+    /// - Returns: True if the specific location is contained in this region.
     func contains(_ location: Location) -> Bool {
         start <= location && end >= location
     }
 
     /// Whether the specified rule is enabled in this region.
     ///
-    /// - parameter rule: The rule whose status should be determined.
+    /// - Parameters:
+    ///   - rule: The rule whose status should be determined.
     ///
-    /// - returns: True if the specified rule is enabled in this region.
+    /// - Returns: True if the specified rule is enabled in this region.
     func isRuleEnabled(_ rule: some Rule) -> Bool {
         !isRuleDisabled(rule)
     }
 
     /// Whether the specified rule is disabled in this region.
     ///
-    /// - parameter rule: The rule whose status should be determined.
+    /// - Parameters:
+    ///   - rule: The rule whose status should be determined.
     ///
-    /// - returns: True if the specified rule is disabled in this region.
+    /// - Returns: True if the specified rule is disabled in this region.
     func isRuleDisabled(_ rule: some Rule) -> Bool {
         areRulesDisabled(ruleIDs: type(of: rule).description.allIdentifiers)
     }
 
     /// Whether the given rules are disabled in this region.
     ///
-    /// - parameter ruleIDs: A list of rule IDs. Typically all identifiers of a single rule.
+    /// - Parameters:
+    ///   - ruleIDs: A list of rule IDs. Typically all identifiers of a single rule.
     ///
-    /// - returns: True if the specified rules are disabled in this region.
+    /// - Returns: True if the specified rules are disabled in this region.
     func areRulesDisabled(ruleIDs: [String]) -> Bool {
         if disabledRuleIdentifiers.contains(.all) {
             return true
@@ -54,9 +58,10 @@ package struct Region: Equatable, Sendable {
     /// Returns the deprecated rule aliases that are disabling the specified rule in this region.
     /// Returns the empty set if the rule isn't disabled in this region.
     ///
-    /// - parameter rule: The rule to check.
+    /// - Parameters:
+    ///   - rule: The rule to check.
     ///
-    /// - returns: Deprecated rule aliases.
+    /// - Returns: Deprecated rule aliases.
     func deprecatedAliasesDisabling(rule: some Rule) -> Set<String> {
         let identifiers = type(of: rule).description.deprecatedAliases
         return Set(disabledRuleIdentifiers.map(\.stringRepresentation)).intersection(identifiers)
@@ -64,9 +69,10 @@ package struct Region: Equatable, Sendable {
 
     /// Converts this `Region` to a SwiftSyntax `SourceRange`.
     ///
-    /// - parameter locationConverter: The SwiftSyntax location converter to use.
+    /// - Parameters:
+    ///   - locationConverter: The SwiftSyntax location converter to use.
     ///
-    /// - returns: The `SourceRange` if one was produced.
+    /// - Returns: The `SourceRange` if one was produced.
     func toSourceRange(locationConverter: SourceLocationConverter) -> SourceRange? {
         guard let startLine = start.line, let endLine = end.line else {
             return nil

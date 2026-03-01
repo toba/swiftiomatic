@@ -1,6 +1,6 @@
 // MARK: - TypeName
 
-/// A Swift type parsed by the `formatter.parseType(at:)` parsing helper
+/// A Swift type parsed by the ``Formatter``'s `parseType(at:)` parsing helper
 struct TypeName {
     let range: ClosedRange<Int>
     private let formatter: Formatter
@@ -98,7 +98,10 @@ extension TypeName {
         return formatter.index(of: .delimiter(":"), in: (openBrace + 1) ..< closingBrace) != nil
     }
 
-    /// Whether or not this type is a generic type with the given name.
+    /// Whether this type is a generic type with the given name
+    ///
+    /// - Parameters:
+    ///   - typeName: The identifier to match (e.g. `"Set"`, `"Array"`).
     func isGenericType(named typeName: String) -> Bool {
         guard
             let firstToken = formatter.index(

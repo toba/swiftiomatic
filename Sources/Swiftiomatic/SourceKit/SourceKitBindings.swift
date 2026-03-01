@@ -1,5 +1,11 @@
+/// Runtime-loaded C function pointers for the sourcekitd in-process framework
+///
+/// All symbols are resolved lazily via ``DynamicLinkLibrary/load(symbol:)``
+/// from the Xcode toolchain's `sourcekitdInProc.framework`.
+
 import SourceKitC
 
+/// The dynamically loaded sourcekitdInProc framework handle
 private let library = toolchainLoader.load(
     path: "sourcekitdInProc.framework/Versions/A/sourcekitdInProc",
 )

@@ -1,4 +1,7 @@
-/// SourceKit response dictionary keys.
+/// SourceKit response dictionary keys (`key.*` strings)
+///
+/// Provides both raw key constants and typed static accessors that extract
+/// values from a `[String: SourceKitValue]` dictionary.
 enum SwiftDocKey: String {
     case annotatedDeclaration = "key.annotated_decl"
     case bodyLength = "key.bodylength"
@@ -56,60 +59,116 @@ enum SwiftDocKey: String {
         dictionary[key.rawValue]?.int64Value.map(ByteCount.init)
     }
 
+    /// Extract the `key.kind` string from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func kind(from dictionary: [String: SourceKitValue]) -> String? {
         string(.kind, from: dictionary)
     }
 
+    /// Extract the `key.syntaxmap` array from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func syntaxMap(from dictionary: [String: SourceKitValue]) -> [SourceKitValue]? {
         dictionary[syntaxMap.rawValue]?.arrayValue
     }
 
+    /// Extract the `key.offset` byte count from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func offset(from dictionary: [String: SourceKitValue]) -> ByteCount? {
         byteCount(.offset, from: dictionary)
     }
 
+    /// Extract the `key.length` byte count from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func length(from dictionary: [String: SourceKitValue]) -> ByteCount? {
         byteCount(.length, from: dictionary)
     }
 
+    /// Extract the `key.name` string from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func name(from dictionary: [String: SourceKitValue]) -> String? {
         string(.name, from: dictionary)
     }
 
+    /// Extract the `key.typename` string from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func typeName(from dictionary: [String: SourceKitValue]) -> String? {
         string(.typeName, from: dictionary)
     }
 
+    /// Extract the `key.annotated_decl` string from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func annotatedDeclaration(from dictionary: [String: SourceKitValue]) -> String? {
         string(.annotatedDeclaration, from: dictionary)
     }
 
+    /// Extract the `key.substructure` array of dictionaries from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func substructure(from dictionary: [String: SourceKitValue]) -> [[String:
             SourceKitValue]]?
     {
         dictionary[substructure.rawValue]?.arrayValue?.compactMap(\.dictionaryValue)
     }
 
+    /// Extract the `key.nameoffset` byte count from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func nameOffset(from dictionary: [String: SourceKitValue]) -> ByteCount? {
         byteCount(.nameOffset, from: dictionary)
     }
 
+    /// Extract the `key.namelength` byte count from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func nameLength(from dictionary: [String: SourceKitValue]) -> ByteCount? {
         byteCount(.nameLength, from: dictionary)
     }
 
+    /// Extract the `key.bodyoffset` byte count from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func bodyOffset(from dictionary: [String: SourceKitValue]) -> ByteCount? {
         byteCount(.bodyOffset, from: dictionary)
     }
 
+    /// Extract the `key.bodylength` byte count from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func bodyLength(from dictionary: [String: SourceKitValue]) -> ByteCount? {
         byteCount(.bodyLength, from: dictionary)
     }
 
+    /// Extract the `key.doc.full_as_xml` string from a response dictionary
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func fullXMLDocs(from dictionary: [String: SourceKitValue]) -> String? {
         string(.fullXMLDocs, from: dictionary)
     }
 
+    /// Return the name offset if available and non-zero, otherwise fall back to the general offset
+    ///
+    /// - Parameters:
+    ///   - dictionary: The SourceKit response dictionary.
     static func bestOffset(from dictionary: [String: SourceKitValue]) -> ByteCount? {
         if let nameOffset = nameOffset(from: dictionary), nameOffset > 0 {
             return nameOffset

@@ -3,13 +3,13 @@ private let _registerAllRulesOnceImpl: Void = {
 }()
 
 extension RuleRegistry {
-  /// Register all rules. Should only be called once before any linting code is executed.
+  /// Register all rules, should only be called once before any linting code is executed
   package static func registerAllRulesOnce() {
     _ = _registerAllRulesOnceImpl
   }
 }
 
-/// All available built-in rules.
+/// All available built-in rules
 private let allRules: [any Rule.Type] = [
   AccessibilityLabelForImageRule.self,
   AccessibilityTraitForButtonRule.self,

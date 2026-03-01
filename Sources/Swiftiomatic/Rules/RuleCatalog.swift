@@ -1,5 +1,6 @@
-/// Unified read-only facade that queries Suggest, Lint, and Format rule registries.
+/// Unified read-only facade that queries Suggest, Lint, and Format rule registries
 package enum RuleCatalog {
+    /// A single rule entry aggregated from any engine (lint, format, or suggest)
     package struct Entry: Codable, Sendable {
         package let id: String
         package let name: String
@@ -12,7 +13,7 @@ package enum RuleCatalog {
         package let requiresSourceKit: Bool
     }
 
-    /// All rules across all engines, sorted by source then id.
+    /// All rules across all engines, sorted by source then id
     package static func allRules() -> [Entry] {
         var entries: [Entry] = []
 
@@ -61,12 +62,20 @@ package enum RuleCatalog {
         return entries.sorted { ($0.source.rawValue, $0.id) < ($1.source.rawValue, $1.id) }
     }
 
-    /// Look up a single rule by ID across all engines.
+    /// Look up a single rule by ID across all engines
+    ///
+    /// - Parameters:
+    ///   - id: The unique rule identifier to search for.
+    /// - Returns: The matching ``Entry``, or `nil` if no rule matches.
     static func rule(id: String) -> Entry? {
         allRules().first { $0.id == id }
     }
 
-    /// All rules for a specific source.
+    /// All rules for a specific ``DiagnosticSource``
+    ///
+    /// - Parameters:
+    ///   - source: The diagnostic source to filter by.
+    /// - Returns: All entries whose source matches.
     package static func rules(for source: DiagnosticSource) -> [Entry] {
         allRules().filter { $0.source == source }
     }

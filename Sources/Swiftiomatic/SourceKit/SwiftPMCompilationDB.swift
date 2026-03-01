@@ -23,11 +23,18 @@ private struct SwiftPMNodes: Codable {
     let nodes: [String: SwiftPMNode]
 }
 
+/// Parser for Swift Package Manager's `.build/debug.yaml` compilation database
+///
+/// Extracts per-file compiler arguments needed for SourceKit requests.
 struct SwiftPMCompilationDB: Codable {
     private let commands: [String: SwiftPMCommand]
 
-    /// Discover first available compiler arguments from an SPM project root.
-    /// Reads `.build/debug.yaml` if it exists.
+    /// Discover compiler arguments from an SPM project root
+    ///
+    /// Reads `.build/debug.yaml` and returns the first non-empty argument set.
+    ///
+    /// - Parameters:
+    ///   - projectRoot: The root directory of the Swift Package Manager project.
     static func compilerArguments(inPath projectRoot: String) -> [String]? {
         let yamlPath = URL(fileURLWithPath: projectRoot)
             .appendingPathComponent(".build/debug.yaml").path
@@ -40,6 +47,10 @@ struct SwiftPMCompilationDB: Codable {
         return firstArgs
     }
 
+    /// Parse a YAML compilation database into a mapping of source file paths to compiler arguments
+    ///
+    /// - Parameters:
+    ///   - yaml: The raw YAML data from `.build/debug.yaml`.
     static func parse(yaml: Data) throws -> [String: [String]] {
         let decoder = YAMLDecoder()
         let compilationDB: Self

@@ -1,9 +1,9 @@
-/// Maps lint rules that are superseded by format rules to avoid duplicate diagnostics.
+/// Maps lint rules that are superseded by format rules to avoid duplicate diagnostics
 ///
 /// When format-lint is active, lint rules in this map are skipped because the format
 /// engine already covers the same check (often with auto-fix capability).
 package enum DiagnosticDeduplicator {
-  /// Lint rule ID → Format rule name that supersedes it.
+  /// Lint rule ID to format rule name that supersedes it
   static let lintSupersededByFormat: [String: String] = [
     "trailing_whitespace": "trailingSpace",
     "trailing_newline": "linebreakAtEndOfFile",
@@ -19,7 +19,11 @@ package enum DiagnosticDeduplicator {
     "mark": "blankLinesAroundMark",
   ]
 
-  /// Remove lint diagnostics that overlap with active format diagnostics.
+  /// Remove lint diagnostics that overlap with active format diagnostics
+  ///
+  /// - Parameters:
+  ///   - diagnostics: The full set of diagnostics from both lint and format passes.
+  /// - Returns: The filtered diagnostics with superseded lint entries removed.
   package static func deduplicate(_ diagnostics: [Diagnostic]) -> [Diagnostic] {
     let activeFormatRules = Set(diagnostics.filter { $0.source == .format }.map(\.ruleID))
     guard !activeFormatRules.isEmpty else { return diagnostics }

@@ -1,12 +1,12 @@
 import Foundation
 
 extension SourceKitDictionary {
-  /// Returns array of tuples containing "key.kind" and "byteRange" from Structure
-  /// that contains the byte offset. Returns all kinds if no parameter specified.
+  /// Collects all structure kinds and their byte ranges that contain the given offset
   ///
-  /// - parameter byteOffset: Int?
+  /// When `byteOffset` is `nil`, returns every kind in the entire structure tree.
   ///
-  /// - returns: The kinds and byte ranges.
+  /// - Parameters:
+  ///   - byteOffset: Byte offset to filter by, or `nil` to return all kinds.
   func kinds(forByteOffset byteOffset: ByteCount? = nil)
     -> [(kind: String, byteRange: ByteRange)]
   {
@@ -28,9 +28,10 @@ extension SourceKitDictionary {
     return results
   }
 
-  /// Return the string content of this structure in the given file.
-  /// - Parameter file: File this structure occurs in
-  /// - Returns: The content of the file which this `SourceKitDictionary` structure represents
+  /// Extracts the string content of this structure node from the given source file
+  ///
+  /// - Parameters:
+  ///   - file: The ``SwiftSource`` file this structure occurs in.
   func content(in file: SwiftSource) -> String? {
     guard let byteRange, let range = file.stringView.byteRangeToNSRange(byteRange) else {
       return nil

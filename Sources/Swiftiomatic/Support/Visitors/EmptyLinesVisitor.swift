@@ -1,30 +1,32 @@
 import SwiftSyntax
 
-/// Visitor to find lines that are totally empty (no code, no comments).
+/// Finds source lines that are completely empty (no code, no comments)
 final class EmptyLinesVisitor: SyntaxVisitor {
     private let locationConverter: SourceLocationConverter
 
     private var linesWithContent = Set<Int>()
     private var lastLine = 0
 
-    /// Lines that are totally empty (contain neither code nor comments).
+    /// Line numbers that contain neither code nor comments
     var emptyLines: Set<Int> {
         guard lastLine > 0 else { return [] }
         let allLines = Set(1 ... lastLine)
         return allLines.subtracting(linesWithContent)
     }
 
-    /// Initializer.
+    /// Creates a visitor with the given location converter
     ///
-    /// - Parameter locationConverter: The location converter to use for mapping positions to line numbers.
+    /// - Parameters:
+    ///   - locationConverter: The converter for mapping positions to line numbers.
     init(locationConverter: SourceLocationConverter) {
         self.locationConverter = locationConverter
         super.init(viewMode: .sourceAccurate)
     }
 
-    /// Compute empty lines in the given file.
+    /// Computes empty lines in the given source file
     ///
-    /// - Parameter file: The source file to analyze.
+    /// - Parameters:
+    ///   - file: The source file to analyze.
     /// - Returns: A set of line numbers that are empty.
     static func emptyLines(in file: SwiftSource) -> Set<Int> {
         EmptyLinesVisitor(locationConverter: file.locationConverter)

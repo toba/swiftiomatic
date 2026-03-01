@@ -1,4 +1,6 @@
-/// The kind of expression for a contiguous set of Swift source tokens.
+/// The kind of expression for a contiguous set of Swift source tokens
+///
+/// Maps directly to SourceKit `source.lang.swift.expr.*` UIDs.
 enum ExpressionKind: String {
     /// A call to a named function or closure.
     case call = "source.lang.swift.expr.call"

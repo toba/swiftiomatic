@@ -1,12 +1,24 @@
 import Foundation
 
-/// Infer default options by examining the existing source
+/// Infers ``FormatOptions`` by examining the existing source tokens
+///
+/// Inspects indentation, line breaks, and other stylistic patterns
+/// to produce options that match the file's current formatting.
+///
+/// - Parameters:
+///   - tokens: The tokenized source to analyze.
 func inferFormatOptions(from tokens: [Token]) -> FormatOptions {
     var options = FormatOptions.default
     inferFormatOptions(Inference.all, from: tokens, into: &options)
     return options
 }
 
+/// Infers specific option values and merges them into the given options
+///
+/// - Parameters:
+///   - options: The option property names to infer.
+///   - tokens: The tokenized source to analyze.
+///   - into: The ``FormatOptions`` to update in place.
 func inferFormatOptions(_ options: [String], from tokens: [Token], into: inout FormatOptions) {
     let formatter = Formatter(tokens)
     for name in options {
@@ -17,8 +29,8 @@ func inferFormatOptions(_ options: [String], from tokens: [Token], into: inout F
 private struct OptionInferrer {
     let fn: (Formatter, inout FormatOptions) -> Void
 
-    init(_ fn: @escaping (Formatter, inout FormatOptions) -> Void) {
-        self.fn = fn
+    init(_ body: @escaping (Formatter, inout FormatOptions) -> Void) {
+        fn = body
     }
 }
 
@@ -82,33 +94,29 @@ private struct Inference {
         }
     }
 
-    let linebreak = OptionInferrer { formatter, options in
+    let lineBreak = OptionInferrer { formatter, options in
         var cr = 0
-        var lf = 0
+        var lineFeed = 0
         var crlf = 0
         formatter.forEachToken { _, token in
             switch token {
-                case .lineBreak("\n", _):
-                    lf += 1
-                case .lineBreak("\r", _):
-                    cr += 1
-                case .lineBreak("\r\n", _):
-                    crlf += 1
-                default:
-                    break
+                case .lineBreak("\n", _): lineFeed += 1
+                case .lineBreak("\r", _): cr += 1
+                case .lineBreak("\r\n", _): crlf += 1
+                default: break
             }
         }
-        var max = lf
-        var linebreak = "\n"
+        var max = lineFeed
+        var lineBreak = "\n"
         if cr > max {
             max = cr
-            linebreak = "\r"
+            lineBreak = "\r"
         }
         if crlf > max {
             max = crlf
-            linebreak = "\r\n"
+            lineBreak = "\r\n"
         }
-        options.linebreak = linebreak
+        options.lineBreak = lineBreak
     }
 
     let semicolons = OptionInferrer { formatter, options in
@@ -128,6 +136,7 @@ private struct Inference {
     let noSpaceOperators = OptionInferrer { formatter, options in
         var spaced = [String: Int]()
         var unspaced = [String: Int]()
+
         formatter.forEach(.operator) { i, token in
             guard case let .operator(name, .infix) = token, name != ".",
                   let nextToken = formatter.next(.nonSpaceOrCommentOrLineBreak, after: i),
@@ -199,22 +208,19 @@ private struct Inference {
         var trailing = 0
         var noTrailing = 0
         formatter.forEach(.endOfScope("]")) { i, _ in
-            guard let linebreakIndex = formatter.index(of: .nonSpaceOrComment, before: i),
-                  case .lineBreak = formatter.tokens[linebreakIndex],
+            guard let lineBreakIndex = formatter.index(of: .nonSpaceOrComment, before: i),
+                  case .lineBreak = formatter.tokens[lineBreakIndex],
                   let prevTokenIndex = formatter.index(
-                      of: .nonSpaceOrCommentOrLineBreak, before: linebreakIndex + 1,
+                      of: .nonSpaceOrCommentOrLineBreak, before: lineBreakIndex + 1,
                   ),
                   let token = formatter.token(at: prevTokenIndex)
             else {
                 return
             }
             switch token.string {
-                case "[", ":":
-                    break // do nothing
-                case ",":
-                    trailing += 1
-                default:
-                    noTrailing += 1
+                case "[", ":": break // do nothing
+                case ",": trailing += 1
+                default: noTrailing += 1
             }
         }
         options.trailingCommas = (trailing >= noTrailing) ? .always : .never
@@ -255,6 +261,7 @@ private struct Inference {
     let allmanBraces = OptionInferrer { formatter, options in
         var allman = 0
         var knr = 0
+
         formatter.forEach(.startOfScope("{")) { i, _ in
             // Check this isn't an inline block
             guard let closingBraceIndex = formatter.index(of: .endOfScope("}"), after: i),
@@ -273,15 +280,13 @@ private struct Inference {
                let prevToken = formatter.token(at: prevTokenIndex)
             {
                 switch prevToken {
-                    case .identifier, .keyword, .endOfScope, .operator("?", .postfix), .operator(
-                    "!",
-                    .postfix,
-                ):
-                        knr += 1
-                    case .lineBreak:
-                        allman += 1
-                    default:
-                        break
+                    case .identifier,
+                         .keyword,
+                         .endOfScope,
+                         .operator("?", .postfix),
+                         .operator("!", .postfix): knr += 1
+                    case .lineBreak: allman += 1
+                    default: break
                 }
             }
         }
@@ -295,7 +300,8 @@ private struct Inference {
         var preserveCandidates = 0
 
         formatter.forEach(.startOfScope("#if")) { i, _ in
-            if let indent = formatter.token(at: i - 1), case let .space(string) = indent,
+            if let indent = formatter.token(at: i - 1),
+               case let .space(string) = indent,
                !string.isEmpty
             {
                 // Indented, check next line

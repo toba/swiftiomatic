@@ -82,7 +82,8 @@ package enum SwiftiomaticError: LocalizedError, Equatable {
 
     /// Wraps any `Error` into a `SwiftiomaticError.genericWarning` if it is not already one.
     ///
-    /// - parameter error: Any `Error`.
+    /// - Parameters:
+    ///   - error: Any `Error`.
     ///
     /// - returns: A `Issue.genericWarning` containing the message of the `error` argument.
     package static func wrap(error: some Error) -> Self {

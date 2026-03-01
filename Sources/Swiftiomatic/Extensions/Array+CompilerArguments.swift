@@ -1,11 +1,12 @@
 import Foundation
 
-/// Partially filters compiler arguments from `xcodebuild` to something that SourceKit/Clang will accept.
+/// Partially filters compiler arguments from `xcodebuild` to something that SourceKit/Clang will accept
 ///
-/// - parameter args: Compiler arguments, as parsed from `xcodebuild`.
+/// - Parameters:
+///   - args: Compiler arguments, as parsed from `xcodebuild`.
 ///
-/// - returns: A tuple of partially filtered compiler arguments in `.0`, and whether or not there are
-/// more flags to remove in `.1`.
+/// - Returns: A tuple of partially filtered compiler arguments in `.0`, and whether or not there are
+///   more flags to remove in `.1`.
 private func partiallyFilter(arguments args: [String]) -> ([String], Bool) {
     guard let indexOfFlagToRemove = args.firstIndex(of: "-output-file-map") else {
         return (args, false)
@@ -17,7 +18,11 @@ private func partiallyFilter(arguments args: [String]) -> ([String], Bool) {
 }
 
 extension [String] {
-    /// Returns filtered compiler arguments from `xcodebuild` to something that SourceKit/Clang will accept.
+    /// Compiler arguments filtered for SourceKit/Clang compatibility
+    ///
+    /// Strips the leading `swiftc` invocation, removes unsupported flags like
+    /// `-output-file-map` and `-parseable-output`, unescapes shell metacharacters,
+    /// and forces debug mode (`-Onone`, `-DDEBUG=1`).
     var filteringCompilerArguments: [String] {
         var args = self
         if args.first == "swiftc" {

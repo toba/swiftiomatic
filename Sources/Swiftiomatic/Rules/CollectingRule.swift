@@ -1,47 +1,49 @@
-/// Marker protocol used to check whether a rule is collectable.
+/// Marker protocol used to check whether a rule is collectable
 package protocol CollectingRuleMarker: Rule {}
 
-/// A rule that requires knowledge of all other files being linted.
+/// A rule that requires knowledge of all other files being linted
+///
+/// Conforming rules implement a two-pass workflow: pass 1 calls ``collectInfo(for:)``
+/// on every file, then pass 2 calls ``validate(file:collectedInfo:)`` with the
+/// aggregated results.
 protocol CollectingRule: CollectingRuleMarker {
-  /// The kind of information to collect for each file being linted for this rule.
+  /// The kind of information to collect for each file being linted for this rule
   associatedtype FileInfo
 
-  /// Collects information for the specified file, to be analyzed by a `CollectedLinter`.
+  /// Collect file-level information for the specified file
   ///
-  /// - parameter file:              The file for which to collect info.
-  /// - parameter compilerArguments: The compiler arguments needed to compile this file.
-  ///
-  /// - returns: The collected file information.
+  /// - Parameters:
+  ///   - file: The file for which to collect info.
+  ///   - compilerArguments: The compiler arguments needed to compile this file.
+  /// - Returns: The collected file information.
   func collectInfo(for file: SwiftSource, compilerArguments: [String]) -> FileInfo
 
-  /// Collects information for the specified file, to be analyzed by a `CollectedLinter`.
+  /// Collect file-level information without compiler arguments
   ///
-  /// - parameter file: The file for which to collect info.
-  ///
-  /// - returns: The collected file information.
+  /// - Parameters:
+  ///   - file: The file for which to collect info.
+  /// - Returns: The collected file information.
   func collectInfo(for file: SwiftSource) -> FileInfo
 
-  /// Executes the rule on a file after collecting file info for all files and returns any violations to the rule's
-  /// expectations.
+  /// Validate a file using the aggregated info from all files
   ///
-  /// - parameter file:              The file for which to execute the rule.
-  /// - parameter collectedInfo:     All collected info for all files.
-  /// - parameter compilerArguments: The compiler arguments needed to compile this file.
-  ///
-  /// - returns: All style violations to the rule's expectations.
+  /// - Parameters:
+  ///   - file: The file for which to execute the rule.
+  ///   - collectedInfo: All collected info for all files.
+  ///   - compilerArguments: The compiler arguments needed to compile this file.
+  /// - Returns: All style violations to the rule's expectations.
   func validate(
     file: SwiftSource,
     collectedInfo: [SwiftSource: FileInfo],
     compilerArguments: [String],
   ) -> [RuleViolation]
 
-  /// Executes the rule on a file after collecting file info for all files and returns any violations to the rule's
-  /// expectations.
+  /// Validate a file using the aggregated info from all files, without compiler arguments
   ///
-  /// - parameter file:          The file for which to execute the rule.
-  /// - parameter collectedInfo: All collected info for all files.
-  ///
-  /// - returns: All style violations to the rule's expectations.
+  /// - Parameters:
+  ///   - file: The file for which to execute the rule.
+  ///   - collectedInfo: All collected info for all files.
+  /// - Returns: All style violations to the rule's expectations.
   func validate(file: SwiftSource, collectedInfo: [SwiftSource: FileInfo]) -> [RuleViolation]
 }
 

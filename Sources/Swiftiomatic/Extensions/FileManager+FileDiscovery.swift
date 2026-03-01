@@ -1,6 +1,18 @@
 import Foundation
 
 extension FileManager: LintableFileDiscovering, @unchecked @retroactive Sendable {
+  /// Collect Swift file paths eligible for linting under the given path
+  ///
+  /// If `path` points to a single `.swift` file, that file is returned (unless excluded).
+  /// If it points to a directory, the directory is walked recursively, skipping excluded
+  /// subtrees for efficiency.
+  ///
+  /// - Parameters:
+  ///   - path: A file or directory path, absolute or relative to `rootDirectory`.
+  ///   - rootDirectory: Base directory used to resolve relative paths. Defaults to the
+  ///     current working directory when `nil`.
+  ///   - excluder: An ``Excluder`` that filters out paths matching exclusion rules.
+  /// - Returns: Absolute paths to non-excluded Swift files.
   func filesToLint(
     inPath path: String,
     rootDirectory: String? = nil,
@@ -73,6 +85,10 @@ extension FileManager: LintableFileDiscovering, @unchecked @retroactive Sendable
       }
   }
 
+  /// Modification date of the file at the given path, or `nil` if unavailable
+  ///
+  /// - Parameters:
+  ///   - path: Absolute path to the file.
   func modificationDate(forFileAtPath path: String) -> Date? {
     (try? attributesOfItem(atPath: path))?[.modificationDate] as? Date
   }

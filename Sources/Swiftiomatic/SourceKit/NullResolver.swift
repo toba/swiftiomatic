@@ -1,6 +1,7 @@
-/// No-op resolver used when `--sourcekit` is not passed.
+/// No-op ``TypeResolver`` used when `--sourcekit` is not passed
 ///
-/// Returns nil/empty for all queries. Checks fall back to syntax-only analysis.
+/// Returns `nil` or empty for all queries so that rules fall back to
+/// syntax-only analysis without requiring a SourceKit connection.
 struct NullResolver: TypeResolver {
     package var isAvailable: Bool {
         false

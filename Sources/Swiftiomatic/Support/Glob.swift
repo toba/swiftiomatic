@@ -2,7 +2,15 @@ import Foundation
 
 // Adapted from https://gist.github.com/efirestone/ce01ae109e08772647eb061b3bb387c3
 
+/// POSIX `glob(3)` wrapper with support for `**` (globstar) expansion
 enum Glob {
+    /// Resolves a glob pattern into a sorted list of unique, absolute file paths
+    ///
+    /// Supports `*`, `?`, `[]`, and `**` (recursive directory matching).
+    ///
+    /// - Parameters:
+    ///   - pattern: A file-system glob pattern.
+    /// - Returns: Matching file paths, deduplicated and sorted.
     static func resolveGlob(_ pattern: String) -> [String] {
         let globCharset = CharacterSet(charactersIn: "*?[]")
         guard pattern.rangeOfCharacter(from: globCharset) != nil else {
@@ -24,6 +32,15 @@ enum Glob {
             .map { $0.absolutePathStandardized() }
     }
 
+    /// Creates absolute glob patterns from a root directory and a relative pattern
+    ///
+    /// Appends `/**` when the pattern targets a directory so that all contained
+    /// Swift files are matched.
+    ///
+    /// - Parameters:
+    ///   - root: The root directory to anchor the pattern against.
+    ///   - pattern: A relative or absolute glob pattern.
+    /// - Returns: One or two absolute glob patterns covering the intended scope.
     static func createGlobPatterns(root: String, pattern: String) -> [String] {
         var absolutPathPattern = pattern
         if !pattern.starts(with: root) {

@@ -1,6 +1,9 @@
+/// String helpers for SourceKit-related parsing and path resolution.
+
 import Foundation
 
 extension String {
+    /// The string with backslash-escape sequences removed (e.g. `\"` becomes `"`)
     var unescaped: String {
         struct UnescapingSequence: Sequence, IteratorProtocol {
             var iterator: String.Iterator
@@ -13,6 +16,10 @@ extension String {
         return String(UnescapingSequence(iterator: makeIterator()))
     }
 
+    /// Count the number of leading characters that belong to the given character set
+    ///
+    /// - Parameters:
+    ///   - characterSet: The set of characters to match.
     func countOfLeadingCharacters(in characterSet: CharacterSet) -> Int {
         var count = 0
         for char in utf16 {
@@ -22,6 +29,10 @@ extension String {
         return count
     }
 
+    /// Return the string with trailing characters in the given set removed
+    ///
+    /// - Parameters:
+    ///   - characterSet: The set of characters to trim from the end.
     func trimmingTrailingCharacters(in characterSet: CharacterSet) -> String {
         guard !isEmpty else { return "" }
         var unicodeScalars = self.unicodeScalars
@@ -36,6 +47,13 @@ extension String {
 }
 
 extension String {
+    /// Resolve this path to an absolute path
+    ///
+    /// Handles tilde expansion and relative paths. Already-absolute paths are
+    /// returned unchanged.
+    ///
+    /// - Parameters:
+    ///   - rootDirectory: The directory to resolve relative paths against.
     func absolutePathRepresentation(rootDirectory: String = FileManager.default
         .currentDirectoryPath)
         -> String

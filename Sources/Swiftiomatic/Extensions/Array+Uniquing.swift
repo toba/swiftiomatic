@@ -23,11 +23,16 @@ extension Array where Element: Equatable {
 // MARK: - SourceKit bridging (Any is required at the ObjC boundary)
 
 extension Array where Element: Hashable {
-  /// Coerces a SourceKit response value into an array.
+  /// Coerces a SourceKit response value into an array
   ///
   /// Accepts `[Element]`, `Set<Element>`, or a single `Element` wrapped in `Any?`.
-  /// The `Any` parameter is intentional — SourceKit returns untyped dictionaries
+  /// The `Any` parameter is intentional -- SourceKit returns untyped dictionaries
   /// (`[String: SourceKitValue]`) and values must be downcast at the boundary.
+  ///
+  /// - Parameters:
+  ///   - obj: The untyped value from a SourceKit response dictionary.
+  ///
+  /// - Returns: The value coerced to `[Element]`, or `nil` if the cast fails.
   static func array(of obj: Any?) -> [Element]? {
     if let array = obj as? [Element] {
       return array
@@ -43,11 +48,16 @@ extension Array where Element: Hashable {
 }
 
 extension Array {
-  /// Coerces a SourceKit response value into an array.
+  /// Coerces a SourceKit response value into an array
   ///
   /// Accepts `[Element]` or a single `Element` wrapped in `Any?`.
-  /// The `Any` parameter is intentional — SourceKit returns untyped dictionaries
+  /// The `Any` parameter is intentional -- SourceKit returns untyped dictionaries
   /// (`[String: SourceKitValue]`) and values must be downcast at the boundary.
+  ///
+  /// - Parameters:
+  ///   - obj: The untyped value from a SourceKit response dictionary.
+  ///
+  /// - Returns: The value coerced to `[Element]`, or `nil` if the cast fails.
   static func array(of obj: Any?) -> [Element]? {
     if let array = obj as? [Element] {
       return array

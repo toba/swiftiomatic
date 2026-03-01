@@ -22,7 +22,8 @@ struct SeverityConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Inli
 
     /// Create a `SeverityConfiguration` with the specified severity.
     ///
-    /// - parameter severity: The severity that should be used when emitting violations.
+    /// - Parameters:
+    ///   - severity: The severity that should be used when emitting violations.
     init(_ severity: ViolationSeverity) {
         self.severity = severity
     }

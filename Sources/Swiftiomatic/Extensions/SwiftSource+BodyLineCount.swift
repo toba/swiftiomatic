@@ -1,13 +1,11 @@
 import SwiftSyntax
 
 extension SwiftSource {
-  /// This function determines if given a scope with a left/right brace, such as a function, closure, type, etc, how
-  /// many lines the "body" spans when you ignore lines only containing comments and/or whitespace.
+  /// Counts effective body lines between braces, ignoring comment-only and blank lines
   ///
-  /// - parameter leftBraceLine:  The line where the scope's left opening brace is located.
-  /// - parameter rightBraceLine: The line where the scope's right closing brace is located.
-  ///
-  /// - returns: The number of effective lines of the body ignoring lines only containing comments and/or whitespace.
+  /// - Parameters:
+  ///   - leftBraceLine: The line number of the opening brace.
+  ///   - rightBraceLine: The line number of the closing brace.
   func bodyLineCountIgnoringCommentsAndWhitespace(
     leftBraceLine: Int, rightBraceLine: Int,
   ) -> Int {
@@ -40,6 +38,7 @@ extension SwiftSource {
     return totalNumberOfLines - numberOfCommentAndWhitespaceOnlyLines
   }
 
+  /// Builds the set of line numbers that contain at least one meaningful token
   func computeLinesWithTokens() -> Set<Int> {
     let locationConverter = locationConverter
     return

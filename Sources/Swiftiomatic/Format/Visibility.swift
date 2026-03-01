@@ -1,4 +1,4 @@
-/// The visibility of a declaration
+/// Swift access control levels, ordered from most visible to least visible
 enum Visibility: String, CaseIterable, Comparable {
     case open
     case `public`
@@ -28,13 +28,18 @@ extension Declaration {
         }
     }
 
-    /// Adds the given visibility keyword to the given declaration,
-    /// replacing any existing visibility keyword.
+    /// Adds or replaces the visibility keyword on this declaration
+    ///
+    /// - Parameters:
+    ///   - visibilityKeyword: The access level to apply.
     func addVisibility(_ visibilityKeyword: Visibility) {
         formatter.addDeclarationVisibility(visibilityKeyword, declarationKeywordIndex: keywordIndex)
     }
 
-    /// Removes the given visibility keyword from the given declaration
+    /// Removes the given visibility keyword from this declaration
+    ///
+    /// - Parameters:
+    ///   - visibilityKeyword: The access level keyword to remove.
     func removeVisibility(_ visibilityKeyword: Visibility) {
         formatter.removeDeclarationVisibility(
             visibilityKeyword,

@@ -59,12 +59,13 @@ struct Command: Equatable {
 
     /// Creates a command based on the specified parameters.
     ///
-    /// - parameter action:          This command's action.
-    /// - parameter ruleIdentifiers: The identifiers for the rules associated with this command.
-    /// - parameter line:            The line in the source file where this command is defined.
-    /// - parameter range:           The range of the command in the line (0-based).
-    /// - parameter modifier:        This command's modifier, if any.
-    /// - parameter trailingComment: The comment following this command's `-` delimiter, if any.
+    /// - Parameters:
+    ///   - action: This command's action.
+    ///   - ruleIdentifiers: The identifiers for the rules associated with this command.
+    ///   - line: The line in the source file where this command is defined.
+    ///   - range: The range of the command in the line (0-based).
+    ///   - modifier: This command's modifier, if any.
+    ///   - trailingComment: The comment following this command's `-` delimiter, if any.
     init(
         action: Action,
         ruleIdentifiers: Set<RuleIdentifier> = [],
@@ -83,9 +84,10 @@ struct Command: Equatable {
 
     /// Creates a command based on the specified parameters.
     ///
-    /// - parameter commandString: The whole command string as found in the code.
-    /// - parameter line:          The line in the source file where this command is defined.
-    /// - parameter range:         The range of the command in the line (0-based).
+    /// - Parameters:
+    ///   - commandString: The whole command string as found in the code.
+    ///   - line: The line in the source file where this command is defined.
+    ///   - range: The range of the command in the line (0-based).
     init(commandString: String, line: Int, range: Range<Int>) {
         let scanner = Scanner(string: commandString)
         _ = scanner.scanString("sm:")

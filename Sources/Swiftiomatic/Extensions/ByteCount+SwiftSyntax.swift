@@ -1,9 +1,10 @@
 import SwiftSyntax
 
 extension ByteCount {
-  /// Converts a SwiftSyntax `AbsolutePosition` to a SourceKit `ByteCount`.
+  /// Creates a byte count from a SwiftSyntax ``AbsolutePosition``
   ///
-  /// - parameter position: The SwiftSyntax position to convert.
+  /// - Parameters:
+  ///   - position: The SwiftSyntax position whose UTF-8 offset is used.
   init(_ position: AbsolutePosition) {
     self.init(position.utf8Offset)
   }

@@ -1,4 +1,4 @@
-/// Swift declaration attribute kinds.
+/// Swift declaration attribute kinds from SourceKit `source.decl.attribute.*` UIDs
 enum SwiftDeclarationAttributeKind: String, CaseIterable {
     case ibaction = "source.decl.attribute.ibaction"
     case iboutlet = "source.decl.attribute.iboutlet"

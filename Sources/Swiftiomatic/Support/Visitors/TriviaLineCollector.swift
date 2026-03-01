@@ -1,23 +1,25 @@
 import SwiftSyntax
 
-/// Shared logic for extracting line ranges from trivia pieces.
-/// Used by `CommentLinesVisitor` and `EmptyLinesVisitor`.
+/// Extracts line-range information from trivia pieces
+///
+/// Shared by ``CommentLinesVisitor`` and ``EmptyLinesVisitor`` to avoid
+/// duplicating trivia scanning logic.
 enum TriviaLineCollector {
-    /// Information about comment and newline line ranges found in a trivia sequence.
+    /// Comment and newline line-range data extracted from a trivia sequence
     struct Result {
-        /// Line numbers spanned by comment trivia pieces.
+        /// Line numbers spanned by comment trivia pieces
         var commentLines = Set<Int>()
-        /// The highest line number reached by any newline trivia piece, or `nil` if none found.
+        /// The highest line number reached by any newline trivia piece, or `nil` if none were found
         var maxNewlineLine: Int?
     }
 
-    /// Scan trivia in reverse (from `endPosition` backward) and collect comment/newline line info.
+    /// Scans trivia in reverse from `endPosition` and collects comment and newline line info
     ///
     /// - Parameters:
     ///   - trivia: The trivia to scan.
     ///   - endPosition: The absolute position at the end of the trivia.
     ///   - locationConverter: Converter for mapping positions to line numbers.
-    /// - Returns: Collected line information.
+    /// - Returns: A ``Result`` with the collected line information.
     static func collectLines(
         from trivia: Trivia,
         endingAt endPosition: AbsolutePosition,

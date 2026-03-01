@@ -17,9 +17,10 @@ package final class RuleStorage: CustomStringConvertible, Sendable {
 
     /// Collects file info for a given rule into the storage.
     ///
-    /// - parameter info: The file information to store.
-    /// - parameter file: The file for which this information pertains to.
-    /// - parameter rule: The rule that generated this info.
+    /// - Parameters:
+    ///   - info: The file information to store.
+    ///   - file: The file for which this information pertains to.
+    ///   - rule: The rule that generated this info.
     func collect<R: CollectingRule>(info: R.FileInfo, for file: SwiftSource, in _: R) {
         let key = ObjectIdentifier(R.self)
         storage.withLock { box in
@@ -29,7 +30,8 @@ package final class RuleStorage: CustomStringConvertible, Sendable {
 
     /// Retrieves all file information for a given rule that was collected via `collect(...)`.
     ///
-    /// - parameter rule: The rule whose collected information should be retrieved.
+    /// - Parameters:
+    ///   - rule: The rule whose collected information should be retrieved.
     ///
     /// - returns: All file information for a given rule that was collected via `collect(...)`.
     func collectedInfo<R: CollectingRule>(for _: R) -> [SwiftSource: R.FileInfo]? {

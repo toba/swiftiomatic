@@ -1,11 +1,13 @@
 import Foundation
 
-/// This is a utility class used for manipulating a tokenized source file.
-/// It doesn't actually contain any logic for formatting, but provides
-/// utility methods for enumerating and adding/removing/replacing tokens.
-/// The primary advantage it provides over operating on the token array
-/// directly is that it allows mutation during enumeration, and
+/// Utility class for manipulating a tokenized Swift source file
+///
+/// Provides methods for enumerating, adding, removing, and replacing
+/// ``Token`` values. The primary advantage over operating on the token
+/// array directly is that it allows mutation during enumeration and
 /// transparently handles changes that affect the current token index.
+/// Individual ``FormatRule`` implementations receive a `Formatter` and
+/// use it to inspect and transform the source.
 package final class Formatter {
     private var enumerationIndex = -1
     private var autoUpdatingReferences = [WeakAutoUpdatingReference]()
@@ -238,7 +240,7 @@ package final class Formatter {
 
     // MARK: change tracking
 
-    /// Change record
+    /// A record of a single formatting change applied to the source
     package struct Change: Equatable {
         let line: Int
         let rule: FormatRule
@@ -900,7 +902,7 @@ extension Formatter {
         } else {
             lineNumber = originalLine(at: index)
         }
-        return .lineBreak(options.linebreak, lineNumber)
+        return .lineBreak(options.lineBreak, lineNumber)
     }
 
     /// Formatting linebreaks

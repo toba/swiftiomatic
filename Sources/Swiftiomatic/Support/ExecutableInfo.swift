@@ -1,9 +1,9 @@
 import MachO
 import Foundation
 
-/// Information about this executable.
+/// Metadata extracted from the running Mach-O binary
 enum ExecutableInfo {
-    /// A stable identifier for this executable. Uses the Mach-O header UUID.
+    /// A stable identifier derived from the Mach-O `LC_UUID` load command
     static let buildID: String? = {
         func getUUID(pointer: UnsafeRawPointer) -> UUID? {
             var offset: UInt64 = 0

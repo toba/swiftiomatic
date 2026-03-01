@@ -2,7 +2,7 @@ import Foundation
 
 /// Captures code and context information for an example of a triggering or
 /// non-triggering style
-struct Example: Sendable {
+package struct Example: Sendable {
     /// The contents of the example
     private(set) var code: String
     /// The untyped configuration to apply to the rule, if deviating from the default configuration.
@@ -84,7 +84,8 @@ extension Example {
     }
 
     /// Returns the same example, but with the `code` that is passed in
-    /// - Parameter code: the new code to use in the modified example
+    /// - Parameters:
+    ///   - code: the new code to use in the modified example
     func with(code: String) -> Example {
         var new = self
         new.code = code
@@ -128,7 +129,7 @@ extension Example {
 }
 
 extension Example: Hashable {
-    static func == (lhs: Example, rhs: Example) -> Bool {
+    package static func == (lhs: Example, rhs: Example) -> Bool {
         // Ignoring file/line metadata because two Examples could represent
         // the same idea, but captured at two different points in the code
         lhs.code == rhs.code
@@ -136,7 +137,7 @@ extension Example: Hashable {
             == rhs.configuration?.mapValues(String.init(describing:))
     }
 
-    func hash(into hasher: inout Hasher) {
+    package func hash(into hasher: inout Hasher) {
         // Ignoring file/line metadata because two Examples could represent
         // the same idea, but captured at two different points in the code
         hasher.combine(code)
@@ -145,7 +146,7 @@ extension Example: Hashable {
 }
 
 extension Example: Comparable {
-    static func < (lhs: Example, rhs: Example) -> Bool {
+    package static func < (lhs: Example, rhs: Example) -> Bool {
         lhs.code < rhs.code
     }
 }

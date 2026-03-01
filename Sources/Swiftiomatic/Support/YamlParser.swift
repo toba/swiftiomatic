@@ -3,20 +3,19 @@ import Foundation
 
 // MARK: - YamlParser
 
-/// An interface for parsing YAML.
+/// Parses YAML configuration strings into untyped dictionaries
 enum YamlParser {
-    /// Parses the input YAML string as an untyped dictionary.
+    /// Parses a YAML string into an untyped dictionary
     ///
-    /// YAML is inherently untyped — the Yams library returns `Any` for all values.
+    /// YAML is inherently untyped -- the Yams library returns `Any` for all values.
     /// Callers are responsible for casting values to concrete types immediately
     /// after parsing (see ``Configuration/loadUnified(from:)``).
     ///
-    /// - parameter yaml: YAML-formatted string.
-    /// - parameter env:  The environment to use to expand variables in the YAML.
-    ///
-    /// - returns: The parsed YAML as an untyped dictionary.
-    ///
-    /// - throws: Throws if the `yaml` string provided could not be parsed.
+    /// - Parameters:
+    ///   - yaml: YAML-formatted string.
+    ///   - env: The environment used to expand `${VAR}` references in the YAML.
+    /// - Returns: The parsed YAML as an untyped dictionary.
+    /// - Throws: ``SwiftiomaticError/yamlParsing(_:)`` if the string cannot be parsed.
     static func parse(
         _ yaml: String,
         env: [String: String] = ProcessInfo.processInfo.environment,

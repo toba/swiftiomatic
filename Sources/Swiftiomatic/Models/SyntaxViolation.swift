@@ -62,15 +62,17 @@ struct SyntaxViolation: Comparable, Hashable {
 extension [SyntaxViolation] {
     /// Add a violation at the specified position using the default description and severity.
     ///
-    /// - parameter position: The position for the violation to append.
+    /// - Parameters:
+    ///   - position: The position for the violation to append.
     mutating func append(_ position: AbsolutePosition) {
         append(SyntaxViolation(position: position))
     }
 
     /// Add a violation and the correction at the specified position using the default description and severity.
     ///
-    /// - parameter position: The position for the violation to append.
-    /// - parameter correction: An optional correction to be applied when running with `--fix`.
+    /// - Parameters:
+    ///   - position: The position for the violation to append.
+    ///   - correction: An optional correction to be applied when running with `--fix`.
     mutating func append(
         at position: AbsolutePosition, correction: SyntaxViolation.Correction? = nil,
     ) {
@@ -79,7 +81,8 @@ extension [SyntaxViolation] {
 
     /// Add violations for the specified positions using the default description and severity.
     ///
-    /// - parameter positions: The positions for the violations to append.
+    /// - Parameters:
+    ///   - positions: The positions for the violations to append.
     mutating func append(contentsOf positions: [AbsolutePosition]) {
         append(contentsOf: positions.map { SyntaxViolation(position: $0) })
     }

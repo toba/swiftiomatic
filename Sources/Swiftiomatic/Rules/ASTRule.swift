@@ -1,26 +1,27 @@
-/// A rule that leverages the Swift source's pre-typechecked Abstract Syntax Tree to recurse into the source's
-/// structure, validating the rule recursively in nested source bodies.
+/// A rule that recurses into a pre-typechecked AST via SourceKit structure dictionaries
+///
+/// Conforming rules validate each node whose ``KindType`` matches, walking the
+/// ``SourceKitDictionary`` tree depth-first.
 protocol SourceKitASTRule: Rule {
-  /// The kind of token being recursed over.
+  /// The kind of token being recursed over
   associatedtype KindType: RawRepresentable
 
-  /// Executes the rule on a file and a subset of its AST structure, returning any violations to the rule's
-  /// expectations.
+  /// Validate a single AST node of the expected kind
   ///
-  /// - parameter file:       The file for which to execute the rule.
-  /// - parameter kind:       The kind of token being recursed over.
-  /// - parameter dictionary: The dictionary for an AST subset to validate.
-  ///
-  /// - returns: All style violations to the rule's expectations.
+  /// - Parameters:
+  ///   - file: The file for which to execute the rule.
+  ///   - kind: The kind of token being recursed over.
+  ///   - dictionary: The dictionary for an AST subset to validate.
+  /// - Returns: All style violations to the rule's expectations.
   func validate(file: SwiftSource, kind: KindType, dictionary: SourceKitDictionary)
     -> [RuleViolation]
 
-  /// Get the `kind` from the specified dictionary.
+  /// Extract the ``KindType`` from the specified dictionary
   ///
-  /// - parameter dictionary: The `SourceKitDictionary` representing the source structure from which to extract the
-  ///                         `kind`.
-  ///
-  /// - returns: The `kind` from the specified dictionary, if one was found.
+  /// - Parameters:
+  ///   - dictionary: The ``SourceKitDictionary`` representing the source structure
+  ///     from which to extract the kind.
+  /// - Returns: The kind from the specified dictionary, if one was found.
   func kind(from dictionary: SourceKitDictionary) -> KindType?
 }
 
@@ -29,13 +30,12 @@ extension SourceKitASTRule {
     validate(file: file, dictionary: file.structureDictionary)
   }
 
-  /// Executes the rule on a file and a subset of its AST structure, returning any violations to the rule's
-  /// expectations.
+  /// Validate a file by walking the given dictionary subtree depth-first
   ///
-  /// - parameter file:       The file for which to execute the rule.
-  /// - parameter dictionary: The dictionary for an AST subset to validate.
-  ///
-  /// - returns: All style violations to the rule's expectations.
+  /// - Parameters:
+  ///   - file: The file for which to execute the rule.
+  ///   - dictionary: The dictionary for an AST subset to validate.
+  /// - Returns: All style violations to the rule's expectations.
   func validate(file: SwiftSource, dictionary: SourceKitDictionary) -> [RuleViolation] {
     dictionary.traverseDepthFirst { subDict in
       guard let kind = self.kind(from: subDict) else { return nil }

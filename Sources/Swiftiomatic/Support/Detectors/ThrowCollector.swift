@@ -1,11 +1,17 @@
 import SwiftSyntax
 
-/// Collects thrown error types from throw expressions. Used by both
-/// `TypedThrowsCheck` (suggest) and `TypedThrowsRule` (lint).
+/// Collects thrown error types from `throw` expressions within a single function scope
+///
+/// Stops at closure and nested function boundaries since those have their own
+/// throw scope. Used by both `TypedThrowsCheck` (suggest) and `TypedThrowsRule` (lint).
 final class ThrowCollector: SyntaxVisitor {
+    /// Distinct error type names found in `throw` statements
     var thrownTypes: Set<String> = []
+
+    /// Whether the body contains an unqualified `try` (indicating rethrown errors)
     var hasRethrows = false
-    /// Byte offsets of throw expressions with unknown types (for SourceKit resolution).
+
+    /// Byte offsets of `throw` expressions whose type could not be determined statically
     var unknownOffsets: [Int] = []
 
     override func visit(_ node: ThrowStmtSyntax) -> SyntaxVisitorContinueKind {

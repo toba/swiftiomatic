@@ -1,102 +1,100 @@
 import Foundation
 
-/// An executable value that can identify issues (violations) in Swift source code.
+/// An executable value that can identify issues (violations) in Swift source code
 package protocol Rule: Sendable {
-    /// The type of the configuration used to configure this rule.
+    /// The type of the configuration used to configure this rule
     associatedtype ConfigurationType: RuleConfiguration
 
-    /// A verbose description of many of this rule's properties.
+    /// A verbose description of many of this rule's properties
     static var description: RuleDescription { get }
 
-    /// This rule's configuration.
+    /// This rule's configuration
     var configuration: ConfigurationType { get set }
 
-    /// Whether this rule should be used on empty files. Defaults to `false`.
+    /// Whether this rule should be used on empty files, defaults to `false`
     var shouldLintEmptyFiles: Bool { get }
 
-    /// A default initializer for rules. All rules need to be trivially initializable.
+    /// A default initializer for rules; all rules need to be trivially initializable
     init()
 
-    /// Creates a rule by applying its configuration.
+    /// Create a rule by applying its configuration
     ///
-    /// - parameter configuration: The untyped configuration value to apply.
-    ///
-    /// - throws: Throws if the configuration didn't match the expected format.
+    /// - Parameters:
+    ///   - configuration: The untyped configuration value to apply.
+    /// - Throws: ``SwiftiomaticError`` if the configuration didn't match the expected format.
     init(configuration: Any) throws
 
-    /// Create a description of how this rule has been configured to run.
+    /// Create a description of how this rule has been configured to run
     ///
-    /// - parameter exclusiveOptions: A set of options that should be excluded from the description.
-    ///
-    /// - returns: A description of the rule's configuration.
+    /// - Parameters:
+    ///   - exclusiveOptions: A set of options that should be excluded from the description.
+    /// - Returns: A description of the rule's configuration.
     func createConfigurationDescription(exclusiveOptions: Set<String>)
         -> RuleConfigurationDescription
 
-    /// Executes the rule on a file and returns any violations to the rule's expectations.
+    /// Execute the rule on a file and return any violations
     ///
-    /// - parameter file:              The file for which to execute the rule.
-    /// - parameter compilerArguments: The compiler arguments needed to compile this file.
-    ///
-    /// - returns: All style violations to the rule's expectations.
+    /// - Parameters:
+    ///   - file: The file for which to execute the rule.
+    ///   - compilerArguments: The compiler arguments needed to compile this file.
+    /// - Returns: All style violations to the rule's expectations.
     func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation]
 
-    /// Executes the rule on a file and returns any violations to the rule's expectations.
+    /// Execute the rule on a file and return any violations
     ///
-    /// - parameter file: The file for which to execute the rule.
-    ///
-    /// - returns: All style violations to the rule's expectations.
+    /// - Parameters:
+    ///   - file: The file for which to execute the rule.
+    /// - Returns: All style violations to the rule's expectations.
     func validate(file: SwiftSource) -> [RuleViolation]
 
-    /// Whether or not the specified rule is equivalent to the current rule.
+    /// Check whether the specified rule is equivalent to the current rule
     ///
-    /// - parameter rule: The `rule` value to compare against.
-    ///
-    /// - returns: Whether or not the specified rule is equivalent to the current rule.
+    /// - Parameters:
+    ///   - rule: The rule value to compare against.
+    /// - Returns: Whether the specified rule is equivalent to the current rule.
     func isEqualTo(_ rule: some Rule) -> Bool
 
-    /// Collects information for the specified file in a storage object, to be analyzed by a `CollectedLinter`.
+    /// Collect information for the specified file into a storage object
     ///
-    /// - note: This function is called by the linter and is always implemented in extensions.
+    /// Called by the linter; always implemented in extensions.
     ///
-    /// - parameter file:              The file for which to collect info.
-    /// - parameter storage:           The storage object where collected info should be saved.
-    /// - parameter compilerArguments: The compiler arguments needed to compile this file.
+    /// - Parameters:
+    ///   - file: The file for which to collect info.
+    ///   - storage: The storage object where collected info should be saved.
+    ///   - compilerArguments: The compiler arguments needed to compile this file.
     func collectInfo(
         for file: SwiftSource,
         into storage: RuleStorage,
         compilerArguments: [String],
     )
 
-    /// Executes the rule on a file after collecting file info for all files and returns any violations to the rule's
-    /// expectations.
+    /// Validate a file after collecting file info for all files
     ///
-    /// - note: This function is called by the linter and is always implemented in extensions.
+    /// Called by the linter; always implemented in extensions.
     ///
-    /// - parameter file:              The file for which to execute the rule.
-    /// - parameter storage:           The storage object containing all collected info.
-    /// - parameter compilerArguments: The compiler arguments needed to compile this file.
-    ///
-    /// - returns: All style violations to the rule's expectations.
+    /// - Parameters:
+    ///   - file: The file for which to execute the rule.
+    ///   - storage: The storage object containing all collected info.
+    ///   - compilerArguments: The compiler arguments needed to compile this file.
+    /// - Returns: All style violations to the rule's expectations.
     func validate(file: SwiftSource, using storage: RuleStorage, compilerArguments: [String])
         -> [RuleViolation]
 
-    /// Checks if a style violation can be disabled by a command specifying a rule ID. Only the rule can claim that for
-    /// sure since it knows all the possible identifiers.
+    /// Check if a style violation can be disabled by a command specifying a rule ID
+    ///
+    /// Only the rule can claim that for sure since it knows all the possible identifiers.
     ///
     /// - Parameters:
     ///   - violation: A style violation.
     ///   - ruleID: The name of a rule as used in a disable command.
-    ///
     /// - Returns: A boolean value indicating whether the violation can be disabled by the given ID.
     func canBeDisabled(violation: RuleViolation, by ruleID: RuleIdentifier) -> Bool
 
-    /// Checks if a the rule is enabled in a given region. A specific rule ID can be provided in case a rule supports
-    /// more than one identifier.
+    /// Check if the rule is enabled in a given region
     ///
     /// - Parameters:
     ///   - region: The region to check.
     ///   - ruleID: Rule identifier deviating from the default rule's name.
-    ///
     /// - Returns: A boolean value indicating whether the rule is enabled in the given region.
     func isEnabled(in region: Region, for ruleID: String) -> Bool
 }
@@ -140,8 +138,7 @@ extension Rule {
         // no-op: only CollectingRules mutate their storage
     }
 
-    /// The cache description which will be used to determine if a previous
-    /// cached value is still valid given the new cache value.
+    /// A string fingerprint of this rule's configuration used for cache invalidation
     var cacheDescription: String {
         createConfigurationDescription().oneLiner()
     }
@@ -170,42 +167,41 @@ extension Rule {
 }
 
 extension Rule {
-    /// The rule's unique identifier which is the same as `Rule.description.identifier`.
+    /// The rule's unique identifier, equivalent to ``RuleDescription/identifier``
     static var identifier: String {
         description.identifier
     }
 }
 
-/// A rule that is not enabled by default. Rules conforming to this need to be explicitly enabled by users.
+/// A rule that is not enabled by default and must be explicitly enabled by users
 protocol OptInRule: Rule {}
 
-/// A rule that can correct violations.
+/// A rule that can correct violations
 package protocol CorrectableRule: Rule {
-    /// Attempts to correct the violations to this rule in the specified file.
+    /// Attempt to correct violations in the specified file
     ///
-    /// - parameter file:              The file for which to correct violations.
-    /// - parameter compilerArguments: The compiler arguments needed to compile this file.
-    ///
-    /// - returns: Number of corrections that were applied.
+    /// - Parameters:
+    ///   - file: The file for which to correct violations.
+    ///   - compilerArguments: The compiler arguments needed to compile this file.
+    /// - Returns: Number of corrections that were applied.
     func correct(file: SwiftSource, compilerArguments: [String]) -> Int
 
-    /// Attempts to correct the violations to this rule in the specified file.
+    /// Attempt to correct violations in the specified file
     ///
-    /// - parameter file: The file for which to correct violations.
-    ///
-    /// - returns: Number of corrections that were applied.
+    /// - Parameters:
+    ///   - file: The file for which to correct violations.
+    /// - Returns: Number of corrections that were applied.
     func correct(file: SwiftSource) -> Int
 
-    /// Attempts to correct the violations to this rule in the specified file after collecting file info for all files
-    /// and returns all corrections that were applied.
+    /// Correct violations after collecting file info for all files
     ///
-    /// - note: This function is called by the linter and is always implemented in extensions.
+    /// Called by the linter; always implemented in extensions.
     ///
-    /// - parameter file:              The file for which to execute the rule.
-    /// - parameter storage:           The storage object containing all collected info.
-    /// - parameter compilerArguments: The compiler arguments needed to compile this file.
-    ///
-    /// - returns: All corrections that were applied.
+    /// - Parameters:
+    ///   - file: The file for which to execute the rule.
+    ///   - storage: The storage object containing all collected info.
+    ///   - compilerArguments: The compiler arguments needed to compile this file.
+    /// - Returns: All corrections that were applied.
     func correct(file: SwiftSource, using storage: RuleStorage, compilerArguments: [String])
         -> Int
 }
@@ -220,22 +216,21 @@ extension CorrectableRule {
     }
 }
 
-/// A correctable rule that can apply its corrections by replacing the content of ranges in the offending file with
-/// updated content.
+/// A correctable rule that applies corrections by replacing ranges in the offending file
 protocol SubstitutionCorrectableRule: CorrectableRule {
-    /// Returns the `Range<String.Index>` ranges to be replaced in the specified file.
+    /// Return the ranges that violate this rule and should be replaced
     ///
-    /// - parameter file: The file in which to find ranges of violations for this rule.
-    ///
-    /// - returns: The ranges to be replaced in the specified file.
+    /// - Parameters:
+    ///   - file: The file in which to find ranges of violations for this rule.
+    /// - Returns: The ranges to be replaced in the specified file.
     func violationRanges(in file: SwiftSource) -> [Range<String.Index>]
 
-    /// Returns the substitution to apply for the given range.
+    /// Return the substitution to apply for the given violation range
     ///
-    /// - parameter violationRange: The range of the violation that should be replaced.
-    /// - parameter file:           The file in which the violation should be replaced.
-    ///
-    /// - returns: The range of the correction and its contents, if one could be computed.
+    /// - Parameters:
+    ///   - violationRange: The range of the violation that should be replaced.
+    ///   - file: The file in which the violation should be replaced.
+    /// - Returns: The range of the correction and its contents, if one could be computed.
     func substitution(for violationRange: Range<String.Index>, in file: SwiftSource)
         -> (Range<String.Index>, String)?
 }
@@ -277,31 +272,32 @@ extension [any Rule] {
     }
 }
 
-/// A rule that operates purely on syntax (SwiftSyntax) and does not require SourceKit.
+/// A rule that operates purely on SwiftSyntax and does not require SourceKit
 protocol SyntaxOnlyRule: Rule {}
 
 extension Rule {
-    /// Whether this rule requires SourceKit to operate.
-    /// Returns false if the rule conforms to SyntaxOnlyRule.
+    /// Whether this rule requires SourceKit to operate, `false` when the rule conforms to ``SyntaxOnlyRule``
     var requiresSourceKit: Bool {
         !(self is any SyntaxOnlyRule)
     }
 }
 
-/// A rule that can produce additional violations via async SourceKit enrichment.
+/// A rule that can produce additional violations via async SourceKit enrichment
 ///
-/// After the synchronous `validate()` pass, the Analyzer calls `enrich()`
-/// for conforming rules when a `TypeResolver` is available. This allows rules
-/// to resolve types, check USRs, or query expression types to upgrade
-/// confidence or add findings that require semantic information.
+/// After the synchronous ``Rule/validate(file:)`` pass, the ``Analyzer`` calls
+/// ``enrich(file:typeResolver:)`` for conforming rules when a ``TypeResolver``
+/// is available. This allows rules to resolve types, check USRs, or query
+/// expression types to upgrade confidence or add findings that require semantic
+/// information.
 ///
-/// The protocol is additive — it does not change the synchronous `Rule.validate()` contract.
+/// The protocol is additive -- it does not change the synchronous
+/// ``Rule/validate(file:)`` contract.
 protocol AsyncEnrichableRule: Rule {
-    /// Produce additional violations by resolving types via SourceKit.
+    /// Produce additional violations by resolving types via SourceKit
     ///
-    /// Called after `validate()` when a `TypeResolver` is available.
+    /// Called after ``Rule/validate(file:)`` when a ``TypeResolver`` is available.
     /// Returns only the *new* violations discovered through async enrichment;
-    /// the Analyzer merges them with the synchronous results.
+    /// the ``Analyzer`` merges them with the synchronous results.
     ///
     /// - Parameters:
     ///   - file: The file being analyzed.
@@ -313,8 +309,10 @@ protocol AsyncEnrichableRule: Rule {
     ) async -> [RuleViolation]
 }
 
-/// A rule that can operate on the post-typechecked AST using compiler arguments. Performs rules that are more like
-/// static analysis than syntactic checks.
+/// A rule that operates on the post-typechecked AST using compiler arguments
+///
+/// Analyzer rules perform checks that are more like static analysis than
+/// syntactic checks. They are always opt-in and require compiler arguments.
 protocol AnalyzerRule: OptInRule {}
 
 extension AnalyzerRule {

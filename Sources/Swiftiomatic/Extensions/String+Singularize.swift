@@ -47,6 +47,7 @@ private let rules: [(String, replacement: String)] = [
 ]
 
 extension String {
+    /// Returns the singular form of this English word, or `nil` if no pluralization rule matches
     func singularized() -> String? {
         guard
             let (rule, replacement) =
@@ -68,7 +69,10 @@ extension String {
         .removingCaseAwarePrefix("all")
     }
 
-    /// Removes the prefix (case-insensitive match) while preserving the casing of the remainder.
+    /// Removes the prefix (case-insensitive match) while preserving the casing of the remainder
+    ///
+    /// - Parameters:
+    ///   - prefix: The prefix to strip, matched case-insensitively.
     func removingCaseAwarePrefix(_ prefix: String) -> String? {
         if hasPrefix(prefix.lowercased()) {
             let string = dropFirst(prefix.count)

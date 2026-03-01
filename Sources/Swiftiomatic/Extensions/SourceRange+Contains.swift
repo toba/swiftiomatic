@@ -1,12 +1,11 @@
 import SwiftSyntax
 
 extension SourceRange {
-  /// Check if a position is contained within this range.
+  /// Whether the given absolute position falls within this source range
   ///
-  /// - parameter position:          The position to check.
-  /// - parameter locationConverter: The location converter to use to perform the check.
-  ///
-  /// - returns: Whether the specified position is contained within this range.
+  /// - Parameters:
+  ///   - position: The absolute position to check.
+  ///   - locationConverter: The converter used to translate line/column to absolute positions.
   func contains(
     _ position: AbsolutePosition,
     locationConverter: SourceLocationConverter

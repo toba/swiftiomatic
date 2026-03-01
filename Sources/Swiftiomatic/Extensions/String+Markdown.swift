@@ -32,7 +32,10 @@ extension String {
     }
 }
 
-/// Legacy free-function wrapper — prefer `.strippingMarkdown` property.
+/// Legacy free-function wrapper -- prefer ``String/strippingMarkdown``
+///
+/// - Parameters:
+///   - input: A string potentially containing markdown backtick formatting.
 func stripMarkdown(_ input: String) -> String {
     input.strippingMarkdown
 }

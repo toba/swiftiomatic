@@ -1,24 +1,27 @@
-/// A collection of keys and values as parsed out of SourceKit, with many conveniences for accessing analysis-specific
-/// values.
+/// A parsed SourceKit response dictionary with typed accessors for common keys
+///
+/// Eagerly resolves the entity kind (expression, declaration, or statement)
+/// and caches nested substructure so repeated traversals are allocation-free.
 struct SourceKitDictionary {
-    /// The underlying SourceKit dictionary.
+    /// The raw key-value pairs from SourceKit
     let value: [String: SourceKitValue]
-    /// The cached substructure for this dictionary. Empty if there is no substructure.
+    /// Cached child substructure dictionaries (empty when none exist)
     let substructure: [Self]
 
-    /// The kind of Swift expression represented by this dictionary, if it is an expression.
+    /// The expression kind, if this dictionary represents an expression
     let expressionKind: ExpressionKind?
-    /// The kind of Swift declaration represented by this dictionary, if it is a declaration.
+    /// The declaration kind, if this dictionary represents a declaration
     let declarationKind: SwiftDeclarationKind?
-    /// The kind of Swift statement represented by this dictionary, if it is a statement.
+    /// The statement kind, if this dictionary represents a statement
     let statementKind: StatementKind?
 
-    /// The accessibility level for this dictionary, if it is a declaration.
+    /// The accessibility level, if this dictionary represents a declaration
     let accessibility: AccessControlLevel?
 
-    /// Creates a SourceKit dictionary given a `[String: SourceKitValue]` input.
+    /// Create a dictionary from raw SourceKit key-value pairs
     ///
-    /// - parameter value: The input dictionary.
+    /// - Parameters:
+    ///   - value: The raw `[String: SourceKitValue]` dictionary.
     init(_ value: [String: SourceKitValue]) {
         self.value = value
 
@@ -35,104 +38,107 @@ struct SourceKitDictionary {
         )
     }
 
-    /// Body length
+    /// The body length in bytes (`key.bodylength`)
     var bodyLength: ByteCount? {
         value["key.bodylength"]?.int64Value.map(ByteCount.init)
     }
 
-    /// Body offset.
+    /// The body offset in bytes (`key.bodyoffset`)
     var bodyOffset: ByteCount? {
         value["key.bodyoffset"]?.int64Value.map(ByteCount.init)
     }
 
-    /// Kind.
+    /// The SourceKit kind UID string (`key.kind`)
     var kind: String? {
         value["key.kind"]?.stringValue
     }
 
-    /// Length.
+    /// The total length in bytes (`key.length`)
     var length: ByteCount? {
         value["key.length"]?.int64Value.map(ByteCount.init)
     }
 
-    /// Name.
+    /// The symbol name (`key.name`)
     var name: String? {
         value["key.name"]?.stringValue
     }
 
-    /// Name length.
+    /// The name length in bytes (`key.namelength`)
     var nameLength: ByteCount? {
         value["key.namelength"]?.int64Value.map(ByteCount.init)
     }
 
-    /// Name offset.
+    /// The name offset in bytes (`key.nameoffset`)
     var nameOffset: ByteCount? {
         value["key.nameoffset"]?.int64Value.map(ByteCount.init)
     }
 
-    /// Offset.
+    /// The starting byte offset (`key.offset`)
     var offset: ByteCount? {
         value["key.offset"]?.int64Value.map(ByteCount.init)
     }
 
-    /// Returns byte range starting from `offset` with `length` bytes
+    /// The ``ByteRange`` spanning from ``offset`` for ``length`` bytes
     var byteRange: ByteRange? {
         guard let offset, let length else { return nil }
         return ByteRange(location: offset, length: length)
     }
 
-    /// Setter accessibility.
+    /// The setter accessibility level UID string (`key.setter_accessibility`)
     var setterAccessibility: String? {
         value["key.setter_accessibility"]?.stringValue
     }
 
-    /// Type name.
+    /// The type name string (`key.typename`)
     var typeName: String? {
         value["key.typename"]?.stringValue
     }
 
-    /// The attribute for this dictionary, as returned by SourceKit.
+    /// The attribute UID string (`key.attribute`)
     var attribute: String? {
         value["key.attribute"]?.stringValue
     }
 
-    /// Module name in `@import` expressions.
+    /// The module name in `@import` expressions (`key.modulename`)
     var moduleName: String? {
         value["key.modulename"]?.stringValue
     }
 
-    /// The line number for this declaration.
+    /// The one-based line number (`key.line`)
     var line: Int64? {
         value["key.line"]?.int64Value
     }
 
-    /// The column number for this declaration.
+    /// The one-based column number (`key.column`)
     var column: Int64? {
         value["key.column"]?.int64Value
     }
 
-    /// The `SwiftDeclarationAttributeKind` values associated with this dictionary.
+    /// The ``SwiftDeclarationAttributeKind`` values associated with this dictionary
     var enclosedSwiftAttributes: [SwiftDeclarationAttributeKind] {
         swiftAttributes.compactMap(\.attribute)
             .compactMap(SwiftDeclarationAttributeKind.init(rawValue:))
     }
 
-    /// The fully preserved SourceKit dictionaries for all the attributes associated with this dictionary.
+    /// The full SourceKit dictionaries for all attributes associated with this entity
     var swiftAttributes: [Self] {
         let array = value["key.attributes"]?.arrayValue ?? []
         return array.compactMap(\.dictionaryValue).map(Self.init)
     }
 
+    /// The child element dictionaries (`key.elements`)
     var elements: [Self] {
         let elements = value["key.elements"]?.arrayValue ?? []
         return elements.compactMap(\.dictionaryValue).map(Self.init)
     }
 
+    /// The child entity dictionaries (`key.entities`)
     var entities: [Self] {
         let entities = value["key.entities"]?.arrayValue ?? []
         return entities.compactMap(\.dictionaryValue).map(Self.init)
     }
 
+    /// All `varParameter` declarations reachable through substructure, recursing into arguments and closures
     var enclosedVarParameters: [Self] {
         substructure.flatMap { subDict -> [Self] in
             if subDict.declarationKind == .varParameter {
@@ -146,6 +152,7 @@ struct SourceKitDictionary {
         }
     }
 
+    /// All argument expressions in the immediate substructure
     var enclosedArguments: [Self] {
         substructure.flatMap { subDict -> [Self] in
             guard subDict.expressionKind == .argument else {
@@ -156,11 +163,13 @@ struct SourceKitDictionary {
         }
     }
 
+    /// The names of inherited types (`key.inheritedtypes`)
     var inheritedTypes: [String] {
         let array = value["key.inheritedtypes"]?.arrayValue ?? []
         return array.compactMap { $0.dictionaryValue?["key.name"]?.stringValue }
     }
 
+    /// Secondary symbols associated with this entity (`key.secondary_symbols`)
     var secondarySymbols: [Self] {
         let array = value["key.secondary_symbols"]?.arrayValue ?? []
         return array.compactMap(\.dictionaryValue).map(Self.init)
@@ -168,19 +177,21 @@ struct SourceKitDictionary {
 }
 
 extension SourceKitDictionary {
-    /// Block executed for every encountered entity during traversal of a dictionary.
+    /// Block executed for every encountered entity during dictionary traversal
     typealias TraverseBlock<T> = (
         _ parent: SourceKitDictionary,
         _ entity: SourceKitDictionary,
     )
         -> T?
 
-    /// Traversing all substructures of the dictionary hierarchically, calling `traverseBlock` on each node.
-    /// Traversing using depth first strategy, so deepest substructures will be passed to `traverseBlock` first.
+    /// Traverse all substructures depth-first, collecting values from each node
     ///
-    /// - parameter traverseBlock: block that will be called for each substructure in the dictionary.
+    /// Deepest substructures are visited first, so leaf nodes are processed
+    /// before their parents.
     ///
-    /// - returns: The list of substructure dictionaries with updated values from the traverse block.
+    /// - Parameters:
+    ///   - traverseBlock: A closure called for each substructure dictionary.
+    ///     Return values to collect, or `nil` to skip.
     func traverseDepthFirst<T>(traverseBlock: (SourceKitDictionary) -> [T]?) -> [T] {
         var result: [T] = []
         traverseDepthFirst(collectingValuesInto: &result, traverseBlock: traverseBlock)
@@ -200,12 +211,11 @@ extension SourceKitDictionary {
         }
     }
 
-    /// Traversing all entities of the dictionary hierarchically, calling `traverseBlock` on each node.
-    /// Traversing using depth first strategy, so deepest substructures will be passed to `traverseBlock` first.
+    /// Traverse all entities depth-first, collecting values from each parent-entity pair
     ///
-    /// - parameter traverseBlock: Block that will be called for each entity and its parent in the dictionary.
-    ///
-    /// - returns: The list of entity dictionaries with updated values from the traverse block.
+    /// - Parameters:
+    ///   - traverseBlock: A closure called with the parent and child entity dictionaries.
+    ///     Return a value to collect, or `nil` to skip.
     func traverseEntitiesDepthFirst<T>(traverseBlock: TraverseBlock<T>) -> [T] {
         var result: [T] = []
         traverseEntitiesDepthFirst(collectingValuesInto: &result, traverseBlock: traverseBlock)

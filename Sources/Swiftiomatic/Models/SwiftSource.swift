@@ -13,9 +13,10 @@ package final class SwiftSource: Sendable {
 
     /// Creates a `SwiftSource` with a SourceKit `File`.
     ///
-    /// - parameter file: A file from the vendored SourceKit layer.
-    /// - parameter isTestFile: Mark the file as being generated for testing purposes only.
-    /// - parameter isVirtual: Mark the file as virtual (in-memory).
+    /// - Parameters:
+    ///   - file: A file from the vendored SourceKit layer.
+    ///   - isTestFile: Mark the file as being generated for testing purposes only.
+    ///   - isVirtual: Mark the file as virtual (in-memory).
     init(file: File, isTestFile: Bool = false, isVirtual: Bool = false) {
         self.file = file
         id = UUID()
@@ -26,8 +27,9 @@ package final class SwiftSource: Sendable {
     /// Creates a `SwiftSource` by specifying its path on disk.
     /// Fails if the file does not exist.
     ///
-    /// - parameter path: The path to a file on disk. Relative and absolute paths supported.
-    /// - parameter isTestFile: Mark the file as being generated for testing purposes only.
+    /// - Parameters:
+    ///   - path: The path to a file on disk. Relative and absolute paths supported.
+    ///   - isTestFile: Mark the file as being generated for testing purposes only.
     package convenience init?(path: String, isTestFile: Bool = false) {
         guard let file = File(path: path) else { return nil }
         self.init(file: file, isTestFile: isTestFile)
@@ -36,15 +38,17 @@ package final class SwiftSource: Sendable {
     /// Creates a `SwiftSource` by specifying its path on disk. Unlike the  `SwiftSource(path:)` initializer, this
     /// one does not read its contents immediately, but rather traps at runtime when attempting to access its contents.
     ///
-    /// - parameter path: The path to a file on disk. Relative and absolute paths supported.
+    /// - Parameters:
+    ///   - path: The path to a file on disk. Relative and absolute paths supported.
     convenience init(pathDeferringReading path: String) {
         self.init(file: File(pathDeferringReading: path))
     }
 
     /// Creates a `SwiftSource` that is not backed by a file on disk by specifying its contents.
     ///
-    /// - parameter contents: The contents of the file.
-    /// - parameter isTestFile: Mark the file as being generated for testing purposes only.
+    /// - Parameters:
+    ///   - contents: The contents of the file.
+    ///   - isTestFile: Mark the file as being generated for testing purposes only.
     convenience init(contents: String, isTestFile: Bool = false) {
         self.init(file: File(contents: contents), isTestFile: isTestFile, isVirtual: true)
     }

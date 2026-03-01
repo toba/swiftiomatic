@@ -4,6 +4,10 @@ import Foundation
 
 extension Formatter {
     /// Returns the index of the first token of the line containing the specified index
+    ///
+    /// - Parameters:
+    ///   - index: A token index within the line.
+    ///   - excludingIndent: When `true`, skips past leading whitespace.
     func startOfLine(at index: Int, excludingIndent: Bool = false) -> Int {
         var index = min(index, tokens.count)
         while let token = token(at: index - 1) {
@@ -19,6 +23,9 @@ extension Formatter {
     }
 
     /// Returns the index of the linebreak token at the end of the line containing the specified index
+    ///
+    /// - Parameters:
+    ///   - index: A token index within the line.
     func endOfLine(at index: Int) -> Int {
         var index = index
         while let token = token(at: index) {
@@ -30,12 +37,19 @@ extension Formatter {
         return index
     }
 
-    /// Whether or not the two indices represent tokens on the same line
+    /// Whether the two indices represent tokens on the same line
+    ///
+    /// - Parameters:
+    ///   - lhs: First token index.
+    ///   - rhs: Second token index.
     func onSameLine(_ lhs: Int, _ rhs: Int) -> Bool {
         startOfLine(at: lhs) == startOfLine(at: rhs)
     }
 
-    /// Returns the current space at the start of the line containing the specified index
+    /// Returns the leading whitespace at the start of the line containing the specified index
+    ///
+    /// - Parameters:
+    ///   - index: A token index within the line.
     func currentIndentForLine(at index: Int) -> String {
         if case let .space(string)? = token(at: startOfLine(at: index)) {
             return string
@@ -43,23 +57,36 @@ extension Formatter {
         return ""
     }
 
-    /// Returns the length (in characters) of the specified token
+    /// Returns the visual column width of the specified token
+    ///
+    /// - Parameters:
+    ///   - token: The token to measure.
     func tokenLength(_ token: Token) -> Int {
         let tabWidth = options.tabWidth > 0 ? options.tabWidth : options.indent.count
         return token.columnWidth(tabWidth: tabWidth)
     }
 
-    /// Returns the length (in characters) of the line at the specified index
+    /// Returns the visual column width of the entire line at the specified index
+    ///
+    /// - Parameters:
+    ///   - index: A token index within the line.
     func lineLength(at index: Int) -> Int {
         lineLength(upTo: endOfLine(at: index))
     }
 
-    /// Returns the length (in characters) up to (but not including) the specified token index
+    /// Returns the visual column width up to (but not including) the specified token index
+    ///
+    /// - Parameters:
+    ///   - index: The exclusive upper-bound token index.
     func lineLength(upTo index: Int) -> Int {
         lineLength(from: startOfLine(at: index), upTo: index)
     }
 
-    /// Returns the length (in characters) of the specified token range
+    /// Returns the visual column width of the specified token range
+    ///
+    /// - Parameters:
+    ///   - start: The inclusive lower-bound token index.
+    ///   - end: The exclusive upper-bound token index.
     func lineLength(from start: Int, upTo end: Int) -> Int {
         if options.assetLiteralWidth == .actualWidth {
             return tokens[start ..< end].reduce(0) { total, token in
@@ -87,7 +114,10 @@ extension Formatter {
         return length
     }
 
-    /// Returns white space made up of indent characters equivalent to the specified width
+    /// Returns whitespace composed of indent characters equivalent to the specified column width
+    ///
+    /// - Parameters:
+    ///   - width: The target column width.
     func spaceEquivalentToWidth(_ width: Int) -> String {
         if !options.smartTabs, options.useTabs, options.tabWidth > 0 {
             let tabs = width / options.tabWidth

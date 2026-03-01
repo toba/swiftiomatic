@@ -1,5 +1,6 @@
 import Foundation
 
+/// Placeholder keys for file header template substitution
 enum ReplacementKey: String, CaseIterable {
     case fileName = "file"
     case currentYear = "year"
@@ -14,7 +15,7 @@ enum ReplacementKey: String, CaseIterable {
     }
 }
 
-/// Argument type for stripping
+/// Controls how file headers are managed during formatting
 enum FileHeaderMode: Equatable, RawRepresentable, ExpressibleByStringLiteral {
     case ignore
     case replace(String)
@@ -72,6 +73,7 @@ enum FileHeaderMode: Equatable, RawRepresentable, ExpressibleByStringLiteral {
     }
 }
 
+/// Options that control how template placeholders are resolved (date format, time zone)
 struct ReplacementOptions: CustomStringConvertible {
     var dateFormat: DateFormat
     var timeZone: FormatTimeZone
@@ -88,6 +90,7 @@ struct ReplacementOptions: CustomStringConvertible {
     var description: String { "\(dateFormat)@\(timeZone)" }
 }
 
+/// A replacement value for a file header placeholder, either a fixed string or a dynamic closure
 enum ReplacementType: Equatable, CustomStringConvertible {
     case constant(String)
     case dynamic((FileInfo, ReplacementOptions) -> String?)
@@ -108,6 +111,11 @@ enum ReplacementType: Equatable, CustomStringConvertible {
         }
     }
 
+    /// Resolves the replacement value using the given file info and options
+    ///
+    /// - Parameters:
+    ///   - info: Metadata about the file being formatted.
+    ///   - options: Date and time zone settings for dynamic replacements.
     func resolve(_ info: FileInfo, _ options: ReplacementOptions) -> String? {
         switch self {
             case let .constant(value): value
@@ -123,7 +131,7 @@ enum ReplacementType: Equatable, CustomStringConvertible {
     }
 }
 
-/// File info, used for constructing header comments
+/// Metadata about a source file used for constructing header comments
 struct FileInfo: Equatable, CustomStringConvertible {
     nonisolated(unsafe) static var defaultReplacements: [ReplacementKey: ReplacementType] = [
         .createdDate: .dynamic { info, options in
@@ -162,12 +170,17 @@ struct FileInfo: Equatable, CustomStringConvertible {
             .joined(separator: ";")
     }
 
+    /// Whether a non-nil replacement value exists for the given key
+    ///
+    /// - Parameters:
+    ///   - key: The placeholder key to check.
+    ///   - options: Format options providing date/time zone settings.
     func hasReplacement(for key: ReplacementKey, options: FormatOptions) -> Bool {
         replacements[key]?.resolve(self, ReplacementOptions(options)) != nil
     }
 }
 
-/// Format to use when printing dates
+/// Format to use when printing dates in file headers
 enum DateFormat: Equatable, RawRepresentable, CustomStringConvertible {
     case dayMonthYear
     case iso
@@ -198,7 +211,7 @@ enum DateFormat: Equatable, RawRepresentable, CustomStringConvertible {
     var description: String { rawValue }
 }
 
-/// Timezone to use when printing dates
+/// Time zone to use when printing dates in file headers
 enum FormatTimeZone: Equatable, RawRepresentable, CustomStringConvertible {
     case system
     case abbreviation(String)

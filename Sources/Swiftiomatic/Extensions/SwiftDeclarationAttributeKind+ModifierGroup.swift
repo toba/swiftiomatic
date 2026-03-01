@@ -1,4 +1,5 @@
 extension SwiftDeclarationAttributeKind {
+  /// Attributes that imply an Objective-C runtime dependency (Foundation)
   static let attributesRequiringFoundation: Set<SwiftDeclarationAttributeKind> = [
     .objc,
     .objcName,
@@ -6,6 +7,7 @@ extension SwiftDeclarationAttributeKind {
     .objcNonLazyRealization,
   ]
 
+  /// Logical grouping of declaration modifiers for ordering rules
   enum ModifierGroup: String, CustomDebugStringConvertible, Sendable {
     case override
     case acl
@@ -21,6 +23,10 @@ extension SwiftDeclarationAttributeKind {
     case isolation
     case atPrefixed
 
+    /// Creates a modifier group from a raw SourceKit attribute string
+    ///
+    /// - Parameters:
+    ///   - rawAttribute: The raw SourceKit attribute value (e.g. `"source.decl.attribute.public"`).
     init?(rawAttribute: String) {
       let allModifierGroups: Set<SwiftDeclarationAttributeKind.ModifierGroup> = [
         .acl, .setterACL, .mutators, .override, .owned, .atPrefixed, .dynamic, .final,
@@ -38,6 +44,7 @@ extension SwiftDeclarationAttributeKind {
       }
     }
 
+    /// The set of ``SwiftDeclarationAttributeKind`` values belonging to this group
     var swiftDeclarationAttributeKinds: Set<SwiftDeclarationAttributeKind> {
       switch self {
       case .acl:

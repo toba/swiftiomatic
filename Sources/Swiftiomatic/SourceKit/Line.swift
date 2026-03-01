@@ -1,13 +1,13 @@
 import Foundation
 
-/// Representation of a single line in a larger String.
+/// A single line within a source string, with both UTF-16 and byte-based ranges
 struct Line {
-    /// origin = 0.
+    /// One-based line number
     let index: Int
-    /// Content.
+    /// The text content of the line (excluding the newline terminator)
     let content: String
-    /// UTF16 based range in entire String. Equivalent to `Range<UTF16Index>`.
+    /// UTF-16 based range in the entire string, including the trailing newline
     let range: NSRange
-    /// Byte based range in entire String. Equivalent to `Range<UTF8Index>`.
+    /// Byte-based range in the entire string, including the trailing newline
     let byteRange: ByteRange
 }

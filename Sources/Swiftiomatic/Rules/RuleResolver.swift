@@ -1,15 +1,16 @@
-/// Instantiates lint rules based on enable/disable lists and per-rule configuration.
+/// Instantiates lint rules based on enable/disable lists and per-rule configuration
 ///
-/// Replaces the Configuration+RuleSelection layer from the vendored lint orchestration.
+/// Replaces the ``Configuration/RuleSelection`` layer from the vendored lint orchestration.
 package enum RuleResolver {
-  /// Instantiate all registered rules with optional per-rule config overrides.
+  /// Instantiate all registered rules with optional per-rule config overrides
   ///
   /// - Parameters:
-  ///   - enabled: Explicit set of rule IDs to enable (opt-in rules need this). `nil` = all non-OptIn.
+  ///   - enabled: Explicit set of rule IDs to enable (opt-in rules need this). `nil` means all non-``OptInRule``.
   ///   - disabled: Rule IDs to skip.
   ///   - onlyRules: If non-empty, ONLY these rules run (overrides enabled/disabled).
   ///   - ruleConfigs: Per-rule configuration dictionaries from `.swiftiomatic.yaml`.
-  ///   - skipAnalyzerRules: If true, skip rules that require compiler arguments (AnalyzerRule).
+  ///   - skipAnalyzerRules: If `true`, skip rules that require compiler arguments (``AnalyzerRule``).
+  /// - Returns: The instantiated and configured rules.
   package static func loadRules(
     enabled: Set<String>? = nil,
     disabled: Set<String> = [],

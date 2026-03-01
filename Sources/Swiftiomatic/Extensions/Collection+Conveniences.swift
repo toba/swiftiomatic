@@ -1,12 +1,10 @@
 extension Collection {
-  /// Whether this collection has one or more element.
+  /// Whether this collection has one or more elements
   var isNotEmpty: Bool {
     !isEmpty
   }
 
-  /// Get the only element in the collection.
-  ///
-  /// If the collection is empty or contains more than one element the result will be `nil`.
+  /// The sole element if the collection contains exactly one, otherwise `nil`
   var onlyElement: Element? {
     count == 1 ? first : nil
   }

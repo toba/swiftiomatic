@@ -1,23 +1,24 @@
 import Foundation
 
-/// User-facing documentation for a Swiftiomatic RuleList.
+/// User-facing documentation for a Swiftiomatic ``RuleList``
 struct RuleListDocumentation {
     private let ruleDocumentations: [RuleDocumentation]
 
-    /// Creates a RuleListDocumentation instance from a RuleList.
+    /// Create a ``RuleListDocumentation`` instance from a ``RuleList``
     ///
-    /// - parameter list: A RuleList to document.
+    /// - Parameters:
+    ///   - list: A ``RuleList`` to document.
     init(_ list: RuleList) {
         ruleDocumentations = list.rules
             .sorted { $0.0 < $1.0 }
             .map { RuleDocumentation($0.value) }
     }
 
-    /// Write the rule list documentation as markdown files to the specified directory.
+    /// Write the rule list documentation as markdown files to the specified directory
     ///
-    /// - parameter url: Local URL for directory where the markdown files for this documentation should be saved.
-    ///
-    /// - throws: Throws if the files could not be written to.
+    /// - Parameters:
+    ///   - url: Local URL for directory where the markdown files should be saved.
+    /// - Throws: An error if the files could not be written.
     func write(to url: URL) throws {
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         func write(_ text: String, toFile file: String) throws {

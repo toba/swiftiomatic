@@ -1,52 +1,35 @@
 import Foundation
 
 /// A detailed description for a rule. Used for both documentation and testing purposes.
-package struct RuleDescription: Equatable, Sendable {
+public struct RuleDescription: Equatable, Sendable {
     /// The rule's unique identifier, to be used in configuration files and commands.
     /// Should be short and only comprised of lowercase latin alphabet letters and underscores formatted in snake case.
-    let identifier: String
+    public let identifier: String
 
     /// The rule's human-readable name. Should be short, descriptive and formatted in Title Case. May contain spaces.
-    let name: String
+    public let name: String
 
     /// The rule's verbose description. Should read as a sentence or short paragraph. Good things to include are an
     /// explanation of the rule's purpose and rationale.
-    let description: String
+    public let description: String
 
     /// A longer explanation of the rule's purpose and rationale. Typically defined as a multiline string, long text
     /// lines should be wrapped. Markdown formatting is supported. Multiline code blocks will be formatted as
     /// `swift` code unless otherwise specified, and will automatically be indented by four spaces when printed
     /// to the console.
-    let rationale: String?
+    public let rationale: String?
 
     /// Where this rule participates in the analysis pipeline.
-    let scope: Scope
+    public let scope: Scope
 
-    /// Swift source examples that do not trigger a violation for this rule. Used for documentation purposes to inform
-    /// users of various samples of code that are considered valid by this rule. Should be valid Swift syntax but is not
-    /// required to compile.
-    ///
-    /// These examples are also used for automatic testing purposes. Tests will validate that the rule does not trigger
-    /// any violations for these examples.
+    /// Swift source examples that do not trigger a violation for this rule.
     let nonTriggeringExamples: [Example]
 
-    /// Swift source examples that do trigger one or more violations for this rule. Used for documentation purposes to
-    /// inform users of various samples of code that are considered invalid by this rule. Should be valid Swift syntax
-    /// but is not required to compile.
-    ///
-    /// Violations should occur where `↓` markers are located.
-    ///
-    /// These examples are also used for automatic testing purposes. Tests will validate that the rule triggers
-    /// violations for these examples wherever `↓` markers are located.
+    /// Swift source examples that do trigger one or more violations for this rule.
     let triggeringExamples: [Example]
 
     /// Pairs of Swift source examples, where keys are examples that trigger violations for this rule, and the values
     /// are the expected value after applying corrections with the rule.
-    ///
-    /// Rules that aren't correctable (conforming to the `CorrectableRule` protocol) should leave property empty.
-    ///
-    /// These examples are used for testing purposes if the rule conforms to `AutomaticTestableRule`. Tests will
-    /// validate that the rule corrects all keys to their corresponding values.
     let corrections: [Example: Example]
 
     /// Any previous iteration of the rule's identifier that was previously shipped.
@@ -58,6 +41,11 @@ package struct RuleDescription: Equatable, Sendable {
     /// Whether or not this rule can only be executed on a file physically on-disk. Typically necessary for rules
     /// conforming to `AnalyzerRule`.
     let requiresFileOnDisk: Bool
+
+    /// Whether this rule has corrections defined.
+    public var isCorrectable: Bool {
+        !corrections.isEmpty
+    }
 
     /// The console-printable string for this description.
     var consoleDescription: String {
@@ -81,17 +69,18 @@ package struct RuleDescription: Equatable, Sendable {
 
     /// Creates a `RuleDescription` by specifying all its properties directly.
     ///
-    /// - parameter identifier:            Sets the description's `identifier` property.
-    /// - parameter name:                  Sets the description's `name` property.
-    /// - parameter description:           Sets the description's `description` property.
-    /// - parameter scope:                 Sets the description's `scope` property.
-    /// - parameter minSwiftVersion:       Sets the description's `minSwiftVersion` property.
-    /// - parameter nonTriggeringExamples: Sets the description's `nonTriggeringExamples` property.
-    /// - parameter triggeringExamples:    Sets the description's `triggeringExamples` property.
-    /// - parameter corrections:           Sets the description's `corrections` property.
-    /// - parameter deprecatedAliases:     Sets the description's `deprecatedAliases` property.
-    /// - parameter requiresFileOnDisk:    Sets the description's `requiresFileOnDisk` property.
-    init(
+    /// - Parameters:
+    ///   - identifier:            Sets the description's `identifier` property.
+    ///   - name:                  Sets the description's `name` property.
+    ///   - description:           Sets the description's `description` property.
+    ///   - scope:                 Sets the description's `scope` property.
+    ///   - minSwiftVersion:       Sets the description's `minSwiftVersion` property.
+    ///   - nonTriggeringExamples: Sets the description's `nonTriggeringExamples` property.
+    ///   - triggeringExamples:    Sets the description's `triggeringExamples` property.
+    ///   - corrections:           Sets the description's `corrections` property.
+    ///   - deprecatedAliases:     Sets the description's `deprecatedAliases` property.
+    ///   - requiresFileOnDisk:    Sets the description's `requiresFileOnDisk` property.
+    package init(
         identifier: String,
         name: String,
         description: String,
@@ -119,7 +108,7 @@ package struct RuleDescription: Equatable, Sendable {
 
     // MARK: Equatable
 
-    package static func == (lhs: Self, rhs: Self) -> Bool {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.identifier == rhs.identifier
     }
 }

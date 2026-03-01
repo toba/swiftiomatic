@@ -1,12 +1,20 @@
 import Foundation
 
-/// An enumeration of the types of error that may be thrown by SwiftFormat
+/// Errors that can occur during formatting or linting
 enum FormatError: Error, CustomStringConvertible, LocalizedError {
     case reading(String)
     case writing(String)
     case parsing(String)
     case options(String)
 
+    /// Creates an ``options`` error for an unrecognized CLI argument value
+    ///
+    /// Includes a "did you mean?" suggestion when a close match exists.
+    ///
+    /// - Parameters:
+    ///   - option: The invalid value that was provided.
+    ///   - argumentName: The CLI argument name (without leading dashes).
+    ///   - validOptions: All accepted values for this argument.
     static func invalidOption(
         _ option: String,
         for argumentName: String,

@@ -1,6 +1,12 @@
 import Foundation
 
 extension SwiftSource {
+    /// Appends a string to the file's contents and writes it to disk
+    ///
+    /// For virtual files the disk write is skipped. Invalidates cached state after writing.
+    ///
+    /// - Parameters:
+    ///   - string: The string to append.
     func append(_ string: String) {
         guard string.isNotEmpty else {
             return
@@ -21,6 +27,13 @@ extension SwiftSource {
         invalidateCache()
     }
 
+    /// Replaces the file's entire contents and writes them to disk atomically
+    ///
+    /// No-ops when the new string equals the current contents. For virtual files the disk
+    /// write is skipped. Invalidates cached state after writing.
+    ///
+    /// - Parameters:
+    ///   - string: The replacement contents.
     func write(_ string: some StringProtocol) {
         guard string != contents else {
             return

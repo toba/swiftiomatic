@@ -2,6 +2,7 @@ import Foundation
 import CommonCrypto
 
 extension Data {
+    /// Compute the SHA-256 digest of this data
     func sha256() -> Data {
         withUnsafeBytes { bytes in
             var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
@@ -10,6 +11,7 @@ extension Data {
         }
     }
 
+    /// Lowercase hex-encoded representation of the bytes
     var hexString: String {
         let hexDigits = Array("0123456789abcdef".unicodeScalars)
         var result = ""
@@ -23,6 +25,7 @@ extension Data {
 }
 
 extension String {
+    /// Compute the SHA-256 hex digest of this string's UTF-8 representation
     func sha256() -> String {
         // UTF-8 encoding of a Swift String cannot fail (String is always valid Unicode)
         data(using: .utf8)!.sha256().hexString

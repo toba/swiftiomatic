@@ -1,11 +1,16 @@
 import SwiftSyntax
 import SwiftIDEUtils
 
-/// Maps SwiftSyntax classifications to SourceKit syntax kinds.
-/// This enables SwiftSyntax-based custom rules to work with kind filtering
-/// without making any SourceKit calls.
+/// Maps ``SyntaxClassification`` values to ``SourceKitSyntaxKind``
+///
+/// Enables SwiftSyntax-based rules to perform kind filtering without
+/// making any SourceKit calls.
 enum SyntaxKindMapper {
-    /// Map a SwiftSyntax classification to SourceKit syntax kind.
+    /// Converts a SwiftSyntax classification to the equivalent ``SourceKitSyntaxKind``
+    ///
+    /// - Parameters:
+    ///   - classification: The SwiftSyntax classification to map.
+    /// - Returns: The corresponding syntax kind, or `nil` for unmapped classifications.
     static func mapClassification(_ classification: SyntaxClassification) -> SourceKitSyntaxKind? {
         // sm:disable:previous cyclomatic_complexity
         switch classification {
@@ -40,7 +45,11 @@ enum SyntaxKindMapper {
         }
     }
 
-    /// Convert SwiftSyntax syntax classifications to SourceKit-compatible syntax tokens.
+    /// Converts all syntax classifications in a ``SwiftSource`` file to ``ResolvedSyntaxToken`` values
+    ///
+    /// - Parameters:
+    ///   - file: The source file whose classifications should be mapped.
+    /// - Returns: An array of resolved syntax tokens with SourceKit-compatible kinds.
     static func sourceKitSyntaxKinds(for file: SwiftSource) -> [ResolvedSyntaxToken] {
         file.syntaxClassifications.compactMap { classifiedRange in
             guard let syntaxKind = mapClassification(classifiedRange.kind) else {

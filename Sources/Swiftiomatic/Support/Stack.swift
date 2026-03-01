@@ -1,4 +1,4 @@
-/// A basic stack type implementing the LIFO principle - only the last inserted element can be accessed and removed.
+/// A generic LIFO stack where only the last inserted element can be accessed or removed
 struct Stack<Element> {
     private var elements = [Element]()
 
@@ -10,38 +10,42 @@ struct Stack<Element> {
         elements.count
     }
 
-    /// Pushes (appends) an element onto the stack.
+    /// Pushes an element onto the top of the stack
     ///
-    /// - parameter element: The element to push onto the stack.
+    /// - Parameters:
+    ///   - element: The element to push.
     mutating func push(_ element: Element) {
         elements.append(element)
     }
 
-    /// Removes and returns the last element of the stack.
+    /// Removes and returns the top element
     ///
-    /// - returns: The last element of the stack if the stack is not empty; otherwise, nil.
+    /// - Returns: The top element, or `nil` if the stack is empty.
     @discardableResult
     mutating func pop() -> Element? {
         elements.popLast()
     }
 
-    /// Returns the last element of the stack if the stack is not empty; otherwise, nil.
+    /// Returns the top element without removing it
     func peek() -> Element? {
         elements.last
     }
 
-    /// Check whether the sequence contains an element that satisfies the given predicate.
+    /// Checks whether any element satisfies the given predicate
     ///
-    /// - parameter predicate: A closure that takes an element of the sequence
-    ///   and returns whether it represents a match.
-    /// - returns: `true` if the sequence contains an element that satisfies `predicate`.
+    /// - Parameters:
+    ///   - predicate: A closure that takes an element and returns whether it matches.
+    /// - Returns: `true` if an element satisfying `predicate` exists.
     func contains(where predicate: (Element) -> Bool) -> Bool {
         elements.contains(where: predicate)
     }
 
-    /// Modify the last element.
+    /// Mutates the top element in place
     ///
-    /// - parameter modifier: A function to be applied to the last element to modify the same in place.
+    /// Does nothing if the stack is empty.
+    ///
+    /// - Parameters:
+    ///   - modifier: A closure applied to the top element as an `inout` reference.
     mutating func modifyLast(using modifier: (inout Element) -> Void) {
         if elements.isNotEmpty {
             modifier(&elements[count - 1])

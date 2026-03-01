@@ -1,5 +1,10 @@
 import Foundation
 
+/// A single formatting or linting rule that can be applied to a ``Formatter``
+///
+/// Each rule encapsulates a transformation closure, metadata (help text, examples),
+/// and dependency ordering relative to other rules. Rules are registered in the
+/// ``FormatRuleCatalog`` and referenced by name in configuration.
 package final class FormatRule: Hashable, Comparable, CustomStringConvertible, @unchecked Sendable {
     static let unnamedRule = "[unnamed rule]"
 
@@ -51,6 +56,10 @@ package final class FormatRule: Hashable, Comparable, CustomStringConvertible, @
         self.examples = examples()
     }
 
+    /// Applies this rule to the given formatter
+    ///
+    /// - Parameters:
+    ///   - formatter: The ``Formatter`` instance to transform.
     func apply(with formatter: Formatter) {
         formatter.currentRule = self
         fn(formatter)
@@ -70,6 +79,7 @@ package final class FormatRule: Hashable, Comparable, CustomStringConvertible, @
     }
 }
 
+/// The shared catalog of all registered format rules
 package let FormatRules = FormatRuleCatalog()
 
 private let rulesByName: [String: FormatRule] = {
@@ -135,7 +145,10 @@ extension FormatRuleCatalog {
         _deprecatedRules
     }
 
-    /// Just the specified rules
+    /// Returns only the rules matching the given names
+    ///
+    /// - Parameters:
+    ///   - names: The rule names to look up.
     package func named(_ names: [String]) -> [FormatRule] {
         Array(names.sorted().compactMap { rulesByName[$0] })
     }
@@ -147,7 +160,10 @@ extension FormatRuleCatalog {
 }
 
 extension FormatRuleCatalog {
-    /// Get all format options used by a given set of rules
+    /// Returns all format option names used by the given rules
+    ///
+    /// - Parameters:
+    ///   - rules: The rules whose options should be collected.
     func optionsForRules(_ rules: [FormatRule]) -> [String] {
         var options = Set<String>()
         for rule in rules {
@@ -156,7 +172,10 @@ extension FormatRuleCatalog {
         return options.sorted()
     }
 
-    /// Get shared-only options for a given set of rules
+    /// Returns options that are shared but not owned by any of the given rules
+    ///
+    /// - Parameters:
+    ///   - rules: The rules whose shared options should be collected.
     func sharedOptionsForRules(_ rules: [FormatRule]) -> [String] {
         var options = Set<String>()
         var sharedOptions = Set<String>()
@@ -169,6 +188,7 @@ extension FormatRuleCatalog {
     }
 }
 
+/// Registry that owns all ``FormatRule`` instances and provides lookup by name
 package struct FormatRuleCatalog {
     fileprivate init() {}
 }

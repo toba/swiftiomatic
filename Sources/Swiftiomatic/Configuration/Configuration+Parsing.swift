@@ -19,14 +19,14 @@ extension Configuration {
 
     // MARK: - Initializers
 
-    /// Creates a Configuration value based on the specified parameters.
+    /// Create a ``Configuration`` value from a parsed YAML dictionary
     ///
-    /// - parameter dict:                   The untyped dictionary to serve as the input for this typed configuration.
-    ///                                     Typically generated from a YAML-formatted file.
-    /// - parameter ruleList:               The list of rules to be available to this configuration.
-    /// - parameter enableAllRules:         Whether all rules from `ruleList` should be enabled, regardless of the
-    ///                                     settings in `dict`.
-    /// - parameter cachePath:              The location of the persisted cache on disk.
+    /// - Parameters:
+    ///   - dict: The untyped dictionary to serve as the input, typically generated from a YAML file.
+    ///   - ruleList: The list of rules to be available to this configuration.
+    ///   - enableAllRules: Whether all rules from `ruleList` should be enabled regardless of `dict`.
+    ///   - onlyRule: Rules to restrict the run to.
+    ///   - cachePath: The location of the persisted cache on disk.
     init(
         dict: [String: Any],
         ruleList: RuleList = RuleRegistry.shared.list,

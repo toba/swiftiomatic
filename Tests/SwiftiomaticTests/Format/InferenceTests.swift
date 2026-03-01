@@ -77,7 +77,7 @@ import Testing
     let input = "foo\nbar\r\nbaz\rquux\r\n"
     let output = "\r\n"
     let options = inferFormatOptions(from: tokenize(input))
-    #expect(options.linebreak == output)
+    #expect(options.lineBreak == output)
   }
 
   // MARK: allowInlineSemicolons

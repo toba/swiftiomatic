@@ -40,11 +40,12 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
 
     /// Creates a `RuleViolation` by specifying its properties directly.
     ///
-    /// - parameter ruleDescription: The description of the rule that generated this violation.
-    /// - parameter severity:        The severity of this violation.
-    /// - parameter location:        The location of this violation.
-    /// - parameter reason:          The justification for this violation. If not specified the rule's description will
-    ///                              be used.
+    /// - Parameters:
+    ///   - ruleDescription: The description of the rule that generated this violation.
+    ///   - severity: The severity of this violation.
+    ///   - location: The location of this violation.
+    ///   - reason: The justification for this violation. If not specified the rule's description will
+    ///     be used.
     init(
         ruleDescription: RuleDescription,
         severity: ViolationSeverity = .warning,
@@ -77,7 +78,8 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
     }
 
     /// Returns the same violation, but with the `severity` that is passed in
-    /// - Parameter severity: the new severity to use in the modified violation
+    /// - Parameters:
+    ///   - severity: the new severity to use in the modified violation
     func with(severity: ViolationSeverity) -> Self {
         var new = self
         new.severity = severity
@@ -85,7 +87,8 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
     }
 
     /// Returns the same violation, but with the `location` that is passed in
-    /// - Parameter location: the new location to use in the modified violation
+    /// - Parameters:
+    ///   - location: the new location to use in the modified violation
     func with(location: Location) -> Self {
         var new = self
         new.location = location

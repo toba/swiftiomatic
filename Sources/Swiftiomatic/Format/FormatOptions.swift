@@ -1,6 +1,6 @@
 import Foundation
 
-/// The indenting mode to use for #if/#endif statements
+/// The indenting mode to use for `#if`/`#endif` statements
 enum IndentMode: String, CaseIterable {
     case indent
     case noIndent = "no-indent"
@@ -23,7 +23,7 @@ enum IndentMode: String, CaseIterable {
     }
 }
 
-/// Wrap mode for arguments
+/// Wrapping strategy for function arguments, parameters, and collections
 enum WrapMode: String, CaseIterable {
     case beforeFirst = "before-first"
     case afterFirst = "after-first"
@@ -49,46 +49,46 @@ enum WrapMode: String, CaseIterable {
     }
 }
 
-/// Wrap enum cases
+/// Wrapping strategy for enum case declarations
 enum WrapEnumCases: String, CaseIterable {
     case always
     case withValues = "with-values"
 }
 
-/// Argument type for stripping
+/// Controls which unused function arguments are replaced with `_`
 enum ArgumentStrippingMode: String, CaseIterable {
     case unnamedOnly = "unnamed-only"
     case closureOnly = "closure-only"
     case all = "always"
 }
 
-/// Wrap mode for @ attributes
+/// Placement of `@` attributes relative to the declaration they modify
 enum AttributeMode: String, CaseIterable {
     case prevLine = "prev-line"
     case sameLine = "same-line"
     case preserve
 }
 
-/// Where to place the else or catch in an if/else or do/catch statement
+/// Placement of `else` or `catch` in `if`/`else` or `do`/`catch` statements
 enum ElsePosition: String, CaseIterable {
     case sameLine = "same-line"
     case nextLine = "next-line"
 }
 
-/// Where to place the else in a guard statement
+/// Placement of `else` in a `guard` statement
 enum GuardElsePosition: String, CaseIterable {
     case sameLine = "same-line"
     case nextLine = "next-line"
     case auto
 }
 
-/// Where to place the access control keyword of an extension
+/// Placement of access control keywords on extensions versus their members
 enum ExtensionACLPlacement: String, CaseIterable {
     case onExtension = "on-extension"
     case onDeclarations = "on-declarations"
 }
 
-/// Wrapping behavior for the return type of a function declaration
+/// Wrapping behavior for the return type (`-> T`) of a function declaration
 enum WrapReturnType: String, CaseIterable {
     case preserve
     /// `-> ReturnType` is wrapped to the line after the closing paren
@@ -108,7 +108,7 @@ enum WrapEffects: String, CaseIterable {
     case never
 }
 
-/// Argument type for whether explicit or inferred properties are preferred
+/// Whether to prefer explicit type annotations or inferred types in property declarations
 enum PropertyTypes: String, CaseIterable {
     /// Preserves the type as a part of the property definition:
     /// `let foo: Foo = Foo()` becomes `let foo: Foo = .init()`
@@ -126,14 +126,14 @@ enum PropertyTypes: String, CaseIterable {
     case inferLocalsOnly = "infer-locals-only"
 }
 
-/// Argument type for empty brace spacing behavior
+/// Spacing behavior inside empty braces (`{ }` vs `{}` vs multi-line)
 enum EmptyBracesSpacing: String, CaseIterable {
     case spaced
     case noSpace = "no-space"
     case linebreak
 }
 
-/// Wrapping behavior for multi-line ternary operators
+/// Wrapping strategy for multi-line ternary operators
 enum TernaryOperatorWrapMode: String, CaseIterable {
     /// Wraps ternary operators using the default `wrap` behavior,
     /// which performs the minimum amount of wrapping necessary.
@@ -142,6 +142,7 @@ enum TernaryOperatorWrapMode: String, CaseIterable {
     case beforeOperators = "before-operators"
 }
 
+/// Wrapping strategy for string interpolation expressions
 enum StringInterpolationWrapMode: String, CaseIterable {
     /// Wraps string interpolation if necessary based on the max line length
     case `default`
@@ -150,12 +151,13 @@ enum StringInterpolationWrapMode: String, CaseIterable {
     case preserve
 }
 
-/// Whether or not to remove `-> Void` from closures
+/// Whether to remove redundant `-> Void` return types from closures
 enum ClosureVoidReturn: String, CaseIterable {
     case remove
     case preserve
 }
 
+/// When to insert or remove trailing commas in multi-line lists
 enum TrailingCommas: String, CaseIterable {
     case never
     case always
@@ -163,14 +165,14 @@ enum TrailingCommas: String, CaseIterable {
     case multiElementLists = "multi-element-lists"
 }
 
-/// Whether to insert, remove, or preserve spaces around operators
+/// Spacing behavior around operators
 enum OperatorSpacingMode: String, CaseIterable {
     case insert = "spaced"
     case remove = "no-space"
     case preserve
 }
 
-/// Grouping for numeric literals
+/// Digit grouping configuration for numeric literals
 enum Grouping: Equatable, RawRepresentable, CustomStringConvertible {
     case ignore
     case none
@@ -212,7 +214,7 @@ enum Grouping: Equatable, RawRepresentable, CustomStringConvertible {
     }
 }
 
-/// Grouping for sorting imports
+/// Sorting and grouping strategy for import statements
 enum ImportGrouping: String, CaseIterable {
     case alpha
     case length
@@ -220,46 +222,46 @@ enum ImportGrouping: String, CaseIterable {
     case testableLast = "testable-last"
 }
 
-/// Self insertion mode
+/// Controls insertion or removal of explicit `self.` references
 enum SelfMode: String, CaseIterable {
     case insert
     case remove
     case initOnly = "init-only"
 }
 
-/// Optionals mode
+/// Controls how optional type shorthand (`T?` vs `Optional<T>`) is applied
 enum OptionalsMode: String, CaseIterable {
     case preserveStructInits = "preserve-struct-inits"
     case exceptPropertiesDeprecated = "except-properties"
     case always
 }
 
-/// Argument type for yoda conditions
+/// Controls swapping of yoda-style conditions (literal on the left)
 enum YodaMode: String, CaseIterable {
     case literalsOnly = "literals-only"
     case always
 }
 
-/// Argument type for asset literals
+/// How asset literal width is measured for line-length calculations
 enum AssetLiteralWidth: String, CaseIterable {
     case actualWidth = "actual-width"
     case visualWidth = "visual-width"
 }
 
-/// Whether or not to mark types / extensions
+/// Controls insertion of `// MARK:` comments for types and extensions
 enum MarkMode: String, CaseIterable {
     case always
     case never
     case ifNotEmpty = "if-not-empty"
 }
 
-/// Whether to convert types to enum
+/// Controls conversion of types used as namespaces to `enum`
 enum EnumNamespacesMode: String, CaseIterable {
     case always
     case structsOnly = "structs-only"
 }
 
-/// Whether to add spacing around a delimiter
+/// Spacing around type annotation delimiters (`:`)
 enum DelimiterSpacing: String, CaseIterable {
     case spaced
     case spaceAfter = "space-after"
@@ -289,14 +291,13 @@ enum TypeBlankLines: String, CaseIterable {
     case preserve
 }
 
-/// Treatment of semicolons
+/// Controls removal of semicolons
 enum SemicolonsMode: String, CaseIterable {
     case inlineOnly = "inline-only"
     case never
 }
 
-/// When initializing an optional value type,
-/// is it necessary to explicitly declare a default value
+/// Whether to insert or remove explicit `= nil` for optional property declarations
 enum NilInitType: String, CaseIterable {
     /// Remove redundant `nil` if it is added as default value
     case remove
@@ -305,13 +306,14 @@ enum NilInitType: String, CaseIterable {
     case insert
 }
 
-/// Placement for closing paren in a function call or definition
+/// Placement of the closing parenthesis in a multi-line function call or definition
 enum ClosingParenPosition: String, CaseIterable {
     case balanced
     case sameLine = "same-line"
     case `default`
 }
 
+/// Sorting strategy for SwiftUI property wrappers within type bodies
 enum SwiftUIPropertiesSortMode: String, CaseIterable {
     /// No sorting
     case none
@@ -354,6 +356,7 @@ enum NamedMacro: Equatable, RawRepresentable, CustomStringConvertible {
     }
 }
 
+/// When to insert blank lines after `switch` case bodies
 enum BlankLineAfterSwitchCase: String, CaseIterable {
     /// Always add blank lines after switch cases
     case always
@@ -404,12 +407,15 @@ enum PreferSynthesizedInitMode: Equatable, CustomStringConvertible {
     }
 }
 
-/// Configuration options for formatting. These aren't actually used by the
-/// Formatter class itself, but it makes them available to the format rules.
+/// Configuration options for formatting
+///
+/// These values are not used by ``Formatter`` directly but are made
+/// available to individual ``FormatRule`` implementations through the
+/// formatter's ``Formatter/options`` property.
 package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     var lineAfterMarks: Bool
     package var indent: String
-    var linebreak: String
+    var lineBreak: String
     var semicolons: SemicolonsMode
     var spaceAroundRangeOperators: OperatorSpacingMode
     var spaceAroundOperatorDeclarations: OperatorSpacingMode
@@ -689,7 +695,7 @@ package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     ) {
         self.lineAfterMarks = lineAfterMarks
         self.indent = indent
-        self.linebreak = linebreak
+        self.lineBreak = linebreak
         self.semicolons = semicolons
         self.spaceAroundRangeOperators = spaceAroundRangeOperators
         self.spaceAroundOperatorDeclarations = spaceAroundOperatorDeclarations
@@ -859,7 +865,7 @@ package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     }
 }
 
-/// When to remove redundant `throws` / `async` effects
+/// When to remove redundant `throws` or `async` effects
 enum RedundantEffectMode: String, CaseIterable {
     /// Only remove redundant effects from test functions (default)
     case testsOnly = "tests-only"
@@ -867,6 +873,7 @@ enum RedundantEffectMode: String, CaseIterable {
     case always
 }
 
+/// How Swift code blocks inside Markdown files are treated during formatting
 enum MarkdownFormattingMode: String, CaseIterable {
     /// Swift code in markdown files is ignored (default)
     case ignore

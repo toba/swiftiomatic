@@ -1,7 +1,9 @@
 import Foundation
 
-/// The current SwiftFormat version
+/// The current format engine version string
 let swiftFormatVersion = "0.59.1"
+
+/// Alias for ``swiftFormatVersion``
 let version = swiftFormatVersion
 
 /// Supported Swift compiler versions
@@ -16,7 +18,10 @@ let languageModes = [
     "4", "4.2", "5", "6",
 ]
 
-/// The default language mode for the given Swift compiler version
+/// Returns the default Swift language mode for the given compiler version
+///
+/// - Parameters:
+///   - compilerVersion: The Swift compiler ``Version`` to query.
 func defaultLanguageMode(for compilerVersion: Version) -> Version {
     switch compilerVersion {
         case "4.0" ..< "4.2":
@@ -32,8 +37,7 @@ func defaultLanguageMode(for compilerVersion: Version) -> Version {
     }
 }
 
-/// Line and column offset in source
-/// Note: line and column indexes start at 1
+/// A 1-based line and column position in source code
 struct SourceOffset: Equatable, CustomStringConvertible {
     var line, column: Int
 
@@ -47,7 +51,12 @@ struct SourceOffset: Equatable, CustomStringConvertible {
     }
 }
 
-/// Get offset for token
+/// Returns the source offset (line and column) for the token at the given index
+///
+/// - Parameters:
+///   - index: The token index to locate.
+///   - tokens: The full token array.
+///   - tabWidth: The number of columns per tab character.
 func offsetForToken(at index: Int, in tokens: [Token], tabWidth: Int) -> SourceOffset {
     var column = 1
     for token in tokens[..<index].reversed() {
@@ -61,7 +70,12 @@ func offsetForToken(at index: Int, in tokens: [Token], tabWidth: Int) -> SourceO
     return SourceOffset(line: 1, column: column)
 }
 
-/// Get token index for offset
+/// Returns the token index closest to the given source offset
+///
+/// - Parameters:
+///   - offset: The line/column position to search for.
+///   - tokens: The full token array.
+///   - tabWidth: The number of columns per tab character.
 func tokenIndex(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> Int {
     var tokenIndex = 0
     var line = 1
@@ -86,7 +100,11 @@ func tokenIndex(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> 
     return tokenIndex
 }
 
-/// Get token index range for line range
+/// Converts a line range into a token index range
+///
+/// - Parameters:
+///   - lineRange: The inclusive range of source lines.
+///   - tokens: The full token array.
 func tokenRange(forLineRange lineRange: ClosedRange<Int>, in tokens: [Token]) -> Range<Int> {
     let startOffset = SourceOffset(line: lineRange.lowerBound, column: 0)
     let endOffset = SourceOffset(line: lineRange.upperBound + 1, column: 0)
@@ -95,7 +113,12 @@ func tokenRange(forLineRange lineRange: ClosedRange<Int>, in tokens: [Token]) ->
     return tokenStart ..< tokenEnd
 }
 
-/// Get new offset for an original offset (before formatting)
+/// Maps an original (pre-formatting) offset to its new position after formatting
+///
+/// - Parameters:
+///   - offset: The original source offset before formatting.
+///   - tokens: The formatted token array.
+///   - tabWidth: The number of columns per tab character.
 func newOffset(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> SourceOffset {
     var closestLine = 0
     for i in tokens.indices {
@@ -120,7 +143,12 @@ func newOffset(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> S
     return SourceOffset(line: closestLine + 1, column: min(offset.column, lineLength + 1))
 }
 
-/// Process parsing errors
+/// Scans the token array for parsing errors and conflict markers
+///
+/// - Parameters:
+///   - tokens: The token array to scan.
+///   - options: Format options controlling fragment and conflict-marker behavior.
+///   - allowErrorsInFragments: When `true`, error tokens in fragments are tolerated.
 func parsingError(for tokens: [Token], options: FormatOptions, allowErrorsInFragments: Bool = true)
     -> FormatError?
 {
@@ -154,12 +182,27 @@ func parsingError(for tokens: [Token], options: FormatOptions, allowErrorsInFrag
     return .parsing("\(message) at \(offset)")
 }
 
-/// Convert a token array back into a string
+/// Converts a token array back into a source code string
+///
+/// - Parameters:
+///   - tokens: The tokens to join. Returns an empty string if `nil`.
 func sourceCode(for tokens: [Token]?) -> String {
     (tokens ?? []).map(\.string).joined()
 }
 
-/// Apply specified rules to a token array and optionally capture list of changes
+/// Applies the specified rules to a token array, iterating until stable
+///
+/// Rules are applied in sorted order. Shared options are inferred from the
+/// source when they are at their default values. The engine iterates up to
+/// `maxIterations` times and throws if the rules fail to converge.
+///
+/// - Parameters:
+///   - originalRules: The ``FormatRule`` instances to apply.
+///   - originalTokens: The input token array.
+///   - options: The ``FormatOptions`` to use.
+///   - trackChanges: Whether to record a ``Formatter/Change`` for each modification.
+///   - originalRange: An optional token range to restrict formatting to.
+///   - maxIterations: The maximum number of formatting passes (must be > 1).
 func applyRules(
     _ originalRules: [FormatRule],
     to originalTokens: [Token],
@@ -326,7 +369,13 @@ func applyRules(
     throw FormatError.writing("The \(names) failed to terminate at \(lines)")
 }
 
-/// Format a pre-parsed token array
+/// Formats a pre-parsed token array and returns the result with changes
+///
+/// - Parameters:
+///   - tokens: The input token array.
+///   - rules: The rules to apply. Defaults to ``FormatRules/default``.
+///   - options: The formatting options. Defaults to ``FormatOptions/default``.
+///   - range: An optional token range to restrict formatting to.
 func format(
     _ tokens: [Token], rules: [FormatRule] = FormatRules.default,
     options: FormatOptions = .default, range: Range<Int>? = nil,
@@ -334,7 +383,13 @@ func format(
     try applyRules(rules, to: tokens, with: options, trackChanges: true, range: range)
 }
 
-/// Format code with specified rules and options
+/// Formats Swift source code and returns the formatted string with changes
+///
+/// - Parameters:
+///   - source: The Swift source code to format.
+///   - rules: The rules to apply. Defaults to ``FormatRules/default``.
+///   - options: The formatting options. Defaults to ``FormatOptions/default``.
+///   - lineRange: An optional line range to restrict formatting to.
 func format(
     _ source: String, rules: [FormatRule] = FormatRules.default,
     options: FormatOptions = .default, lineRange: ClosedRange<Int>? = nil,
@@ -345,7 +400,13 @@ func format(
     return (sourceCode(for: output.tokens), output.changes)
 }
 
-/// Lint a pre-parsed token array
+/// Lints a pre-parsed token array and returns the changes that would be made
+///
+/// - Parameters:
+///   - tokens: The input token array.
+///   - rules: The rules to check. Defaults to ``FormatRules/default``.
+///   - options: The formatting options. Defaults to ``FormatOptions/default``.
+///   - range: An optional token range to restrict linting to.
 func lint(
     _ tokens: [Token], rules: [FormatRule] = FormatRules.default,
     options: FormatOptions = .default, range: Range<Int>? = nil,
@@ -353,7 +414,13 @@ func lint(
     try applyRules(rules, to: tokens, with: options, trackChanges: true, range: range).changes
 }
 
-/// Lint code with specified rules and options
+/// Lints Swift source code and returns the changes that would be made
+///
+/// - Parameters:
+///   - source: The Swift source code to lint.
+///   - rules: The rules to check. Defaults to ``FormatRules/default``.
+///   - options: The formatting options. Defaults to ``FormatOptions/default``.
+///   - lineRange: An optional line range to restrict linting to.
 func lint(
     _ source: String, rules: [FormatRule] = FormatRules.default,
     options: FormatOptions = .default, lineRange: ClosedRange<Int>? = nil,

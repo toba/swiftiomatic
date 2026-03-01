@@ -1,6 +1,10 @@
 import SwiftSyntax
 
-/// A visitor that collects style violations for all available code blocks.
+/// A visitor that dispatches every braced code block to ``collectViolations(for:)``
+///
+/// Subclasses override ``collectViolations(for:)`` to define what constitutes
+/// a violation for their specific rule. The base class handles visiting all
+/// declaration and statement kinds that introduce code blocks.
 class CodeBlockVisitor<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
     Configuration,
 > {
@@ -111,7 +115,8 @@ class CodeBlockVisitor<Configuration: RuleConfiguration>: ViolationCollectingVis
 
     /// Collects violations for the given braced item. Intended to be specialized by subclasses.
     ///
-    /// - Parameter bracedItem: The braced item to collect violations for.
+    /// - Parameters:
+    ///   - bracedItem: The braced item to collect violations for.
     func collectViolations(for _: (some BracedSyntax)?) {
         // Intended to be overridden.
     }

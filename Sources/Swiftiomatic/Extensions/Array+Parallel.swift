@@ -1,13 +1,12 @@
 import Dispatch
 
 extension Array {
-    /// Group the elements in this array into a dictionary, keyed by applying the specified `transform`.
-    /// Elements for which the `transform` returns a `nil` key are removed.
+    /// Groups elements into a dictionary by a key extracted via `transform`, discarding `nil` keys
     ///
-    /// - parameter transform: The transformation function to extract an element to its group key,
-    ///                        or exclude the element.
+    /// - Parameters:
+    ///   - transform: A closure that returns the group key for an element, or `nil` to exclude it.
     ///
-    /// - returns: The elements grouped by applying the specified transformation.
+    /// - Returns: The elements grouped by the key returned from `transform`.
     func filterGroup<U: Hashable & Sendable>(by transform: (Element) -> U?) -> [U: [Element]]
         where Element: Sendable
     {
@@ -20,13 +19,14 @@ extension Array {
         return result
     }
 
-    /// Same as `filterGroup`, but spreads the work in the `transform` block in parallel using GCD's
-    /// `concurrentPerform`.
+    /// Parallel variant of ``filterGroup(by:)`` using GCD's `concurrentPerform`
     ///
-    /// - parameter transform: The transformation function to extract an element to its group key,
-    ///                        or exclude the element.
+    /// Falls back to the sequential version for arrays with fewer than 16 elements.
     ///
-    /// - returns: The elements grouped by applying the specified transformation.
+    /// - Parameters:
+    ///   - transform: A closure that returns the group key for an element, or `nil` to exclude it.
+    ///
+    /// - Returns: The elements grouped by the key returned from `transform`.
     func parallelFilterGroup<U: Hashable & Sendable>(by transform: @Sendable (Element) -> U?) -> [U:
         [Element]] where Element: Sendable
     {
@@ -43,14 +43,17 @@ extension Array {
         return results[0].merging(results[1], uniquingKeysWith: +)
     }
 
-    /// Returns the elements failing the `belongsInSecondPartition` test, followed by the elements passing the
-    /// `belongsInSecondPartition` test.
+    /// Splits the array into two slices around a predicate
     ///
-    /// - parameter belongsInSecondPartition: The test function to determine if the element should be in the second
-    ///                                       partition.
+    /// Elements that fail `belongsInSecondPartition` appear in `first`;
+    /// elements that pass appear in `second`. Relative order within each
+    /// partition is **not** preserved (uses the standard library's in-place `partition`).
     ///
-    /// - returns: The elements failing the `belongsInSecondPartition` test, followed by the elements passing the
-    ///            `belongsInSecondPartition` test.
+    /// - Parameters:
+    ///   - belongsInSecondPartition: A closure that returns `true` for elements
+    ///     that belong in the second partition.
+    ///
+    /// - Returns: A named tuple of `(first:, second:)` array slices.
     func partitioned(by belongsInSecondPartition: (Element) throws -> Bool) rethrows -> (
         first: ArraySlice<Element>, second: ArraySlice<Element>,
     ) {
@@ -59,29 +62,32 @@ extension Array {
         return (copy[0 ..< pivot], copy[pivot ..< count])
     }
 
-    /// Same as `flatMap` but spreads the work in the `transform` block in parallel using GCD's `concurrentPerform`.
+    /// Parallel variant of `flatMap` using GCD's `concurrentPerform`
     ///
-    /// - parameter transform: The transformation to apply to each element.
+    /// - Parameters:
+    ///   - transform: The transformation to apply to each element.
     ///
-    /// - returns: The result of applying `transform` on every element and flattening the results.
+    /// - Returns: The flattened results of applying `transform` to every element.
     func parallelFlatMap<T>(transform: @Sendable (Element) -> [T]) -> [T] {
         parallelMap(transform: transform).flatMap(\.self)
     }
 
-    /// Same as `compactMap` but spreads the work in the `transform` block in parallel using GCD's `concurrentPerform`.
+    /// Parallel variant of `compactMap` using GCD's `concurrentPerform`
     ///
-    /// - parameter transform: The transformation to apply to each element.
+    /// - Parameters:
+    ///   - transform: The transformation to apply to each element.
     ///
-    /// - returns: The result of applying `transform` on every element and discarding the `nil` ones.
+    /// - Returns: The non-`nil` results of applying `transform` to every element.
     func parallelCompactMap<T>(transform: @Sendable (Element) -> T?) -> [T] {
         parallelMap(transform: transform).compactMap(\.self)
     }
 
-    /// Same as `map` but spreads the work in the `transform` block in parallel using GCD's `concurrentPerform`.
+    /// Parallel variant of `map` using GCD's `concurrentPerform`
     ///
-    /// - parameter transform: The transformation to apply to each element.
+    /// - Parameters:
+    ///   - transform: The transformation to apply to each element.
     ///
-    /// - returns: The result of applying `transform` on every element.
+    /// - Returns: The results of applying `transform` to every element.
     func parallelMap<T>(transform: @Sendable (Element) -> T) -> [T] {
         var result = ContiguousArray<T?>(repeating: nil, count: count)
         return result.withUnsafeMutableBufferPointer { buffer in

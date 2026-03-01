@@ -1,16 +1,25 @@
-/// A `Sendable` wrapper for untyped YAML configuration values.
+/// A `Sendable` wrapper for untyped YAML configuration values
 ///
 /// Replaces `[String: Any]` in configuration properties where `Sendable` conformance
 /// is required. Converts to/from `Any` at system boundaries (YAML parsing, rule init).
-package enum ConfigValue: Sendable, Equatable {
+public enum ConfigValue: Sendable, Equatable {
+    /// A string value
     case string(String)
+    /// An integer value
     case int(Int)
+    /// A double-precision floating-point value
     case double(Double)
+    /// A boolean value
     case bool(Bool)
+    /// An ordered list of ``ConfigValue`` elements
     case array([ConfigValue])
+    /// A keyed dictionary of ``ConfigValue`` entries
     case dictionary([String: ConfigValue])
 
-    /// Creates a `ConfigValue` from an untyped value, returning `nil` if the type isn't representable.
+    /// Create a ``ConfigValue`` from an untyped value, returning `nil` if the type isn't representable
+    ///
+    /// - Parameters:
+    ///   - any: The untyped value to wrap.
     init?(_ any: Any) {
         switch any {
             case let value as String: self = .string(value)
@@ -25,7 +34,7 @@ package enum ConfigValue: Sendable, Equatable {
         }
     }
 
-    /// Converts back to an untyped value for passing to `Rule.init(configuration:)`.
+    /// Convert back to an untyped value for passing to ``Rule/init(configuration:)``
     var asAny: Any {
         switch self {
             case let .string(v): v

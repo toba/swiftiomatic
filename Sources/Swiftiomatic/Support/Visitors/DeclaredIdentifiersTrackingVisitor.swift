@@ -1,20 +1,20 @@
 import Foundation
 import SwiftSyntax
 
-/// An identifier declaration.
+/// A declaration of an identifier within a lexical scope
 enum IdentifierDeclaration: Hashable {
-    /// Parameter declaration with a name token.
+    /// A function or closure parameter
     case parameter(name: TokenSyntax)
-    /// Local variable declaration with a name token.
+    /// A local `let` or `var` binding
     case localVariable(name: TokenSyntax)
-    /// A variable that is implicitly added by the compiler (e.g. `error` in `catch` clauses).
+    /// A compiler-synthesized variable (e.g. `error` in bare `catch` clauses)
     case implicitVariable(name: String)
-    /// A variable hidden from scope because its name is a wildcard `_`.
+    /// A wildcard `_` binding that is invisible to name lookup
     case wildcard
-    /// Special case that marks a type boundary at which name lookup stops.
+    /// A sentinel that marks a type boundary where name lookup stops
     case lookupBoundary
 
-    /// The name of the declared identifier (e.g. in `let a = 1` this is `a`).
+    /// The textual name of the declared identifier (e.g. `a` in `let a = 1`)
     fileprivate var name: String {
         switch self {
             case let .parameter(name): name.text
@@ -25,12 +25,15 @@ enum IdentifierDeclaration: Hashable {
         }
     }
 
-    /// Check whether self declares a variable given by name.
+    /// Whether this declaration matches the given identifier name
+    ///
+    /// Wildcards never match. Backtick-escaped names are normalized by default
+    /// since backticks only disambiguate and do not contribute to name resolution.
     ///
     /// - Parameters:
-    ///   - id: Name of the variable.
-    ///   - disregardBackticks: If `true`, normalize all names before comparison by removing all backticks. This is the
-    ///                         default since backticks only disambiguate, but don't contribute to name resolution.
+    ///   - id: The identifier name to compare against.
+    ///   - disregardBackticks: If `true`, strips backticks before comparing.
+    /// - Returns: `true` if this declaration's name matches `id`.
     func declares(id: String, disregardBackticks: Bool = true) -> Bool {
         if self == .wildcard || id == "_" {
             // Insignificant names cannot refer to each other.
@@ -44,33 +47,37 @@ enum IdentifierDeclaration: Hashable {
     }
 }
 
-/// A specialized `ViolationCollectingVisitor` that tracks declared identifiers per scope while traversing the AST.
+/// A ``ViolationCollectingVisitor`` that tracks declared identifiers per lexical scope
+///
+/// Maintains a hierarchical ``Stack`` of identifier declarations as it walks
+/// the AST. Rules that need to know which names are in scope at a given point
+/// should subclass this visitor.
 class DeclaredIdentifiersTrackingVisitor<Configuration: RuleConfiguration>:
     ViolationCollectingVisitor<Configuration>
 {
-    /// A type that remembers the declared identifiers (in order) up to the current position in the code.
+    /// A stack of identifier arrays representing nested lexical scopes
     typealias Scope = Stack<[IdentifierDeclaration]>
 
-    /// The hierarchical stack of identifiers declared up to the current position in the code.
+    /// The hierarchical stack of declared identifiers up to the current AST position
     var scope: Scope
 
-    /// Initializer.
+    /// Creates a visitor with rule configuration, source file, and optional pre-filled scope
     ///
     /// - Parameters:
     ///   - configuration: Configuration of a rule.
-    ///   - file: File from which the syntax tree stems from.
-    ///   - scope: A (potentially already pre-filled) scope to collect identifiers into.
+    ///   - file: The source file whose syntax tree will be traversed.
+    ///   - scope: A pre-filled scope to continue collecting into.
     @inlinable
     init(configuration: Configuration, file: SwiftSource, scope: Scope = Scope()) {
         self.scope = scope
         super.init(configuration: configuration, file: file)
     }
 
-    /// Indicate whether a given identifier is in scope.
+    /// Whether a given identifier has been declared in any enclosing scope
     ///
     /// - Parameters:
-    ///   - identifier: An identifier.
-    /// - Returns: `true` if the identifier was declared previously.
+    ///   - identifier: The identifier name to look up.
+    /// - Returns: `true` if a matching declaration exists in scope.
     func hasSeenDeclaration(for identifier: String) -> Bool {
         scope.contains { $0.contains { $0.name == identifier } }
     }

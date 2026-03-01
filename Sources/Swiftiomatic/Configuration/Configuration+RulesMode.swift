@@ -1,30 +1,27 @@
 extension Configuration {
-    /// Returns the rule for the specified ID, if configured in this configuration.
+    /// Return the rule for the specified ID, if configured in this configuration
     ///
-    /// - parameter ruleID: The identifier for the rule to look up.
-    ///
-    /// - returns: The rule for the specified ID, if configured in this configuration.
+    /// - Parameters:
+    ///   - ruleID: The identifier for the rule to look up.
+    /// - Returns: The rule for the specified ID, if configured in this configuration.
     func configuredRule(forID ruleID: String) -> (any Rule)? {
         rules.first { rule in
             type(of: rule).identifier == ruleID
         }
     }
 
-    /// Represents how a Configuration object can be configured with regards to rules.
+    /// Represents how a ``Configuration`` selects which rules are active
     package enum RulesMode: Equatable, Sendable {
-        /// The default rules mode, which will enable all rules that aren't defined as being opt-in
-        /// (conforming to the `OptInRule` protocol), minus the rules listed in `disabled`, plus the rules listed in
-        /// `optIn`.
+        /// Enable all non-``OptInRule`` rules minus `disabled`, plus `optIn`
         case defaultConfiguration(disabled: Set<String>, optIn: Set<String>)
 
-        /// Only enable the rules explicitly listed in the configuration files.
+        /// Only enable the rules explicitly listed in the configuration files
         case onlyConfiguration(Set<String>)
 
-        /// Only enable the rule(s) explicitly listed on the command line (and their aliases). `--only-rule` can be
-        /// specified multiple times to enable multiple rules.
+        /// Only enable the rule(s) explicitly listed on the command line (and their aliases)
         case onlyCommandLine(Set<String>)
 
-        /// Enable all available rules.
+        /// Enable all available rules
         case allCommandLine
 
         init(
@@ -98,6 +95,11 @@ extension Configuration {
             }
         }
 
+        /// Return a copy with all rule identifiers resolved through the alias resolver
+        ///
+        /// - Parameters:
+        ///   - aliasResolver: A closure that maps deprecated aliases to canonical identifiers.
+        /// - Returns: A new ``RulesMode`` with all identifiers resolved.
         func applied(aliasResolver: (String) -> String) -> Self {
             switch self {
                 case let .defaultConfiguration(disabled, optIn):

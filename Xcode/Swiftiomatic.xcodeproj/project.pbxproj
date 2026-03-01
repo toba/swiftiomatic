@@ -7,12 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0B1250FA0D9EFC780577CCAA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29E37C12049749CDDBEF370 /* AppDelegate.swift */; };
+		0C2E778E37A8A7A630D86A80 /* SelectionSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA94BF388A12820A5E1597C6 /* SelectionSnapshot.swift */; };
 		1BBED5ADBBC5CBEC6C35A565 /* FormatSelectionCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6610B8742E60BB8F47EC4DA /* FormatSelectionCommand.swift */; };
+		6221B9963D9693FFF25AEFF4 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91A778337C6E6716F981EDBC /* SharedDefaults.swift */; };
 		7FED0BB65F174A26DDE860E5 /* SourceEditorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC80A0FBEE4DCB483B684BC /* SourceEditorExtension.swift */; };
+		8BA05A382AD0FF38284456AF /* SwiftiomaticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4831E2A3C4C23AEFF4FC23B6 /* SwiftiomaticApp.swift */; };
 		B1B5867413AF117F77752318 /* XcodeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C7AF47298E7EB265F9BBF92 /* XcodeKit.framework */; };
+		BFF939B02D309CB2F33D5E38 /* LintFileCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EC22484CAE196AB22576CCC /* LintFileCommand.swift */; };
+		C2EA17F364C4924A4FECD67A /* SwiftiomaticLib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4AE053F2E5A10BD73A928057 /* SwiftiomaticLib.framework */; };
 		CF78E67EAFA0890522B97DA4 /* SwiftiomaticExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 04BBAECB177391FD3173F5DF /* SwiftiomaticExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		CF926FFEC899C2AC52BB3F13 /* ConfigurationLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD60A865C86BE3D473E1626F /* ConfigurationLoading.swift */; };
+		E2C9421B768338EE3417292E /* XCSourceTextBuffer+Swiftiomatic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D3C4DA88B1B43080C931E91 /* XCSourceTextBuffer+Swiftiomatic.swift */; };
 		FE8FEE85F5BDEB4CB8C880BC /* FormatFileCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C5363612C7FB0CFADDBED5 /* FormatFileCommand.swift */; };
+		FF252533FD18C32ABF9D902C /* FormatCommandError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531FCA9452A741FBD889EC07 /* FormatCommandError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,10 +51,30 @@
 		0BE1371309EC7DBF5754EA80 /* Info.plist */ = {isa = PBXFileReference; name = Info.plist; path = SwiftiomaticExtension/Info.plist; sourceTree = "<group>"; };
 		0E7C843C080B1C4765FBC9C6 /* SwiftiomaticApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftiomaticApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C7AF47298E7EB265F9BBF92 /* XcodeKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XcodeKit.framework; path = System/Library/Frameworks/XcodeKit.framework; sourceTree = SDKROOT; };
+		1EC22484CAE196AB22576CCC /* LintFileCommand.swift */ = {isa = PBXFileReference; name = LintFileCommand.swift; path = SwiftiomaticExtension/LintFileCommand.swift; sourceTree = "<group>"; };
 		22C5363612C7FB0CFADDBED5 /* FormatFileCommand.swift */ = {isa = PBXFileReference; name = FormatFileCommand.swift; path = SwiftiomaticExtension/FormatFileCommand.swift; sourceTree = "<group>"; };
+		23DEA312DF38B6B3A4810E79 /* AboutTab.swift */ = {isa = PBXFileReference; name = AboutTab.swift; path = SwiftiomaticApp/Views/AboutTab.swift; sourceTree = "<group>"; };
+		2687FD006470785B8D7982DB /* SharedDefaults.swift */ = {isa = PBXFileReference; name = SharedDefaults.swift; path = SwiftiomaticApp/Models/SharedDefaults.swift; sourceTree = "<group>"; };
 		2EB64C472274C585B839F0B9 /* Info.plist */ = {isa = PBXFileReference; name = Info.plist; path = SwiftiomaticApp/Info.plist; sourceTree = "<group>"; };
+		3A533D79912390DB611CC6F8 /* SharedDefaults.swift */ = {isa = PBXFileReference; name = SharedDefaults.swift; path = SwiftiomaticExtension/SharedDefaults.swift; sourceTree = "<group>"; };
+		3BFF43A282AC841BC385FEB6 /* SwiftiomaticApp.entitlements */ = {isa = PBXFileReference; name = SwiftiomaticApp.entitlements; path = SwiftiomaticApp/SwiftiomaticApp.entitlements; sourceTree = "<group>"; };
+		4831E2A3C4C23AEFF4FC23B6 /* SwiftiomaticApp.swift */ = {isa = PBXFileReference; name = SwiftiomaticApp.swift; path = SwiftiomaticApp/SwiftiomaticApp.swift; sourceTree = "<group>"; };
+		4AE053F2E5A10BD73A928057 /* SwiftiomaticLib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftiomaticLib.framework; path = System/Library/Frameworks/SwiftiomaticLib.framework; sourceTree = SDKROOT; };
+		531FCA9452A741FBD889EC07 /* FormatCommandError.swift */ = {isa = PBXFileReference; name = FormatCommandError.swift; path = SwiftiomaticExtension/FormatCommandError.swift; sourceTree = "<group>"; };
+		540DB21E149A1E9CE14ECDE1 /* ContentView.swift */ = {isa = PBXFileReference; name = ContentView.swift; path = SwiftiomaticApp/Views/ContentView.swift; sourceTree = "<group>"; };
 		6AC80A0FBEE4DCB483B684BC /* SourceEditorExtension.swift */ = {isa = PBXFileReference; name = SourceEditorExtension.swift; path = SwiftiomaticExtension/SourceEditorExtension.swift; sourceTree = "<group>"; };
+		6D3C4DA88B1B43080C931E91 /* XCSourceTextBuffer+Swiftiomatic.swift */ = {isa = PBXFileReference; name = "XCSourceTextBuffer+Swiftiomatic.swift"; path = "SwiftiomaticExtension/XCSourceTextBuffer+Swiftiomatic.swift"; sourceTree = "<group>"; };
+		7ACCDA67ED5C4A4D564DF33C /* SwiftiomaticExtension.entitlements */ = {isa = PBXFileReference; name = SwiftiomaticExtension.entitlements; path = SwiftiomaticExtension/SwiftiomaticExtension.entitlements; sourceTree = "<group>"; };
+		91A778337C6E6716F981EDBC /* SharedDefaults.swift */ = {isa = PBXFileReference; name = SharedDefaults.swift; path = SwiftiomaticExtension/SharedDefaults.swift; sourceTree = "<group>"; };
+		965E14378C1964C4AF69D9E4 /* AppModel.swift */ = {isa = PBXFileReference; name = AppModel.swift; path = SwiftiomaticApp/Models/AppModel.swift; sourceTree = "<group>"; };
+		A971EF3CED855B87059FCE5A /* RulesTab.swift */ = {isa = PBXFileReference; name = RulesTab.swift; path = SwiftiomaticApp/Views/RulesTab.swift; sourceTree = "<group>"; };
+		AD60A865C86BE3D473E1626F /* ConfigurationLoading.swift */ = {isa = PBXFileReference; name = ConfigurationLoading.swift; path = SwiftiomaticExtension/ConfigurationLoading.swift; sourceTree = "<group>"; };
 		B29E37C12049749CDDBEF370 /* AppDelegate.swift */ = {isa = PBXFileReference; name = AppDelegate.swift; path = SwiftiomaticApp/AppDelegate.swift; sourceTree = "<group>"; };
+		B53258F389EEF5AF4B9C57B6 /* OptionsTab.swift */ = {isa = PBXFileReference; name = OptionsTab.swift; path = SwiftiomaticApp/Views/OptionsTab.swift; sourceTree = "<group>"; };
+		B57CDB29A1DCFE7D0F014FF1 /* RuleDetailView.swift */ = {isa = PBXFileReference; name = RuleDetailView.swift; path = SwiftiomaticApp/Views/RuleDetailView.swift; sourceTree = "<group>"; };
+		B9352BF0EB014DC010189CEE /* ScopeBadge.swift */ = {isa = PBXFileReference; name = ScopeBadge.swift; path = SwiftiomaticApp/Views/ScopeBadge.swift; sourceTree = "<group>"; };
+		DA94BF388A12820A5E1597C6 /* SelectionSnapshot.swift */ = {isa = PBXFileReference; name = SelectionSnapshot.swift; path = SwiftiomaticExtension/SelectionSnapshot.swift; sourceTree = "<group>"; };
+		E9C35A4B2B5D8850000D2293 /* RuleRow.swift */ = {isa = PBXFileReference; name = RuleRow.swift; path = SwiftiomaticApp/Views/RuleRow.swift; sourceTree = "<group>"; };
 		F6610B8742E60BB8F47EC4DA /* FormatSelectionCommand.swift */ = {isa = PBXFileReference; name = FormatSelectionCommand.swift; path = SwiftiomaticExtension/FormatSelectionCommand.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -56,6 +83,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2EA17F364C4924A4FECD67A /* SwiftiomaticLib.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,6 +98,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		10D5F3989AE6D091E8881827 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Models;
+			path = Models;
+			sourceTree = "<group>";
+		};
 		126C769955D5218107664809 = {
 			isa = PBXGroup;
 			children = (
@@ -83,8 +119,17 @@
 			isa = PBXGroup;
 			children = (
 				1C7AF47298E7EB265F9BBF92 /* XcodeKit.framework */,
+				4AE053F2E5A10BD73A928057 /* SwiftiomaticLib.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		35AE5E26DE31EF8C73B07063 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Views;
+			path = Views;
 			sourceTree = "<group>";
 		};
 		438B7D8AF15CFFEBDA2464CC /* Products */ = {
@@ -99,8 +144,11 @@
 		7BE879316B554C7B0F6E638A /* SwiftiomaticApp */ = {
 			isa = PBXGroup;
 			children = (
-				B29E37C12049749CDDBEF370 /* AppDelegate.swift */,
 				2EB64C472274C585B839F0B9 /* Info.plist */,
+				10D5F3989AE6D091E8881827 /* Models */,
+				35AE5E26DE31EF8C73B07063 /* Views */,
+				4831E2A3C4C23AEFF4FC23B6 /* SwiftiomaticApp.swift */,
+				3BFF43A282AC841BC385FEB6 /* SwiftiomaticApp.entitlements */,
 			);
 			name = SwiftiomaticApp;
 			sourceTree = "<group>";
@@ -112,6 +160,14 @@
 				22C5363612C7FB0CFADDBED5 /* FormatFileCommand.swift */,
 				F6610B8742E60BB8F47EC4DA /* FormatSelectionCommand.swift */,
 				0BE1371309EC7DBF5754EA80 /* Info.plist */,
+				531FCA9452A741FBD889EC07 /* FormatCommandError.swift */,
+				6D3C4DA88B1B43080C931E91 /* XCSourceTextBuffer+Swiftiomatic.swift */,
+				DA94BF388A12820A5E1597C6 /* SelectionSnapshot.swift */,
+				3A533D79912390DB611CC6F8 /* SharedDefaults.swift */,
+				1EC22484CAE196AB22576CCC /* LintFileCommand.swift */,
+				AD60A865C86BE3D473E1626F /* ConfigurationLoading.swift */,
+				7ACCDA67ED5C4A4D564DF33C /* SwiftiomaticExtension.entitlements */,
+				91A778337C6E6716F981EDBC /* SharedDefaults.swift */,
 			);
 			name = SwiftiomaticExtension;
 			sourceTree = "<group>";
@@ -215,7 +271,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0B1250FA0D9EFC780577CCAA /* AppDelegate.swift in Sources */,
+				8BA05A382AD0FF38284456AF /* SwiftiomaticApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,6 +282,12 @@
 				7FED0BB65F174A26DDE860E5 /* SourceEditorExtension.swift in Sources */,
 				FE8FEE85F5BDEB4CB8C880BC /* FormatFileCommand.swift in Sources */,
 				1BBED5ADBBC5CBEC6C35A565 /* FormatSelectionCommand.swift in Sources */,
+				FF252533FD18C32ABF9D902C /* FormatCommandError.swift in Sources */,
+				E2C9421B768338EE3417292E /* XCSourceTextBuffer+Swiftiomatic.swift in Sources */,
+				0C2E778E37A8A7A630D86A80 /* SelectionSnapshot.swift in Sources */,
+				BFF939B02D309CB2F33D5E38 /* LintFileCommand.swift in Sources */,
+				CF926FFEC899C2AC52BB3F13 /* ConfigurationLoading.swift in Sources */,
+				6221B9963D9693FFF25AEFF4 /* SharedDefaults.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -245,6 +307,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = SwiftiomaticExtension/SwiftiomaticExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
@@ -274,6 +337,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_IDENTIFIER = com.toba.swiftiomatic;
+				CODE_SIGN_ENTITLEMENTS = SwiftiomaticApp/SwiftiomaticApp.entitlements;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = SwiftiomaticApp/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -289,6 +353,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				BUNDLE_IDENTIFIER = com.toba.swiftiomatic;
+				CODE_SIGN_ENTITLEMENTS = SwiftiomaticApp/SwiftiomaticApp.entitlements;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = SwiftiomaticApp/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -304,6 +369,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_ENTITLEMENTS = SwiftiomaticExtension/SwiftiomaticExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;

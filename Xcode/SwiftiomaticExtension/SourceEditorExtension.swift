@@ -1,3 +1,9 @@
 import XcodeKit
+import Swiftiomatic
 
-final class SourceEditorExtension: NSObject, XCSourceEditorExtension {}
+final class SourceEditorExtension: NSObject, XCSourceEditorExtension {
+    func extensionDidFinishLaunching() {
+        // Warm the rule registry on extension launch rather than first command.
+        SwiftiomaticLib.ruleCatalog()
+    }
+}

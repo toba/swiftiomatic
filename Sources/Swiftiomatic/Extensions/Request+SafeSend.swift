@@ -1,6 +1,11 @@
 import Foundation
 
 extension Request {
+  /// Send this SourceKit request after verifying the current rule is allowed to use SourceKit
+  ///
+  /// Guards against accidental SourceKit use by ``SyntaxOnlyRule`` conformances and
+  /// requests made outside of a rule execution context. Calls ``Console/fatalError(_:)``
+  /// when a violation is detected.
   func sendIfNotDisabled() throws(Request.Error) -> [String: SourceKitValue] {
     // Skip safety checks if explicitly allowed (e.g., for testing or specific operations)
     if !CurrentRule.allowSourceKitRequestWithoutRule {
@@ -45,6 +50,15 @@ extension Request {
     return try send()
   }
 
+  /// Build a cursor-info request with symbol-graph retrieval disabled
+  ///
+  /// Omitting the symbol graph significantly reduces SourceKit response time when only
+  /// basic cursor information (kind, USR, type) is needed.
+  ///
+  /// - Parameters:
+  ///   - file: Absolute path to the source file.
+  ///   - offset: Byte offset of the cursor position within the file.
+  ///   - arguments: Compiler arguments forwarded to SourceKit.
   static func cursorInfoWithoutSymbolGraph(file: String, offset: ByteCount, arguments: [String])
     -> Request
   {

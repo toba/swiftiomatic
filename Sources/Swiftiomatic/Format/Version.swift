@@ -1,6 +1,6 @@
 import Foundation
 
-/// Version number wrapper
+/// A semantic version number supporting string-literal initialization and numeric comparison
 package struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral, CustomStringConvertible,
     Sendable
 {

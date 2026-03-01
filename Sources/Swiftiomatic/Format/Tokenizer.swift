@@ -31,6 +31,10 @@ extension UnicodeScalar {
 
 // Workaround for horribly slow String.UnicodeScalarView.Subsequence perf
 
+/// A performant view over a string's unicode scalars with mutable start/end bounds
+///
+/// Works around the poor performance of `String.UnicodeScalarView.SubSequence`
+/// by maintaining explicit index bounds rather than creating subsequences.
 struct UnicodeScalarView {
     typealias Index = String.UnicodeScalarView.Index
 
@@ -608,6 +612,10 @@ extension UnicodeScalarView {
     }
 }
 
+/// Tokenizes Swift source code into an array of ``Token`` values
+///
+/// - Parameters:
+///   - source: The Swift source code string to tokenize.
 func tokenize(_ source: String) -> [Token] {
     var scopeIndexStack: [Int] = []
     var tokens: [Token] = []

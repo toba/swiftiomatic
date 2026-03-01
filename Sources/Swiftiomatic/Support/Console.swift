@@ -3,20 +3,22 @@ import Synchronization
 
 private let outputLock = Mutex(())
 
-/// Thread-safe console output utilities.
+/// Thread-safe console output utilities
 package enum Console {
-    /// A thread-safe version of Swift's standard `print()`.
+    /// A thread-safe version of Swift's standard `print()`
     ///
-    /// - parameter object: Object to print.
+    /// - Parameters:
+    ///   - object: Object to print.
     static func print(_ object: some Sendable) {
         outputLock.withLock { _ in
             Swift.print(object)
         }
     }
 
-    /// A thread-safe, newline-terminated version of `fputs(..., stderr)`.
+    /// A thread-safe, newline-terminated version of `fputs(..., stderr)`
     ///
-    /// - parameter string: String to print.
+    /// - Parameters:
+    ///   - string: String to print.
     static func printError(_ string: String) {
         outputLock.withLock { _ in
             fflush(stdout)
@@ -26,15 +28,16 @@ package enum Console {
 
     // MARK: - Test Capture
 
+    /// Continuation for the active capture stream, set via ``captureConsole(runner:)``
     @TaskLocal package static var captureContinuation: AsyncStream<String>.Continuation?
 
-    /// Hook used to capture all messages normally printed to stdout and return them back to the caller.
+    /// Captures all messages normally printed to stdout and returns them to the caller
     ///
     /// > Warning: Shall only be used in tests to verify console output.
     ///
-    /// - parameter runner: The code to run. Messages printed during the execution are collected.
-    ///
-    /// - returns: The collected messages produced while running the code in the runner.
+    /// - Parameters:
+    ///   - runner: The code to run. Messages printed during the execution are collected.
+    /// - Returns: The collected messages produced while running the code in the runner.
     @MainActor
     package static func captureConsole(runner: @Sendable () throws -> Void) async rethrows -> String {
         let (stream, continuation) = AsyncStream.makeStream(of: String.self)
@@ -43,8 +46,12 @@ package enum Console {
         return await stream.reduce(into: "") { @Sendable in $0 += $0.isEmpty ? $1 : "\n\($1)" }
     }
 
-    /// A thread-safe, newline-terminated version of `fatalError(...)` that doesn't leak
-    /// the source path from the compiled binary.
+    /// A thread-safe `fatalError` replacement that strips the source path from the compiled binary
+    ///
+    /// - Parameters:
+    ///   - string: The error message to print to stderr.
+    ///   - file: The source file path (defaults to the caller's file).
+    ///   - line: The source line number (defaults to the caller's line).
     static func fatalError(_ string: String, file: StaticString = #file, line: UInt = #line) -> Never {
         outputLock.withLock { _ in
             fflush(stdout)

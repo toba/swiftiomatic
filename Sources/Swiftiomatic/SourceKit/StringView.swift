@@ -28,21 +28,37 @@ extension RandomAccessCollection {
 
 private let newlinesCharacterSet = CharacterSet(charactersIn: "\u{000A}\u{000D}")
 
-/// Structure that precalculates lines for the specified string and then uses this information for
-/// ByteRange to NSRange and NSRange to ByteRange operations
+/// Pre-indexed string that provides efficient conversions between byte offsets, UTF-16 positions, and line numbers
+///
+/// Lines are computed once at initialization. All subsequent byte-range and
+/// character-offset queries use binary search over the cached line table.
 struct StringView {
+    /// The Objective-C string representation used for `NSRange` operations
     let nsString: NSString
+    /// The full `NSRange` of ``nsString``
     let range: NSRange
+    /// The Swift string value
     let string: String
+    /// Pre-computed line table
     let lines: [Line]
 
+    /// Cached UTF-8 view for byte offset calculations
     let utf8View: String.UTF8View
+    /// Cached UTF-16 view for `NSRange` calculations
     let utf16View: String.UTF16View
 
+    /// Create a string view from a Swift `String`
+    ///
+    /// - Parameters:
+    ///   - string: The source string to index.
     init(_ string: String) {
         self.init(string, string as NSString)
     }
 
+    /// Create a string view from an `NSString`
+    ///
+    /// - Parameters:
+    ///   - nsstring: The Objective-C string to index.
     init(_ nsstring: NSString) {
         self.init(nsstring as String, nsstring)
     }
@@ -97,14 +113,26 @@ struct StringView {
         self.lines = lines
     }
 
+    /// Extract a substring using an `NSRange`
+    ///
+    /// - Parameters:
+    ///   - range: The UTF-16 range to extract.
     func substring(with range: NSRange) -> String {
         nsString.substring(with: range)
     }
 
+    /// Extract a substring using a ``ByteRange``
+    ///
+    /// - Parameters:
+    ///   - byteRange: The byte range to extract.
     func substringWithByteRange(_ byteRange: ByteRange) -> String? {
         byteRangeToNSRange(byteRange).map(nsString.substring)
     }
 
+    /// Convert a ``ByteRange`` to an `NSRange`
+    ///
+    /// - Parameters:
+    ///   - byteRange: The byte range to convert.
     func byteRangeToNSRange(_ byteRange: ByteRange) -> NSRange? {
         guard !string.isEmpty else { return nil }
         let utf16Start = location(fromByteOffset: byteRange.location)
@@ -115,6 +143,10 @@ struct StringView {
         return Foundation.NSRange(location: utf16Start, length: utf16End - utf16Start)
     }
 
+    /// Convert a ``ByteRange`` to a `Range<String.Index>`
+    ///
+    /// - Parameters:
+    ///   - byteRange: The byte range to convert.
     func byteRangeToStringRange(_ byteRange: ByteRange) -> Range<String.Index>? {
         guard !string.isEmpty else { return nil }
         let utf8 = string.utf8
@@ -130,12 +162,20 @@ struct StringView {
         return start..<end
     }
 
+    /// Convert a `Range<String.Index>` to a ``ByteRange``
+    ///
+    /// - Parameters:
+    ///   - range: The string index range to convert.
     func stringRangeToByteRange(_ range: Range<String.Index>) -> ByteRange {
         let byteStart = string.utf8.distance(from: string.utf8.startIndex, to: range.lowerBound)
         let byteLength = string.utf8.distance(from: range.lowerBound, to: range.upperBound)
         return ByteRange(location: ByteCount(byteStart), length: ByteCount(byteLength))
     }
 
+    /// Convert a UTF-16 character location to a byte offset
+    ///
+    /// - Parameters:
+    ///   - location: The UTF-16 character offset.
     func byteOffset(fromLocation location: Int) -> ByteCount {
         if lines.isEmpty { return 0 }
         let index = lines.indexAssumingSorted { line in
@@ -167,6 +207,11 @@ struct StringView {
         return ByteCount(line.byteRange.location.value + byteDiff)
     }
 
+    /// Convert an `NSRange` (given as start and length) to a ``ByteRange``
+    ///
+    /// - Parameters:
+    ///   - start: The UTF-16 start offset.
+    ///   - length: The UTF-16 length.
     func NSRangeToByteRange(start: Int, length: Int) -> ByteRange? {
         let startUTF16Index = utf16View.index(utf16View.startIndex, offsetBy: start)
         let endUTF16Index = utf16View.index(startUTF16Index, offsetBy: length)
@@ -181,10 +226,18 @@ struct StringView {
         return ByteRange(location: byteOffset(fromLocation: start), length: ByteCount(length))
     }
 
+    /// Convert an `NSRange` to a ``ByteRange``
+    ///
+    /// - Parameters:
+    ///   - range: The `NSRange` to convert.
     func NSRangeToByteRange(_ range: NSRange) -> ByteRange? {
         NSRangeToByteRange(start: range.location, length: range.length)
     }
 
+    /// Convert a byte offset to a UTF-16 character location
+    ///
+    /// - Parameters:
+    ///   - byteOffset: The byte offset to convert.
     func location(fromByteOffset byteOffset: ByteCount) -> Int {
         if lines.isEmpty { return 0 }
         let index = lines.indexAssumingSorted { line in
@@ -214,6 +267,10 @@ struct StringView {
         return line.range.location + utf16Diff
     }
 
+    /// Extract a substring from the start of the first line through the end of the byte range
+    ///
+    /// - Parameters:
+    ///   - byteRange: The byte range whose enclosing lines to extract.
     func substringStartingLinesWithByteRange(_ byteRange: ByteRange) -> String? {
         byteRangeToNSRange(byteRange).map { range in
             var lineStart = 0
@@ -228,6 +285,10 @@ struct StringView {
         }
     }
 
+    /// Extract complete lines that overlap the given byte range
+    ///
+    /// - Parameters:
+    ///   - byteRange: The byte range whose enclosing lines to extract.
     func substringLinesWithByteRange(_ byteRange: ByteRange) -> String? {
         byteRangeToNSRange(byteRange).map { range in
             var lineStart = 0
@@ -239,6 +300,10 @@ struct StringView {
         }
     }
 
+    /// Return the start and end line indices (one-based) that overlap the given byte range
+    ///
+    /// - Parameters:
+    ///   - byteRange: The byte range to query.
     func lineRangeWithByteRange(_ byteRange: ByteRange) -> (start: Int, end: Int)? {
         guard !lines.isEmpty else { return nil }
         let startIndex = lines.indexAssumingSorted { line in
@@ -258,6 +323,11 @@ struct StringView {
         return (startLine.index, endLine.index)
     }
 
+    /// Convert a byte offset to a one-based line and character position
+    ///
+    /// - Parameters:
+    ///   - offset: The byte offset to convert.
+    ///   - tabWidth: The number of columns per tab stop (default 1).
     func lineAndCharacter(forByteOffset offset: ByteCount, expandingTabsToWidth tabWidth: Int = 1)
         -> (line: Int, character: Int)?
     {
@@ -265,6 +335,11 @@ struct StringView {
         return lineAndCharacter(forCharacterOffset: characterOffset, expandingTabsToWidth: tabWidth)
     }
 
+    /// Convert a UTF-16 character offset to a one-based line and character position
+    ///
+    /// - Parameters:
+    ///   - offset: The UTF-16 character offset.
+    ///   - tabWidth: The number of columns per tab stop (default 1).
     func lineAndCharacter(forCharacterOffset offset: Int,
                           expandingTabsToWidth tabWidth: Int = 1) -> (
         line: Int, character: Int,

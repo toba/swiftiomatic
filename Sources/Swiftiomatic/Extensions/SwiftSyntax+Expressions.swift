@@ -2,6 +2,10 @@ import Foundation
 import SwiftSyntax
 
 extension ExprSyntax {
+    /// The expression as a ``FunctionCallExprSyntax``, unwrapping a single-element tuple if needed
+    ///
+    /// Handles parenthesized calls like `(someFunc())` by looking through a
+    /// ``TupleExprSyntax`` with exactly one element.
     var asFunctionCall: FunctionCallExprSyntax? {
         if let functionCall = `as`(FunctionCallExprSyntax.self) {
             return functionCall
@@ -41,6 +45,7 @@ extension FloatLiteralExprSyntax {
 }
 
 extension MemberAccessExprSyntax {
+    /// Whether the base expression is `self`
     var isBaseSelf: Bool {
         base?.as(DeclReferenceExprSyntax.self)?.isSelf == true
     }
@@ -53,16 +58,19 @@ extension DeclReferenceExprSyntax {
 }
 
 extension ClosureCaptureSyntax {
+    /// Whether this capture binds `self`
     var capturesSelf: Bool {
         name.text == "self"
     }
 
+    /// Whether this capture uses the `weak` specifier
     var capturesWeakly: Bool {
         specifier?.specifier.text == "weak"
     }
 }
 
 extension TypeSyntax {
+    /// Whether this type is optional, either as `T?` syntax or `Optional<T>`
     var isOptionalType: Bool {
         if `is`(OptionalTypeSyntax.self) {
             return true

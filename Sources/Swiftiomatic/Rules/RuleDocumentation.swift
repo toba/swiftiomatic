@@ -1,40 +1,41 @@
-/// User-facing documentation for a Swiftiomatic rule.
+/// User-facing documentation for a single Swiftiomatic rule
 struct RuleDocumentation {
     private let ruleType: any Rule.Type
 
-    /// If this rule is an opt-in rule.
+    /// Whether this rule is an opt-in rule
     var isOptInRule: Bool { ruleType is any OptInRule.Type }
 
-    /// If this rule is an analyzer rule.
+    /// Whether this rule is an analyzer rule
     var isAnalyzerRule: Bool { ruleType is any AnalyzerRule.Type }
 
-    /// If this rule is a linter rule.
+    /// Whether this rule is a linter rule (non-analyzer)
     var isLinterRule: Bool { !isAnalyzerRule }
 
-    /// If this rule uses SourceKit.
+    /// Whether this rule uses SourceKit
     var usesSourceKit: Bool { !(ruleType is any SyntaxOnlyRule.Type) }
 
-    /// If this rule is disabled by default.
+    /// Whether this rule is disabled by default
     var isDisabledByDefault: Bool { ruleType is any OptInRule.Type }
 
-    /// If this rule is enabled by default.
+    /// Whether this rule is enabled by default
     var isEnabledByDefault: Bool { !isDisabledByDefault }
 
-    /// Creates a RuleDocumentation instance from a Rule type.
+    /// Create a ``RuleDocumentation`` instance from a ``Rule`` type
     ///
-    /// - parameter ruleType: A subtype of the `Rule` protocol to document.
+    /// - Parameters:
+    ///   - ruleType: A subtype of the ``Rule`` protocol to document.
     init(_ ruleType: any Rule.Type) { self.ruleType = ruleType }
 
-    /// The name of the documented rule.
+    /// The name of the documented rule
     var ruleName: String { ruleType.description.name }
 
-    /// The identifier of the documented rule.
+    /// The identifier of the documented rule
     var ruleIdentifier: String { ruleType.identifier }
 
-    /// The name of the file on disk for this rule documentation.
+    /// The name of the file on disk for this rule documentation
     var fileName: String { "\(ruleType.identifier).md" }
 
-    /// The contents of the file for this rule documentation.
+    /// The contents of the file for this rule documentation
     var fileContents: String {
         let description = ruleType.description
         var content = [

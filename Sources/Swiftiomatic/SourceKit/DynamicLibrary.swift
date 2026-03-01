@@ -2,11 +2,21 @@ import Foundation
 
 // MARK: - Shared Types & Functions
 
+/// A dynamically loaded shared library handle
+///
+/// Wraps `dlopen` / `dlsym` to load C function pointers from the
+/// SourceKit in-process framework at runtime.
 struct DynamicLinkLibrary: @unchecked Sendable {
     typealias Handle = UnsafeMutableRawPointer
 
     fileprivate let handle: Handle
 
+    /// Look up and return a typed function pointer for the given symbol
+    ///
+    /// Fatally errors if the symbol cannot be resolved.
+    ///
+    /// - Parameters:
+    ///   - symbol: The C symbol name to resolve.
     func load<T>(symbol: String) -> T {
         if let sym = dlsym(handle, symbol) {
             return unsafeBitCast(sym, to: T.self)
@@ -16,9 +26,18 @@ struct DynamicLinkLibrary: @unchecked Sendable {
     }
 }
 
+/// Searches well-known toolchain paths to locate and `dlopen` a dynamic library
 struct Loader: Sendable {
+    /// Ordered directories to search for the library
     let searchPaths: [String]
 
+    /// Open the dynamic library at the given relative path
+    ///
+    /// Tries each search path in order, then falls back to the bare path.
+    /// Fatally errors if the library cannot be loaded from any location.
+    ///
+    /// - Parameters:
+    ///   - path: The relative path to the dynamic library (e.g. `sourcekitdInProc.framework/...`).
     func load(path: String) -> DynamicLinkLibrary {
         let fullPaths: [String] = searchPaths.map { $0.appending(pathComponent: path) }
             .filter(\.isFile)
@@ -52,6 +71,7 @@ extension String {
 
 // MARK: - Darwin
 
+/// Pre-configured ``Loader`` that searches Xcode and command-line toolchain paths for SourceKit
 let toolchainLoader = Loader(
     searchPaths: [
         xcodeDefaultToolchainOverride,

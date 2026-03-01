@@ -1,14 +1,14 @@
 import Foundation
 import SwiftSyntax
 
-/// A Swiftiomatic CorrectableRule that performs its corrections using a SwiftSyntax `SyntaxRewriter`.
+/// A ``CorrectableRule`` that performs its corrections using a SwiftSyntax `SyntaxRewriter`
 protocol SwiftSyntaxCorrectableRule: SwiftSyntaxRule, CorrectableRule {
-  /// Produce a `ViolationCollectingRewriter` for the given file.
+  /// Produce a ``ViolationCollectingRewriter`` for the given file
   ///
-  /// - parameter file: The file for which to produce the rewriter.
-  ///
-  /// - returns: A `ViolationCollectingRewriter` for the given file. May be `nil` in which case the rule visitor's
-  ///            collected `violationCorrections` will be used.
+  /// - Parameters:
+  ///   - file: The file for which to produce the rewriter.
+  /// - Returns: A ``ViolationCollectingRewriter`` for the given file, or `nil` to fall back
+  ///   to the visitor's collected `violationCorrections`.
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>?
 }
 
@@ -71,39 +71,39 @@ extension SwiftSyntaxCorrectableRule {
   }
 }
 
-/// A SwiftSyntax `SyntaxRewriter` that produces absolute positions where corrections were applied.
+/// A SwiftSyntax `SyntaxRewriter` that produces absolute positions where corrections were applied
 class ViolationCollectingRewriter<Configuration: RuleConfiguration>: SyntaxRewriter {
-  /// A rule's configuration.
+  /// The rule's configuration
   let configuration: Configuration
-  /// The file from which the traversed syntax tree stems from.
+  /// The file from which the traversed syntax tree stems
   let file: SwiftSource
 
-  /// A converter of positions in the traversed source file.
+  /// A converter of positions in the traversed source file
   lazy var locationConverter = file.locationConverter
-  /// The regions in the traversed file that are disabled by a command.
+  /// The regions in the traversed file that are disabled by a command
   lazy var disabledRegions = file.regions()
     .filter { $0.areRulesDisabled(ruleIDs: Configuration.Parent.description.allIdentifiers) }
     .compactMap { $0.toSourceRange(locationConverter: locationConverter) }
 
-  /// The number of corrections made by the rewriter.
+  /// The number of corrections made by the rewriter
   var numberOfCorrections = 0
 
-  /// Initializer for a ``ViolationCollectingRewriter``.
+  /// Create a ``ViolationCollectingRewriter``
   ///
   /// - Parameters:
   ///   - configuration: Configuration of a rule.
-  ///   - file: File from which the syntax tree stems from.
+  ///   - file: File from which the syntax tree stems.
   @inlinable
   init(configuration: Configuration, file: SwiftSource) {
     self.configuration = configuration
     self.file = file
   }
 
-  /// Determines whether the rule is disabled at the start position of the given syntax node.
+  /// Determine whether the rule is disabled at the start position of the given syntax node
   ///
-  /// - parameter node: The syntax node to check.
-  ///
-  /// - returns: `true` if the rule is disabled for the node.
+  /// - Parameters:
+  ///   - node: The syntax node to check.
+  /// - Returns: `true` if the rule is disabled for the node.
   func isDisabled(atStartPositionOf node: some SyntaxProtocol) -> Bool {
     node.isContainedIn(regions: disabledRegions, locationConverter: locationConverter)
   }

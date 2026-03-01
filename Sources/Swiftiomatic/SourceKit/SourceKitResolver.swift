@@ -1,14 +1,13 @@
 import Foundation
 import Synchronization
 
-/// SourceKit-backed type resolver.
+/// SourceKit-backed ``TypeResolver`` that wraps cursorinfo, index, and expression-type requests
 ///
-/// Wraps cursorinfo, index, and expression-type requests.
-/// Caches compiler args and file indexes for the lifetime of the scan.
+/// Caches compiler arguments and file indexes for the lifetime of the scan.
 ///
-/// `@unchecked Sendable` because the underlying sourcekitd XPC calls touch global C state.
-/// All mutable state is protected by `Mutex`, and the C FFI calls are serialized by
-/// `sourceKitRequestGate` (also a `Mutex`).
+/// Marked `@unchecked Sendable` because the underlying sourcekitd XPC calls touch
+/// global C state. All mutable state is protected by ``Mutex``, and C FFI calls
+/// are serialized by a global request gate.
 package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
     private let compilerArgs: [String]
     private let indexCache = Mutex<[String: FileIndex]>([:])
@@ -17,12 +16,20 @@ package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
         true
     }
 
-    /// Create a resolver with explicit compiler arguments.
+    /// Create a resolver with explicit compiler arguments
+    ///
+    /// - Parameters:
+    ///   - compilerArgs: The compiler arguments passed to SourceKit requests.
     package init(compilerArgs: [String]) {
         self.compilerArgs = compilerArgs
     }
 
-    /// Create a resolver that discovers compiler args from an SPM project root.
+    /// Create a resolver that discovers compiler arguments from an SPM project root
+    ///
+    /// Returns `nil` if `.build/debug.yaml` cannot be found or parsed.
+    ///
+    /// - Parameters:
+    ///   - projectRoot: The root directory of the Swift Package Manager project.
     package init?(projectRoot: String) {
         guard let args = SwiftPMCompilationDB.compilerArguments(inPath: projectRoot) else {
             return nil
@@ -32,6 +39,11 @@ package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
 
     // MARK: - TypeResolver
 
+    /// Resolve the type at a byte offset via a cursorinfo request
+    ///
+    /// - Parameters:
+    ///   - file: The absolute path to the source file.
+    ///   - offset: The byte offset of the expression to resolve.
     package func resolveType(inFile file: String, offset: Int) -> ResolvedType? {
         let request = Request.cursorInfo(
             file: file,
@@ -47,6 +59,12 @@ package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
         return ResolvedType(typeName: typeName, usr: usr, moduleName: moduleName)
     }
 
+    /// Index a file and return its declarations and references
+    ///
+    /// Results are cached per file path for the lifetime of this resolver.
+    ///
+    /// - Parameters:
+    ///   - file: The absolute path to the source file.
     package func indexFile(_ file: String) -> FileIndex? {
         if let cached = indexCache.withLock({ $0[file] }) {
             return cached
@@ -66,6 +84,10 @@ package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
         return index
     }
 
+    /// Retrieve resolved types for all expressions in the file
+    ///
+    /// - Parameters:
+    ///   - file: The absolute path to the source file.
     package func expressionTypes(inFile file: String) -> [ExpressionTypeInfo] {
         guard let source = try? String(contentsOfFile: file, encoding: .utf8) else { return [] }
 

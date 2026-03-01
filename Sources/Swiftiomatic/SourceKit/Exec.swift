@@ -1,16 +1,24 @@
 import Foundation
 
-/// Namespace for utilities to execute a child process.
+/// Namespace for synchronous child-process execution utilities
 enum Exec {
+    /// How to handle the child process's standard error stream
     enum Stderr {
+        /// Inherit the parent's stderr (default)
         case inherit
+        /// Redirect stderr to `/dev/null`
         case discard
+        /// Merge stderr into stdout
         case merge
     }
 
+    /// The captured output and exit status of a completed child process
     struct Results {
+        /// The process termination status, or `-1` if the process failed to launch
         let terminationStatus: Int32
+        /// The raw bytes captured from stdout (and stderr when ``Stderr/merge`` is used)
         let data: Data
+        /// The UTF-8 decoded, whitespace-trimmed output, or `nil` if empty
         var string: String? {
             let encoded = String(data: data, encoding: .utf8) ?? ""
             let trimmed = encoded.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -18,6 +26,13 @@ enum Exec {
         }
     }
 
+    /// Execute a command with variadic arguments
+    ///
+    /// - Parameters:
+    ///   - command: The absolute path to the executable.
+    ///   - arguments: The command-line arguments.
+    ///   - currentDirectory: The working directory for the child process.
+    ///   - stderr: How to handle the child's stderr stream.
     static func run(
         _ command: String,
         _ arguments: String...,
@@ -27,6 +42,13 @@ enum Exec {
         run(command, arguments, currentDirectory: currentDirectory, stderr: stderr)
     }
 
+    /// Execute a command with an array of arguments
+    ///
+    /// - Parameters:
+    ///   - command: The absolute path to the executable.
+    ///   - arguments: The command-line arguments.
+    ///   - currentDirectory: The working directory for the child process.
+    ///   - stderr: How to handle the child's stderr stream.
     static func run(
         _ command: String,
         _ arguments: [String] = [],

@@ -62,13 +62,13 @@ extension FormatRule {
       result + (token.isLineBreak ? 1 : 0)
     }
     if lastHeaderTokenIndex < formatter.tokens.count - 1 {
-      headerTokens.append(.lineBreak(formatter.options.linebreak, headerLinebreaks + 1))
+      headerTokens.append(.lineBreak(formatter.options.lineBreak, headerLinebreaks + 1))
       if lastHeaderTokenIndex < formatter.tokens.count - 2,
         !formatter.tokens[lastHeaderTokenIndex + 1...lastHeaderTokenIndex + 2].allSatisfy(
           \.isLineBreak,
         )
       {
-        headerTokens.append(.lineBreak(formatter.options.linebreak, headerLinebreaks + 2))
+        headerTokens.append(.lineBreak(formatter.options.lineBreak, headerLinebreaks + 2))
       }
     }
     if let index = formatter.index(

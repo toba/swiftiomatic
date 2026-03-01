@@ -269,10 +269,11 @@ struct Linter: @unchecked Sendable {
 
     /// Creates a `Linter` by specifying its properties directly.
     ///
-    /// - parameter file:              The file to lint with this linter.
-    /// - parameter configuration:     The configuration to apply to this linter.
-    /// - parameter cache:             The persisted cache to use for this linter.
-    /// - parameter compilerArguments: The compiler arguments to use for this linter if it is to execute analyzer rules.
+    /// - Parameters:
+    ///   - file: The file to lint with this linter.
+    ///   - configuration: The configuration to apply to this linter.
+    ///   - cache: The persisted cache to use for this linter.
+    ///   - compilerArguments: The compiler arguments to use for this linter if it is to execute analyzer rules.
     init(
         file: SwiftSource,
         configuration: Configuration = Configuration.default,
@@ -296,9 +297,10 @@ struct Linter: @unchecked Sendable {
 
     /// Returns a linter capable of checking for violations after running each rule's collection step.
     ///
-    /// - parameter storage: The storage object where collected info should be saved.
+    /// - Parameters:
+    ///   - storage: The storage object where collected info should be saved.
     ///
-    /// - returns: A linter capable of checking for violations after running each rule's collection step.
+    /// - Returns: A linter capable of checking for violations after running each rule's collection step.
     func collect(into storage: RuleStorage) async -> CollectedLinter {
         await withTaskGroup(of: Void.self) { group in
             for idx in rules.indices {
@@ -340,18 +342,20 @@ struct CollectedLinter: @unchecked Sendable {
 
     /// Computes or retrieves style violations.
     ///
-    /// - parameter storage: The storage object containing all collected info.
+    /// - Parameters:
+    ///   - storage: The storage object containing all collected info.
     ///
-    /// - returns: All style violations found by this linter.
+    /// - Returns: All style violations found by this linter.
     func ruleViolations(using storage: RuleStorage) -> [RuleViolation] {
         getRuleViolations(using: storage).0
     }
 
     /// Computes or retrieves style violations and the time spent executing each rule.
     ///
-    /// - parameter storage: The storage object containing all collected info.
+    /// - Parameters:
+    ///   - storage: The storage object containing all collected info.
     ///
-    /// - returns: All style violations found by this linter, and the time spent executing each rule.
+    /// - Returns: All style violations found by this linter, and the time spent executing each rule.
     func ruleViolationsAndRuleTimes(using storage: RuleStorage)
         -> ([RuleViolation], [(id: String, time: Double)])
     {
@@ -438,9 +442,10 @@ struct CollectedLinter: @unchecked Sendable {
 
     /// Applies corrections for all rules to this file, returning performed corrections.
     ///
-    /// - parameter storage: The storage object containing all collected info.
+    /// - Parameters:
+    ///   - storage: The storage object containing all collected info.
     ///
-    /// - returns: All corrections that were applied.
+    /// - Returns: All corrections that were applied.
     func correct(using storage: RuleStorage) -> [String: Int] {
         if let violations = cachedRuleViolations()?.0, violations.isEmpty {
             return [:]

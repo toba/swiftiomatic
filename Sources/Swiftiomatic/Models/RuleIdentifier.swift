@@ -29,7 +29,8 @@ package enum RuleIdentifier: Hashable, ExpressibleByStringLiteral, Comparable, S
 
     /// Creates a `RuleIdentifier` by its string representation.
     ///
-    /// - parameter value: The string representation.
+    /// - Parameters:
+    ///   - value: The string representation.
     init(_ value: String) {
         self = value == Self.allStringRepresentation ? .all : .single(identifier: value)
     }

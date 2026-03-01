@@ -3,7 +3,7 @@ import Foundation
 extension Configuration {
     // MARK: On-Disk Cache
 
-    /// A SHA-256 fingerprint of this configuration's root directory and rule settings.
+    /// A SHA-256 fingerprint of this configuration's root directory and rule settings
     ///
     /// ``LinterCache`` uses this as a cache key: lint results for a file are only valid
     /// when produced under the same configuration fingerprint. Changing any rule or its
@@ -19,7 +19,7 @@ extension Configuration {
         return data.sha256().hexString
     }
 
-    /// The directory where ``LinterCache`` stores its per-file violation caches.
+    /// The directory where ``LinterCache`` stores its per-file violation caches
     ///
     /// Resolves to `<cachePath>/Swiftiomatic/<version>/<buildID>/`, falling back to
     /// `~/Library/Caches/` when no custom ``cachePath`` is set.
@@ -40,7 +40,7 @@ extension Configuration {
         return baseURL.appendingPathComponent(versionedDirectory)
     }
 
-    /// Creates the cache directory at ``cacheURL`` if it doesn't already exist.
+    /// Create the cache directory at ``cacheURL`` if it doesn't already exist
     func prepareCacheDirectory() {
         do {
             try FileManager.default.createDirectory(

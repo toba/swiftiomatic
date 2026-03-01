@@ -2,7 +2,10 @@ import Foundation
 
 // MARK: - DeclarationType
 
-/// The type of a declaration.
+/// The organizational category of a ``Declaration`` within a type body
+///
+/// Used by the declaration-ordering rule to group and sort members
+/// into sections separated by MARK comments.
 enum DeclarationType: String, CaseIterable {
     case beforeMarks
     case nestedType
@@ -61,6 +64,7 @@ enum DeclarationType: String, CaseIterable {
         }
     }
 
+    /// The minimum set of cases that must appear in every ordering configuration
     static var essentialCases: [DeclarationType] {
         [
             .beforeMarks,
@@ -71,6 +75,10 @@ enum DeclarationType: String, CaseIterable {
         ]
     }
 
+    /// Returns the default declaration ordering for the given organization mode
+    ///
+    /// - Parameters:
+    ///   - mode: Whether declarations are organized by visibility or by type.
     static func defaultOrdering(for mode: DeclarationOrganizationMode) -> [DeclarationType] {
         switch mode {
             case .type:
@@ -115,7 +123,12 @@ enum DeclarationType: String, CaseIterable {
 }
 
 extension Declaration {
-    /// The `DeclarationType` of the given `Declaration`
+    /// Determines the ``DeclarationType`` of this declaration
+    ///
+    /// - Parameters:
+    ///   - availableTypes: The allowlisted declaration types that may be returned.
+    ///   - beforeMarks: Keywords whose declarations should appear before any MARK comments.
+    ///   - lifecycleMethods: Method names treated as lifecycle methods (e.g. `viewDidLoad`).
     func declarationType(
         allowlist availableTypes: [DeclarationType],
         beforeMarks: Set<String>,

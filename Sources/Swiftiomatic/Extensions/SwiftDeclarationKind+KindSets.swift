@@ -1,4 +1,5 @@
 extension SwiftDeclarationKind {
+  /// All declaration kinds that represent functions, methods, accessors, and subscripts
   static let functionKinds: Set<SwiftDeclarationKind> = [
     .functionAccessorAddress,
     .functionAccessorDidset,
@@ -16,6 +17,7 @@ extension SwiftDeclarationKind {
     .functionSubscript,
   ]
 
+  /// All declaration kinds that represent named types (class, struct, enum, typealias, associated type)
   static let typeKinds: Set<SwiftDeclarationKind> = [
     .class,
     .struct,

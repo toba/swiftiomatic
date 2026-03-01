@@ -1,10 +1,12 @@
-/// Classification of `Any`-family type annotations. Used by both
-/// `AnyEliminationCheck` (suggest) and `AnyEliminationRule` (lint).
+/// Classification of `Any`-family type annotations
+///
+/// Used by both `AnyEliminationCheck` (suggest) and `AnyEliminationRule` (lint).
 enum AnyTypeMatch {
     case any
     case anyObject
     case anyHashable
 
+    /// A human-readable diagnostic message describing the type-safety concern
     var message: String {
         switch self {
             case .any:
@@ -16,6 +18,7 @@ enum AnyTypeMatch {
         }
     }
 
+    /// An optional replacement suggestion, or `nil` when no single fix applies
     var suggestion: String? {
         switch self {
             case .any:
@@ -26,8 +29,13 @@ enum AnyTypeMatch {
     }
 }
 
+/// Classifies type annotation strings as `Any`-family types
 enum AnyTypeClassifier {
-    /// Classify a type string as an `Any`-family type, or return `nil` if it isn't one.
+    /// Classifies a type string as an `Any`-family type
+    ///
+    /// - Parameters:
+    ///   - typeStr: The type annotation text to classify.
+    /// - Returns: The matching ``AnyTypeMatch`` case, or `nil` if the type is not an `Any`-family type.
     static func classifyAnyType(_ typeStr: String) -> AnyTypeMatch? {
         if typeStr == "Any" || typeStr == "Any?" {
             return .any

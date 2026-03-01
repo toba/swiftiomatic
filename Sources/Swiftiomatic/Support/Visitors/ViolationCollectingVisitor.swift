@@ -1,20 +1,25 @@
 import SwiftSyntax
 
-/// A SwiftSyntax `SyntaxVisitor` that produces absolute positions where violations should be reported.
+/// Base `SyntaxVisitor` that accumulates ``SyntaxViolation`` positions during AST traversal
+///
+/// Subclasses override `visitPost` methods to append to ``violations``.
+/// The visitor also supports a ``skippableDeclarations`` list so rules can
+/// opt out of visiting certain declaration kinds.
 class ViolationCollectingVisitor<Configuration: RuleConfiguration>: SyntaxVisitor {
-    /// A rule's configuration.
+    /// The rule configuration driving this visitor's thresholds and options
     let configuration: Configuration
-    /// The file from which the traversed syntax tree stems from.
+
+    /// The source file whose syntax tree is being traversed
     let file: SwiftSource
 
-    /// A source location converter associated with the syntax tree being traversed.
+    /// A lazily-created location converter for the current file
     lazy var locationConverter = file.locationConverter
 
-    /// Initializer for a ``ViolationCollectingVisitor``.
+    /// Creates a visitor for the given rule configuration and source file
     ///
     /// - Parameters:
     ///   - configuration: Configuration of a rule.
-    ///   - file: File from which the syntax tree stems from.
+    ///   - file: The source file whose syntax tree will be traversed.
     @inlinable
     init(configuration: Configuration, file: SwiftSource) {
         self.configuration = configuration
@@ -22,10 +27,13 @@ class ViolationCollectingVisitor<Configuration: RuleConfiguration>: SyntaxVisito
         super.init(viewMode: .sourceAccurate)
     }
 
-    /// Positions in a source file where violations should be reported.
+    /// Accumulated violation positions collected during traversal
     var violations: [SyntaxViolation] = []
 
-    /// List of declaration types that shall be skipped while traversing the AST.
+    /// Declaration types that this visitor skips entirely
+    ///
+    /// Override in subclasses to restrict traversal. Defaults to an empty array
+    /// (visit everything).
     var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
         []
     }
@@ -77,7 +85,7 @@ class ViolationCollectingVisitor<Configuration: RuleConfiguration>: SyntaxVisito
 }
 
 extension [any DeclSyntaxProtocol.Type] {
-    /// All visitable declaration syntax types.
+    /// All visitable declaration syntax types
     static let all: Self = [
         ActorDeclSyntax.self,
         ClassDeclSyntax.self,
@@ -91,11 +99,11 @@ extension [any DeclSyntaxProtocol.Type] {
         VariableDeclSyntax.self,
     ]
 
-    /// All declarations except for the specified ones.
+    /// All declaration types except for the specified ones
     ///
-    /// - parameter declarations: The declarations to exclude from all declarations.
-    ///
-    /// - returns: All declarations except for the specified ones.
+    /// - Parameters:
+    ///   - declarations: The declaration types to exclude.
+    /// - Returns: All declaration types minus the excluded ones.
     static func allExcept(_ declarations: Element...) -> Self {
         all.filter { decl in !declarations.contains { $0 == decl } }
     }

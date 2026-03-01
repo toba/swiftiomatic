@@ -26,6 +26,12 @@ extension String {
         Console.fatalError("invalid range")
     }
 
+    /// Extract a substring starting at the given character offset
+    ///
+    /// - Parameters:
+    ///   - from: Zero-based character offset to start from.
+    ///   - length: Number of characters to include. When `nil`, returns everything
+    ///     from `from` to the end of the string.
     func substring(from: Int, length: Int? = nil) -> String {
         if let length {
             return self[from ..< from + length]
@@ -36,6 +42,10 @@ extension String {
         return String(self[idx...])
     }
 
+    /// Return the character offset of the last occurrence of `search`, or `nil` if not found
+    ///
+    /// - Parameters:
+    ///   - search: The substring to locate.
     func lastIndex(of search: String) -> Int? {
         if let range = range(of: search, options: [.literal, .backwards]) {
             return distance(from: startIndex, to: range.lowerBound)
@@ -43,6 +53,13 @@ extension String {
         return nil
     }
 
+    /// Convert an `NSRange` (UTF-16 offsets) to a native `Range<String.Index>`
+    ///
+    /// Returns `nil` when the range has `NSNotFound` as its location or when the
+    /// UTF-16 offsets cannot be mapped to valid `String.Index` values.
+    ///
+    /// - Parameters:
+    ///   - nsrange: The `NSRange` to convert.
     func nsRangeToIndexRange(_ nsrange: NSRange) -> Range<Index>? {
         guard nsrange.location != NSNotFound else {
             return nil
@@ -93,14 +110,21 @@ extension String {
         return false
     }
 
-    /// Count the number of occurrences of the given character in `self`
-    /// - Parameter character: Character to count
-    /// - Returns: Number of times `character` occurs in `self`
+    /// Count the number of occurrences of a character in this string
+    ///
+    /// - Parameters:
+    ///   - character: Character to count.
     func countOccurrences(of character: Character) -> Int {
         reduce(0) { $1 == character ? $0 + 1 : $0 }
     }
 
-    /// If self is a path, this method can be used to get a path expression relative to a root directory
+    /// Compute a relative path from `rootDirectory` to this path
+    ///
+    /// Both paths are standardized before comparison. The result may include
+    /// leading `..` components when the receiver is outside the root directory tree.
+    ///
+    /// - Parameters:
+    ///   - rootDirectory: The directory to make this path relative to.
     func path(relativeTo rootDirectory: String) -> String {
         let normalizedRootDir = URL(fileURLWithPath: rootDirectory).standardizedFileURL.path
         let normalizedSelf = URL(fileURLWithPath: self).standardizedFileURL.path
@@ -123,11 +147,21 @@ extension String {
         }
     }
 
+    /// Return the string with the given prefix removed, or unchanged if the prefix is absent
+    ///
+    /// - Parameters:
+    ///   - prefix: The prefix to strip.
     func deletingPrefix(_ prefix: String) -> String {
         guard hasPrefix(prefix) else { return self }
         return String(dropFirst(prefix.count))
     }
 
+    /// Indent every line by the given number of spaces
+    ///
+    /// - Parameters:
+    ///   - spaces: Number of space characters to prepend to each line.
+    ///   - skipFirst: When `true`, the first line is left unindented.
+    ///   - skipEmptyLines: When `true`, empty lines are not indented.
     func indent(by spaces: Int, skipFirst: Bool = false, skipEmptyLines: Bool = true) -> String {
         let lines = components(separatedBy: "\n")
         if skipFirst, let firstLine = lines.first {
@@ -140,10 +174,20 @@ extension String {
         return lines.indent(by: spaces, skipEmptyLines: skipEmptyLines)
     }
 
+    /// Prepend `prefix` to every line after the first
+    ///
+    /// - Parameters:
+    ///   - prefix: The string to insert after each newline.
     func linesPrefixed(with prefix: Self) -> Self {
         split(separator: "\n").joined(separator: "\n\(prefix)")
     }
 
+    /// Convert a UTF-8 byte offset to a zero-based character (grapheme cluster) position
+    ///
+    /// Returns `nil` when the offset is out of range or does not land on a character boundary.
+    ///
+    /// - Parameters:
+    ///   - utf8Offset: The byte offset into the string's UTF-8 representation.
     func characterPosition(of utf8Offset: Int) -> Int? {
         guard utf8Offset != 0 else { return 0 }
         guard utf8Offset > 0, utf8Offset < utf8.count else { return nil }

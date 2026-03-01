@@ -20,14 +20,16 @@ struct RuleList: Sendable {
 
     /// Creates a `RuleList` by specifying all its rules.
     ///
-    /// - parameter rules: The rules to be contained in this list.
+    /// - Parameters:
+    ///   - rules: The rules to be contained in this list.
     init(rules: any Rule.Type...) {
         self.init(rules: rules)
     }
 
     /// Creates a `RuleList` by specifying all its rules.
     ///
-    /// - parameter rules: The rules to be contained in this list.
+    /// - Parameters:
+    ///   - rules: The rules to be contained in this list.
     init(rules: [any Rule.Type]) {
         var tmpList = [String: any Rule.Type]()
         var tmpAliases = [String: String]()

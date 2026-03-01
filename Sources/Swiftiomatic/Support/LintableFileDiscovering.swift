@@ -1,36 +1,41 @@
 import Foundation
 
-/// An interface for discovering files that can be linted.
+/// An interface for discovering files that can be linted
 protocol LintableFileDiscovering: Sendable {
-    /// Returns all files that can be linted in the specified path. If the path is relative, it will be appended to the
-    /// specified root path, or current working directory if no root directory is specified.
+    /// Returns all lintable files found at the specified path
     ///
-    /// - parameter path:          The path in which lintable files should be found.
-    /// - parameter rootDirectory: The parent directory for the specified path. If none is provided, the current working
-    ///                            directory will be used.
-    /// - parameter excluder:     The excluder used to filter out files that should not be linted.
+    /// If the path is relative, it is appended to the root directory or the
+    /// current working directory when no root is provided.
     ///
-    /// - returns: Files to lint.
+    /// - Parameters:
+    ///   - path: The path in which lintable files should be found.
+    ///   - rootDirectory: The parent directory for the specified path. Defaults to the current working directory.
+    ///   - excluder: The ``Excluder`` used to filter out files that should not be linted.
+    /// - Returns: Files to lint.
     func filesToLint(inPath path: String, rootDirectory: String?, excluder: Excluder) -> [String]
 
-    /// Returns the date when the file at the specified path was last modified. Returns `nil` if the file cannot be
-    /// found or its last modification date cannot be determined.
+    /// Returns the last modification date of the file at the given path
     ///
-    /// - parameter path: The file whose modification date should be determined.
-    ///
-    /// - returns: A date, if one was determined.
+    /// - Parameters:
+    ///   - path: The file whose modification date should be determined.
+    /// - Returns: A date, if one was determined.
     func modificationDate(forFileAtPath path: String) -> Date?
 }
 
-/// An excluder for filtering out files that should not be linted.
+/// A strategy for filtering out files that should not be linted
 enum Excluder: Sendable {
-    /// Full matching excluder using glob patterns via fnmatch(3).
+    /// Glob-pattern matching via `fnmatch(3)`
     case matching(patterns: [String])
-    /// Prefix-based excluder using path prefixes.
+    /// Prefix-based path matching
     case byPrefix(prefixes: [String])
-    /// An excluder that does not exclude any files.
+    /// Passes all files through without exclusion
     case noExclusion
 
+    /// Whether the given path is excluded by this strategy
+    ///
+    /// - Parameters:
+    ///   - path: The file path to test.
+    /// - Returns: `true` if the path matches an exclusion pattern.
     func excludes(path: String) -> Bool {
         switch self {
             case let .matching(patterns):

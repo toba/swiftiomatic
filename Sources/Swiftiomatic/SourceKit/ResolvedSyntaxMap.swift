@@ -1,20 +1,22 @@
-/// Represents a Swift file's syntax information with resolved token kinds.
+/// A Swift file's syntax information with token kinds resolved to ``SourceKitSyntaxKind``
 struct ResolvedSyntaxMap {
-    /// The syntax tokens for this syntax map.
+    /// The resolved syntax tokens for this map
     let tokens: [ResolvedSyntaxToken]
 
-    /// Creates a resolved syntax map from the raw SourceKit `SyntaxMap`.
+    /// Create a resolved syntax map from a raw SourceKit ``SyntaxMap``
     ///
-    /// - parameter value: The raw `SyntaxMap` obtained by SourceKit.
+    /// - Parameters:
+    ///   - value: The raw ``SyntaxMap`` obtained from SourceKit.
     init(value: SyntaxMap) {
         tokens = value.tokens.map(ResolvedSyntaxToken.init)
     }
 
-    /// Returns array of syntax tokens intersecting with byte range.
+    /// Return syntax tokens that intersect with the given byte range
     ///
-    /// - parameter byteRange: Byte-based NSRange.
+    /// Uses binary search to efficiently skip tokens before the range.
     ///
-    /// - returns: The array of syntax tokens intersecting with byte range.
+    /// - Parameters:
+    ///   - byteRange: The byte range to test against.
     func tokens(inByteRange byteRange: ByteRange) -> [ResolvedSyntaxToken] {
         func intersect(_ token: ResolvedSyntaxToken) -> Bool {
             token.range.intersects(byteRange)
@@ -37,11 +39,10 @@ struct ResolvedSyntaxMap {
         return Array(tokensAfterFirstIntersection)
     }
 
-    /// Returns the syntax kinds in the specified byte range.
+    /// Return the syntax kinds present in the given byte range
     ///
-    /// - parameter byteRange: Byte range.
-    ///
-    /// - returns: The syntax kinds in the specified byte range.
+    /// - Parameters:
+    ///   - byteRange: The byte range to query.
     func kinds(inByteRange byteRange: ByteRange) -> [SourceKitSyntaxKind] {
         tokens(inByteRange: byteRange).compactMap(\.kind)
     }

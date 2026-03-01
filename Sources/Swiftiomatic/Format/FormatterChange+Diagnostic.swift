@@ -1,5 +1,5 @@
 extension Formatter.Change {
-    /// Convert to the unified Diagnostic output type.
+    /// Converts this change record into a unified ``Diagnostic`` for reporting
     package func toDiagnostic() -> Diagnostic {
         Diagnostic(
             ruleID: rule.name,

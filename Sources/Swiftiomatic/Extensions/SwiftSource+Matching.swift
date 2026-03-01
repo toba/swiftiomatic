@@ -1,5 +1,12 @@
 import Foundation
 
+/// Creates or retrieves a cached regular expression for the given pattern
+///
+/// All patterns used here are compile-time verified string literals.
+///
+/// - Parameters:
+///   - pattern: The regular expression pattern string.
+///   - options: Optional ``NSRegularExpression/Options`` to apply.
 func regex(
   _ pattern: String,
   options: NSRegularExpression.Options? = nil,
@@ -12,6 +19,12 @@ func regex(
 }
 
 extension SwiftSource {
+  /// Returns ranges where the pattern matches and the matched tokens have the expected syntax kinds
+  ///
+  /// - Parameters:
+  ///   - pattern: Regular expression pattern to match.
+  ///   - syntaxKinds: The exact sequence of syntax kinds the match must contain.
+  ///   - range: Optional sub-range of the file to search within.
   func match(
     pattern: String, with syntaxKinds: [SourceKitSyntaxKind],
     range: Range<String.Index>? = nil
@@ -21,6 +34,12 @@ extension SwiftSource {
       .map(\.0)
   }
 
+  /// Returns all regex matches paired with the syntax kinds of each matched region
+  ///
+  /// - Parameters:
+  ///   - pattern: Regular expression pattern to match.
+  ///   - range: Optional sub-range of the file to search within.
+  ///   - captureGroup: The capture group index whose range to return (0 for the full match).
   func match(pattern: String, range: Range<String.Index>? = nil, captureGroup: Int = 0) -> [(
     Range<String.Index>, [SourceKitSyntaxKind],
   )] {
@@ -47,15 +66,13 @@ extension SwiftSource {
     }
   }
 
-  /// This function returns only matches that are not contained in a syntax kind
-  /// specified.
+  /// Returns matches that do not overlap with any of the excluded syntax kinds
   ///
-  /// - parameter pattern: regex pattern to be matched inside file.
-  /// - parameter excludingSyntaxKinds: syntax kinds the matches to be filtered
-  /// when inside them.
-  ///
-  /// - returns: An array of `Range<String.Index>` objects consisting of regex matches inside
-  /// file contents.
+  /// - Parameters:
+  ///   - pattern: Regular expression pattern to match.
+  ///   - syntaxKinds: Syntax kinds to exclude -- matches inside these kinds are filtered out.
+  ///   - range: Optional sub-range of the file to search within.
+  ///   - captureGroup: The capture group index whose range to return (0 for the full match).
   func match(
     pattern: String,
     excludingSyntaxKinds syntaxKinds: Set<SourceKitSyntaxKind>,
@@ -67,6 +84,11 @@ extension SwiftSource {
       .map(\.0)
   }
 
+  /// Filters violation ranges to only those where the rule is enabled by region annotations
+  ///
+  /// - Parameters:
+  ///   - violatingRanges: Candidate violation ranges to filter.
+  ///   - rule: The rule to check enablement for.
   func ruleEnabled(
     violatingRanges: [Range<String.Index>], for rule: some Rule
   ) -> [Range<String.Index>] {
@@ -80,6 +102,11 @@ extension SwiftSource {
     }
   }
 
+  /// Returns the range if the rule is enabled at that location, or `nil` if disabled
+  ///
+  /// - Parameters:
+  ///   - violatingRange: The candidate violation range.
+  ///   - rule: The rule to check enablement for.
   func ruleEnabled(
     violatingRange: Range<String.Index>, for rule: some Rule
   ) -> Range<String.Index>? {
@@ -88,6 +115,11 @@ extension SwiftSource {
 
   // MARK: - NSRange overloads (mirrors Range<String.Index> versions above for SourceKit/Line ranges)
 
+  /// Filters `NSRange` violation ranges to only those where the rule is enabled
+  ///
+  /// - Parameters:
+  ///   - violatingRanges: Candidate violation ranges to filter.
+  ///   - rule: The rule to check enablement for.
   func ruleEnabled(violatingRanges: [NSRange], for rule: some Rule) -> [NSRange] {
     let fileRegions = regions()
     if fileRegions.isEmpty { return violatingRanges }
@@ -99,10 +131,19 @@ extension SwiftSource {
     }
   }
 
+  /// Returns the `NSRange` if the rule is enabled at that location, or `nil` if disabled
+  ///
+  /// - Parameters:
+  ///   - violatingRange: The candidate violation range.
+  ///   - rule: The rule to check enablement for.
   func ruleEnabled(violatingRange: NSRange, for rule: some Rule) -> NSRange? {
     ruleEnabled(violatingRanges: [violatingRange], for: rule).first
   }
 
+  /// Extracts the string contents of a resolved syntax token from this file
+  ///
+  /// - Parameters:
+  ///   - token: The ``ResolvedSyntaxToken`` whose byte range to extract.
   func contents(for token: ResolvedSyntaxToken) -> String? {
     stringView.substringWithByteRange(token.range)
   }

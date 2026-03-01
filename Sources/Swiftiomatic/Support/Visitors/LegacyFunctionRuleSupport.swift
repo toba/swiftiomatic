@@ -1,18 +1,22 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-/// Visitor that collects violations when legacy functions are called.
+/// Collects violations when legacy C-style function calls are used
+///
+/// Matches calls against a dictionary of legacy function names and records a
+/// violation at each call site. Paired with ``LegacyFunctionRewriter`` for
+/// auto-correction.
 class LegacyFunctionVisitor<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
     Configuration,
 > {
     @usableFromInline let legacyFunctions: [String: LegacyFunctionRewriteStrategy]
 
-    /// Initializer for a ``ViolationCollectingVisitor``.
+    /// Creates a visitor that watches for the specified legacy functions
     ///
     /// - Parameters:
     ///   - configuration: Configuration of a rule.
-    ///   - file: File from which the syntax tree stems from.
-    ///   - legacyFunctions: A dictionary mapping legacy function names to their rewrite strategies.
+    ///   - file: The source file whose syntax tree will be traversed.
+    ///   - legacyFunctions: A mapping from legacy function names to their ``LegacyFunctionRewriteStrategy``.
     @inlinable
     init(
         configuration: Configuration,
@@ -30,15 +34,16 @@ class LegacyFunctionVisitor<Configuration: RuleConfiguration>: ViolationCollecti
     }
 }
 
-/// Strategy to apply when rewriting a legacy function call.
+/// Strategy for rewriting a legacy C-style function call to its modern Swift equivalent
 enum LegacyFunctionRewriteStrategy: Sendable {
-    /// Replace with equality check between the two arguments.
+    /// Rewrite as an equality check between the two arguments (e.g. `a == b`)
     case equal
-    /// Replace with property access with name ``name`` on the argument.
+    /// Rewrite as a property access on the argument (e.g. `a.isZero`)
     case property(name: String)
-    /// Replace with method call with name ``name`` on the first argument, passing the remaining arguments
-    /// with the specified ``argumentLabels``. If ``reversed`` is `true`, the order of arguments is reversed, that
-    /// is, the function is called on the second argument, passing the first argument as parameter.
+    /// Rewrite as a method call on the first argument with the remaining arguments
+    ///
+    /// When `reversed` is `true`, the method is called on the second argument
+    /// with the first argument passed as a parameter.
     case function(name: String, argumentLabels: [String], reversed: Bool = false)
 
     fileprivate var expectedInitialArguments: Int {
@@ -50,18 +55,21 @@ enum LegacyFunctionRewriteStrategy: Sendable {
     }
 }
 
-/// Rewriter that corrects legacy function calls to their modern equivalents.
+/// Rewrites legacy C-style function calls to their modern Swift equivalents
+///
+/// Applies the ``LegacyFunctionRewriteStrategy`` for each matched call,
+/// preserving leading and trailing trivia.
 class LegacyFunctionRewriter<Configuration: RuleConfiguration>: ViolationCollectingRewriter<
     Configuration,
 > {
     @usableFromInline let legacyFunctions: [String: LegacyFunctionRewriteStrategy]
 
-    /// Initializer for a ``ViolationCollectingRewriter``.
+    /// Creates a rewriter that corrects the specified legacy functions
     ///
     /// - Parameters:
     ///   - configuration: Configuration of a rule.
-    ///   - file: File from which the syntax tree stems from.
-    ///   - legacyFunctions: A dictionary mapping legacy function names to their rewrite strategies.
+    ///   - file: The source file whose syntax tree will be rewritten.
+    ///   - legacyFunctions: A mapping from legacy function names to their ``LegacyFunctionRewriteStrategy``.
     @inlinable
     init(
         configuration: Configuration,

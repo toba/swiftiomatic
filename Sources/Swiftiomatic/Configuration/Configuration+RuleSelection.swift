@@ -2,7 +2,7 @@ import Foundation
 import Synchronization
 
 extension Configuration {
-    /// Manages which rules are active based on the configured `RulesMode`.
+    /// Manages which rules are active based on the configured ``RulesMode``
     ///
     /// All mutable state is protected by `Mutex`, making concurrent access safe.
     package final class RuleSelection: @unchecked Sendable {
@@ -16,8 +16,7 @@ extension Configuration {
         private let invalidRuleIdsWarnedAbout = Mutex<Set<String>>([])
         private let cachedResultingRules = Mutex<[any Rule]?>(nil)
 
-        /// All rules enabled in this configuration,
-        /// derived from rule mode (only / optIn - disabled) & existing rules
+        /// All rules enabled in this configuration, derived from the ``RulesMode``
         var resultingRules: [any Rule] {
             cachedResultingRules.withLock { cached in
                 if let rules = cached { return rules }

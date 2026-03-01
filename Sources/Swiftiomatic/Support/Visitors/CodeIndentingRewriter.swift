@@ -1,27 +1,29 @@
 import SwiftSyntax
 
-/// Rewriter that indents or unindents a syntax piece including comments and nested
-/// AST nodes (e.g. a code block in a code block).
+/// Rewrites leading trivia to indent or unindent a syntax subtree
+///
+/// Handles comments and nested AST nodes (e.g. a code block inside another
+/// code block) by adjusting whitespace trivia on every token.
 final class CodeIndentingRewriter: SyntaxRewriter {
-    /// Style defining whether the rewriter shall indent or unindent and whether it shall use tabs or spaces and
-    /// how many of them.
+    /// Direction and unit of indentation change
     enum IndentationStyle {
-        /// Indentation with a number of spaces.
+        /// Indent by a number of spaces
         case indentSpaces(Int)
-        /// Reverse indentation of a number of spaces.
+        /// Unindent by a number of spaces
         case unindentSpaces(Int)
-        /// Indentation with a number of tabs
+        /// Indent by a number of tabs
         case indentTabs(Int)
-        /// Reverse indentation of a number of tabs.
+        /// Unindent by a number of tabs
         case unindentTabs(Int)
     }
 
     private let style: IndentationStyle
     private var isFirstToken = true
 
-    /// Initializer accepting an indentation style.
+    /// Creates a rewriter with the given indentation style
     ///
-    /// - parameter style: Indentation style. The default is indentation by 4 spaces.
+    /// - Parameters:
+    ///   - style: The indentation style to apply. Defaults to 4-space indent.
     init(style: IndentationStyle = .indentSpaces(4)) {
         self.style = style
     }

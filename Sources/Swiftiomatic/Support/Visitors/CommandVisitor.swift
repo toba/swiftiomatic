@@ -3,11 +3,21 @@ import SwiftSyntax
 
 // MARK: - CommandVisitor
 
-/// Visits the source syntax tree to collect all `sm:` comment commands.
+/// Visits the syntax tree to collect all `sm:` inline comment commands
+///
+/// Scans both leading and trailing trivia on every token for line comments
+/// containing the `sm:` prefix (e.g. `// sm:disable:next rule_id`).
 final class CommandVisitor: SyntaxVisitor {
+    /// The collected ``Command`` values found during traversal
     private(set) var commands: [Command] = []
+
+    /// The location converter for mapping byte positions to line/column numbers
     let locationConverter: SourceLocationConverter
 
+    /// Creates a visitor with the given location converter
+    ///
+    /// - Parameters:
+    ///   - locationConverter: Converter for mapping absolute positions to source locations.
     init(locationConverter: SourceLocationConverter) {
         self.locationConverter = locationConverter
         super.init(viewMode: .sourceAccurate)

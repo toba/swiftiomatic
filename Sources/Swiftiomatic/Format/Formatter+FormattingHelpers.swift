@@ -3,7 +3,10 @@ import Foundation
 // MARK: shared helper methods
 
 extension Formatter {
-    /// should brace be wrapped according to `wrapMultilineStatementBraces` rule?
+    /// Whether the brace at the given index should be wrapped per the `wrapMultilineStatementBraces` rule
+    ///
+    /// - Parameters:
+    ///   - index: Token index of a `{` start-of-scope token.
     func shouldWrapMultilineStatementBrace(at index: Int) -> Bool {
         assert(tokens[index] == .startOfScope("{"))
         guard let endIndex = endOfScope(at: index),
@@ -28,7 +31,12 @@ extension Formatter {
         return false
     }
 
-    /// Should the specified token be followed by a space if next token is an opening paren, bracket, etc?
+    /// Whether a space should be inserted after the token at the given index before an opening scope
+    ///
+    /// Returns `nil` when the default spacing behavior should apply.
+    ///
+    /// - Parameters:
+    ///   - index: The token index to evaluate.
     func shouldInsertSpaceAfterToken(at index: Int) -> Bool? {
         switch token(at: index) {
             case let .keyword(keywordOrAttribute):
@@ -80,7 +88,13 @@ extension Formatter {
         }
     }
 
-    /// remove self if possible
+    /// Removes an explicit `self` or `Self` prefix if it is redundant
+    ///
+    /// - Parameters:
+    ///   - i: Token index of the `self` / `Self` identifier.
+    ///   - exclude: Symbol names that must not have `self` removed.
+    ///   - include: If non-nil, only these symbol names are eligible for removal.
+    /// - Returns: `true` if the `self` prefix was removed.
     func removeSelf(at i: Int, exclude: Set<String>, include: Set<String>? = nil) -> Bool {
         guard case let .identifier(selfKeyword) = tokens[i], ["self", "Self"].contains(selfKeyword)
         else {

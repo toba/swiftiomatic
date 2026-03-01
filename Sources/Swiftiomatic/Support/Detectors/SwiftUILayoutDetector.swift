@@ -1,28 +1,35 @@
 import SwiftSyntax
 
-/// Shared SwiftUI layout anti-pattern detection used by both
-/// `SwiftUILayoutCheck` (suggest) and `SwiftUILayoutRule` (lint).
+/// Detects SwiftUI layout anti-patterns such as nested navigation stacks and
+/// conflicting scrollable containers
+///
+/// Used by both `SwiftUILayoutCheck` (suggest) and `SwiftUILayoutRule` (lint).
 enum SwiftUILayoutDetector {
-    /// Container names tracked for nesting analysis.
+    /// Container view names tracked for nesting analysis
     static let trackedContainers: Set<String> = [
         "NavigationStack", "List", "ScrollView", "GeometryReader",
         "VStack", "HStack", "ZStack", "Form",
     ]
 
-    /// Containers that provide their own scrolling.
+    /// Containers that provide their own scrolling behavior
     static let unboundedContainers: Set<String> = ["List", "ScrollView", "Form"]
 
-    /// Stack containers that can hold multiple children.
+    /// Stack containers that can hold multiple children
     static let stackContainers: Set<String> = ["VStack", "HStack", "ZStack"]
 
-    /// A detected layout issue.
+    /// A detected layout anti-pattern with a reason and suggested fix
     struct LayoutIssue {
         let reason: String
         let suggestion: String
         let isHighSeverity: Bool
     }
 
-    /// Check for NavigationStack nested inside another NavigationStack.
+    /// Checks for `NavigationStack` nested inside another `NavigationStack`
+    ///
+    /// - Parameters:
+    ///   - callee: The name of the container being entered.
+    ///   - containerStack: The current nesting stack of container names.
+    /// - Returns: A ``LayoutIssue`` if double nesting is detected.
     static func checkNestedNavigationStack(
         callee: String,
         containerStack: [String],
@@ -37,7 +44,12 @@ enum SwiftUILayoutDetector {
         )
     }
 
-    /// Check for List inside ScrollView (List already scrolls).
+    /// Checks for `List` inside `ScrollView` since `List` already scrolls
+    ///
+    /// - Parameters:
+    ///   - callee: The name of the container being entered.
+    ///   - containerStack: The current nesting stack of container names.
+    /// - Returns: A ``LayoutIssue`` if the conflict is detected.
     static func checkListInsideScrollView(
         callee: String,
         containerStack: [String],
@@ -50,7 +62,12 @@ enum SwiftUILayoutDetector {
         )
     }
 
-    /// Check for GeometryReader inside ScrollView (undefined proposed size).
+    /// Checks for `GeometryReader` inside `ScrollView` where the proposed size is undefined
+    ///
+    /// - Parameters:
+    ///   - callee: The name of the container being entered.
+    ///   - containerStack: The current nesting stack of container names.
+    /// - Returns: A ``LayoutIssue`` if the conflict is detected.
     static func checkGeometryReaderInsideScrollView(
         callee: String,
         containerStack: [String],
@@ -63,7 +80,11 @@ enum SwiftUILayoutDetector {
         )
     }
 
-    /// Check for multiple unbounded containers competing for space inside a stack.
+    /// Checks for multiple unbounded containers competing for space inside a stack
+    ///
+    /// - Parameters:
+    ///   - containerStack: The current nesting stack of container names.
+    /// - Returns: A ``LayoutIssue`` if two or more unbounded containers share a stack parent.
     static func checkMultipleUnboundedContainers(
         containerStack: [String],
     ) -> LayoutIssue? {

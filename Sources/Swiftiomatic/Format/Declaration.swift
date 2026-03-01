@@ -1,13 +1,11 @@
-/// A declaration, like a property, function, or type.
-/// https://docs.swift.org/swift-book/documentation/the-swift-programming-language/declarations/
+/// A Swift declaration such as a property, function, or type
 ///
-/// Forms a tree of declarations, since `type` declarations have a body
-/// that contains child declarations.
+/// Forms a tree of declarations, since type declarations have a body
+/// that contains child declarations. Each declaration tracks a specific
+/// range in the associated ``Formatter`` and is automatically kept
+/// up-to-date as tokens are added, removed, or modified.
 ///
-/// Tracks a specific range in the associated formatter. Declarations are
-/// automatically kept up-to-date as tokens are added, removed, or modified
-/// in the associated formatter.
-///
+/// - SeeAlso: [Swift Language Reference — Declarations](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/declarations/)
 protocol Declaration: AutoUpdatingReference, CustomDebugStringConvertible {
     /// The keyword of this declaration (`class`, `struct`, `func`, `let`, `var`, etc.)
     var keyword: String { get }
@@ -27,6 +25,7 @@ protocol Declaration: AutoUpdatingReference, CustomDebugStringConvertible {
     var parent: Declaration? { get set }
 }
 
+/// The concrete kind of a ``Declaration``
 enum DeclarationKind {
     /// A simple declaration without any child declarations, representing a property, function, etc.
     case declaration(SimpleDeclaration)
@@ -108,8 +107,12 @@ extension Declaration {
         return typeKeywords.contains(keyword)
     }
 
-    /// The start index of this declaration's modifiers,
-    /// which represents the first non-space / non-comment token in the declaration.
+    /// The start index of this declaration's modifiers
+    ///
+    /// Represents the first non-space / non-comment token in the declaration.
+    ///
+    /// - Parameters:
+    ///   - includingAttributes: Whether to include `@` attributes in the range.
     func startOfModifiersIndex(includingAttributes: Bool) -> Int {
         let startOfModifiers = formatter.startOfModifiers(
             at: keywordIndex, includingAttributes: includingAttributes,
@@ -136,6 +139,9 @@ extension Declaration {
     }
 
     /// Whether or not this declaration has the given modifier
+    ///
+    /// - Parameters:
+    ///   - modifier: The modifier keyword or attribute to check for.
     func hasModifier(_ modifier: String) -> Bool {
         formatter.modifiersForDeclaration(at: keywordIndex, contains: modifier)
     }
@@ -208,14 +214,23 @@ extension Declaration {
         formatter.removeTokens(in: range)
     }
 
-    /// Appends the given tokens to the end of this declaration.
+    /// Appends the given tokens to the end of this declaration
+    ///
+    /// - Parameters:
+    ///   - tokens: The ``Token`` values to insert after this declaration's last token.
     func append(_ tokens: [Token]) {
         formatter.insert(tokens, at: range.upperBound)
     }
 }
 
-/// A simple declaration without any child declarations, representing a property, function, etc.
+/// A simple declaration without any child declarations, representing a property, function, etc
 final class SimpleDeclaration: Declaration {
+    /// Creates a simple declaration tracked by the given ``Formatter``
+    ///
+    /// - Parameters:
+    ///   - keyword: The introducing keyword (`let`, `var`, `func`, etc.).
+    ///   - range: The token range this declaration occupies.
+    ///   - formatter: The ``Formatter`` that owns the token array.
     init(keyword: String, range: ClosedRange<Int>, formatter: Formatter) {
         self.keyword = keyword
         self.range = range
@@ -237,8 +252,15 @@ final class SimpleDeclaration: Declaration {
     }
 }
 
-/// A type with a body, representing a class, struct, enum, extension, etc.
+/// A type with a body, representing a class, struct, enum, extension, etc
 final class TypeDeclaration: Declaration {
+    /// Creates a type declaration with child declarations
+    ///
+    /// - Parameters:
+    ///   - keyword: The introducing keyword (`class`, `struct`, `enum`, etc.).
+    ///   - range: The token range this declaration occupies.
+    ///   - body: The child declarations contained within this type's body.
+    ///   - formatter: The ``Formatter`` that owns the token array.
     init(keyword: String, range: ClosedRange<Int>, body: [Declaration], formatter: Formatter) {
         self.keyword = keyword
         self.range = range
@@ -265,8 +287,14 @@ final class TypeDeclaration: Declaration {
         .type(self)
     }
 
-    /// Replaces the body declarations of this type.
-    /// The updated array must contain the same set of declarations, just in a different order.
+    /// Replaces the body declarations of this type
+    ///
+    /// The updated array must contain the same set of declarations,
+    /// just in a different order. Token ranges are re-registered
+    /// automatically after the reorder.
+    ///
+    /// - Parameters:
+    ///   - newBody: The reordered declarations to install in the type body.
     func updateBody(to newBody: [Declaration]) {
         assert(!body.isEmpty)
 
@@ -377,8 +405,14 @@ extension TypeDeclaration {
     }
 }
 
-/// A conditional compilation condition with a body.
+/// A conditional compilation block (`#if` / `#endif`) with child declarations
 final class ConditionalCompilationDeclaration: Declaration {
+    /// Creates a conditional compilation declaration
+    ///
+    /// - Parameters:
+    ///   - range: The token range this block occupies.
+    ///   - body: The child declarations contained within the block.
+    ///   - formatter: The ``Formatter`` that owns the token array.
     init(range: ClosedRange<Int>, body: [Declaration], formatter: Formatter) {
         self.range = range
         self.body = body
@@ -408,7 +442,10 @@ final class ConditionalCompilationDeclaration: Declaration {
 // MARK: - Helpers
 
 extension Collection<Declaration> {
-    /// Performs the given operation for each declaration in this tree of declarations.
+    /// Performs the given operation for each declaration in this tree of declarations
+    ///
+    /// - Parameters:
+    ///   - operation: A closure called once per declaration, including nested children.
     func forEachRecursiveDeclaration(_ operation: (Declaration) -> Void) {
         for declaration in self {
             operation(declaration)
@@ -417,6 +454,9 @@ extension Collection<Declaration> {
     }
 
     /// Searches for and returns the inner-most declaration that contains the given index
+    ///
+    /// - Parameters:
+    ///   - index: The token index to search for.
     func declaration(containing index: Int) -> Declaration? {
         var containingDeclaration: Declaration?
 

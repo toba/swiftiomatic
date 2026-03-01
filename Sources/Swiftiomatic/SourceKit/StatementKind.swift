@@ -1,4 +1,4 @@
-/// Swift statement kinds.
+/// Swift statement kinds from SourceKit `source.lang.swift.stmt.*` UIDs
 enum StatementKind: String {
     case brace = "source.lang.swift.stmt.brace"
     case `case` = "source.lang.swift.stmt.case"

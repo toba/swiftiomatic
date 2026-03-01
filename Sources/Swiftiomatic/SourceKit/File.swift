@@ -6,9 +6,12 @@ import Foundation
 import SourceKitC
 import Synchronization
 
-/// Represents a source file.
+/// A Swift source file that lazily reads and caches its contents
+///
+/// Provides ``StringView``-based access for byte-range operations
+/// required by SourceKit responses. Thread-safe via ``Mutex``.
 final class File: Sendable {
-    /// File path. Nil if initialized directly with `File(contents:)`.
+    /// File path, or `nil` if initialized directly with ``init(contents:)``
     let path: String?
 
     private struct FileState {
@@ -45,6 +48,7 @@ final class File: Sendable {
         }
     }
 
+    /// Discard cached contents and string view, forcing a re-read on next access
     func clearCaches() {
         state.withLock { s in
             s.contents = nil
@@ -52,6 +56,7 @@ final class File: Sendable {
         }
     }
 
+    /// A ``StringView`` over the file contents, lazily created and cached
     var stringView: StringView {
         state.withLock { s in
             if s.stringView == nil {
@@ -67,10 +72,17 @@ final class File: Sendable {
         }
     }
 
+    /// The lines of the file, derived from ``stringView``
     var lines: [Line] {
         stringView.lines
     }
 
+    /// Create a file by immediately reading from disk
+    ///
+    /// Returns `nil` if the file cannot be read.
+    ///
+    /// - Parameters:
+    ///   - path: The file system path to read.
     init?(path: String) {
         self.path = path.absolutePathRepresentation()
         do {
@@ -82,11 +94,19 @@ final class File: Sendable {
         }
     }
 
+    /// Create a file that defers reading until ``contents`` is first accessed
+    ///
+    /// - Parameters:
+    ///   - path: The file system path to read later.
     init(pathDeferringReading path: String) {
         self.path = path.absolutePathRepresentation()
         state = Mutex(FileState())
     }
 
+    /// Create a file from in-memory contents with no backing path
+    ///
+    /// - Parameters:
+    ///   - contents: The Swift source text.
     init(contents: String) {
         path = nil
         state = Mutex(FileState(contents: contents))
