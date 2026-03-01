@@ -1,4 +1,4 @@
-struct RedundantSelfConfiguration: SeverityBasedRuleConfiguration {
+struct RedundantSelfConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "keep_in_initializers")

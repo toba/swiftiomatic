@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct TypedThrowsRule: Rule {
+struct TypedThrowsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -9,6 +9,7 @@ struct TypedThrowsRule: Rule {
     name: "Typed Throws",
     description: "Functions that throw a single error type should use typed throws",
     scope: .suggest,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("func parse() throws(ParseError) { throw ParseError.invalid }"),
       Example("func work() throws { throw ErrorA.a; throw ErrorB.b }"),
@@ -21,12 +22,12 @@ struct TypedThrowsRule: Rule {
 }
 
 extension TypedThrowsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension TypedThrowsRule: OptInRule {}
+extension TypedThrowsRule {}
 
 extension TypedThrowsRule: AsyncEnrichableRule {
   func enrich(
@@ -70,7 +71,7 @@ extension TypedThrowsRule: AsyncEnrichableRule {
 }
 
 extension TypedThrowsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       checkResultReturnType(node)
 

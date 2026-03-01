@@ -1,4 +1,4 @@
-struct ExplicitTypeInterfaceConfiguration: SeverityBasedRuleConfiguration {
+struct ExplicitTypeInterfaceConfiguration: SeverityBasedRuleOptions {
   enum VariableKind: String, AcceptableByConfigurationElement, CaseIterable {
     case instance
     case local

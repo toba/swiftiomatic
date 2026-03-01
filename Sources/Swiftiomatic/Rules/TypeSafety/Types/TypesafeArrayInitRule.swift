@@ -7,6 +7,9 @@ struct TypesafeArrayInitRule: AnalyzerRule {
     identifier: "typesafe_array_init",
     name: "Type-safe Array Init",
     description: ArrayInitRule.description.description,
+    isOptIn: true,
+    requiresSourceKit: true,
+    requiresCompilerArguments: true,
     nonTriggeringExamples: [
       Example(
         """

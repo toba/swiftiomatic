@@ -1,4 +1,4 @@
-struct RequiredEnumCaseConfiguration: RuleConfiguration {
+struct RequiredEnumCaseConfiguration: RuleOptions {
   typealias Parent = RequiredEnumCaseRule
 
   struct RequiredCase: Hashable {
@@ -13,7 +13,7 @@ struct RequiredEnumCaseConfiguration: RuleConfiguration {
 
   var protocols: [String: Set<RequiredCase>] = [:]
 
-  var parameterDescription: RuleConfigurationDescription? {
+  var parameterDescription: RuleOptionsDescription? {
     if protocols.isEmpty {
       "{Protocol Name}"
         => .nest {

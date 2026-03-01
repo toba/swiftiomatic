@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct PatternMatchingKeywordsRule: Rule {
+struct PatternMatchingKeywordsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "pattern_matching_keywords",
     name: "Pattern Matching Keywords",
     description: "Combine multiple pattern matching bindings by moving keywords out of tuples",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("default"),
       Example("case 1"),
@@ -48,15 +49,15 @@ struct PatternMatchingKeywordsRule: Rule {
 }
 
 extension PatternMatchingKeywordsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension PatternMatchingKeywordsRule: OptInRule {}
+extension PatternMatchingKeywordsRule {}
 
 extension PatternMatchingKeywordsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SwitchCaseItemSyntax) {
       let localViolations = TupleVisitor(configuration: configuration, file: file)
         .walk(tree: node.pattern, handler: \.violations)
@@ -65,7 +66,7 @@ extension PatternMatchingKeywordsRule {
   }
 }
 
-private final class TupleVisitor<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
+private final class TupleVisitor<Configuration: RuleOptions>: ViolationCollectingVisitor<
   Configuration,
 >
 {

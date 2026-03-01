@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct LegacyRandomRule: Rule {
+struct LegacyRandomRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -21,13 +21,13 @@ struct LegacyRandomRule: Rule {
 }
 
 extension LegacyRandomRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension LegacyRandomRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private static let legacyRandomFunctions: Set<String> = [
       "arc4random",
       "arc4random_uniform",

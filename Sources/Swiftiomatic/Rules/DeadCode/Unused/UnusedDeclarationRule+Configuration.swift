@@ -1,4 +1,4 @@
-struct UnusedDeclarationConfiguration: SeverityBasedRuleConfiguration {
+struct UnusedDeclarationConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>.error
   @ConfigurationElement(key: "include_public_and_open")

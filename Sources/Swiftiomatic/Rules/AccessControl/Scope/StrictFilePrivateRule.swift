@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct StrictFilePrivateRule: Rule {
+struct StrictFilePrivateRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "strict_fileprivate",
     name: "Strict Fileprivate",
     description: "`fileprivate` should be avoided",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("extension String {}"),
       Example("private extension String {}"),
@@ -156,12 +157,12 @@ struct StrictFilePrivateRule: Rule {
 }
 
 extension StrictFilePrivateRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension StrictFilePrivateRule: OptInRule {}
+extension StrictFilePrivateRule {}
 
 private enum ProtocolRequirementType: Equatable {
   case method(String)
@@ -170,7 +171,7 @@ private enum ProtocolRequirementType: Equatable {
 }
 
 extension StrictFilePrivateRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private lazy var protocols = ProtocolCollector(configuration: configuration, file: file)
       .walk(tree: file.syntaxTree, handler: \.protocols)
 
@@ -246,7 +247,7 @@ extension StrictFilePrivateRule {
   }
 }
 
-private final class ProtocolCollector<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
+private final class ProtocolCollector<Configuration: RuleOptions>: ViolationCollectingVisitor<
   Configuration,
 >
 {

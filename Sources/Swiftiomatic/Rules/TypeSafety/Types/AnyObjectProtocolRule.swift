@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct AnyObjectProtocolRule: Rule {
+struct AnyObjectProtocolRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -19,13 +19,13 @@ struct AnyObjectProtocolRule: Rule {
 }
 
 extension AnyObjectProtocolRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension AnyObjectProtocolRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ProtocolDeclSyntax) {
       guard let inheritanceClause = node.inheritanceClause else { return }
       for type in inheritanceClause.inheritedTypes {

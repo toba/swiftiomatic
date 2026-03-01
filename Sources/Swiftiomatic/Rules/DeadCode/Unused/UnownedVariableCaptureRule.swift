@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct UnownedVariableCaptureRule: Rule {
+struct UnownedVariableCaptureRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "unowned_variable_capture",
     name: "Unowned Variable Capture",
     description: "Prefer capturing references as weak to avoid potential crashes",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("foo { [weak self] in _ }"),
       Example("foo { [weak self] param in _ }"),
@@ -35,15 +36,15 @@ struct UnownedVariableCaptureRule: Rule {
 }
 
 extension UnownedVariableCaptureRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension UnownedVariableCaptureRule: OptInRule {}
+extension UnownedVariableCaptureRule {}
 
 extension UnownedVariableCaptureRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: TokenSyntax) {
       if case .keyword(.unowned) = node.tokenKind,
         node.parent?.is(ClosureCaptureSpecifierSyntax.self) == true

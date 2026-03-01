@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// this rule exists due to a compiler bug: https://github.com/apple/swift/issues/51036
-struct NSNumberInitAsFunctionReferenceRule: Rule {
+struct NSNumberInitAsFunctionReferenceRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -25,13 +25,13 @@ struct NSNumberInitAsFunctionReferenceRule: Rule {
 }
 
 extension NSNumberInitAsFunctionReferenceRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension NSNumberInitAsFunctionReferenceRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       guard node.declName.argumentNames.isEmptyOrNil,
         node.declName.baseName.text == "init",

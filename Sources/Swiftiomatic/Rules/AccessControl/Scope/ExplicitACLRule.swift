@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ExplicitACLRule: Rule {
+struct ExplicitACLRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "explicit_acl",
     name: "Explicit ACL",
     description: "All declarations should specify Access Control Level keywords explicitly",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("internal enum A {}"),
       Example("public final class B {}"),
@@ -124,12 +125,12 @@ struct ExplicitACLRule: Rule {
 }
 
 extension ExplicitACLRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ExplicitACLRule: OptInRule {}
+extension ExplicitACLRule {}
 
 private enum CheckACLState {
   case required
@@ -137,7 +138,7 @@ private enum CheckACLState {
 }
 
 extension ExplicitACLRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var declScope = Stack<CheckACLState>()
 
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {

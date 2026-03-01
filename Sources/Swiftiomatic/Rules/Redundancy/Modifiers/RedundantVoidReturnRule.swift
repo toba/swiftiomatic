@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantVoidReturnRule: Rule {
+struct RedundantVoidReturnRule {
   var configuration = RedundantVoidReturnConfiguration()
 
   static let description = RuleDescription(
@@ -85,17 +85,17 @@ struct RedundantVoidReturnRule: Rule {
 }
 
 extension RedundantVoidReturnRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension RedundantVoidReturnRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ReturnClauseSyntax) {
       if !configuration.includeClosures,
         node.parent?.is(ClosureSignatureSyntax.self) == true
@@ -111,7 +111,7 @@ extension RedundantVoidReturnRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
       guard configuration.includeClosures,
         let output = node.returnClause,

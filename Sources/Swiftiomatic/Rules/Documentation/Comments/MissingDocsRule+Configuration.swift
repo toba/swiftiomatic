@@ -1,4 +1,4 @@
-struct MissingDocsConfiguration: RuleConfiguration {
+struct MissingDocsConfiguration: RuleOptions {
   typealias Parent = MissingDocsRule
 
   private(set) var parameters = [
@@ -15,7 +15,7 @@ struct MissingDocsConfiguration: RuleConfiguration {
   @ConfigurationElement(key: "evaluate_effective_access_control_level")
   private(set) var evaluateEffectiveAccessControlLevel = false
 
-  var parameterDescription: RuleConfigurationDescription? {
+  var parameterDescription: RuleOptionsDescription? {
     let parametersDescription = Dictionary(grouping: parameters) { $0.severity }
       .sorted { $0.key.rawValue < $1.key.rawValue }
     if parametersDescription.isNotEmpty {

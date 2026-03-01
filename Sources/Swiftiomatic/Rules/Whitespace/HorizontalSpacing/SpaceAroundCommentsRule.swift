@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct SpaceAroundCommentsRule: Rule {
+struct SpaceAroundCommentsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -27,17 +27,17 @@ struct SpaceAroundCommentsRule: Rule {
 }
 
 extension SpaceAroundCommentsRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension SpaceAroundCommentsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
       // Check if a line comment in leading trivia is not preceded by a space
       // (i.e., directly after code on the same line, no space between)
@@ -70,7 +70,7 @@ extension SpaceAroundCommentsRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
       let leading = token.leadingTrivia
       var newPieces = [TriviaPiece]()

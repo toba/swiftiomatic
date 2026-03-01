@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct Swift62ModernizationRule: Rule {
+struct Swift62ModernizationRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -9,6 +9,7 @@ struct Swift62ModernizationRule: Rule {
     description:
       "Code that can benefit from Swift 6.2 features like @concurrent, Observations, weak let, and Span",
     scope: .suggest,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("func work() async { }")
     ],
@@ -20,15 +21,15 @@ struct Swift62ModernizationRule: Rule {
 }
 
 extension Swift62ModernizationRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension Swift62ModernizationRule: OptInRule {}
+extension Swift62ModernizationRule: Rule {}
 
 extension Swift62ModernizationRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       let callee = node.calledExpression.trimmedDescription
 

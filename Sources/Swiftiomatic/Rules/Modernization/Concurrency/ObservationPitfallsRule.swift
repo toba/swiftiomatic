@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ObservationPitfallsRule: Rule {
+struct ObservationPitfallsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "observation_pitfalls",
     name: "Observation Pitfalls",
     description: "Detects common pitfalls with the Observation framework",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("for await value in Observations({ [weak self] in self?.model }) { }")
     ],
@@ -23,15 +24,15 @@ struct ObservationPitfallsRule: Rule {
 }
 
 extension ObservationPitfallsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ObservationPitfallsRule: OptInRule {}
+extension ObservationPitfallsRule {}
 
 extension ObservationPitfallsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ForStmtSyntax) {
       guard let callExpr = node.sequence.as(FunctionCallExprSyntax.self),
         callExpr.calledExpression.trimmedDescription == "Observations"

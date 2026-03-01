@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct TypeNameRule: Rule {
+struct TypeNameRule {
   var configuration = TypeNameConfiguration()
 
   static let description = RuleDescription(
@@ -18,13 +18,13 @@ struct TypeNameRule: Rule {
 }
 
 extension TypeNameRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension TypeNameRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: StructDeclSyntax) {
       if let violation = violation(
         identifier: node.name, modifiers: node.modifiers,

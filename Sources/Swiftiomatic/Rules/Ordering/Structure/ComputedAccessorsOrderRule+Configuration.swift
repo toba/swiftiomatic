@@ -1,4 +1,4 @@
-struct ComputedAccessorsOrderConfiguration: SeverityBasedRuleConfiguration {
+struct ComputedAccessorsOrderConfiguration: SeverityBasedRuleOptions {
   enum Order: String, AcceptableByConfigurationElement {
     case getSet = "get_set"
     case setGet = "set_get"

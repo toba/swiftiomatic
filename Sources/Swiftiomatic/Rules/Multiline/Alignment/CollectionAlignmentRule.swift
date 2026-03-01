@@ -1,27 +1,28 @@
 import SwiftSyntax
 
-struct CollectionAlignmentRule: Rule {
+struct CollectionAlignmentRule {
   var configuration = CollectionAlignmentConfiguration()
 
   static let description = RuleDescription(
     identifier: "collection_alignment",
     name: "Collection Element Alignment",
     description: "All elements in a collection literal should be vertically aligned",
+    isOptIn: true,
     nonTriggeringExamples: Examples(alignColons: false).nonTriggeringExamples,
     triggeringExamples: Examples(alignColons: false).triggeringExamples,
   )
 }
 
 extension CollectionAlignmentRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension CollectionAlignmentRule: OptInRule {}
+extension CollectionAlignmentRule {}
 
 extension CollectionAlignmentRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ArrayExprSyntax) {
       let locations = node.elements.map { element in
         locationConverter.location(for: element.positionAfterSkippingLeadingTrivia)

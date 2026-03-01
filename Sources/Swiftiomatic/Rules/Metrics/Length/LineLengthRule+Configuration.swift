@@ -1,4 +1,4 @@
-struct LineLengthConfiguration: RuleConfiguration {
+struct LineLengthConfiguration: RuleOptions {
   @ConfigurationElement(isInline: true)
   private(set) var length = SeverityLevelsConfiguration<Parent>(warning: 120, error: 200)
   @ConfigurationElement(key: "ignores_urls")

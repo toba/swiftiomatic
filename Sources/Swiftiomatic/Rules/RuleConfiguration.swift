@@ -1,73 +1,53 @@
-/// A configuration value for a rule to allow users to modify its behavior
-public protocol RuleConfiguration: Equatable, Sendable {
-  /// The type of the rule that uses this configuration
-  associatedtype Parent: Rule
+/// Unified protocol exposing all rule metadata regardless of rule engine.
+///
+/// Adapters bridge existing ``Rule`` and ``FormatRule`` types into this protocol,
+/// providing a single interface for documentation, YAML configuration, and app UX.
+public protocol RuleConfiguration: Sendable, Identifiable where ID == String {
+    /// The rule's unique identifier (e.g. "trailing_whitespace" or "redundantSelf")
+    var id: String { get }
 
-  /// A description for this configuration's parameters, built using the annotated result builder
-  @RuleConfigurationDescriptionBuilder
-  var parameterDescription: RuleConfigurationDescription? { get }
+    /// Human-readable display name
+    var name: String { get }
 
-  /// Apply an untyped configuration to the current value
-  ///
-  /// - Parameters:
-  ///   - configuration: The untyped configuration value to apply.
-  /// - Throws: ``SwiftiomaticError`` if the configuration is not in the expected format.
-  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError)
+    /// Brief description of what the rule checks or formats
+    var summary: String { get }
 
-  /// Run a sanity check on the configuration and perform optional post-processing
-  mutating func validate() throws(SwiftiomaticError)
-}
+    /// Detailed rationale in Markdown, or `nil` if none
+    var rationale: String? { get }
 
-/// A configuration for a rule that allows configuring at least the severity
-protocol SeverityBasedRuleConfiguration: RuleConfiguration {
-  /// The configuration of a rule's severity
-  var severityConfiguration: SeverityConfiguration<Parent> { get set }
-}
+    /// Where the rule participates: `.lint`, `.format`, or `.suggest`
+    var scope: Scope { get }
 
-extension SeverityBasedRuleConfiguration {
-  /// The severity of a rule
-  var severity: Severity {
-    severityConfiguration.severity
-  }
+    /// Whether the rule can automatically fix violations
+    var isCorrectable: Bool { get }
 
-  /// Apply severity from the configuration if present, silently ignoring when absent
-  ///
-  /// - Parameters:
-  ///   - configuration: The untyped configuration dictionary.
-  mutating func applySeverityIfPresent(_ configuration: [String: Any]) throws(SwiftiomaticError) {
-    do {
-      try severityConfiguration.apply(configuration, ruleID: Parent.identifier)
-    } catch let issue where issue == SwiftiomaticError.nothingApplied(ruleID: Parent.identifier) {
-      // Acceptable — severity is optional.
-    }
-  }
-}
+    /// Whether the rule is opt-in (not enabled by default)
+    var isOptIn: Bool { get }
 
-extension RuleConfiguration {
-  var parameterDescription: RuleConfigurationDescription? {
-    nil
-  }
+    /// Whether the rule is deprecated
+    var isDeprecated: Bool { get }
 
-  // sm:disable:next unneeded_throws_rethrows
-  func validate() {
-    // Do nothing by default.
-  }
-}
+    /// Deprecation message, or `nil` if not deprecated
+    var deprecationMessage: String? { get }
 
-extension RuleConfiguration {
-  /// All keys supported by this configuration
-  var supportedKeys: Set<String> {
-    Set(RuleConfigurationDescription.from(configuration: self).allowedKeys())
-  }
+    /// Whether the rule requires SourceKit to operate
+    var requiresSourceKit: Bool { get }
 
-  /// Emit a warning for any unrecognized keys in the configuration
-  ///
-  /// - Parameters:
-  ///   - configuration: The configuration dictionary to check for unknown keys.
-  func warnAboutUnknownKeys(in configuration: [String: Any]) {
-    if !supportedKeys.isSuperset(of: configuration.keys) {
-      let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)
-      SwiftiomaticError.invalidConfigurationKeys(ruleID: Parent.identifier, keys: unknownKeys).print()
-    }
-  }
+    /// Whether the rule requires compiler arguments (analyzer rules)
+    var requiresCompilerArguments: Bool { get }
+
+    /// Whether the rule performs cross-file analysis (``CollectingRule``)
+    var isCrossFile: Bool { get }
+
+    /// Whether the rule can produce additional violations via async enrichment
+    var canEnrichAsync: Bool { get }
+
+    /// Structured examples for this rule
+    var examples: RuleExamples { get }
+
+    /// Configurable options exposed by this rule
+    var configurationOptions: [ConfigOptionDescriptor] { get }
+
+    /// Identifiers of related rules
+    var relatedRuleIDs: [String] { get }
 }

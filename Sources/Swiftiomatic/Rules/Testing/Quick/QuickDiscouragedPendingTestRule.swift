@@ -1,27 +1,28 @@
 import SwiftSyntax
 
-struct QuickDiscouragedPendingTestRule: Rule {
+struct QuickDiscouragedPendingTestRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "quick_discouraged_pending_test",
     name: "Quick Discouraged Pending Test",
     description: "This test won't run as long as it's marked pending",
+    isOptIn: true,
     nonTriggeringExamples: QuickDiscouragedPendingTestRuleExamples.nonTriggeringExamples,
     triggeringExamples: QuickDiscouragedPendingTestRuleExamples.triggeringExamples,
   )
 }
 
 extension QuickDiscouragedPendingTestRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension QuickDiscouragedPendingTestRule: OptInRule {}
+extension QuickDiscouragedPendingTestRule {}
 
 extension QuickDiscouragedPendingTestRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }

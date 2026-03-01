@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct UnusedClosureParameterRule: Rule {
+struct UnusedClosureParameterRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -16,17 +16,17 @@ struct UnusedClosureParameterRule: Rule {
 }
 
 extension UnusedClosureParameterRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension UnusedClosureParameterRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClosureExprSyntax) {
       let namedParameters = node.namedParameters
       guard namedParameters.isNotEmpty else {
@@ -42,7 +42,7 @@ extension UnusedClosureParameterRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
       guard node.namedParameters.isNotEmpty,
         let signature = node.signature,

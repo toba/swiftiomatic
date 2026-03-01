@@ -1,4 +1,4 @@
-struct LegacyObjcTypeConfiguration: SeverityBasedRuleConfiguration {
+struct LegacyObjcTypeConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>.warning
   @ConfigurationElement(key: "allowed_types")

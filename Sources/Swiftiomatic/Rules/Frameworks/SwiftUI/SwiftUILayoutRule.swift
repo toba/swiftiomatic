@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct SwiftUILayoutRule: Rule {
+struct SwiftUILayoutRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct SwiftUILayoutRule: Rule {
     name: "SwiftUI Layout",
     description:
       "Detects SwiftUI layout composition anti-patterns like nested NavigationStack or List inside ScrollView",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("NavigationStack { List { Text(\"Hello\") } }")
     ],
@@ -18,15 +19,15 @@ struct SwiftUILayoutRule: Rule {
 }
 
 extension SwiftUILayoutRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension SwiftUILayoutRule: OptInRule {}
+extension SwiftUILayoutRule {}
 
 extension SwiftUILayoutRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var containerStack: [String] = []
 
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {

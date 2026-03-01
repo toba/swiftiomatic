@@ -1,4 +1,4 @@
-struct FileTypesOrderConfiguration: SeverityBasedRuleConfiguration {
+struct FileTypesOrderConfiguration: SeverityBasedRuleOptions {
   enum FileType: String, AcceptableByConfigurationElement {
     case supportingType = "supporting_type"
     case mainType = "main_type"

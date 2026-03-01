@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct AttributeNameSpacingRule: Rule {
+struct AttributeNameSpacingRule {
   var configuration = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
@@ -94,13 +94,13 @@ struct AttributeNameSpacingRule: Rule {
 }
 
 extension AttributeNameSpacingRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension AttributeNameSpacingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: DeclModifierSyntax) {
       guard node.detail != nil, node.name.trailingTrivia.isNotEmpty else {
         return

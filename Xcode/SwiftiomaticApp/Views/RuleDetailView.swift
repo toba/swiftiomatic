@@ -3,7 +3,7 @@ import Swiftiomatic
 
 struct RuleDetailView: View {
     @Environment(AppModel.self) private var model
-    let entry: RuleCatalogEntry
+    let entry: RuleConfigurationEntry
 
     var body: some View {
         ScrollView {
@@ -33,7 +33,7 @@ struct RuleDetailView: View {
                     .toggleStyle(.switch)
                 }
 
-                Text(entry.identifier)
+                Text(entry.id)
                     .font(.subheadline.monospaced())
                     .foregroundStyle(.secondary)
 
@@ -42,7 +42,7 @@ struct RuleDetailView: View {
                 // Description
                 Text("Description")
                     .font(.headline)
-                Text(entry.description)
+                Text(entry.summary)
 
                 // Rationale
                 if let rationale = entry.rationale {

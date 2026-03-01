@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ForWhereRule: Rule {
+struct ForWhereRule {
   var configuration = ForWhereConfiguration()
 
   static let description = RuleDescription(
@@ -149,13 +149,13 @@ struct ForWhereRule: Rule {
 }
 
 extension ForWhereRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension ForWhereRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ForStmtSyntax) {
       guard node.whereClause == nil,
         let onlyExprStmt = node.body.statements.onlyElement?.item

@@ -1,4 +1,4 @@
-struct IncompatibleConcurrencyAnnotationConfiguration: SeverityBasedRuleConfiguration {
+struct IncompatibleConcurrencyAnnotationConfiguration: SeverityBasedRuleOptions {
   // sm:disable:previous type_name
 
   @ConfigurationElement(key: "severity")

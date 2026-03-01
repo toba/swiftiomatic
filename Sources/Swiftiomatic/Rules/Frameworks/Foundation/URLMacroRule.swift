@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct URLMacroRule: Rule {
+struct URLMacroRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -19,13 +19,13 @@ struct URLMacroRule: Rule {
 }
 
 extension URLMacroRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension URLMacroRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ForceUnwrapExprSyntax) {
       // Check if the unwrapped expression is URL(string: "...")
       guard let call = node.expression.as(FunctionCallExprSyntax.self),

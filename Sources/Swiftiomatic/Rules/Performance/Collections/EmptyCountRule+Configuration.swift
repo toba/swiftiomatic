@@ -1,4 +1,4 @@
-struct EmptyCountConfiguration: SeverityBasedRuleConfiguration {
+struct EmptyCountConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.error)
   @ConfigurationElement(key: "only_after_dot")

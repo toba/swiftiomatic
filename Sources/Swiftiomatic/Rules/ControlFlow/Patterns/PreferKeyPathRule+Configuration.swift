@@ -1,4 +1,4 @@
-struct PreferKeyPathConfiguration: SeverityBasedRuleConfiguration {
+struct PreferKeyPathConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "restrict_to_standard_functions")

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct VerticalParameterAlignmentRule: Rule {
+struct VerticalParameterAlignmentRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -14,13 +14,13 @@ struct VerticalParameterAlignmentRule: Rule {
 }
 
 extension VerticalParameterAlignmentRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension VerticalParameterAlignmentRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       violations
         .append(contentsOf: violations(for: node.signature.parameterClause.parameters))

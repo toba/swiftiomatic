@@ -17,7 +17,7 @@ private func embedInSwitch(
   )
 }
 
-struct UnneededBreakInSwitchRule: Rule {
+struct UnneededBreakInSwitchRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -102,17 +102,17 @@ struct UnneededBreakInSwitchRule: Rule {
 }
 
 extension UnneededBreakInSwitchRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension UnneededBreakInSwitchRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SwitchCaseSyntax) {
       guard let statement = node.unneededBreak else {
         return
@@ -121,7 +121,7 @@ extension UnneededBreakInSwitchRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: SwitchCaseSyntax) -> SwitchCaseSyntax {
       let stmts = CodeBlockItemListSyntax(node.statements.dropLast())
       guard let breakStatement = node.unneededBreak, let secondLast = stmts.last else {

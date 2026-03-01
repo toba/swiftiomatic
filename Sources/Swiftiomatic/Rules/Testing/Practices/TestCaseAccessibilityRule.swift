@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct TestCaseAccessibilityRule: Rule {
+struct TestCaseAccessibilityRule {
   var configuration = TestCaseAccessibilityConfiguration()
 
   static let description = RuleDescription(
     identifier: "test_case_accessibility",
     name: "Test Case Accessibility",
     description: "Test cases should only contain private non-test members",
+    isOptIn: true,
     nonTriggeringExamples: TestCaseAccessibilityRuleExamples.nonTriggeringExamples,
     triggeringExamples: TestCaseAccessibilityRuleExamples.triggeringExamples,
     corrections: TestCaseAccessibilityRuleExamples.corrections,
@@ -14,15 +15,15 @@ struct TestCaseAccessibilityRule: Rule {
 }
 
 extension TestCaseAccessibilityRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension TestCaseAccessibilityRule: OptInRule {}
+extension TestCaseAccessibilityRule {}
 
 extension TestCaseAccessibilityRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }
@@ -49,7 +50,7 @@ extension TestCaseAccessibilityRule {
     }
   }
 
-  fileprivate final class XCTestClassVisitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class XCTestClassVisitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }

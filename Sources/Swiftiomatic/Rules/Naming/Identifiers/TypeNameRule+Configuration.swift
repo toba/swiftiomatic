@@ -1,4 +1,4 @@
-struct TypeNameConfiguration: RuleConfiguration {
+struct TypeNameConfiguration: RuleOptions {
   @ConfigurationElement(isInline: true)
   private(set) var nameConfiguration = NameConfiguration<Parent>(
     minLengthWarning: 3,

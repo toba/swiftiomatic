@@ -30,7 +30,7 @@ private func wrapInFunc(_ str: String, file: StaticString = #filePath, line: UIn
   )
 }
 
-struct EmptyEnumArgumentsRule: Rule {
+struct EmptyEnumArgumentsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -134,17 +134,17 @@ struct EmptyEnumArgumentsRule: Rule {
 }
 
 extension EmptyEnumArgumentsRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension EmptyEnumArgumentsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SwitchCaseItemSyntax) {
       if let violationPosition = node.pattern.emptyEnumArgumentsViolation(rewrite: false)?
         .position
@@ -162,7 +162,7 @@ extension EmptyEnumArgumentsRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
       guard let (_, newPattern) = node.pattern.emptyEnumArgumentsViolation(rewrite: true)
       else {

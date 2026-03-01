@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ContainsOverRangeNilComparisonRule: Rule {
+struct ContainsOverRangeNilComparisonRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "contains_over_range_nil_comparison",
     name: "Contains over Range Comparison to Nil",
     description: "Prefer `contains` over `range(of:) != nil` and `range(of:) == nil`",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("let range = myString.range(of: \"Test\")"),
       Example("myString.contains(\"Test\")"),
@@ -22,7 +23,7 @@ struct ContainsOverRangeNilComparisonRule: Rule {
 }
 
 extension ContainsOverRangeNilComparisonRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -33,10 +34,10 @@ extension ContainsOverRangeNilComparisonRule {
   }
 }
 
-extension ContainsOverRangeNilComparisonRule: OptInRule {}
+extension ContainsOverRangeNilComparisonRule {}
 
 extension ContainsOverRangeNilComparisonRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: InfixOperatorExprSyntax) {
       guard
         let operatorNode = node.operator.as(BinaryOperatorExprSyntax.self),

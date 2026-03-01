@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct LeadingDelimitersRule: Rule {
+struct LeadingDelimitersRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -27,13 +27,13 @@ struct LeadingDelimitersRule: Rule {
 }
 
 extension LeadingDelimitersRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension LeadingDelimitersRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
       guard token.tokenKind == .comma || token.tokenKind == .semicolon else {
         return .visitChildren

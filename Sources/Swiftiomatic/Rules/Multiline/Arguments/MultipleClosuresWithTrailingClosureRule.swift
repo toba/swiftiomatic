@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct MultipleClosuresWithTrailingClosureRule: Rule {
+struct MultipleClosuresWithTrailingClosureRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -41,13 +41,13 @@ struct MultipleClosuresWithTrailingClosureRule: Rule {
 }
 
 extension MultipleClosuresWithTrailingClosureRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension MultipleClosuresWithTrailingClosureRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard let trailingClosure = node.trailingClosure,
         node.hasTrailingClosureViolation

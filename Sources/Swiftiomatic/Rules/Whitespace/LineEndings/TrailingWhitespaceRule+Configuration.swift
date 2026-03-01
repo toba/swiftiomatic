@@ -1,4 +1,4 @@
-struct TrailingWhitespaceConfiguration: SeverityBasedRuleConfiguration {
+struct TrailingWhitespaceConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "ignores_empty_lines")

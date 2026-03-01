@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct PreferForLoopRule: Rule {
+struct PreferForLoopRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -40,13 +40,13 @@ struct PreferForLoopRule: Rule {
 }
 
 extension PreferForLoopRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension PreferForLoopRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       // Looking for `.forEach { ... }` or `.forEach({ ... })`
       guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),

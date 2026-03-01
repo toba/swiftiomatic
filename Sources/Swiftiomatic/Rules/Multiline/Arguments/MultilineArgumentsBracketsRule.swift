@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct MultilineArgumentsBracketsRule: Rule {
+struct MultilineArgumentsBracketsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "multiline_arguments_brackets",
     name: "Multiline Arguments Brackets",
     description: "Multiline arguments should have their surrounding brackets in a new line",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -207,15 +208,15 @@ struct MultilineArgumentsBracketsRule: Rule {
 }
 
 extension MultilineArgumentsBracketsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension MultilineArgumentsBracketsRule: OptInRule {}
+extension MultilineArgumentsBracketsRule {}
 
 extension MultilineArgumentsBracketsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard let firstArgument = node.arguments.first,
         let leftParen = node.leftParen,

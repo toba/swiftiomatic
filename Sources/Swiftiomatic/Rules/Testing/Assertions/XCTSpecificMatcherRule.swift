@@ -1,7 +1,7 @@
 import SwiftOperators
 import SwiftSyntax
 
-struct XCTSpecificMatcherRule: Rule {
+struct XCTSpecificMatcherRule {
   var configuration = XCTSpecificMatcherConfiguration()
 
   static let description = RuleDescription(
@@ -18,21 +18,22 @@ struct XCTSpecificMatcherRule: Rule {
       clear that the intention is to check equality, without needing to understand the underlying logic of the
       comparison.
       """,
+    isOptIn: true,
     nonTriggeringExamples: XCTSpecificMatcherRuleExamples.nonTriggeringExamples,
     triggeringExamples: XCTSpecificMatcherRuleExamples.triggeringExamples,
   )
 }
 
 extension XCTSpecificMatcherRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension XCTSpecificMatcherRule: OptInRule {}
+extension XCTSpecificMatcherRule {}
 
 extension XCTSpecificMatcherRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       if configuration.matchers.contains(.twoArgumentAsserts),
         let suggestion = TwoArgsXCTAssert.violations(in: node)

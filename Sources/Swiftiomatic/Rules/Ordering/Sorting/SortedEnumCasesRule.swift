@@ -1,13 +1,14 @@
 import Foundation
 import SwiftSyntax
 
-struct SortedEnumCasesRule: Rule {
+struct SortedEnumCasesRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "sorted_enum_cases",
     name: "Sorted Enum Cases",
     description: "Enum cases should be sorted",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -139,15 +140,15 @@ struct SortedEnumCasesRule: Rule {
 }
 
 extension SortedEnumCasesRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension SortedEnumCasesRule: OptInRule {}
+extension SortedEnumCasesRule {}
 
 extension SortedEnumCasesRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .allExcept(EnumDeclSyntax.self)
     }

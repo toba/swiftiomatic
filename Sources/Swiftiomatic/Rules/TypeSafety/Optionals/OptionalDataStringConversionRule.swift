@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct OptionalDataStringConversionRule: Rule {
+struct OptionalDataStringConversionRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -22,13 +22,13 @@ struct OptionalDataStringConversionRule: Rule {
 }
 
 extension OptionalDataStringConversionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension OptionalDataStringConversionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: DeclReferenceExprSyntax) {
       if node.baseName.text == "String",
         let parent = node.parent?.as(FunctionCallExprSyntax.self),

@@ -1,12 +1,13 @@
 import Foundation
 
-struct VerticalWhitespaceClosingBracesRule: CorrectableRule, OptInRule {
+struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
   var configuration = VerticalWhitespaceClosingBracesConfiguration()
 
   static let description = RuleDescription(
     identifier: "vertical_whitespace_closing_braces",
     name: "Vertical Whitespace before Closing Braces",
     description: "Don't include vertical whitespace (empty line) before closing braces",
+    isOptIn: true,
     nonTriggeringExamples: VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples
       .values.sorted() + VerticalWhitespaceClosingBracesRuleExamples.nonTriggeringExamples,
     triggeringExamples: Array(

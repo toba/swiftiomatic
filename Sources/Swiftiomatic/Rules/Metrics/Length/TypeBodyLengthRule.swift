@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct TypeBodyLengthRule: Rule {
+struct TypeBodyLengthRule {
   var configuration = TypeBodyLengthConfiguration()
 
   private static let testConfig = ["warning": 2] as [String: any Sendable]
@@ -119,13 +119,13 @@ struct TypeBodyLengthRule: Rule {
 }
 
 extension TypeBodyLengthRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension TypeBodyLengthRule {
-  fileprivate final class Visitor: BodyLengthVisitor<ConfigurationType> {
+  fileprivate final class Visitor: BodyLengthVisitor<OptionsType> {
     override func visitPost(_ node: ActorDeclSyntax) {
       if !configuration.excludedTypes.contains(.actor) {
         collectViolation(node)

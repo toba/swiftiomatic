@@ -2,13 +2,14 @@ import SwiftSyntax
 
 // MARK: - SelfBindingRule
 
-struct SelfBindingRule: Rule {
+struct SelfBindingRule {
   var configuration = SelfBindingConfiguration()
 
   static let description = RuleDescription(
     identifier: "self_binding",
     name: "Self Binding",
     description: "Re-bind `self` to a consistent identifier name.",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("if let self = self { return }"),
       Example("guard let self = self else { return }"),
@@ -62,19 +63,19 @@ struct SelfBindingRule: Rule {
 }
 
 extension SelfBindingRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension SelfBindingRule: OptInRule {}
+extension SelfBindingRule {}
 
 extension SelfBindingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: OptionalBindingConditionSyntax) {
       if let identifierPattern = node.pattern.as(IdentifierPatternSyntax.self),
         identifierPattern.identifier.text != configuration.bindIdentifier
@@ -103,7 +104,7 @@ extension SelfBindingRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: OptionalBindingConditionSyntax)
       -> OptionalBindingConditionSyntax
     {

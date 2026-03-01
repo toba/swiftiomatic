@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct DiscouragedObjectLiteralRule: Rule {
+struct DiscouragedObjectLiteralRule {
   var configuration = DiscouragedObjectLiteralConfiguration()
 
   static let description = RuleDescription(
     identifier: "discouraged_object_literal",
     name: "Discouraged Object Literal",
     description: "Prefer initializers over object literals",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("let image = UIImage(named: aVariable)"),
       Example("let image = UIImage(named: \"interpolated \\(variable)\")"),
@@ -25,15 +26,15 @@ struct DiscouragedObjectLiteralRule: Rule {
 }
 
 extension DiscouragedObjectLiteralRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension DiscouragedObjectLiteralRule: OptInRule {}
+extension DiscouragedObjectLiteralRule {}
 
 extension DiscouragedObjectLiteralRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MacroExpansionExprSyntax) {
       guard
         case .identifier(let identifierText) = node.macroName.tokenKind,

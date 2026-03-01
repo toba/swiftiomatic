@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantClosureRule: Rule {
+struct RedundantClosureRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -37,13 +37,13 @@ struct RedundantClosureRule: Rule {
 }
 
 extension RedundantClosureRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension RedundantClosureRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       // Looking for `{ ... }()` pattern (immediately-invoked closure)
       guard let closureExpr = node.calledExpression.as(ClosureExprSyntax.self),

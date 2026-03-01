@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantSendableRule: Rule {
+struct RedundantSendableRule {
   var configuration = RedundantSendableConfiguration()
 
   static let description = RuleDescription(
@@ -52,17 +52,17 @@ struct RedundantSendableRule: Rule {
 }
 
 extension RedundantSendableRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension RedundantSendableRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ActorDeclSyntax) {
       if node.conformsToSendable {
         violations.append(at: node.name.positionAfterSkippingLeadingTrivia)
@@ -88,7 +88,7 @@ extension RedundantSendableRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ActorDeclSyntax) -> DeclSyntax {
       if node.conformsToSendable {
         numberOfCorrections += 1

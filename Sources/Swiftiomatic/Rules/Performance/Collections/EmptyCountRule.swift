@@ -2,13 +2,14 @@ import SwiftLexicalLookup
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct EmptyCountRule: Rule {
+struct EmptyCountRule {
   var configuration = EmptyCountConfiguration()
 
   static let description = RuleDescription(
     identifier: "empty_count",
     name: "Empty Count",
     description: "Prefer checking `isEmpty` over comparing `count` to zero",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("var count = 0"),
       Example("[Int]().isEmpty"),
@@ -120,11 +121,11 @@ struct EmptyCountRule: Rule {
 }
 
 extension EmptyCountRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
@@ -135,10 +136,10 @@ extension EmptyCountRule {
   }
 }
 
-extension EmptyCountRule: OptInRule {}
+extension EmptyCountRule {}
 
 extension EmptyCountRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: InfixOperatorExprSyntax) {
       guard let binaryOperator = node.binaryOperator, binaryOperator.isComparison else {
         return
@@ -157,7 +158,7 @@ extension EmptyCountRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: InfixOperatorExprSyntax) -> ExprSyntax {
       guard let binaryOperator = node.binaryOperator, binaryOperator.isComparison else {
         return super.visit(node)

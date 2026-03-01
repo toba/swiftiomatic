@@ -1,6 +1,6 @@
 import Foundation
 
-struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
+struct LiteralExpressionEndIndentationRule: Rule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,8 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
     name: "Literal Expression End Indentation",
     description:
       "Array and dictionary literal end should have the same indentation as the line that started it",
+    isOptIn: true,
+    requiresSourceKit: true,
     nonTriggeringExamples: [
       Example(
         """

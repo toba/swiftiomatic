@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantPropertyRule: Rule {
+struct RedundantPropertyRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -74,17 +74,17 @@ struct RedundantPropertyRule: Rule {
 }
 
 extension RedundantPropertyRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension RedundantPropertyRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: CodeBlockItemListSyntax) {
       for (propertyItem, _) in node.redundantPropertyReturnPairs() {
         guard
@@ -96,7 +96,7 @@ extension RedundantPropertyRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
       let pairs = node.redundantPropertyReturnPairs()
       guard pairs.isNotEmpty else { return super.visit(node) }

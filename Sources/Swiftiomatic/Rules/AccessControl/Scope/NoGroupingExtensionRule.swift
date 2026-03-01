@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct NoGroupingExtensionRule: Rule {
+struct NoGroupingExtensionRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "no_grouping_extension",
     name: "No Grouping Extension",
     description: "Extensions shouldn't be used to group code within the same source file",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("protocol Food {}\nextension Food {}"),
       Example("class Apples {}\nextension Oranges {}"),
@@ -37,12 +38,12 @@ struct NoGroupingExtensionRule: Rule {
 }
 
 extension NoGroupingExtensionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension NoGroupingExtensionRule: OptInRule {}
+extension NoGroupingExtensionRule {}
 
 extension NoGroupingExtensionRule {
   fileprivate struct ExtensionDeclaration: Hashable {
@@ -50,7 +51,7 @@ extension NoGroupingExtensionRule {
     let position: AbsolutePosition
   }
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private(set) var typeDeclarations = Set<String>()
     private var typeScope: [String] = []
     private(set) var extensionDeclarations = Set<ExtensionDeclaration>()

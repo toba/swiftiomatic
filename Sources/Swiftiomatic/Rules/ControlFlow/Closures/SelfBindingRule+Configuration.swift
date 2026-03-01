@@ -1,4 +1,4 @@
-struct SelfBindingConfiguration: SeverityBasedRuleConfiguration {
+struct SelfBindingConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "bind_identifier")

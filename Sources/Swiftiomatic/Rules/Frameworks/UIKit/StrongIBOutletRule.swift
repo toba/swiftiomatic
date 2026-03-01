@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct StrongIBOutletRule: Rule {
+struct StrongIBOutletRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "strong_iboutlet",
     name: "Strong IBOutlet",
     description: "@IBOutlets shouldn't be declared as weak",
+    isOptIn: true,
     nonTriggeringExamples: [
       wrapExample("@IBOutlet var label: UILabel?"),
       wrapExample("weak var label: UILabel?"),
@@ -28,19 +29,19 @@ struct StrongIBOutletRule: Rule {
 }
 
 extension StrongIBOutletRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension StrongIBOutletRule: OptInRule {}
+extension StrongIBOutletRule {}
 
 extension StrongIBOutletRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: VariableDeclSyntax) {
       if let violationPosition = node.violationPosition {
         violations.append(violationPosition)
@@ -48,7 +49,7 @@ extension StrongIBOutletRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: VariableDeclSyntax) -> DeclSyntax {
       guard node.violationPosition != nil,
         let weakOrUnownedModifier = node.weakOrUnownedModifier,

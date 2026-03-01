@@ -17,7 +17,7 @@ enum TypeContent: String, AcceptableByConfigurationElement {
   case ibSegueAction = "ib_segue_action"
 }
 
-struct TypeContentsOrderConfiguration: SeverityBasedRuleConfiguration {
+struct TypeContentsOrderConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "order")

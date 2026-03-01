@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct YodaConditionRule: Rule {
+struct YodaConditionRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct YodaConditionRule: Rule {
     name: "Yoda Condition",
     description:
       "The constant literal should be placed on the right-hand side of the comparison operator",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("if foo == 42 {}"),
       Example("if foo <= 42.42 {}"),
@@ -37,15 +38,15 @@ struct YodaConditionRule: Rule {
 }
 
 extension YodaConditionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension YodaConditionRule: OptInRule {}
+extension YodaConditionRule {}
 
 extension YodaConditionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: IfExprSyntax) {
       visit(conditions: node.conditions)
     }

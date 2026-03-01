@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct UnavailableFunctionRule: Rule {
+struct UnavailableFunctionRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "unavailable_function",
     name: "Unavailable Function",
     description: "Unimplemented functions should be marked as unavailable",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -85,15 +86,15 @@ struct UnavailableFunctionRule: Rule {
 }
 
 extension UnavailableFunctionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension UnavailableFunctionRule: OptInRule {}
+extension UnavailableFunctionRule {}
 
 extension UnavailableFunctionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       guard !node.returnsNever,
         !node.attributes.hasUnavailableAttribute,

@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct FinalTestCaseRule: Rule {
+struct FinalTestCaseRule {
   var configuration = FinalTestCaseConfiguration()
 
   static let description = RuleDescription(
     identifier: "final_test_case",
     name: "Final Test Case",
     description: "Test cases should be final",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("final class Test: XCTestCase {}"),
       Example("open class Test: XCTestCase {}"),
@@ -35,19 +36,19 @@ struct FinalTestCaseRule: Rule {
 }
 
 extension FinalTestCaseRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension FinalTestCaseRule: OptInRule {}
+extension FinalTestCaseRule {}
 
 extension FinalTestCaseRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClassDeclSyntax) {
       if node.isNonFinalTestClass(parentClasses: configuration.testParentClasses) {
         violations.append(node.name.positionAfterSkippingLeadingTrivia)
@@ -55,7 +56,7 @@ extension FinalTestCaseRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
       var newNode = node
       if node.isNonFinalTestClass(parentClasses: configuration.testParentClasses) {

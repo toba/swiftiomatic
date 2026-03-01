@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct FunctionNameWhitespaceRule: Rule {
+struct FunctionNameWhitespaceRule {
   var configuration = FunctionNameWhitespaceConfiguration()
 
   static let description = RuleDescription(
@@ -16,13 +16,13 @@ struct FunctionNameWhitespaceRule: Rule {
 }
 
 extension FunctionNameWhitespaceRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension FunctionNameWhitespaceRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       validateFuncKeywordSpacing(for: node)
       correctSingleCommentTrivia(

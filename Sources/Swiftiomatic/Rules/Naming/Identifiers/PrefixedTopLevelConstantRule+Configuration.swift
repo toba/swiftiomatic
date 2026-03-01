@@ -1,4 +1,4 @@
-struct PrefixedTopLevelConstantConfiguration: SeverityBasedRuleConfiguration {
+struct PrefixedTopLevelConstantConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "only_private")

@@ -1,12 +1,14 @@
 import Foundation
 
-struct MultilineParametersBracketsRule: OptInRule {
+struct MultilineParametersBracketsRule: Rule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "multiline_parameters_brackets",
     name: "Multiline Parameters Brackets",
     description: "Multiline parameters should have their surrounding brackets in a new line",
+    isOptIn: true,
+    requiresSourceKit: true,
     nonTriggeringExamples: [
       Example(
         """

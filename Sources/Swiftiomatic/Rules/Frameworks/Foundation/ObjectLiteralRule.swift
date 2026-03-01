@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ObjectLiteralRule: Rule {
+struct ObjectLiteralRule {
   var configuration = ObjectLiteralConfiguration<Self>()
 
   static let description = RuleDescription(
     identifier: "object_literal",
     name: "Object Literal",
     description: "Prefer object literals over image and color inits",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("let image = #imageLiteral(resourceName: \"image.jpg\")"),
       Example(
@@ -38,15 +39,15 @@ struct ObjectLiteralRule: Rule {
 }
 
 extension ObjectLiteralRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ObjectLiteralRule: OptInRule {}
+extension ObjectLiteralRule {}
 
 extension ObjectLiteralRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard configuration.colorLiteral || configuration.imageLiteral else {
         return

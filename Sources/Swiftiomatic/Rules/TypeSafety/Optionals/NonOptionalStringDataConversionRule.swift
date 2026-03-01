@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct NonOptionalStringDataConversionRule: Rule {
+struct NonOptionalStringDataConversionRule {
   var configuration = NonOptionalStringDataConversionConfiguration()
 
   private static let variablesIncluded = ["include_variables": true]
@@ -32,13 +32,13 @@ struct NonOptionalStringDataConversionRule: Rule {
 }
 
 extension NonOptionalStringDataConversionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension NonOptionalStringDataConversionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       if node.declName.baseName.text == "data",
         let parent = node.parent?.as(FunctionCallExprSyntax.self),

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct PreferConditionListRule: Rule {
+struct PreferConditionListRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -29,6 +29,7 @@ struct PreferConditionListRule: Rule {
       conditions, this rule makes sure to wrap such expressions in parentheses when transforming them to
       condition list elements. The scope of the parentheses is limited to the function call itself.
       """,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("if a, b {}"),
       Example("guard a || b && c {}"),
@@ -92,11 +93,11 @@ struct PreferConditionListRule: Rule {
 }
 
 extension PreferConditionListRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
@@ -107,10 +108,10 @@ extension PreferConditionListRule {
   }
 }
 
-extension PreferConditionListRule: OptInRule {}
+extension PreferConditionListRule {}
 
 extension PreferConditionListRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ConditionElementSyntax) {
       if case .expression(let expr) = node.condition {
         collectViolations(for: expr)
@@ -128,7 +129,7 @@ extension PreferConditionListRule {
     }
   }
 
-  private final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  private final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ConditionElementListSyntax) -> ConditionElementListSyntax {
       var elements = Array(node)
       var modifiedIndices = Set<Int>()

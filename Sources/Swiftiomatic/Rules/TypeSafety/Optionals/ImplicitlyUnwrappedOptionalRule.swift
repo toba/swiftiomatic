@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ImplicitlyUnwrappedOptionalRule: Rule {
+struct ImplicitlyUnwrappedOptionalRule {
   var configuration = ImplicitlyUnwrappedOptionalConfiguration()
 
   static let description = RuleDescription(
     identifier: "implicitly_unwrapped_optional",
     name: "Implicitly Unwrapped Optional",
     description: "Implicitly unwrapped optionals should be avoided when possible",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("@IBOutlet private var label: UILabel!"),
       Example("@IBOutlet var label: UILabel!"),
@@ -47,15 +48,15 @@ struct ImplicitlyUnwrappedOptionalRule: Rule {
 }
 
 extension ImplicitlyUnwrappedOptionalRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ImplicitlyUnwrappedOptionalRule: OptInRule {}
+extension ImplicitlyUnwrappedOptionalRule {}
 
 extension ImplicitlyUnwrappedOptionalRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ImplicitlyUnwrappedOptionalTypeSyntax) {
       violations.append(node.positionAfterSkippingLeadingTrivia)
     }

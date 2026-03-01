@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct PrivateOutletRule: Rule {
+struct PrivateOutletRule {
   var configuration = PrivateOutletConfiguration()
 
   static let description = RuleDescription(
     identifier: "private_outlet",
     name: "Private Outlets",
     description: "IBOutlets should be private to avoid leaking UIKit to higher layers",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("class Foo { @IBOutlet private var label: UILabel? }"),
       Example("class Foo { @IBOutlet private var label: UILabel! }"),
@@ -79,15 +80,15 @@ struct PrivateOutletRule: Rule {
 }
 
 extension PrivateOutletRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension PrivateOutletRule: OptInRule {}
+extension PrivateOutletRule {}
 
 extension PrivateOutletRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberBlockItemSyntax) {
       guard
         let decl = node.decl.as(VariableDeclSyntax.self),

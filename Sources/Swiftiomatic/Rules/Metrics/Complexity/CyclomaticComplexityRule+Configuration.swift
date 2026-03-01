@@ -1,4 +1,4 @@
-struct CyclomaticComplexityConfiguration: RuleConfiguration {
+struct CyclomaticComplexityConfiguration: RuleOptions {
   @ConfigurationElement(isInline: true)
   private(set) var length = SeverityLevelsConfiguration<Parent>(warning: 10, error: 20)
   @ConfigurationElement(key: "ignores_case_statements")

@@ -1,4 +1,4 @@
-struct NonOverridableClassDeclarationConfiguration: SeverityBasedRuleConfiguration {
+struct NonOverridableClassDeclarationConfiguration: SeverityBasedRuleOptions {
     enum FinalClassModifier: String, AcceptableByConfigurationElement {
         case finalClass = "final class"
         case `static`

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct TodoRule: Rule {
+struct TodoRule {
   var configuration = TodoConfiguration()
 
   static let description = RuleDescription(
@@ -26,13 +26,13 @@ struct TodoRule: Rule {
 }
 
 extension TodoRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension TodoRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private lazy var keywordRegex: CachedRegex = {
       let searchKeywords = configuration.only.map(\.rawValue).joined(separator: "|")
       return regex(#"\b((?:\#(searchKeywords))(?::|\b))"#)

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct HeaderFileNameRule: Rule {
+struct HeaderFileNameRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -31,13 +31,13 @@ struct HeaderFileNameRule: Rule {
 }
 
 extension HeaderFileNameRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension HeaderFileNameRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SourceFileSyntax) {
       guard let fileName = file.path?.components(separatedBy: "/").last,
         fileName.hasSuffix(".swift")

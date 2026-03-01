@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct NumberSeparatorRule: Rule {
+struct NumberSeparatorRule {
   var configuration = NumberSeparatorConfiguration()
 
   static let description = RuleDescription(
@@ -12,6 +12,7 @@ struct NumberSeparatorRule: Rule {
       other words, there should be an underscore after every 3 digits in the integral as well as the fractional \
       part of a number.
       """,
+    isOptIn: true,
     nonTriggeringExamples: NumberSeparatorRuleExamples.nonTriggeringExamples,
     triggeringExamples: NumberSeparatorRuleExamples.triggeringExamples,
     corrections: NumberSeparatorRuleExamples.corrections,
@@ -26,19 +27,19 @@ struct NumberSeparatorRule: Rule {
 }
 
 extension NumberSeparatorRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension NumberSeparatorRule: OptInRule {}
+extension NumberSeparatorRule {}
 
 extension NumberSeparatorRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType>,
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType>,
     NumberSeparatorValidator
   {
     override func visitPost(_ node: FloatLiteralExprSyntax) {
@@ -58,7 +59,7 @@ extension NumberSeparatorRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType>,
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType>,
     NumberSeparatorValidator
   {
     override func visit(_ node: FloatLiteralExprSyntax) -> ExprSyntax {

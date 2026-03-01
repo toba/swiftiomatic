@@ -1,7 +1,7 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct LegacyConstantRule: Rule {
+struct LegacyConstantRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -15,17 +15,17 @@ struct LegacyConstantRule: Rule {
 }
 
 extension LegacyConstantRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension LegacyConstantRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: DeclReferenceExprSyntax) {
       if LegacyConstantRuleExamples.patterns.keys.contains(node.baseName.text) {
         violations.append(node.positionAfterSkippingLeadingTrivia)
@@ -39,7 +39,7 @@ extension LegacyConstantRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
       guard let correction = LegacyConstantRuleExamples.patterns[node.baseName.text] else {
         return super.visit(node)

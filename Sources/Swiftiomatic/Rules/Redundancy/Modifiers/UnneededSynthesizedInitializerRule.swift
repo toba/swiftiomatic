@@ -15,7 +15,7 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct UnneededSynthesizedInitializerRule: Rule {
+struct UnneededSynthesizedInitializerRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -30,17 +30,17 @@ struct UnneededSynthesizedInitializerRule: Rule {
 }
 
 extension UnneededSynthesizedInitializerRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension UnneededSynthesizedInitializerRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .allExcept(StructDeclSyntax.self, ClassDeclSyntax.self)
     }
@@ -59,7 +59,7 @@ extension UnneededSynthesizedInitializerRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     private var unneededInitializers: [InitializerDeclSyntax] = []
 
     override func visitAny(_: Syntax) -> Syntax? {

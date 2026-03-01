@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct LegacyMultipleRule: Rule {
+struct LegacyMultipleRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct LegacyMultipleRule: Rule {
     name: "Legacy Multiple",
     description:
       "Prefer using the `isMultiple(of:)` function instead of using the remainder operator (`%`)",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         "cell.contentView.backgroundColor = indexPath.row.isMultiple(of: 2) ? .gray : .white",
@@ -57,7 +58,7 @@ struct LegacyMultipleRule: Rule {
 }
 
 extension LegacyMultipleRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -68,10 +69,10 @@ extension LegacyMultipleRule {
   }
 }
 
-extension LegacyMultipleRule: OptInRule {}
+extension LegacyMultipleRule {}
 
 extension LegacyMultipleRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: InfixOperatorExprSyntax) {
       guard let operatorNode = node.operator.as(BinaryOperatorExprSyntax.self),
         operatorNode.operator.tokenKind == .binaryOperator("%"),

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ForceTryRule: Rule {
+struct ForceTryRule {
   var configuration = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
@@ -29,13 +29,13 @@ struct ForceTryRule: Rule {
 }
 
 extension ForceTryRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension ForceTryRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: TryExprSyntax) {
       if node.questionOrExclamationMark?.tokenKind == .exclamationMark {
         violations.append(node.positionAfterSkippingLeadingTrivia)

@@ -17,8 +17,8 @@ struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule 
     corrections: RedundantObjcAttributeRuleExamples.corrections,
   )
 
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
-    final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+    final class Visitor: ViolationCollectingVisitor<OptionsType> {
       override func visitPost(_ node: AttributeListSyntax) {
         if let objcAttribute = node.violatingObjCAttribute {
           violations.append(objcAttribute.positionAfterSkippingLeadingTrivia)

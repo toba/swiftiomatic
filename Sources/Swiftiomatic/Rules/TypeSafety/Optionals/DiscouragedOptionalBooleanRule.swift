@@ -1,27 +1,28 @@
 import SwiftSyntax
 
-struct DiscouragedOptionalBooleanRule: Rule {
+struct DiscouragedOptionalBooleanRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "discouraged_optional_boolean",
     name: "Discouraged Optional Boolean",
     description: "Prefer non-optional booleans over optional booleans",
+    isOptIn: true,
     nonTriggeringExamples: DiscouragedOptionalBooleanRuleExamples.nonTriggeringExamples,
     triggeringExamples: DiscouragedOptionalBooleanRuleExamples.triggeringExamples,
   )
 }
 
 extension DiscouragedOptionalBooleanRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension DiscouragedOptionalBooleanRule: OptInRule {}
+extension DiscouragedOptionalBooleanRule {}
 
 extension DiscouragedOptionalBooleanRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: OptionalTypeSyntax) {
       if node.wrappedType.as(IdentifierTypeSyntax.self)?.typeName == "Bool" {
         violations.append(node.positionAfterSkippingLeadingTrivia)

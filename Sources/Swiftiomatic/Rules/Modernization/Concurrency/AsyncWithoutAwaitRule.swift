@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct AsyncWithoutAwaitRule: Rule {
+struct AsyncWithoutAwaitRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "async_without_await",
     name: "Async Without Await",
     description: "Declaration should not be async if it doesn't use await",
+    isOptIn: true,
     nonTriggeringExamples: AsyncWithoutAwaitRuleExamples.nonTriggeringExamples,
     triggeringExamples: AsyncWithoutAwaitRuleExamples.triggeringExamples,
     corrections: AsyncWithoutAwaitRuleExamples.corrections,
@@ -14,19 +15,19 @@ struct AsyncWithoutAwaitRule: Rule {
 }
 
 extension AsyncWithoutAwaitRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension AsyncWithoutAwaitRule: OptInRule {}
+extension AsyncWithoutAwaitRule {}
 extension AsyncWithoutAwaitRule {
   private struct FuncInfo {
     var containsAwait = false
     let asyncToken: TokenSyntax?
   }
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var functionScopes = Stack<FuncInfo>()
     private var actorTypeStack = Stack<Bool>()
     private var pendingAsync: TokenSyntax?

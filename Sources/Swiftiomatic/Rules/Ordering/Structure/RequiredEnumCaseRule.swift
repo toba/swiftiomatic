@@ -67,7 +67,7 @@ import SwiftSyntax
 ///     case accountCreated
 /// }
 /// ````
-struct RequiredEnumCaseRule: Rule {
+struct RequiredEnumCaseRule {
   var configuration = RequiredEnumCaseConfiguration()
 
   private static let exampleConfiguration = [
@@ -78,6 +78,7 @@ struct RequiredEnumCaseRule: Rule {
     identifier: "required_enum_case",
     name: "Required Enum Case",
     description: "Enums conforming to a specified protocol must implement a specific case(s).",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -148,15 +149,15 @@ struct RequiredEnumCaseRule: Rule {
 }
 
 extension RequiredEnumCaseRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension RequiredEnumCaseRule: OptInRule {}
+extension RequiredEnumCaseRule {}
 
 extension RequiredEnumCaseRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: EnumDeclSyntax) {
       guard configuration.protocols.isNotEmpty else {
         return

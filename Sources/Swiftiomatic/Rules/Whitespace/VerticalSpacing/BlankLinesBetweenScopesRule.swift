@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct BlankLinesBetweenScopesRule: Rule {
+struct BlankLinesBetweenScopesRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -38,13 +38,13 @@ struct BlankLinesBetweenScopesRule: Rule {
 }
 
 extension BlankLinesBetweenScopesRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension BlankLinesBetweenScopesRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SourceFileSyntax) {
       checkStatements(node.statements)
     }

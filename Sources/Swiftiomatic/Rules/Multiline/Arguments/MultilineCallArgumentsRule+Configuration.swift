@@ -1,4 +1,4 @@
-struct MultilineCallArgumentsConfiguration: SeverityBasedRuleConfiguration {
+struct MultilineCallArgumentsConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "allows_single_line")

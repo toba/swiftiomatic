@@ -1,32 +1,78 @@
 ---
 # 7y2-kma
-title: Evaluate consistent use of RuleDescription across SwiftLint and SwiftFormat-derived rules
-status: in-progress
+title: Unify rule metadata and align rule protocols
+status: completed
 type: task
 priority: normal
 created_at: 2026-03-01T20:20:03Z
-updated_at: 2026-03-01T20:26:02Z
+updated_at: 2026-03-01T21:55:44Z
 sync:
     github:
         issue_number: "128"
-        synced_at: "2026-03-01T21:06:26Z"
+        synced_at: "2026-03-01T21:56:04Z"
 ---
 
-Audit the two rule systems (Rule protocol with RuleDescription vs FormatRule class) for consistency in how rule metadata is described, documented, and consumed. Identify gaps and recommend whether/how to unify.
+Unify rule metadata into a single RuleConfiguration protocol, rename the existing YAML-parsing protocol to RuleOptions, and fold three marker protocols into data fields.
 
-- [x] Map the two metadata models
-- [x] Identify field coverage gaps
-- [x] Evaluate generate-docs coverage
-- [x] Assess RuleCatalog bridge completeness
-- [x] Write findings and recommendations
+## Implementation Checklist
+
+- [x] Phase 1: Rename RuleConfiguration → RuleOptions (~107 files, mechanical find-and-replace)
+- [x] Phase 2: Fold marker protocols into RuleDescription (add isOptIn/requiresSourceKit/requiresCompilerArguments fields, update ~165 rules, update all consumers)
+- [x] Phase 3: Create unified RuleConfiguration protocol and supporting types (RuleExamples, ConfigOptionDescriptor, RuleConfigurationEntry, LintRuleConfigurationAdapter, FormatRuleConfigurationAdapter)
+- [ ] Phase 4: Wire up consumers (RuleCatalog, SwiftiomaticLib, CLI, AppModel, remove RuleCatalogEntry)
+
+## Phase 4 Status — IN PROGRESS
+
+Completed so far in Phase 4:
+- [x] RuleCatalog rewritten to use adapters, returns `[RuleConfigurationEntry]` via `allEntries()`
+- [x] SwiftiomaticLib.ruleCatalog() delegates to RuleCatalog.allEntries()
+- [x] CLI (SwiftiomaticCLI list-rules) updated to use new API
+- [x] Xcode app files updated: RuleCatalogEntry → RuleConfigurationEntry, .identifier → .id, .description → .summary
+- [x] Old RuleCatalogEntry.swift deleted
+- [x] SPM build succeeds (swift build --build-tests)
+- [x] SPM tests pass (4387 passed)
+
+Remaining for Phase 4:
+- [x] Build Xcode app target (SwiftiomaticApp) — fixed RulesTab.swift (.identifier→.id, .description→.summary) and FormatRuleConfigurationAdapter (duplicate propertyName crash)
+- [x] Run full test suite — 4386 tests pass
+- [x] Verify `swiftiomatic list-rules --format json` output includes full metadata
+
+## Key Files Changed
+
+### Phase 1 (rename)
+- `Rules/RuleConfiguration.swift` → `Rules/RuleOptions.swift` (protocol rename)
+- `Models/RuleConfigurationDescription.swift` → `Models/RuleOptionsDescription.swift`
+- ~107 files: sed rename of types (RuleConfiguration→RuleOptions, ConfigurationType→OptionsType, etc.)
+
+### Phase 2 (marker protocols)
+- `Models/RuleDescription.swift`: Added `isOptIn`, `requiresSourceKit`, `requiresCompilerArguments` fields with defaults
+- ~165 rule files: Added `isOptIn: true` to OptInRule conformers, removed explicit `: OptInRule` conformance
+- 5 analyzer rules: Added `isOptIn: true, requiresSourceKit: true, requiresCompilerArguments: true`
+- 4 SourceKit-requiring rules: Added `requiresSourceKit: true`
+- `Rules/Rule.swift`: Deprecated OptInRule/SyntaxOnlyRule/AnalyzerRule (kept for behavioral defaults), updated requiresSourceKit computed property
+- Consumer updates: RuleResolver, RuleCatalog, RuleDocumentation, PublicAPI, Configuration+Parsing, Configuration+RulesMode, Configuration+RuleSelection, Linter, Request+SafeSend, LintTestHelpers
+- Test fix: CollectingRuleTests — added description override for AnalyzerRule mock specs
+
+### Phase 3 (new types)
+- `Rules/RuleConfiguration.swift` (NEW): Unified protocol with 16 metadata properties
+- `Models/RuleExamples.swift` (NEW): CodeExample, CorrectionExample, RuleExamples
+- `Models/ConfigOptionDescriptor.swift` (NEW): ConfigValueType, ConfigOptionDescriptor
+- `Models/RuleConfigurationEntry.swift` (NEW): Concrete Codable struct
+- `Rules/LintRuleConfigurationAdapter.swift` (NEW): Wraps Rule.Type → RuleConfiguration
+- `Rules/FormatRuleConfigurationAdapter.swift` (NEW): Wraps FormatRule → RuleConfiguration
+
+### Phase 4 (consumer wiring)
+- `Rules/RuleCatalog.swift`: Rewritten with allEntries()/entry(id:)/entries(for:)
+- `PublicAPI.swift`: Simplified to delegate to RuleCatalog
+- `SwiftiomaticCLI.swift`: Updated list-rules to use new API
+- `Xcode/SwiftiomaticApp/`: All 4 files migrated from RuleCatalogEntry to RuleConfigurationEntry
+- `Models/RuleCatalogEntry.swift`: DELETED
+
 
 ## Summary of Changes
 
-Evaluation only — no code changes. Findings:
+Completed Phase 4 consumer wiring. Fixed two remaining issues:
+1. **RulesTab.swift** — updated stale property references (`.identifier`→`.id`, `.description`→`.summary`) to match `RuleConfigurationEntry`
+2. **FormatRuleConfigurationAdapter** — fixed fatal crash from duplicate `propertyName` keys in `Descriptors.all` (deprecated/renamed options share the same keyPath). Changed `uniqueKeysWithValues` to `uniquingKeysWith` to keep the first (current) descriptor.
 
-1. **Two separate metadata systems**: Rule uses RuleDescription struct (11 fields); FormatRule uses inline stored properties (help, examples, options). They don't share a type.
-2. **RuleCatalog bridges them** at the query layer via Entry, but loses rich metadata.
-3. **generate-docs excludes FormatRules** entirely — 130 rules get no documentation output.
-4. **Naming mismatch**: Rules use snake_case identifiers, FormatRules use camelCase names.
-5. **rationale field adopted by only 14/323 rules** — dead API surface.
-6. **Recommendation**: Don't unify the types (different execution models). Instead: (a) extend generate-docs for FormatRules, (b) add a RuleMetadata protocol for the common interface, (c) normalize naming, (d) audit rationale adoption.
+All targets build (SPM + Xcode app), all 4386 tests pass, CLI JSON output includes full rule metadata.

@@ -1,27 +1,28 @@
 import SwiftSyntax
 
-struct TypeContentsOrderRule: Rule {
+struct TypeContentsOrderRule {
   var configuration = TypeContentsOrderConfiguration()
 
   static let description = RuleDescription(
     identifier: "type_contents_order",
     name: "Type Contents Order",
     description: "Specifies the order of subtypes, properties, methods & more within a type.",
+    isOptIn: true,
     nonTriggeringExamples: TypeContentsOrderRuleExamples.nonTriggeringExamples,
     triggeringExamples: TypeContentsOrderRuleExamples.triggeringExamples,
   )
 }
 
 extension TypeContentsOrderRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension TypeContentsOrderRule: OptInRule {}
+extension TypeContentsOrderRule {}
 
 extension TypeContentsOrderRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private static let viewLifecycleMethodNames = [
       "loadView",
       "loadViewIfNeeded",

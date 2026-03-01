@@ -31,11 +31,11 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
     }
   }
 
-  func makeVisitor(file _: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file _: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Console.fatalError("Unreachable: `validate(file:)` will be used instead")
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
@@ -251,7 +251,7 @@ extension SwiftSource {
 }
 
 extension DuplicateImportsRule {
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     private lazy var importPositionsToRemove = file.duplicateImportsViolationPositions()
 
     override func visit(_ node: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct DiscouragedDirectInitRule: Rule {
+struct DiscouragedDirectInitRule {
   var configuration = DiscouragedDirectInitConfiguration()
 
   static let description = RuleDescription(
@@ -38,13 +38,13 @@ struct DiscouragedDirectInitRule: Rule {
 }
 
 extension DiscouragedDirectInitRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension DiscouragedDirectInitRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard node.arguments.isEmpty, node.trailingClosure == nil,
         configuration.discouragedInits.contains(node.calledExpression.trimmedDescription)

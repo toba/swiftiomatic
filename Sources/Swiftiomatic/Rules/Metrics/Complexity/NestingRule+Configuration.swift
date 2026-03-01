@@ -1,4 +1,4 @@
-struct NestingConfiguration: RuleConfiguration {
+struct NestingConfiguration: RuleOptions {
   typealias SeverityLevels = SeverityLevelsConfiguration<Parent>
 
   @ConfigurationElement(key: "type_level")

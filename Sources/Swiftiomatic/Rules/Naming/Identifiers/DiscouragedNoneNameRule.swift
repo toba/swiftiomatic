@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct DiscouragedNoneNameRule: Rule {
+struct DiscouragedNoneNameRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -9,6 +9,7 @@ struct DiscouragedNoneNameRule: Rule {
     description:
       "Enum cases and static members named `none` are discouraged as they can conflict with "
       + "`Optional<T>.none`.",
+    isOptIn: true,
     nonTriggeringExamples: [
       // Should not trigger unless exactly matches "none"
       Example(
@@ -241,15 +242,15 @@ struct DiscouragedNoneNameRule: Rule {
 }
 
 extension DiscouragedNoneNameRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension DiscouragedNoneNameRule: OptInRule {}
+extension DiscouragedNoneNameRule {}
 
 extension DiscouragedNoneNameRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: EnumCaseElementSyntax) {
       let emptyParams = node.parameterClause?.parameters.isEmpty ?? true
       if emptyParams, node.name.isNone {

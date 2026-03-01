@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct TrailingClosureRule: Rule {
+struct TrailingClosureRule {
   var configuration = TrailingClosureConfiguration()
 
   private static let onlySingleMutedConfig = ["only_single_muted_parameter": true]
@@ -9,6 +9,7 @@ struct TrailingClosureRule: Rule {
     identifier: "trailing_closure",
     name: "Trailing Closure",
     description: "Trailing closure syntax should be used whenever possible",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("foo.map { $0 + 1 }"),
       Example("foo.bar()"),
@@ -176,19 +177,19 @@ struct TrailingClosureRule: Rule {
 }
 
 extension TrailingClosureRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension TrailingClosureRule: OptInRule {}
+extension TrailingClosureRule {}
 
 extension TrailingClosureRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard node.trailingClosure == nil else {
         return
@@ -215,7 +216,7 @@ extension TrailingClosureRule {
 }
 
 extension TrailingClosureRule {
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
       guard node.trailingClosure == nil else {
         return super.visit(node)

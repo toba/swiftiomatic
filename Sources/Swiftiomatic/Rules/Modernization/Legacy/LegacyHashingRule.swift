@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct LegacyHashingRule: Rule {
+struct LegacyHashingRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -88,13 +88,13 @@ struct LegacyHashingRule: Rule {
 }
 
 extension LegacyHashingRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension LegacyHashingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: VariableDeclSyntax) {
       guard
         node.parent?.is(MemberBlockItemSyntax.self) == true,

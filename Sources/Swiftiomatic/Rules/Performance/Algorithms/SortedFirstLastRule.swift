@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct SortedFirstLastRule: Rule {
+struct SortedFirstLastRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "sorted_first_last",
     name: "Min or Max over Sorted First or Last",
     description: "Prefer using `min()` or `max()` over `sorted().first` or `sorted().last`",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("let min = myList.min()"),
       Example("let min = myList.min(by: { $0 < $1 })"),
@@ -47,15 +48,15 @@ struct SortedFirstLastRule: Rule {
 }
 
 extension SortedFirstLastRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension SortedFirstLastRule: OptInRule {}
+extension SortedFirstLastRule {}
 
 extension SortedFirstLastRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       guard
         node.declName.baseName.text == "first" || node.declName.baseName.text == "last",

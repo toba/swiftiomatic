@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantDiscardableLetRule: Rule {
+struct RedundantDiscardableLetRule {
   var configuration = RedundantDiscardableLetConfiguration()
 
   static let description = RuleDescription(
@@ -180,7 +180,7 @@ struct RedundantDiscardableLetRule: Rule {
 }
 
 extension RedundantDiscardableLetRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -191,7 +191,7 @@ extension RedundantDiscardableLetRule {
     case view
   }
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var codeBlockScopes = Stack<CodeBlockKind>()
 
     override func visit(_ node: AccessorBlockSyntax) -> SyntaxVisitorContinueKind {

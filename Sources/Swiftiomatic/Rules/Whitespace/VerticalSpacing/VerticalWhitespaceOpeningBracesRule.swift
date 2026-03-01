@@ -177,11 +177,12 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
   private let pattern = "([{(\\[][ \\t]*(?:[^\\n{]+ in[ \\t]*$)?)((?:\\n[ \\t]*)+)(\\n)"
 }
 
-extension VerticalWhitespaceOpeningBracesRule: OptInRule {
+extension VerticalWhitespaceOpeningBracesRule {
   static let description = RuleDescription(
     identifier: "vertical_whitespace_opening_braces",
     name: "Vertical Whitespace after Opening Braces",
     description: "Don't include vertical whitespace (empty line) after opening braces",
+    isOptIn: true,
     nonTriggeringExamples: (violatingToValidExamples.values + nonTriggeringExamples).sorted(),
     triggeringExamples: Array(violatingToValidExamples.keys).sorted(),
     corrections: violatingToValidExamples.removingViolationMarkers(),

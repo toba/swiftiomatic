@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ImplicitOptionalInitializationRule: Rule {
+struct ImplicitOptionalInitializationRule {
   var configuration = ImplicitOptionalInitializationConfiguration()
 
   static let description = RuleDescription(
@@ -15,17 +15,17 @@ struct ImplicitOptionalInitializationRule: Rule {
 }
 
 extension ImplicitOptionalInitializationRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension ImplicitOptionalInitializationRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     var reason: String {
       switch configuration.style {
       case .always: "Optional should be implicitly initialized without nil"
@@ -43,7 +43,7 @@ extension ImplicitOptionalInitializationRule {
 }
 
 extension ImplicitOptionalInitializationRule {
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: PatternBindingSyntax) -> PatternBindingSyntax {
       guard node.violationPosition(for: configuration.style) != nil else {
         return super.visit(node)

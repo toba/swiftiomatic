@@ -1,13 +1,14 @@
 import SwiftIDEUtils
 import SwiftSyntax
 
-struct LocalDocCommentRule: SwiftSyntaxRule, OptInRule {
+struct LocalDocCommentRule: SwiftSyntaxRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "local_doc_comment",
     name: "Local Doc Comment",
     description: "Prefer regular comments over doc comments in local scopes",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -49,7 +50,7 @@ struct LocalDocCommentRule: SwiftSyntaxRule, OptInRule {
     ],
   )
 
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(
       configuration: configuration,
       file: file,
@@ -59,11 +60,11 @@ struct LocalDocCommentRule: SwiftSyntaxRule, OptInRule {
 }
 
 extension LocalDocCommentRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private let docCommentRanges: [Range<AbsolutePosition>]
 
     init(
-      configuration: ConfigurationType,
+      configuration: OptionsType,
       file: SwiftSource,
       classifications: [SyntaxClassifiedRange],
     ) {

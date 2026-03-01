@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct FileLengthRule: Rule {
+struct FileLengthRule {
   var configuration = FileLengthConfiguration()
 
   static let description = RuleDescription(
@@ -19,13 +19,13 @@ struct FileLengthRule: Rule {
 }
 
 extension FileLengthRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension FileLengthRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SourceFileSyntax) {
       let lineCount =
         configuration.ignoreCommentOnlyLines

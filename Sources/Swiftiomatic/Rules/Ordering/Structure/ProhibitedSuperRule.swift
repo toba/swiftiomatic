@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ProhibitedSuperRule: Rule {
+struct ProhibitedSuperRule {
   var configuration = ProhibitedSuperConfiguration()
 
   static let description = RuleDescription(
     identifier: "prohibited_super_call",
     name: "Prohibited Calls to Super",
     description: "Some methods should not call super.",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -85,15 +86,15 @@ struct ProhibitedSuperRule: Rule {
 }
 
 extension ProhibitedSuperRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ProhibitedSuperRule: OptInRule {}
+extension ProhibitedSuperRule {}
 
 extension ProhibitedSuperRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }

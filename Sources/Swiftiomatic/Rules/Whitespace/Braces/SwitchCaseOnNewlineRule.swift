@@ -12,13 +12,14 @@ private func wrapInSwitch(_ str: String, file: StaticString = #filePath, line: U
   )
 }
 
-struct SwitchCaseOnNewlineRule: Rule {
+struct SwitchCaseOnNewlineRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "switch_case_on_newline",
     name: "Cases on Newline",
     description: "Cases inside a switch should always be on a newline",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("/*case 1: */return true"),
       Example("//case 1:\n return true"),
@@ -69,15 +70,15 @@ struct SwitchCaseOnNewlineRule: Rule {
 }
 
 extension SwitchCaseOnNewlineRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension SwitchCaseOnNewlineRule: OptInRule {}
+extension SwitchCaseOnNewlineRule {}
 
 extension SwitchCaseOnNewlineRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SwitchCaseSyntax) {
       let caseEndLine =
         locationConverter

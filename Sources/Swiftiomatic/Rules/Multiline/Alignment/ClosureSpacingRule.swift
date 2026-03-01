@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ClosureSpacingRule: Rule {
+struct ClosureSpacingRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "closure_spacing",
     name: "Closure Spacing",
     description: "Closure expressions should have a single space inside each brace",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("[].map ({ $0.description })"),
       Example("[].filter { $0.contains(location) }"),
@@ -51,19 +52,19 @@ struct ClosureSpacingRule: Rule {
 }
 
 extension ClosureSpacingRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension ClosureSpacingRule: OptInRule {}
+extension ClosureSpacingRule {}
 
 extension ClosureSpacingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClosureExprSyntax) {
       if node.shouldCheckForClosureSpacingRule(locationConverter: locationConverter),
         node.violations.hasViolations
@@ -73,7 +74,7 @@ extension ClosureSpacingRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ClosureExprSyntax) -> ExprSyntax {
       var node = node
       node.statements = visit(node.statements)

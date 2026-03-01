@@ -1,27 +1,28 @@
 import SwiftSyntax
 
-struct MultilineArgumentsRule: Rule {
+struct MultilineArgumentsRule {
   var configuration = MultilineArgumentsConfiguration()
 
   static let description = RuleDescription(
     identifier: "multiline_arguments",
     name: "Multiline Arguments",
     description: "Arguments should be either on the same line, or one per line",
+    isOptIn: true,
     nonTriggeringExamples: MultilineArgumentsRuleExamples.nonTriggeringExamples,
     triggeringExamples: MultilineArgumentsRuleExamples.triggeringExamples,
   )
 }
 
 extension MultilineArgumentsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension MultilineArgumentsRule: OptInRule {}
+extension MultilineArgumentsRule {}
 
 extension MultilineArgumentsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard node.arguments.count > 1 else {
         return

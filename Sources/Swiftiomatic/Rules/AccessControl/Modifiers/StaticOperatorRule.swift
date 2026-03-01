@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct StaticOperatorRule: Rule {
+struct StaticOperatorRule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
     static let description = RuleDescription(
         identifier: "static_operator",
         name: "Static Operator",
         description: "Operators should be declared as static functions, not free functions",
+        isOptIn: true,
         nonTriggeringExamples: [
             Example(
                 """
@@ -93,15 +94,15 @@ struct StaticOperatorRule: Rule {
 }
 
 extension StaticOperatorRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: configuration, file: file)
     }
 }
 
-extension StaticOperatorRule: OptInRule {}
+extension StaticOperatorRule {}
 
 extension StaticOperatorRule {
-    fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
         override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
             .all
         }

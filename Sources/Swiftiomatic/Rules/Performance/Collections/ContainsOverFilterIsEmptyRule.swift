@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ContainsOverFilterIsEmptyRule: Rule {
+struct ContainsOverFilterIsEmptyRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "contains_over_filter_is_empty",
     name: "Contains over Filter is Empty",
     description: "Prefer `contains` over using `filter(where:).isEmpty`",
+    isOptIn: true,
     nonTriggeringExamples: [">", "==", "!="].flatMap { operation in
       [
         Example("let result = myList.filter(where: { $0 % 2 == 0 }).count \(operation) 1"),
@@ -27,15 +28,15 @@ struct ContainsOverFilterIsEmptyRule: Rule {
 }
 
 extension ContainsOverFilterIsEmptyRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ContainsOverFilterIsEmptyRule: OptInRule {}
+extension ContainsOverFilterIsEmptyRule {}
 
 extension ContainsOverFilterIsEmptyRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       guard
         node.declName.baseName.text == "isEmpty",

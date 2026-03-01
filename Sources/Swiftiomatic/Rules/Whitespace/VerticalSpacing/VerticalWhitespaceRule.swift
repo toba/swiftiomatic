@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct VerticalWhitespaceRule: Rule {
+struct VerticalWhitespaceRule {
   var configuration = VerticalWhitespaceConfiguration()
 
   static let description = RuleDescription(
@@ -53,17 +53,17 @@ struct VerticalWhitespaceRule: Rule {
 }
 
 extension VerticalWhitespaceRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension VerticalWhitespaceRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     /// The number of additional newlines to expect before the first token.
     private var firstTokenAdditionalNewlines = 1
 
@@ -130,7 +130,7 @@ extension VerticalWhitespaceRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
       var result = [TriviaPiece]()
       var pendingWhitespace = [TriviaPiece]()

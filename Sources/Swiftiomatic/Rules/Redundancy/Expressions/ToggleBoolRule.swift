@@ -1,13 +1,14 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct ToggleBoolRule: Rule {
+struct ToggleBoolRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "toggle_bool",
     name: "Toggle Bool",
     description: "Prefer `someBool.toggle()` over `someBool = !someBool`",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("isHidden.toggle()"),
       Example("view.clipsToBounds.toggle()"),
@@ -32,19 +33,19 @@ struct ToggleBoolRule: Rule {
 }
 
 extension ToggleBoolRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension ToggleBoolRule: OptInRule {}
+extension ToggleBoolRule {}
 
 extension ToggleBoolRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ExprListSyntax) {
       if node.hasToggleBoolViolation {
         violations.append(node.positionAfterSkippingLeadingTrivia)
@@ -52,7 +53,7 @@ extension ToggleBoolRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ExprListSyntax) -> ExprListSyntax {
       guard node.hasToggleBoolViolation, let firstExpr = node.first,
         let index = node.index(of: firstExpr)

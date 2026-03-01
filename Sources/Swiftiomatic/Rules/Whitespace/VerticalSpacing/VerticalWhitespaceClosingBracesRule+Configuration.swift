@@ -1,4 +1,4 @@
-struct VerticalWhitespaceClosingBracesConfiguration: SeverityBasedRuleConfiguration {
+struct VerticalWhitespaceClosingBracesConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "only_enforce_before_trivial_lines")

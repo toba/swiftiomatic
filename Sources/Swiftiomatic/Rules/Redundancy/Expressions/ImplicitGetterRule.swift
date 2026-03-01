@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ImplicitGetterRule: Rule {
+struct ImplicitGetterRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -13,7 +13,7 @@ struct ImplicitGetterRule: Rule {
 }
 
 extension ImplicitGetterRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -32,7 +32,7 @@ private enum ViolationKind {
 }
 
 extension ImplicitGetterRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: AccessorBlockSyntax) {
       guard node.accessorsList.count == 1,
         let getAccessor = node.getAccessor,

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ComputedAccessorsOrderRule: Rule {
+struct ComputedAccessorsOrderRule {
   var configuration = ComputedAccessorsOrderConfiguration()
 
   static let description = RuleDescription(
@@ -14,7 +14,7 @@ struct ComputedAccessorsOrderRule: Rule {
 }
 
 extension ComputedAccessorsOrderRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -24,7 +24,7 @@ extension ComputedAccessorsOrderRule {
     case `subscript`, property
   }
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: AccessorBlockSyntax) {
       guard let firstAccessor = node.accessorsList.first,
         let order = node.order,

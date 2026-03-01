@@ -1,4 +1,4 @@
-struct ExpiringTodoConfiguration: RuleConfiguration {
+struct ExpiringTodoConfiguration: RuleOptions {
   typealias Severity = SeverityConfiguration<Parent>
 
   struct DelimiterConfiguration: Equatable, AcceptableByConfigurationElement {

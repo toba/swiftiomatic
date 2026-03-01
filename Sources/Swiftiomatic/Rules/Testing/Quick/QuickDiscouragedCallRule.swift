@@ -1,19 +1,20 @@
 import SwiftSyntax
 
-struct QuickDiscouragedCallRule: Rule {
+struct QuickDiscouragedCallRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "quick_discouraged_call",
     name: "Quick Discouraged Call",
     description: "Discouraged call inside 'describe' and/or 'context' block.",
+    isOptIn: true,
     nonTriggeringExamples: QuickDiscouragedCallRuleExamples.nonTriggeringExamples,
     triggeringExamples: QuickDiscouragedCallRuleExamples.triggeringExamples,
   )
 }
 
 extension QuickDiscouragedCallRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -24,12 +25,12 @@ extension QuickDiscouragedCallRule {
   }
 }
 
-extension QuickDiscouragedCallRule: OptInRule {}
+extension QuickDiscouragedCallRule {}
 
 private typealias ScopeElement = (kind: QuickCallKind, blockId: SyntaxIdentifier)?
 
 extension QuickDiscouragedCallRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var quickScope = Stack<ScopeElement>()
 
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {

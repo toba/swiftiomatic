@@ -1,13 +1,14 @@
 import Foundation
 import SwiftSyntax
 
-struct MultilineLiteralBracketsRule: Rule {
+struct MultilineLiteralBracketsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "multiline_literal_brackets",
     name: "Multiline Literal Brackets",
     description: "Multiline literals should have their surrounding brackets in a new line",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -137,15 +138,15 @@ struct MultilineLiteralBracketsRule: Rule {
 }
 
 extension MultilineLiteralBracketsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension MultilineLiteralBracketsRule: OptInRule {}
+extension MultilineLiteralBracketsRule {}
 
 extension MultilineLiteralBracketsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ArrayExprSyntax) {
       validate(
         node,

@@ -1,4 +1,4 @@
-struct PrivateOutletConfiguration: SeverityBasedRuleConfiguration {
+struct PrivateOutletConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "allow_private_set")

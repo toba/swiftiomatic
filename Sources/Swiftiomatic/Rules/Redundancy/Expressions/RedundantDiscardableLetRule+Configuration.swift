@@ -1,4 +1,4 @@
-struct RedundantDiscardableLetConfiguration: SeverityBasedRuleConfiguration {
+struct RedundantDiscardableLetConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "ignore_swiftui_view_bodies")

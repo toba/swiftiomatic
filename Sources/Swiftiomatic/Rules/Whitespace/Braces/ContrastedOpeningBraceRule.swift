@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct ContrastedOpeningBraceRule: Rule {
+struct ContrastedOpeningBraceRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -15,6 +15,7 @@ struct ContrastedOpeningBraceRule: Rule {
       after the declaration to contrast the code block from the rest of the declaration. Comments between the \
       declaration and the opening brace are respected. Check out the `opening_brace` rule for a different style.
       """,
+    isOptIn: true,
     nonTriggeringExamples: ContrastedOpeningBraceRuleExamples.nonTriggeringExamples,
     triggeringExamples: ContrastedOpeningBraceRuleExamples.triggeringExamples,
     corrections: ContrastedOpeningBraceRuleExamples.corrections,
@@ -22,15 +23,15 @@ struct ContrastedOpeningBraceRule: Rule {
 }
 
 extension ContrastedOpeningBraceRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ContrastedOpeningBraceRule: OptInRule {}
+extension ContrastedOpeningBraceRule {}
 
 extension ContrastedOpeningBraceRule {
-  fileprivate final class Visitor: CodeBlockVisitor<ConfigurationType> {
+  fileprivate final class Visitor: CodeBlockVisitor<OptionsType> {
     override func collectViolations(for bracedItem: (some BracedSyntax)?) {
       if let bracedItem, let correction = violationCorrection(bracedItem) {
         violations.append(

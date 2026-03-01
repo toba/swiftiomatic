@@ -194,7 +194,7 @@ extension Configuration {
                 return SwiftiomaticError.ruleDisabledInDisabledRules(ruleID: ruleType.identifier)
             }
 
-            if ruleType is any OptInRule.Type {
+            if ruleType.description.isOptIn {
                 if optInRules.isDisjoint(with: allIdentifiers) {
                     return SwiftiomaticError.ruleNotEnabledInOptInRules(ruleID: ruleType.identifier)
                 }
@@ -206,7 +206,7 @@ extension Configuration {
 
     private static func warnAboutMisplacedAnalyzerRules(optInRules: [String], ruleList: RuleList) {
         let analyzerRules = ruleList.rules
-            .filter { $0.value.self is any AnalyzerRule.Type }
+            .filter { $0.value.description.requiresCompilerArguments }
             .map(\.key)
         Set(analyzerRules).intersection(optInRules)
             .sorted()

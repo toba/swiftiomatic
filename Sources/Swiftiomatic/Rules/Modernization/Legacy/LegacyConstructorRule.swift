@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct LegacyConstructorRule: Rule {
+struct LegacyConstructorRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -135,17 +135,17 @@ struct LegacyConstructorRule: Rule {
 }
 
 extension LegacyConstructorRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension LegacyConstructorRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       if let identifierExpr = node.calledExpression.as(DeclReferenceExprSyntax.self),
         constructorsToCorrectedNames[identifierExpr.baseName.text] != nil
@@ -155,7 +155,7 @@ extension LegacyConstructorRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
       guard let identifierExpr = node.calledExpression.as(DeclReferenceExprSyntax.self),
         case let identifier = identifierExpr.baseName.text,

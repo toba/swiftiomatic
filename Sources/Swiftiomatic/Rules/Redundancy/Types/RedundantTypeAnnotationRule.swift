@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct RedundantTypeAnnotationRule: Rule {
+struct RedundantTypeAnnotationRule {
   var configuration = RedundantTypeAnnotationConfiguration()
 
   static let description = RuleDescription(
     identifier: "redundant_type_annotation",
     name: "Redundant Type Annotation",
     description: "Variables should not have redundant type annotation",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("var url = URL()"),
       Example("var url: CustomStringConvertible = URL()"),
@@ -244,15 +245,15 @@ struct RedundantTypeAnnotationRule: Rule {
 }
 
 extension RedundantTypeAnnotationRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension RedundantTypeAnnotationRule: OptInRule {}
+extension RedundantTypeAnnotationRule {}
 
 extension RedundantTypeAnnotationRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: PatternBindingSyntax) {
       if let varDecl = node.parent?.parent?.as(VariableDeclSyntax.self),
         !configuration.shouldSkipRuleCheck(for: varDecl),

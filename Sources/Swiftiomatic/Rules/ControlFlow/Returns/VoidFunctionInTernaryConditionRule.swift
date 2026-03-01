@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct VoidFunctionInTernaryConditionRule: Rule {
+struct VoidFunctionInTernaryConditionRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -145,13 +145,13 @@ struct VoidFunctionInTernaryConditionRule: Rule {
 }
 
 extension VoidFunctionInTernaryConditionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension VoidFunctionInTernaryConditionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: TernaryExprSyntax) {
       guard node.thenExpression.is(FunctionCallExprSyntax.self),
         node.elseExpression.is(FunctionCallExprSyntax.self),

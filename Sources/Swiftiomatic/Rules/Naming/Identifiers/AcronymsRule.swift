@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct AcronymsRule: Rule {
+struct AcronymsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -23,13 +23,13 @@ struct AcronymsRule: Rule {
 }
 
 extension AcronymsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension AcronymsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private static let commonAcronyms: Set<String> = [
       "Id", "Url", "Uri", "Http", "Https", "Ftp", "Ssh", "Json", "Xml",
       "Html", "Css", "Sql", "Api", "Uuid", "Utf",

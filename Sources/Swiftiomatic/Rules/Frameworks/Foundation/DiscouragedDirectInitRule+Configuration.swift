@@ -1,4 +1,4 @@
-struct DiscouragedDirectInitConfiguration: SeverityBasedRuleConfiguration {
+struct DiscouragedDirectInitConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
 

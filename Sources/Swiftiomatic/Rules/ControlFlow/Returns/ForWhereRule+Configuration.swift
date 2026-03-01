@@ -1,4 +1,4 @@
-struct ForWhereConfiguration: SeverityBasedRuleConfiguration {
+struct ForWhereConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "allow_for_as_filter")

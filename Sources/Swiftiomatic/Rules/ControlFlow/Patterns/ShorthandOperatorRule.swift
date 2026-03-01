@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ShorthandOperatorRule: Rule {
+struct ShorthandOperatorRule {
   var configuration = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
@@ -43,7 +43,7 @@ struct ShorthandOperatorRule: Rule {
 }
 
 extension ShorthandOperatorRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -55,7 +55,7 @@ extension ShorthandOperatorRule {
 }
 
 extension ShorthandOperatorRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: InfixOperatorExprSyntax) {
       guard node.operator.is(AssignmentExprSyntax.self),
         let rightExpr = node.rightOperand.as(InfixOperatorExprSyntax.self),

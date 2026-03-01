@@ -3,18 +3,18 @@ import Testing
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct RequiredEnumCaseConfigurationTests {
-  private typealias RuleConfiguration = RequiredEnumCaseConfiguration
-  private typealias RequiredCase = RuleConfiguration.RequiredCase
+  private typealias RuleOptions = RequiredEnumCaseConfiguration
+  private typealias RequiredCase = RuleOptions.RequiredCase
 
   private static let protocol1 = "RequiredProtocol"
   private static let protocol2 = "NetworkResults"
   private static let protocol3 = "RequiredProtocolWithSeverity"
-  private static let rule1 = RuleConfiguration.RequiredCase(name: "success", severity: .warning)
-  private static let rule2 = RuleConfiguration.RequiredCase(name: "error", severity: .warning)
-  private static let rule3 = RuleConfiguration.RequiredCase(name: "success", severity: .error)
+  private static let rule1 = RuleOptions.RequiredCase(name: "success", severity: .warning)
+  private static let rule2 = RuleOptions.RequiredCase(name: "error", severity: .warning)
+  private static let rule3 = RuleOptions.RequiredCase(name: "success", severity: .error)
 
-  private static func makeConfig() -> RuleConfiguration {
-    var config = RuleConfiguration()
+  private static func makeConfig() -> RuleOptions {
+    var config = RuleOptions()
     config.protocols[protocol1] = [rule1, rule2]
     config.protocols[protocol2] = [rule2]
     return config
@@ -52,7 +52,7 @@ import Testing
     #expect(config.parameterDescription?.oneLiner() == expected)
   }
 
-  private static func validateRulesExistForProtocol1(in config: RuleConfiguration) {
+  private static func validateRulesExistForProtocol1(in config: RuleOptions) {
     #expect(config.protocols[protocol1]?.contains(rule1) ?? false)
     #expect(config.protocols[protocol1]?.contains(rule2) ?? false)
   }
@@ -63,7 +63,7 @@ import Testing
     Self.validateRulesExistForProtocol3(in: config)
   }
 
-  private static func validateRulesExistForProtocol3(in config: RuleConfiguration) {
+  private static func validateRulesExistForProtocol3(in config: RuleOptions) {
     #expect(config.protocols[protocol3]?.contains(rule3) ?? false)
     #expect(config.protocols[protocol3]?.contains(rule2) ?? false)
   }
@@ -99,30 +99,30 @@ import Testing
   }
 
   @Test func equalsReturnsTrue() {
-    var lhs = RuleConfiguration()
+    var lhs = RuleOptions()
     try? lhs.apply(configuration: [Self.protocol1: ["success", "error"]])
 
-    var rhs = RuleConfiguration()
+    var rhs = RuleOptions()
     try? rhs.apply(configuration: [Self.protocol1: ["success", "error"]])
 
     #expect(lhs == rhs)
   }
 
   @Test func equalsReturnsFalseBecauseProtocolsArentEqual() {
-    var lhs = RuleConfiguration()
+    var lhs = RuleOptions()
     try? lhs.apply(configuration: [Self.protocol1: ["success": "error"]])
 
-    var rhs = RuleConfiguration()
+    var rhs = RuleOptions()
     try? rhs.apply(configuration: [Self.protocol2: ["success": "error", "error": "warning"]])
 
     #expect(lhs != rhs)
   }
 
   @Test func equalsReturnsFalseBecauseSeverityIsntEqual() {
-    var lhs = RuleConfiguration()
+    var lhs = RuleOptions()
     try? lhs.apply(configuration: [Self.protocol1: ["success": "error", "error": "error"]])
 
-    var rhs = RuleConfiguration()
+    var rhs = RuleOptions()
     try? rhs.apply(configuration: [Self.protocol1: ["success": "warning", "error": "error"]])
 
     #expect(lhs != rhs)

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ArrayInitRule: Rule {
+struct ArrayInitRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -39,6 +39,7 @@ struct ArrayInitRule: Rule {
       may be picked up as false positives by the `array_init` rule. If your codebase contains constructs like this, \
       consider using the `typesafe_array_init` analyzer rule instead.
       """,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("Array(foo)"),
       Example("foo.map { $0.0 }"),
@@ -90,15 +91,15 @@ struct ArrayInitRule: Rule {
 }
 
 extension ArrayInitRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ArrayInitRule: OptInRule {}
+extension ArrayInitRule {}
 
 extension ArrayInitRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
         memberAccess.declName.baseName.text == "map",

@@ -1,6 +1,6 @@
 /// A rule configuration that allows to disable (`off`) an option of a rule or specify its severity level in which
 /// case it's active.
-struct OptionSeverityConfiguration<Parent: Rule>: RuleConfiguration,
+struct OptionSeverityConfiguration<Parent: Rule>: RuleOptions,
     AcceptableByConfigurationElement,
     Sendable
 {

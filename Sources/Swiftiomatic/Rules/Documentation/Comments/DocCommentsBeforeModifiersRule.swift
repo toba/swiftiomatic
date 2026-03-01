@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct DocCommentsBeforeModifiersRule: Rule {
+struct DocCommentsBeforeModifiersRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -36,13 +36,13 @@ struct DocCommentsBeforeModifiersRule: Rule {
 }
 
 extension DocCommentsBeforeModifiersRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension DocCommentsBeforeModifiersRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       checkDocCommentPosition(
         modifiers: node.modifiers, attributes: node.attributes,

@@ -1,13 +1,14 @@
 import Foundation
 import SwiftSyntax
 
-struct SortedImportsRule: Rule {
+struct SortedImportsRule {
   var configuration = SortedImportsConfiguration()
 
   static let description = RuleDescription(
     identifier: "sorted_imports",
     name: "Sorted Imports",
     description: "Imports should be sorted",
+    isOptIn: true,
     nonTriggeringExamples: SortedImportsRuleExamples.nonTriggeringExamples,
     triggeringExamples: SortedImportsRuleExamples.triggeringExamples,
     corrections: SortedImportsRuleExamples.corrections,
@@ -15,19 +16,19 @@ struct SortedImportsRule: Rule {
 }
 
 extension SortedImportsRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension SortedImportsRule: OptInRule {}
+extension SortedImportsRule {}
 
 extension SortedImportsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var imports = [Import]()
 
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
@@ -67,7 +68,7 @@ extension SortedImportsRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
       var statements = rewrite(statements: node.statements)
       if numberOfCorrections == 0 {

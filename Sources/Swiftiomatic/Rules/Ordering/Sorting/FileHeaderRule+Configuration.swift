@@ -1,6 +1,6 @@
 import Foundation
 
-struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
+struct FileHeaderConfiguration: SeverityBasedRuleOptions {
   typealias Parent = FileHeaderRule
 
   private static let fileNamePlaceholder = "CURRENT_FILENAME"

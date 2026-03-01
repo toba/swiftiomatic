@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct SpaceAroundBracketsRule: Rule {
+struct SpaceAroundBracketsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -25,17 +25,17 @@ struct SpaceAroundBracketsRule: Rule {
 }
 
 extension SpaceAroundBracketsRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension SpaceAroundBracketsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SubscriptCallExprSyntax) {
       // No space between callee and [
       let leftBracket = node.leftSquare
@@ -49,7 +49,7 @@ extension SpaceAroundBracketsRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
       // Strip trailing horizontal whitespace from callee token before `[` in subscript calls
       if token.trailingTrivia.containsHorizontalWhitespace,

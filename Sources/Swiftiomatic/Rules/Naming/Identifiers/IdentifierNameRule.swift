@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct IdentifierNameRule: Rule {
+struct IdentifierNameRule {
   var configuration = IdentifierNameConfiguration()
 
   static let description = RuleDescription(
@@ -19,13 +19,13 @@ struct IdentifierNameRule: Rule {
 }
 
 extension IdentifierNameRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension IdentifierNameRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private lazy var nameConfiguration = configuration.nameConfiguration
 
     override func visitPost(_ node: AccessorParametersSyntax) {

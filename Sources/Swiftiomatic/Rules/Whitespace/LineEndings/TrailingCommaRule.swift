@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct TrailingCommaRule: Rule {
+struct TrailingCommaRule {
   var configuration = TrailingCommaConfiguration()
 
   private static let triggeringExamples: [Example] = [
@@ -49,17 +49,17 @@ struct TrailingCommaRule: Rule {
 }
 
 extension TrailingCommaRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension TrailingCommaRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: DictionaryElementListSyntax) {
       guard let lastElement = node.last else {
         return
@@ -99,7 +99,7 @@ extension TrailingCommaRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: DictionaryElementListSyntax) -> DictionaryElementListSyntax {
       guard let lastElement = node.last, let index = node.index(of: lastElement) else {
         return super.visit(node)

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct DocCommentsRule: Rule {
+struct DocCommentsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -46,13 +46,13 @@ struct DocCommentsRule: Rule {
 }
 
 extension DocCommentsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension DocCommentsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       checkForRegularComment(on: node)
     }

@@ -7,7 +7,7 @@ protocol SwiftSyntaxRule: SyntaxOnlyRule {
   /// - Parameters:
   ///   - file: The file for which to produce the visitor.
   /// - Returns: A ``ViolationCollectingVisitor`` for the given file.
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType>
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType>
 
   /// Produce a ``RuleViolation`` for the given file and syntax violation
   ///
@@ -28,7 +28,7 @@ protocol SwiftSyntaxRule: SyntaxOnlyRule {
   func preprocess(file: SwiftSource) -> SourceFileSyntax?
 }
 
-extension SwiftSyntaxRule where ConfigurationType: SeverityBasedRuleConfiguration {
+extension SwiftSyntaxRule where OptionsType: SeverityBasedRuleOptions {
   func makeViolation(file: SwiftSource, violation: SyntaxViolation) -> RuleViolation {
     RuleViolation(
       ruleDescription: Self.description,
@@ -67,7 +67,7 @@ extension SwiftSyntaxRule {
       Console.fatalError(
         """
         A severity must be provided. Either define it in the violation or make the rule configuration \
-        conform to `SeverityBasedRuleConfiguration` to take the default.
+        conform to `SeverityBasedRuleOptions` to take the default.
         """,
       )
     }

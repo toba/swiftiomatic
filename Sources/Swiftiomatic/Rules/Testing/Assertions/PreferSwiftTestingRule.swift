@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct PreferSwiftTestingRule: Rule {
+struct PreferSwiftTestingRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -39,13 +39,13 @@ struct PreferSwiftTestingRule: Rule {
 }
 
 extension PreferSwiftTestingRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension PreferSwiftTestingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClassDeclSyntax) {
       // Check if class inherits from XCTestCase
       guard let inheritanceClause = node.inheritanceClause,

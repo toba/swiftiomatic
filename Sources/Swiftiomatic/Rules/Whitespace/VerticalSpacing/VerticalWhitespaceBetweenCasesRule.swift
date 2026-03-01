@@ -1,13 +1,14 @@
 import SwiftBasicFormat
 import SwiftSyntax
 
-struct VerticalWhitespaceBetweenCasesRule: Rule {
+struct VerticalWhitespaceBetweenCasesRule {
   var configuration = VerticalWhitespaceBetweenCasesConfiguration()
 
   static let description = RuleDescription(
     identifier: "vertical_whitespace_between_cases",
     name: "Vertical Whitespace Between Cases",
     description: "Include a single empty line between switch cases",
+    isOptIn: true,
     nonTriggeringExamples: VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
       .values.sorted() + VerticalWhitespaceBetweenCasesRuleExamples.nonTriggeringExamples,
     triggeringExamples: Array(
@@ -19,15 +20,15 @@ struct VerticalWhitespaceBetweenCasesRule: Rule {
 }
 
 extension VerticalWhitespaceBetweenCasesRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension VerticalWhitespaceBetweenCasesRule: OptInRule {}
+extension VerticalWhitespaceBetweenCasesRule {}
 
 extension VerticalWhitespaceBetweenCasesRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private lazy var emptyLines = EmptyLinesVisitor.emptyLines(in: file)
 
     // sm:disable:next function_body_length

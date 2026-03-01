@@ -1,4 +1,4 @@
-struct FunctionDefaultParameterAtEndConfiguration: SeverityBasedRuleConfiguration {
+struct FunctionDefaultParameterAtEndConfiguration: SeverityBasedRuleOptions {
   // sm:disable:previous type_name
 
   @ConfigurationElement(key: "severity")

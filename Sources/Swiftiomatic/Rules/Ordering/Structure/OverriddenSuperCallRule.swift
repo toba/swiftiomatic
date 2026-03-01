@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct OverriddenSuperCallRule: Rule {
+struct OverriddenSuperCallRule {
   var configuration = OverriddenSuperCallConfiguration()
 
   static let description = RuleDescription(
     identifier: "overridden_super_call",
     name: "Overridden Method Calls Super",
     description: "Some overridden methods should always call super.",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -91,15 +92,15 @@ struct OverriddenSuperCallRule: Rule {
 }
 
 extension OverriddenSuperCallRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension OverriddenSuperCallRule: OptInRule {}
+extension OverriddenSuperCallRule {}
 
 extension OverriddenSuperCallRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }

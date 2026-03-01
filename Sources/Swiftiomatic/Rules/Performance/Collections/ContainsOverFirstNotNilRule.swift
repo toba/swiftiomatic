@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ContainsOverFirstNotNilRule: Rule {
+struct ContainsOverFirstNotNilRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "contains_over_first_not_nil",
     name: "Contains over First not Nil",
     description: "Prefer `contains` over `first(where:) != nil` and `firstIndex(where:) != nil`.",
+    isOptIn: true,
     nonTriggeringExamples: ["first", "firstIndex"].flatMap { method in
       [
         Example("let \(method) = myList.\(method)(where: { $0 % 2 == 0 })"),
@@ -31,7 +32,7 @@ struct ContainsOverFirstNotNilRule: Rule {
 }
 
 extension ContainsOverFirstNotNilRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -42,10 +43,10 @@ extension ContainsOverFirstNotNilRule {
   }
 }
 
-extension ContainsOverFirstNotNilRule: OptInRule {}
+extension ContainsOverFirstNotNilRule {}
 
 extension ContainsOverFirstNotNilRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: InfixOperatorExprSyntax) {
       guard let operatorNode = node.operator.as(BinaryOperatorExprSyntax.self),
         operatorNode.operator.tokenKind.isEqualityComparison,

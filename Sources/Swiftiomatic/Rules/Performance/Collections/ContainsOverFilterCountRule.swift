@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ContainsOverFilterCountRule: Rule {
+struct ContainsOverFilterCountRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "contains_over_filter_count",
     name: "Contains over Filter Count",
     description: "Prefer `contains` over comparing `filter(where:).count` to 0",
+    isOptIn: true,
     nonTriggeringExamples: [">", "==", "!="].flatMap { operation in
       [
         Example("let result = myList.filter(where: { $0 % 2 == 0 }).count \(operation) 1"),
@@ -29,15 +30,15 @@ struct ContainsOverFilterCountRule: Rule {
 }
 
 extension ContainsOverFilterCountRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ContainsOverFilterCountRule: OptInRule {}
+extension ContainsOverFilterCountRule {}
 
 extension ContainsOverFilterCountRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ExprListSyntax) {
       guard
         node.count == 3,

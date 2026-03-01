@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct SelfInPropertyInitializationRule: Rule {
+struct SelfInPropertyInitializationRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -114,13 +114,13 @@ struct SelfInPropertyInitializationRule: Rule {
 }
 
 extension SelfInPropertyInitializationRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension SelfInPropertyInitializationRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: VariableDeclSyntax) {
       guard !node.modifiers.contains(keyword: .lazy),
         !node.modifiers.containsStaticOrClass,

@@ -1,12 +1,13 @@
 import Foundation
 
-struct FileNameNoSpaceRule: OptInRule, SyntaxOnlyRule {
+struct FileNameNoSpaceRule: SyntaxOnlyRule {
   var configuration = FileNameNoSpaceConfiguration()
 
   static let description = RuleDescription(
     identifier: "file_name_no_space",
     name: "File Name no Space",
     description: "File name should not contain any whitespace",
+      isOptIn: true,
   )
 
   func validate(file: SwiftSource) -> [RuleViolation] {

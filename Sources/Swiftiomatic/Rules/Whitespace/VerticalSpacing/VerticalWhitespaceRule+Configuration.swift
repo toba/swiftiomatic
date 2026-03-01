@@ -1,4 +1,4 @@
-struct VerticalWhitespaceConfiguration: SeverityBasedRuleConfiguration {
+struct VerticalWhitespaceConfiguration: SeverityBasedRuleOptions {
   static let defaultDescriptionReason = "Limit vertical whitespace to a single empty line"
 
   @ConfigurationElement(key: "severity")

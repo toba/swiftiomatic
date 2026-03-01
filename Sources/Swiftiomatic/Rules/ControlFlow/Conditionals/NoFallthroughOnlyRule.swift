@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct NoFallthroughOnlyRule: Rule {
+struct NoFallthroughOnlyRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -14,13 +14,13 @@ struct NoFallthroughOnlyRule: Rule {
 }
 
 extension NoFallthroughOnlyRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension NoFallthroughOnlyRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SwitchCaseListSyntax) {
       let cases = node.compactMap { $0.as(SwitchCaseSyntax.self) }
 

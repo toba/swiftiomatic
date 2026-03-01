@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct SingleTestClassRule: SyntaxOnlyRule, OptInRule {
+struct SingleTestClassRule: SyntaxOnlyRule {
   var configuration = SingleTestClassConfiguration()
 
   static let description = RuleDescription(
     identifier: "single_test_class",
     name: "Single Test Class",
     description: "Test files should contain a single QuickSpec or XCTestCase class.",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("class FooTests {  }"),
       Example("class FooTests: QuickSpec {  }"),
@@ -80,7 +81,7 @@ struct SingleTestClassRule: SyntaxOnlyRule, OptInRule {
 }
 
 extension SingleTestClassRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }

@@ -1,4 +1,4 @@
-struct InclusiveLanguageConfiguration: SeverityBasedRuleConfiguration {
+struct InclusiveLanguageConfiguration: SeverityBasedRuleOptions {
   private static let defaultTerms: Set<String> = [
     "whitelist",
     "blacklist",

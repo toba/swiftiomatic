@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct EnumCaseAssociatedValuesLengthRule: Rule {
+struct EnumCaseAssociatedValuesLengthRule {
   var configuration = SeverityLevelsConfiguration<Self>(warning: 5, error: 6)
 
   static let description = RuleDescription(
     identifier: "enum_case_associated_values_count",
     name: "Enum Case Associated Values Count",
     description: "The number of associated values in an enum case should be low.",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -45,15 +46,15 @@ struct EnumCaseAssociatedValuesLengthRule: Rule {
 }
 
 extension EnumCaseAssociatedValuesLengthRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension EnumCaseAssociatedValuesLengthRule: OptInRule {}
+extension EnumCaseAssociatedValuesLengthRule {}
 
 extension EnumCaseAssociatedValuesLengthRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: EnumCaseElementSyntax) {
       guard let associatedValue = node.parameterClause,
         case let enumCaseAssociatedValueCount = associatedValue.parameters.count,

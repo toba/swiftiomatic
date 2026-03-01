@@ -1,13 +1,14 @@
 import Foundation
 import SwiftIDEUtils
 
-struct PeriodSpacingRule: SyntaxOnlyRule, OptInRule, SubstitutionCorrectableRule {
+struct PeriodSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "period_spacing",
     name: "Period Spacing",
     description: "Periods should not be followed by more than one space",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("let pi = 3.2"),
       Example("let pi = Double.pi"),

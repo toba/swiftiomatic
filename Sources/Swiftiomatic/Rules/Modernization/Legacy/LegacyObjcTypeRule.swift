@@ -28,13 +28,14 @@ private let legacyObjcTypes = [
   "NSUUID",
 ]
 
-struct LegacyObjcTypeRule: Rule {
+struct LegacyObjcTypeRule {
   var configuration = LegacyObjcTypeConfiguration()
 
   static let description = RuleDescription(
     identifier: "legacy_objc_type",
     name: "Legacy Objective-C Reference Type",
     description: "Prefer Swift value types to bridged Objective-C reference types",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("var array = Array<Int>()"),
       Example("var calendar: Calendar? = nil"),
@@ -79,15 +80,15 @@ struct LegacyObjcTypeRule: Rule {
 }
 
 extension LegacyObjcTypeRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension LegacyObjcTypeRule: OptInRule {}
+extension LegacyObjcTypeRule {}
 
 extension LegacyObjcTypeRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: IdentifierTypeSyntax) {
       if let name = node.typeName, isViolatingType(name) {
         violations.append(node.positionAfterSkippingLeadingTrivia)

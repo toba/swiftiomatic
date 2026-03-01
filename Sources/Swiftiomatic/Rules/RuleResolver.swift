@@ -5,11 +5,11 @@ public enum RuleResolver {
   /// Instantiate all registered rules with optional per-rule config overrides
   ///
   /// - Parameters:
-  ///   - enabled: Explicit set of rule IDs to enable (opt-in rules need this). `nil` means all non-``OptInRule``.
+  ///   - enabled: Explicit set of rule IDs to enable (opt-in rules need this). `nil` means all default rules.
   ///   - disabled: Rule IDs to skip.
   ///   - onlyRules: If non-empty, ONLY these rules run (overrides enabled/disabled).
   ///   - ruleConfigs: Per-rule configuration dictionaries from `.swiftiomatic.yaml`.
-  ///   - skipAnalyzerRules: If `true`, skip rules that require compiler arguments (``AnalyzerRule``).
+  ///   - skipAnalyzerRules: If `true`, skip rules that require compiler arguments.
   /// - Returns: The instantiated and configured rules.
   public static func loadRules(
     enabled: Set<String>? = nil,
@@ -30,13 +30,13 @@ public enum RuleResolver {
         guard !disabled.contains(identifier) else { return nil }
 
         // Skip opt-in rules unless explicitly enabled
-        if ruleType is any OptInRule.Type {
+        if ruleType.description.isOptIn {
           guard enabled?.contains(identifier) ?? false else { return nil }
         }
       }
 
       // Skip analyzer rules when we don't have compiler arguments
-      if skipAnalyzerRules, ruleType is any AnalyzerRule.Type {
+      if skipAnalyzerRules, ruleType.description.requiresCompilerArguments {
         return nil
       }
 

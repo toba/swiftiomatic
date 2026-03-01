@@ -1,4 +1,4 @@
-struct PrivateOverFilePrivateConfiguration: SeverityBasedRuleConfiguration {
+struct PrivateOverFilePrivateConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "validate_extensions")

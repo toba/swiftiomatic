@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct LetVarWhitespaceRule: Rule {
+struct LetVarWhitespaceRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "let_var_whitespace",
     name: "Variable Declaration Whitespace",
     description: "Variable declarations should be separated from other statements by a blank line",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -276,15 +277,15 @@ struct LetVarWhitespaceRule: Rule {
 }
 
 extension LetVarWhitespaceRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension LetVarWhitespaceRule: OptInRule {}
+extension LetVarWhitespaceRule {}
 
 extension LetVarWhitespaceRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberBlockItemListSyntax) {
       collectViolations(from: node, using: \.decl)
     }

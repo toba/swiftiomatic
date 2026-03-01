@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct EmptyCollectionLiteralRule: Rule {
+struct EmptyCollectionLiteralRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct EmptyCollectionLiteralRule: Rule {
     name: "Empty Collection Literal",
     description:
       "Prefer checking `isEmpty` over comparing collection to an empty array or dictionary literal",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("myArray = []"),
       Example("myArray.isEmpty"),
@@ -28,15 +29,15 @@ struct EmptyCollectionLiteralRule: Rule {
 }
 
 extension EmptyCollectionLiteralRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension EmptyCollectionLiteralRule: OptInRule {}
+extension EmptyCollectionLiteralRule {}
 
 extension EmptyCollectionLiteralRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: TokenSyntax) {
       guard
         node.tokenKind.isEqualityComparison,

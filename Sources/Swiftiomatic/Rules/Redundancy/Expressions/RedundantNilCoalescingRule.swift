@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantNilCoalescingRule: Rule {
+struct RedundantNilCoalescingRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct RedundantNilCoalescingRule: Rule {
     name: "Redundant Nil Coalescing",
     description: "nil coalescing operator is only evaluated if the lhs is nil"
       + ", coalescing operator with nil as rhs is redundant",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("var myVar: Int?; myVar ?? 0")
     ],
@@ -22,19 +23,19 @@ struct RedundantNilCoalescingRule: Rule {
 }
 
 extension RedundantNilCoalescingRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension RedundantNilCoalescingRule: OptInRule {}
+extension RedundantNilCoalescingRule {}
 
 extension RedundantNilCoalescingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: TokenSyntax) {
       if node.tokenKind.isNilCoalescingOperator,
         node.nextToken(viewMode: .sourceAccurate)?.tokenKind == .keyword(.nil)
@@ -44,7 +45,7 @@ extension RedundantNilCoalescingRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ExprListSyntax) -> ExprListSyntax {
       guard
         node.count > 2,

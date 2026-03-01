@@ -6,13 +6,14 @@ import SwiftSyntax
 /// of objects and the deinit should print a message or remove its instance from a
 /// list of allocations. Even having an empty deinit method is useful to provide
 /// a place to put a breakpoint when chasing down leaks.
-struct RequiredDeinitRule: Rule {
+struct RequiredDeinitRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "required_deinit",
     name: "Required Deinit",
     description: "Classes should have an explicit deinit method",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -79,15 +80,15 @@ struct RequiredDeinitRule: Rule {
 }
 
 extension RequiredDeinitRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension RequiredDeinitRule: OptInRule {}
+extension RequiredDeinitRule {}
 
 extension RequiredDeinitRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClassDeclSyntax) {
       let visitor = DeinitVisitor(configuration: configuration, file: file)
       if !visitor.walk(tree: node.memberBlock, handler: \.hasDeinit) {
@@ -96,7 +97,7 @@ extension RequiredDeinitRule {
     }
   }
 
-  fileprivate final class DeinitVisitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class DeinitVisitor: ViolationCollectingVisitor<OptionsType> {
     private(set) var hasDeinit = false
 
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {

@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct OneDeclarationPerFileRule: Rule {
+struct OneDeclarationPerFileRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "one_declaration_per_file",
     name: "One Declaration per File",
     description: "Only a single declaration is allowed in a file",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -51,15 +52,15 @@ struct OneDeclarationPerFileRule: Rule {
 }
 
 extension OneDeclarationPerFileRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension OneDeclarationPerFileRule: OptInRule {}
+extension OneDeclarationPerFileRule {}
 
 extension OneDeclarationPerFileRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var declarationVisited = false
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all

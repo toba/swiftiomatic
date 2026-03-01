@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct PrivateActionRule: Rule {
+struct PrivateActionRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "private_action",
     name: "Private Actions",
     description: "IBActions should be private",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         "class Foo {\n\t@IBAction private func barButtonTapped(_ sender: UIButton) {}\n}",
@@ -60,15 +61,15 @@ struct PrivateActionRule: Rule {
 }
 
 extension PrivateActionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension PrivateActionRule: OptInRule {}
+extension PrivateActionRule {}
 
 extension PrivateActionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
       node.modifiers.containsPrivateOrFileprivate() ? .skipChildren : .visitChildren
     }

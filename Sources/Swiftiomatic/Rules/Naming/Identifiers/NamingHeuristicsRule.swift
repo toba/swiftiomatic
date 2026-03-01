@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct NamingHeuristicsRule: Rule {
+struct NamingHeuristicsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -9,6 +9,7 @@ struct NamingHeuristicsRule: Rule {
     name: "Naming Heuristics",
     description:
       "Checks names against Swift API Design Guidelines: Bool assertions, protocol suffixes, factory prefixes",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("var isEnabled: Bool = true"),
       Example("var hasContent: Bool = false"),
@@ -22,12 +23,12 @@ struct NamingHeuristicsRule: Rule {
 }
 
 extension NamingHeuristicsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension NamingHeuristicsRule: OptInRule {}
+extension NamingHeuristicsRule {}
 
 extension NamingHeuristicsRule {
   static func boolNamingReason(_ name: String) -> String {
@@ -122,7 +123,7 @@ extension NamingHeuristicsRule {
     }
   }
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ProtocolDeclSyntax) {
       let name = node.name.text
       guard name.hasSuffix("able") || name.hasSuffix("ible") else { return }

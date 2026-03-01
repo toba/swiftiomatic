@@ -5,7 +5,7 @@ import SwiftSyntax
 /// Subclasses override ``collectViolations(for:)`` to define what constitutes
 /// a violation for their specific rule. The base class handles visiting all
 /// declaration and statement kinds that introduce code blocks.
-class CodeBlockVisitor<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
+class CodeBlockVisitor<Configuration: RuleOptions>: ViolationCollectingVisitor<
     Configuration,
 > {
     @inlinable

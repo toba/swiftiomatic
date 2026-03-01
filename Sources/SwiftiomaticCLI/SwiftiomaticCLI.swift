@@ -244,11 +244,14 @@ struct ListRules: ParsableCommand {
     var format: OutputFormat = .text
 
     func run() {
-        let entries: [RuleCatalog.Entry]
+        var entries = RuleCatalog.allEntries()
         if let source {
-            entries = RuleCatalog.rules(for: source)
-        } else {
-            entries = RuleCatalog.allRules()
+            let scope: Scope = switch source {
+                case .lint: .lint
+                case .format: .format
+                case .suggest: .suggest
+            }
+            entries = entries.filter { $0.scope == scope }
         }
 
         switch format {
@@ -256,12 +259,12 @@ struct ListRules: ParsableCommand {
                 for entry in entries {
                     var flags: [String] = []
                     if entry.isDeprecated { flags.append("deprecated") }
-                    if !entry.isEnabled { flags.append("disabled") }
-                    if entry.canAutoFix { flags.append("autofix") }
+                    if entry.isOptIn { flags.append("opt-in") }
+                    if entry.isCorrectable { flags.append("autofix") }
                     if entry.isCrossFile { flags.append("cross-file") }
                     if entry.requiresSourceKit { flags.append("sourcekit") }
                     let suffix = flags.isEmpty ? "" : " (\(flags.joined(separator: ", ")))"
-                    print("[\(entry.source.rawValue)] \(entry.id) — \(entry.name)\(suffix)")
+                    print("[\(entry.scope.rawValue)] \(entry.id) — \(entry.name)\(suffix)")
                 }
                 print("\nTotal: \(entries.count) rules")
             case .json:
@@ -274,7 +277,7 @@ struct ListRules: ParsableCommand {
                 }
             case .xcode:
                 for entry in entries {
-                    print("[\(entry.source.rawValue)] \(entry.id) — \(entry.name)")
+                    print("[\(entry.scope.rawValue)] \(entry.id) — \(entry.name)")
                 }
         }
     }

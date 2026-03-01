@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ConditionalReturnsOnNewlineRule: Rule {
+struct ConditionalReturnsOnNewlineRule {
   var configuration = ConditionalReturnsOnNewlineConfiguration()
 
   static let description = RuleDescription(
     identifier: "conditional_returns_on_newline",
     name: "Conditional Returns on Newline",
     description: "Conditional statements should always return on the next line",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("guard true else {\n return true\n}"),
       Example("guard true,\n let x = true else {\n return true\n}"),
@@ -37,15 +38,15 @@ struct ConditionalReturnsOnNewlineRule: Rule {
 }
 
 extension ConditionalReturnsOnNewlineRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ConditionalReturnsOnNewlineRule: OptInRule {}
+extension ConditionalReturnsOnNewlineRule {}
 
 extension ConditionalReturnsOnNewlineRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: IfExprSyntax) {
       if isReturn(node.body.statements.lastReturn, onTheSameLineAs: node.ifKeyword) {
         violations.append(node.ifKeyword.positionAfterSkippingLeadingTrivia)

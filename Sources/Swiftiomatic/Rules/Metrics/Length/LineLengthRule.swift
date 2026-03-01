@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct LineLengthRule: Rule {
+struct LineLengthRule {
   var configuration = LineLengthConfiguration()
 
   static let description = RuleDescription(
@@ -34,13 +34,13 @@ struct LineLengthRule: Rule {
 }
 
 extension LineLengthRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension LineLengthRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     // To store line numbers that should be ignored based on configuration
     private var functionDeclarationLines = Set<Int>()
     private var commentOnlyLines = Set<Int>()

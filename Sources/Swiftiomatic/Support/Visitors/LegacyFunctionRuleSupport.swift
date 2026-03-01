@@ -6,7 +6,7 @@ import SwiftSyntaxBuilder
 /// Matches calls against a dictionary of legacy function names and records a
 /// violation at each call site. Paired with ``LegacyFunctionRewriter`` for
 /// auto-correction.
-class LegacyFunctionVisitor<Configuration: RuleConfiguration>: ViolationCollectingVisitor<
+class LegacyFunctionVisitor<Configuration: RuleOptions>: ViolationCollectingVisitor<
     Configuration,
 > {
     @usableFromInline let legacyFunctions: [String: LegacyFunctionRewriteStrategy]
@@ -59,7 +59,7 @@ enum LegacyFunctionRewriteStrategy: Sendable {
 ///
 /// Applies the ``LegacyFunctionRewriteStrategy`` for each matched call,
 /// preserving leading and trailing trivia.
-class LegacyFunctionRewriter<Configuration: RuleConfiguration>: ViolationCollectingRewriter<
+class LegacyFunctionRewriter<Configuration: RuleOptions>: ViolationCollectingRewriter<
     Configuration,
 > {
     @usableFromInline let legacyFunctions: [String: LegacyFunctionRewriteStrategy]

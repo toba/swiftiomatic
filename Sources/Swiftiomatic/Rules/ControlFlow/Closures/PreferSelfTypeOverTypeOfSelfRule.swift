@@ -1,13 +1,14 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct PreferSelfTypeOverTypeOfSelfRule: Rule {
+struct PreferSelfTypeOverTypeOfSelfRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "prefer_self_type_over_type_of_self",
     name: "Prefer Self Type Over Type of Self",
     description: "Prefer `Self` over `type(of: self)` when accessing properties or calling methods",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -132,19 +133,19 @@ struct PreferSelfTypeOverTypeOfSelfRule: Rule {
 }
 
 extension PreferSelfTypeOverTypeOfSelfRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension PreferSelfTypeOverTypeOfSelfRule: OptInRule {}
+extension PreferSelfTypeOverTypeOfSelfRule {}
 
 extension PreferSelfTypeOverTypeOfSelfRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       if let function = node.base?.as(FunctionCallExprSyntax.self), function.hasViolation {
         violations.append(function.positionAfterSkippingLeadingTrivia)
@@ -152,7 +153,7 @@ extension PreferSelfTypeOverTypeOfSelfRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
       guard let function = node.base?.as(FunctionCallExprSyntax.self),
         function.hasViolation

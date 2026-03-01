@@ -5,7 +5,7 @@ import Testing
 @Suite(.rulesRegistered) struct RuleTests {
   fileprivate struct RuleMock1: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
-    var configurationDescription: some Documentable { RuleConfigurationOption.noOptions }
+    var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
     static let description = RuleDescription(
       identifier: "RuleMock1", name: "",
       description: "",
@@ -21,7 +21,7 @@ import Testing
 
   fileprivate struct RuleMock2: Rule {
     var configuration = SeverityConfiguration<Self>(.warning)
-    var configurationDescription: some Documentable { RuleConfigurationOption.noOptions }
+    var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
     static let description = RuleDescription(
       identifier: "RuleMock2", name: "",
       description: "",

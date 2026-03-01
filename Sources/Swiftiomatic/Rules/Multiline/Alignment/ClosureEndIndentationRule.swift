@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ClosureEndIndentationRule: Rule {
+struct ClosureEndIndentationRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "closure_end_indentation",
     name: "Closure End Indentation",
     description: "Closure end should have the same indentation as the line that started it.",
+    isOptIn: true,
     nonTriggeringExamples: ClosureEndIndentationRuleExamples.nonTriggeringExamples,
     triggeringExamples: ClosureEndIndentationRuleExamples.triggeringExamples,
     corrections: ClosureEndIndentationRuleExamples.corrections,
@@ -14,15 +15,15 @@ struct ClosureEndIndentationRule: Rule {
 }
 
 extension ClosureEndIndentationRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ClosureEndIndentationRule: OptInRule {}
+extension ClosureEndIndentationRule {}
 
 extension ClosureEndIndentationRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClosureExprSyntax) {
       // Get locations of opening and closing braces
       let leftBraceLocation = locationConverter.location(

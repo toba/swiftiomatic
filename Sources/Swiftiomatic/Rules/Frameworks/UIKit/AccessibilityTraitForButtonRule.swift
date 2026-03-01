@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct AccessibilityTraitForButtonRule: Rule {
+struct AccessibilityTraitForButtonRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -21,21 +21,22 @@ struct AccessibilityTraitForButtonRule: Rule {
       the link trait instead. This rule attempts to catch uses of the SwiftUI `.onTapGesture` modifier where the \
       `.isButton` or `.isLink` trait is not explicitly applied.
       """,
+    isOptIn: true,
     nonTriggeringExamples: AccessibilityTraitForButtonRuleExamples.nonTriggeringExamples,
     triggeringExamples: AccessibilityTraitForButtonRuleExamples.triggeringExamples,
   )
 }
 
 extension AccessibilityTraitForButtonRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension AccessibilityTraitForButtonRule: OptInRule {}
+extension AccessibilityTraitForButtonRule {}
 
 extension AccessibilityTraitForButtonRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var isInViewStruct = false
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {

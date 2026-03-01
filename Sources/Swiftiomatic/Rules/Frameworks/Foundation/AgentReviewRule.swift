@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct AgentReviewRule: Rule {
+struct AgentReviewRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "agent_review",
     name: "Agent Review",
     description: "Lower-confidence checks that benefit from agent verification",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("let task = Task { await work() }"),
       Example("enum AppError: LocalizedError { case failed }"),
@@ -19,15 +20,15 @@ struct AgentReviewRule: Rule {
 }
 
 extension AgentReviewRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension AgentReviewRule: OptInRule {}
+extension AgentReviewRule {}
 
 extension AgentReviewRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       let callee = node.calledExpression.trimmedDescription
 

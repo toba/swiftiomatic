@@ -1,4 +1,4 @@
-struct CollectionAlignmentConfiguration: SeverityBasedRuleConfiguration {
+struct CollectionAlignmentConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "align_colons")

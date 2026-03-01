@@ -1,7 +1,7 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct UnneededOverrideRule: Rule {
+struct UnneededOverrideRule {
   var configuration = UnneededOverrideConfiguration()
 
   static let description = RuleDescription(
@@ -15,17 +15,17 @@ struct UnneededOverrideRule: Rule {
 }
 
 extension UnneededOverrideRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension UnneededOverrideRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       if node.isUnneededOverride(excludedMethods: configuration.excludedMethods) {
         violations.append(node.positionAfterSkippingLeadingTrivia)
@@ -39,7 +39,7 @@ extension UnneededOverrideRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
       guard node.isUnneededOverride(excludedMethods: configuration.excludedMethods) else {
         return super.visit(node)

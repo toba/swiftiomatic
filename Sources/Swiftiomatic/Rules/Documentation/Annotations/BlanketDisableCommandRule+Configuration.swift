@@ -1,4 +1,4 @@
-struct BlanketDisableCommandConfiguration: SeverityBasedRuleConfiguration {
+struct BlanketDisableCommandConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "allowed_rules")

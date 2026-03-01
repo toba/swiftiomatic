@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct InclusiveLanguageRule: Rule {
+struct InclusiveLanguageRule {
   var configuration = InclusiveLanguageConfiguration()
 
   static let description = RuleDescription(
@@ -17,13 +17,13 @@ struct InclusiveLanguageRule: Rule {
 }
 
 extension InclusiveLanguageRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension InclusiveLanguageRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: IdentifierPatternSyntax) {
       if let violation = violation(for: node.identifier) {
         violations.append(violation)

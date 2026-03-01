@@ -54,7 +54,7 @@ import Testing
       "disabled_block_types": ["initializer_bodies", "statement_blocks"]
     ])
     #expect(
-      RuleConfigurationDescription.from(configuration: config).oneLiner()
+      RuleOptionsDescription.from(configuration: config).oneLiner()
         == "severity: warning; disabled_block_types: [initializer_bodies, statement_blocks]",
     )
   }

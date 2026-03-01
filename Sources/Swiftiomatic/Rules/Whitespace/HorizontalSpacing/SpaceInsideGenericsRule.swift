@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct SpaceInsideGenericsRule: Rule {
+struct SpaceInsideGenericsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -23,17 +23,17 @@ struct SpaceInsideGenericsRule: Rule {
 }
 
 extension SpaceInsideGenericsRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension SpaceInsideGenericsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
       switch token.tokenKind {
       case .leftAngle:
@@ -53,7 +53,7 @@ extension SpaceInsideGenericsRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
       switch token.tokenKind {
       case .leftAngle:

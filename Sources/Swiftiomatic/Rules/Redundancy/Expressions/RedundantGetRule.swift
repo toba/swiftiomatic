@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantGetRule: Rule {
+struct RedundantGetRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -107,17 +107,17 @@ struct RedundantGetRule: Rule {
 }
 
 extension RedundantGetRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension RedundantGetRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: AccessorBlockSyntax) {
       guard node.hasRedundantGet else { return }
       let getter = node.accessorsList.first!
@@ -125,7 +125,7 @@ extension RedundantGetRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
       guard node.hasRedundantGet,
         let getter = node.accessorsList.first,

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct AccessibilityLabelForImageRule: Rule, OptInRule {
+struct AccessibilityLabelForImageRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -20,19 +20,20 @@ struct AccessibilityLabelForImageRule: Rule, OptInRule {
       not accessibility elements. Known false positives for Images created in a separate function from where they \
       have accessibility properties applied.
       """,
+    isOptIn: true,
     nonTriggeringExamples: AccessibilityLabelForImageRuleExamples.nonTriggeringExamples,
     triggeringExamples: AccessibilityLabelForImageRuleExamples.triggeringExamples,
   )
 }
 
 extension AccessibilityLabelForImageRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension AccessibilityLabelForImageRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var isInViewStruct = false
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {

@@ -1,4 +1,4 @@
-struct NoMagicNumbersConfiguration: SeverityBasedRuleConfiguration {
+struct NoMagicNumbersConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(

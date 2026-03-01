@@ -1,4 +1,4 @@
-struct ModifierOrderConfiguration: SeverityBasedRuleConfiguration {
+struct ModifierOrderConfiguration: SeverityBasedRuleOptions {
     @ConfigurationElement(key: "severity")
     var severityConfiguration = SeverityConfiguration<Parent>(.warning)
     @ConfigurationElement(key: "preferred_modifier_order")

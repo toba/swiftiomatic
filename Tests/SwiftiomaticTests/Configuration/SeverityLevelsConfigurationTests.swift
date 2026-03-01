@@ -149,7 +149,7 @@ private struct MockSeverityLevelsRule: Rule {
     }
   }
 
-  @Test func applyConfigurationWithInvalidConfigurationType() throws {
+  @Test func applyConfigurationWithInvalidOptionsType() throws {
     var config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 12, error: nil)
 
     // Unrecognized keys are silently ignored

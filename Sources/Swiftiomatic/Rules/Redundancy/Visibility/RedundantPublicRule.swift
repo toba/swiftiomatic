@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantPublicRule: Rule {
+struct RedundantPublicRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -44,13 +44,13 @@ struct RedundantPublicRule: Rule {
 }
 
 extension RedundantPublicRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension RedundantPublicRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: DeclModifierSyntax) {
       guard node.name.tokenKind == .keyword(.public), node.detail == nil else { return }
 

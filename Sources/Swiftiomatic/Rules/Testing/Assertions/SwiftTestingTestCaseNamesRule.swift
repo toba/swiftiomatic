@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct SwiftTestingTestCaseNamesRule: Rule {
+struct SwiftTestingTestCaseNamesRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -29,13 +29,13 @@ struct SwiftTestingTestCaseNamesRule: Rule {
 }
 
 extension SwiftTestingTestCaseNamesRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension SwiftTestingTestCaseNamesRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       // Check if the function has @Test attribute
       let hasTestAttribute = node.attributes.contains {

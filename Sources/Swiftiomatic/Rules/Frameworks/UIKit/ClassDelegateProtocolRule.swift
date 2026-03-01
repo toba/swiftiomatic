@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ClassDelegateProtocolRule: Rule {
+struct ClassDelegateProtocolRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -56,13 +56,13 @@ struct ClassDelegateProtocolRule: Rule {
 }
 
 extension ClassDelegateProtocolRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension ClassDelegateProtocolRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .allExcept(ProtocolDeclSyntax.self)
     }

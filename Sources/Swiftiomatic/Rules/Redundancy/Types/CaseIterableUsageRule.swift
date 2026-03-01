@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct CaseIterableUsageRule: CollectingRule, OptInRule {
+struct CaseIterableUsageRule: CollectingRule {
   typealias FileInfo = CaseIterableContribution
 
   var configuration = SeverityConfiguration<Self>(.warning)
@@ -11,6 +11,7 @@ struct CaseIterableUsageRule: CollectingRule, OptInRule {
     description:
       "Enums conforming to CaseIterable without any .allCases references may have unnecessary conformance",
     scope: .suggest,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """

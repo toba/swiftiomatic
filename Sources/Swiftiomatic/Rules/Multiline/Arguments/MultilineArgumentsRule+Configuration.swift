@@ -1,4 +1,4 @@
-struct MultilineArgumentsConfiguration: SeverityBasedRuleConfiguration {
+struct MultilineArgumentsConfiguration: SeverityBasedRuleOptions {
   enum FirstArgumentLocation: String, AcceptableByConfigurationElement {
     case anyLine = "any_line"
     case sameLine = "same_line"

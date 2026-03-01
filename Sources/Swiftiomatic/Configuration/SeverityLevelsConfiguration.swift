@@ -1,5 +1,5 @@
 /// A rule configuration that allows specifying thresholds for `warning` and `error` severities
-struct SeverityLevelsConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption, Sendable {
+struct SeverityLevelsConfiguration<Parent: Rule>: RuleOptions, InlinableOption, Sendable {
     /// The threshold for a violation to be a warning
     @ConfigurationElement(key: "warning")
     var warning = 12

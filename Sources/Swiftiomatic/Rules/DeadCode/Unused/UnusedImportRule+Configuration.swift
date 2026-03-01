@@ -26,7 +26,7 @@ struct TransitiveModuleConfiguration<Parent: Rule>: Equatable, AcceptableByConfi
   }
 }
 
-struct UnusedImportConfiguration: SeverityBasedRuleConfiguration {
+struct UnusedImportConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>.warning
   @ConfigurationElement(key: "require_explicit_imports")

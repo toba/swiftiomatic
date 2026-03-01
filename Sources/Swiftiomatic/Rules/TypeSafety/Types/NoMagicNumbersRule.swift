@@ -3,13 +3,14 @@
 import Foundation
 import SwiftSyntax
 
-struct NoMagicNumbersRule: Rule {
+struct NoMagicNumbersRule {
   var configuration = NoMagicNumbersConfiguration()
 
   static let description = RuleDescription(
     identifier: "no_magic_numbers",
     name: "No Magic Numbers",
     description: "Magic numbers should be replaced by named constants",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("var foo = 123"),
       Example("static let bar: Double = 0.123"),
@@ -247,7 +248,7 @@ struct NoMagicNumbersRule: Rule {
 }
 
 extension NoMagicNumbersRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -258,10 +259,10 @@ extension NoMagicNumbersRule {
   }
 }
 
-extension NoMagicNumbersRule: OptInRule {}
+extension NoMagicNumbersRule {}
 
 extension NoMagicNumbersRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var testClasses: Set<String> = []
     private var nonTestClasses: Set<String> = []
     private var possibleViolations: [String: Set<AbsolutePosition>] = [:]

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct PreferCountWhereRule: Rule {
+struct PreferCountWhereRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -22,13 +22,13 @@ struct PreferCountWhereRule: Rule {
 }
 
 extension PreferCountWhereRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension PreferCountWhereRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       // Looking for `.count` access on a `.filter(...)` call
       guard node.declName.baseName.text == "count" else { return }

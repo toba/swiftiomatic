@@ -9,11 +9,11 @@ protocol SwiftSyntaxCorrectableRule: SwiftSyntaxRule, CorrectableRule {
   ///   - file: The file for which to produce the rewriter.
   /// - Returns: A ``ViolationCollectingRewriter`` for the given file, or `nil` to fall back
   ///   to the visitor's collected `violationCorrections`.
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>?
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>?
 }
 
 extension SwiftSyntaxCorrectableRule {
-  func makeRewriter(file _: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file _: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     nil
   }
 
@@ -72,7 +72,7 @@ extension SwiftSyntaxCorrectableRule {
 }
 
 /// A SwiftSyntax `SyntaxRewriter` that produces absolute positions where corrections were applied
-class ViolationCollectingRewriter<Configuration: RuleConfiguration>: SyntaxRewriter {
+class ViolationCollectingRewriter<Configuration: RuleOptions>: SyntaxRewriter {
   /// The rule's configuration
   let configuration: Configuration
   /// The file from which the traversed syntax tree stems

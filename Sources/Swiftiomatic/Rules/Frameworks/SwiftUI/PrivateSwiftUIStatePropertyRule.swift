@@ -10,13 +10,14 @@ import SwiftSyntax
 ///
 /// Declare state and state objects as private to prevent setting them from a memberwise initializer,
 /// which can conflict with the storage management that SwiftUI provides:
-struct PrivateSwiftUIStatePropertyRule: Rule {
+struct PrivateSwiftUIStatePropertyRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "private_swiftui_state",
     name: "Private SwiftUI State Properties",
     description: "SwiftUI state properties should be private",
+    isOptIn: true,
     nonTriggeringExamples: PrivateSwiftUIStatePropertyRuleExamples.nonTriggeringExamples,
     triggeringExamples: PrivateSwiftUIStatePropertyRuleExamples.triggeringExamples,
     corrections: PrivateSwiftUIStatePropertyRuleExamples.corrections,
@@ -24,19 +25,19 @@ struct PrivateSwiftUIStatePropertyRule: Rule {
 }
 
 extension PrivateSwiftUIStatePropertyRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension PrivateSwiftUIStatePropertyRule: OptInRule {}
+extension PrivateSwiftUIStatePropertyRule {}
 
 extension PrivateSwiftUIStatePropertyRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }
@@ -89,7 +90,7 @@ extension PrivateSwiftUIStatePropertyRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     /// LIFO stack that stores if a type conforms to SwiftUI protocols.
     /// `true` indicates that SwiftUI state properties should be
     /// checked in the scope of the last entered declaration.

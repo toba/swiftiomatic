@@ -1,4 +1,4 @@
-struct IdentifierNameConfiguration: RuleConfiguration {
+struct IdentifierNameConfiguration: RuleOptions {
   private static let defaultOperators = [
     "/", "=", "-", "+", "!", "*", "|", "^", "~", "?", ".", "%", "<", ">", "&",
   ]

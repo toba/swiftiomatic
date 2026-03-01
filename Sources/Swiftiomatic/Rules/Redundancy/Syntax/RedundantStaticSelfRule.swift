@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantStaticSelfRule: Rule {
+struct RedundantStaticSelfRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -43,13 +43,13 @@ struct RedundantStaticSelfRule: Rule {
 }
 
 extension RedundantStaticSelfRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension RedundantStaticSelfRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       // Looking for `Self.something` in a static context
       guard let base = node.base?.as(DeclReferenceExprSyntax.self),

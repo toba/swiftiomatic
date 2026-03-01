@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct AttributesRule: Rule {
+struct AttributesRule {
   var configuration = AttributesConfiguration()
 
   static let description = RuleDescription(
@@ -26,21 +26,22 @@ struct AttributesRule: Rule {
       Swiftiomatic's rule requires attributes to be on their own lines for functions and types, but on the same line \
       for variables and imports.
       """,
+    isOptIn: true,
     nonTriggeringExamples: AttributesRuleExamples.nonTriggeringExamples,
     triggeringExamples: AttributesRuleExamples.triggeringExamples,
   )
 }
 
 extension AttributesRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension AttributesRule: OptInRule {}
+extension AttributesRule {}
 
 extension AttributesRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: AttributeListSyntax) {
       guard let helper = node.makeHelper(locationConverter: locationConverter) else {
         return

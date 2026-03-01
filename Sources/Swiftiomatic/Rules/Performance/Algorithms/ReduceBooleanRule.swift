@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ReduceBooleanRule: Rule {
+struct ReduceBooleanRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -28,13 +28,13 @@ struct ReduceBooleanRule: Rule {
 }
 
 extension ReduceBooleanRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension ReduceBooleanRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard
         let calledExpression = node.calledExpression.as(MemberAccessExprSyntax.self),

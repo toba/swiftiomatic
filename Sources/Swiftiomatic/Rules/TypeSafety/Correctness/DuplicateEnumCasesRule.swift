@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct DuplicateEnumCasesRule: Rule {
+struct DuplicateEnumCasesRule {
   var configuration = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
@@ -66,13 +66,13 @@ struct DuplicateEnumCasesRule: Rule {
 }
 
 extension DuplicateEnumCasesRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension DuplicateEnumCasesRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: EnumDeclSyntax) {
       let enumElements = node.memberBlock.members
         .flatMap { member -> EnumCaseElementListSyntax in

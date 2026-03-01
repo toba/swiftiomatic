@@ -1,7 +1,7 @@
 import SwiftBasicFormat
 import SwiftSyntax
 
-struct SuperfluousElseRule: Rule {
+struct SuperfluousElseRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -9,6 +9,7 @@ struct SuperfluousElseRule: Rule {
     name: "Superfluous Else",
     description:
       "Else branches should be avoided when the previous if-block exits the current scope",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -292,19 +293,19 @@ struct SuperfluousElseRule: Rule {
 }
 
 extension SuperfluousElseRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension SuperfluousElseRule: OptInRule {}
+extension SuperfluousElseRule {}
 
 extension SuperfluousElseRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }
@@ -316,8 +317,8 @@ extension SuperfluousElseRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
-    override init(configuration: ConfigurationType, file: SwiftSource) {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
+    override init(configuration: OptionsType, file: SwiftSource) {
       super.init(configuration: configuration, file: file)
       numberOfCorrections +=
         Visitor(configuration: configuration, file: file)

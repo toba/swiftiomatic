@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct UnhandledThrowingTaskRule: Rule {
+struct UnhandledThrowingTaskRule {
   var configuration = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
@@ -12,6 +12,7 @@ struct UnhandledThrowingTaskRule: Rule {
       See this forum thread for more details: \
       https://forums.swift.org/t/task-initializer-with-throwing-closure-swallows-error/56066
       """,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -235,15 +236,15 @@ struct UnhandledThrowingTaskRule: Rule {
 }
 
 extension UnhandledThrowingTaskRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension UnhandledThrowingTaskRule: OptInRule {}
+extension UnhandledThrowingTaskRule {}
 
 extension UnhandledThrowingTaskRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       if node.hasViolation {
         violations.append(node.calledExpression.positionAfterSkippingLeadingTrivia)

@@ -1,27 +1,28 @@
 import SwiftSyntax
 
-struct MissingDocsRule: Rule {
+struct MissingDocsRule {
   var configuration = MissingDocsConfiguration()
 
   static let description = RuleDescription(
     identifier: "missing_docs",
     name: "Missing Docs",
     description: "Declarations should be documented.",
+    isOptIn: true,
     nonTriggeringExamples: MissingDocsRuleExamples.nonTriggeringExamples,
     triggeringExamples: MissingDocsRuleExamples.triggeringExamples,
   )
 }
 
 extension MissingDocsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension MissingDocsRule: OptInRule {}
+extension MissingDocsRule {}
 
 extension MissingDocsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var aclScope = Stack<AccessControlBehavior>()
 
     override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {

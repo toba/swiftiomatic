@@ -1,12 +1,12 @@
 import SwiftSyntax
 
 /// A rule configuration that defines warning and error thresholds for line-count violations
-protocol SeverityLevelsBasedRuleConfiguration<Parent>: RuleConfiguration {
+protocol SeverityLevelsBasedRuleOptions<Parent>: RuleOptions {
     /// The severity thresholds for warning and error levels
     var severityConfiguration: SeverityLevelsConfiguration<Parent> { get }
 }
 
-extension SeverityLevelsConfiguration: SeverityLevelsBasedRuleConfiguration {
+extension SeverityLevelsConfiguration: SeverityLevelsBasedRuleOptions {
     var severityConfiguration: SeverityLevelsConfiguration<Parent> {
         self
     }
@@ -18,7 +18,7 @@ extension SeverityLevelsConfiguration: SeverityLevelsBasedRuleConfiguration {
 /// ``registerViolations(leftBrace:rightBrace:violationNode:objectName:)`` from
 /// their `visitPost` overrides.
 class BodyLengthVisitor<
-    LevelConfig: SeverityLevelsBasedRuleConfiguration,
+    LevelConfig: SeverityLevelsBasedRuleOptions,
 >: ViolationCollectingVisitor<
     LevelConfig,
 > {

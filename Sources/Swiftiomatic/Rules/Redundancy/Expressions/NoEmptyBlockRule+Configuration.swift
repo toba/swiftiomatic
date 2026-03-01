@@ -1,4 +1,4 @@
-struct NoEmptyBlockConfiguration: SeverityBasedRuleConfiguration {
+struct NoEmptyBlockConfiguration: SeverityBasedRuleOptions {
   enum CodeBlockType: String, AcceptableByConfigurationElement, CaseIterable {
     case functionBodies = "function_bodies"
     case initializerBodies = "initializer_bodies"

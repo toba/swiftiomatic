@@ -1,4 +1,4 @@
-struct FileLengthConfiguration: RuleConfiguration {
+struct FileLengthConfiguration: RuleOptions {
   @ConfigurationElement(isInline: true)
   var severityConfiguration = SeverityLevelsConfiguration<Parent>(
     warning: 400, error: 1000,

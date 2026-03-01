@@ -1,4 +1,4 @@
-struct RedundantTypeAnnotationConfiguration: SeverityBasedRuleConfiguration {
+struct RedundantTypeAnnotationConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "ignore_attributes")

@@ -1,4 +1,4 @@
-struct FunctionParameterCountConfiguration: RuleConfiguration {
+struct FunctionParameterCountConfiguration: RuleOptions {
   @ConfigurationElement(isInline: true)
   var severityConfiguration = SeverityLevelsConfiguration<Parent>(
     warning: 5,

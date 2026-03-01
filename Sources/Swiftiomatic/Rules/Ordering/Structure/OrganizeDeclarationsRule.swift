@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct OrganizeDeclarationsRule: Rule {
+struct OrganizeDeclarationsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -35,13 +35,13 @@ struct OrganizeDeclarationsRule: Rule {
 }
 
 extension OrganizeDeclarationsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension OrganizeDeclarationsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: StructDeclSyntax) {
       checkOrganization(
         members: node.memberBlock.members, at: node.name.positionAfterSkippingLeadingTrivia)

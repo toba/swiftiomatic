@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct NonOverridableClassDeclarationRule: Rule {
+struct NonOverridableClassDeclarationRule {
     var configuration = NonOverridableClassDeclarationConfiguration()
 
     static let description = RuleDescription(
@@ -10,6 +10,7 @@ struct NonOverridableClassDeclarationRule: Rule {
         Class methods and properties in final classes should themselves be final, just as if the declarations
         are private. In both cases, they cannot be overridden. Using `final class` or `static` makes this explicit.
         """,
+        isOptIn: true,
         nonTriggeringExamples: [
             Example(
                 """
@@ -122,15 +123,15 @@ struct NonOverridableClassDeclarationRule: Rule {
 }
 
 extension NonOverridableClassDeclarationRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: configuration, file: file)
     }
 }
 
-extension NonOverridableClassDeclarationRule: OptInRule {}
+extension NonOverridableClassDeclarationRule {}
 
 extension NonOverridableClassDeclarationRule {
-    fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
         private var finalClassScope = Stack<Bool>()
 
         override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {

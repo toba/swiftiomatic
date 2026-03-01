@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct PrefixedTopLevelConstantRule: Rule {
+struct PrefixedTopLevelConstantRule {
   var configuration = PrefixedTopLevelConstantConfiguration()
 
   static let description = RuleDescription(
     identifier: "prefixed_toplevel_constant",
     name: "Prefixed Top-Level Constant",
     description: "Top-level constants should be prefixed by `k`",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("private let kFoo = 20.0"),
       Example("public let kFoo = false"),
@@ -98,15 +99,15 @@ struct PrefixedTopLevelConstantRule: Rule {
 }
 
 extension PrefixedTopLevelConstantRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension PrefixedTopLevelConstantRule: OptInRule {}
+extension PrefixedTopLevelConstantRule {}
 
 extension PrefixedTopLevelConstantRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private let topLevelPrefix = "k"
 
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {

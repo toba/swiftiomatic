@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct FirstWhereRule: Rule {
+struct FirstWhereRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "first_where",
     name: "First Where",
     description: "Prefer using `.first(where:)` over `.filter { }.first` in collections",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("kinds.filter(excludingKinds.contains).isEmpty && kinds.first == .identifier"),
       Example("myList.first(where: { $0 % 2 == 0 })"),
@@ -35,15 +36,15 @@ struct FirstWhereRule: Rule {
 }
 
 extension FirstWhereRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension FirstWhereRule: OptInRule {}
+extension FirstWhereRule {}
 
 extension FirstWhereRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       guard
         node.declName.baseName.text == "first",

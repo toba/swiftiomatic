@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct MarkTypesRule: Rule {
+struct MarkTypesRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -34,13 +34,13 @@ struct MarkTypesRule: Rule {
 }
 
 extension MarkTypesRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension MarkTypesRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SourceFileSyntax) {
       // Collect top-level type declarations (excluding imports)
       let typeDecls = node.statements.compactMap { stmt -> (TokenSyntax, Trivia)? in

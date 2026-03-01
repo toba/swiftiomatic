@@ -4,7 +4,7 @@ typealias FinalTestCaseConfiguration = UnitTestConfiguration<FinalTestCaseRule>
 typealias SingleTestClassConfiguration = UnitTestConfiguration<SingleTestClassRule>
 typealias PrivateUnitTestConfiguration = UnitTestConfiguration<PrivateUnitTestRule>
 
-struct UnitTestConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration {
+struct UnitTestConfiguration<Parent: Rule>: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(

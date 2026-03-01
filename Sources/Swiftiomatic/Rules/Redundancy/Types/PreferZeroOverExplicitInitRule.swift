@@ -1,7 +1,7 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct PreferZeroOverExplicitInitRule: Rule {
+struct PreferZeroOverExplicitInitRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -9,6 +9,7 @@ struct PreferZeroOverExplicitInitRule: Rule {
     name: "Prefer Zero Over Explicit Init",
     description:
       "Prefer `.zero` over explicit init with zero parameters (e.g. `CGPoint(x: 0, y: 0)`)",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("CGRect(x: 0, y: 0, width: 0, height: 1)"),
       Example("CGPoint(x: 0, y: -1)"),
@@ -39,19 +40,19 @@ struct PreferZeroOverExplicitInitRule: Rule {
 }
 
 extension PreferZeroOverExplicitInitRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension PreferZeroOverExplicitInitRule: OptInRule {}
+extension PreferZeroOverExplicitInitRule {}
 
 extension PreferZeroOverExplicitInitRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       if node.hasViolation {
         violations.append(node.positionAfterSkippingLeadingTrivia)
@@ -59,7 +60,7 @@ extension PreferZeroOverExplicitInitRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
       guard node.hasViolation, let name = node.name else {
         return super.visit(node)

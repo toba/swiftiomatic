@@ -2,7 +2,7 @@ import Testing
 
 @testable import Swiftiomatic
 
-@Suite(.rulesRegistered) struct RuleConfigurationTests {
+@Suite(.rulesRegistered) struct RuleOptionsTests {
   private let defaultNestingConfiguration = NestingConfiguration(
     typeLevel: SeverityLevelsConfiguration(warning: 0),
     functionLevel: SeverityLevelsConfiguration(warning: 0),
@@ -367,7 +367,7 @@ import Testing
     }
   }
 
-  @Test func computedAccessorsOrderRuleConfiguration() throws {
+  @Test func computedAccessorsOrderRuleOptions() throws {
     var configuration = ComputedAccessorsOrderConfiguration()
     let config = ["severity": "error", "order": "set_get"]
     try configuration.apply(configuration: config)
@@ -376,7 +376,7 @@ import Testing
     #expect(configuration.order == .setGet)
 
     #expect(
-      RuleConfigurationDescription.from(configuration: configuration).oneLiner()
+      RuleOptionsDescription.from(configuration: configuration).oneLiner()
         == "severity: error; order: set_get",
     )
   }

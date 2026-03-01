@@ -1,4 +1,4 @@
-struct UnusedOptionalBindingConfiguration: SeverityBasedRuleConfiguration {
+struct UnusedOptionalBindingConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "ignore_optional_try")

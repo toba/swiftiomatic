@@ -1,13 +1,14 @@
 import SwiftLexicalLookup
 import SwiftSyntax
 
-struct UnneededEscapingRule: Rule {
+struct UnneededEscapingRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "unneeded_escaping",
     name: "Unneeded Escaping",
     description: "The `@escaping` attribute should only be used when the closure actually escapes.",
+    isOptIn: true,
     nonTriggeringExamples: UnneededEscapingRuleExamples.nonTriggeringExamples,
     triggeringExamples: UnneededEscapingRuleExamples.triggeringExamples,
     corrections: UnneededEscapingRuleExamples.corrections,
@@ -15,7 +16,7 @@ struct UnneededEscapingRule: Rule {
 }
 
 extension UnneededEscapingRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -26,10 +27,10 @@ extension UnneededEscapingRule {
   }
 }
 
-extension UnneededEscapingRule: OptInRule {}
+extension UnneededEscapingRule {}
 
 extension UnneededEscapingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }

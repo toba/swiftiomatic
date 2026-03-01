@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct CyclomaticComplexityRule: Rule {
+struct CyclomaticComplexityRule {
   var configuration = CyclomaticComplexityConfiguration()
 
   static let description = RuleDescription(
@@ -79,13 +79,13 @@ struct CyclomaticComplexityRule: Rule {
 }
 
 extension CyclomaticComplexityRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension CyclomaticComplexityRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       guard let body = node.body else {
         return

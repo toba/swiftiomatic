@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ConsecutiveSpacesRule: Rule {
+struct ConsecutiveSpacesRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -25,17 +25,17 @@ struct ConsecutiveSpacesRule: Rule {
 }
 
 extension ConsecutiveSpacesRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension ConsecutiveSpacesRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
       // Check leading trivia for consecutive spaces not after a linebreak
       checkTrivia(token.leadingTrivia, startPosition: token.position, afterLinebreak: true)
@@ -72,7 +72,7 @@ extension ConsecutiveSpacesRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ token: TokenSyntax) -> TokenSyntax {
       let newLeading = collapseSpaces(token.leadingTrivia, afterLinebreak: true)
       let newTrailing = collapseSpaces(token.trailingTrivia, afterLinebreak: false)

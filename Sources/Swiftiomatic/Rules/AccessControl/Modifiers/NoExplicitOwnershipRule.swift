@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct NoExplicitOwnershipRule: Rule {
+struct NoExplicitOwnershipRule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
     static let description = RuleDescription(
@@ -23,17 +23,17 @@ struct NoExplicitOwnershipRule: Rule {
 }
 
 extension NoExplicitOwnershipRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
 
 extension NoExplicitOwnershipRule {
-    fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
         override func visitPost(_ node: FunctionParameterSyntax) {
             checkOwnershipSpecifier(node.type)
         }
@@ -62,7 +62,7 @@ extension NoExplicitOwnershipRule {
         }
     }
 
-    fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+    fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
         override func visit(_ node: AttributedTypeSyntax) -> TypeSyntax {
             var modified = false
             let newSpecifiers = node.specifiers.filter { specifier in

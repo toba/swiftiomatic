@@ -24,8 +24,8 @@ extension Request {
             )
           }
 
-          // Check if the current rule is a SyntaxOnlyRule
-          if ruleType is any SyntaxOnlyRule.Type {
+          // Check if the current rule does not require SourceKit
+          if !ruleType.description.requiresSourceKit {
             Console.fatalError(
               """
               '\(

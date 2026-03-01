@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct DiscouragedAssertRule: Rule {
+struct DiscouragedAssertRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "discouraged_assert",
     name: "Discouraged Assert",
     description: "Prefer `assertionFailure()` and/or `preconditionFailure()` over `assert(false)`",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(#"assert(true)"#),
       Example(#"assert(true, "foobar")"#),
@@ -24,15 +25,15 @@ struct DiscouragedAssertRule: Rule {
 }
 
 extension DiscouragedAssertRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension DiscouragedAssertRule: OptInRule {}
+extension DiscouragedAssertRule {}
 
 extension DiscouragedAssertRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard node.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == "assert",
         let firstArg = node.arguments.first,

@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct PreferNimbleRule: Rule {
+struct PreferNimbleRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "prefer_nimble",
     name: "Prefer Nimble",
     description: "Prefer Nimble matchers over XCTAssert functions",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("expect(foo) == 1"),
       Example("expect(foo).to(equal(1))"),
@@ -23,15 +24,15 @@ struct PreferNimbleRule: Rule {
 }
 
 extension PreferNimbleRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension PreferNimbleRule: OptInRule {}
+extension PreferNimbleRule {}
 
 extension PreferNimbleRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       if let expr = node.calledExpression.as(DeclReferenceExprSyntax.self),
         expr.baseName.text.starts(with: "XCTAssert")

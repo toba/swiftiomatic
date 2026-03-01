@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ExtensionAccessControlRule: Rule {
+struct ExtensionAccessControlRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -41,13 +41,13 @@ struct ExtensionAccessControlRule: Rule {
 }
 
 extension ExtensionAccessControlRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension ExtensionAccessControlRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ExtensionDeclSyntax) {
       // Skip if extension already has an access modifier
       let hasExtensionACL = node.modifiers.contains(where: { modifier in

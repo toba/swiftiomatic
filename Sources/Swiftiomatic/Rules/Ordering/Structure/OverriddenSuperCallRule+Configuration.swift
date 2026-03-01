@@ -1,4 +1,4 @@
-struct OverriddenSuperCallConfiguration: SeverityBasedRuleConfiguration {
+struct OverriddenSuperCallConfiguration: SeverityBasedRuleOptions {
   private static let defaultIncluded = [
     // NSObject
     "awakeFromNib()",

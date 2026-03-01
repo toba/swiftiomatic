@@ -1,4 +1,4 @@
-struct TrailingCommaConfiguration: SeverityBasedRuleConfiguration {
+struct TrailingCommaConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "mandatory_comma")

@@ -1,13 +1,14 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct ExplicitInitRule: Rule {
+struct ExplicitInitRule {
   var configuration = ExplicitInitConfiguration()
 
   static let description = RuleDescription(
     identifier: "explicit_init",
     name: "Explicit Init",
     description: "Explicitly calling .init() should be avoided",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -242,19 +243,19 @@ struct ExplicitInitRule: Rule {
 }
 
 extension ExplicitInitRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension ExplicitInitRule: OptInRule {}
+extension ExplicitInitRule {}
 
 extension ExplicitInitRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard let calledExpression = node.calledExpression.as(MemberAccessExprSyntax.self)
       else {
@@ -278,7 +279,7 @@ extension ExplicitInitRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
       guard let calledExpression = node.calledExpression.as(MemberAccessExprSyntax.self),
         calledExpression.explicitInitPosition != nil,

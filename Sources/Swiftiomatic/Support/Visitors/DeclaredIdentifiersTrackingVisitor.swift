@@ -52,7 +52,7 @@ enum IdentifierDeclaration: Hashable {
 /// Maintains a hierarchical ``Stack`` of identifier declarations as it walks
 /// the AST. Rules that need to know which names are in scope at a given point
 /// should subclass this visitor.
-class DeclaredIdentifiersTrackingVisitor<Configuration: RuleConfiguration>:
+class DeclaredIdentifiersTrackingVisitor<Configuration: RuleOptions>:
     ViolationCollectingVisitor<Configuration>
 {
     /// A stack of identifier arrays representing nested lexical scopes

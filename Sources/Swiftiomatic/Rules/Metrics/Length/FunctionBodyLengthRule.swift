@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct FunctionBodyLengthRule: Rule {
+struct FunctionBodyLengthRule {
   var configuration = SeverityLevelsConfiguration<Self>(warning: 50, error: 100)
 
   private static let testConfig = ["warning": 2]
@@ -120,13 +120,13 @@ struct FunctionBodyLengthRule: Rule {
 }
 
 extension FunctionBodyLengthRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension FunctionBodyLengthRule {
-  fileprivate final class Visitor: BodyLengthVisitor<ConfigurationType> {
+  fileprivate final class Visitor: BodyLengthVisitor<OptionsType> {
     override func visitPost(_ node: DeinitializerDeclSyntax) {
       if let body = node.body {
         registerViolations(

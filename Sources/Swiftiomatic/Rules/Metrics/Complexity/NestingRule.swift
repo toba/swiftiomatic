@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct NestingRule: Rule {
+struct NestingRule {
   var configuration = NestingConfiguration()
 
   static let description = RuleDescription(
@@ -14,7 +14,7 @@ struct NestingRule: Rule {
 }
 
 extension NestingRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -48,7 +48,7 @@ private struct Levels {
 }
 
 extension NestingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var levels = Levels()
 
     override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {

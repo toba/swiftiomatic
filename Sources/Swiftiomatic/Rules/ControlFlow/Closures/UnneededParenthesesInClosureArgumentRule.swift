@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct UnneededParenthesesInClosureArgumentRule: Rule {
+struct UnneededParenthesesInClosureArgumentRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "unneeded_parentheses_in_closure_argument",
     name: "Unneeded Parentheses in Closure Argument",
     description: "Parentheses are not needed when declaring closure arguments",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("let foo = { (bar: Int) in }"),
       Example("let foo = { bar, _  in }"),
@@ -87,19 +88,19 @@ struct UnneededParenthesesInClosureArgumentRule: Rule {
 }
 
 extension UnneededParenthesesInClosureArgumentRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension UnneededParenthesesInClosureArgumentRule: OptInRule {}
+extension UnneededParenthesesInClosureArgumentRule {}
 
 extension UnneededParenthesesInClosureArgumentRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClosureSignatureSyntax) {
       guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),
         clause.parameters.isNotEmpty,
@@ -112,7 +113,7 @@ extension UnneededParenthesesInClosureArgumentRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
       guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),
         clause.parameters.isNotEmpty,

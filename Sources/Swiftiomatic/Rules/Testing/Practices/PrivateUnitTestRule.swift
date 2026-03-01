@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct PrivateUnitTestRule: Rule {
+struct PrivateUnitTestRule {
   var configuration = PrivateUnitTestConfiguration()
 
   static let description = RuleDescription(
@@ -156,17 +156,17 @@ struct PrivateUnitTestRule: Rule {
 }
 
 extension PrivateUnitTestRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension PrivateUnitTestRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }
@@ -189,7 +189,7 @@ extension PrivateUnitTestRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
       guard node.isPrivate, node.isXCTestCase(configuration.testParentClasses) else {
         return super.visit(node)

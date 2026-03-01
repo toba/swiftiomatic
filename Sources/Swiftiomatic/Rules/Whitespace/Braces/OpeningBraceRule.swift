@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct OpeningBraceRule: Rule {
+struct OpeningBraceRule {
   var configuration = OpeningBraceConfiguration()
 
   static let description = RuleDescription(
@@ -22,13 +22,13 @@ struct OpeningBraceRule: Rule {
 }
 
 extension OpeningBraceRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension OpeningBraceRule {
-  fileprivate final class Visitor: CodeBlockVisitor<ConfigurationType> {
+  fileprivate final class Visitor: CodeBlockVisitor<OptionsType> {
     // MARK: - Type Declarations
 
     override func visitPost(_ node: ActorDeclSyntax) {

@@ -3,19 +3,19 @@ struct RuleDocumentation {
     private let ruleType: any Rule.Type
 
     /// Whether this rule is an opt-in rule
-    var isOptInRule: Bool { ruleType is any OptInRule.Type }
+    var isOptInRule: Bool { ruleType.description.isOptIn }
 
-    /// Whether this rule is an analyzer rule
-    var isAnalyzerRule: Bool { ruleType is any AnalyzerRule.Type }
+    /// Whether this rule requires compiler arguments
+    var isAnalyzerRule: Bool { ruleType.description.requiresCompilerArguments }
 
     /// Whether this rule is a linter rule (non-analyzer)
     var isLinterRule: Bool { !isAnalyzerRule }
 
     /// Whether this rule uses SourceKit
-    var usesSourceKit: Bool { !(ruleType is any SyntaxOnlyRule.Type) }
+    var usesSourceKit: Bool { ruleType.description.requiresSourceKit }
 
     /// Whether this rule is disabled by default
-    var isDisabledByDefault: Bool { ruleType is any OptInRule.Type }
+    var isDisabledByDefault: Bool { ruleType.description.isOptIn }
 
     /// Whether this rule is enabled by default
     var isEnabledByDefault: Bool { !isDisabledByDefault }
@@ -100,10 +100,10 @@ private func h2(_ text: String) -> String {
 private func detailsSummary(_ rule: some Rule) -> String {
     let ruleDescription = """
     * **Identifier:** `\(type(of: rule).identifier)`
-    * **Enabled by default:** \(rule is any OptInRule ? "No" : "Yes")
+    * **Enabled by default:** \(type(of: rule).description.isOptIn ? "No" : "Yes")
     * **Supports autocorrection:** \(rule is any CorrectableRule ? "Yes" : "No")
     * **Scope:** \(type(of: rule).description.scope)
-    * **Analyzer rule:** \(rule is any AnalyzerRule ? "Yes" : "No")
+    * **Analyzer rule:** \(type(of: rule).description.requiresCompilerArguments ? "Yes" : "No")
     * **Minimum Swift compiler version:** \(type(of: rule).description.minSwiftVersion.rawValue)
     """
     let description = rule.createConfigurationDescription()

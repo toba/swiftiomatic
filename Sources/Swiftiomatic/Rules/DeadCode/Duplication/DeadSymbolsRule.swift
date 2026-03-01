@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct DeadSymbolsRule: CollectingRule, OptInRule {
+struct DeadSymbolsRule: CollectingRule {
   typealias FileInfo = SymbolContribution
 
   var configuration = SeverityConfiguration<Self>(.warning)
@@ -9,6 +9,7 @@ struct DeadSymbolsRule: CollectingRule, OptInRule {
     identifier: "dead_symbols",
     name: "Dead Symbols",
     description: "Private symbols with no references are likely dead code",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """

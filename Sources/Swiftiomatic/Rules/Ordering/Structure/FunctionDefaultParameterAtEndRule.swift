@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct FunctionDefaultParameterAtEndRule: Rule {
+struct FunctionDefaultParameterAtEndRule {
   var configuration = FunctionDefaultParameterAtEndConfiguration()
 
   static let description = RuleDescription(
     identifier: "function_default_parameter_at_end",
     name: "Function Default Parameter at End",
     description: "Prefer to locate parameters with defaults toward the end of the parameter list",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("func foo(baz: String, bar: Int = 0) {}"),
       Example("func foo(x: String, y: Int = 0, z: CGFloat = 0) {}"),
@@ -74,15 +75,15 @@ struct FunctionDefaultParameterAtEndRule: Rule {
 }
 
 extension FunctionDefaultParameterAtEndRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension FunctionDefaultParameterAtEndRule: OptInRule {}
+extension FunctionDefaultParameterAtEndRule {}
 
 extension FunctionDefaultParameterAtEndRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       if !node.modifiers.contains(keyword: .override) {
         collectViolations(for: node.signature)

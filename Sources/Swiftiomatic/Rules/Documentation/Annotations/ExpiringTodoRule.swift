@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct ExpiringTodoRule: Rule {
+struct ExpiringTodoRule {
   enum ExpiryViolationLevel {
     case approachingExpiry
     case expired
@@ -23,6 +23,7 @@ struct ExpiringTodoRule: Rule {
     identifier: "expiring_todo",
     name: "Expiring Todo",
     description: "TODOs and FIXMEs should be resolved prior to their expiry date.",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("// notaTODO:"),
       Example("// notaFIXME:"),
@@ -47,15 +48,15 @@ struct ExpiringTodoRule: Rule {
 }
 
 extension ExpiringTodoRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ExpiringTodoRule: OptInRule {}
+extension ExpiringTodoRule {}
 
 extension ExpiringTodoRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private lazy var expiryRegex: CachedRegex = {
       let pattern = #"""
         \b(?:TODO|FIXME)(?::|\b)(?:(?!\b(?:TODO|FIXME)(?::|\b)).)*?\#

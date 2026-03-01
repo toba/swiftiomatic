@@ -1,4 +1,4 @@
-struct ProhibitedSuperConfiguration: SeverityBasedRuleConfiguration {
+struct ProhibitedSuperConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "excluded")

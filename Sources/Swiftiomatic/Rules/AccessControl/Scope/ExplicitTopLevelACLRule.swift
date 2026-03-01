@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ExplicitTopLevelACLRule: Rule {
+struct ExplicitTopLevelACLRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "explicit_top_level_acl",
     name: "Explicit Top Level ACL",
     description: "Top-level declarations should specify Access Control Level keywords explicitly",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("internal enum A {}"),
       Example("public final class B {}"),
@@ -37,15 +38,15 @@ struct ExplicitTopLevelACLRule: Rule {
 }
 
 extension ExplicitTopLevelACLRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ExplicitTopLevelACLRule: OptInRule {}
+extension ExplicitTopLevelACLRule {}
 
 extension ExplicitTopLevelACLRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }

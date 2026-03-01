@@ -1,4 +1,4 @@
-struct ConditionalReturnsOnNewlineConfiguration: SeverityBasedRuleConfiguration {
+struct ConditionalReturnsOnNewlineConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "if_only")

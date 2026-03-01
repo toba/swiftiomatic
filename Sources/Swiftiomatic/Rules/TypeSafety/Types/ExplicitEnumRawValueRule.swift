@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ExplicitEnumRawValueRule: Rule {
+struct ExplicitEnumRawValueRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "explicit_enum_raw_value",
     name: "Explicit Enum Raw Value",
     description: "Enums should be explicitly assigned their raw values",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -100,15 +101,15 @@ struct ExplicitEnumRawValueRule: Rule {
 }
 
 extension ExplicitEnumRawValueRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ExplicitEnumRawValueRule: OptInRule {}
+extension ExplicitEnumRawValueRule {}
 
 extension ExplicitEnumRawValueRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }

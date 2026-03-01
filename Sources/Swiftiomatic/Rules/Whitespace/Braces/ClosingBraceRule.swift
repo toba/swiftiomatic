@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ClosingBraceRule: Rule {
+struct ClosingBraceRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -23,17 +23,17 @@ struct ClosingBraceRule: Rule {
 }
 
 extension ClosingBraceRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension ClosingBraceRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: TokenSyntax) {
       if node.hasClosingBraceViolation {
         violations.append(node.positionAfterSkippingLeadingTrivia)
@@ -41,7 +41,7 @@ extension ClosingBraceRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: TokenSyntax) -> TokenSyntax {
       guard node.hasClosingBraceViolation else {
         return super.visit(node)

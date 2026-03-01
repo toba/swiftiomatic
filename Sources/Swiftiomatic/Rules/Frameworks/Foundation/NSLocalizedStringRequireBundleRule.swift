@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct NSLocalizedStringRequireBundleRule: Rule {
+struct NSLocalizedStringRequireBundleRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct NSLocalizedStringRequireBundleRule: Rule {
     name: "NSLocalizedString Require Bundle",
     description:
       "Calls to NSLocalizedString should specify the bundle which contains the strings file",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -56,15 +57,15 @@ struct NSLocalizedStringRequireBundleRule: Rule {
 }
 
 extension NSLocalizedStringRequireBundleRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension NSLocalizedStringRequireBundleRule: OptInRule {}
+extension NSLocalizedStringRequireBundleRule {}
 
 extension NSLocalizedStringRequireBundleRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       if let identifierExpr = node.calledExpression.as(DeclReferenceExprSyntax.self),
         identifierExpr.baseName.tokenKind == .identifier("NSLocalizedString"),

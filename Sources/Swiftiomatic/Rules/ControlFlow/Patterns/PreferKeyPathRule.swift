@@ -1,7 +1,7 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct PreferKeyPathRule: Rule {
+struct PreferKeyPathRule {
   var configuration = PreferKeyPathConfiguration()
 
   private static let extendedMode = ["restrict_to_standard_functions": false]
@@ -19,6 +19,7 @@ struct PreferKeyPathRule: Rule {
       Note: Swift 5 doesn't support identity key path conversions (`{ $0 }` -> `(\\.self)`) and so
       Swiftiomatic disregards `ignore_identity_closures: false` if it runs on a Swift <6 project.
       """,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("f {}"),
       Example("f { $0 }"),
@@ -104,19 +105,19 @@ struct PreferKeyPathRule: Rule {
 }
 
 extension PreferKeyPathRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension PreferKeyPathRule: OptInRule {}
+extension PreferKeyPathRule {}
 
 extension PreferKeyPathRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClosureExprSyntax) {
       if node
         .isInvalid(restrictToStandardFunctions: configuration.restrictToStandardFunctions)
@@ -137,7 +138,7 @@ extension PreferKeyPathRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
       guard node.additionalTrailingClosures.isEmpty,
         let closure = node.trailingClosure,

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
+struct CommaInheritanceRule: SubstitutionCorrectableRule,
   SyntaxOnlyRule
 {
   var configuration = SeverityConfiguration<Self>(.warning)
@@ -10,6 +10,7 @@ struct CommaInheritanceRule: OptInRule, SubstitutionCorrectableRule,
     identifier: "comma_inheritance",
     name: "Comma Inheritance Rule",
     description: "Use commas to separate types in inheritance lists",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("struct A: Codable, Equatable {}"),
       Example("enum B: Codable, Equatable {}"),

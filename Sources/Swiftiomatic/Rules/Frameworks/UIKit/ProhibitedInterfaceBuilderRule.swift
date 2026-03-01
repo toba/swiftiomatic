@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ProhibitedInterfaceBuilderRule: Rule {
+struct ProhibitedInterfaceBuilderRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "prohibited_interface_builder",
     name: "Prohibited Interface Builder",
     description: "Creating views using Interface Builder should be avoided",
+    isOptIn: true,
     nonTriggeringExamples: [
       wrapExample("var label: UILabel!"),
       wrapExample("@objc func buttonTapped(_ sender: UIButton) {}"),
@@ -19,15 +20,15 @@ struct ProhibitedInterfaceBuilderRule: Rule {
 }
 
 extension ProhibitedInterfaceBuilderRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ProhibitedInterfaceBuilderRule: OptInRule {}
+extension ProhibitedInterfaceBuilderRule {}
 
 extension ProhibitedInterfaceBuilderRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: VariableDeclSyntax) {
       if node.isIBOutlet {
         violations.append(node.bindingSpecifier.positionAfterSkippingLeadingTrivia)

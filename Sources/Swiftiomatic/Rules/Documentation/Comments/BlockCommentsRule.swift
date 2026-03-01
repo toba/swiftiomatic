@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct BlockCommentsRule: Rule {
+struct BlockCommentsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -34,13 +34,13 @@ struct BlockCommentsRule: Rule {
 }
 
 extension BlockCommentsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension BlockCommentsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ node: TokenSyntax) -> SyntaxVisitorContinueKind {
       checkTrivia(node.leadingTrivia, at: node.position)
       return .visitChildren

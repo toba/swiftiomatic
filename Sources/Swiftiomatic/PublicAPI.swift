@@ -30,45 +30,8 @@ public enum SwiftiomaticLib {
     }
 
     /// Returns metadata for every registered rule, sorted by identifier.
-    public static func ruleCatalog() -> [RuleCatalogEntry] {
-        RuleRegistry.registerAllRulesOnce()
-        let ruleList = RuleRegistry.shared.list
-
-        var entries: [RuleCatalogEntry] = []
-
-        // Lint rules (AST-based)
-        for (identifier, ruleType) in ruleList.rules {
-            let desc = ruleType.description
-            entries.append(
-                RuleCatalogEntry(
-                    identifier: identifier,
-                    name: desc.name,
-                    description: desc.description,
-                    rationale: desc.rationale,
-                    scope: desc.scope,
-                    isCorrectable: ruleType is any CorrectableRule.Type,
-                    isOptIn: ruleType is any OptInRule.Type,
-                ),
-            )
-        }
-
-        // Format rules (token-based)
-        for rule in FormatRules.all {
-            let isDefault = FormatRules.default.contains(where: { $0.name == rule.name })
-            entries.append(
-                RuleCatalogEntry(
-                    identifier: rule.name,
-                    name: rule.name,
-                    description: stripMarkdown(rule.help),
-                    rationale: nil,
-                    scope: .format,
-                    isCorrectable: true,
-                    isOptIn: !isDefault,
-                ),
-            )
-        }
-
-        return entries.sorted { $0.identifier < $1.identifier }
+    public static func ruleCatalog() -> [RuleConfigurationEntry] {
+        RuleCatalog.allEntries().sorted { $0.id < $1.id }
     }
 
     /// Load a configuration from a YAML file at the given path.

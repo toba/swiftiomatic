@@ -3,7 +3,7 @@ import Swiftiomatic
 
 struct RuleRow: View {
     @Environment(AppModel.self) private var model
-    let entry: RuleCatalogEntry
+    let entry: RuleConfigurationEntry
 
     var body: some View {
         HStack {
@@ -23,7 +23,7 @@ struct RuleRow: View {
                                 .help("Auto-correctable")
                         }
                     }
-                    Text(entry.identifier)
+                    Text(entry.id)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

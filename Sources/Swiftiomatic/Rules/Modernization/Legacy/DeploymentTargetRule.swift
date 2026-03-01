@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct DeploymentTargetRule: Rule {
+struct DeploymentTargetRule {
   fileprivate typealias Version = DeploymentTargetConfiguration.Version
 
   var configuration = DeploymentTargetConfiguration()
@@ -16,7 +16,7 @@ struct DeploymentTargetRule: Rule {
 }
 
 extension DeploymentTargetRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
@@ -39,7 +39,7 @@ private enum AvailabilityType {
 }
 
 extension DeploymentTargetRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var platformToConfiguredMinVersion: [String: Version] {
       [
         "iOS": configuration.iOSDeploymentTarget,

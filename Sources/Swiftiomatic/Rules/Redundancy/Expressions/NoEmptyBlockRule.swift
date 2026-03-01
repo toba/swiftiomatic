@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct NoEmptyBlockRule: Rule {
+struct NoEmptyBlockRule {
   var configuration = NoEmptyBlockConfiguration()
 
   static let description = RuleDescription(
     identifier: "no_empty_block",
     name: "No Empty Block",
     description: "Code blocks should contain at least one statement or comment",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -176,15 +177,15 @@ struct NoEmptyBlockRule: Rule {
 }
 
 extension NoEmptyBlockRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension NoEmptyBlockRule: OptInRule {}
+extension NoEmptyBlockRule {}
 
 extension NoEmptyBlockRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: CodeBlockSyntax) {
       if let codeBlockType = node.codeBlockType,
         configuration.enabledBlockTypes.contains(codeBlockType)

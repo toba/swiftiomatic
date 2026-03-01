@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct PreferSelfInStaticReferencesRule: Rule {
+struct PreferSelfInStaticReferencesRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "prefer_self_in_static_references",
     name: "Prefer Self in Static References",
     description: "Use `Self` to refer to the surrounding type name",
+    isOptIn: true,
     nonTriggeringExamples: PreferSelfInStaticReferencesRuleExamples.nonTriggeringExamples,
     triggeringExamples: PreferSelfInStaticReferencesRuleExamples.triggeringExamples,
     corrections: PreferSelfInStaticReferencesRuleExamples.corrections,
@@ -14,12 +15,12 @@ struct PreferSelfInStaticReferencesRule: Rule {
 }
 
 extension PreferSelfInStaticReferencesRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension PreferSelfInStaticReferencesRule: OptInRule {}
+extension PreferSelfInStaticReferencesRule {}
 
 extension PreferSelfInStaticReferencesRule {
   private enum ParentDeclBehavior {
@@ -41,7 +42,7 @@ extension PreferSelfInStaticReferencesRule {
     case skipReferences
   }
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var parentDeclScopes = Stack<ParentDeclBehavior>()
     private var variableDeclScopes = Stack<VariableDeclBehavior>()
 

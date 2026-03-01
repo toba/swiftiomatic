@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct PerformanceAntiPatternsRule: Rule {
+struct PerformanceAntiPatternsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct PerformanceAntiPatternsRule: Rule {
     name: "Performance Anti-Patterns",
     description:
       "Detects common performance anti-patterns like Date() for benchmarking and mutation during iteration",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("let now = ContinuousClock.now"),
       Example("array.removeAll(where: { $0.isEmpty })"),
@@ -25,15 +26,15 @@ struct PerformanceAntiPatternsRule: Rule {
 }
 
 extension PerformanceAntiPatternsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension PerformanceAntiPatternsRule: OptInRule {}
+extension PerformanceAntiPatternsRule {}
 
 extension PerformanceAntiPatternsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var withLockDepth = 0
 
     override func visitPost(_ node: FunctionCallExprSyntax) {

@@ -1,31 +1,32 @@
 import SwiftSyntax
 
-struct ModifierOrderRule: Rule {
+struct ModifierOrderRule {
     var configuration = ModifierOrderConfiguration()
 
     static let description = RuleDescription(
         identifier: "modifier_order",
         name: "Modifier Order",
         description: "Modifier order should be consistent.",
+        isOptIn: true,
         nonTriggeringExamples: ModifierOrderRuleExamples.nonTriggeringExamples,
         triggeringExamples: ModifierOrderRuleExamples.triggeringExamples,
     )
 }
 
 extension ModifierOrderRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
 
-extension ModifierOrderRule: OptInRule {}
+extension ModifierOrderRule {}
 
 extension ModifierOrderRule {
-    fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
         override func visitPost(_ node: DeclModifierListSyntax) {
             guard let parent = node.parent else {
                 return
@@ -62,7 +63,7 @@ extension ModifierOrderRule {
         }
     }
 
-    fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+    fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
         override func visit(_ node: DeclModifierListSyntax) -> DeclModifierListSyntax {
             let modifierDescriptions = node.modifierDescriptions
             let prevModifiers = modifierDescriptions.map(\.modifier)

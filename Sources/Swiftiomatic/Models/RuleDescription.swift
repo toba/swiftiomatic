@@ -39,8 +39,17 @@ public struct RuleDescription: Equatable, Sendable {
     let minSwiftVersion: SwiftVersion
 
     /// Whether or not this rule can only be executed on a file physically on-disk. Typically necessary for rules
-    /// conforming to `AnalyzerRule`.
+    /// that require compiler arguments.
     let requiresFileOnDisk: Bool
+
+    /// Whether this rule is opt-in (not enabled by default).
+    public let isOptIn: Bool
+
+    /// Whether this rule operates purely on SwiftSyntax and does not require SourceKit.
+    public let requiresSourceKit: Bool
+
+    /// Whether this rule requires compiler arguments to operate.
+    public let requiresCompilerArguments: Bool
 
     /// Whether this rule has corrections defined.
     public var isCorrectable: Bool {
@@ -70,22 +79,29 @@ public struct RuleDescription: Equatable, Sendable {
     /// Creates a `RuleDescription` by specifying all its properties directly.
     ///
     /// - Parameters:
-    ///   - identifier:            Sets the description's `identifier` property.
-    ///   - name:                  Sets the description's `name` property.
-    ///   - description:           Sets the description's `description` property.
-    ///   - scope:                 Sets the description's `scope` property.
-    ///   - minSwiftVersion:       Sets the description's `minSwiftVersion` property.
-    ///   - nonTriggeringExamples: Sets the description's `nonTriggeringExamples` property.
-    ///   - triggeringExamples:    Sets the description's `triggeringExamples` property.
-    ///   - corrections:           Sets the description's `corrections` property.
-    ///   - deprecatedAliases:     Sets the description's `deprecatedAliases` property.
-    ///   - requiresFileOnDisk:    Sets the description's `requiresFileOnDisk` property.
+    ///   - identifier:               Sets the description's `identifier` property.
+    ///   - name:                     Sets the description's `name` property.
+    ///   - description:              Sets the description's `description` property.
+    ///   - rationale:                Sets the description's `rationale` property.
+    ///   - scope:                    Sets the description's `scope` property.
+    ///   - isOptIn:                  Whether this rule is opt-in (not enabled by default).
+    ///   - requiresSourceKit:        Whether this rule requires SourceKit to operate.
+    ///   - requiresCompilerArguments: Whether this rule requires compiler arguments.
+    ///   - minSwiftVersion:          Sets the description's `minSwiftVersion` property.
+    ///   - nonTriggeringExamples:    Sets the description's `nonTriggeringExamples` property.
+    ///   - triggeringExamples:       Sets the description's `triggeringExamples` property.
+    ///   - corrections:              Sets the description's `corrections` property.
+    ///   - deprecatedAliases:        Sets the description's `deprecatedAliases` property.
+    ///   - requiresFileOnDisk:       Sets the description's `requiresFileOnDisk` property.
     public init(
         identifier: String,
         name: String,
         description: String,
         rationale: String? = nil,
         scope: Scope = .lint,
+        isOptIn: Bool = false,
+        requiresSourceKit: Bool = false,
+        requiresCompilerArguments: Bool = false,
         minSwiftVersion: SwiftVersion = .v6,
         nonTriggeringExamples: [Example] = [],
         triggeringExamples: [Example] = [],
@@ -98,6 +114,9 @@ public struct RuleDescription: Equatable, Sendable {
         self.description = description
         self.rationale = rationale
         self.scope = scope
+        self.isOptIn = isOptIn
+        self.requiresSourceKit = requiresSourceKit
+        self.requiresCompilerArguments = requiresCompilerArguments
         self.nonTriggeringExamples = nonTriggeringExamples
         self.triggeringExamples = triggeringExamples
         self.corrections = corrections

@@ -2,7 +2,7 @@ typealias DiscouragedObjectLiteralConfiguration = ObjectLiteralConfiguration<
   DiscouragedObjectLiteralRule,
 >
 
-struct ObjectLiteralConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration {
+struct ObjectLiteralConfiguration<Parent: Rule>: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "image_literal")

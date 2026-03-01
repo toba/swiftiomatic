@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ConvenienceTypeRule: Rule {
+struct ConvenienceTypeRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -9,6 +9,7 @@ struct ConvenienceTypeRule: Rule {
     description:
       "Types used for hosting only static members should be implemented as a caseless enum "
       + "to avoid instantiation",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -153,15 +154,15 @@ struct ConvenienceTypeRule: Rule {
 }
 
 extension ConvenienceTypeRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ConvenienceTypeRule: OptInRule {}
+extension ConvenienceTypeRule {}
 
 extension ConvenienceTypeRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }
@@ -204,7 +205,7 @@ extension ConvenienceTypeRule {
     }
   }
 
-  fileprivate final class ConvenienceTypeCheckVisitor: ViolationCollectingVisitor<ConfigurationType>
+  fileprivate final class ConvenienceTypeCheckVisitor: ViolationCollectingVisitor<OptionsType>
   {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all

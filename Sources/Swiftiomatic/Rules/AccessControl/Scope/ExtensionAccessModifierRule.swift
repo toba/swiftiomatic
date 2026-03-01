@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ExtensionAccessModifierRule: Rule {
+struct ExtensionAccessModifierRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "extension_access_modifier",
     name: "Extension Access Modifier",
     description: "Prefer to use extension access modifiers",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -215,12 +216,12 @@ struct ExtensionAccessModifierRule: Rule {
 }
 
 extension ExtensionAccessModifierRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ExtensionAccessModifierRule: OptInRule {}
+extension ExtensionAccessModifierRule {}
 
 extension ExtensionAccessModifierRule {
   private enum ACL: Hashable {
@@ -246,7 +247,7 @@ extension ExtensionAccessModifierRule {
     }
   }
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }

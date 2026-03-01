@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct AnonymousArgumentInMultilineClosureRule: Rule {
+struct AnonymousArgumentInMultilineClosureRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -24,6 +24,7 @@ struct AnonymousArgumentInMultilineClosureRule: Rule {
       }
       ```
       """,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("closure { $0 }"),
       Example("closure { print($0) }"),
@@ -55,15 +56,15 @@ struct AnonymousArgumentInMultilineClosureRule: Rule {
 }
 
 extension AnonymousArgumentInMultilineClosureRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension AnonymousArgumentInMultilineClosureRule: OptInRule {}
+extension AnonymousArgumentInMultilineClosureRule {}
 
 extension AnonymousArgumentInMultilineClosureRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
       let startLocation = locationConverter.location(
         for: node.leftBrace.positionAfterSkippingLeadingTrivia,

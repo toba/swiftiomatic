@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct FileHeaderRule: Rule {
+struct FileHeaderRule {
   var configuration = FileHeaderConfiguration()
 
   static let description = RuleDescription(
@@ -10,6 +10,7 @@ struct FileHeaderRule: Rule {
     description: "Header comments should be consistent with project patterns. "
       + "The CURRENT_FILENAME placeholder can optionally be used in the "
       + "required and forbidden patterns. It will be replaced by the real file name.",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("let foo = \"Copyright\""),
       Example("let foo = 2 // Copyright"),
@@ -34,19 +35,19 @@ struct FileHeaderRule: Rule {
 }
 
 extension FileHeaderRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension FileHeaderRule: OptInRule {}
+extension FileHeaderRule {}
 
 private struct ProcessTriviaResult {
   let foundNonComment: Bool
 }
 
 extension FileHeaderRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ node: SourceFileSyntax) -> SyntaxVisitorContinueKind {
       let headerRange = collectHeaderComments(from: node)
 

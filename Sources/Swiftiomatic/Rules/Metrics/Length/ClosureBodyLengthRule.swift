@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ClosureBodyLengthRule: Rule {
+struct ClosureBodyLengthRule {
   private static let defaultWarningThreshold = 30
 
   var configuration = SeverityLevelsConfiguration<Self>(
@@ -16,21 +16,22 @@ struct ClosureBodyLengthRule: Rule {
 
       Possibly you could refactor your closure code and extract some of it into a function.
       """,
+    isOptIn: true,
     nonTriggeringExamples: ClosureBodyLengthRuleExamples.nonTriggeringExamples,
     triggeringExamples: ClosureBodyLengthRuleExamples.triggeringExamples,
   )
 }
 
 extension ClosureBodyLengthRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ClosureBodyLengthRule: OptInRule {}
+extension ClosureBodyLengthRule {}
 
 extension ClosureBodyLengthRule {
-  fileprivate final class Visitor: BodyLengthVisitor<ConfigurationType> {
+  fileprivate final class Visitor: BodyLengthVisitor<OptionsType> {
     override func visitPost(_ node: ClosureExprSyntax) {
       registerViolations(
         leftBrace: node.leftBrace,

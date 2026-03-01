@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct OptionalEnumCaseMatchingRule: Rule {
+struct OptionalEnumCaseMatchingRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct OptionalEnumCaseMatchingRule: Rule {
     name: "Optional Enum Case Match",
     description:
       "Matching an enum case against an optional enum without '?' is supported on Swift 5.1 and above",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -211,19 +212,19 @@ struct OptionalEnumCaseMatchingRule: Rule {
 }
 
 extension OptionalEnumCaseMatchingRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension OptionalEnumCaseMatchingRule: OptInRule {}
+extension OptionalEnumCaseMatchingRule {}
 
 extension OptionalEnumCaseMatchingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SwitchCaseItemSyntax) {
       guard let pattern = node.pattern.as(ExpressionPatternSyntax.self) else {
         return
@@ -244,7 +245,7 @@ extension OptionalEnumCaseMatchingRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: SwitchCaseItemSyntax) -> SwitchCaseItemSyntax {
       guard
         let pattern = node.pattern.as(ExpressionPatternSyntax.self),

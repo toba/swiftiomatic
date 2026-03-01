@@ -1,27 +1,28 @@
 import SwiftSyntax
 
-struct PrivateSubjectRule: Rule {
+struct PrivateSubjectRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "private_subject",
     name: "Private Combine Subject",
     description: "Combine Subject should be private",
+    isOptIn: true,
     nonTriggeringExamples: PrivateSubjectRuleExamples.nonTriggeringExamples,
     triggeringExamples: PrivateSubjectRuleExamples.triggeringExamples,
   )
 }
 
 extension PrivateSubjectRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension PrivateSubjectRule: OptInRule {}
+extension PrivateSubjectRule {}
 
 extension PrivateSubjectRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private let subjectTypes: Set<String> = ["PassthroughSubject", "CurrentValueSubject"]
 
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {

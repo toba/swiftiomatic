@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct DirectReturnRule: Rule {
+struct DirectReturnRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "direct_return",
     name: "Direct Return",
     description: "Directly return the expression instead of assigning it to a variable first",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -225,19 +226,19 @@ struct DirectReturnRule: Rule {
 }
 
 extension DirectReturnRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension DirectReturnRule: OptInRule {}
+extension DirectReturnRule {}
 
 extension DirectReturnRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }
@@ -249,7 +250,7 @@ extension DirectReturnRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ statements: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
       guard let (binding, returnStmt) = statements.violation,
         let bindingList = binding.parent?.as(PatternBindingListSyntax.self),

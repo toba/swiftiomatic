@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct OverrideInExtensionRule: OptInRule, SwiftSyntaxRule {
+struct OverrideInExtensionRule: SwiftSyntaxRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "override_in_extension",
     name: "Override in Extension",
     description: "Extensions shouldn't override declarations",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("extension Person {\n  var age: Int { return 42 }\n}"),
       Example("extension Person {\n  func celebrateBirthday() {}\n}"),
@@ -45,7 +46,7 @@ struct OverrideInExtensionRule: OptInRule, SwiftSyntaxRule {
     ],
   )
 
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     let allowedExtensions = ClassNameCollectingVisitor(
       configuration: configuration,
       file: file,
@@ -59,11 +60,11 @@ struct OverrideInExtensionRule: OptInRule, SwiftSyntaxRule {
 }
 
 extension OverrideInExtensionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private let allowedExtensions: Set<String>
 
     init(
-      configuration: ConfigurationType,
+      configuration: OptionsType,
       file: SwiftSource,
       allowedExtensions: Set<String>,
     ) {
@@ -103,7 +104,7 @@ extension OverrideInExtensionRule {
     }
   }
 
-  fileprivate final class ClassNameCollectingVisitor: ViolationCollectingVisitor<ConfigurationType>
+  fileprivate final class ClassNameCollectingVisitor: ViolationCollectingVisitor<OptionsType>
   {
     private(set) var classNames: Set<String> = []
 

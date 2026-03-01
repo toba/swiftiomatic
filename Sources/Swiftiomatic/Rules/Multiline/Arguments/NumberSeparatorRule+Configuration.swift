@@ -1,4 +1,4 @@
-struct NumberSeparatorConfiguration: SeverityBasedRuleConfiguration {
+struct NumberSeparatorConfiguration: SeverityBasedRuleOptions {
   struct ExcludeRange: AcceptableByConfigurationElement, Equatable {
     private let min: Double
     private let max: Double

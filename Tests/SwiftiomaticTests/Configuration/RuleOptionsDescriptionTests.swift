@@ -2,8 +2,8 @@ import Testing
 
 @testable import Swiftiomatic
 
-@Suite(.rulesRegistered) struct RuleConfigurationDescriptionTests {
-  private struct MockConfiguration: RuleConfiguration {
+@Suite(.rulesRegistered) struct RuleOptionsDescriptionTests {
+  private struct MockConfiguration: RuleOptions {
     typealias Parent = MockRule
 
     @ConfigurationElement(key: "flag")
@@ -127,13 +127,13 @@ import Testing
       }
     }
 
-    func isEqualTo(_: some RuleConfiguration) -> Bool { false }
+    func isEqualTo(_: some RuleOptions) -> Bool { false }
   }
 
   @Test func descriptionFromConfiguration() throws {
     var configuration = MockConfiguration()
     try configuration.apply(configuration: [:])  // Configure to set keys.
-    let description = RuleConfigurationDescription.from(configuration: configuration)
+    let description = RuleOptionsDescription.from(configuration: configuration)
 
     #expect(
       description.oneLiner() == """
@@ -313,10 +313,10 @@ import Testing
   }
 
   @Test func prefersParameterDescription() {
-    struct InnerMockConfiguration: RuleConfiguration {
+    struct InnerMockConfiguration: RuleOptions {
       typealias Parent = MockRule
 
-      var parameterDescription: RuleConfigurationDescription? {
+      var parameterDescription: RuleOptionsDescription? {
         "visible" => .flag(true)
       }
 
@@ -325,10 +325,10 @@ import Testing
 
       mutating func apply(configuration _: [String: Any]) { /* conformance for test */  }
 
-      func isEqualTo(_: some RuleConfiguration) -> Bool { false }
+      func isEqualTo(_: some RuleOptions) -> Bool { false }
     }
 
-    let description = RuleConfigurationDescription.from(configuration: InnerMockConfiguration())
+    let description = RuleOptionsDescription.from(configuration: InnerMockConfiguration())
     #expect(description.oneLiner() == "visible: true")
     #expect(
       description.markdown() == """
@@ -353,7 +353,7 @@ import Testing
   }
 
   @Test func emptyDescription() {
-    let desc = description { RuleConfigurationOption.noOptions }
+    let desc = description { RuleOptionsEntry.noOptions }
 
     #expect(desc.oneLiner().isEmpty)
     #expect(desc.markdown().isEmpty)
@@ -648,8 +648,8 @@ import Testing
   }
 
   private func description(
-    @RuleConfigurationDescriptionBuilder _ content: () -> RuleConfigurationDescription,
+    @RuleOptionsDescriptionBuilder _ content: () -> RuleOptionsDescription,
   )
-    -> RuleConfigurationDescription
+    -> RuleOptionsDescription
   { content() }
 }

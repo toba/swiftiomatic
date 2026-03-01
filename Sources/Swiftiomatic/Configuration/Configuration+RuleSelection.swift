@@ -53,7 +53,7 @@ extension Configuration {
                         let id = ruleType.identifier
                         return !disabledRuleIdentifiers.contains(id)
                             && ruleType.description.scope == .lint
-                            && (!(tuple.rule is any OptInRule) || optInRuleIdentifiers.contains(id))
+                            && (!ruleType.description.isOptIn || optInRuleIdentifiers.contains(id))
                     }.map(\.rule)
             }
 

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct SinglePropertyPerLineRule: Rule {
+struct SinglePropertyPerLineRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -26,13 +26,13 @@ struct SinglePropertyPerLineRule: Rule {
 }
 
 extension SinglePropertyPerLineRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension SinglePropertyPerLineRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: VariableDeclSyntax) {
       // Skip if only one binding
       guard node.bindings.count > 1 else { return }

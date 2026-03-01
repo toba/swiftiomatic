@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ShorthandOptionalBindingRule: Rule {
+struct ShorthandOptionalBindingRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "shorthand_optional_binding",
     name: "Shorthand Optional Binding",
     description: "Use shorthand syntax for optional binding",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -111,19 +112,19 @@ struct ShorthandOptionalBindingRule: Rule {
 }
 
 extension ShorthandOptionalBindingRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension ShorthandOptionalBindingRule: OptInRule {}
+extension ShorthandOptionalBindingRule {}
 
 extension ShorthandOptionalBindingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: OptionalBindingConditionSyntax) {
       if node.isShadowingOptionalBinding {
         violations.append(node.bindingSpecifier.positionAfterSkippingLeadingTrivia)
@@ -131,7 +132,7 @@ extension ShorthandOptionalBindingRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: OptionalBindingConditionSyntax)
       -> OptionalBindingConditionSyntax
     {

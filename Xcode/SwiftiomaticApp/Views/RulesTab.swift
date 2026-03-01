@@ -5,7 +5,7 @@ struct RulesTab: View {
     @Environment(AppModel.self) private var model
     @State private var searchText = ""
     @State private var scopeFilter: ScopeFilter = .all
-    @State private var selectedRule: RuleCatalogEntry?
+    @State private var selectedRule: RuleConfigurationEntry?
 
     enum ScopeFilter: String, CaseIterable {
         case all = "All"
@@ -14,7 +14,7 @@ struct RulesTab: View {
         case suggest = "Suggest"
     }
 
-    private var filteredRules: [RuleCatalogEntry] {
+    private var filteredRules: [RuleConfigurationEntry] {
         model.rules.filter { entry in
             switch scopeFilter {
                 case .all: true
@@ -25,8 +25,8 @@ struct RulesTab: View {
         }.filter {
             searchText.isEmpty
                 || $0.name.localizedCaseInsensitiveContains(searchText)
-                || $0.identifier.localizedCaseInsensitiveContains(searchText)
-                || $0.description.localizedCaseInsensitiveContains(searchText)
+                || $0.id.localizedCaseInsensitiveContains(searchText)
+                || $0.summary.localizedCaseInsensitiveContains(searchText)
         }
     }
 

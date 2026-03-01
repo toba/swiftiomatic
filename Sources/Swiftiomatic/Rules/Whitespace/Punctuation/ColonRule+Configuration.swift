@@ -1,4 +1,4 @@
-struct ColonConfiguration: SeverityBasedRuleConfiguration {
+struct ColonConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "flexible_right_spacing")

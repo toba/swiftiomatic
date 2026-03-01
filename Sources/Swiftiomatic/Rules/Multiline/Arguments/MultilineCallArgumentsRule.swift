@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct MultilineCallArgumentsRule: Rule {
+struct MultilineCallArgumentsRule {
   var configuration = MultilineCallArgumentsConfiguration()
 
   static let description = RuleDescription(
     identifier: "multiline_call_arguments",
     name: "Multiline Call Arguments",
     description: "Call should have each parameter on a separate line",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -84,15 +85,15 @@ struct MultilineCallArgumentsRule: Rule {
 }
 
 extension MultilineCallArgumentsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension MultilineCallArgumentsRule: OptInRule {}
+extension MultilineCallArgumentsRule {}
 
 extension MultilineCallArgumentsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       if containsViolation(
         parameterPositions: node.arguments.map(\.positionAfterSkippingLeadingTrivia),

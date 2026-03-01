@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct VerticalParameterAlignmentOnCallRule: Rule {
+struct VerticalParameterAlignmentOnCallRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
     name: "Vertical Parameter Alignment on Call",
     description:
       "Function parameters should be aligned vertically if they're in multiple lines in a method call",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -164,15 +165,15 @@ struct VerticalParameterAlignmentOnCallRule: Rule {
 }
 
 extension VerticalParameterAlignmentOnCallRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension VerticalParameterAlignmentOnCallRule: OptInRule {}
+extension VerticalParameterAlignmentOnCallRule {}
 
 extension VerticalParameterAlignmentOnCallRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       let arguments = node.arguments
       guard arguments.count > 1, let firstArg = arguments.first else {

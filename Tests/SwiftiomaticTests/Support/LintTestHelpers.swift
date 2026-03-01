@@ -307,7 +307,7 @@ private func assertCorrection(
 ) async {
   let (cleanedBefore, _) = cleanedContentsAndMarkerOffsets(from: before.code)
   let file = SwiftSource.testFile(withContents: cleanedBefore, persistToDisk: true)
-  let includeCompilerArguments = config.rules.contains(where: { $0 is any AnalyzerRule })
+  let includeCompilerArguments = config.rules.contains(where: { type(of: $0).description.requiresCompilerArguments })
   let compilerArguments = includeCompilerArguments ? file.makeCompilerArguments() : []
   let storage = RuleStorage()
   let collector = Linter(file: file, configuration: config, compilerArguments: compilerArguments)
@@ -579,7 +579,7 @@ func verifyLint(
 
   // Severity can be changed
   let ruleType = RuleRegistry.shared.rule(forID: ruleDescription.identifier)
-  if ruleType?.init().configuration is (any SeverityBasedRuleConfiguration),
+  if ruleType?.init().configuration is (any SeverityBasedRuleOptions),
     let example = triggers.first(where: { $0.configuration == nil })
   {
     let withWarning = Example(example.code, configuration: ["severity": "warning"])

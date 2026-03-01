@@ -6,20 +6,20 @@ import UniformTypeIdentifiers
 @Observable
 @MainActor
 final class AppModel {
-    var rules: [RuleCatalogEntry] = []
+    var rules: [RuleConfigurationEntry] = []
     var configuration: Configuration = .default
     var configPath: String?
     var configBookmark: Data?
 
-    var lintRules: [RuleCatalogEntry] {
+    var lintRules: [RuleConfigurationEntry] {
         rules.filter { $0.scope == .lint }
     }
 
-    var formatRules: [RuleCatalogEntry] {
+    var formatRules: [RuleConfigurationEntry] {
         rules.filter { $0.scope == .format }
     }
 
-    var suggestRules: [RuleCatalogEntry] {
+    var suggestRules: [RuleConfigurationEntry] {
         rules.filter { $0.scope == .suggest }
     }
 
@@ -28,18 +28,18 @@ final class AppModel {
         loadFromAppGroup()
     }
 
-    func isRuleEnabled(_ entry: RuleCatalogEntry) -> Bool {
+    func isRuleEnabled(_ entry: RuleConfigurationEntry) -> Bool {
         switch entry.scope {
             case .lint:
-                if configuration.disabledLintRules.contains(entry.identifier) { return false }
+                if configuration.disabledLintRules.contains(entry.id) { return false }
                 if entry.isOptIn {
-                    return configuration.enabledLintRules.contains(entry.identifier)
+                    return configuration.enabledLintRules.contains(entry.id)
                 }
                 return true
             case .format:
-                if configuration.disabledFormatRules.contains(entry.identifier) { return false }
+                if configuration.disabledFormatRules.contains(entry.id) { return false }
                 if entry.isOptIn {
-                    return configuration.enabledFormatRules.contains(entry.identifier)
+                    return configuration.enabledFormatRules.contains(entry.id)
                 }
                 return true
             case .suggest:
@@ -47,31 +47,31 @@ final class AppModel {
         }
     }
 
-    func toggleRule(_ entry: RuleCatalogEntry) {
+    func toggleRule(_ entry: RuleConfigurationEntry) {
         let enabled = isRuleEnabled(entry)
         switch entry.scope {
             case .lint:
                 if enabled {
-                    configuration.enabledLintRules.removeAll { $0 == entry.identifier }
+                    configuration.enabledLintRules.removeAll { $0 == entry.id }
                     if !entry.isOptIn {
-                        configuration.disabledLintRules.append(entry.identifier)
+                        configuration.disabledLintRules.append(entry.id)
                     }
                 } else {
-                    configuration.disabledLintRules.removeAll { $0 == entry.identifier }
+                    configuration.disabledLintRules.removeAll { $0 == entry.id }
                     if entry.isOptIn {
-                        configuration.enabledLintRules.append(entry.identifier)
+                        configuration.enabledLintRules.append(entry.id)
                     }
                 }
             case .format:
                 if enabled {
-                    configuration.enabledFormatRules.removeAll { $0 == entry.identifier }
+                    configuration.enabledFormatRules.removeAll { $0 == entry.id }
                     if !entry.isOptIn {
-                        configuration.disabledFormatRules.append(entry.identifier)
+                        configuration.disabledFormatRules.append(entry.id)
                     }
                 } else {
-                    configuration.disabledFormatRules.removeAll { $0 == entry.identifier }
+                    configuration.disabledFormatRules.removeAll { $0 == entry.id }
                     if entry.isOptIn {
-                        configuration.enabledFormatRules.append(entry.identifier)
+                        configuration.enabledFormatRules.append(entry.id)
                     }
                 }
             case .suggest:

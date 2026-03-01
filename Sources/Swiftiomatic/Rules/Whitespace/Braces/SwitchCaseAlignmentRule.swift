@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct SwitchCaseAlignmentRule: Rule {
+struct SwitchCaseAlignmentRule {
   var configuration = SwitchCaseAlignmentConfiguration()
 
   static let description = RuleDescription(
@@ -41,13 +41,13 @@ struct SwitchCaseAlignmentRule: Rule {
 }
 
 extension SwitchCaseAlignmentRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension SwitchCaseAlignmentRule {
-  final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SwitchExprSyntax) {
       guard node.cases.isNotEmpty,
         let firstCasePosition = node.cases.first?.positionAfterSkippingLeadingTrivia

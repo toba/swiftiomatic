@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ImplicitReturnRule: Rule {
+struct ImplicitReturnRule {
   var configuration = ImplicitReturnConfiguration()
 
   static let description = RuleDescription(
     identifier: "implicit_return",
     name: "Implicit Return",
     description: "Prefer implicit returns in closures, functions and getters",
+    isOptIn: true,
     nonTriggeringExamples: ImplicitReturnRuleExamples.nonTriggeringExamples,
     triggeringExamples: ImplicitReturnRuleExamples.triggeringExamples,
     corrections: ImplicitReturnRuleExamples.corrections,
@@ -14,15 +15,15 @@ struct ImplicitReturnRule: Rule {
 }
 
 extension ImplicitReturnRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ImplicitReturnRule: OptInRule {}
+extension ImplicitReturnRule {}
 
 extension ImplicitReturnRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }

@@ -1,13 +1,14 @@
 import Foundation
 import SwiftSyntax
 
-struct FileNameRule: OptInRule, SyntaxOnlyRule {
+struct FileNameRule: SyntaxOnlyRule {
   var configuration = FileNameConfiguration()
 
   static let description = RuleDescription(
     identifier: "file_name",
     name: "File Name",
     description: "File name should match a type or extension declared in the file (if any)",
+      isOptIn: true,
   )
 
   func validate(file: SwiftSource) -> [RuleViolation] {

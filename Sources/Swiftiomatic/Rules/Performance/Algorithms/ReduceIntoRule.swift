@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ReduceIntoRule: Rule {
+struct ReduceIntoRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "reduce_into",
     name: "Reduce into",
     description: "Prefer `reduce(into:_:)` over `reduce(_:_:)` for copy-on-write types",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -141,15 +142,15 @@ struct ReduceIntoRule: Rule {
 }
 
 extension ReduceIntoRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ReduceIntoRule: OptInRule {}
+extension ReduceIntoRule {}
 
 extension ReduceIntoRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard let name = node.nameToken,
         name.text == "reduce",

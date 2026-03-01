@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct BlankLinesAroundMarkRule: Rule {
+struct BlankLinesAroundMarkRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -31,13 +31,13 @@ struct BlankLinesAroundMarkRule: Rule {
 }
 
 extension BlankLinesAroundMarkRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension BlankLinesAroundMarkRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
       let leading = token.leadingTrivia
       var position = token.position

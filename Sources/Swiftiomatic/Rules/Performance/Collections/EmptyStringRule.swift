@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct EmptyStringRule: Rule {
+struct EmptyStringRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "empty_string",
     name: "Empty String",
     description: "Prefer checking `isEmpty` over comparing `string` to an empty string literal",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("myString.isEmpty"),
       Example("!myString.isEmpty"),
@@ -23,7 +24,7 @@ struct EmptyStringRule: Rule {
 }
 
 extension EmptyStringRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: StringLiteralExprSyntax) {
       guard
         // Empty string literal: `""`, `#""#`, etc.
@@ -43,9 +44,9 @@ extension EmptyStringRule {
 }
 
 extension EmptyStringRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension EmptyStringRule: OptInRule {}
+extension EmptyStringRule {}

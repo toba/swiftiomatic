@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct FireAndForgetTaskRule: Rule {
+struct FireAndForgetTaskRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct FireAndForgetTaskRule: Rule {
     name: "Fire and Forget Task",
     description:
       "Enhanced fire-and-forget Task detection with scope-aware severity and .onAppear+Task analysis",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("let task = Task { await work() }"),
       Example("return Task { await work() }"),
@@ -25,15 +26,15 @@ struct FireAndForgetTaskRule: Rule {
 }
 
 extension FireAndForgetTaskRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension FireAndForgetTaskRule: OptInRule {}
+extension FireAndForgetTaskRule {}
 
 extension FireAndForgetTaskRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var insideViewBody = false
     private var insideInit = false
 

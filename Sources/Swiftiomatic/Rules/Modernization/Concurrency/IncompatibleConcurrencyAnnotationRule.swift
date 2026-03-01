@@ -1,7 +1,7 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct IncompatibleConcurrencyAnnotationRule: Rule {
+struct IncompatibleConcurrencyAnnotationRule {
   var configuration = IncompatibleConcurrencyAnnotationConfiguration()
 
   static let description = RuleDescription(
@@ -16,6 +16,7 @@ struct IncompatibleConcurrencyAnnotationRule: Rule {
       This rule detects public declarations that require `@preconcurrency` and can automatically add
       the annotation.
       """,
+    isOptIn: true,
     nonTriggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.nonTriggeringExamples,
     triggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.triggeringExamples,
     corrections: IncompatibleConcurrencyAnnotationRuleExamples.corrections,
@@ -23,19 +24,19 @@ struct IncompatibleConcurrencyAnnotationRule: Rule {
 }
 
 extension IncompatibleConcurrencyAnnotationRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension IncompatibleConcurrencyAnnotationRule: OptInRule {}
+extension IncompatibleConcurrencyAnnotationRule {}
 
 extension IncompatibleConcurrencyAnnotationRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClassDeclSyntax) {
       collectViolations(node, introducer: node.classKeyword)
     }
@@ -74,7 +75,7 @@ extension IncompatibleConcurrencyAnnotationRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
       super.visit(rewrite(node))
     }

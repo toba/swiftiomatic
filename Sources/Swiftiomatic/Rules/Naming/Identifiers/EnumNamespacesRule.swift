@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct EnumNamespacesRule: Rule {
+struct EnumNamespacesRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -54,13 +54,13 @@ struct EnumNamespacesRule: Rule {
 }
 
 extension EnumNamespacesRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension EnumNamespacesRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: StructDeclSyntax) {
       checkNamespace(
         keyword: node.structKeyword, members: node.memberBlock.members,

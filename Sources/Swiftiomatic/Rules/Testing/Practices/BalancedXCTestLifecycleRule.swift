@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct BalancedXCTestLifecycleRule: Rule {
+struct BalancedXCTestLifecycleRule {
   var configuration = BalancedXCTestLifecycleConfiguration()
 
   static let description = RuleDescription(
@@ -17,6 +17,7 @@ struct BalancedXCTestLifecycleRule: Rule {
       The `tearDown` method should be used to cleanup or reset any resources that could \
       otherwise have any effects on subsequent tests, and to free up any instance variables.
       """,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         #"""
@@ -143,17 +144,17 @@ struct BalancedXCTestLifecycleRule: Rule {
 }
 
 extension BalancedXCTestLifecycleRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension BalancedXCTestLifecycleRule: OptInRule {}
+extension BalancedXCTestLifecycleRule {}
 
 // MARK: - Private
 
 extension BalancedXCTestLifecycleRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }
@@ -174,7 +175,7 @@ extension BalancedXCTestLifecycleRule {
   }
 }
 
-private final class SetupTearDownVisitor<Configuration: RuleConfiguration>:
+private final class SetupTearDownVisitor<Configuration: RuleOptions>:
   ViolationCollectingVisitor<
     Configuration,
   >

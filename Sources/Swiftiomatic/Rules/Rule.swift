@@ -3,13 +3,13 @@ import Foundation
 /// An executable value that can identify issues (violations) in Swift source code
 public protocol Rule: Sendable {
     /// The type of the configuration used to configure this rule
-    associatedtype ConfigurationType: RuleConfiguration
+    associatedtype OptionsType: RuleOptions
 
     /// A verbose description of many of this rule's properties
     static var description: RuleDescription { get }
 
     /// This rule's configuration
-    var configuration: ConfigurationType { get set }
+    var configuration: OptionsType { get set }
 
     /// Whether this rule should be used on empty files, defaults to `false`
     var shouldLintEmptyFiles: Bool { get }
@@ -30,7 +30,7 @@ public protocol Rule: Sendable {
     ///   - exclusiveOptions: A set of options that should be excluded from the description.
     /// - Returns: A description of the rule's configuration.
     func createConfigurationDescription(exclusiveOptions: Set<String>)
-        -> RuleConfigurationDescription
+        -> RuleOptionsDescription
 
     /// Execute the rule on a file and return any violations
     ///
@@ -144,9 +144,9 @@ extension Rule {
     }
 
     func createConfigurationDescription(exclusiveOptions: Set<String> = [])
-        -> RuleConfigurationDescription
+        -> RuleOptionsDescription
     {
-        RuleConfigurationDescription.from(
+        RuleOptionsDescription.from(
             configuration: configuration, exclusiveOptions: exclusiveOptions,
         )
     }
@@ -174,6 +174,9 @@ extension Rule {
 }
 
 /// A rule that is not enabled by default and must be explicitly enabled by users
+///
+/// - Note: Deprecated. Use `RuleDescription.isOptIn` instead. This protocol remains
+///   for backward compatibility but is no longer checked at runtime.
 protocol OptInRule: Rule {}
 
 /// A rule that can correct violations
@@ -273,12 +276,15 @@ extension [any Rule] {
 }
 
 /// A rule that operates purely on SwiftSyntax and does not require SourceKit
+///
+/// - Note: Deprecated. Use `RuleDescription.requiresSourceKit` instead. This protocol
+///   remains for backward compatibility with ``SwiftSyntaxRule``.
 protocol SyntaxOnlyRule: Rule {}
 
 extension Rule {
-    /// Whether this rule requires SourceKit to operate, `false` when the rule conforms to ``SyntaxOnlyRule``
+    /// Whether this rule requires SourceKit to operate
     var requiresSourceKit: Bool {
-        !(self is any SyntaxOnlyRule)
+        Self.description.requiresSourceKit
     }
 }
 
@@ -313,7 +319,9 @@ protocol AsyncEnrichableRule: Rule {
 ///
 /// Analyzer rules perform checks that are more like static analysis than
 /// syntactic checks. They are always opt-in and require compiler arguments.
-protocol AnalyzerRule: OptInRule {}
+/// Set `isOptIn: true` and `requiresCompilerArguments: true` in the rule's
+/// ``RuleDescription``.
+protocol AnalyzerRule: Rule {}
 
 extension AnalyzerRule {
     func validate(file _: SwiftSource) -> [RuleViolation] {

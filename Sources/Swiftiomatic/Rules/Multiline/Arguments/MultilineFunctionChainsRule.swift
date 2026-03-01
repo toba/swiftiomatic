@@ -1,12 +1,14 @@
 import Foundation
 
-struct MultilineFunctionChainsRule: SourceKitASTRule, OptInRule {
+struct MultilineFunctionChainsRule: SourceKitASTRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "multiline_function_chains",
     name: "Multiline Function Chains",
     description: "Chained function calls should be either on the same line, or one per line",
+    isOptIn: true,
+    requiresSourceKit: true,
     nonTriggeringExamples: [
       Example(
         "let evenSquaresSum = [20, 17, 35, 4].filter { $0 % 2 == 0 }.map { $0 * $0 }.reduce(0, +)",

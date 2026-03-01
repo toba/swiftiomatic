@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct GenericTypeNameRule: Rule {
+struct GenericTypeNameRule {
   var configuration = NameConfiguration<Self>(
     minLengthWarning: 1,
     minLengthError: 0,
@@ -56,13 +56,13 @@ struct GenericTypeNameRule: Rule {
 }
 
 extension GenericTypeNameRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension GenericTypeNameRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: GenericParameterSyntax) {
       let name = node.name.text
       guard !name.isEmpty,

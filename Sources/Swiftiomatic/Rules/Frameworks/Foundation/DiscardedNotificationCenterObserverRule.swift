@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct DiscardedNotificationCenterObserverRule: Rule {
+struct DiscardedNotificationCenterObserverRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct DiscardedNotificationCenterObserverRule: Rule {
     name: "Discarded Notification Center Observer",
     description: "When registering for a notification using a block, the opaque observer that is "
       + "returned should be stored so it can be removed later",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         "let foo = nc.addObserver(forName: .NSSystemTimeZoneDidChange, object: nil, queue: nil) { }",
@@ -128,12 +129,12 @@ struct DiscardedNotificationCenterObserverRule: Rule {
 }
 
 extension DiscardedNotificationCenterObserverRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension DiscardedNotificationCenterObserverRule: OptInRule {}
+extension DiscardedNotificationCenterObserverRule {}
 
 private enum CodeBlockScope: Equatable {
   case file
@@ -144,7 +145,7 @@ private enum CodeBlockScope: Equatable {
 }
 
 extension DiscardedNotificationCenterObserverRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     var scopes = Stack<CodeBlockScope>()
 
     override func visit(_: SourceFileSyntax) -> SyntaxVisitorContinueKind {

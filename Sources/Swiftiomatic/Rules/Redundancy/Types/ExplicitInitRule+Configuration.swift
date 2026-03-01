@@ -1,4 +1,4 @@
-struct ExplicitInitConfiguration: SeverityBasedRuleConfiguration {
+struct ExplicitInitConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "include_bare_init")

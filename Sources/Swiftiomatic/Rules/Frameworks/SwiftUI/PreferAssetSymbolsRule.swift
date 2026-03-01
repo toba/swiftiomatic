@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct PreferAssetSymbolsRule: Rule {
+struct PreferAssetSymbolsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -12,6 +12,7 @@ struct PreferAssetSymbolsRule: Rule {
       arguments. Since Xcode 15, Xcode generates codes for images in the Asset Catalog. Usage of these codes \
       and system icons from SF Symbols avoid typos and allow for compile-time checking.
       """,
+    isOptIn: true,
     nonTriggeringExamples: [
       // UIKit - using asset symbols
       Example("UIImage(resource: .someImage)"),
@@ -45,15 +46,15 @@ struct PreferAssetSymbolsRule: Rule {
 }
 
 extension PreferAssetSymbolsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension PreferAssetSymbolsRule: OptInRule {}
+extension PreferAssetSymbolsRule {}
 
 extension PreferAssetSymbolsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       // Check for UIImage(named:) or SwiftUI Image(_:) calls
       if isImageInit(node: node, className: "UIImage", argumentLabel: "named")

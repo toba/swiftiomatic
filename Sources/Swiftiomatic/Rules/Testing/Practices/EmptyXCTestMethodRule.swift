@@ -1,27 +1,28 @@
 import SwiftSyntax
 
-struct EmptyXCTestMethodRule: Rule {
+struct EmptyXCTestMethodRule {
   var configuration = EmptyXCTestMethodConfiguration()
 
   static let description = RuleDescription(
     identifier: "empty_xctest_method",
     name: "Empty XCTest Method",
     description: "Empty XCTest method should be avoided",
+    isOptIn: true,
     nonTriggeringExamples: EmptyXCTestMethodRuleExamples.nonTriggeringExamples,
     triggeringExamples: EmptyXCTestMethodRuleExamples.triggeringExamples,
   )
 }
 
 extension EmptyXCTestMethodRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension EmptyXCTestMethodRule: OptInRule {}
+extension EmptyXCTestMethodRule {}
 
 extension EmptyXCTestMethodRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct UnneededThrowsRule: Rule {
+struct UnneededThrowsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct UnneededThrowsRule: Rule {
     name: "Unneeded (Re)Throws Keyword",
     description:
       "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`.",
+    isOptIn: true,
     nonTriggeringExamples: UnneededThrowsRuleExamples.nonTriggeringExamples,
     triggeringExamples: UnneededThrowsRuleExamples.triggeringExamples,
     corrections: UnneededThrowsRuleExamples.corrections,
@@ -15,19 +16,19 @@ struct UnneededThrowsRule: Rule {
 }
 
 extension UnneededThrowsRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension UnneededThrowsRule: OptInRule {}
+extension UnneededThrowsRule {}
 
 extension UnneededThrowsRule {
   fileprivate struct Scope {
     var throwsClause: ThrowsClauseSyntax?
   }
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var scopes = Stack<Scope>()
 
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {

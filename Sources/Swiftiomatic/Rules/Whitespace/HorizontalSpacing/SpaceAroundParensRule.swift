@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct SpaceAroundParensRule: Rule {
+struct SpaceAroundParensRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -26,11 +26,11 @@ struct SpaceAroundParensRule: Rule {
 }
 
 extension SpaceAroundParensRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
@@ -41,7 +41,7 @@ extension SpaceAroundParensRule {
     .if, .guard, .while, .for, .switch, .catch,
   ]
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard let leftParen = node.leftParen else { return }
       checkNoSpaceBeforeLeftParen(leftParen)
@@ -68,7 +68,7 @@ extension SpaceAroundParensRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
       guard let leftParen = node.leftParen else { return super.visit(node) }
       guard let prevToken = leftParen.previousToken(viewMode: .sourceAccurate) else {

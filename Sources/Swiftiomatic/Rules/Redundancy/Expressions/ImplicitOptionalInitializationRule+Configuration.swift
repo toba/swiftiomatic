@@ -1,4 +1,4 @@
-struct ImplicitOptionalInitializationConfiguration: SeverityBasedRuleConfiguration {  // sm:disable:this type_name
+struct ImplicitOptionalInitializationConfiguration: SeverityBasedRuleOptions {  // sm:disable:this type_name
   enum Style: String, AcceptableByConfigurationElement {
     case always
     case never

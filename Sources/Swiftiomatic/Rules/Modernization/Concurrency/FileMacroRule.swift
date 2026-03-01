@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct FileMacroRule: Rule {
+struct FileMacroRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -19,13 +19,13 @@ struct FileMacroRule: Rule {
 }
 
 extension FileMacroRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension FileMacroRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
       if token.tokenKind == .poundAvailable || token.text == "#fileID" {
         // Check for #fileID keyword

@@ -52,7 +52,7 @@ import Testing
     var config = ExplicitTypeInterfaceConfiguration()
     try config.apply(configuration: ["excluded": ["class", "instance"]])
     #expect(
-      RuleConfigurationDescription.from(configuration: config).oneLiner()
+      RuleOptionsDescription.from(configuration: config).oneLiner()
         == "severity: warning; excluded: [class, instance]; allow_redundancy: false",
     )
   }

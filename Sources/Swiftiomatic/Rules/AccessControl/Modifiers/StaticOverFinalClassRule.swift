@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct StaticOverFinalClassRule: Rule {
+struct StaticOverFinalClassRule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
     static let description = RuleDescription(
@@ -98,13 +98,13 @@ struct StaticOverFinalClassRule: Rule {
 }
 
 extension StaticOverFinalClassRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: configuration, file: file)
     }
 }
 
 extension StaticOverFinalClassRule {
-    fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
         private var classContexts = Stack<Bool>()
 
         override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {

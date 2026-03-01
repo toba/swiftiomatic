@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantSetAccessControlRule: Rule {
+struct RedundantSetAccessControlRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -73,13 +73,13 @@ struct RedundantSetAccessControlRule: Rule {
 }
 
 extension RedundantSetAccessControlRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension RedundantSetAccessControlRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [FunctionDeclSyntax.self]
     }

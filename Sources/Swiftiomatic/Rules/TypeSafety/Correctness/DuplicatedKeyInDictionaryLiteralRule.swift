@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct DuplicatedKeyInDictionaryLiteralRule: Rule {
+struct DuplicatedKeyInDictionaryLiteralRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -96,13 +96,13 @@ struct DuplicatedKeyInDictionaryLiteralRule: Rule {
 }
 
 extension DuplicatedKeyInDictionaryLiteralRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension DuplicatedKeyInDictionaryLiteralRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ list: DictionaryElementListSyntax) {
       let keys = list.map(\.key).compactMap { expr -> DictionaryKey? in
         expr.stringContent.map {

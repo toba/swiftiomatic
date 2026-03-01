@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ShorthandArgumentRule: Rule {
+struct ShorthandArgumentRule {
   var configuration = ShorthandArgumentConfiguration()
 
   static let description = RuleDescription(
@@ -11,6 +11,7 @@ struct ShorthandArgumentRule: Rule {
       away from the beginning of the closure. Optionally, while usage of a single shorthand argument is okay, \
       more than one or complex ones with field accesses might increase the risk of obfuscation.
       """,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -87,15 +88,15 @@ struct ShorthandArgumentRule: Rule {
 }
 
 extension ShorthandArgumentRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ShorthandArgumentRule: OptInRule {}
+extension ShorthandArgumentRule {}
 
 extension ShorthandArgumentRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClosureExprSyntax) {
       let arguments = ShorthandArgumentCollector().walk(
         tree: node.statements,

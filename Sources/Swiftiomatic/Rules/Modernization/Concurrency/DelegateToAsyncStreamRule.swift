@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct DelegateToAsyncStreamRule: Rule {
+struct DelegateToAsyncStreamRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -9,6 +9,7 @@ struct DelegateToAsyncStreamRule: Rule {
     description:
       "Protocol declarations where all methods are single-callback-shaped may benefit from an AsyncStream wrapper",
     scope: .suggest,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -34,15 +35,15 @@ struct DelegateToAsyncStreamRule: Rule {
 }
 
 extension DelegateToAsyncStreamRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension DelegateToAsyncStreamRule: OptInRule {}
+extension DelegateToAsyncStreamRule {}
 
 extension DelegateToAsyncStreamRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     /// Common delegate method name patterns (lowercase for case-insensitive matching)
     private static let delegatePatterns = [
       "did", "will", "should",

@@ -1,4 +1,4 @@
-struct ImplicitlyUnwrappedOptionalConfiguration: SeverityBasedRuleConfiguration {
+struct ImplicitlyUnwrappedOptionalConfiguration: SeverityBasedRuleOptions {
   enum ImplicitlyUnwrappedOptionalModeConfiguration: String,
     AcceptableByConfigurationElement
   {  // sm:disable:this type_name

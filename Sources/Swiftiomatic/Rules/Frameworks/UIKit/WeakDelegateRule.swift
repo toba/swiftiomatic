@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct WeakDelegateRule: Rule {
+struct WeakDelegateRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "weak_delegate",
     name: "Weak Delegate",
     description: "Delegates should be weak to avoid reference cycles",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("class Foo {\n  weak var delegate: SomeProtocol?\n}"),
       Example("class Foo {\n  weak var someDelegate: SomeDelegateProtocol?\n}"),
@@ -82,15 +83,15 @@ struct WeakDelegateRule: Rule {
 }
 
 extension WeakDelegateRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension WeakDelegateRule: OptInRule {}
+extension WeakDelegateRule {}
 
 extension WeakDelegateRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }

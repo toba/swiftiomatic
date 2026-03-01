@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct ConcurrencyModernizationRule: Rule {
+struct ConcurrencyModernizationRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -9,6 +9,7 @@ struct ConcurrencyModernizationRule: Rule {
     name: "Concurrency Modernization",
     description:
       "Flags GCD usage and legacy concurrency patterns that should use structured concurrency",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("Task { @MainActor in update() }"),
       Example("await withTaskGroup(of: Void.self) { }"),
@@ -22,12 +23,12 @@ struct ConcurrencyModernizationRule: Rule {
 }
 
 extension ConcurrencyModernizationRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ConcurrencyModernizationRule: OptInRule {}
+extension ConcurrencyModernizationRule {}
 
 extension ConcurrencyModernizationRule: AsyncEnrichableRule {
   func enrich(
@@ -99,7 +100,7 @@ extension ConcurrencyModernizationRule {
     }
   }
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       for param in node.signature.parameterClause.parameters
       where ConcurrencyPatternDetector.isCompletionHandlerParam(param) {

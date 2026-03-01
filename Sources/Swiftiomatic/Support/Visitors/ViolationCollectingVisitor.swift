@@ -5,7 +5,7 @@ import SwiftSyntax
 /// Subclasses override `visitPost` methods to append to ``violations``.
 /// The visitor also supports a ``skippableDeclarations`` list so rules can
 /// opt out of visiting certain declaration kinds.
-class ViolationCollectingVisitor<Configuration: RuleConfiguration>: SyntaxVisitor {
+class ViolationCollectingVisitor<Configuration: RuleOptions>: SyntaxVisitor {
     /// The rule configuration driving this visitor's thresholds and options
     let configuration: Configuration
 

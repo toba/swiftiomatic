@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct NoExtensionAccessModifierRule: Rule {
+struct NoExtensionAccessModifierRule {
   var configuration = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
     identifier: "no_extension_access_modifier",
     name: "No Extension Access Modifier",
     description: "Prefer not to use extension access modifiers",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("extension String {}"),
       Example("\n\n extension String {}"),
@@ -23,15 +24,15 @@ struct NoExtensionAccessModifierRule: Rule {
 }
 
 extension NoExtensionAccessModifierRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension NoExtensionAccessModifierRule: OptInRule {}
+extension NoExtensionAccessModifierRule {}
 
 extension NoExtensionAccessModifierRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }

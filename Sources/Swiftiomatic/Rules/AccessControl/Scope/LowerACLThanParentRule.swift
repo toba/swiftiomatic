@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct LowerACLThanParentRule: Rule {
+struct LowerACLThanParentRule {
     var configuration = SeverityConfiguration<Self>(.warning)
 
     static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct LowerACLThanParentRule: Rule {
         name: "Lower ACL than Parent",
         description:
         "Ensure declarations have a lower access control level than their enclosing parent",
+        isOptIn: true,
         nonTriggeringExamples: [
             Example("public struct Foo { public func bar() {} }"),
             Example("internal struct Foo { func bar() {} }"),
@@ -86,19 +87,19 @@ struct LowerACLThanParentRule: Rule {
 }
 
 extension LowerACLThanParentRule: SwiftSyntaxCorrectableRule {
-    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: configuration, file: file)
     }
 
-    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
         Rewriter(configuration: configuration, file: file)
     }
 }
 
-extension LowerACLThanParentRule: OptInRule {}
+extension LowerACLThanParentRule {}
 
 extension LowerACLThanParentRule {
-    fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
         override func visitPost(_ node: DeclModifierSyntax) {
             if node.isHigherACLThanParent {
                 violations.append(node.positionAfterSkippingLeadingTrivia)
@@ -106,7 +107,7 @@ extension LowerACLThanParentRule {
         }
     }
 
-    fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+    fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
         override func visit(_ node: DeclModifierSyntax) -> DeclModifierSyntax {
             guard node.isHigherACLThanParent else {
                 return super.visit(node)

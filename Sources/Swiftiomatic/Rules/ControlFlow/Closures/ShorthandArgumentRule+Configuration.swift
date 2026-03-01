@@ -1,4 +1,4 @@
-struct ShorthandArgumentConfiguration: SeverityBasedRuleConfiguration {
+struct ShorthandArgumentConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "allow_until_line_after_opening_brace")

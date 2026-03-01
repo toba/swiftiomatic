@@ -4,13 +4,15 @@ private typealias FileTypeOffset = (
   fileType: FileTypesOrderConfiguration.FileType, offset: ByteCount,
 )
 
-struct FileTypesOrderRule: OptInRule {
+struct FileTypesOrderRule: Rule {
   var configuration = FileTypesOrderConfiguration()
 
   static let description = RuleDescription(
     identifier: "file_types_order",
     name: "File Types Order",
     description: "Specifies how the types within a file should be ordered.",
+    isOptIn: true,
+    requiresSourceKit: true,
     nonTriggeringExamples: FileTypesOrderRuleExamples.nonTriggeringExamples,
     triggeringExamples: FileTypesOrderRuleExamples.triggeringExamples,
   )

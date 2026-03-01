@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct AndOperatorRule: Rule {
+struct AndOperatorRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -22,13 +22,13 @@ struct AndOperatorRule: Rule {
 }
 
 extension AndOperatorRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension AndOperatorRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ConditionElementSyntax) {
       // Check if this condition element contains a && operator
       // that could be replaced with a comma

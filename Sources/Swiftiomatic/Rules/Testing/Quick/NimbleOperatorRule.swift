@@ -1,13 +1,14 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct NimbleOperatorRule: Rule {
+struct NimbleOperatorRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "nimble_operator",
     name: "Nimble Operator",
     description: "Prefer Nimble operator overloads over free matcher functions",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("expect(seagull.squawk) != \"Hi!\""),
       Example("expect(\"Hi!\") == \"Hi!\""),
@@ -77,19 +78,19 @@ struct NimbleOperatorRule: Rule {
 }
 
 extension NimbleOperatorRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension NimbleOperatorRule: OptInRule {}
+extension NimbleOperatorRule {}
 
 extension NimbleOperatorRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard predicateDescription(for: node) != nil else {
         return
@@ -98,7 +99,7 @@ extension NimbleOperatorRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: FunctionCallExprSyntax) -> ExprSyntax {
       guard let expectation = node.expectation(),
         let predicate = predicatesMapping[expectation.operatorExpr.baseName.text],

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ValidIBInspectableRule: Rule {
+struct ValidIBInspectableRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -182,13 +182,13 @@ struct ValidIBInspectableRule: Rule {
 }
 
 extension ValidIBInspectableRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension ValidIBInspectableRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [FunctionDeclSyntax.self]
     }

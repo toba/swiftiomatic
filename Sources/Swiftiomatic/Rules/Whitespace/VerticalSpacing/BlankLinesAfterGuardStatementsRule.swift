@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct BlankLinesAfterGuardStatementsRule: Rule {
+struct BlankLinesAfterGuardStatementsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -35,13 +35,13 @@ struct BlankLinesAfterGuardStatementsRule: Rule {
 }
 
 extension BlankLinesAfterGuardStatementsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension BlankLinesAfterGuardStatementsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: CodeBlockSyntax) {
       checkStatements(node.statements)
     }

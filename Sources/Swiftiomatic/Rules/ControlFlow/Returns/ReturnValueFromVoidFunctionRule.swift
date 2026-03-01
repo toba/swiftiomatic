@@ -1,32 +1,33 @@
 import SwiftBasicFormat
 import SwiftSyntax
 
-struct ReturnValueFromVoidFunctionRule: Rule {
+struct ReturnValueFromVoidFunctionRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "return_value_from_void_function",
     name: "Return Value from Void Function",
     description: "Returning values from Void functions should be avoided",
+    isOptIn: true,
     nonTriggeringExamples: ReturnValueFromVoidFunctionRuleExamples.nonTriggeringExamples,
     triggeringExamples: ReturnValueFromVoidFunctionRuleExamples.triggeringExamples,
   )
 }
 
 extension ReturnValueFromVoidFunctionRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
-extension ReturnValueFromVoidFunctionRule: OptInRule {}
+extension ReturnValueFromVoidFunctionRule {}
 
 extension ReturnValueFromVoidFunctionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ReturnStmtSyntax) {
       if node.expression != nil,
         let functionNode = Syntax(node).enclosingFunction(),
@@ -37,7 +38,7 @@ extension ReturnValueFromVoidFunctionRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ statements: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
       guard let returnStmt = statements.last?.item.as(ReturnStmtSyntax.self),
         let expr = returnStmt.expression,

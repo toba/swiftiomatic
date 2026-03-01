@@ -1,4 +1,4 @@
-struct XCTSpecificMatcherConfiguration: SeverityBasedRuleConfiguration {
+struct XCTSpecificMatcherConfiguration: SeverityBasedRuleOptions {
   enum Matcher: String, AcceptableByConfigurationElement, CaseIterable {
     case oneArgumentAsserts = "one-argument-asserts"
     case twoArgumentAsserts = "two-argument-asserts"

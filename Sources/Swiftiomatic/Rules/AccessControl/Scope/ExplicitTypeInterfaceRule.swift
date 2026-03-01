@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct ExplicitTypeInterfaceRule: Rule {
+struct ExplicitTypeInterfaceRule {
   var configuration = ExplicitTypeInterfaceConfiguration()
 
   static let description = RuleDescription(
     identifier: "explicit_type_interface",
     name: "Explicit Type Interface",
     description: "Properties should have a type interface",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -92,15 +93,15 @@ struct ExplicitTypeInterfaceRule: Rule {
 }
 
 extension ExplicitTypeInterfaceRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension ExplicitTypeInterfaceRule: OptInRule {}
+extension ExplicitTypeInterfaceRule {}
 
 extension ExplicitTypeInterfaceRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]
     }

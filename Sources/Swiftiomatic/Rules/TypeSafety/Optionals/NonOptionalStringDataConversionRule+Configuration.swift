@@ -1,4 +1,4 @@
-struct NonOptionalStringDataConversionConfiguration: SeverityBasedRuleConfiguration {
+struct NonOptionalStringDataConversionConfiguration: SeverityBasedRuleOptions {
   // sm:disable:previous type_name
 
   @ConfigurationElement(key: "severity")

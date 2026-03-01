@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct TrailingWhitespaceRule: Rule {
+struct TrailingWhitespaceRule {
   var configuration = TrailingWhitespaceConfiguration()
 
   static let description = RuleDescription(
@@ -32,13 +32,13 @@ struct TrailingWhitespaceRule: Rule {
 }
 
 extension TrailingWhitespaceRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension TrailingWhitespaceRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     // Pre-computed comment information for performance
     private var linesFullyCoveredByBlockComments = Set<Int>()
     private var linesEndingWithComment = Set<Int>()

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct UnusedParameterRule: Rule {
+struct UnusedParameterRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -11,6 +11,7 @@ struct UnusedParameterRule: Rule {
       marked by the Swift compiler. Since unused parameters are code smells, they should either be removed \
       or replaced/shadowed by a wildcard '_' to indicate that they are being deliberately disregarded.
       """,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -173,17 +174,17 @@ struct UnusedParameterRule: Rule {
 }
 
 extension UnusedParameterRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension UnusedParameterRule: OptInRule {}
+extension UnusedParameterRule {}
 
 // MARK: Visitor
 
 extension UnusedParameterRule {
-  fileprivate final class Visitor: DeclaredIdentifiersTrackingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: DeclaredIdentifiersTrackingVisitor<OptionsType> {
     private var referencedDeclarations = Set<IdentifierDeclaration>()
 
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {

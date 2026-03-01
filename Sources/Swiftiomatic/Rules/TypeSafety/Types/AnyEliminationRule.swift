@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct AnyEliminationRule: Rule {
+struct AnyEliminationRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -9,6 +9,7 @@ struct AnyEliminationRule: Rule {
     description:
       "Usage of Any/AnyObject erases type safety and should be replaced with specific types or generics",
     scope: .suggest,
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("var name: String = \"\""),
       Example("func process(_ item: Codable) {}"),
@@ -22,12 +23,12 @@ struct AnyEliminationRule: Rule {
 }
 
 extension AnyEliminationRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension AnyEliminationRule: OptInRule {}
+extension AnyEliminationRule {}
 
 extension AnyEliminationRule: AsyncEnrichableRule {
   func enrich(
@@ -106,7 +107,7 @@ extension AnyEliminationRule {
     }
   }
 
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: TypeAnnotationSyntax) {
       checkForAny(in: node.type)
     }

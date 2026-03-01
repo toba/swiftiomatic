@@ -1,27 +1,28 @@
 import SwiftSyntax
 
-struct DiscouragedOptionalCollectionRule: Rule {
+struct DiscouragedOptionalCollectionRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "discouraged_optional_collection",
     name: "Discouraged Optional Collection",
     description: "Prefer empty collection over optional collection",
+    isOptIn: true,
     nonTriggeringExamples: DiscouragedOptionalCollectionExamples.nonTriggeringExamples,
     triggeringExamples: DiscouragedOptionalCollectionExamples.triggeringExamples,
   )
 }
 
 extension DiscouragedOptionalCollectionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension DiscouragedOptionalCollectionRule: OptInRule {}
+extension DiscouragedOptionalCollectionRule {}
 
 extension DiscouragedOptionalCollectionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: OptionalTypeSyntax) {
       if node.wrappedType.isCollectionType {
         violations.append(node.positionAfterSkippingLeadingTrivia)

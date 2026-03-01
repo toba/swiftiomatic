@@ -1,4 +1,4 @@
-struct MultilineParametersConfiguration: SeverityBasedRuleConfiguration {
+struct MultilineParametersConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "allows_single_line")

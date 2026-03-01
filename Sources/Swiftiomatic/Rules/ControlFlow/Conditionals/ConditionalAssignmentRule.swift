@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ConditionalAssignmentRule: Rule {
+struct ConditionalAssignmentRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -44,13 +44,13 @@ struct ConditionalAssignmentRule: Rule {
 }
 
 extension ConditionalAssignmentRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension ConditionalAssignmentRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: CodeBlockItemListSyntax) {
       var iterator = node.makeIterator()
       var previous: CodeBlockItemSyntax?

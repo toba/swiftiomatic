@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct LargeTupleRule: Rule {
+struct LargeTupleRule {
   var configuration = LargeTupleConfiguration()
 
   static let description = RuleDescription(
@@ -85,13 +85,13 @@ struct LargeTupleRule: Rule {
 }
 
 extension LargeTupleRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension LargeTupleRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: TupleTypeSyntax) {
       if configuration.ignoreRegex, node.isInsideRegexType {
         return

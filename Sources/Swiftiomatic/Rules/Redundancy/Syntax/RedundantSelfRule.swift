@@ -1,13 +1,14 @@
 @_spi(Diagnostics) import SwiftParser
 @_spi(RawSyntax) import SwiftSyntax
 
-struct RedundantSelfRule: Rule {
+struct RedundantSelfRule {
   var configuration = RedundantSelfConfiguration()
 
   static let description = RuleDescription(
     identifier: "redundant_self",
     name: "Redundant Self",
     description: "Explicit use of 'self' is not required",
+    isOptIn: true,
     nonTriggeringExamples: RedundantSelfRuleExamples.nonTriggeringExamples,
     triggeringExamples: RedundantSelfRuleExamples.triggeringExamples,
     corrections: RedundantSelfRuleExamples.corrections,
@@ -16,12 +17,12 @@ struct RedundantSelfRule: Rule {
 }
 
 extension RedundantSelfRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension RedundantSelfRule: OptInRule {}
+extension RedundantSelfRule {}
 
 private enum TypeDeclarationKind {
   case likeStruct, likeClass, `extension`
@@ -36,7 +37,7 @@ private enum SelfCaptureKind {
 }
 
 extension RedundantSelfRule {
-  fileprivate final class Visitor: DeclaredIdentifiersTrackingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: DeclaredIdentifiersTrackingVisitor<OptionsType> {
     private var typeDeclarations = Stack<TypeDeclarationKind>()
     private var closureExprScopes = Stack<(ClosureExprType, SelfCaptureKind)>()
     private var initializerScopes = Stack<Bool>()

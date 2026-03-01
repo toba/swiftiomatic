@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct StructuralDuplicationRule: CollectingRule, OptInRule {
+struct StructuralDuplicationRule: CollectingRule {
   typealias FileInfo = [FunctionFingerprint]
 
   var configuration = SeverityConfiguration<Self>(.warning)
@@ -10,6 +10,7 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
     name: "Structural Duplication",
     description:
       "Functions with identical AST structure are likely duplicated code that should be consolidated",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("func unique1() { print(1) }\nfunc unique2() { return 2 }")
     ],

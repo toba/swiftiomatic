@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct LastWhereRule: Rule {
+struct LastWhereRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "last_where",
     name: "Last Where",
     description: "Prefer using `.last(where:)` over `.filter { }.last` in collections",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("kinds.filter(excludingKinds.contains).isEmpty && kinds.last == .identifier"),
       Example("myList.last(where: { $0 % 2 == 0 })"),
@@ -27,15 +28,15 @@ struct LastWhereRule: Rule {
 }
 
 extension LastWhereRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension LastWhereRule: OptInRule {}
+extension LastWhereRule {}
 
 extension LastWhereRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       guard
         node.declName.baseName.text == "last",

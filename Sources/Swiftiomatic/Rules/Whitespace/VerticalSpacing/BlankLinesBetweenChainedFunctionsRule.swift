@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct BlankLinesBetweenChainedFunctionsRule: Rule {
+struct BlankLinesBetweenChainedFunctionsRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -30,13 +30,13 @@ struct BlankLinesBetweenChainedFunctionsRule: Rule {
 }
 
 extension BlankLinesBetweenChainedFunctionsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension BlankLinesBetweenChainedFunctionsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
       // Look for `.` (period) tokens that are member access operators
       guard token.tokenKind == .period else { return .visitChildren }

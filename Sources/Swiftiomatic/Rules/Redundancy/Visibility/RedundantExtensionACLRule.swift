@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct RedundantExtensionACLRule: Rule {
+struct RedundantExtensionACLRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -67,17 +67,17 @@ struct RedundantExtensionACLRule: Rule {
 }
 
 extension RedundantExtensionACLRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension RedundantExtensionACLRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ExtensionDeclSyntax) {
       guard let extensionACL = node.effectiveACLKeyword else { return }
       let memberACL = extensionACL == .private ? Keyword.fileprivate : extensionACL
@@ -94,7 +94,7 @@ extension RedundantExtensionACLRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: ExtensionDeclSyntax) -> DeclSyntax {
       guard let extensionACL = node.effectiveACLKeyword else {
         return super.visit(node)

@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ClosureParameterPositionRule: Rule {
+struct ClosureParameterPositionRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -119,13 +119,13 @@ struct ClosureParameterPositionRule: Rule {
 }
 
 extension ClosureParameterPositionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension ClosureParameterPositionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClosureExprSyntax) {
       guard let signature = node.signature else {
         return

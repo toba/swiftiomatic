@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct UnusedOptionalBindingRule: Rule {
+struct UnusedOptionalBindingRule {
   var configuration = UnusedOptionalBindingConfiguration()
 
   static let description = RuleDescription(
@@ -30,13 +30,13 @@ struct UnusedOptionalBindingRule: Rule {
 }
 
 extension UnusedOptionalBindingRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension UnusedOptionalBindingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: OptionalBindingConditionSyntax) {
       guard let pattern = node.pattern.as(ExpressionPatternSyntax.self),
         pattern.expression.isDiscardExpression

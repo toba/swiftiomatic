@@ -1,4 +1,4 @@
-struct OperatorUsageWhitespaceConfiguration: SeverityBasedRuleConfiguration {
+struct OperatorUsageWhitespaceConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "lines_look_around")

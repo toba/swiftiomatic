@@ -1,4 +1,4 @@
-struct UnneededOverrideConfiguration: SeverityBasedRuleConfiguration {
+struct UnneededOverrideConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "affect_initializers")

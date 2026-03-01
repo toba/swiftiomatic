@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct DuplicateConditionsRule: Rule {
+struct DuplicateConditionsRule {
   var configuration = SeverityConfiguration<Self>(.error)
 
   static let description = RuleDescription(
@@ -194,13 +194,13 @@ struct DuplicateConditionsRule: Rule {
 }
 
 extension DuplicateConditionsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension DuplicateConditionsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: IfExprSyntax) {
       if node.parent?.is(IfExprSyntax.self) == true {
         // We can skip these cases - they will be picked up when we visit the top level `if`

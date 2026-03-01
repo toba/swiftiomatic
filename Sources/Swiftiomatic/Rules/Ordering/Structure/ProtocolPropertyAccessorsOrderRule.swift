@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct ProtocolPropertyAccessorsOrderRule: Rule {
+struct ProtocolPropertyAccessorsOrderRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -24,17 +24,17 @@ struct ProtocolPropertyAccessorsOrderRule: Rule {
 }
 
 extension ProtocolPropertyAccessorsOrderRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
     Rewriter(configuration: configuration, file: file)
   }
 }
 
 extension ProtocolPropertyAccessorsOrderRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .allExcept(ProtocolDeclSyntax.self, VariableDeclSyntax.self)
     }
@@ -48,7 +48,7 @@ extension ProtocolPropertyAccessorsOrderRule {
     }
   }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<ConfigurationType> {
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: AccessorBlockSyntax) -> AccessorBlockSyntax {
       guard node.hasViolation else {
         return super.visit(node)

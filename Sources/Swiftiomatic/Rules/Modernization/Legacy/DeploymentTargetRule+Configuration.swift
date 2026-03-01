@@ -1,6 +1,6 @@
 import Foundation
 
-struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
+struct DeploymentTargetConfiguration: SeverityBasedRuleOptions {
   typealias Parent = DeploymentTargetRule
 
   enum Platform: String {
@@ -110,7 +110,7 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
 
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
 
-  var parameterDescription: RuleConfigurationDescription? {
+  var parameterDescription: RuleOptionsDescription? {
     let targets = Dictionary(
       uniqueKeysWithValues: [
         iOSDeploymentTarget,

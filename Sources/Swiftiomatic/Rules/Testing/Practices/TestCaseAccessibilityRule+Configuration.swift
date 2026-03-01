@@ -1,4 +1,4 @@
-struct TestCaseAccessibilityConfiguration: SeverityBasedRuleConfiguration {
+struct TestCaseAccessibilityConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "allowed_prefixes")

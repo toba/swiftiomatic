@@ -1,6 +1,6 @@
 import Foundation
 
-struct IndentationWidthRule: OptInRule {
+struct IndentationWidthRule: Rule {
   // MARK: - Subtypes
 
   private enum Indentation: Equatable {
@@ -24,6 +24,7 @@ struct IndentationWidthRule: OptInRule {
     name: "Indentation Width",
     description: "Indent code using either one tab or the configured amount of spaces, "
       + "unindent to match previous indentations. Don't indent the first line.",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("firstLine\nsecondLine"),
       Example("firstLine\n    secondLine"),

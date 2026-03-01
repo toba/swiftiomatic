@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct PreferFinalClassesRule: Rule {
+struct PreferFinalClassesRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -27,13 +27,13 @@ struct PreferFinalClassesRule: Rule {
 }
 
 extension PreferFinalClassesRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension PreferFinalClassesRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClassDeclSyntax) {
       // Skip if already final or open
       let hasFinal = node.modifiers.contains { $0.name.tokenKind == .keyword(.final) }

@@ -24,10 +24,10 @@ public protocol Documentable {
 }
 
 /// Description of a rule configuration.
-public struct RuleConfigurationDescription: Equatable, Sendable {
-    fileprivate let options: [RuleConfigurationOption]
+public struct RuleOptionsDescription: Equatable, Sendable {
+    fileprivate let options: [RuleOptionsEntry]
 
-    fileprivate init(options: [RuleConfigurationOption], exclusiveOptions: Set<String> = []) {
+    fileprivate init(options: [RuleOptionsEntry], exclusiveOptions: Set<String> = []) {
         if options.contains(.noOptions) {
             if options.count > 1 {
                 Console.fatalError(
@@ -48,14 +48,14 @@ public struct RuleConfigurationDescription: Equatable, Sendable {
                 : nonEmptyOptions.filter { exclusiveOptions.contains($0.key) }
     }
 
-    static func from(configuration: some RuleConfiguration, exclusiveOptions: Set<String> = [])
+    static func from(configuration: some RuleOptions, exclusiveOptions: Set<String> = [])
         -> Self
     {
         // Prefer custom descriptions.
         if let customDescription = configuration.parameterDescription {
             return Self(options: customDescription.options, exclusiveOptions: exclusiveOptions)
         }
-        let options: [RuleConfigurationOption] = Mirror(reflecting: configuration).children
+        let options: [RuleOptionsEntry] = Mirror(reflecting: configuration).children
             .flatMap { child in
                 // Property wrappers have names prefixed by an underscore.
                 if child.label?.starts(with: "_") == true,
@@ -70,7 +70,7 @@ public struct RuleConfigurationDescription: Equatable, Sendable {
                 """
                 Rule configuration '\(configuration)' does not have any parameters.
                 A custom description must be provided. If really no documentation is
-                required, define the description as `{ RuleConfigurationOption.noOptions }`.
+                required, define the description as `{ RuleOptionsEntry.noOptions }`.
                 """,
             )
         }
@@ -91,7 +91,7 @@ public struct RuleConfigurationDescription: Equatable, Sendable {
     }
 }
 
-extension RuleConfigurationDescription: Documentable {
+extension RuleOptionsDescription: Documentable {
     public var hasContent: Bool {
         options.isNotEmpty
     }
@@ -125,8 +125,8 @@ extension RuleConfigurationDescription: Documentable {
     }
 }
 
-/// A single option of a ``RuleConfigurationDescription``.
-struct RuleConfigurationOption: Equatable, Sendable {
+/// A single option of a ``RuleOptionsDescription``.
+struct RuleOptionsEntry: Equatable, Sendable {
     /// An option serving as a marker for an empty configuration description.
     static let noOptions = Self(key: "<nothing>", value: .empty)
 
@@ -134,7 +134,7 @@ struct RuleConfigurationOption: Equatable, Sendable {
     fileprivate let value: OptionType
 }
 
-extension RuleConfigurationOption: Documentable {
+extension RuleOptionsEntry: Documentable {
     var hasContent: Bool {
         self != .noOptions
     }
@@ -186,7 +186,7 @@ enum OptionType: Equatable, Sendable {
     /// A list of options.
     case list([Self])
     /// An option which is another set of configuration options to be nested in the serialized output.
-    case nested(RuleConfigurationDescription)
+    case nested(RuleOptionsDescription)
 }
 
 extension OptionType: Documentable {
@@ -242,9 +242,9 @@ extension OptionType: Documentable {
 
 /// A result builder creating configuration descriptions.
 @resultBuilder
-enum RuleConfigurationDescriptionBuilder {
+enum RuleOptionsDescriptionBuilder {
     /// :nodoc:
-    typealias Description = RuleConfigurationDescription
+    typealias Description = RuleOptionsDescription
 
     /// :nodoc:
     static func buildBlock(_ components: Description...) -> Description {
@@ -267,12 +267,12 @@ enum RuleConfigurationDescriptionBuilder {
     }
 
     /// :nodoc:
-    static func buildExpression(_ expression: RuleConfigurationOption) -> Description {
+    static func buildExpression(_ expression: RuleOptionsEntry) -> Description {
         Description(options: [expression])
     }
 
     /// :nodoc:
-    static func buildExpression(_ expression: some RuleConfiguration) -> Description {
+    static func buildExpression(_ expression: some RuleOptions) -> Description {
         Description.from(configuration: expression)
     }
 
@@ -292,8 +292,8 @@ extension OptionType {
     ///   - value: Value of the option.
     ///
     /// - Returns: A configuration option built up by the given data.
-    static func => (key: String, value: OptionType) -> RuleConfigurationOption {
-        RuleConfigurationOption(key: key, value: value)
+    static func => (key: String, value: OptionType) -> RuleOptionsEntry {
+        RuleOptionsEntry(key: key, value: value)
     }
 
     /// Create an option defined by nested configuration description.
@@ -303,7 +303,7 @@ extension OptionType {
     ///
     /// - Returns: A configuration option with a value being another configuration description.
     static func nest(
-        @RuleConfigurationDescriptionBuilder _ description: () -> RuleConfigurationDescription,
+        @RuleOptionsDescriptionBuilder _ description: () -> RuleOptionsDescription,
     ) -> Self {
         .nested(description())
     }
@@ -313,7 +313,7 @@ extension OptionType {
 
 /// Type of a configuration parameter wrapper.
 private protocol AnyConfigurationElement {
-    var description: RuleConfigurationDescription { get }
+    var description: RuleOptionsDescription { get }
 }
 
 /// Type of an object that can be used as a configuration element.
@@ -336,7 +336,7 @@ protocol AcceptableByConfigurationElement {
     ///   - key: Name of the option to be put into the description.
     ///
     /// - Returns: Configuration description of this object.
-    func asDescription(with key: String) -> RuleConfigurationDescription
+    func asDescription(with key: String) -> RuleOptionsDescription
 
     /// Update the object.
     ///
@@ -362,8 +362,8 @@ extension AcceptableByConfigurationElement where Self: RawRepresentable, RawValu
 
 /// Default implementations which are shortcuts applicable for most of the types conforming to the protocol.
 extension AcceptableByConfigurationElement {
-    func asDescription(with key: String) -> RuleConfigurationDescription {
-        RuleConfigurationDescription(options: [key => asOption()])
+    func asDescription(with key: String) -> RuleOptionsDescription {
+        RuleOptionsDescription(options: [key => asOption()])
     }
 
     mutating func apply(_ value: Any, ruleID: String) throws(SwiftiomaticError) {
@@ -374,7 +374,7 @@ extension AcceptableByConfigurationElement {
 /// An option type that can appear inlined into its using configuration.
 ///
 /// The ``ConfigurationElement`` must opt into this behavior. In this case, the option does not have a key. This is
-/// almost exclusively useful for common ``RuleConfiguration``s that are used in many other rules as child
+/// almost exclusively useful for common ``RuleOptions``s that are used in many other rules as child
 /// configurations.
 ///
 /// > Warning: A type conforming to this protocol is assumed to throw an issue in its `apply` method only when it's
@@ -552,7 +552,7 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
 }
 
 extension ConfigurationElement: AnyConfigurationElement {
-    fileprivate var description: RuleConfigurationDescription {
+    fileprivate var description: RuleOptionsDescription {
         wrappedValue.asDescription(with: key)
     }
 }
@@ -670,18 +670,18 @@ extension CachedRegex: AcceptableByConfigurationElement {
     }
 }
 
-// MARK: RuleConfiguration conformances
+// MARK: RuleOptions conformances
 
-extension AcceptableByConfigurationElement where Self: RuleConfiguration {
+extension AcceptableByConfigurationElement where Self: RuleOptions {
     func asOption() -> OptionType {
         .nested(.from(configuration: self))
     }
 
-    func asDescription(with key: String) -> RuleConfigurationDescription {
+    func asDescription(with key: String) -> RuleOptionsDescription {
         if key.isEmpty {
             return .from(configuration: self)
         }
-        return RuleConfigurationDescription(options: [key => asOption()])
+        return RuleOptionsDescription(options: [key => asOption()])
     }
 
     mutating func apply(_ value: Any, ruleID: String) throws(SwiftiomaticError) {
@@ -700,8 +700,8 @@ extension AcceptableByConfigurationElement where Self: RuleConfiguration {
 extension SeverityConfiguration {
     /// Severity configurations are special in that they shall not be nested when an option name is provided.
     /// Instead, their only option value must be used together with the option name.
-    func asDescription(with key: String) -> RuleConfigurationDescription {
-        let description = RuleConfigurationDescription.from(configuration: self)
+    func asDescription(with key: String) -> RuleOptionsDescription {
+        let description = RuleOptionsDescription.from(configuration: self)
         if key.isEmpty {
             return description
         }
@@ -712,6 +712,6 @@ extension SeverityConfiguration {
                 """,
             )
         }
-        return RuleConfigurationDescription(options: [key => option])
+        return RuleOptionsDescription(options: [key => option])
     }
 }

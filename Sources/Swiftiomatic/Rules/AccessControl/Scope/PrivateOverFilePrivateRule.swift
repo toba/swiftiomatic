@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct PrivateOverFilePrivateRule: Rule {
+struct PrivateOverFilePrivateRule {
   var configuration = PrivateOverFilePrivateConfiguration()
 
   static let description = RuleDescription(
@@ -89,13 +89,13 @@ struct PrivateOverFilePrivateRule: Rule {
 }
 
 extension PrivateOverFilePrivateRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
 extension PrivateOverFilePrivateRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }

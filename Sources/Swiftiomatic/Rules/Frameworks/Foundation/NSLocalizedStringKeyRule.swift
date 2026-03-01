@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct NSLocalizedStringKeyRule: Rule {
+struct NSLocalizedStringKeyRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -8,6 +8,7 @@ struct NSLocalizedStringKeyRule: Rule {
     name: "NSLocalizedString Key",
     description: "Static strings should be used as key/comment"
       + " in NSLocalizedString in order for genstrings to work",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example("NSLocalizedString(\"key\", comment: \"\")"),
       Example("NSLocalizedString(\"key\" + \"2\", comment: \"\")"),
@@ -36,15 +37,15 @@ struct NSLocalizedStringKeyRule: Rule {
 }
 
 extension NSLocalizedStringKeyRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension NSLocalizedStringKeyRule: OptInRule {}
+extension NSLocalizedStringKeyRule {}
 
 extension NSLocalizedStringKeyRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard
         node.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text == "NSLocalizedString"

@@ -1,4 +1,4 @@
-struct RedundantVoidReturnConfiguration: SeverityBasedRuleConfiguration {
+struct RedundantVoidReturnConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "include_closures")

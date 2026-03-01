@@ -1,12 +1,13 @@
 import SwiftSyntax
 
-struct IBInspectableInExtensionRule: Rule {
+struct IBInspectableInExtensionRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
     identifier: "ibinspectable_in_extension",
     name: "IBInspectable in Extension",
     description: "Extensions shouldn't add @IBInspectable properties",
+    isOptIn: true,
     nonTriggeringExamples: [
       Example(
         """
@@ -29,15 +30,15 @@ struct IBInspectableInExtensionRule: Rule {
 }
 
 extension IBInspectableInExtensionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: configuration, file: file)
   }
 }
 
-extension IBInspectableInExtensionRule: OptInRule {}
+extension IBInspectableInExtensionRule {}
 
 extension IBInspectableInExtensionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .allExcept(ExtensionDeclSyntax.self, VariableDeclSyntax.self)
     }

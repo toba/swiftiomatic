@@ -1,4 +1,4 @@
-struct FunctionNameWhitespaceConfiguration: SeverityBasedRuleConfiguration {
+struct FunctionNameWhitespaceConfiguration: SeverityBasedRuleOptions {
   @ConfigurationElement(key: "severity")
   var severityConfiguration = SeverityConfiguration<Parent>(.warning)
   @ConfigurationElement(key: "generic_spacing")

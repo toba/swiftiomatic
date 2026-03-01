@@ -1,7 +1,7 @@
 @testable import Swiftiomatic
 
 struct MockRule: Rule {
-  var configurationDescription: some Documentable { RuleConfigurationOption.noOptions }
+  var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
   var configuration = SeverityConfiguration<Self>(.warning)
 
