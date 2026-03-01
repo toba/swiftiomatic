@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ConsecutiveSpacesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ConsecutiveSpacesConfiguration()
+
   static let description = RuleDescription(
     identifier: "consecutive_spaces",
     name: "Consecutive Spaces",

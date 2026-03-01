@@ -7,6 +7,8 @@ struct ClosureBodyLengthRule {
     warning: Self.defaultWarningThreshold, error: 100,
   )
 
+  static let configuration = ClosureBodyLengthConfiguration()
+
   static let description = RuleDescription(
     identifier: "closure_body_length",
     name: "Closure Body Length",

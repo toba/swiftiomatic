@@ -4,6 +4,8 @@ import SwiftSyntaxBuilder
 struct IncompatibleConcurrencyAnnotationRule {
   var options = IncompatibleConcurrencyAnnotationOptions()
 
+  static let configuration = IncompatibleConcurrencyAnnotationConfiguration()
+
   static let description = RuleDescription(
     identifier: "incompatible_concurrency_annotation",
     name: "Incompatible Concurrency Annotation",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ConditionalReturnsOnNewlineRule {
   var options = ConditionalReturnsOnNewlineOptions()
 
+  static let configuration = ConditionalReturnsOnNewlineConfiguration()
+
   static let description = RuleDescription(
     identifier: "conditional_returns_on_newline",
     name: "Conditional Returns on Newline",

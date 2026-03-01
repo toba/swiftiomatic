@@ -19,6 +19,8 @@ struct ExpiringTodoRule {
     }
   }
 
+  static let configuration = ExpiringTodoConfiguration()
+
   static let description = RuleDescription(
     identifier: "expiring_todo",
     name: "Expiring Todo",

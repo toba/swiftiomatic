@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PrivateSubjectRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PrivateSubjectConfiguration()
+
   static let description = RuleDescription(
     identifier: "private_subject",
     name: "Private Combine Subject",

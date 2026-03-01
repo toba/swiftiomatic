@@ -3,6 +3,8 @@ import SwiftSyntax
 struct UnusedSetterValueRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnusedSetterValueConfiguration()
+
   static let description = RuleDescription(
     identifier: "unused_setter_value",
     name: "Unused Setter Value",

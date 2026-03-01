@@ -3,6 +3,8 @@ import SwiftSyntax
 struct EnvironmentEntryRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = EnvironmentEntryConfiguration()
+
   static let description = RuleDescription(
     identifier: "environment_entry",
     name: "Environment Entry",

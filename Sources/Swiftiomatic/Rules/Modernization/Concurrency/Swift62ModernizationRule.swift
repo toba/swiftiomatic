@@ -3,6 +3,8 @@ import SwiftSyntax
 struct Swift62ModernizationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = Swift62ModernizationConfiguration()
+
   static let description = RuleDescription(
     identifier: "swift62_modernization",
     name: "Swift 6.2 Modernization",

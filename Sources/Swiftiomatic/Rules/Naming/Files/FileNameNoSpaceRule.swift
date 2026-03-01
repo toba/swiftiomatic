@@ -3,6 +3,8 @@ import Foundation
 struct FileNameNoSpaceRule: SyntaxOnlyRule {
   var options = FileNameNoSpaceOptions()
 
+  static let configuration = FileNameNoSpaceConfiguration()
+
   static let description = RuleDescription(
     identifier: "file_name_no_space",
     name: "File Name no Space",

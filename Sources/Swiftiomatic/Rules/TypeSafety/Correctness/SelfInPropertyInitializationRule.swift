@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SelfInPropertyInitializationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SelfInPropertyInitializationConfiguration()
+
   static let description = RuleDescription(
     identifier: "self_in_property_initialization",
     name: "Self in Property Initialization",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct AsyncWithoutAwaitRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = AsyncWithoutAwaitConfiguration()
+
   static let description = RuleDescription(
     identifier: "async_without_await",
     name: "Async Without Await",

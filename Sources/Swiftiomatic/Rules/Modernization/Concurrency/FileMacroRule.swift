@@ -3,6 +3,8 @@ import SwiftSyntax
 struct FileMacroRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = FileMacroConfiguration()
+
   static let description = RuleDescription(
     identifier: "file_macro",
     name: "File Macro",

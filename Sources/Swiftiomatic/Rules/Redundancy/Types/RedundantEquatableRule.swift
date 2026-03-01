@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantEquatableRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantEquatableConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_equatable",
     name: "Redundant Equatable",

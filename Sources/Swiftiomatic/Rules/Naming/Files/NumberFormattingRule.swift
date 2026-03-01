@@ -3,6 +3,8 @@ import SwiftSyntax
 struct NumberFormattingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = NumberFormattingConfiguration()
+
   static let description = RuleDescription(
     identifier: "number_formatting",
     name: "Number Formatting",

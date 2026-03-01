@@ -6,6 +6,8 @@ struct CommaInheritanceRule: SubstitutionCorrectableRule,
 {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = CommaInheritanceConfiguration()
+
   static let description = RuleDescription(
     identifier: "comma_inheritance",
     name: "Comma Inheritance Rule",

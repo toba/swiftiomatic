@@ -4,6 +4,8 @@ import SwiftSyntaxBuilder
 struct UnneededOverrideRule {
   var options = UnneededOverrideOptions()
 
+  static let configuration = UnneededOverrideConfiguration()
+
   static let description = RuleDescription(
     identifier: "unneeded_override",
     name: "Unneeded Overridden Functions",

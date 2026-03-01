@@ -3,6 +3,8 @@ import SwiftSyntax
 struct EmptyCollectionLiteralRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = EmptyCollectionLiteralConfiguration()
+
   static let description = RuleDescription(
     identifier: "empty_collection_literal",
     name: "Empty Collection Literal",

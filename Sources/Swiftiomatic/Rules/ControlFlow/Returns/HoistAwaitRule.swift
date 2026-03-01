@@ -3,6 +3,8 @@ import SwiftSyntax
 struct HoistAwaitRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = HoistAwaitConfiguration()
+
   static let description = RuleDescription(
     identifier: "hoist_await",
     name: "Hoist Await",

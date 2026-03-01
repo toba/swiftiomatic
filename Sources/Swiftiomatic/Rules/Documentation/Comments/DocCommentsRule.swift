@@ -4,6 +4,8 @@ import SwiftSyntax
 struct DocCommentsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = DocCommentsConfiguration()
+
   static let description = RuleDescription(
     identifier: "doc_comments",
     name: "Doc Comments",

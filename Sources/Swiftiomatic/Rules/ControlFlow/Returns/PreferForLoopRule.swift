@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PreferForLoopRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferForLoopConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_for_loop",
     name: "Prefer For Loop",

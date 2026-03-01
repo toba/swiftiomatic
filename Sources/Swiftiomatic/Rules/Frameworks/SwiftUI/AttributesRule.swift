@@ -3,6 +3,8 @@ import SwiftSyntax
 struct AttributesRule {
   var options = AttributesOptions()
 
+  static let configuration = AttributesConfiguration()
+
   static let description = RuleDescription(
     identifier: "attributes",
     name: "Attributes",

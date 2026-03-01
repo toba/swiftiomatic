@@ -3,6 +3,8 @@ import SwiftSyntax
 struct MultilineParametersRule {
   var options = MultilineParametersOptions()
 
+  static let configuration = MultilineParametersConfiguration()
+
   static let description = RuleDescription(
     identifier: "multiline_parameters",
     name: "Multiline Parameters",

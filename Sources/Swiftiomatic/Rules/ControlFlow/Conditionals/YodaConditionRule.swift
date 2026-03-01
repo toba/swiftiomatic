@@ -3,6 +3,8 @@ import SwiftSyntax
 struct YodaConditionRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = YodaConditionConfiguration()
+
   static let description = RuleDescription(
     identifier: "yoda_condition",
     name: "Yoda Condition",

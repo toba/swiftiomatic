@@ -20,6 +20,8 @@ private func embedInSwitch(
 struct UnneededBreakInSwitchRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnneededBreakInSwitchConfiguration()
+
   static let description = RuleDescription(
     identifier: "unneeded_break_in_switch",
     name: "Unneeded Break in Switch",

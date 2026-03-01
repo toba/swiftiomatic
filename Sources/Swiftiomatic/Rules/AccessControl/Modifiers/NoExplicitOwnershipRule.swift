@@ -3,6 +3,8 @@ import SwiftSyntax
 struct NoExplicitOwnershipRule {
     var options = SeverityConfiguration<Self>(.warning)
 
+    static let configuration = NoExplicitOwnershipConfiguration()
+
     static let description = RuleDescription(
         identifier: "no_explicit_ownership",
         name: "No Explicit Ownership",

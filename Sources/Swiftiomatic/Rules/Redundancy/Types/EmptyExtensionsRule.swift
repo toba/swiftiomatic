@@ -3,6 +3,8 @@ import SwiftSyntax
 struct EmptyExtensionsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = EmptyExtensionsConfiguration()
+
   static let description = RuleDescription(
     identifier: "empty_extensions",
     name: "Empty Extensions",

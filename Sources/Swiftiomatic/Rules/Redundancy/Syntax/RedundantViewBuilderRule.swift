@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantViewBuilderRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantViewBuilderConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_view_builder",
     name: "Redundant ViewBuilder",

@@ -4,6 +4,8 @@ import SwiftSyntax
 struct TypedThrowsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = TypedThrowsConfiguration()
+
   static let description = RuleDescription(
     identifier: "typed_throws",
     name: "Typed Throws",

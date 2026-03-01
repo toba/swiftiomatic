@@ -3,6 +3,8 @@ import SwiftSyntax
 struct AnyEliminationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = AnyEliminationConfiguration()
+
   static let description = RuleDescription(
     identifier: "any_elimination",
     name: "Any Elimination",

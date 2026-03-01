@@ -3,6 +3,8 @@ import SwiftSyntax
 struct OptionalDataStringConversionRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = OptionalDataStringConversionConfiguration()
+
   static let description = RuleDescription(
     identifier: "optional_data_string_conversion",
     name: "Optional Data -> String Conversion",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct HoistTryRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = HoistTryConfiguration()
+
   static let description = RuleDescription(
     identifier: "hoist_try",
     name: "Hoist Try",

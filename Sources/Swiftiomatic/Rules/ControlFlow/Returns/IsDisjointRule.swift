@@ -3,6 +3,8 @@ import SwiftSyntax
 struct IsDisjointRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = IsDisjointConfiguration()
+
   static let description = RuleDescription(
     identifier: "is_disjoint",
     name: "Is Disjoint",

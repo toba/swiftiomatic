@@ -5,6 +5,8 @@ struct DeploymentTargetRule {
 
   var options = DeploymentTargetOptions()
 
+  static let configuration = DeploymentTargetConfiguration()
+
   static let description = RuleDescription(
     identifier: "deployment_target",
     name: "Deployment Target",

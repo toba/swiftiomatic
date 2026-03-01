@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DocCommentsBeforeModifiersRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = DocCommentsBeforeModifiersConfiguration()
+
   static let description = RuleDescription(
     identifier: "doc_comments_before_modifiers",
     name: "Doc Comments Before Modifiers",

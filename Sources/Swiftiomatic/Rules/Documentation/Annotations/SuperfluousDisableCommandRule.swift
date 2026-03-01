@@ -1,6 +1,8 @@
 struct SuperfluousDisableCommandRule: SyntaxOnlyRule, Sendable {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SuperfluousDisableCommandConfiguration()
+
   static let description = RuleDescription(
     identifier: "superfluous_disable_command",
     name: "Superfluous Disable Command",

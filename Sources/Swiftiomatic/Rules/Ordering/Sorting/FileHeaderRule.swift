@@ -4,6 +4,8 @@ import SwiftSyntax
 struct FileHeaderRule {
   var options = FileHeaderOptions()
 
+  static let configuration = FileHeaderConfiguration()
+
   static let description = RuleDescription(
     identifier: "file_header",
     name: "File Header",

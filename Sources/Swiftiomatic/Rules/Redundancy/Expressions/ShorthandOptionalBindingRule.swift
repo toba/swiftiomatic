@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ShorthandOptionalBindingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ShorthandOptionalBindingConfiguration()
+
   static let description = RuleDescription(
     identifier: "shorthand_optional_binding",
     name: "Shorthand Optional Binding",

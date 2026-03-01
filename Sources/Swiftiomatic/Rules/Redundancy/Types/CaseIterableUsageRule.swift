@@ -5,6 +5,8 @@ struct CaseIterableUsageRule: CollectingRule {
 
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = CaseIterableUsageConfiguration()
+
   static let description = RuleDescription(
     identifier: "case_iterable_usage",
     name: "CaseIterable Usage",

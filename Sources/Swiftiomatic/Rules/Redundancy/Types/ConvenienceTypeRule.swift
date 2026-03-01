@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ConvenienceTypeRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ConvenienceTypeConfiguration()
+
   static let description = RuleDescription(
     identifier: "convenience_type",
     name: "Convenience Type",

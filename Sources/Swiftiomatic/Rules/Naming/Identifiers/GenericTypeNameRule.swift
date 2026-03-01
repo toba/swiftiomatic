@@ -9,6 +9,8 @@ struct GenericTypeNameRule {
     maxLengthError: 1000,
   )
 
+  static let configuration = GenericTypeNameConfiguration()
+
   static let description = RuleDescription(
     identifier: "generic_type_name",
     name: "Generic Type Name",

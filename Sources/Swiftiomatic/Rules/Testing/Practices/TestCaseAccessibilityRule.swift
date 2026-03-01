@@ -3,6 +3,8 @@ import SwiftSyntax
 struct TestCaseAccessibilityRule {
   var options = TestCaseAccessibilityOptions()
 
+  static let configuration = TestCaseAccessibilityConfiguration()
+
   static let description = RuleDescription(
     identifier: "test_case_accessibility",
     name: "Test Case Accessibility",

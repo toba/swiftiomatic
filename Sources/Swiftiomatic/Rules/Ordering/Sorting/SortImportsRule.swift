@@ -4,6 +4,8 @@ import SwiftSyntax
 struct SortImportsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SortImportsConfiguration()
+
   static let description = RuleDescription(
     identifier: "sort_imports",
     name: "Sort Imports",

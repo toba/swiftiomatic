@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PerformanceAntiPatternsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PerformanceAntiPatternsConfiguration()
+
   static let description = RuleDescription(
     identifier: "performance_anti_patterns",
     name: "Performance Anti-Patterns",

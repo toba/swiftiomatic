@@ -3,6 +3,8 @@ import Foundation
 struct LeadingWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = LeadingWhitespaceConfiguration()
+
   static let description = RuleDescription(
     identifier: "leading_whitespace",
     name: "Leading Whitespace",

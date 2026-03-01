@@ -3,6 +3,8 @@ import SwiftSyntax
 struct NestingRule {
   var options = NestingOptions()
 
+  static let configuration = NestingConfiguration()
+
   static let description = RuleDescription(
     identifier: "nesting",
     name: "Nesting",

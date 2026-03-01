@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ContainsOverFilterCountRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ContainsOverFilterCountConfiguration()
+
   static let description = RuleDescription(
     identifier: "contains_over_filter_count",
     name: "Contains over Filter Count",

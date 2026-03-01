@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ConditionalAssignmentRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ConditionalAssignmentConfiguration()
+
   static let description = RuleDescription(
     identifier: "conditional_assignment",
     name: "Conditional Assignment",

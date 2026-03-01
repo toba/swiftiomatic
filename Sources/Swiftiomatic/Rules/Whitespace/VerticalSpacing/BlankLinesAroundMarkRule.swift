@@ -4,6 +4,8 @@ import SwiftSyntax
 struct BlankLinesAroundMarkRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = BlankLinesAroundMarkConfiguration()
+
   static let description = RuleDescription(
     identifier: "blank_lines_around_mark",
     name: "Blank Lines Around MARK",

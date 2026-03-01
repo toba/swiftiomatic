@@ -3,6 +3,8 @@ import SwiftSyntax
 struct BlankLinesBetweenScopesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = BlankLinesBetweenScopesConfiguration()
+
   static let description = RuleDescription(
     identifier: "blank_lines_between_scopes",
     name: "Blank Lines Between Scopes",

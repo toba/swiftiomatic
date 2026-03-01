@@ -3,6 +3,8 @@ import Foundation
 struct BlanketDisableCommandRule: Rule, SyntaxOnlyRule {
   var options = BlanketDisableCommandOptions()
 
+  static let configuration = BlanketDisableCommandConfiguration()
+
   static let description = RuleDescription(
     identifier: "blanket_disable_command",
     name: "Blanket Disable Command",

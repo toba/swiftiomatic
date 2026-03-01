@@ -3,6 +3,8 @@ import SwiftSyntax
 struct TrailingSemicolonRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = TrailingSemicolonConfiguration()
+
   static let description = RuleDescription(
     identifier: "trailing_semicolon",
     name: "Trailing Semicolon",

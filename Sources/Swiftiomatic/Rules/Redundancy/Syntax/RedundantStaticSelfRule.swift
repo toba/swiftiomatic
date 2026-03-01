@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantStaticSelfRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantStaticSelfConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_static_self",
     name: "Redundant Static Self",

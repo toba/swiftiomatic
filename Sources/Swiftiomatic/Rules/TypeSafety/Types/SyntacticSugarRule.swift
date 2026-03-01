@@ -4,6 +4,8 @@ import SwiftSyntax
 struct SyntacticSugarRule: CorrectableRule, SyntaxOnlyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SyntacticSugarConfiguration()
+
   static let description = RuleDescription(
     identifier: "syntactic_sugar",
     name: "Syntactic Sugar",

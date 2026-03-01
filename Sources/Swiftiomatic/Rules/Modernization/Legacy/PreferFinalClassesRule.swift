@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PreferFinalClassesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferFinalClassesConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_final_classes",
     name: "Prefer Final Classes",

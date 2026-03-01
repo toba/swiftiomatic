@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ObservationPitfallsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ObservationPitfallsConfiguration()
+
   static let description = RuleDescription(
     identifier: "observation_pitfalls",
     name: "Observation Pitfalls",

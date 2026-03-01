@@ -3,6 +3,8 @@ import SwiftSyntax
 struct NoFallthroughOnlyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = NoFallthroughOnlyConfiguration()
+
   static let description = RuleDescription(
     identifier: "no_fallthrough_only",
     name: "No Fallthrough only",

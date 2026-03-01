@@ -4,6 +4,8 @@ import SwiftSyntax
 struct IdentifierNameRule {
   var options = IdentifierNameOptions()
 
+  static let configuration = IdentifierNameConfiguration()
+
   static let description = RuleDescription(
     identifier: "identifier_name",
     name: "Identifier Name",

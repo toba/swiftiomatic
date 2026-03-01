@@ -3,6 +3,8 @@ import SwiftSyntax
 struct FileLengthRule {
   var options = FileLengthOptions()
 
+  static let configuration = FileLengthConfiguration()
+
   static let description = RuleDescription(
     identifier: "file_length",
     name: "File Length",

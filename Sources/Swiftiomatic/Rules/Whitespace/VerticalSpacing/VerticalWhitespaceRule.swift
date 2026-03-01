@@ -4,6 +4,8 @@ import SwiftSyntax
 struct VerticalWhitespaceRule {
   var options = VerticalWhitespaceOptions()
 
+  static let configuration = VerticalWhitespaceConfiguration()
+
   static let description = RuleDescription(
     identifier: "vertical_whitespace",
     name: "Vertical Whitespace",

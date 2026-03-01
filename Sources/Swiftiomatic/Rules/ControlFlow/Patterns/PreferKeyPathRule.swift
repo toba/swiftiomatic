@@ -11,6 +11,8 @@ struct PreferKeyPathRule {
     "ignore_identity_closures": true,
   ]
 
+  static let configuration = PreferKeyPathConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_key_path",
     name: "Prefer Key Path",

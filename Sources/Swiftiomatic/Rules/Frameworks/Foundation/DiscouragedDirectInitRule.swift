@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DiscouragedDirectInitRule {
   var options = DiscouragedDirectInitOptions()
 
+  static let configuration = DiscouragedDirectInitConfiguration()
+
   static let description = RuleDescription(
     identifier: "discouraged_direct_init",
     name: "Discouraged Direct Initialization",

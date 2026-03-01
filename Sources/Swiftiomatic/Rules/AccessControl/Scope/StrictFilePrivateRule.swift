@@ -3,6 +3,8 @@ import SwiftSyntax
 struct StrictFilePrivateRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = StrictFilePrivateConfiguration()
+
   static let description = RuleDescription(
     identifier: "strict_fileprivate",
     name: "Strict Fileprivate",

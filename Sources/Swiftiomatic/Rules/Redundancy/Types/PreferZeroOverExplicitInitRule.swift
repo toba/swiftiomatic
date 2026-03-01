@@ -4,6 +4,8 @@ import SwiftSyntaxBuilder
 struct PreferZeroOverExplicitInitRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferZeroOverExplicitInitConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_zero_over_explicit_init",
     name: "Prefer Zero Over Explicit Init",

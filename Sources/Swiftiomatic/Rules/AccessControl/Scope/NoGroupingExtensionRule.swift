@@ -3,6 +3,8 @@ import SwiftSyntax
 struct NoGroupingExtensionRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = NoGroupingExtensionConfiguration()
+
   static let description = RuleDescription(
     identifier: "no_grouping_extension",
     name: "No Grouping Extension",

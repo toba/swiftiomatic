@@ -4,6 +4,8 @@ import SwiftSyntax
 struct BlockBasedKVORule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = BlockBasedKVOConfiguration()
+
   static let description = RuleDescription(
     identifier: "block_based_kvo",
     name: "Block Based KVO",

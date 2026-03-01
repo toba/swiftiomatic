@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ImplicitOptionalInitializationRule {
   var options = ImplicitOptionalInitializationOptions()
 
+  static let configuration = ImplicitOptionalInitializationConfiguration()
+
   static let description = RuleDescription(
     identifier: "implicit_optional_initialization",
     name: "Implicit Optional Initialization",

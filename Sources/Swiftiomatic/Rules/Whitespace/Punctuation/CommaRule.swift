@@ -4,6 +4,8 @@ import SwiftSyntax
 struct CommaRule: CorrectableRule, SyntaxOnlyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = CommaConfiguration()
+
   static let description = RuleDescription(
     identifier: "comma",
     name: "Comma Spacing",

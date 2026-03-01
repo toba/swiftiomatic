@@ -3,6 +3,8 @@ import SwiftSyntax
 struct EmptyParametersRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = EmptyParametersConfiguration()
+
   static let description = RuleDescription(
     identifier: "empty_parameters",
     name: "Empty Parameters",

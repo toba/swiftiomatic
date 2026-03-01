@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DiscouragedObjectLiteralRule {
   var options = DiscouragedObjectLiteralOptions()
 
+  static let configuration = DiscouragedObjectLiteralConfiguration()
+
   static let description = RuleDescription(
     identifier: "discouraged_object_literal",
     name: "Discouraged Object Literal",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct AccessibilityLabelForImageRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = AccessibilityLabelForImageConfiguration()
+
   static let description = RuleDescription(
     identifier: "accessibility_label_for_image",
     name: "Accessibility Label for Image",

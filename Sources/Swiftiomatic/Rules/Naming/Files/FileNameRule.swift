@@ -4,6 +4,8 @@ import SwiftSyntax
 struct FileNameRule: SyntaxOnlyRule {
   var options = FileNameOptions()
 
+  static let configuration = FileNameConfiguration()
+
   static let description = RuleDescription(
     identifier: "file_name",
     name: "File Name",

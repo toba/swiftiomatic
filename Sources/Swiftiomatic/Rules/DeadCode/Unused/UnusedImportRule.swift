@@ -5,6 +5,8 @@ private let moduleToLog = ProcessInfo.processInfo.environment["SWIFTIOMATIC_LOG_
 struct UnusedImportRule: CorrectableRule, AnalyzerRule {
   var options = UnusedImportOptions()
 
+  static let configuration = UnusedImportConfiguration()
+
   static let description = RuleDescription(
     identifier: "unused_import",
     name: "Unused Import",

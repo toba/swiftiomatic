@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PreferAssetSymbolsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferAssetSymbolsConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_asset_symbols",
     name: "Prefer Asset Symbols",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ModifierOrderRule {
     var options = ModifierOrderOptions()
 
+    static let configuration = ModifierOrderConfiguration()
+
     static let description = RuleDescription(
         identifier: "modifier_order",
         name: "Modifier Order",

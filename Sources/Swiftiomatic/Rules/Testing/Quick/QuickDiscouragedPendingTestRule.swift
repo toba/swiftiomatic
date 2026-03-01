@@ -3,6 +3,8 @@ import SwiftSyntax
 struct QuickDiscouragedPendingTestRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = QuickDiscouragedPendingTestConfiguration()
+
   static let description = RuleDescription(
     identifier: "quick_discouraged_pending_test",
     name: "Quick Discouraged Pending Test",

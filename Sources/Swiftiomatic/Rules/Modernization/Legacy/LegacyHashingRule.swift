@@ -3,6 +3,8 @@ import SwiftSyntax
 struct LegacyHashingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = LegacyHashingConfiguration()
+
   static let description = RuleDescription(
     identifier: "legacy_hashing",
     name: "Legacy Hashing",

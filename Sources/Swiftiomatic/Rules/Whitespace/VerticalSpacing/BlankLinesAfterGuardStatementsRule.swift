@@ -3,6 +3,8 @@ import SwiftSyntax
 struct BlankLinesAfterGuardStatementsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = BlankLinesAfterGuardStatementsConfiguration()
+
   static let description = RuleDescription(
     identifier: "blank_lines_after_guard_statements",
     name: "Blank Lines After Guard Statements",

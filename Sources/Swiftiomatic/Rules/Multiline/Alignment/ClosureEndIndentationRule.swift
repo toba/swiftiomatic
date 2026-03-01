@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ClosureEndIndentationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ClosureEndIndentationConfiguration()
+
   static let description = RuleDescription(
     identifier: "closure_end_indentation",
     name: "Closure End Indentation",

@@ -7,6 +7,8 @@ private typealias FileTypeOffset = (
 struct FileTypesOrderRule: Rule {
   var options = FileTypesOrderOptions()
 
+  static let configuration = FileTypesOrderConfiguration()
+
   static let description = RuleDescription(
     identifier: "file_types_order",
     name: "File Types Order",

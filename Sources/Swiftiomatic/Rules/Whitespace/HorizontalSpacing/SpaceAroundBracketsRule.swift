@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SpaceAroundBracketsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SpaceAroundBracketsConfiguration()
+
   static let description = RuleDescription(
     identifier: "space_around_brackets",
     name: "Space Around Brackets",

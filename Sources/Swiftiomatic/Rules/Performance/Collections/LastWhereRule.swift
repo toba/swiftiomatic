@@ -3,6 +3,8 @@ import SwiftSyntax
 struct LastWhereRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = LastWhereConfiguration()
+
   static let description = RuleDescription(
     identifier: "last_where",
     name: "Last Where",

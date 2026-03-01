@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PreferConditionListRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferConditionListConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_condition_list",
     name: "Prefer Condition List",

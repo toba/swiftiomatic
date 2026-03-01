@@ -4,6 +4,8 @@ import SwiftSyntax
 struct OpeningBraceRule {
   var options = OpeningBraceOptions()
 
+  static let configuration = OpeningBraceConfiguration()
+
   static let description = RuleDescription(
     identifier: "opening_brace",
     name: "Opening Brace Spacing",

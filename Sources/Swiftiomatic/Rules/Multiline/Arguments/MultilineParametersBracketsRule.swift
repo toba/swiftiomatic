@@ -3,6 +3,8 @@ import Foundation
 struct MultilineParametersBracketsRule: Rule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = MultilineParametersBracketsConfiguration()
+
   static let description = RuleDescription(
     identifier: "multiline_parameters_brackets",
     name: "Multiline Parameters Brackets",

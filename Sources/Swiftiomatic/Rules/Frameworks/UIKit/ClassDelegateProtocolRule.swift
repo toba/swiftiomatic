@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ClassDelegateProtocolRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ClassDelegateProtocolConfiguration()
+
   static let description = RuleDescription(
     identifier: "class_delegate_protocol",
     name: "Class Delegate Protocol",

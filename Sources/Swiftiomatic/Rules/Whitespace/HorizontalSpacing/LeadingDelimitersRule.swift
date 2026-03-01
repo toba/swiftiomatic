@@ -3,6 +3,8 @@ import SwiftSyntax
 struct LeadingDelimitersRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = LeadingDelimitersConfiguration()
+
   static let description = RuleDescription(
     identifier: "leading_delimiters",
     name: "Leading Delimiters",

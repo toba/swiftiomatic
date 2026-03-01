@@ -1,6 +1,8 @@
 struct LegacyNSGeometryFunctionsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = LegacyNSGeometryFunctionsConfiguration()
+
   static let description = RuleDescription(
     identifier: "legacy_nsgeometry_functions",
     name: "Legacy NSGeometry Functions",

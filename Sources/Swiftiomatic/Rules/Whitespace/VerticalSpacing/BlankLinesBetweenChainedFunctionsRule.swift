@@ -3,6 +3,8 @@ import SwiftSyntax
 struct BlankLinesBetweenChainedFunctionsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = BlankLinesBetweenChainedFunctionsConfiguration()
+
   static let description = RuleDescription(
     identifier: "blank_lines_between_chained_functions",
     name: "Blank Lines Between Chained Functions",

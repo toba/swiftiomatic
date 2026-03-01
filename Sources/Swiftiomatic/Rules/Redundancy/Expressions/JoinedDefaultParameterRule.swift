@@ -3,6 +3,8 @@ import SwiftSyntax
 struct JoinedDefaultParameterRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = JoinedDefaultParameterConfiguration()
+
   static let description = RuleDescription(
     identifier: "joined_default_parameter",
     name: "Joined Default Parameter",

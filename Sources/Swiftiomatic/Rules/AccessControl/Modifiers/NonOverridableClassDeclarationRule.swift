@@ -3,6 +3,8 @@ import SwiftSyntax
 struct NonOverridableClassDeclarationRule {
     var options = NonOverridableClassDeclarationOptions()
 
+    static let configuration = NonOverridableClassDeclarationConfiguration()
+
     static let description = RuleDescription(
         identifier: "non_overridable_class_declaration",
         name: "Class Declaration in Final Class",

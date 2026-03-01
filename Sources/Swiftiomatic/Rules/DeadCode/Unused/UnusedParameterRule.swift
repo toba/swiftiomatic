@@ -3,6 +3,8 @@ import SwiftSyntax
 struct UnusedParameterRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnusedParameterConfiguration()
+
   static let description = RuleDescription(
     identifier: "unused_parameter",
     name: "Unused Parameter",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct LetVarWhitespaceRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = LetVarWhitespaceConfiguration()
+
   static let description = RuleDescription(
     identifier: "let_var_whitespace",
     name: "Variable Declaration Whitespace",

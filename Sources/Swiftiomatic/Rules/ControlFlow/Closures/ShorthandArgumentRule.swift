@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ShorthandArgumentRule {
   var options = ShorthandArgumentOptions()
 
+  static let configuration = ShorthandArgumentConfiguration()
+
   static let description = RuleDescription(
     identifier: "shorthand_argument",
     name: "Shorthand Argument",

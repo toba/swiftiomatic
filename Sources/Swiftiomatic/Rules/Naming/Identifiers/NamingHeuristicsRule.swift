@@ -4,6 +4,8 @@ import SwiftSyntax
 struct NamingHeuristicsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = NamingHeuristicsConfiguration()
+
   static let description = RuleDescription(
     identifier: "naming_heuristics",
     name: "Naming Heuristics",

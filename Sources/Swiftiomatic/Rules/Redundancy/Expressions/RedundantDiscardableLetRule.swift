@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantDiscardableLetRule {
   var options = RedundantDiscardableLetOptions()
 
+  static let configuration = RedundantDiscardableLetConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_discardable_let",
     name: "Redundant Discardable Let",

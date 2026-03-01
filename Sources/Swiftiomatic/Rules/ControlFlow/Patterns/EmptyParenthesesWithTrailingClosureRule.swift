@@ -3,6 +3,8 @@ import SwiftSyntax
 struct EmptyParenthesesWithTrailingClosureRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = EmptyParenthesesWithTrailingClosureConfiguration()
+
   static let description = RuleDescription(
     identifier: "empty_parentheses_with_trailing_closure",
     name: "Empty Parentheses with Trailing Closure",

@@ -4,6 +4,8 @@ import SwiftIDEUtils
 struct PeriodSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PeriodSpacingConfiguration()
+
   static let description = RuleDescription(
     identifier: "period_spacing",
     name: "Period Spacing",

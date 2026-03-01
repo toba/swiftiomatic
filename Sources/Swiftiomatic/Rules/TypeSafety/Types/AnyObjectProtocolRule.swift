@@ -3,6 +3,8 @@ import SwiftSyntax
 struct AnyObjectProtocolRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = AnyObjectProtocolConfiguration()
+
   static let description = RuleDescription(
     identifier: "any_object_protocol",
     name: "AnyObject Protocol",

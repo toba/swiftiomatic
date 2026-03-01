@@ -3,6 +3,8 @@ import SwiftSyntax
 struct FireAndForgetTaskRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = FireAndForgetTaskConfiguration()
+
   static let description = RuleDescription(
     identifier: "fire_and_forget_task",
     name: "Fire and Forget Task",

@@ -5,6 +5,8 @@ struct TrailingClosureRule {
 
   private static let onlySingleMutedConfig = ["only_single_muted_parameter": true]
 
+  static let configuration = TrailingClosureConfiguration()
+
   static let description = RuleDescription(
     identifier: "trailing_closure",
     name: "Trailing Closure",

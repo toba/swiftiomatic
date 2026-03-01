@@ -5,6 +5,8 @@ struct DeadSymbolsRule: CollectingRule {
 
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = DeadSymbolsConfiguration()
+
   static let description = RuleDescription(
     identifier: "dead_symbols",
     name: "Dead Symbols",

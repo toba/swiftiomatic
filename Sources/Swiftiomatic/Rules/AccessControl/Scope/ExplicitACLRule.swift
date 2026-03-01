@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ExplicitACLRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ExplicitACLConfiguration()
+
   static let description = RuleDescription(
     identifier: "explicit_acl",
     name: "Explicit ACL",

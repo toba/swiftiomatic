@@ -6,6 +6,8 @@ import SwiftSyntax
 struct NoMagicNumbersRule {
   var options = NoMagicNumbersOptions()
 
+  static let configuration = NoMagicNumbersConfiguration()
+
   static let description = RuleDescription(
     identifier: "no_magic_numbers",
     name: "No Magic Numbers",

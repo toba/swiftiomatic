@@ -3,6 +3,8 @@ import Foundation
 struct MultilineFunctionChainsRule: SourceKitASTRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = MultilineFunctionChainsConfiguration()
+
   static let description = RuleDescription(
     identifier: "multiline_function_chains",
     name: "Multiline Function Chains",

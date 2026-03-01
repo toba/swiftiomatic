@@ -3,6 +3,8 @@ import SwiftSyntax
 struct OverriddenSuperCallRule {
   var options = OverriddenSuperCallOptions()
 
+  static let configuration = OverriddenSuperCallConfiguration()
+
   static let description = RuleDescription(
     identifier: "overridden_super_call",
     name: "Overridden Method Calls Super",

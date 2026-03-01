@@ -3,6 +3,8 @@ import SwiftSyntax
 struct MarkTypesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = MarkTypesConfiguration()
+
   static let description = RuleDescription(
     identifier: "mark_types",
     name: "Mark Types",

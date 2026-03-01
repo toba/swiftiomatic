@@ -4,6 +4,8 @@ import SwiftSyntax
 struct PrivateUnitTestRule {
   var options = PrivateUnitTestOptions()
 
+  static let configuration = PrivateUnitTestConfiguration()
+
   static let description = RuleDescription(
     identifier: "private_unit_test",
     name: "Private Unit Test",

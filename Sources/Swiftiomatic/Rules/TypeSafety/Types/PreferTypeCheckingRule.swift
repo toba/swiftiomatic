@@ -4,6 +4,8 @@ import SwiftSyntaxBuilder
 struct PreferTypeCheckingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferTypeCheckingConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_type_checking",
     name: "Prefer Type Checking",

@@ -20,6 +20,8 @@ extension String {
 struct TrailingNewlineRule: CorrectableRule, SyntaxOnlyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = TrailingNewlineConfiguration()
+
   static let description = RuleDescription(
     identifier: "trailing_newline",
     name: "Trailing Newline",

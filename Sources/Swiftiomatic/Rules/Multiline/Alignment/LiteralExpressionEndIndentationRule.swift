@@ -3,6 +3,8 @@ import Foundation
 struct LiteralExpressionEndIndentationRule: Rule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = LiteralExpressionEndIndentationConfiguration()
+
   static let description = RuleDescription(
     identifier: "literal_expression_end_indentation",
     name: "Literal Expression End Indentation",

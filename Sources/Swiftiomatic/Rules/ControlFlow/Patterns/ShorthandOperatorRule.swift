@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ShorthandOperatorRule {
   var options = SeverityConfiguration<Self>(.error)
 
+  static let configuration = ShorthandOperatorConfiguration()
+
   static let description = RuleDescription(
     identifier: "shorthand_operator",
     name: "Shorthand Operator",

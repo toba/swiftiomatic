@@ -4,6 +4,8 @@ import SwiftSyntax
 struct MultilineLiteralBracketsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = MultilineLiteralBracketsConfiguration()
+
   static let description = RuleDescription(
     identifier: "multiline_literal_brackets",
     name: "Multiline Literal Brackets",

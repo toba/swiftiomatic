@@ -3,6 +3,8 @@ import SwiftSyntax
 struct FunctionDefaultParameterAtEndRule {
   var options = FunctionDefaultParameterAtEndOptions()
 
+  static let configuration = FunctionDefaultParameterAtEndConfiguration()
+
   static let description = RuleDescription(
     identifier: "function_default_parameter_at_end",
     name: "Function Default Parameter at End",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct NoEmptyBlockRule {
   var options = NoEmptyBlockOptions()
 
+  static let configuration = NoEmptyBlockConfiguration()
+
   static let description = RuleDescription(
     identifier: "no_empty_block",
     name: "No Empty Block",

@@ -4,6 +4,8 @@ import SwiftSyntaxBuilder
 struct ExplicitInitRule {
   var options = ExplicitInitOptions()
 
+  static let configuration = ExplicitInitConfiguration()
+
   static let description = RuleDescription(
     identifier: "explicit_init",
     name: "Explicit Init",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ReturnArrowWhitespaceRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ReturnArrowWhitespaceConfiguration()
+
   static let description = RuleDescription(
     identifier: "return_arrow_whitespace",
     name: "Returning Whitespace",

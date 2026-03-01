@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PrivateOverFilePrivateRule {
   var options = PrivateOverFilePrivateOptions()
 
+  static let configuration = PrivateOverFilePrivateConfiguration()
+
   static let description = RuleDescription(
     identifier: "private_over_fileprivate",
     name: "Private over Fileprivate",

@@ -7,6 +7,8 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
   typealias USR = String
   typealias FileInfo = Set<USR>
 
+  static let configuration = CaptureVariableConfiguration()
+
   static let description = RuleDescription(
     identifier: "capture_variable",
     name: "Capture Variable",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct UnhandledThrowingTaskRule {
   var options = SeverityConfiguration<Self>(.error)
 
+  static let configuration = UnhandledThrowingTaskConfiguration()
+
   static let description = RuleDescription(
     identifier: "unhandled_throwing_task",
     name: "Unhandled Throwing Task",

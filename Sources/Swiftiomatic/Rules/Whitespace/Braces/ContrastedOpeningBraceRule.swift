@@ -4,6 +4,8 @@ import SwiftSyntax
 struct ContrastedOpeningBraceRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ContrastedOpeningBraceConfiguration()
+
   static let description = RuleDescription(
     identifier: "contrasted_opening_brace",
     name: "Contrasted Opening Brace",

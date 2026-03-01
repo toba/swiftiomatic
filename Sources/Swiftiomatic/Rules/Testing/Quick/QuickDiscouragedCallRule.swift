@@ -3,6 +3,8 @@ import SwiftSyntax
 struct QuickDiscouragedCallRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = QuickDiscouragedCallConfiguration()
+
   static let description = RuleDescription(
     identifier: "quick_discouraged_call",
     name: "Quick Discouraged Call",

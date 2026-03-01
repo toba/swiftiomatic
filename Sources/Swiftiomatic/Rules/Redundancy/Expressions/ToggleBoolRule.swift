@@ -4,6 +4,8 @@ import SwiftSyntaxBuilder
 struct ToggleBoolRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ToggleBoolConfiguration()
+
   static let description = RuleDescription(
     identifier: "toggle_bool",
     name: "Toggle Bool",

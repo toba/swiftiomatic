@@ -3,6 +3,8 @@ import SwiftSyntax
 struct UnusedControlFlowLabelRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnusedControlFlowLabelConfiguration()
+
   static let description = RuleDescription(
     identifier: "unused_control_flow_label",
     name: "Unused Control Flow Label",

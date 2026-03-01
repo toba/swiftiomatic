@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ControlStatementRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ControlStatementConfiguration()
+
   static let description = RuleDescription(
     identifier: "control_statement",
     name: "Control Statement",

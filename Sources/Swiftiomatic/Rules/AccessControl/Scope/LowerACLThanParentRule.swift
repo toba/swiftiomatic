@@ -3,6 +3,8 @@ import SwiftSyntax
 struct LowerACLThanParentRule {
     var options = SeverityConfiguration<Self>(.warning)
 
+    static let configuration = LowerACLThanParentConfiguration()
+
     static let description = RuleDescription(
         identifier: "lower_acl_than_parent",
         name: "Lower ACL than Parent",

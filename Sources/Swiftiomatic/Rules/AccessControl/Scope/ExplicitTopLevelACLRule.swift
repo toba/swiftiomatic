@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ExplicitTopLevelACLRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ExplicitTopLevelACLConfiguration()
+
   static let description = RuleDescription(
     identifier: "explicit_top_level_acl",
     name: "Explicit Top Level ACL",

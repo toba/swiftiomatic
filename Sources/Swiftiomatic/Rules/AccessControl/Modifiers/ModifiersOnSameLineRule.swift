@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ModifiersOnSameLineRule {
     var options = SeverityConfiguration<Self>(.warning)
 
+    static let configuration = ModifiersOnSameLineConfiguration()
+
     static let description = RuleDescription(
         identifier: "modifiers_on_same_line",
         name: "Modifiers on Same Line",

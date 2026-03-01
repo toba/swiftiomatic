@@ -3,6 +3,8 @@ import SwiftSyntax
 struct FirstWhereRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = FirstWhereConfiguration()
+
   static let description = RuleDescription(
     identifier: "first_where",
     name: "First Where",

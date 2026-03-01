@@ -3,6 +3,8 @@ import SwiftSyntax
 struct FunctionNameWhitespaceRule {
   var options = FunctionNameWhitespaceOptions()
 
+  static let configuration = FunctionNameWhitespaceConfiguration()
+
   static let description = RuleDescription(
     identifier: "function_name_whitespace",
     name: "Function Name Whitespace",

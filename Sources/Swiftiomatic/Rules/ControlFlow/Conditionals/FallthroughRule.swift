@@ -3,6 +3,8 @@ import SwiftSyntax
 struct FallthroughRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = FallthroughConfiguration()
+
   static let description = RuleDescription(
     identifier: "fallthrough",
     name: "Fallthrough",

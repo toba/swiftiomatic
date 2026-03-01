@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SpaceInsideGenericsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SpaceInsideGenericsConfiguration()
+
   static let description = RuleDescription(
     identifier: "space_inside_generics",
     name: "Space Inside Generics",

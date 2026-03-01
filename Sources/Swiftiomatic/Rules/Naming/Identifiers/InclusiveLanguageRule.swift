@@ -4,6 +4,8 @@ import SwiftSyntax
 struct InclusiveLanguageRule {
   var options = InclusiveLanguageOptions()
 
+  static let configuration = InclusiveLanguageConfiguration()
+
   static let description = RuleDescription(
     identifier: "inclusive_language",
     name: "Inclusive Language",

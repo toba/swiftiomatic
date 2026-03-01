@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ApplicationMainRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ApplicationMainConfiguration()
+
   static let description = RuleDescription(
     identifier: "application_main",
     name: "Application Main",

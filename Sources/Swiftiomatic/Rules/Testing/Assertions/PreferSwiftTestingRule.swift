@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PreferSwiftTestingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferSwiftTestingConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_swift_testing",
     name: "Prefer Swift Testing",

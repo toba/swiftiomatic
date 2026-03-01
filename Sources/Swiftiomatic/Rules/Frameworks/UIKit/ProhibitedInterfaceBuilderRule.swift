@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ProhibitedInterfaceBuilderRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ProhibitedInterfaceBuilderConfiguration()
+
   static let description = RuleDescription(
     identifier: "prohibited_interface_builder",
     name: "Prohibited Interface Builder",

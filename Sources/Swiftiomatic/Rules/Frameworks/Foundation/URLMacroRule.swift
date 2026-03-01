@@ -3,6 +3,8 @@ import SwiftSyntax
 struct URLMacroRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = URLMacroConfiguration()
+
   static let description = RuleDescription(
     identifier: "url_macro",
     name: "URL Macro",

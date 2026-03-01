@@ -74,6 +74,8 @@ struct RequiredEnumCaseRule {
     "NetworkResponsable": ["success": "warning", "error": "warning", "notConnected": "warning"]
   ]
 
+  static let configuration = RequiredEnumCaseConfiguration()
+
   static let description = RuleDescription(
     identifier: "required_enum_case",
     name: "Required Enum Case",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct EnumCaseAssociatedValuesLengthRule {
   var options = SeverityLevelsConfiguration<Self>(warning: 5, error: 6)
 
+  static let configuration = EnumCaseAssociatedValuesLengthConfiguration()
+
   static let description = RuleDescription(
     identifier: "enum_case_associated_values_count",
     name: "Enum Case Associated Values Count",

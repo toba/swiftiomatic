@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DiscardedNotificationCenterObserverRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = DiscardedNotificationCenterObserverConfiguration()
+
   static let description = RuleDescription(
     identifier: "discarded_notification_center_observer",
     name: "Discarded Notification Center Observer",

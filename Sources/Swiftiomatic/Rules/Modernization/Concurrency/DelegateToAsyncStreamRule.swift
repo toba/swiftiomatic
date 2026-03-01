@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DelegateToAsyncStreamRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = DelegateToAsyncStreamConfiguration()
+
   static let description = RuleDescription(
     identifier: "delegate_to_async_stream",
     name: "Delegate to AsyncStream",

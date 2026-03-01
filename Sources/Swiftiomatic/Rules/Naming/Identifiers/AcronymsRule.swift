@@ -4,6 +4,8 @@ import SwiftSyntax
 struct AcronymsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = AcronymsConfiguration()
+
   static let description = RuleDescription(
     identifier: "acronyms",
     name: "Acronyms",

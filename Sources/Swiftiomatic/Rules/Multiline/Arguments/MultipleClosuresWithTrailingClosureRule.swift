@@ -3,6 +3,8 @@ import SwiftSyntax
 struct MultipleClosuresWithTrailingClosureRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = MultipleClosuresWithTrailingClosureConfiguration()
+
   static let description = RuleDescription(
     identifier: "multiple_closures_with_trailing_closure",
     name: "Multiple Closures with Trailing Closure",

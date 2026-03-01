@@ -3,6 +3,8 @@ import SwiftSyntax
 struct TypeContentsOrderRule {
   var options = TypeContentsOrderOptions()
 
+  static let configuration = TypeContentsOrderConfiguration()
+
   static let description = RuleDescription(
     identifier: "type_contents_order",
     name: "Type Contents Order",

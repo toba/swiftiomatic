@@ -4,6 +4,8 @@ import SwiftSyntax
 struct NumberSeparatorRule {
   var options = NumberSeparatorOptions()
 
+  static let configuration = NumberSeparatorConfiguration()
+
   static let description = RuleDescription(
     identifier: "number_separator",
     name: "Number Separator",

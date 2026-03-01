@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SpaceAroundCommentsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SpaceAroundCommentsConfiguration()
+
   static let description = RuleDescription(
     identifier: "space_around_comments",
     name: "Space Around Comments",

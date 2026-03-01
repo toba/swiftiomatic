@@ -3,6 +3,8 @@ import SwiftSyntax
 struct OverrideInExtensionRule: SwiftSyntaxRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = OverrideInExtensionConfiguration()
+
   static let description = RuleDescription(
     identifier: "override_in_extension",
     name: "Override in Extension",

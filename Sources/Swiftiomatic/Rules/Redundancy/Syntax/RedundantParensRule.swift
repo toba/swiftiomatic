@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantParensRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantParensConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_parens",
     name: "Redundant Parentheses",

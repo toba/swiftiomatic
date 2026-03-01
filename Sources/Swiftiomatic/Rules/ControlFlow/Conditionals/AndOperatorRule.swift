@@ -3,6 +3,8 @@ import SwiftSyntax
 struct AndOperatorRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = AndOperatorConfiguration()
+
   static let description = RuleDescription(
     identifier: "and_operator",
     name: "And Operator",

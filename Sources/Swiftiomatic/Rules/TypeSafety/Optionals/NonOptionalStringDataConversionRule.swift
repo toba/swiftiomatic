@@ -5,6 +5,8 @@ struct NonOptionalStringDataConversionRule {
 
   private static let variablesIncluded = ["include_variables": true]
 
+  static let configuration = NonOptionalStringDataConversionConfiguration()
+
   static let description = RuleDescription(
     identifier: "non_optional_string_data_conversion",
     name: "Non-optional String -> Data Conversion",

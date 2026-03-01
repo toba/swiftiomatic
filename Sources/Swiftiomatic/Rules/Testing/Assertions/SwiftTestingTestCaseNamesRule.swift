@@ -4,6 +4,8 @@ import SwiftSyntax
 struct SwiftTestingTestCaseNamesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SwiftTestingTestCaseNamesConfiguration()
+
   static let description = RuleDescription(
     identifier: "swift_testing_test_case_names",
     name: "Swift Testing Test Case Names",

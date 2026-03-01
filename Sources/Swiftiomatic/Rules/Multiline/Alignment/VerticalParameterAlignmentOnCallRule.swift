@@ -3,6 +3,8 @@ import SwiftSyntax
 struct VerticalParameterAlignmentOnCallRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = VerticalParameterAlignmentOnCallConfiguration()
+
   static let description = RuleDescription(
     identifier: "vertical_parameter_alignment_on_call",
     name: "Vertical Parameter Alignment on Call",

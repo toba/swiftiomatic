@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SortTypealiasesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SortTypealiasesConfiguration()
+
   static let description = RuleDescription(
     identifier: "sort_typealiases",
     name: "Sort Typealiases",

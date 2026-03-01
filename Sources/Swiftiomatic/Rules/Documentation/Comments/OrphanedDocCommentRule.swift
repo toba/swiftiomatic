@@ -3,6 +3,8 @@ import SwiftSyntax
 struct OrphanedDocCommentRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = OrphanedDocCommentConfiguration()
+
   static let description = RuleDescription(
     identifier: "orphaned_doc_comment",
     name: "Orphaned Doc Comment",

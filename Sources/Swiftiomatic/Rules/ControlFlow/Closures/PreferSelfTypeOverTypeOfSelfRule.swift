@@ -4,6 +4,8 @@ import SwiftSyntaxBuilder
 struct PreferSelfTypeOverTypeOfSelfRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferSelfTypeOverTypeOfSelfConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_self_type_over_type_of_self",
     name: "Prefer Self Type Over Type of Self",

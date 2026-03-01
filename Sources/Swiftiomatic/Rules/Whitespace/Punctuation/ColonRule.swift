@@ -4,6 +4,8 @@ import SwiftSyntax
 struct ColonRule: SubstitutionCorrectableRule, SyntaxOnlyRule {
   var options = ColonOptions()
 
+  static let configuration = ColonConfiguration()
+
   static let description = RuleDescription(
     identifier: "colon",
     name: "Colon Spacing",

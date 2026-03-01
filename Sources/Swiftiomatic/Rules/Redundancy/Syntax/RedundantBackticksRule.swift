@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantBackticksRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantBackticksConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_backticks",
     name: "Redundant Backticks",

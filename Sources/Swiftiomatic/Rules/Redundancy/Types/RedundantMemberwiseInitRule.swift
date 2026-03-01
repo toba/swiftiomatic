@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantMemberwiseInitRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantMemberwiseInitConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_memberwise_init",
     name: "Redundant Memberwise Init",

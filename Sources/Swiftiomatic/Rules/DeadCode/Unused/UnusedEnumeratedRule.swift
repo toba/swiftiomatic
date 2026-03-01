@@ -3,6 +3,8 @@ import SwiftSyntax
 struct UnusedEnumeratedRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnusedEnumeratedConfiguration()
+
   static let description = RuleDescription(
     identifier: "unused_enumerated",
     name: "Unused Enumerated",

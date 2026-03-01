@@ -3,6 +3,8 @@ import SwiftSyntax
 struct BlockCommentsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = BlockCommentsConfiguration()
+
   static let description = RuleDescription(
     identifier: "block_comments",
     name: "Block Comments",

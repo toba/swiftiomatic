@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ContainsOverRangeNilComparisonRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ContainsOverRangeNilComparisonConfiguration()
+
   static let description = RuleDescription(
     identifier: "contains_over_range_nil_comparison",
     name: "Contains over Range Comparison to Nil",

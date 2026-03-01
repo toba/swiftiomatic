@@ -3,6 +3,8 @@ import SwiftSyntax
 struct StrongifiedSelfRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = StrongifiedSelfConfiguration()
+
   static let description = RuleDescription(
     identifier: "strongified_self",
     name: "Strongified Self",

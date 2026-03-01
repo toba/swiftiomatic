@@ -4,6 +4,8 @@ import SwiftSyntax
 struct ReturnValueFromVoidFunctionRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ReturnValueFromVoidFunctionConfiguration()
+
   static let description = RuleDescription(
     identifier: "return_value_from_void_function",
     name: "Return Value from Void Function",

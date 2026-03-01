@@ -178,6 +178,8 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
 }
 
 extension VerticalWhitespaceOpeningBracesRule {
+  static let configuration = VerticalWhitespaceOpeningBracesConfiguration()
+
   static let description = RuleDescription(
     identifier: "vertical_whitespace_opening_braces",
     name: "Vertical Whitespace after Opening Braces",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ImplicitReturnRule {
   var options = ImplicitReturnOptions()
 
+  static let configuration = ImplicitReturnConfiguration()
+
   static let description = RuleDescription(
     identifier: "implicit_return",
     name: "Implicit Return",

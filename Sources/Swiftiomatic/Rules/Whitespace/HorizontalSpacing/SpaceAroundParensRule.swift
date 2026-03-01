@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SpaceAroundParensRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SpaceAroundParensConfiguration()
+
   static let description = RuleDescription(
     identifier: "space_around_parens",
     name: "Space Around Parentheses",

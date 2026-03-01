@@ -31,6 +31,8 @@ private let legacyObjcTypes = [
 struct LegacyObjcTypeRule {
   var options = LegacyObjcTypeOptions()
 
+  static let configuration = LegacyObjcTypeConfiguration()
+
   static let description = RuleDescription(
     identifier: "legacy_objc_type",
     name: "Legacy Objective-C Reference Type",

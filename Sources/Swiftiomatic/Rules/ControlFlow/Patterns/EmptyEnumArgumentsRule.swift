@@ -33,6 +33,8 @@ private func wrapInFunc(_ str: String, file: StaticString = #filePath, line: UIn
 struct EmptyEnumArgumentsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = EmptyEnumArgumentsConfiguration()
+
   static let description = RuleDescription(
     identifier: "empty_enum_arguments",
     name: "Empty Enum Arguments",

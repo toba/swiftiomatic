@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DuplicatedKeyInDictionaryLiteralRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = DuplicatedKeyInDictionaryLiteralConfiguration()
+
   static let description = RuleDescription(
     identifier: "duplicated_key_in_dictionary_literal",
     name: "Duplicated Key in Dictionary Literal",

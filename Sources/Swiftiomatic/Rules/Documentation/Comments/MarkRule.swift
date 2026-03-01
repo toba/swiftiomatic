@@ -4,6 +4,8 @@ import SwiftSyntax
 struct MarkRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = MarkConfiguration()
+
   static let description = RuleDescription(
     identifier: "mark",
     name: "Mark",

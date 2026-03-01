@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ContainsOverFirstNotNilRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ContainsOverFirstNotNilConfiguration()
+
   static let description = RuleDescription(
     identifier: "contains_over_first_not_nil",
     name: "Contains over First not Nil",

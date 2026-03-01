@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PreferSelfInStaticReferencesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferSelfInStaticReferencesConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_self_in_static_references",
     name: "Prefer Self in Static References",

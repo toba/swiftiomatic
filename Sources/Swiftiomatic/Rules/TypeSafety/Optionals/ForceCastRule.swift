@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ForceCastRule {
   var options = SeverityConfiguration<Self>(.error)
 
+  static let configuration = ForceCastConfiguration()
+
   static let description = RuleDescription(
     identifier: "force_cast",
     name: "Force Cast",

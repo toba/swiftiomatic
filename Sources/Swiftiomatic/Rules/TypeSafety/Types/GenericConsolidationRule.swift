@@ -3,6 +3,8 @@ import SwiftSyntax
 struct GenericConsolidationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = GenericConsolidationConfiguration()
+
   static let description = RuleDescription(
     identifier: "generic_consolidation",
     name: "Generic Consolidation",

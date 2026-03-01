@@ -3,6 +3,8 @@ import SwiftSyntax
 struct BalancedXCTestLifecycleRule {
   var options = BalancedXCTestLifecycleOptions()
 
+  static let configuration = BalancedXCTestLifecycleConfiguration()
+
   static let description = RuleDescription(
     identifier: "balanced_xctest_lifecycle",
     name: "Balanced XCTest Life Cycle",

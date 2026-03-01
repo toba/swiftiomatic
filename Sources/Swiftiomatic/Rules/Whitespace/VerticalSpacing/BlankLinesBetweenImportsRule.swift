@@ -3,6 +3,8 @@ import SwiftSyntax
 struct BlankLinesBetweenImportsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = BlankLinesBetweenImportsConfiguration()
+
   static let description = RuleDescription(
     identifier: "blank_lines_between_imports",
     name: "Blank Lines Between Imports",

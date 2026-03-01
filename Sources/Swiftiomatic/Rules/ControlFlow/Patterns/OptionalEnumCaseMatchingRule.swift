@@ -3,6 +3,8 @@ import SwiftSyntax
 struct OptionalEnumCaseMatchingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = OptionalEnumCaseMatchingConfiguration()
+
   static let description = RuleDescription(
     identifier: "optional_enum_case_matching",
     name: "Optional Enum Case Match",

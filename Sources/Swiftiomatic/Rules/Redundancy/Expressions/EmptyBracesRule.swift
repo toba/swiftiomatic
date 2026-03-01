@@ -3,6 +3,8 @@ import SwiftSyntax
 struct EmptyBracesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = EmptyBracesConfiguration()
+
   static let description = RuleDescription(
     identifier: "empty_braces",
     name: "Empty Braces",

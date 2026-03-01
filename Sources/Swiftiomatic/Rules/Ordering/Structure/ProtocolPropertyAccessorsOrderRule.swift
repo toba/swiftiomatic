@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ProtocolPropertyAccessorsOrderRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ProtocolPropertyAccessorsOrderConfiguration()
+
   static let description = RuleDescription(
     identifier: "protocol_property_accessors_order",
     name: "Protocol Property Accessors Order",

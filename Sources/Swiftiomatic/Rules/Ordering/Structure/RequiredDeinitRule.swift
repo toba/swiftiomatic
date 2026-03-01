@@ -9,6 +9,8 @@ import SwiftSyntax
 struct RequiredDeinitRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RequiredDeinitConfiguration()
+
   static let description = RuleDescription(
     identifier: "required_deinit",
     name: "Required Deinit",

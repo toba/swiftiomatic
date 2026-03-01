@@ -3,6 +3,8 @@ import Foundation
 struct TypesafeArrayInitRule: AnalyzerRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = TypesafeArrayInitConfiguration()
+
   static let description = RuleDescription(
     identifier: "typesafe_array_init",
     name: "Type-safe Array Init",

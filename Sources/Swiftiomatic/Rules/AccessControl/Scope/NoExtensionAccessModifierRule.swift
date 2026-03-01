@@ -3,6 +3,8 @@ import SwiftSyntax
 struct NoExtensionAccessModifierRule {
   var options = SeverityConfiguration<Self>(.error)
 
+  static let configuration = NoExtensionAccessModifierConfiguration()
+
   static let description = RuleDescription(
     identifier: "no_extension_access_modifier",
     name: "No Extension Access Modifier",

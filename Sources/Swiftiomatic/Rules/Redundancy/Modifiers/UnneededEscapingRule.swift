@@ -4,6 +4,8 @@ import SwiftSyntax
 struct UnneededEscapingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnneededEscapingConfiguration()
+
   static let description = RuleDescription(
     identifier: "unneeded_escaping",
     name: "Unneeded Escaping",

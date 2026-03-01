@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DiscouragedAssertRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = DiscouragedAssertConfiguration()
+
   static let description = RuleDescription(
     identifier: "discouraged_assert",
     name: "Discouraged Assert",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct NoSpaceInMethodCallRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = NoSpaceInMethodCallConfiguration()
+
   static let description = RuleDescription(
     identifier: "no_space_in_method_call",
     name: "No Space in Method Call",

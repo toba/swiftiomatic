@@ -4,6 +4,8 @@ import SwiftSyntax
 struct CyclomaticComplexityRule {
   var options = CyclomaticComplexityOptions()
 
+  static let configuration = CyclomaticComplexityConfiguration()
+
   static let description = RuleDescription(
     identifier: "cyclomatic_complexity",
     name: "Cyclomatic Complexity",

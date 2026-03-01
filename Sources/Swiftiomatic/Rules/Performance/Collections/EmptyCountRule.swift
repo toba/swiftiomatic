@@ -5,6 +5,8 @@ import SwiftSyntaxBuilder
 struct EmptyCountRule {
   var options = EmptyCountOptions()
 
+  static let configuration = EmptyCountConfiguration()
+
   static let description = RuleDescription(
     identifier: "empty_count",
     name: "Empty Count",

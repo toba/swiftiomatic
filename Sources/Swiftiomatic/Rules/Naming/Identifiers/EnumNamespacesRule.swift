@@ -3,6 +3,8 @@ import SwiftSyntax
 struct EnumNamespacesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = EnumNamespacesConfiguration()
+
   static let description = RuleDescription(
     identifier: "enum_namespaces",
     name: "Enum Namespaces",

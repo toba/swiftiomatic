@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SpaceInsideParensRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SpaceInsideParensConfiguration()
+
   static let description = RuleDescription(
     identifier: "space_inside_parens",
     name: "Space Inside Parentheses",

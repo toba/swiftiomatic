@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ClosingBraceRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ClosingBraceConfiguration()
+
   static let description = RuleDescription(
     identifier: "closing_brace",
     name: "Closing Brace Spacing",

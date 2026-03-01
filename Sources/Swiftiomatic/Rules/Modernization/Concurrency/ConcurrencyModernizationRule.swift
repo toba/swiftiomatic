@@ -4,6 +4,8 @@ import SwiftSyntax
 struct ConcurrencyModernizationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ConcurrencyModernizationConfiguration()
+
   static let description = RuleDescription(
     identifier: "concurrency_modernization",
     name: "Concurrency Modernization",

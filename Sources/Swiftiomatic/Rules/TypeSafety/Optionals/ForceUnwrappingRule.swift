@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ForceUnwrappingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ForceUnwrappingConfiguration()
+
   static let description = RuleDescription(
     identifier: "force_unwrapping",
     name: "Force Unwrapping",

@@ -4,6 +4,8 @@ import SwiftSyntax
 struct HeaderFileNameRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = HeaderFileNameConfiguration()
+
   static let description = RuleDescription(
     identifier: "header_file_name",
     name: "Header File Name",

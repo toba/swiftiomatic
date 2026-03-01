@@ -3,6 +3,8 @@ import SwiftSyntax
 struct UnneededThrowsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnneededThrowsConfiguration()
+
   static let description = RuleDescription(
     identifier: "unneeded_throws_rethrows",
     name: "Unneeded (Re)Throws Keyword",

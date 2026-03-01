@@ -18,6 +18,8 @@ import SwiftSyntaxBuilder
 struct UnneededSynthesizedInitializerRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnneededSynthesizedInitializerConfiguration()
+
   static let description = RuleDescription(
     identifier: "unneeded_synthesized_initializer",
     name: "Unneeded Synthesized Initializer",

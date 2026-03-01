@@ -19,6 +19,8 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
 
   var options = UnusedDeclarationOptions()
 
+  static let configuration = UnusedDeclarationConfiguration()
+
   static let description = RuleDescription(
     identifier: "unused_declaration",
     name: "Unused Declaration",

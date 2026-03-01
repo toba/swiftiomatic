@@ -4,6 +4,8 @@ import SwiftSyntax
 struct LineLengthRule {
   var options = LineLengthOptions()
 
+  static let configuration = LineLengthConfiguration()
+
   static let description = RuleDescription(
     identifier: "line_length",
     name: "Line Length",

@@ -4,6 +4,8 @@ import SwiftIDEUtils
 struct CommentSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = CommentSpacingConfiguration()
+
   static let description = RuleDescription(
     identifier: "comment_spacing",
     name: "Comment Spacing",

@@ -4,6 +4,8 @@ import SwiftSyntax
 struct TypeNameRule {
   var options = TypeNameOptions()
 
+  static let configuration = TypeNameConfiguration()
+
   static let description = RuleDescription(
     identifier: "type_name",
     name: "Type Name",

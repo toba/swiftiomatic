@@ -3,6 +3,8 @@ import SwiftSyntax
 struct AccessibilityTraitForButtonRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = AccessibilityTraitForButtonConfiguration()
+
   static let description = RuleDescription(
     identifier: "accessibility_trait_for_button",
     name: "Accessibility Trait for Button",

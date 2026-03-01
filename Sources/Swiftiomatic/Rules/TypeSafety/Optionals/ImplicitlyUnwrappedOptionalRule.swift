@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ImplicitlyUnwrappedOptionalRule {
   var options = ImplicitlyUnwrappedOptionalOptions()
 
+  static let configuration = ImplicitlyUnwrappedOptionalConfiguration()
+
   static let description = RuleDescription(
     identifier: "implicitly_unwrapped_optional",
     name: "Implicitly Unwrapped Optional",

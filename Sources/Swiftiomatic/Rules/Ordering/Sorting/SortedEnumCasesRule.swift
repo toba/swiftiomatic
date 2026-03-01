@@ -4,6 +4,8 @@ import SwiftSyntax
 struct SortedEnumCasesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SortedEnumCasesConfiguration()
+
   static let description = RuleDescription(
     identifier: "sorted_enum_cases",
     name: "Sorted Enum Cases",

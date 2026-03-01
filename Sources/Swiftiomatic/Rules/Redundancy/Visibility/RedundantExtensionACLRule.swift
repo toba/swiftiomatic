@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantExtensionACLRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantExtensionACLConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_extension_acl",
     name: "Redundant Extension ACL",

@@ -4,6 +4,8 @@ import SwiftSyntax
 struct SortedImportsRule {
   var options = SortedImportsOptions()
 
+  static let configuration = SortedImportsConfiguration()
+
   static let description = RuleDescription(
     identifier: "sorted_imports",
     name: "Sorted Imports",

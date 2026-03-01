@@ -3,6 +3,8 @@ import SwiftSyntax
 struct LargeTupleRule {
   var options = LargeTupleOptions()
 
+  static let configuration = LargeTupleConfiguration()
+
   static let description = RuleDescription(
     identifier: "large_tuple",
     name: "Large Tuple",

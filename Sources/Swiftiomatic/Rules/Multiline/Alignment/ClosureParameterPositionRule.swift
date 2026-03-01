@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ClosureParameterPositionRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ClosureParameterPositionConfiguration()
+
   static let description = RuleDescription(
     identifier: "closure_parameter_position",
     name: "Closure Parameter Position",

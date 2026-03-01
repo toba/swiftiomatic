@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SwiftUILayoutRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SwiftUILayoutConfiguration()
+
   static let description = RuleDescription(
     identifier: "swiftui_layout",
     name: "SwiftUI Layout",

@@ -3,6 +3,8 @@ import Foundation
 struct StatementPositionRule: CorrectableRule {
   var options = StatementPositionOptions()
 
+  static let configuration = StatementPositionConfiguration()
+
   static let description = RuleDescription(
     identifier: "statement_position",
     name: "Statement Position",

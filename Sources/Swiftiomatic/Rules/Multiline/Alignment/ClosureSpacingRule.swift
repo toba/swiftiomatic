@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ClosureSpacingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ClosureSpacingConfiguration()
+
   static let description = RuleDescription(
     identifier: "closure_spacing",
     name: "Closure Spacing",

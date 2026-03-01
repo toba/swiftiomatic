@@ -12,6 +12,8 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
     "var", "func",
   ]
 
+  static let configuration = DuplicateImportsConfiguration()
+
   static let description = RuleDescription(
     identifier: "duplicate_imports",
     name: "Duplicate Imports",

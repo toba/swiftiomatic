@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantPropertyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantPropertyConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_property",
     name: "Redundant Property",

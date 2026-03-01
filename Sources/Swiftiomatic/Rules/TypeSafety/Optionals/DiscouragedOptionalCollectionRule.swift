@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DiscouragedOptionalCollectionRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = DiscouragedOptionalCollectionConfiguration()
+
   static let description = RuleDescription(
     identifier: "discouraged_optional_collection",
     name: "Discouraged Optional Collection",

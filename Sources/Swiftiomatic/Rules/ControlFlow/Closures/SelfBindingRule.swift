@@ -5,6 +5,8 @@ import SwiftSyntax
 struct SelfBindingRule {
   var options = SelfBindingOptions()
 
+  static let configuration = SelfBindingConfiguration()
+
   static let description = RuleDescription(
     identifier: "self_binding",
     name: "Self Binding",

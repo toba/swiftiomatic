@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SingleTestClassRule: SyntaxOnlyRule {
   var options = SingleTestClassOptions()
 
+  static let configuration = SingleTestClassConfiguration()
+
   static let description = RuleDescription(
     identifier: "single_test_class",
     name: "Single Test Class",

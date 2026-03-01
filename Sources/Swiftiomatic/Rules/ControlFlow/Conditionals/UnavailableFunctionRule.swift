@@ -3,6 +3,8 @@ import SwiftSyntax
 struct UnavailableFunctionRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnavailableFunctionConfiguration()
+
   static let description = RuleDescription(
     identifier: "unavailable_function",
     name: "Unavailable Function",

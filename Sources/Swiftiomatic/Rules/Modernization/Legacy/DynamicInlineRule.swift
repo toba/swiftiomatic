@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DynamicInlineRule {
   var options = SeverityConfiguration<Self>(.error)
 
+  static let configuration = DynamicInlineConfiguration()
+
   static let description = RuleDescription(
     identifier: "dynamic_inline",
     name: "Dynamic Inline",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantTypeAnnotationRule {
   var options = RedundantTypeAnnotationOptions()
 
+  static let configuration = RedundantTypeAnnotationConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_type_annotation",
     name: "Redundant Type Annotation",

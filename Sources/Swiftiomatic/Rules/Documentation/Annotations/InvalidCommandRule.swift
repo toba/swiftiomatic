@@ -3,6 +3,8 @@ import Foundation
 struct InvalidCommandRule: Rule, SyntaxOnlyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = InvalidCommandConfiguration()
+
   static let description = RuleDescription(
     identifier: "invalid_command",
     name: "Invalid Command",

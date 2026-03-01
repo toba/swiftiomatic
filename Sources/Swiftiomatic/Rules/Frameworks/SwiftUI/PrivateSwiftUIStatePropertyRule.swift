@@ -13,6 +13,8 @@ import SwiftSyntax
 struct PrivateSwiftUIStatePropertyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PrivateSwiftUIStatePropertyConfiguration()
+
   static let description = RuleDescription(
     identifier: "private_swiftui_state",
     name: "Private SwiftUI State Properties",

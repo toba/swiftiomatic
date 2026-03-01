@@ -3,6 +3,8 @@ import SwiftSyntax
 struct StaticOverFinalClassRule {
     var options = SeverityConfiguration<Self>(.warning)
 
+    static let configuration = StaticOverFinalClassConfiguration()
+
     static let description = RuleDescription(
         identifier: "static_over_final_class",
         name: "Static Over Final Class",

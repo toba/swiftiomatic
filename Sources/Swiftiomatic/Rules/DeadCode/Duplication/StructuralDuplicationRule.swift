@@ -5,6 +5,8 @@ struct StructuralDuplicationRule: CollectingRule {
 
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = StructuralDuplicationConfiguration()
+
   static let description = RuleDescription(
     identifier: "structural_duplication",
     name: "Structural Duplication",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct LegacyConstructorRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = LegacyConstructorConfiguration()
+
   static let description = RuleDescription(
     identifier: "legacy_constructor",
     name: "Legacy Constructor",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct OneDeclarationPerFileRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = OneDeclarationPerFileConfiguration()
+
   static let description = RuleDescription(
     identifier: "one_declaration_per_file",
     name: "One Declaration per File",

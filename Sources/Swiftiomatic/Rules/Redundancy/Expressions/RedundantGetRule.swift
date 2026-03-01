@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantGetRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantGetConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_get",
     name: "Redundant Get",

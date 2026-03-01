@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantClosureRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantClosureConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_closure",
     name: "Redundant Closure",

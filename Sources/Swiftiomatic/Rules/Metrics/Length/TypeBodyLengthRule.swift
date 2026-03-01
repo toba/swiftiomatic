@@ -10,6 +10,8 @@ struct TypeBodyLengthRule {
     uniquingKeysWith: { $1 },
   )
 
+  static let configuration = TypeBodyLengthConfiguration()
+
   static let description = RuleDescription(
     identifier: "type_body_length",
     name: "Type Body Length",

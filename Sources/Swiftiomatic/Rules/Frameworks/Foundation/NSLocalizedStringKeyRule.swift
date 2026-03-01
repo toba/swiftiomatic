@@ -3,6 +3,8 @@ import SwiftSyntax
 struct NSLocalizedStringKeyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = NSLocalizedStringKeyConfiguration()
+
   static let description = RuleDescription(
     identifier: "nslocalizedstring_key",
     name: "NSLocalizedString Key",

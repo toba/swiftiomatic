@@ -4,6 +4,8 @@ import SwiftSyntax
 struct TodoRule {
   var options = TodoOptions()
 
+  static let configuration = TodoConfiguration()
+
   static let description = RuleDescription(
     identifier: "todo",
     name: "Todo",

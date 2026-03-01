@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PrivateActionRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PrivateActionConfiguration()
+
   static let description = RuleDescription(
     identifier: "private_action",
     name: "Private Actions",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PreferCountWhereRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferCountWhereConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_count_where",
     name: "Prefer count(where:)",

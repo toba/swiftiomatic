@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PrivateOutletRule {
   var options = PrivateOutletOptions()
 
+  static let configuration = PrivateOutletConfiguration()
+
   static let description = RuleDescription(
     identifier: "private_outlet",
     name: "Private Outlets",

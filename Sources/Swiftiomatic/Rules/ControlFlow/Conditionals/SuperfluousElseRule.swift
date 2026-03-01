@@ -4,6 +4,8 @@ import SwiftSyntax
 struct SuperfluousElseRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SuperfluousElseConfiguration()
+
   static let description = RuleDescription(
     identifier: "superfluous_else",
     name: "Superfluous Else",

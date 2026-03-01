@@ -5,6 +5,8 @@ struct IdenticalOperandsRule {
 
   private static let operators = ["==", "!=", "===", "!==", ">", ">=", "<", "<="]
 
+  static let configuration = IdenticalOperandsConfiguration()
+
   static let description = RuleDescription(
     identifier: "identical_operands",
     name: "Identical Operands",

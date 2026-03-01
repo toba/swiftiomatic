@@ -3,6 +3,8 @@ import SwiftSyntax
 struct PreferNimbleRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = PreferNimbleConfiguration()
+
   static let description = RuleDescription(
     identifier: "prefer_nimble",
     name: "Prefer Nimble",

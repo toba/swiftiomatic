@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SpaceInsideBracketsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SpaceInsideBracketsConfiguration()
+
   static let description = RuleDescription(
     identifier: "space_inside_brackets",
     name: "Space Inside Brackets",

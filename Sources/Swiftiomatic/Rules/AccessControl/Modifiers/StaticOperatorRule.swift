@@ -3,6 +3,8 @@ import SwiftSyntax
 struct StaticOperatorRule {
     var options = SeverityConfiguration<Self>(.warning)
 
+    static let configuration = StaticOperatorConfiguration()
+
     static let description = RuleDescription(
         identifier: "static_operator",
         name: "Static Operator",

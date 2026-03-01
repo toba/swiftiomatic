@@ -3,6 +3,8 @@ import SwiftSyntax
 struct FinalTestCaseRule {
   var options = FinalTestCaseOptions()
 
+  static let configuration = FinalTestCaseConfiguration()
+
   static let description = RuleDescription(
     identifier: "final_test_case",
     name: "Final Test Case",

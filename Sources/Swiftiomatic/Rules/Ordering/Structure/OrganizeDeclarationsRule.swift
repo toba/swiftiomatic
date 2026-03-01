@@ -3,6 +3,8 @@ import SwiftSyntax
 struct OrganizeDeclarationsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = OrganizeDeclarationsConfiguration()
+
   static let description = RuleDescription(
     identifier: "organize_declarations",
     name: "Organize Declarations",

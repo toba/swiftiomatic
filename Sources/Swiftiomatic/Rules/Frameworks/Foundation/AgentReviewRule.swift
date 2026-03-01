@@ -3,6 +3,8 @@ import SwiftSyntax
 struct AgentReviewRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = AgentReviewConfiguration()
+
   static let description = RuleDescription(
     identifier: "agent_review",
     name: "Agent Review",

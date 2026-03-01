@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DuplicateEnumCasesRule {
   var options = SeverityConfiguration<Self>(.error)
 
+  static let configuration = DuplicateEnumCasesConfiguration()
+
   static let description = RuleDescription(
     identifier: "duplicate_enum_cases",
     name: "Duplicate Enum Cases",

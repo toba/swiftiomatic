@@ -4,6 +4,8 @@ import SwiftSyntax
 struct OperatorUsageWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
   var options = OperatorUsageWhitespaceOptions()
 
+  static let configuration = OperatorUsageWhitespaceConfiguration()
+
   static let description = RuleDescription(
     identifier: "operator_usage_whitespace",
     name: "Operator Usage Whitespace",

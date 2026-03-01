@@ -5,6 +5,8 @@ struct FunctionBodyLengthRule {
 
   private static let testConfig = ["warning": 2]
 
+  static let configuration = FunctionBodyLengthConfiguration()
+
   static let description = RuleDescription(
     identifier: "function_body_length",
     name: "Function Body Length",

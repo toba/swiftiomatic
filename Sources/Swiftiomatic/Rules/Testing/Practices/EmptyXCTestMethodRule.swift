@@ -3,6 +3,8 @@ import SwiftSyntax
 struct EmptyXCTestMethodRule {
   var options = EmptyXCTestMethodOptions()
 
+  static let configuration = EmptyXCTestMethodConfiguration()
+
   static let description = RuleDescription(
     identifier: "empty_xctest_method",
     name: "Empty XCTest Method",

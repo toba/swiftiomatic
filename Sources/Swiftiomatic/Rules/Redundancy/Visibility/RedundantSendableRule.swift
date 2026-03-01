@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantSendableRule {
   var options = RedundantSendableOptions()
 
+  static let configuration = RedundantSendableConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_sendable",
     name: "Redundant Sendable",

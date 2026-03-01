@@ -4,6 +4,8 @@
 struct RedundantSelfRule {
   var options = RedundantSelfOptions()
 
+  static let configuration = RedundantSelfConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_self",
     name: "Redundant Self",

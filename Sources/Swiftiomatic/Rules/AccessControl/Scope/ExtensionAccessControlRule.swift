@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ExtensionAccessControlRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ExtensionAccessControlConfiguration()
+
   static let description = RuleDescription(
     identifier: "extension_access_control",
     name: "Extension Access Control",

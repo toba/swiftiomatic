@@ -3,6 +3,8 @@ import SwiftSyntax
 struct MissingDocsRule {
   var options = MissingDocsOptions()
 
+  static let configuration = MissingDocsConfiguration()
+
   static let description = RuleDescription(
     identifier: "missing_docs",
     name: "Missing Docs",

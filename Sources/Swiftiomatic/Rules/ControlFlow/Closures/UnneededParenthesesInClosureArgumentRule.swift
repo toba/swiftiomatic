@@ -3,6 +3,8 @@ import SwiftSyntax
 struct UnneededParenthesesInClosureArgumentRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnneededParenthesesInClosureArgumentConfiguration()
+
   static let description = RuleDescription(
     identifier: "unneeded_parentheses_in_closure_argument",
     name: "Unneeded Parentheses in Closure Argument",

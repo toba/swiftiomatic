@@ -3,6 +3,8 @@ import SwiftSyntax
 struct AttributeNameSpacingRule {
   var options = SeverityConfiguration<Self>(.error)
 
+  static let configuration = AttributeNameSpacingConfiguration()
+
   static let description = RuleDescription(
     identifier: "attribute_name_spacing",
     name: "Attribute Name Spacing",

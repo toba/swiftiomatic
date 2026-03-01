@@ -3,6 +3,8 @@ import SwiftSyntax
 struct SinglePropertyPerLineRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SinglePropertyPerLineConfiguration()
+
   static let description = RuleDescription(
     identifier: "single_property_per_line",
     name: "Single Property Per Line",

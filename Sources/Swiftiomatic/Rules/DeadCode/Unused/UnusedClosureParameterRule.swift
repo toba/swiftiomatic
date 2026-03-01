@@ -5,6 +5,8 @@ import SwiftSyntaxBuilder
 struct UnusedClosureParameterRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UnusedClosureParameterConfiguration()
+
   static let description = RuleDescription(
     identifier: "unused_closure_parameter",
     name: "Unused Closure Parameter",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct ComputedAccessorsOrderRule {
   var options = ComputedAccessorsOrderOptions()
 
+  static let configuration = ComputedAccessorsOrderConfiguration()
+
   static let description = RuleDescription(
     identifier: "computed_accessors_order",
     name: "Computed Accessors Order",

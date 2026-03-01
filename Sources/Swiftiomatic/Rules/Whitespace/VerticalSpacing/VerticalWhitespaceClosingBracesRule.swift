@@ -3,6 +3,8 @@ import Foundation
 struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
   var options = VerticalWhitespaceClosingBracesOptions()
 
+  static let configuration = VerticalWhitespaceClosingBracesConfiguration()
+
   static let description = RuleDescription(
     identifier: "vertical_whitespace_closing_braces",
     name: "Vertical Whitespace before Closing Braces",

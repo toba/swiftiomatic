@@ -19,6 +19,8 @@ struct IndentationWidthRule: Rule {
 
   var options = IndentationWidthOptions()
 
+  static let configuration = IndentationWidthConfiguration()
+
   static let description = RuleDescription(
     identifier: "indentation_width",
     name: "Indentation Width",

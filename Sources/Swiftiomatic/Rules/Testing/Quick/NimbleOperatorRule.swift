@@ -4,6 +4,8 @@ import SwiftSyntaxBuilder
 struct NimbleOperatorRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = NimbleOperatorConfiguration()
+
   static let description = RuleDescription(
     identifier: "nimble_operator",
     name: "Nimble Operator",

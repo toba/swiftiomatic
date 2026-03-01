@@ -4,6 +4,8 @@ import SwiftSyntaxBuilder
 struct VoidReturnRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = VoidReturnConfiguration()
+
   static let description = RuleDescription(
     identifier: "void_return",
     name: "Void Return",

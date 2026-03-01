@@ -3,6 +3,8 @@ import SwiftSyntax
 struct DuplicateConditionsRule {
   var options = SeverityConfiguration<Self>(.error)
 
+  static let configuration = DuplicateConditionsConfiguration()
+
   static let description = RuleDescription(
     identifier: "duplicate_conditions",
     name: "Duplicate Conditions",

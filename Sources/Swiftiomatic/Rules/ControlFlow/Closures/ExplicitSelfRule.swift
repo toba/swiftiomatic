@@ -3,6 +3,8 @@ import Foundation
 struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = ExplicitSelfConfiguration()
+
   static let description = RuleDescription(
     identifier: "explicit_self",
     name: "Explicit Self",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantFileprivateRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = RedundantFileprivateConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_fileprivate",
     name: "Redundant Fileprivate",

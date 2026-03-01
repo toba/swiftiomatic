@@ -3,6 +3,8 @@ import SwiftSyntax
 struct CollectionAlignmentRule {
   var options = CollectionAlignmentOptions()
 
+  static let configuration = CollectionAlignmentConfiguration()
+
   static let description = RuleDescription(
     identifier: "collection_alignment",
     name: "Collection Element Alignment",

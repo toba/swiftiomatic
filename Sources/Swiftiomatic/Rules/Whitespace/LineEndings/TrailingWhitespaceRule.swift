@@ -4,6 +4,8 @@ import SwiftSyntax
 struct TrailingWhitespaceRule {
   var options = TrailingWhitespaceOptions()
 
+  static let configuration = TrailingWhitespaceConfiguration()
+
   static let description = RuleDescription(
     identifier: "trailing_whitespace",
     name: "Trailing Whitespace",

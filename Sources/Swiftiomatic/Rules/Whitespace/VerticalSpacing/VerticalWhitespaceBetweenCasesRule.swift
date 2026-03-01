@@ -4,6 +4,8 @@ import SwiftSyntax
 struct VerticalWhitespaceBetweenCasesRule {
   var options = VerticalWhitespaceBetweenCasesOptions()
 
+  static let configuration = VerticalWhitespaceBetweenCasesConfiguration()
+
   static let description = RuleDescription(
     identifier: "vertical_whitespace_between_cases",
     name: "Vertical Whitespace Between Cases",

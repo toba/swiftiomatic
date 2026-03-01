@@ -3,6 +3,8 @@ import SwiftSyntax
 struct LinebreaksRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = LinebreaksConfiguration()
+
   static let description = RuleDescription(
     identifier: "linebreaks",
     name: "Linebreaks",

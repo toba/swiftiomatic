@@ -29,6 +29,8 @@ struct TrailingCommaRule {
     return result
   }()
 
+  static let configuration = TrailingCommaConfiguration()
+
   static let description = RuleDescription(
     identifier: "trailing_comma",
     name: "Trailing Comma",

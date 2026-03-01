@@ -3,6 +3,8 @@ import SwiftSyntax
 struct RedundantVoidReturnRule {
   var options = RedundantVoidReturnOptions()
 
+  static let configuration = RedundantVoidReturnConfiguration()
+
   static let description = RuleDescription(
     identifier: "redundant_void_return",
     name: "Redundant Void Return",

@@ -3,6 +3,8 @@ import SwiftSyntax
 struct UntypedErrorInCatchRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = UntypedErrorInCatchConfiguration()
+
   static let description = RuleDescription(
     identifier: "untyped_error_in_catch",
     name: "Untyped Error in Catch",

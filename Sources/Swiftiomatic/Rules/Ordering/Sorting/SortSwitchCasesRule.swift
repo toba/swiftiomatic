@@ -4,6 +4,8 @@ import SwiftSyntax
 struct SortSwitchCasesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
+  static let configuration = SortSwitchCasesConfiguration()
+
   static let description = RuleDescription(
     identifier: "sort_switch_cases",
     name: "Sort Switch Cases",
