@@ -48,9 +48,6 @@ extension String {
             .path
     }
 
-    private func resolvingSymlinksInPath() -> String {
-        URL(fileURLWithPath: self).resolvingSymlinksInPath().path
-    }
 }
 
 // MARK: - Darwin

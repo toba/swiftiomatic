@@ -6,7 +6,7 @@ import Foundation
 /// The primary advantage it provides over operating on the token array
 /// directly is that it allows mutation during enumeration, and
 /// transparently handles changes that affect the current token index.
-final class Formatter {
+package final class Formatter {
     private var enumerationIndex = -1
     private var autoUpdatingReferences = [WeakAutoUpdatingReference]()
 
@@ -240,7 +240,7 @@ final class Formatter {
     // MARK: change tracking
 
     /// Change record
-    struct Change: Equatable {
+    package struct Change: Equatable {
         let line: Int
         let rule: FormatRule
         let filePath: String?

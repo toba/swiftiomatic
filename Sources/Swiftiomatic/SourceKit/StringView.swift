@@ -240,25 +240,22 @@ struct StringView {
     }
 
     func lineRangeWithByteRange(_ byteRange: ByteRange) -> (start: Int, end: Int)? {
-        byteRangeToNSRange(byteRange).flatMap { range in
-            var numberOfLines = 0
-            var index = 0
-            var lineRangeStart = 0
-            while index < nsString.length {
-                numberOfLines += 1
-                if index <= range.location {
-                    lineRangeStart = numberOfLines
-                }
-                index = NSMaxRange(nsString.lineRange(for: Foundation.NSRange(
-                    location: index,
-                    length: 1,
-                )))
-                if index > NSMaxRange(range) {
-                    return (lineRangeStart, numberOfLines)
-                }
-            }
-            return nil
+        guard !lines.isEmpty else { return nil }
+        let startIndex = lines.indexAssumingSorted { line in
+            if byteRange.location < line.byteRange.location { return .orderedAscending }
+            if byteRange.location >= line.byteRange.upperBound { return .orderedDescending }
+            return .orderedSame
         }
+        let endOffset = byteRange.upperBound - 1
+        let endIndex = lines.indexAssumingSorted { line in
+            if endOffset < line.byteRange.location { return .orderedAscending }
+            if endOffset >= line.byteRange.upperBound { return .orderedDescending }
+            return .orderedSame
+        }
+        guard let startLine = startIndex.map({ lines[$0] }),
+              let endLine = endIndex.map({ lines[$0] })
+        else { return nil }
+        return (startLine.index, endLine.index)
     }
 
     func lineAndCharacter(forByteOffset offset: ByteCount, expandingTabsToWidth tabWidth: Int = 1)

@@ -79,24 +79,20 @@ extension String {
     func editDistance(from other: String) -> Int {
         let lhs = Array(self)
         let rhs = Array(other)
-        var dist = [[Int]]()
-        for i in stride(from: 0, through: lhs.count, by: 1) {
-            dist.append([i])
-        }
-        for j in stride(from: 1, through: rhs.count, by: 1) {
-            dist[0].append(j)
-        }
-        for i in stride(from: 1, through: lhs.count, by: 1) {
-            for j in stride(from: 1, through: rhs.count, by: 1) {
+        let rows = lhs.count + 1
+        let cols = rhs.count + 1
+        var dist = Array(repeating: Array(repeating: 0, count: cols), count: rows)
+        for i in 0 ..< rows { dist[i][0] = i }
+        for j in 0 ..< cols { dist[0][j] = j }
+        for i in 1 ..< rows {
+            for j in 1 ..< cols {
                 if lhs[i - 1] == rhs[j - 1] {
-                    dist[i].append(dist[i - 1][j - 1])
+                    dist[i][j] = dist[i - 1][j - 1]
                 } else {
-                    dist[i].append(
-                        Swift.min(
-                            dist[i - 1][j] + 1,
-                            dist[i][j - 1] + 1,
-                            dist[i - 1][j - 1] + 1,
-                        ),
+                    dist[i][j] = Swift.min(
+                        dist[i - 1][j] + 1,
+                        dist[i][j - 1] + 1,
+                        dist[i - 1][j - 1] + 1,
                     )
                 }
                 if i > 1, j > 1, lhs[i - 1] == rhs[j - 2], lhs[i - 2] == rhs[j - 1] {
@@ -108,10 +104,17 @@ extension String {
     }
 }
 
-/// Parse a comma-delimited list of items
-func parseCommaDelimitedList(_ string: String) -> [String] {
-    string.components(separatedBy: ",").compactMap {
-        let item = $0.trimmingCharacters(in: .whitespacesAndNewlines)
-        return item.isEmpty ? nil : item
+extension String {
+    /// Splits on commas and trims whitespace, discarding empty items.
+    var commaDelimitedItems: [String] {
+        components(separatedBy: ",").compactMap {
+            let item = $0.trimmingCharacters(in: .whitespacesAndNewlines)
+            return item.isEmpty ? nil : item
+        }
     }
+}
+
+/// Legacy free-function wrapper — prefer `.commaDelimitedItems` property.
+func parseCommaDelimitedList(_ string: String) -> [String] {
+    string.commaDelimitedItems
 }

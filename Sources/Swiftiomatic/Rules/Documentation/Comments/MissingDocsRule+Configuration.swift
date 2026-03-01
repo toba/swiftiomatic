@@ -16,7 +16,7 @@ struct MissingDocsConfiguration: RuleConfiguration {
   private(set) var evaluateEffectiveAccessControlLevel = false
 
   var parameterDescription: RuleConfigurationDescription? {
-    let parametersDescription = parameters.group { $0.severity }
+    let parametersDescription = Dictionary(grouping: parameters) { $0.severity }
       .sorted { $0.key.rawValue < $1.key.rawValue }
     if parametersDescription.isNotEmpty {
       for (severity, values) in parametersDescription {

@@ -9,21 +9,21 @@ import Synchronization
 /// `@unchecked Sendable` because the underlying sourcekitd XPC calls touch global C state.
 /// All mutable state is protected by `Mutex`, and the C FFI calls are serialized by
 /// `sourceKitRequestGate` (also a `Mutex`).
-final class SourceKitResolver: TypeResolver, @unchecked Sendable {
+package final class SourceKitResolver: TypeResolver, @unchecked Sendable {
     private let compilerArgs: [String]
     private let indexCache = Mutex<[String: FileIndex]>([:])
 
-    var isAvailable: Bool {
+    package var isAvailable: Bool {
         true
     }
 
     /// Create a resolver with explicit compiler arguments.
-    init(compilerArgs: [String]) {
+    package init(compilerArgs: [String]) {
         self.compilerArgs = compilerArgs
     }
 
     /// Create a resolver that discovers compiler args from an SPM project root.
-    init?(projectRoot: String) {
+    package init?(projectRoot: String) {
         guard let args = SwiftPMCompilationDB.compilerArguments(inPath: projectRoot) else {
             return nil
         }
@@ -32,7 +32,7 @@ final class SourceKitResolver: TypeResolver, @unchecked Sendable {
 
     // MARK: - TypeResolver
 
-    func resolveType(inFile file: String, offset: Int) -> ResolvedType? {
+    package func resolveType(inFile file: String, offset: Int) -> ResolvedType? {
         let request = Request.cursorInfo(
             file: file,
             offset: ByteCount(offset),
@@ -47,7 +47,7 @@ final class SourceKitResolver: TypeResolver, @unchecked Sendable {
         return ResolvedType(typeName: typeName, usr: usr, moduleName: moduleName)
     }
 
-    func indexFile(_ file: String) -> FileIndex? {
+    package func indexFile(_ file: String) -> FileIndex? {
         if let cached = indexCache.withLock({ $0[file] }) {
             return cached
         }
@@ -66,7 +66,7 @@ final class SourceKitResolver: TypeResolver, @unchecked Sendable {
         return index
     }
 
-    func expressionTypes(inFile file: String) -> [ExpressionTypeInfo] {
+    package func expressionTypes(inFile file: String) -> [ExpressionTypeInfo] {
         guard let source = try? String(contentsOfFile: file, encoding: .utf8) else { return [] }
 
         let request = Request.customRequest(request: [

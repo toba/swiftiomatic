@@ -2,31 +2,27 @@ import Foundation
 import Synchronization
 
 extension Configuration {
-    final class RuleSelection {
+    /// Manages which rules are active based on the configured `RulesMode`.
+    ///
+    /// All mutable state is protected by `Mutex`, making concurrent access safe.
+    package final class RuleSelection: @unchecked Sendable {
         // MARK: - Properties
 
         let allRulesWrapped: [ConfiguredRule]
         let mode: RulesMode
-        private let aliasResolver: (String) -> String
+        private let aliasResolver: @Sendable (String) -> String
+        private let validRuleIdentifiers: Set<String>
 
-        private var invalidRuleIdsWarnedAbout: Set<String> = []
-        private var validRuleIdentifiers: Set<String> {
-            Set(allRulesWrapped.map { type(of: $0.rule).identifier })
-        }
-
-        private struct RulesBox: @unchecked Sendable {
-            var rules: [any Rule]?
-        }
-
-        private let cachedResultingRules = Mutex(RulesBox())
+        private let invalidRuleIdsWarnedAbout = Mutex<Set<String>>([])
+        private let cachedResultingRules = Mutex<[any Rule]?>(nil)
 
         /// All rules enabled in this configuration,
         /// derived from rule mode (only / optIn - disabled) & existing rules
         var resultingRules: [any Rule] {
-            return cachedResultingRules.withLock { box in
-                if let rules = box.rules { return rules }
+            cachedResultingRules.withLock { cached in
+                if let rules = cached { return rules }
                 let rules = computeResultingRules()
-                box.rules = rules
+                cached = rules
                 return rules
             }
         }
@@ -68,37 +64,16 @@ extension Configuration {
             return resultingRules
         }
 
-        lazy var disabledRuleIdentifiers: [String] = {
-            switch mode {
-                case let .defaultConfiguration(disabled, _):
-                    return validate(ruleIds: disabled, valid: validRuleIdentifiers, silent: true)
-                        .sorted(by: <)
-
-                case let .onlyConfiguration(onlyRules), let .onlyCommandLine(onlyRules):
-                    return validate(
-                        ruleIds: Set(
-                            allRulesWrapped
-                                .map { type(of: $0.rule).identifier }
-                                .filter { !onlyRules.contains($0) },
-                        ),
-                        valid: validRuleIdentifiers,
-                        silent: true,
-                    ).sorted(by: <)
-
-                case .allCommandLine:
-                    return []
-            }
-        }()
-
         // MARK: - Initializers
 
         init(
             mode: RulesMode,
             allRulesWrapped: [ConfiguredRule],
-            aliasResolver: @escaping (String) -> String,
+            aliasResolver: @escaping @Sendable (String) -> String,
         ) {
             self.allRulesWrapped = allRulesWrapped
             self.aliasResolver = aliasResolver
+            self.validRuleIdentifiers = Set(allRulesWrapped.map { type(of: $0.rule).identifier })
             self.mode = mode.applied(aliasResolver: aliasResolver)
         }
 
@@ -111,21 +86,22 @@ extension Configuration {
             )
         }
 
-        private func validate(ruleIds: Set<String>, valid: Set<String>,
-                              silent: Bool = false) -> Set<
-            String,
-        > {
+        private func validate(
+            ruleIds: Set<String>,
+            valid: Set<String>,
+            silent: Bool = false,
+        ) -> Set<String> {
             // Process invalid rule identifiers
             if !silent {
                 let invalidRuleIdentifiers = ruleIds.subtracting(valid)
                 if !invalidRuleIdentifiers.isEmpty {
-                    for invalidRuleIdentifier in invalidRuleIdentifiers
-                        .subtracting(invalidRuleIdsWarnedAbout)
-                    {
-                        invalidRuleIdsWarnedAbout.insert(invalidRuleIdentifier)
-                        queuedPrintError(
-                            "warning: '\(invalidRuleIdentifier)' is not a valid rule identifier",
-                        )
+                    invalidRuleIdsWarnedAbout.withLock { warned in
+                        for invalidRuleIdentifier in invalidRuleIdentifiers.subtracting(warned) {
+                            warned.insert(invalidRuleIdentifier)
+                            queuedPrintError(
+                                "warning: '\(invalidRuleIdentifier)' is not a valid rule identifier",
+                            )
+                        }
                     }
 
                     queuedPrintError(
@@ -137,7 +113,5 @@ extension Configuration {
             // Return valid rule identifiers
             return ruleIds.intersection(valid)
         }
-
     }
 }
-

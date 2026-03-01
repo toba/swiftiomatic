@@ -1,6 +1,8 @@
 // sm:disable:next blanket_disable_command
 // sm:disable all
-// Copied from https://github.com/apple/swift-algorithms/blob/main/Sources/Algorithms/Windows.swift
+// Vendored from https://github.com/apple/swift-algorithms/blob/main/Sources/Algorithms/Windows.swift
+// Frozen copy — avoids adding swift-algorithms as a dependency for a single utility.
+// Only used by `windowsOfThreeTokens()` in SwiftSyntax+TreeWalking.swift.
 
 //===----------------------------------------------------------------------===//
 //

@@ -1,5 +1,6 @@
 import Foundation
 import ArgumentParser
+import Swiftiomatic
 
 @main
 struct SwiftiomaticCLI: AsyncParsableCommand {
@@ -305,11 +306,10 @@ struct GenerateDocs: ParsableCommand {
 
     func run() throws {
         RuleRegistry.registerAllRulesOnce()
-        let docs = RuleListDocumentation(RuleRegistry.shared.list)
         let url = URL(filePath: outputDir)
-        try docs.write(to: url)
+        try RuleRegistry.shared.generateDocs(to: url)
 
-        let count = RuleRegistry.shared.list.list.count
+        let count = RuleRegistry.shared.ruleCount
         print("Generated documentation for \(count) rules in \(outputDir)/")
     }
 }

@@ -13,7 +13,7 @@ enum SwiftDeclarationAttributeKind: String, CaseIterable {
     case required = "source.decl.attribute.required"
     case optional = "source.decl.attribute.optional"
     case noreturn = "source.decl.attribute.noreturn"
-    case epxorted = "source.decl.attribute._exported"
+    case exported = "source.decl.attribute._exported"
     case nsCopying = "source.decl.attribute.NSCopying"
     case nsManaged = "source.decl.attribute.NSManaged"
     case lazy = "source.decl.attribute.lazy"

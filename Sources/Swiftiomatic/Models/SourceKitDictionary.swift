@@ -1,4 +1,3 @@
-
 /// A collection of keys and values as parsed out of SourceKit, with many conveniences for accessing analysis-specific
 /// values.
 struct SourceKitDictionary {

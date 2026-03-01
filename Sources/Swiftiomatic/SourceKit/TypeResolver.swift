@@ -3,7 +3,7 @@
 /// Checks use this to upgrade confidence when type information is available.
 /// The default `NullResolver` returns nil for everything, preserving
 /// syntax-only behavior when `--sourcekit` is not passed.
-protocol TypeResolver: Sendable {
+package protocol TypeResolver: Sendable {
     /// Whether the resolver has a working connection to sourcekitd.
     var isAvailable: Bool { get }
 
@@ -18,7 +18,7 @@ protocol TypeResolver: Sendable {
 }
 
 /// Resolved type information from a cursorinfo request.
-struct ResolvedType: Sendable, Equatable {
+package struct ResolvedType: Sendable, Equatable {
     /// The fully-qualified type name (e.g. "Swift.Bool", "Dispatch.DispatchQueue").
     let typeName: String
 
@@ -36,8 +36,8 @@ struct ResolvedType: Sendable, Equatable {
 }
 
 /// A declaration or reference found during file indexing.
-struct IndexSymbol: Sendable, Equatable {
-    enum Kind: String, Sendable {
+package struct IndexSymbol: Sendable, Equatable {
+    package enum Kind: String, Sendable {
         case declaration
         case reference
     }
@@ -62,7 +62,7 @@ struct IndexSymbol: Sendable, Equatable {
 }
 
 /// Index data for a single file — declarations and references with USRs.
-struct FileIndex: Sendable {
+package struct FileIndex: Sendable {
     let file: String
     let symbols: [IndexSymbol]
 
@@ -78,7 +78,7 @@ struct FileIndex: Sendable {
 }
 
 /// Type information for an expression span, from the expression-type request.
-struct ExpressionTypeInfo: Sendable, Equatable {
+package struct ExpressionTypeInfo: Sendable, Equatable {
     /// Byte offset of the expression start.
     let offset: Int
 

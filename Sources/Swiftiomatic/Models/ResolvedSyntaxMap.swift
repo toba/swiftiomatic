@@ -1,4 +1,3 @@
-
 /// Represents a Swift file's syntax information with resolved token kinds.
 struct ResolvedSyntaxMap {
     /// The syntax tokens for this syntax map.

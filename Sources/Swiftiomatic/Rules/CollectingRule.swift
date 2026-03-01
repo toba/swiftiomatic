@@ -1,5 +1,5 @@
 /// Marker protocol used to check whether a rule is collectable.
-protocol CollectingRuleMarker: Rule {}
+package protocol CollectingRuleMarker: Rule {}
 
 /// A rule that requires knowledge of all other files being linted.
 protocol CollectingRule: CollectingRuleMarker {

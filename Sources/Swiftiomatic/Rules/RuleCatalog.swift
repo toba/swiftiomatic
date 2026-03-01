@@ -1,19 +1,19 @@
 /// Unified read-only facade that queries Suggest, Lint, and Format rule registries.
-enum RuleCatalog {
-  struct Entry: Codable, Sendable {
-    let id: String
-    let name: String
-    let source: Source
-    let description: String
-    let isEnabled: Bool
-    let isDeprecated: Bool
-    let canAutoFix: Bool
-    let isCrossFile: Bool
-    let requiresSourceKit: Bool
+package enum RuleCatalog {
+  package struct Entry: Codable, Sendable {
+    package let id: String
+    package let name: String
+    package let source: Source
+    package let description: String
+    package let isEnabled: Bool
+    package let isDeprecated: Bool
+    package let canAutoFix: Bool
+    package let isCrossFile: Bool
+    package let requiresSourceKit: Bool
   }
 
   /// All rules across all engines, sorted by source then id.
-  static func allRules() -> [Entry] {
+  package static func allRules() -> [Entry] {
     var entries: [Entry] = []
 
     // Lint rules (AST-based, run through unified Analyzer)
@@ -67,7 +67,7 @@ enum RuleCatalog {
   }
 
   /// All rules for a specific source.
-  static func rules(for source: Source) -> [Entry] {
+  package static func rules(for source: Source) -> [Entry] {
     allRules().filter { $0.source == source }
   }
 }

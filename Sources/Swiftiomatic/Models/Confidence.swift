@@ -3,7 +3,7 @@
 /// - `high`: Definitive — the finding is certain.
 /// - `medium`: Likely true — probably correct but verify.
 /// - `low`: Needs review — pattern matched but context required.
-enum Confidence: String, Codable, Comparable, Sendable {
+package enum Confidence: String, Codable, Comparable, Sendable {
     case low
     case medium
     case high
@@ -16,7 +16,7 @@ enum Confidence: String, Codable, Comparable, Sendable {
         }
     }
 
-    static func < (lhs: Confidence, rhs: Confidence) -> Bool {
+    package static func < (lhs: Confidence, rhs: Confidence) -> Bool {
         lhs.rank < rhs.rank
     }
 }

@@ -6,7 +6,7 @@ import Synchronization
 
 /// Type-safe representation of values returned by SourceKit responses.
 /// Replaces the legacy `SourceKitRepresentable` protocol (effectively `Any`).
-enum SourceKitValue: Sendable, Equatable, CustomStringConvertible {
+enum SourceKitValue: Sendable, Equatable, Encodable, CustomStringConvertible {
     case string(String)
     case int64(Int64)
     case bool(Bool)
@@ -50,6 +50,18 @@ enum SourceKitValue: Sendable, Equatable, CustomStringConvertible {
         dictionaryValue?[key]
     }
 
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+            case let .string(v): try container.encode(v)
+            case let .int64(v): try container.encode(v)
+            case let .bool(v): try container.encode(v)
+            case let .data(v): try container.encode(v)
+            case let .array(v): try container.encode(v)
+            case let .dictionary(v): try container.encode(v)
+        }
+    }
+
     var description: String {
         switch self {
             case let .string(v): return v
@@ -62,71 +74,77 @@ enum SourceKitValue: Sendable, Equatable, CustomStringConvertible {
     }
 }
 
-// MARK: - fromSourceKit
+// MARK: - SourceKitValue from sourcekitd
 
-// sm:disable:next cyclomatic_complexity
-private func fromSourceKit(_ sourcekitObject: sourcekitd_variant_t) -> SourceKitValue? {
-    switch sourcekitd_variant_get_type(sourcekitObject) {
-        case SOURCEKITD_VARIANT_TYPE_ARRAY:
-            var array = [SourceKitValue]()
-            _ = withUnsafeMutablePointer(to: &array) { arrayPtr in
-                sourcekitd_variant_array_apply_f(
-                    sourcekitObject,
-                    { index, value, context in
-                        if let value = fromSourceKit(value), let context {
-                            let localArray = context.assumingMemoryBound(to: [SourceKitValue].self)
-                            localArray.pointee.insert(value, at: Int(index))
-                        }
-                        return true
-                    }, arrayPtr,
-                )
-            }
-            return .array(array)
-        case SOURCEKITD_VARIANT_TYPE_DICTIONARY:
-            var dict = [String: SourceKitValue]()
-            _ = withUnsafeMutablePointer(to: &dict) { dictPtr in
-                sourcekitd_variant_dictionary_apply_f(
-                    sourcekitObject,
-                    { key, value, context in
-                        if let key = String(sourceKitUID: key!), let value = fromSourceKit(value),
-                           let context
-                        {
-                            let localDict = context
-                                .assumingMemoryBound(to: [String: SourceKitValue].self)
-                            localDict.pointee[key] = value
-                        }
-                        return true
-                    }, dictPtr,
-                )
-            }
-            return .dictionary(dict)
-        case SOURCEKITD_VARIANT_TYPE_STRING:
-            return .string(String(cString: sourcekitd_variant_string_get_ptr(sourcekitObject)!))
-        case SOURCEKITD_VARIANT_TYPE_INT64:
-            return .int64(sourcekitd_variant_int64_get_value(sourcekitObject))
-        case SOURCEKITD_VARIANT_TYPE_BOOL:
-            return .bool(sourcekitd_variant_bool_get_value(sourcekitObject))
-        case SOURCEKITD_VARIANT_TYPE_UID:
-            return String(sourceKitUID: sourcekitd_variant_uid_get_value(sourcekitObject)!).map {
-                .string($0)
-            }
-        case SOURCEKITD_VARIANT_TYPE_NULL:
-            return nil
-        case SOURCEKITD_VARIANT_TYPE_DATA:
-            return sourcekitd_variant_data_get_ptr(sourcekitObject).map { ptr in
-                .data(Data(bytes: ptr, count: sourcekitd_variant_data_get_size(sourcekitObject)))
-            }
-        default:
-            fatalError("Unknown SourceKit variant type")
+extension SourceKitValue {
+    // sm:disable:next cyclomatic_complexity
+    fileprivate init?(sourcekitVariant sourcekitObject: sourcekitd_variant_t) {
+        switch sourcekitd_variant_get_type(sourcekitObject) {
+            case SOURCEKITD_VARIANT_TYPE_ARRAY:
+                var array = [SourceKitValue]()
+                _ = withUnsafeMutablePointer(to: &array) { arrayPtr in
+                    sourcekitd_variant_array_apply_f(
+                        sourcekitObject,
+                        { index, value, context in
+                            if let value = SourceKitValue(sourcekitVariant: value), let context {
+                                let localArray = context.assumingMemoryBound(
+                                    to: [SourceKitValue].self)
+                                localArray.pointee.insert(value, at: Int(index))
+                            }
+                            return true
+                        }, arrayPtr,
+                    )
+                }
+                self = .array(array)
+            case SOURCEKITD_VARIANT_TYPE_DICTIONARY:
+                var dict = [String: SourceKitValue]()
+                _ = withUnsafeMutablePointer(to: &dict) { dictPtr in
+                    sourcekitd_variant_dictionary_apply_f(
+                        sourcekitObject,
+                        { key, value, context in
+                            if let key = String(sourceKitUID: key!),
+                               let value = SourceKitValue(sourcekitVariant: value),
+                               let context
+                            {
+                                let localDict = context
+                                    .assumingMemoryBound(to: [String: SourceKitValue].self)
+                                localDict.pointee[key] = value
+                            }
+                            return true
+                        }, dictPtr,
+                    )
+                }
+                self = .dictionary(dict)
+            case SOURCEKITD_VARIANT_TYPE_STRING:
+                self = .string(
+                    String(cString: sourcekitd_variant_string_get_ptr(sourcekitObject)!))
+            case SOURCEKITD_VARIANT_TYPE_INT64:
+                self = .int64(sourcekitd_variant_int64_get_value(sourcekitObject))
+            case SOURCEKITD_VARIANT_TYPE_BOOL:
+                self = .bool(sourcekitd_variant_bool_get_value(sourcekitObject))
+            case SOURCEKITD_VARIANT_TYPE_UID:
+                guard let uid = sourcekitd_variant_uid_get_value(sourcekitObject),
+                      let str = String(sourceKitUID: uid)
+                else { return nil }
+                self = .string(str)
+            case SOURCEKITD_VARIANT_TYPE_NULL:
+                return nil
+            case SOURCEKITD_VARIANT_TYPE_DATA:
+                guard let ptr = sourcekitd_variant_data_get_ptr(sourcekitObject) else { return nil }
+                self = .data(
+                    Data(bytes: ptr, count: sourcekitd_variant_data_get_size(sourcekitObject)))
+            default:
+                fatalError("Unknown SourceKit variant type")
+        }
     }
 }
 
-private let initializeSourceKit: Void = {
+private let _ensureSourceKitInitialized: Void = {
     sourcekitd_initialize()
 }()
 
-private let initializeSourceKitFailable: Void = {
-    initializeSourceKit
+private let _ensureSourceKitNotificationHandler: Void = {
+    _ensureSourceKitInitialized
     sourcekitd_set_notification_handler { response in
         if !sourcekitd_response_is_error(response!) {
             fflush(stdout)
@@ -265,7 +283,7 @@ enum Request {
         if _sourceKitDisabled.withLock({ $0 }) {
             throw .failed("SourceKit is disabled for testing (apple/swift#55112)")
         }
-        initializeSourceKitFailable
+        _ensureSourceKitNotificationHandler
         let result: Result<[String: SourceKitValue], Request.Error> = sourceKitRequestGate.withLock { _ in
             let response = sourcekitObject.sendSync()
             defer { sourcekitd_response_dispose(response!) }
@@ -276,7 +294,7 @@ enum Request {
                 }
                 return .failure(error)
             }
-            guard let value = fromSourceKit(sourcekitd_response_get_value(response!)),
+            guard let value = SourceKitValue(sourcekitVariant: sourcekitd_response_get_value(response!)),
                   let dict = value.dictionaryValue
             else {
                 return .failure(.failed("Response was not a dictionary"))
@@ -295,20 +313,20 @@ enum Request {
         case unknown(String?)
 
         var description: String {
-            getDescription() ?? "no description"
+            message ?? "no description"
         }
 
         var errorDescription: String? {
-            getDescription()
+            message
         }
 
-        private func getDescription() -> String? {
+        private var message: String? {
             switch self {
-                case let .connectionInterrupted(string): return string
-                case let .invalid(string): return string
-                case let .failed(string): return string
-                case let .cancelled(string): return string
-                case let .unknown(string): return string
+                case let .connectionInterrupted(string): string
+                case let .invalid(string): string
+                case let .failed(string): string
+                case let .cancelled(string): string
+                case let .unknown(string): string
             }
         }
 

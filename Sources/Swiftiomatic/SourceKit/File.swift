@@ -14,6 +14,17 @@ final class File: Sendable {
     private struct FileState {
         var contents: String?
         var stringView: StringView?
+
+        mutating func ensureContents(path: String) -> String {
+            if let contents { return contents }
+            do {
+                contents = try String(contentsOfFile: path, encoding: .utf8)
+            } catch {
+                fputs("Could not read contents of `\(path)`\n", stderr)
+                contents = ""
+            }
+            return contents!
+        }
     }
 
     private let state: Mutex<FileState>
@@ -22,15 +33,7 @@ final class File: Sendable {
     var contents: String {
         get {
             state.withLock { s in
-                if s.contents == nil {
-                    do {
-                        s.contents = try String(contentsOfFile: path!, encoding: .utf8)
-                    } catch {
-                        fputs("Could not read contents of `\(path!)`\n", stderr)
-                        s.contents = ""
-                    }
-                }
-                return s.contents!
+                s.ensureContents(path: path!)
             }
         }
         set {
@@ -51,16 +54,8 @@ final class File: Sendable {
     var stringView: StringView {
         state.withLock { s in
             if s.stringView == nil {
-                // Read contents outside stringView init to ensure it's populated
-                if s.contents == nil {
-                    do {
-                        s.contents = try String(contentsOfFile: path!, encoding: .utf8)
-                    } catch {
-                        fputs("Could not read contents of `\(path!)`\n", stderr)
-                        s.contents = ""
-                    }
-                }
-                s.stringView = StringView(s.contents!)
+                let text = s.ensureContents(path: path!)
+                s.stringView = StringView(text)
             }
             return s.stringView!
         }

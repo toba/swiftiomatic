@@ -1,11 +1,11 @@
 import Foundation
 
 /// A configured formatting engine that can format or lint Swift source code.
-struct FormatEngine: Sendable {
-    let rules: [FormatRule]
-    let options: FormatOptions
+package struct FormatEngine: Sendable {
+    package let rules: [FormatRule]
+    package let options: FormatOptions
 
-    init(
+    package init(
         rules: [FormatRule] = FormatRules.default,
         options: FormatOptions = .default,
     ) {
@@ -14,7 +14,7 @@ struct FormatEngine: Sendable {
     }
 
     /// Format Swift source code, returning the formatted output.
-    func format(_ source: String) throws -> String {
+    package func format(_ source: String) throws -> String {
         let tokens = tokenize(source)
         let output = try applyRules(
             rules,
@@ -27,14 +27,14 @@ struct FormatEngine: Sendable {
     }
 
     /// Lint Swift source code, returning changes that would be made.
-    func lint(_ source: String) throws -> [Formatter.Change] {
+    package func lint(_ source: String) throws -> [Formatter.Change] {
         let tokens = tokenize(source)
         return try applyRules(rules, to: tokens, with: options, trackChanges: true, range: nil)
             .changes
     }
 
     /// Lint Swift source code with a file path for diagnostic output.
-    func lint(_ source: String, filePath: String) throws -> [Formatter.Change] {
+    package func lint(_ source: String, filePath: String) throws -> [Formatter.Change] {
         var opts = options
         opts.fileInfo = FileInfo(filePath: filePath)
         let tokens = tokenize(source)
@@ -42,7 +42,7 @@ struct FormatEngine: Sendable {
     }
 
     /// Build an engine with specific rule overrides.
-    init(
+    package init(
         enable: [String] = [],
         disable: [String] = [],
         options: FormatOptions = .default,

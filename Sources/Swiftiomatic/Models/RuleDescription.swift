@@ -1,7 +1,7 @@
 import Foundation
 
 /// A detailed description for a rule. Used for both documentation and testing purposes.
-struct RuleDescription: Equatable, Sendable {
+package struct RuleDescription: Equatable, Sendable {
     /// The rule's unique identifier, to be used in configuration files and commands.
     /// Should be short and only comprised of lowercase latin alphabet letters and underscores formatted in snake case.
     let identifier: String
@@ -119,7 +119,7 @@ struct RuleDescription: Equatable, Sendable {
 
     // MARK: Equatable
 
-    static func == (lhs: Self, rhs: Self) -> Bool {
+    package static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.identifier == rhs.identifier
     }
 }

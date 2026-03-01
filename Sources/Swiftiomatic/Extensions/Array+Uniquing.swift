@@ -1,6 +1,16 @@
+extension Array where Element: Hashable {
+  /// The elements in this array, discarding duplicates after the first one.
+  /// Order-preserving. O(n) via `Set` membership checks.
+  var unique: [Element] {
+    var seen = Set<Element>()
+    return filter { seen.insert($0).inserted }
+  }
+}
+
 extension Array where Element: Equatable {
   /// The elements in this array, discarding duplicates after the first one.
-  /// Order-preserving.
+  /// Order-preserving. O(n²) — prefer the `Hashable`-constrained overload when possible.
+  @_disfavoredOverload
   var unique: [Element] {
     var uniqueValues = [Element]()
     for item in self where !uniqueValues.contains(item) {
@@ -10,18 +20,14 @@ extension Array where Element: Equatable {
   }
 }
 
+// MARK: - SourceKit bridging (Any is required at the ObjC boundary)
+
 extension Array where Element: Hashable {
-  /// Produces an array containing the passed `obj` value.
-  /// If `obj` is an array already, return it.
-  /// If `obj` is a set, copy its elements to a new array.
-  /// If `obj` is a value of type `Element`, return a single-item array containing it.
+  /// Coerces a SourceKit response value into an array.
   ///
-  /// This overload exists separately from the unconstrained version because
-  /// Set conversion requires Hashable conformance.
-  ///
-  /// - parameter obj: The input.
-  ///
-  /// - returns: The produced array.
+  /// Accepts `[Element]`, `Set<Element>`, or a single `Element` wrapped in `Any?`.
+  /// The `Any` parameter is intentional — SourceKit returns untyped dictionaries
+  /// (`[String: SourceKitValue]`) and values must be downcast at the boundary.
   static func array(of obj: Any?) -> [Element]? {
     if let array = obj as? [Element] {
       return array
@@ -37,13 +43,11 @@ extension Array where Element: Hashable {
 }
 
 extension Array {
-  /// Produces an array containing the passed `obj` value.
-  /// If `obj` is an array already, return it.
-  /// If `obj` is a value of type `Element`, return a single-item array containing it.
+  /// Coerces a SourceKit response value into an array.
   ///
-  /// - parameter obj: The input.
-  ///
-  /// - returns: The produced array.
+  /// Accepts `[Element]` or a single `Element` wrapped in `Any?`.
+  /// The `Any` parameter is intentional — SourceKit returns untyped dictionaries
+  /// (`[String: SourceKitValue]`) and values must be downcast at the boundary.
   static func array(of obj: Any?) -> [Element]? {
     if let array = obj as? [Element] {
       return array

@@ -2,38 +2,38 @@ import Foundation
 
 /// Unified output type that all three analysis engines produce at the reporting boundary.
 /// Maps directly to the swift-review skill's output format and the JSON spec from CLAUDE.md.
-struct Diagnostic: Codable, Sendable, Comparable {
+package struct Diagnostic: Codable, Sendable, Comparable {
     /// The identifier of the rule that produced this diagnostic.
-    let ruleID: String
+    package let ruleID: String
 
     /// Which engine produced this diagnostic.
-    let source: Source
+    package let source: Source
 
     /// Warning or error.
-    let severity: DiagnosticSeverity
+    package let severity: DiagnosticSeverity
 
     /// Confidence in the finding.
-    let confidence: Confidence
+    package let confidence: Confidence
 
     /// Source file path.
-    let file: String
+    package let file: String
 
     /// 1-indexed line number.
-    let line: Int
+    package let line: Int
 
     /// 1-indexed column number.
-    let column: Int
+    package let column: Int
 
     /// Human-readable description of the issue.
-    let message: String
+    package let message: String
 
     /// Suggested fix, if available.
-    let suggestion: String?
+    package let suggestion: String?
 
     /// Whether this diagnostic can be auto-fixed by the engine that produced it.
-    let canAutoFix: Bool
+    package let canAutoFix: Bool
 
-    static func < (lhs: Diagnostic, rhs: Diagnostic) -> Bool {
+    package static func < (lhs: Diagnostic, rhs: Diagnostic) -> Bool {
         if lhs.file != rhs.file { return lhs.file < rhs.file }
         if lhs.line != rhs.line { return lhs.line < rhs.line }
         return lhs.column < rhs.column
@@ -41,7 +41,7 @@ struct Diagnostic: Codable, Sendable, Comparable {
 }
 
 /// Which analysis engine produced a diagnostic.
-enum Source: String, CaseIterable, Codable, Sendable {
+package enum Source: String, CaseIterable, Codable, Sendable {
     case suggest
     case lint
     case format
@@ -57,7 +57,7 @@ enum Source: String, CaseIterable, Codable, Sendable {
 }
 
 /// Diagnostic severity — warning or error.
-enum DiagnosticSeverity: String, Codable, Sendable, Comparable {
+package enum DiagnosticSeverity: String, Codable, Sendable, Comparable {
     case warning
     case error
 
@@ -68,7 +68,7 @@ enum DiagnosticSeverity: String, Codable, Sendable, Comparable {
         }
     }
 
-    static func < (lhs: DiagnosticSeverity, rhs: DiagnosticSeverity) -> Bool {
+    package static func < (lhs: DiagnosticSeverity, rhs: DiagnosticSeverity) -> Bool {
         lhs.rank < rhs.rank
     }
 }

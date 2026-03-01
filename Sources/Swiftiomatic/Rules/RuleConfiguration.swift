@@ -1,5 +1,5 @@
 /// A configuration value for a rule to allow users to modify its behavior.
-protocol RuleConfiguration: Equatable, Sendable {
+package protocol RuleConfiguration: Equatable, Sendable {
   /// The type of the rule that's using this configuration.
   associatedtype Parent: Rule
 

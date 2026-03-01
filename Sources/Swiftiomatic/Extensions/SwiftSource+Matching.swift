@@ -86,7 +86,7 @@ extension SwiftSource {
     ruleEnabled(violatingRanges: [violatingRange], for: rule).first
   }
 
-  // MARK: - NSRange overloads (for rules using SourceKit/Line ranges)
+  // MARK: - NSRange overloads (mirrors Range<String.Index> versions above for SourceKit/Line ranges)
 
   func ruleEnabled(violatingRanges: [NSRange], for rule: some Rule) -> [NSRange] {
     let fileRegions = regions()

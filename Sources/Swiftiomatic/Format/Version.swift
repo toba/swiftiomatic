@@ -1,18 +1,18 @@
 import Foundation
 
 /// Version number wrapper
-struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral, CustomStringConvertible,
+package struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral, CustomStringConvertible,
     Sendable
 {
-    let rawValue: String
+    package let rawValue: String
 
     static let undefined = Version(rawValue: "0")!
 
-    init(stringLiteral value: String) {
+    package init(stringLiteral value: String) {
         self.init(rawValue: value)!
     }
 
-    init?(rawValue: String) {
+    package init?(rawValue: String) {
         let rawValue = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard CharacterSet.decimalDigits.contains(rawValue.unicodeScalars.first ?? " ") else {
             return nil
@@ -20,7 +20,7 @@ struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral, Custom
         self.rawValue = rawValue
     }
 
-    static func < (lhs: Version, rhs: Version) -> Bool {
+    package static func < (lhs: Version, rhs: Version) -> Bool {
         lhs.rawValue.compare(
             rhs.rawValue,
             options: .numeric,
@@ -28,7 +28,7 @@ struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral, Custom
         ) == .orderedAscending
     }
 
-    var description: String {
+    package var description: String {
         rawValue
     }
 }

@@ -25,14 +25,18 @@ extension EnumAssociable {
             return T._none
         }
         guard let typed = value as? T else {
-            preconditionFailure("Associated value type mismatch: expected \(T.self), got \(type(of: value))")
+            preconditionFailure(
+                "Associated value type mismatch: expected \(T.self), got \(type(of: value))",
+            )
         }
         return typed
     }
 
     func associatedValue<T>() -> T {
         guard let typed = _associatedValue as? T else {
-            preconditionFailure("Associated value type mismatch: expected \(T.self), got \(type(of: _associatedValue as Any))")
+            preconditionFailure(
+                "Associated value type mismatch: expected \(T.self), got \(type(of: _associatedValue as Any))",
+            )
         }
         return typed
     }

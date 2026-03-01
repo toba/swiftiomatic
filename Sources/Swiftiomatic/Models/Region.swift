@@ -1,7 +1,7 @@
 import SwiftSyntax
 
 /// A contiguous region of Swift source code.
-struct Region: Equatable, Sendable {
+package struct Region: Equatable, Sendable {
     /// The location describing the start of the region. All locations that are less than this value
     /// (earlier in the source file) are not contained in this region.
     let start: Location

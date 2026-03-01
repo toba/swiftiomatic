@@ -1,12 +1,10 @@
 extension SwiftDeclarationAttributeKind {
-  static var attributesRequiringFoundation: Set<SwiftDeclarationAttributeKind> {
-    [
-      .objc,
-      .objcName,
-      .objcMembers,
-      .objcNonLazyRealization,
-    ]
-  }
+  static let attributesRequiringFoundation: Set<SwiftDeclarationAttributeKind> = [
+    .objc,
+    .objcName,
+    .objcMembers,
+    .objcNonLazyRealization,
+  ]
 
   enum ModifierGroup: String, CustomDebugStringConvertible, Sendable {
     case override

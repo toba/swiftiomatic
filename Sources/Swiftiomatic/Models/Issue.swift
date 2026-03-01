@@ -1,7 +1,7 @@
 import Foundation
 
 /// All possible issues which are printed as warnings by default.
-enum Issue: LocalizedError, Equatable {
+package enum Issue: LocalizedError, Equatable {
     /// The configuration didn't match internal expectations.
     case invalidConfiguration(ruleID: String, message: String? = nil)
 

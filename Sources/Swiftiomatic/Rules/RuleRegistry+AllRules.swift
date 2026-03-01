@@ -4,7 +4,7 @@ private let _registerAllRulesOnceImpl: Void = {
 
 extension RuleRegistry {
   /// Register all rules. Should only be called once before any linting code is executed.
-  static func registerAllRulesOnce() {
+  package static func registerAllRulesOnce() {
     _ = _registerAllRulesOnceImpl
   }
 }

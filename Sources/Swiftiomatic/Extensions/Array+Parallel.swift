@@ -2,15 +2,6 @@ import Dispatch
 
 extension Array {
     /// Group the elements in this array into a dictionary, keyed by applying the specified `transform`.
-    ///
-    /// - parameter transform: The transformation function to extract an element to its group key.
-    ///
-    /// - returns: The elements grouped by applying the specified transformation.
-    func group<U: Hashable>(by transform: (Element) -> U) -> [U: [Element]] {
-        Dictionary(grouping: self, by: { transform($0) })
-    }
-
-    /// Group the elements in this array into a dictionary, keyed by applying the specified `transform`.
     /// Elements for which the `transform` returns a `nil` key are removed.
     ///
     /// - parameter transform: The transformation function to extract an element to its group key,

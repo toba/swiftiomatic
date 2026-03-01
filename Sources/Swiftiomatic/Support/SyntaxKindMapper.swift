@@ -6,8 +6,7 @@ import SwiftIDEUtils
 /// without making any SourceKit calls.
 enum SyntaxKindMapper {
     /// Map a SwiftSyntax classification to SourceKit syntax kind.
-    static func mapClassification(_ classification: SyntaxClassification) -> SourceKitSyntaxKind?
-    {
+    static func mapClassification(_ classification: SyntaxClassification) -> SourceKitSyntaxKind? {
         // sm:disable:previous cyclomatic_complexity
         switch classification {
             case .attribute:

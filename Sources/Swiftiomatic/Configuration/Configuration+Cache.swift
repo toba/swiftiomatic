@@ -9,15 +9,14 @@ extension Configuration {
     /// when produced under the same configuration fingerprint. Changing any rule or its
     /// settings produces a different fingerprint, invalidating stale cached violations.
     var cacheDescription: String {
-        let cacheRulesDescriptions =
-            rules
-                .map { rule in [type(of: rule).identifier, rule.cacheDescription] }
-                .sorted { $0[0] < $1[0] }
-        let jsonObject: [Any] = [rootDirectory, cacheRulesDescriptions]
-        if let jsonData = try? JSONSerialization.data(withJSONObject: jsonObject) {
-            return jsonData.sha256().hexString
+        var data = Data(rootDirectory.utf8)
+        for rule in rules.sorted(by: { type(of: $0).identifier < type(of: $1).identifier }) {
+            data.append(contentsOf: type(of: rule).identifier.utf8)
+            data.append(0) // separator
+            data.append(contentsOf: rule.cacheDescription.utf8)
+            data.append(0)
         }
-        queuedFatalError("Could not serialize configuration for cache")
+        return data.sha256().hexString
     }
 
     /// The directory where ``LinterCache`` stores its per-file violation caches.

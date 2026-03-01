@@ -16,8 +16,8 @@ struct RegularExpression: Hashable, Comparable, ExpressibleByStringLiteral, @unc
     init(pattern: String, options: NSRegularExpression.Options? = nil) throws {
         let opts = options ?? [.anchorsMatchLines, .dotMatchesLineSeparators]
         self.pattern = pattern
-        self.optionsRaw = opts.rawValue
-        self.regex = try Self.compileRegex(pattern: pattern, options: opts)
+        optionsRaw = opts.rawValue
+        regex = try Self.compileRegex(pattern: pattern, options: opts)
     }
 
     init(stringLiteral value: String) {
@@ -179,4 +179,3 @@ struct RegularExpression: Hashable, Comparable, ExpressibleByStringLiteral, @unc
         return try Regex(fullPattern)
     }
 }
-

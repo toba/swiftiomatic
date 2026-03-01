@@ -6,20 +6,20 @@ import SwiftSyntax
 ///
 /// All analysis — suggest, lint, and async enrichment — flows through `Rule.validate()`.
 /// Rules conforming to `AsyncEnrichableRule` get a second pass via `enrich()` with SourceKit resolution.
-struct Analyzer: Sendable {
+package struct Analyzer: Sendable {
     /// Minimum confidence to include in results.
-    let minConfidence: Confidence
+    package let minConfidence: Confidence
 
     /// Optional SourceKit-backed type resolver for semantic analysis.
-    let typeResolver: (any TypeResolver)?
+    package let typeResolver: (any TypeResolver)?
 
     /// Instantiated lint rules to run.
-    let lintRules: [any Rule]
+    package let lintRules: [any Rule]
 
     /// Compiler arguments for AnalyzerRules (if any).
-    let compilerArguments: [String]
+    package let compilerArguments: [String]
 
-    init(
+    package init(
         minConfidence: Confidence = .low,
         typeResolver: (any TypeResolver)? = nil,
         lintRules: [any Rule] = [],
@@ -32,7 +32,7 @@ struct Analyzer: Sendable {
     }
 
     /// Analyze the given file paths and return unified diagnostics.
-    func analyze(paths: [String]) async -> [Diagnostic] {
+    package func analyze(paths: [String]) async -> [Diagnostic] {
         let files = FileDiscovery.findSwiftFiles(in: paths)
         guard !files.isEmpty else { return [] }
 

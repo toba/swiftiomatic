@@ -42,78 +42,78 @@ enum SwiftDocKey: String {
     case attributes = "key.attributes"
     case attribute = "key.attribute"
 
-    // MARK: Typed Getters
+    // MARK: Typed Accessors
 
-    private static func getString(
-        _ key: SwiftDocKey, _ dictionary: [String: SourceKitValue],
+    private static func string(
+        _ key: SwiftDocKey, from dictionary: [String: SourceKitValue]
     ) -> String? {
         dictionary[key.rawValue]?.stringValue
     }
 
-    private static func getByteCount(
-        _ key: SwiftDocKey, _ dictionary: [String: SourceKitValue],
+    private static func byteCount(
+        _ key: SwiftDocKey, from dictionary: [String: SourceKitValue]
     ) -> ByteCount? {
         dictionary[key.rawValue]?.int64Value.map(ByteCount.init)
     }
 
-    static func getKind(_ dictionary: [String: SourceKitValue]) -> String? {
-        getString(.kind, dictionary)
+    static func kind(from dictionary: [String: SourceKitValue]) -> String? {
+        string(.kind, from: dictionary)
     }
 
-    static func getSyntaxMap(_ dictionary: [String: SourceKitValue])
-        -> [SourceKitValue]?
-    { dictionary[syntaxMap.rawValue]?.arrayValue }
-    static func getOffset(_ dictionary: [String: SourceKitValue]) -> ByteCount? {
-        getByteCount(.offset, dictionary)
+    static func syntaxMap(from dictionary: [String: SourceKitValue]) -> [SourceKitValue]? {
+        dictionary[syntaxMap.rawValue]?.arrayValue
     }
 
-    static func getLength(_ dictionary: [String: SourceKitValue]) -> ByteCount? {
-        getByteCount(.length, dictionary)
+    static func offset(from dictionary: [String: SourceKitValue]) -> ByteCount? {
+        byteCount(.offset, from: dictionary)
     }
 
-    static func getName(_ dictionary: [String: SourceKitValue]) -> String? {
-        getString(.name, dictionary)
+    static func length(from dictionary: [String: SourceKitValue]) -> ByteCount? {
+        byteCount(.length, from: dictionary)
     }
 
-    static func getTypeName(_ dictionary: [String: SourceKitValue]) -> String? {
-        getString(.typeName, dictionary)
+    static func name(from dictionary: [String: SourceKitValue]) -> String? {
+        string(.name, from: dictionary)
     }
 
-    static func getAnnotatedDeclaration(_ dictionary: [String: SourceKitValue])
-        -> String?
-    { getString(.annotatedDeclaration, dictionary) }
-    static func getSubstructure(_ dictionary: [String: SourceKitValue]) -> [[String:
+    static func typeName(from dictionary: [String: SourceKitValue]) -> String? {
+        string(.typeName, from: dictionary)
+    }
+
+    static func annotatedDeclaration(from dictionary: [String: SourceKitValue]) -> String? {
+        string(.annotatedDeclaration, from: dictionary)
+    }
+
+    static func substructure(from dictionary: [String: SourceKitValue]) -> [[String:
             SourceKitValue]]?
     {
         dictionary[substructure.rawValue]?.arrayValue?.compactMap(\.dictionaryValue)
     }
 
-    static func getNameOffset(_ dictionary: [String: SourceKitValue]) -> ByteCount? {
-        getByteCount(.nameOffset, dictionary)
+    static func nameOffset(from dictionary: [String: SourceKitValue]) -> ByteCount? {
+        byteCount(.nameOffset, from: dictionary)
     }
 
-    static func getNameLength(_ dictionary: [String: SourceKitValue]) -> ByteCount? {
-        getByteCount(.nameLength, dictionary)
+    static func nameLength(from dictionary: [String: SourceKitValue]) -> ByteCount? {
+        byteCount(.nameLength, from: dictionary)
     }
 
-    static func getBodyOffset(_ dictionary: [String: SourceKitValue]) -> ByteCount? {
-        getByteCount(.bodyOffset, dictionary)
+    static func bodyOffset(from dictionary: [String: SourceKitValue]) -> ByteCount? {
+        byteCount(.bodyOffset, from: dictionary)
     }
 
-    static func getBodyLength(_ dictionary: [String: SourceKitValue]) -> ByteCount? {
-        getByteCount(.bodyLength, dictionary)
+    static func bodyLength(from dictionary: [String: SourceKitValue]) -> ByteCount? {
+        byteCount(.bodyLength, from: dictionary)
     }
 
-    static func getFullXMLDocs(_ dictionary: [String: SourceKitValue]) -> String? {
-        getString(.fullXMLDocs, dictionary)
+    static func fullXMLDocs(from dictionary: [String: SourceKitValue]) -> String? {
+        string(.fullXMLDocs, from: dictionary)
     }
-}
 
-extension SwiftDocKey {
-    static func getBestOffset(_ dictionary: [String: SourceKitValue]) -> ByteCount? {
-        if let nameOffset = getNameOffset(dictionary), nameOffset > 0 {
+    static func bestOffset(from dictionary: [String: SourceKitValue]) -> ByteCount? {
+        if let nameOffset = nameOffset(from: dictionary), nameOffset > 0 {
             return nameOffset
         }
-        return getOffset(dictionary)
+        return offset(from: dictionary)
     }
 }

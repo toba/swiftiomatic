@@ -1,7 +1,7 @@
 import Foundation
 
 /// An executable value that can identify issues (violations) in Swift source code.
-protocol Rule: Sendable {
+package protocol Rule: Sendable {
   /// The type of the configuration used to configure this rule.
   associatedtype ConfigurationType: RuleConfiguration
 
@@ -181,7 +181,7 @@ extension Rule {
 protocol OptInRule: Rule {}
 
 /// A rule that can correct violations.
-protocol CorrectableRule: Rule {
+package protocol CorrectableRule: Rule {
   /// Attempts to correct the violations to this rule in the specified file.
   ///
   /// - parameter file:              The file for which to correct violations.

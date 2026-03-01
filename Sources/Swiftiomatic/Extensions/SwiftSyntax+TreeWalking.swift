@@ -1,10 +1,10 @@
 import SwiftSyntax
 
 // Workaround for SR-10121: allows using `Self` in a closure on SyntaxVisitor subclasses
-protocol TreeWalkable: SyntaxVisitor {}
-extension SyntaxVisitor: TreeWalkable {}
+protocol TreeWalking: SyntaxVisitor {}
+extension SyntaxVisitor: TreeWalking {}
 
-extension TreeWalkable {
+extension TreeWalking {
   func walk<T>(tree: some SyntaxProtocol, handler: (Self) -> T) -> T {
     walk(tree)
     return handler(self)

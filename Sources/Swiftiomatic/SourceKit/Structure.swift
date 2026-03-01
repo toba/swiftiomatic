@@ -14,5 +14,5 @@ struct Structure: Equatable {
 }
 
 extension Structure: CustomStringConvertible {
-    var description: String { toJSON(toNSDictionary(dictionary)) }
+    var description: String { toJSON(dictionary) }
 }

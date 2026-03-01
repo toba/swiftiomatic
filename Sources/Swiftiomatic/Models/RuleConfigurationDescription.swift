@@ -3,7 +3,7 @@ import Foundation
 // sm:disable file_length
 
 /// A type that can be converted into a human-readable representation.
-protocol Documentable {
+package protocol Documentable {
     /// Indicate if the item has some content that is useful to document.
     var hasContent: Bool { get }
 
@@ -24,7 +24,7 @@ protocol Documentable {
 }
 
 /// Description of a rule configuration.
-struct RuleConfigurationDescription: Equatable, Sendable {
+package struct RuleConfigurationDescription: Equatable, Sendable {
     fileprivate let options: [RuleConfigurationOption]
 
     fileprivate init(options: [RuleConfigurationOption], exclusiveOptions: Set<String> = []) {
@@ -92,11 +92,11 @@ struct RuleConfigurationDescription: Equatable, Sendable {
 }
 
 extension RuleConfigurationDescription: Documentable {
-    var hasContent: Bool {
+    package var hasContent: Bool {
         options.isNotEmpty
     }
 
-    func oneLiner() -> String {
+    package func oneLiner() -> String {
         oneLiner(separator: ";")
     }
 
@@ -104,7 +104,7 @@ extension RuleConfigurationDescription: Documentable {
         options.map { $0.oneLiner() }.joined(separator: "\(separator) ")
     }
 
-    func markdown() -> String {
+    package func markdown() -> String {
         guard hasContent else {
             return ""
         }
@@ -120,7 +120,7 @@ extension RuleConfigurationDescription: Documentable {
         """
     }
 
-    func yaml() -> String {
+    package func yaml() -> String {
         options.map { $0.yaml() }.joined(separator: "\n")
     }
 }

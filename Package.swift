@@ -6,7 +6,8 @@ let package = Package(
     name: "swiftiomatic",
     platforms: [.macOS(.v15)],
     products: [
-        .executable(name: "swiftiomatic", targets: ["Swiftiomatic"]),
+        .library(name: "SwiftiomaticLib", targets: ["Swiftiomatic"]),
+        .executable(name: "swiftiomatic", targets: ["SwiftiomaticCLI"]),
     ],
     dependencies: [
         .package(
@@ -17,11 +18,10 @@ let package = Package(
         .package(url: "https://github.com/jpsim/Yams.git", from: "6.0.2"),
     ],
     targets: [
-        .executableTarget(
+        .target(
             name: "Swiftiomatic",
             dependencies: [
                 "SourceKitC",
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "SwiftIDEUtils", package: "swift-syntax"),
                 .product(name: "SwiftLexicalLookup", package: "swift-syntax"),
                 .product(name: "SwiftOperators", package: "swift-syntax"),
@@ -37,10 +37,25 @@ let package = Package(
                 .enableUpcomingFeature("MemberImportVisibility"),
                 .enableUpcomingFeature("DisableOutwardActorIsolation"),
                 .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+            ]
+        ),
+        .executableTarget(
+            name: "SwiftiomaticCLI",
+            dependencies: [
+                "Swiftiomatic",
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
+                .enableExperimentalFeature("ApproachableConcurrency"),
+                .enableUpcomingFeature("InternalImportsByDefault"),
+                .enableUpcomingFeature("MemberImportVisibility"),
+                .enableUpcomingFeature("DisableOutwardActorIsolation"),
+                .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+            ]
         ),
         .target(
-            name: "SourceKitC",
+            name: "SourceKitC"
         ),
         .testTarget(
             name: "SwiftiomaticTests",
@@ -58,7 +73,7 @@ let package = Package(
             swiftSettings: [
                 .swiftLanguageMode(.v6),
                 .enableExperimentalFeature("ApproachableConcurrency"),
-            ],
+            ]
         ),
-    ],
+    ]
 )

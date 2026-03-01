@@ -1,12 +1,12 @@
-import Foundation
 import Yams
+import Foundation
 
 /// The configuration struct. User-defined in the `.swiftiomatic.yaml` file.
-struct Configuration {
+package struct Configuration {
     // MARK: - Properties: Static
 
     /// The default Configuration resulting from an empty configuration file.
-    static var `default`: Self {
+    package static var `default`: Self {
         // This is realized via a getter to account for differences of the current working directory
         Self()
     }
@@ -31,28 +31,28 @@ struct Configuration {
     // MARK: Unified Config (format / suggest / lint-override)
 
     /// Lint rules explicitly enabled (for opt-in rules).
-    var enabledLintRules: [String] = []
+    package var enabledLintRules: [String] = []
 
     /// Lint rules explicitly disabled.
-    var disabledLintRules: [String] = []
+    package var disabledLintRules: [String] = []
 
     /// Per-rule configuration overrides (keyed by rule identifier).
-    nonisolated(unsafe) var lintRuleConfigs: [String: Any] = [:]
+    package var lintRuleConfigs: [String: ConfigValue] = [:]
 
     /// Format rules explicitly enabled.
-    var enabledFormatRules: [String] = []
+    package var enabledFormatRules: [String] = []
 
     /// Format rules explicitly disabled.
-    var disabledFormatRules: [String] = []
+    package var disabledFormatRules: [String] = []
 
     /// Format indent string.
-    var formatIndent: String = "    "
+    package var formatIndent: String = "    "
 
     /// Format max line width.
-    var formatMaxWidth: Int = 120
+    package var formatMaxWidth: Int = 120
 
     /// Format Swift version string.
-    var formatSwiftVersion: String = "6.2"
+    package var formatSwiftVersion: String = "6.2"
 
     /// Minimum confidence level for suggest checks.
     var suggestMinConfidence: String = "low"
@@ -61,7 +61,7 @@ struct Configuration {
 
     /// All rules enabled in this configuration
     var rules: [any Rule] {
-        rulesWrapper.resultingRules
+        ruleSelection.resultingRules
     }
 
     /// The root directory is the directory that included & excluded paths relate to.
@@ -70,25 +70,25 @@ struct Configuration {
 
     /// The rules mode used for this configuration.
     var rulesMode: RulesMode {
-        rulesWrapper.mode
+        ruleSelection.mode
     }
 
     // MARK: Internal Instance
 
-    private(set) var rulesWrapper: RuleSelection
+    private(set) var ruleSelection: RuleSelection
 
     // MARK: - Initializers: Internal
 
     /// Initialize with all properties
     init(
-        rulesWrapper: RuleSelection,
+        ruleSelection: RuleSelection,
         rootDirectory: String,
         includedPaths: [String],
         excludedPaths: [String],
         indentation: IndentationStyle,
         cachePath: String?,
     ) {
-        self.rulesWrapper = rulesWrapper
+        self.ruleSelection = ruleSelection
         self.rootDirectory = rootDirectory
         self.includedPaths = includedPaths
         self.excludedPaths = excludedPaths
@@ -100,21 +100,7 @@ struct Configuration {
     ///
     /// - parameter copying:    The existing configuration to copy.
     init(copying configuration: Self) {
-        rulesWrapper = configuration.rulesWrapper
-        rootDirectory = configuration.rootDirectory
-        includedPaths = configuration.includedPaths
-        excludedPaths = configuration.excludedPaths
-        indentation = configuration.indentation
-        cachePath = configuration.cachePath
-        enabledLintRules = configuration.enabledLintRules
-        disabledLintRules = configuration.disabledLintRules
-        lintRuleConfigs = configuration.lintRuleConfigs
-        enabledFormatRules = configuration.enabledFormatRules
-        disabledFormatRules = configuration.disabledFormatRules
-        formatIndent = configuration.formatIndent
-        formatMaxWidth = configuration.formatMaxWidth
-        formatSwiftVersion = configuration.formatSwiftVersion
-        suggestMinConfidence = configuration.suggestMinConfidence
+        self = configuration
     }
 
     /// Creates a `Configuration` by specifying its properties directly,
@@ -140,14 +126,14 @@ struct Configuration {
         cachePath: String? = nil,
     ) {
         self.init(
-            rulesWrapper: RuleSelection(
+            ruleSelection: RuleSelection(
                 mode: rulesMode,
                 allRulesWrapped: allRulesWrapped ?? (try? ruleList.allRulesWrapped()) ?? [],
                 aliasResolver: { ruleList.identifier(for: $0) ?? $0 },
             ),
             rootDirectory: rootDirectory
                 ?? FileManager.default.currentDirectoryPath.bridge()
-                    .absolutePathStandardized(),
+                .absolutePathStandardized(),
             includedPaths: includedPaths,
             excludedPaths: excludedPaths,
             indentation: indentation,
@@ -245,17 +231,23 @@ struct Configuration {
         return nil
     }
 
-    /// Load a unified configuration from a `.swiftiomatic.yaml` file.
-    /// Parses format, suggest, and lint-override sections.
-    static func loadUnified(from path: String) throws -> Configuration {
-        let url = URL(fileURLWithPath: path)
-        let data = try Data(contentsOf: url)
+    /// Loads a YAML file at the given path and returns the top-level dictionary.
+    private static func loadYAML(from path: String) throws -> [String: Any] {
+        let data = try Data(contentsOf: URL(fileURLWithPath: path))
         guard
             let yaml = try Yams
-                .load(yaml: String(data: data, encoding: .utf8) ?? "") as? [String: Any]
+            .load(yaml: String(data: data, encoding: .utf8) ?? "") as? [String: Any]
         else {
-            return .default
+            return [:]
         }
+        return yaml
+    }
+
+    /// Load a unified configuration from a `.swiftiomatic.yaml` file.
+    /// Parses format, suggest, and lint-override sections.
+    package static func loadUnified(from path: String) throws -> Configuration {
+        let yaml = try loadYAML(from: path)
+        guard !yaml.isEmpty else { return .default }
 
         var config = Configuration()
 
@@ -268,7 +260,7 @@ struct Configuration {
                 config.disabledLintRules = disabled
             }
             if let ruleConfig = rules["config"] as? [String: Any] {
-                config.lintRuleConfigs = ruleConfig
+                config.lintRuleConfigs = ruleConfig.compactMapValues(ConfigValue.init)
             }
         }
 
@@ -312,7 +304,7 @@ struct Configuration {
     }
 
     /// Load unified configuration, searching from the given config path or by walking up from cwd.
-    static func loadUnified(configPath: String? = nil) -> Configuration {
+    package static func loadUnified(configPath: String? = nil) -> Configuration {
         if let path = configPath {
             return (try? loadUnified(from: path)) ?? .default
         }
@@ -322,17 +314,16 @@ struct Configuration {
         }
         return .default
     }
-
 }
 
 // MARK: - Sendable
 
-extension Configuration: @unchecked Sendable {}
+extension Configuration: Sendable {}
 
 // MARK: - Hashable
 
 extension Configuration: Hashable {
-    func hash(into hasher: inout Hasher) {
+    package func hash(into hasher: inout Hasher) {
         hasher.combine(includedPaths)
         hasher.combine(excludedPaths)
         hasher.combine(indentation)
@@ -341,7 +332,7 @@ extension Configuration: Hashable {
         hasher.combine(rootDirectory)
     }
 
-    static func == (lhs: Configuration, rhs: Configuration) -> Bool {
+    package static func == (lhs: Configuration, rhs: Configuration) -> Bool {
         lhs.includedPaths == rhs.includedPaths && lhs.excludedPaths == rhs.excludedPaths
             && lhs.indentation == rhs.indentation
             && lhs.cachePath == rhs.cachePath && lhs.rules == rhs.rules
@@ -353,7 +344,7 @@ extension Configuration: Hashable {
 // MARK: - CustomStringConvertible
 
 extension Configuration: CustomStringConvertible {
-    var description: String {
+    package var description: String {
         "Configuration: \n"
             + "- Indentation Style: \(indentation)\n"
             + "- Included Paths: \(includedPaths)\n"

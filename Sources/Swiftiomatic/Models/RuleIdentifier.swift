@@ -1,5 +1,5 @@
 /// An identifier representing a rule, or all rules.
-enum RuleIdentifier: Hashable, ExpressibleByStringLiteral, Comparable, Sendable {
+package enum RuleIdentifier: Hashable, ExpressibleByStringLiteral, Comparable, Sendable {
     // MARK: - Values
 
     /// Special identifier that should be treated as referring to 'all' rules. One helpful usecase is in
@@ -36,13 +36,13 @@ enum RuleIdentifier: Hashable, ExpressibleByStringLiteral, Comparable, Sendable 
 
     // MARK: - ExpressibleByStringLiteral Conformance
 
-    init(stringLiteral value: String) {
+    package init(stringLiteral value: String) {
         self = Self(value)
     }
 
     // MARK: - Comparable Conformance
 
-    static func < (lhs: Self, rhs: Self) -> Bool {
+    package static func < (lhs: Self, rhs: Self) -> Bool {
         lhs.stringRepresentation < rhs.stringRepresentation
     }
 }

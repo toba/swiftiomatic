@@ -1,12 +1,5 @@
-import Darwin
 import Foundation
 import SourceKitC
-
-/// Wrapper to make a non-Sendable value sendable in contexts where the caller guarantees safety.
-private struct UncheckedSendableValue<Value>: @unchecked Sendable {
-    var value: Value
-    init(_ value: Value) { self.value = value }
-}
 
 // MARK: - SourceKitObjectConvertible
 
@@ -103,34 +96,6 @@ final class SourceKitObject {
 
     func sendSync() -> sourcekitd_response_t? {
         sourcekitd_send_request_sync(sourcekitdObject)
-    }
-
-    func sendAsync() async throws -> sourcekitd_response_t {
-        let handle = UncheckedSendableValue(
-            UnsafeMutablePointer<sourcekitd_request_handle_t?>.allocate(capacity: 1),
-        )
-
-        return try await withTaskCancellationHandler {
-            try await withUnsafeThrowingContinuation { continuation in
-                sourcekitd_send_request(sourcekitdObject, handle.value) { response in
-                    enum SourceKitSendError: Error { case error, noResponse }
-
-                    guard let response else {
-                        continuation.resume(throwing: SourceKitSendError.noResponse)
-                        return
-                    }
-
-                    if sourcekitd_response_is_error(response) {
-                        continuation.resume(throwing: SourceKitSendError.error)
-                    } else {
-                        let sendable = UncheckedSendableValue(response)
-                        continuation.resume(returning: sendable.value)
-                    }
-                }
-            }
-        } onCancel: {
-            sourcekitd_cancel_request(handle.value)
-        }
     }
 }
 

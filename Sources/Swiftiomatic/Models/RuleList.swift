@@ -8,7 +8,7 @@ enum RuleListError: Error {
 }
 
 /// A list of available rules.
-struct RuleList {
+struct RuleList: Sendable {
     /// The rules contained in this list.
     let list: [String: any Rule.Type]
     private let aliases: [String: String]
@@ -92,9 +92,8 @@ struct RuleList {
 
 extension RuleList: Equatable {
     static func == (lhs: RuleList, rhs: RuleList) -> Bool {
-        lhs.list.map(\.0) == rhs.list.map(\.0)
-            // sm:disable:next prefer_key_path
-            && lhs.list.map { $0.1.description } == rhs.list.map { $0.1.description }
+        lhs.list.map(\.key) == rhs.list.map(\.key)
+            && lhs.list.map { $0.value.description } == rhs.list.map { $0.value.description }
             && lhs.aliases == rhs.aliases
     }
 }

@@ -18,7 +18,7 @@ struct SyntaxMap: Equatable {
     }
 
     init(sourceKitResponse: [String: SourceKitValue]) {
-        self.init(data: SwiftDocKey.getSyntaxMap(sourceKitResponse) ?? [])
+        self.init(data: SwiftDocKey.syntaxMap(from: sourceKitResponse) ?? [])
     }
 
     init(file: File) throws(Request.Error) {
@@ -30,22 +30,19 @@ struct SyntaxMap: Equatable {
 
 extension SyntaxToken {
     var isDocComment: Bool {
-        SourceKitSyntaxKind.docComments().contains { $0.rawValue == type }
+        SourceKitSyntaxKind.docComments.contains { $0.rawValue == type }
     }
 }
 
 extension SyntaxMap {
     var docCommentRanges: [ByteRange] {
         let docCommentBlocks = tokens.split { !$0.isDocComment }
-        return docCommentBlocks.compactMap { ranges in
-            ranges.first.flatMap { first in
-                ranges.last.flatMap { last -> ByteRange? in
-                    ByteRange(
-                        location: first.offset,
-                        length: last.offset + last.length - first.offset,
-                    )
-                }
-            }
+        return docCommentBlocks.compactMap { block in
+            guard let first = block.first, let last = block.last else { return nil }
+            return ByteRange(
+                location: first.offset,
+                length: last.offset + last.length - first.offset,
+            )
         }
     }
 
@@ -77,6 +74,6 @@ extension SyntaxMap {
 
 extension SyntaxMap: CustomStringConvertible {
     var description: String {
-        toJSON(tokens.map(\.dictionaryValue))
+        toJSON(tokens)
     }
 }

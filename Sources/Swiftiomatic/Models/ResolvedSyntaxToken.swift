@@ -1,4 +1,3 @@
-
 /// A syntax token wrapper with resolved kind information.
 struct ResolvedSyntaxToken {
     /// The raw `SyntaxToken` obtained by SourceKit.

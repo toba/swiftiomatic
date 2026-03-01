@@ -22,7 +22,5 @@ enum SourceKitSyntaxKind: String, CaseIterable {
     case poundDirectiveKeyword = "source.lang.swift.syntaxtype.pounddirective.keyword"
     case `operator` = "source.lang.swift.syntaxtype.operator"
 
-    static func docComments() -> [SourceKitSyntaxKind] {
-        [.commentURL, .docComment, .docCommentField]
-    }
+    static let docComments: [SourceKitSyntaxKind] = [.commentURL, .docComment, .docCommentField]
 }

@@ -1,6 +1,6 @@
 extension Formatter.Change {
     /// Convert to the unified Diagnostic output type.
-    func toDiagnostic() -> Diagnostic {
+    package func toDiagnostic() -> Diagnostic {
         Diagnostic(
             ruleID: rule.name,
             source: .format,

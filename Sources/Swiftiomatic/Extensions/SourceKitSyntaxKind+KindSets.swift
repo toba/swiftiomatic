@@ -25,20 +25,18 @@ extension SourceKitSyntaxKind {
   ]
 
   /// Syntax kinds that don't have associated module info when getting their cursor info.
-  static var kindsWithoutModuleInfo: Set<SourceKitSyntaxKind> {
-    [
-      .attributeBuiltin,
-      .keyword,
-      .number,
-      .docComment,
-      .string,
-      .stringInterpolationAnchor,
-      .attributeID,
-      .buildconfigKeyword,
-      .buildconfigID,
-      .commentURL,
-      .comment,
-      .docCommentField,
-    ]
-  }
+  static let kindsWithoutModuleInfo: Set<SourceKitSyntaxKind> = [
+    .attributeBuiltin,
+    .keyword,
+    .number,
+    .docComment,
+    .string,
+    .stringInterpolationAnchor,
+    .attributeID,
+    .buildconfigKeyword,
+    .buildconfigID,
+    .commentURL,
+    .comment,
+    .docCommentField,
+  ]
 }

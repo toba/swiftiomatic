@@ -1,7 +1,7 @@
 import Foundation
 
 /// Discovers Swift source files, excluding build artifacts and vendored code.
-enum FileDiscovery {
+package enum FileDiscovery {
     /// Default directory names to exclude.
     static let excludedDirectories: Set<String> = [
         ".build", ".git", "Pods", "DerivedData", "Carthage",
@@ -12,7 +12,7 @@ enum FileDiscovery {
     static let excludedSuffixes = [".generated.swift", ".pb.swift"]
 
     /// Find all `.swift` files under the given paths, applying exclusions.
-    static func findSwiftFiles(
+    package static func findSwiftFiles(
         in paths: [String],
         additionalExclusions: [String] = [],
     ) -> [String] {
@@ -49,7 +49,7 @@ enum FileDiscovery {
         guard let enumerator = fm.enumerator(
             at: directoryURL,
             includingPropertiesForKeys: [.isDirectoryKey],
-            options: []
+            options: [],
         ) else { return }
 
         for case let fileURL as URL in enumerator {

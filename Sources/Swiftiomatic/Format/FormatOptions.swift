@@ -435,9 +435,9 @@ enum PreferSynthesizedInitMode: Equatable, CustomStringConvertible {
 
 /// Configuration options for formatting. These aren't actually used by the
 /// Formatter class itself, but it makes them available to the format rules.
-struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
+package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     var lineAfterMarks: Bool
-    var indent: String
+    package var indent: String
     var linebreak: String
     var semicolons: SemicolonsMode
     var spaceAroundRangeOperators: OperatorSpacingMode
@@ -484,7 +484,7 @@ struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     var neverTrailing: Set<String>
     var xcodeIndentation: Bool
     var tabWidth: Int
-    var maxWidth: Int
+    package var maxWidth: Int
     var smartTabs: Bool
     var assetLiteralWidth: AssetLiteralWidth
     var noSpaceOperators: Set<String>
@@ -568,7 +568,7 @@ struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     /// Doesn't really belong here, but hard to put elsewhere
     var fragment: Bool
     var ignoreConflictMarkers: Bool
-    var swiftVersion: Version
+    package var swiftVersion: Version
     var languageMode: Version
     var fileInfo: FileInfo
     var markdownFiles: MarkdownFormattingMode
@@ -578,7 +578,7 @@ struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     /// based on other rules being enabled. Do not rely on it in other contexts
     var enabledRules: Set<String> = []
 
-    static let `default` = FormatOptions()
+    package static let `default` = FormatOptions()
 
     init(
         lineAfterMarks: Bool = true,
@@ -871,7 +871,7 @@ struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
         return options
     }
 
-    var description: String {
+    package var description: String {
         let allowedCharacters = CharacterSet.newlines.inverted
         return Mirror(reflecting: self).children.compactMap { child in
             var value = child.value

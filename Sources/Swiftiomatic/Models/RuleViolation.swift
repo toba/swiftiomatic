@@ -1,7 +1,7 @@
 import Foundation
 
 /// A value describing an instance of Swift source code that is considered invalid by a rule.
-struct RuleViolation: CustomStringConvertible, Codable, Hashable {
+package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
     /// The identifier of the rule that generated this violation.
     let ruleIdentifier: String
 
@@ -27,7 +27,7 @@ struct RuleViolation: CustomStringConvertible, Codable, Hashable {
     let suggestion: String?
 
     /// A printable description for this violation.
-    var description: String {
+    package var description: String {
         // {full_path_to_file}{:line}{:character}: {error,warning}: {content}
         [
             "\(location): ",
@@ -92,7 +92,7 @@ struct RuleViolation: CustomStringConvertible, Codable, Hashable {
         return new
     }
 
-    func hash(into hasher: inout Hasher) {
+    package func hash(into hasher: inout Hasher) {
         hasher.combine(description)
     }
 

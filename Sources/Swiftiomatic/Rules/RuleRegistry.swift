@@ -1,7 +1,8 @@
+package import Foundation
 import Synchronization
 
 /// Container to register and look up Swiftiomatic rules.
-final class RuleRegistry: Sendable {
+package final class RuleRegistry: Sendable {
   // @unchecked because `any Rule.Type` metatypes aren't Sendable-conforming,
   // but metatypes are inherently safe to share across concurrency domains.
   private struct State: @unchecked Sendable {
@@ -12,7 +13,7 @@ final class RuleRegistry: Sendable {
   private let state = Mutex(State())
 
   /// Shared rule registry instance.
-  static let shared = RuleRegistry()
+  package static let shared = RuleRegistry()
 
   /// Rule list associated with this registry. Lazily created, and
   /// immutable once looked up.
@@ -26,6 +27,11 @@ final class RuleRegistry: Sendable {
       state.list = list
       return list
     }
+  }
+
+  /// The number of registered rules.
+  package var ruleCount: Int {
+    list.list.count
   }
 
   private init() { /* To guarantee that this is singleton. */  }
@@ -44,5 +50,11 @@ final class RuleRegistry: Sendable {
   /// - returns: The rule matching the specified ID, if one was found.
   func rule(forID id: String) -> (any Rule.Type)? {
     list.list[id]
+  }
+
+  /// Generate rule documentation to the specified directory.
+  package func generateDocs(to url: URL) throws {
+    let docs = RuleListDocumentation(list)
+    try docs.write(to: url)
   }
 }

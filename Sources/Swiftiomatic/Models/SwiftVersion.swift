@@ -1,27 +1,31 @@
 import Foundation
 
 /// A value describing the version of the Swift compiler.
-struct SwiftVersion: RawRepresentable, Codable, VersionComparable, Sendable {
-    typealias RawValue = String
+package struct SwiftVersion: RawRepresentable, Codable, VersionComparable, Sendable {
+    package typealias RawValue = String
 
-    let rawValue: String
+    package let rawValue: String
+
+    package init(rawValue: String) {
+        self.rawValue = rawValue
+    }
 }
 
 /// A comparable `major.minor.patch` version number.
-protocol VersionComparable: Comparable {
+package protocol VersionComparable: Comparable {
     /// The version string.
     var rawValue: String { get }
 }
 
 extension VersionComparable {
-    static func == (lhs: Self, rhs: Self) -> Bool {
+    package static func == (lhs: Self, rhs: Self) -> Bool {
         if let lhsComparators = lhs.comparators, let rhsComparators = rhs.comparators {
             return lhsComparators == rhsComparators
         }
         return lhs.rawValue == rhs.rawValue
     }
 
-    static func < (lhs: Self, rhs: Self) -> Bool {
+    package static func < (lhs: Self, rhs: Self) -> Bool {
         if let lhsComparators = lhs.comparators, let rhsComparators = rhs.comparators {
             return lhsComparators.lexicographicallyPrecedes(rhsComparators)
         }

@@ -1,12 +1,8 @@
 /// Represents a single Swift syntax token.
-struct SyntaxToken: Equatable {
+struct SyntaxToken: Equatable, Encodable {
     let type: String
     let offset: ByteCount
     let length: ByteCount
-
-    var dictionaryValue: [String: Any] {
-        ["type": type, "offset": offset.value, "length": length.value]
-    }
 
     init(type: String, offset: ByteCount, length: ByteCount) {
         self.type = SourceKitSyntaxKind(rawValue: type)?.rawValue ?? type
@@ -17,8 +13,19 @@ struct SyntaxToken: Equatable {
     var range: ByteRange {
         ByteRange(location: offset, length: length)
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case type, offset, length
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(type, forKey: .type)
+        try container.encode(offset.value, forKey: .offset)
+        try container.encode(length.value, forKey: .length)
+    }
 }
 
 extension SyntaxToken: CustomStringConvertible {
-    var description: String { toJSON(dictionaryValue.bridge()) }
+    var description: String { toJSON(self) }
 }

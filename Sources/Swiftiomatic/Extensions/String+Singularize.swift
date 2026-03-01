@@ -65,10 +65,11 @@ extension String {
         return replacingOccurrences(
             of: rule, with: replacement, options: [.regularExpression, .caseInsensitive],
         )
-        .removingPrefix("all")
+        .removingCaseAwarePrefix("all")
     }
 
-    func removingPrefix(_ prefix: String) -> String? {
+    /// Removes the prefix (case-insensitive match) while preserving the casing of the remainder.
+    func removingCaseAwarePrefix(_ prefix: String) -> String? {
         if hasPrefix(prefix.lowercased()) {
             let string = dropFirst(prefix.count)
             return string.first.map { "\($0.lowercased())\(string.dropFirst())" }
