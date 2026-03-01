@@ -36,7 +36,7 @@ extension SwiftSyntaxCorrectableRule {
 
     let locationConverter = file.locationConverter
     let disabledRegions = file.regions()
-      .filter { $0.areRulesDisabled(ruleIDs: Self.description.allIdentifiers) }
+      .filter { $0.areRulesDisabled(ruleIDs: Self.configuration.allIdentifiers) }
       .compactMap { $0.toSourceRange(locationConverter: locationConverter) }
 
     typealias CorrectionRange = (range: Range<String.Index>, correction: String)
@@ -82,7 +82,7 @@ class ViolationCollectingRewriter<Configuration: RuleOptions>: SyntaxRewriter {
   lazy var locationConverter = file.locationConverter
   /// The regions in the traversed file that are disabled by a command
   lazy var disabledRegions = file.regions()
-    .filter { $0.areRulesDisabled(ruleIDs: Configuration.Parent.description.allIdentifiers) }
+    .filter { $0.areRulesDisabled(ruleIDs: Configuration.Parent.configuration.allIdentifiers) }
     .compactMap { $0.toSourceRange(locationConverter: locationConverter) }
 
   /// The number of corrections made by the rewriter

@@ -3,19 +3,19 @@ struct RuleDocumentation {
     private let ruleType: any Rule.Type
 
     /// Whether this rule is an opt-in rule
-    var isOptInRule: Bool { ruleType.description.isOptIn }
+    var isOptInRule: Bool { ruleType.isOptIn }
 
     /// Whether this rule requires compiler arguments
-    var isAnalyzerRule: Bool { ruleType.description.requiresCompilerArguments }
+    var isAnalyzerRule: Bool { ruleType.description.requiresCompilerArguments } // TODO: migrate to configuration
 
     /// Whether this rule is a linter rule (non-analyzer)
     var isLinterRule: Bool { !isAnalyzerRule }
 
     /// Whether this rule uses SourceKit
-    var usesSourceKit: Bool { ruleType.description.requiresSourceKit }
+    var usesSourceKit: Bool { ruleType.description.requiresSourceKit } // TODO: migrate to configuration
 
     /// Whether this rule is disabled by default
-    var isDisabledByDefault: Bool { ruleType.description.isOptIn }
+    var isDisabledByDefault: Bool { ruleType.isOptIn }
 
     /// Whether this rule is enabled by default
     var isEnabledByDefault: Bool { !isDisabledByDefault }
@@ -27,7 +27,7 @@ struct RuleDocumentation {
     init(_ ruleType: any Rule.Type) { self.ruleType = ruleType }
 
     /// The name of the documented rule
-    var ruleName: String { ruleType.description.name }
+    var ruleName: String { ruleType.description.name } // TODO: migrate to configuration
 
     /// The identifier of the documented rule
     var ruleIdentifier: String { ruleType.identifier }
@@ -100,9 +100,9 @@ private func h2(_ text: String) -> String {
 private func detailsSummary(_ rule: some Rule) -> String {
     let ruleDescription = """
     * **Identifier:** `\(type(of: rule).identifier)`
-    * **Enabled by default:** \(type(of: rule).description.isOptIn ? "No" : "Yes")
+    * **Enabled by default:** \(type(of: rule).isOptIn ? "No" : "Yes")
     * **Supports autocorrection:** \(rule is any CorrectableRule ? "Yes" : "No")
-    * **Scope:** \(type(of: rule).description.scope)
+    * **Scope:** \(type(of: rule).ruleScope)
     * **Analyzer rule:** \(type(of: rule).description.requiresCompilerArguments ? "Yes" : "No")
     * **Minimum Swift compiler version:** \(type(of: rule).description.minSwiftVersion.rawValue)
     """

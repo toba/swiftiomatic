@@ -17,7 +17,7 @@ public enum SwiftiomaticLib {
         let file = SwiftSource(contents: source)
 
         let rules = RuleResolver.loadRules(skipAnalyzerRules: true)
-        let lintRules = rules.filter { type(of: $0).description.scope == .lint }
+        let lintRules = rules.filter { type(of: $0).ruleScope == .lint }
 
         var diagnostics: [Diagnostic] = []
         for rule in lintRules {

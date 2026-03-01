@@ -164,13 +164,13 @@ extension Rule {
             case .all:
                 true
             case let .single(identifier: id):
-                Self.description.allIdentifiers.contains(id)
-                    && Self.description.allIdentifiers.contains(violation.ruleIdentifier)
+                Self.configuration.allIdentifiers.contains(id)
+                    && Self.configuration.allIdentifiers.contains(violation.ruleIdentifier)
         }
     }
 
     func isEnabled(in region: Region, for ruleID: String) -> Bool {
-        !Self.description.allIdentifiers.contains(ruleID) || region.isRuleEnabled(self)
+        !Self.configuration.allIdentifiers.contains(ruleID) || region.isRuleEnabled(self)
     }
 }
 
@@ -185,9 +185,26 @@ extension Rule {
         )
     }
 
-    /// The rule's unique identifier, equivalent to ``RuleDescription/identifier``
+    /// The rule's unique identifier
     static var identifier: String {
-        description.identifier
+        configuration.id
+    }
+
+    /// All identifiers this rule responds to (current + deprecated aliases)
+    ///
+    /// Accessible through `any Rule.Type` without associated type constraints.
+    static var allIdentifiers: [String] {
+        description.allIdentifiers
+    }
+
+    /// Whether this rule is opt-in (not enabled by default)
+    static var isOptIn: Bool {
+        description.isOptIn
+    }
+
+    /// The scope where this rule participates
+    static var ruleScope: Scope {
+        description.scope
     }
 }
 
@@ -302,7 +319,7 @@ protocol SyntaxOnlyRule: Rule {}
 extension Rule {
     /// Whether this rule requires SourceKit to operate
     var requiresSourceKit: Bool {
-        Self.description.requiresSourceKit
+        Self.configuration.requiresSourceKit
     }
 }
 

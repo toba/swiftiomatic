@@ -30,13 +30,13 @@ public enum RuleResolver {
         guard !disabled.contains(identifier) else { return nil }
 
         // Skip opt-in rules unless explicitly enabled
-        if ruleType.description.isOptIn {
+        if ruleType.isOptIn {
           guard enabled?.contains(identifier) ?? false else { return nil }
         }
       }
 
       // Skip analyzer rules when we don't have compiler arguments
-      if skipAnalyzerRules, ruleType.description.requiresCompilerArguments {
+      if skipAnalyzerRules, ruleType.description.requiresCompilerArguments { // TODO: migrate to configuration
         return nil
       }
 

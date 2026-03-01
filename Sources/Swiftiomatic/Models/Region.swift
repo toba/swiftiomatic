@@ -38,7 +38,7 @@ public struct Region: Equatable, Sendable {
     ///
     /// - Returns: True if the specified rule is disabled in this region.
     func isRuleDisabled(_ rule: some Rule) -> Bool {
-        areRulesDisabled(ruleIDs: type(of: rule).description.allIdentifiers)
+        areRulesDisabled(ruleIDs: type(of: rule).allIdentifiers)
     }
 
     /// Whether the given rules are disabled in this region.
@@ -63,7 +63,7 @@ public struct Region: Equatable, Sendable {
     ///
     /// - Returns: Deprecated rule aliases.
     func deprecatedAliasesDisabling(rule: some Rule) -> Set<String> {
-        let identifiers = type(of: rule).description.deprecatedAliases
+        let identifiers = type(of: rule).description.deprecatedAliases // TODO: migrate to configuration
         return Set(disabledRuleIdentifiers.map(\.stringRepresentation)).intersection(identifiers)
     }
 

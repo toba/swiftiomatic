@@ -173,7 +173,7 @@ struct LiteralExpressionEndIndentationRule: Rule {
     in file: SwiftSource
   ) -> RuleViolation {
     let reason =
-      "\(Self.description.description); "
+      "\(Self.configuration.summary); "
       + "expected indentation of \(violation.indentationRanges.expected.length), "
       + "got \(violation.indentationRanges.actual.length)"
 

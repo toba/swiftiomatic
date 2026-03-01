@@ -37,7 +37,7 @@ struct RuleList: Sendable {
         for rule in rules {
             let identifier = rule.identifier
             tmpList[identifier] = rule
-            for alias in rule.description.deprecatedAliases {
+            for alias in rule.description.deprecatedAliases { // TODO: migrate to configuration
                 tmpAliases[alias] = identifier
             }
             tmpAliases[identifier] = identifier
@@ -90,7 +90,7 @@ struct RuleList: Sendable {
 
     public func allValidIdentifiers() -> [String] {
         rules.flatMap { _, rule -> [String] in
-            rule.description.allIdentifiers
+            rule.allIdentifiers
         }
     }
 }

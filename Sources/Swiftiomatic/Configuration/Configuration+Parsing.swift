@@ -58,7 +58,7 @@ extension Configuration {
         do {
             allRulesWrapped = try ruleList.allRulesWrapped(configurationDict: dict)
         } catch let RuleListError.duplicatedConfigurations(ruleType) {
-            let aliases = ruleType.description.deprecatedAliases.map { "'\($0)'" }
+            let aliases = ruleType.description.deprecatedAliases.map { "'\($0)'" } // TODO: migrate to configuration
                 .joined(separator: ", ")
             let identifier = ruleType.identifier
             throw SwiftiomaticError.genericWarning(
@@ -128,7 +128,7 @@ extension Configuration {
         // Deprecation warning for rules
         let deprecatedRulesIdentifiers = ruleList.rules.flatMap {
             identifier, rule -> [(String, String)] in
-            rule.description.deprecatedAliases.map { ($0, identifier) }
+            rule.description.deprecatedAliases.map { ($0, identifier) } // TODO: migrate to configuration
         }
 
         let userProvidedRuleIDs = Set(disabledRules + optInRules + onlyRules)
@@ -167,7 +167,7 @@ extension Configuration {
                 case .allCommandLine, .onlyCommandLine:
                     return
                 case let .onlyConfiguration(onlyRules):
-                    if onlyRules.isDisjoint(with: ruleType.description.allIdentifiers) {
+                    if onlyRules.isDisjoint(with: ruleType.allIdentifiers) {
                         SwiftiomaticError.ruleNotPresentInOnlyRules(ruleID: ruleType.identifier).print()
                     }
                 case let .defaultConfiguration(disabled: disabledRules, optIn: optInRules):
@@ -187,14 +187,14 @@ extension Configuration {
         ruleType: any Rule.Type,
     ) -> SwiftiomaticError? {
         let allEnabledRules = optInRules.subtracting(disabledRules)
-        let allIdentifiers = ruleType.description.allIdentifiers
+        let allIdentifiers = ruleType.allIdentifiers
 
         if allEnabledRules.isDisjoint(with: allIdentifiers) {
             if !disabledRules.isDisjoint(with: allIdentifiers) {
                 return SwiftiomaticError.ruleDisabledInDisabledRules(ruleID: ruleType.identifier)
             }
 
-            if ruleType.description.isOptIn {
+            if ruleType.isOptIn {
                 if optInRules.isDisjoint(with: allIdentifiers) {
                     return SwiftiomaticError.ruleNotEnabledInOptInRules(ruleID: ruleType.identifier)
                 }
@@ -206,7 +206,7 @@ extension Configuration {
 
     private static func warnAboutMisplacedAnalyzerRules(optInRules: [String], ruleList: RuleList) {
         let analyzerRules = ruleList.rules
-            .filter { $0.value.description.requiresCompilerArguments }
+            .filter { $0.value.description.requiresCompilerArguments } // TODO: migrate to configuration
             .map(\.key)
         Set(analyzerRules).intersection(optInRules)
             .sorted()

@@ -72,7 +72,7 @@ extension Rule {
 
     fileprivate func shouldRun(onFile file: SwiftSource) -> Bool {
         // We shouldn't lint if the current Swift version is not supported by the rule
-        guard SwiftVersion.current >= Self.description.minSwiftVersion else {
+        guard SwiftVersion.current >= Self.configuration.minSwiftVersion else {
             return false
         }
 
@@ -155,9 +155,8 @@ extension Rule {
                 }
 
         let ruleIDs =
-            Self.description.allIdentifiers
-                + (superfluousDisableCommandRule.map { type(of: $0) }?.description
-                    .allIdentifiers ?? []) + [
+            Self.configuration.allIdentifiers
+                + (superfluousDisableCommandRule.map { type(of: $0) }?.allIdentifiers ?? []) + [
                     RuleIdentifier.all.stringRepresentation,
                 ]
         let ruleIdentifiers = Set(ruleIDs.map { RuleIdentifier($0) })
@@ -287,9 +286,9 @@ struct Linter: @unchecked Sendable {
 
         let rules = configuration.rules.filter { rule in
             if compilerArguments.isEmpty {
-                return !type(of: rule).description.requiresCompilerArguments
+                return !type(of: rule).description.requiresCompilerArguments // TODO: migrate to configuration
             }
-            return type(of: rule).description.requiresCompilerArguments || rule is SuperfluousDisableCommandRule
+            return type(of: rule).description.requiresCompilerArguments || rule is SuperfluousDisableCommandRule // TODO: migrate to configuration
         }
         self.rules = rules
         isCollecting = rules.contains(where: { $0 is any CollectingRuleMarker })
@@ -474,7 +473,7 @@ struct CollectedLinter: @unchecked Sendable {
                 )
             }
             if let corrected = ruleCorrections, corrected != 0 {
-                corrections[type(of: rule).description.identifier] = corrected
+                corrections[type(of: rule).identifier] = corrected
                 if !file.isVirtual {
                     file.invalidateCache()
                 }

@@ -63,7 +63,7 @@ extension AccessibilityTraitForButtonRule {
           SyntaxViolation(
             // Position of .onTapGesture etc.
             position: node.calledExpression.positionAfterSkippingLeadingTrivia,
-            reason: AccessibilityTraitForButtonRule.description.description,
+            reason: AccessibilityTraitForButtonRule.configuration.summary,
             severity: configuration.severity,
           ),
         )

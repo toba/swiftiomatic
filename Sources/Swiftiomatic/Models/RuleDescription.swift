@@ -163,6 +163,12 @@ public struct RuleDescriptionAdapter: RuleConfiguration {
     public var requiresCompilerArguments: Bool { desc.requiresCompilerArguments }
     public var isCrossFile: Bool { _isCrossFile }
     public var canEnrichAsync: Bool { _canEnrichAsync }
+    public var deprecatedAliases: Set<String> { desc.deprecatedAliases }
+    public var minSwiftVersion: SwiftVersion { desc.minSwiftVersion }
+    public var requiresFileOnDisk: Bool { desc.requiresFileOnDisk }
+    public var nonTriggeringExamples: [Example] { desc.nonTriggeringExamples }
+    public var triggeringExamples: [Example] { desc.triggeringExamples }
+    public var corrections: [Example: Example] { desc.corrections }
 }
 
 private extension String {

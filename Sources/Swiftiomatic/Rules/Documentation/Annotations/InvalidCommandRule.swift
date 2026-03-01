@@ -65,7 +65,7 @@ struct InvalidCommandRule: Rule, SyntaxOnlyRule {
     file.invalidCommands.map { command in
       ruleViolation(
         for: command, in: file,
-        reason: command.invalidReason() ?? Self.description.description,
+        reason: command.invalidReason() ?? Self.configuration.summary,
       )
     }
   }

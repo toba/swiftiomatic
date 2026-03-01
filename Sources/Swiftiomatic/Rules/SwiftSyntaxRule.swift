@@ -31,7 +31,7 @@ protocol SwiftSyntaxRule: SyntaxOnlyRule {
 extension SwiftSyntaxRule where OptionsType: SeverityBasedRuleOptions {
   func makeViolation(file: SwiftSource, violation: SyntaxViolation) -> RuleViolation {
     RuleViolation(
-      ruleDescription: Self.description,
+      configuration: Self.configuration,
       severity: violation.severity ?? options.severity,
       location: Location(file: file, position: violation.position),
       reason: violation.reason,
@@ -72,7 +72,7 @@ extension SwiftSyntaxRule {
       )
     }
     return RuleViolation(
-      ruleDescription: Self.description,
+      configuration: Self.configuration,
       severity: severity,
       location: Location(file: file, position: violation.position),
       reason: violation.reason,

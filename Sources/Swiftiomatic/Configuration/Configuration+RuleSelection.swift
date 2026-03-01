@@ -52,8 +52,8 @@ extension Configuration {
                         let ruleType = type(of: tuple.rule)
                         let id = ruleType.identifier
                         return !disabledRuleIdentifiers.contains(id)
-                            && ruleType.description.scope == .lint
-                            && (!ruleType.description.isOptIn || optInRuleIdentifiers.contains(id))
+                            && ruleType.ruleScope == .lint
+                            && (!ruleType.isOptIn || optInRuleIdentifiers.contains(id))
                     }.map(\.rule)
             }
 

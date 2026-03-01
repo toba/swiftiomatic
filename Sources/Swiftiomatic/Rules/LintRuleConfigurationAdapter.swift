@@ -8,17 +8,17 @@ struct LintRuleConfigurationAdapter: RuleConfiguration {
         self.ruleType = ruleType
     }
 
-    var id: String { ruleType.description.identifier }
-    var name: String { ruleType.description.name }
-    var summary: String { ruleType.description.description }
-    var rationale: String? { ruleType.description.rationale }
-    var scope: Scope { ruleType.description.scope }
+    var id: String { ruleType.identifier }
+    var name: String { ruleType.description.name } // TODO: migrate to configuration
+    var summary: String { ruleType.description.description } // TODO: migrate to configuration
+    var rationale: String? { ruleType.description.rationale } // TODO: migrate to configuration
+    var scope: Scope { ruleType.ruleScope }
 
     var isCorrectable: Bool {
         ruleType is any CorrectableRule.Type
     }
 
-    var isOptIn: Bool { ruleType.description.isOptIn }
+    var isOptIn: Bool { ruleType.isOptIn }
 
     var isDeprecated: Bool {
         let desc = ruleType.description
@@ -26,8 +26,8 @@ struct LintRuleConfigurationAdapter: RuleConfiguration {
     }
 
     var deprecationMessage: String? { nil }
-    var requiresSourceKit: Bool { ruleType.description.requiresSourceKit }
-    var requiresCompilerArguments: Bool { ruleType.description.requiresCompilerArguments }
+    var requiresSourceKit: Bool { ruleType.description.requiresSourceKit } // TODO: migrate to configuration
+    var requiresCompilerArguments: Bool { ruleType.description.requiresCompilerArguments } // TODO: migrate to configuration
 
     var isCrossFile: Bool {
         ruleType is any CollectingRuleMarker.Type
@@ -66,7 +66,7 @@ struct LintRuleConfigurationAdapter: RuleConfiguration {
     }
 
     var relatedRuleIDs: [String] {
-        Array(ruleType.description.deprecatedAliases)
+        Array(ruleType.description.deprecatedAliases) // TODO: migrate to configuration
     }
 }
 

@@ -25,7 +25,7 @@ extension Request {
           }
 
           // Check if the current rule does not require SourceKit
-          if !ruleType.description.requiresSourceKit {
+          if !ruleType.description.requiresSourceKit { // TODO: migrate to configuration
             Console.fatalError(
               """
               '\(
