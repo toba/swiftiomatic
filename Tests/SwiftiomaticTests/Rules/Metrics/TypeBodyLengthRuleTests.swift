@@ -19,7 +19,7 @@ import Testing
         RuleViolation(
           ruleDescription: TypeBodyLengthRule.description,
           severity: .warning,
-          location: Location(file: nil, line: 1, character: 1),
+          location: Location(file: nil, line: 1, column: 1),
           reason: """
             Actor body should span 2 lines or less excluding comments and \
             whitespace: currently spans 3 lines
@@ -45,7 +45,7 @@ import Testing
         RuleViolation(
           ruleDescription: TypeBodyLengthRule.description,
           severity: .error,
-          location: Location(file: nil, line: 1, character: 1),
+          location: Location(file: nil, line: 1, column: 1),
           reason: """
             Class body should span 2 lines or less excluding comments and \
             whitespace: currently spans 3 lines

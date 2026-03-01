@@ -11,7 +11,7 @@ struct DynamicLinkLibrary: @unchecked Sendable {
         if let sym = dlsym(handle, symbol) {
             return unsafeBitCast(sym, to: T.self)
         }
-        let errorString = String(validatingUTF8: dlerror())
+        let errorString = String(validatingCString: dlerror())
         fatalError("Finding symbol \(symbol) failed: \(errorString ?? "unknown error")")
     }
 }

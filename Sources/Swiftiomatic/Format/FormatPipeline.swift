@@ -52,7 +52,7 @@ func offsetForToken(at index: Int, in tokens: [Token], tabWidth: Int) -> SourceO
     var column = 1
     for token in tokens[..<index].reversed() {
         switch token {
-            case let .linebreak(_, line):
+            case let .lineBreak(_, line):
                 return SourceOffset(line: line + 1, column: column)
             default:
                 column += token.columnWidth(tabWidth: tabWidth)
@@ -66,7 +66,7 @@ func tokenIndex(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> 
     var tokenIndex = 0
     var line = 1
     for index in tokens.indices {
-        guard case let .linebreak(_, originalLine) = tokens[index] else {
+        guard case let .lineBreak(_, originalLine) = tokens[index] else {
             continue
         }
         line = originalLine
@@ -99,7 +99,7 @@ func tokenRange(forLineRange lineRange: ClosedRange<Int>, in tokens: [Token]) ->
 func newOffset(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> SourceOffset {
     var closestLine = 0
     for i in tokens.indices {
-        guard case let .linebreak(_, originalLine) = tokens[i] else {
+        guard case let .lineBreak(_, originalLine) = tokens[i] else {
             continue
         }
         closestLine += 1
@@ -109,7 +109,7 @@ func newOffset(for offset: SourceOffset, in tokens: [Token], tabWidth: Int) -> S
         var lineLength = 0
         for j in (0 ..< i).reversed() {
             let token = tokens[j]
-            if token.isLinebreak {
+            if token.isLineBreak {
                 break
             }
             lineLength += token.columnWidth(tabWidth: tabWidth)
@@ -219,7 +219,7 @@ func applyRules(
         var startIndex = 0
         var nextLine = 1
         for (i, token) in tokens.enumerated() {
-            if case let .linebreak(_, line) = token {
+            if case let .lineBreak(_, line) = token {
                 let endIndex = i + (includingLinebreaks ? 1 : 0)
                 if let existing = lines[line] {
                     lines[line] = tokens[existing.startIndex ..< endIndex]

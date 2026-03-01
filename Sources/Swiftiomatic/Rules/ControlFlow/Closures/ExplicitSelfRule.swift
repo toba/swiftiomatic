@@ -39,7 +39,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
 
   private func violationRanges(in file: SwiftSource, compilerArguments: [String]) -> [NSRange] {
     guard compilerArguments.isNotEmpty else {
-      Issue.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
+      SwiftiomaticError.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
       return []
     }
 
@@ -51,7 +51,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
         atByteOffsets: byteOffsets,
       )
     } catch {
-      queuedPrintError(String(describing: error))
+      Console.printError(String(describing: error))
       return []
     }
 
@@ -71,7 +71,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
         let byteOffset = cursorInfo["swiftlint.offset"]?.int64Value
           .flatMap(ByteCount.init)
       else {
-        Issue.genericWarning("Cannot convert offsets in '\(Self.identifier)' rule.").print()
+        SwiftiomaticError.genericWarning("Cannot convert offsets in '\(Self.identifier)' rule.").print()
         return nil
       }
 

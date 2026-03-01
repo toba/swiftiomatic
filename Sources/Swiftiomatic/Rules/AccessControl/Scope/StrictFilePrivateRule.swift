@@ -221,7 +221,7 @@ extension StrictFilePrivateRule {
 
     private func implementedTypesInDecl(of node: (some SyntaxProtocol)?) -> [String] {
       guard let node else {
-        queuedFatalError("Given node is nil. That should not happen.")
+        Console.fatalError("Given node is nil. That should not happen.")
       }
       if node.is(SourceFileSyntax.self) {
         return []

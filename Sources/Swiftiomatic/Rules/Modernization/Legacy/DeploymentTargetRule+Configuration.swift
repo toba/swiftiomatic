@@ -49,13 +49,13 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
       self.patch = patch
     }
 
-    init(platform: Platform, value: Any) throws(Issue) {
+    init(platform: Platform, value: Any) throws(SwiftiomaticError) {
       let (major, minor, patch) = try Self.parseVersion(string: String(describing: value))
       self.init(platform: platform, major: major, minor: minor, patch: patch)
     }
 
-    private static func parseVersion(string: String) throws(Issue) -> (Int, Int, Int) {
-      func parseNumber(_ string: String) throws(Issue) -> Int {
+    private static func parseVersion(string: String) throws(SwiftiomaticError) -> (Int, Int, Int) {
+      func parseNumber(_ string: String) throws(SwiftiomaticError) -> Int {
         guard let number = Int(string) else {
           throw .invalidConfiguration(ruleID: Parent.identifier)
         }
@@ -130,7 +130,7 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
   }
 
   // sm:disable:next cyclomatic_complexity
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     for (key, value) in configuration {
       if key == "severity", let value = value as? String {
         try severityConfiguration.apply(configuration: ["severity": value])
@@ -170,7 +170,7 @@ struct DeploymentTargetConfiguration: SeverityBasedRuleConfiguration {
     value: Any,
     to target: WritableKeyPath<Self, Version>,
     from configuration: [String: Any],
-  ) throws(Issue) {
+  ) throws(SwiftiomaticError) {
     let platform = self[keyPath: target].platform
     self[keyPath: target] = try Version(platform: platform, value: value)
     if let counterpart = platform.appExtensionCounterpart,

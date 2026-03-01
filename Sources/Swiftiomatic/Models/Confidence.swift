@@ -7,8 +7,14 @@ package enum Confidence: String, Codable, CaseIterable, Comparable, Sendable {
     case low
     case medium
     case high
+}
 
-    package static func < (lhs: Confidence, rhs: Confidence) -> Bool {
-        allCases.firstIndex(of: lhs)! < allCases.firstIndex(of: rhs)!
+extension CaseIterable where Self: Equatable & Comparable {
+    package static func < (lhs: Self, rhs: Self) -> Bool {
+        guard let lhsIndex = allCases.firstIndex(of: lhs),
+              let rhsIndex = allCases.firstIndex(of: rhs) else {
+            return false
+        }
+        return lhsIndex < rhsIndex
     }
 }

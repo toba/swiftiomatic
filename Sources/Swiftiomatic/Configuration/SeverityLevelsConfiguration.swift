@@ -27,7 +27,7 @@ struct SeverityLevelsConfiguration<Parent: Rule>: RuleConfiguration, InlinableOp
         return [RuleParameter(severity: .warning, value: warning)]
     }
 
-    mutating func apply(configuration: [String: Any]) throws(Issue) {
+    mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
         if let rawArray = configuration["_values"] as? [Int], rawArray.isNotEmpty {
             warning = rawArray[0]
             error = (rawArray.count > 1) ? rawArray[1] : nil

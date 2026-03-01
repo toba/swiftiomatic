@@ -12,17 +12,17 @@ extension FormatRule {
         let startIndex = formatter.index(of: .nonSpace, before: i),
         formatter.tokens[startIndex] == .startOfScope("//")
       else { return }
-      if let nextIndex = formatter.index(of: .linebreak, after: i),
+      if let nextIndex = formatter.index(of: .lineBreak, after: i),
         let nextToken = formatter.next(.nonSpace, after: nextIndex),
-        !nextToken.isLinebreak, nextToken != .endOfScope("}"),
+        !nextToken.isLineBreak, nextToken != .endOfScope("}"),
         formatter.options.lineAfterMarks
       {
         formatter.insertLinebreak(at: nextIndex)
       }
       if formatter.options.insertBlankLines,
-        let lastIndex = formatter.index(of: .linebreak, before: startIndex),
+        let lastIndex = formatter.index(of: .lineBreak, before: startIndex),
         let lastToken = formatter.last(.nonSpaceOrComment, before: lastIndex),
-        !lastToken.isLinebreak, lastToken != .startOfScope("{")
+        !lastToken.isLineBreak, lastToken != .startOfScope("{")
       {
         formatter.insertLinebreak(at: lastIndex)
       }

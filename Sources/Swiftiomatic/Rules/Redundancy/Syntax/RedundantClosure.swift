@@ -14,16 +14,16 @@ extension FormatRule {
         // Closures that are called immediately are redundant
         // (as long as there's exactly one statement inside them)
         var closureCallOpenParenIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: closureEndIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: closureEndIndex,
         ),
         var closureCallCloseParenIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: closureCallOpenParenIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: closureCallOpenParenIndex,
         ),
         formatter.token(at: closureCallOpenParenIndex) == .startOfScope("("),
         formatter.token(at: closureCallCloseParenIndex) == .endOfScope(")"),
         // Make sure to exclude closures that are completely empty,
         // because removing them could break the build.
-        formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: closureStartIndex)
+        formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: closureStartIndex)
           != closureEndIndex
       {
         // Whether or not this closure has a single, simple expression in its body.
@@ -86,7 +86,7 @@ extension FormatRule {
 
         // If closure is preceded by try and/or await then remove those too
         if let prevIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: startIndex,
+          of: .nonSpaceOrCommentOrLineBreak, before: startIndex,
           if: {
             $0 == .keyword("await")
           },
@@ -94,7 +94,7 @@ extension FormatRule {
           startIndex = prevIndex
         }
         if let prevIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: startIndex,
+          of: .nonSpaceOrCommentOrLineBreak, before: startIndex,
           if: {
             $0 == .keyword("try")
           },
@@ -138,7 +138,7 @@ extension FormatRule {
           if let potentialStartOfExpressionContainingClosure {
             guard
               var startOfExpressionIndex = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 after: potentialStartOfExpressionContainingClosure,
               )
             else { return }
@@ -146,7 +146,7 @@ extension FormatRule {
             // Skip over any return token that may be present
             if formatter.tokens[startOfExpressionIndex] == .keyword("return"),
               let nextTokenIndex = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: startOfExpressionIndex,
+                of: .nonSpaceOrCommentOrLineBreak, after: startOfExpressionIndex,
               )
             {
               startOfExpressionIndex = nextTokenIndex
@@ -167,13 +167,13 @@ extension FormatRule {
         // if the method is `@discardableResult`
         // https://github.com/nicklockwood/SwiftFormat/issues/1236
         if let equalsIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           before: startIndex,
         ),
           formatter.token(at: equalsIndex) == .operator("=", .infix),
           let colonIndex = formatter.index(of: .delimiter(":"), before: equalsIndex),
           let nextIndex = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: colonIndex,
           ),
           formatter.endOfVoidType(at: nextIndex) != nil
@@ -184,7 +184,7 @@ extension FormatRule {
         // First we remove the spaces and linebreaks between the { } and the remainder of the closure body
         //  - This requires a bit of bookkeeping, but makes sure we don't remove any
         //    whitespace characters outside of the closure itself
-        while formatter.token(at: closureStartIndex + 1)?.isSpaceOrLinebreak == true {
+        while formatter.token(at: closureStartIndex + 1)?.isSpaceOrLineBreak == true {
           formatter.removeToken(at: closureStartIndex + 1)
 
           closureCallOpenParenIndex -= 1
@@ -192,7 +192,7 @@ extension FormatRule {
           closureEndIndex -= 1
         }
 
-        while formatter.token(at: closureEndIndex - 1)?.isSpaceOrLinebreak == true {
+        while formatter.token(at: closureEndIndex - 1)?.isSpaceOrLineBreak == true {
           formatter.removeToken(at: closureEndIndex - 1)
 
           closureCallOpenParenIndex -= 1
@@ -207,11 +207,11 @@ extension FormatRule {
 
         // Remove the initial return token, and any trailing space, if present.
         if let returnIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: closureStartIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: closureStartIndex,
         ),
           formatter.token(at: returnIndex)?.string == "return"
         {
-          while formatter.token(at: returnIndex + 1)?.isSpaceOrLinebreak == true {
+          while formatter.token(at: returnIndex + 1)?.isSpaceOrLineBreak == true {
             formatter.removeToken(at: returnIndex + 1)
           }
 

@@ -81,7 +81,7 @@ struct TypesafeArrayInitRule: AnalyzerRule {
       return []
     }
     guard compilerArguments.isNotEmpty else {
-      Issue.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
+      SwiftiomaticError.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
       return []
     }
     return Self.parentRule.validate(file: file)
@@ -112,7 +112,7 @@ struct TypesafeArrayInitRule: AnalyzerRule {
   }
 
   private func getOffset(in file: SwiftSource, at location: Location) -> ByteCount? {
-    guard let line = location.line, let offset = location.character else {
+    guard let line = location.line, let offset = location.column else {
       return nil
     }
     return file.stringView.byteOffset(forLine: Int64(line), bytePosition: Int64(offset))

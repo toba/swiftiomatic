@@ -9,7 +9,7 @@ struct HoistAwaitRule: Rule {
     description:
       "Move `await` keyword to the outermost expression instead of nesting it inside arguments",
     scope: .format,
-    minSwiftVersion: .six,
+    minSwiftVersion: .v6,
     nonTriggeringExamples: [
       Example("let result = await foo(bar)"),
       Example("let result = await foo(bar, baz)"),

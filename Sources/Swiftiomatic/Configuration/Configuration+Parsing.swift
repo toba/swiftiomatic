@@ -61,7 +61,7 @@ extension Configuration {
             let aliases = ruleType.description.deprecatedAliases.map { "'\($0)'" }
                 .joined(separator: ", ")
             let identifier = ruleType.identifier
-            throw Issue.genericWarning(
+            throw SwiftiomaticError.genericWarning(
                 "Multiple configurations found for '\(identifier)'. Check for any aliases: \(aliases).",
             )
         }
@@ -105,7 +105,7 @@ extension Configuration {
             if let indentationStyle = IndentationStyle(rawIndentation) {
                 return indentationStyle
             }
-            Issue.invalidConfiguration(ruleID: Key.indentation.rawValue).print()
+            SwiftiomaticError.invalidConfiguration(ruleID: Key.indentation.rawValue).print()
             return .default
         }
 
@@ -121,12 +121,12 @@ extension Configuration {
     ) {
         // Deprecation warning for "enabled_rules"
         if dict[Key.enabledRules.rawValue] != nil {
-            Issue.renamedIdentifier(old: Key.enabledRules.rawValue, new: Key.optInRules.rawValue)
+            SwiftiomaticError.renamedIdentifier(old: Key.enabledRules.rawValue, new: Key.optInRules.rawValue)
                 .print()
         }
 
         // Deprecation warning for rules
-        let deprecatedRulesIdentifiers = ruleList.list.flatMap {
+        let deprecatedRulesIdentifiers = ruleList.rules.flatMap {
             identifier, rule -> [(String, String)] in
             rule.description.deprecatedAliases.map { ($0, identifier) }
         }
@@ -137,7 +137,7 @@ extension Configuration {
         }
 
         for (deprecatedIdentifier, identifier) in deprecatedUsages {
-            Issue.renamedIdentifier(old: deprecatedIdentifier, new: identifier).print()
+            SwiftiomaticError.renamedIdentifier(old: deprecatedIdentifier, new: identifier).print()
         }
     }
 
@@ -147,7 +147,7 @@ extension Configuration {
         // Log an error when supplying invalid keys in the configuration dictionary
         let invalidKeys = Set(dict.keys).subtracting(validKeys(ruleList: ruleList))
         if invalidKeys.isNotEmpty {
-            Issue.invalidRuleIDs(invalidKeys).print()
+            SwiftiomaticError.invalidRuleIDs(invalidKeys).print()
         }
     }
 
@@ -158,7 +158,7 @@ extension Configuration {
     ) {
         for key in dict.keys where !validGlobalKeys.contains(key) {
             guard let identifier = ruleList.identifier(for: key),
-                  let ruleType = ruleList.list[identifier]
+                  let ruleType = ruleList.rules[identifier]
             else {
                 continue
             }
@@ -168,7 +168,7 @@ extension Configuration {
                     return
                 case let .onlyConfiguration(onlyRules):
                     if onlyRules.isDisjoint(with: ruleType.description.allIdentifiers) {
-                        Issue.ruleNotPresentInOnlyRules(ruleID: ruleType.identifier).print()
+                        SwiftiomaticError.ruleNotPresentInOnlyRules(ruleID: ruleType.identifier).print()
                     }
                 case let .defaultConfiguration(disabled: disabledRules, optIn: optInRules):
                     let issue = validateConfiguredRuleIsEnabled(
@@ -185,18 +185,18 @@ extension Configuration {
         disabledRules: Set<String>,
         optInRules: Set<String>,
         ruleType: any Rule.Type,
-    ) -> Issue? {
+    ) -> SwiftiomaticError? {
         let allEnabledRules = optInRules.subtracting(disabledRules)
         let allIdentifiers = ruleType.description.allIdentifiers
 
         if allEnabledRules.isDisjoint(with: allIdentifiers) {
             if !disabledRules.isDisjoint(with: allIdentifiers) {
-                return Issue.ruleDisabledInDisabledRules(ruleID: ruleType.identifier)
+                return SwiftiomaticError.ruleDisabledInDisabledRules(ruleID: ruleType.identifier)
             }
 
             if ruleType is any OptInRule.Type {
                 if optInRules.isDisjoint(with: allIdentifiers) {
-                    return Issue.ruleNotEnabledInOptInRules(ruleID: ruleType.identifier)
+                    return SwiftiomaticError.ruleNotEnabledInOptInRules(ruleID: ruleType.identifier)
                 }
             }
         }
@@ -205,13 +205,13 @@ extension Configuration {
     }
 
     private static func warnAboutMisplacedAnalyzerRules(optInRules: [String], ruleList: RuleList) {
-        let analyzerRules = ruleList.list
+        let analyzerRules = ruleList.rules
             .filter { $0.value.self is any AnalyzerRule.Type }
             .map(\.key)
         Set(analyzerRules).intersection(optInRules)
             .sorted()
             .forEach {
-                Issue.genericWarning(
+                SwiftiomaticError.genericWarning(
                     """
                     '\($0)' should be listed in the 'analyzer_rules' configuration section \
                     for more clarity as it is only run by the analyze command.

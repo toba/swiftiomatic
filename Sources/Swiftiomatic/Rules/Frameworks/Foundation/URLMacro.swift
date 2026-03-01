@@ -18,19 +18,19 @@ extension FormatRule {
 
     formatter.forEach(.identifier("URL")) { i, _ in
       // Look for `URL(string: "...")!` pattern
-      guard let openParenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
+      guard let openParenIndex = formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: i),
         formatter.tokens[openParenIndex] == .startOfScope("("),
         let firstArgIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: openParenIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: openParenIndex,
         ),
         formatter.tokens[firstArgIndex] == .identifier("string"),
         let colonIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: firstArgIndex,
         ),
         formatter.tokens[colonIndex] == .delimiter(":"),
         let stringStartIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: colonIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: colonIndex,
         ),
         formatter.tokens[stringStartIndex] == .startOfScope("\""),
         let stringEndIndex = formatter.index(
@@ -38,11 +38,11 @@ extension FormatRule {
           after: stringStartIndex,
         ),
         let closeParenIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: stringEndIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: stringEndIndex,
         ),
         formatter.tokens[closeParenIndex] == .endOfScope(")"),
         let unwrapIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: closeParenIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: closeParenIndex,
         ),
         formatter.tokens[unwrapIndex] == .operator("!", .postfix)
       else { return }

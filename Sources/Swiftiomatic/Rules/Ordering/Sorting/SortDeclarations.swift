@@ -46,9 +46,9 @@ extension FormatRule {
             $0.isComment && $0.string.contains("sm:sort:end")
           }),
           let sortRangeStart = formatter.index(of: .nonSpaceOrComment, after: index),
-          let firstRangeToken = formatter.index(of: .nonLinebreak, after: sortRangeStart),
+          let firstRangeToken = formatter.index(of: .nonLineBreak, after: sortRangeStart),
           let lastRangeToken = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, before: endCommentIndex - 2,
+            of: .nonSpaceOrCommentOrLineBreak, before: endCommentIndex - 2,
           )
         else { return }
 
@@ -58,11 +58,11 @@ extension FormatRule {
         guard let typeOpenBrace = formatter.index(of: .startOfScope("{"), after: index),
           let typeCloseBrace = formatter.endOfScope(at: typeOpenBrace),
           let firstTypeBodyToken = formatter.index(
-            of: .nonLinebreak,
+            of: .nonLineBreak,
             after: typeOpenBrace,
           ),
           let lastTypeBodyToken = formatter.index(
-            of: .nonLinebreak,
+            of: .nonLineBreak,
             before: typeCloseBrace,
           ),
           let declarationKeywordIndex =
@@ -85,7 +85,7 @@ extension FormatRule {
 
         rangeToSort = firstTypeBodyToken...lastTypeBodyToken
         // We don't include any leading linebreaks in the range to sort,
-        // since `firstTypeBodyToken` is the first `nonLinebreak` in the body
+        // since `firstTypeBodyToken` is the first `nonLineBreak` in the body
         numberOfLeadingLinebreaks = 0
       } else {
         return
@@ -119,8 +119,8 @@ extension FormatRule {
         let declaration = declarations[i]
         let nextDeclaration = declarations[i + 1]
 
-        if declaration.tokens.last?.isLinebreak == false,
-          nextDeclaration.tokens.first?.isLinebreak == false
+        if declaration.tokens.last?.isLineBreak == false,
+          nextDeclaration.tokens.first?.isLineBreak == false
         {
           let declarationNeedingLinebreak = declarations[i + 1]
           declarationNeedingLinebreak.formatter.insertLinebreak(
@@ -134,7 +134,7 @@ extension FormatRule {
       // Make sure the type has the same number of leading line breaks
       // as it did before sorting
       if let currentLeadingLinebreakCount = sortedFormatter.tokens.firstIndex(where: {
-        !$0.isLinebreak
+        !$0.isLineBreak
       }) {
         if numberOfLeadingLinebreaks != currentLeadingLinebreakCount {
           sortedFormatter.removeTokens(in: 0..<currentLeadingLinebreakCount)
@@ -154,7 +154,7 @@ extension FormatRule {
       // so we remove any trailing line breaks
       // (this is because `typeBodyRange` specifically ends before the first
       // trailing linebreak)
-      while sortedFormatter.tokens.last?.isLinebreak == true {
+      while sortedFormatter.tokens.last?.isLineBreak == true {
         sortedFormatter.removeLastToken()
       }
 

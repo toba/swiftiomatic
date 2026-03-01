@@ -10,7 +10,7 @@ extension Request {
         if ruleID != "mock_test_rule_for_swiftlint_tests" {
           // Ensure the rule exists in the registry
           guard let ruleType = RuleRegistry.shared.rule(forID: ruleID) else {
-            queuedFatalError(
+            Console.fatalError(
               """
               Rule '\(
                                 ruleID
@@ -21,7 +21,7 @@ extension Request {
 
           // Check if the current rule is a SyntaxOnlyRule
           if ruleType is any SyntaxOnlyRule.Type {
-            queuedFatalError(
+            Console.fatalError(
               """
               '\(
                                 ruleID
@@ -33,7 +33,7 @@ extension Request {
       } else {
         // No rule context — allow but warn (non-fatal to support parallel test execution
         // where @TaskLocal context may not propagate through all dispatch paths)
-        queuedPrintError(
+        Console.printError(
           """
           warning: SourceKit request made outside of rule execution context. \
           Use CurrentRule.$allowSourceKitRequestWithoutRule.withValue(true) { ... } for explicit allowance.

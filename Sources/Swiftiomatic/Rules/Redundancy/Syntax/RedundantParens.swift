@@ -10,7 +10,7 @@ extension FormatRule {
 
     formatter.forEach(.startOfScope("(")) { i, _ in
       guard var closingIndex = formatter.index(of: .endOfScope(")"), after: i),
-        formatter.next(.nonSpaceOrCommentOrLinebreak, after: i) != .keyword("repeat")
+        formatter.next(.nonSpaceOrCommentOrLineBreak, after: i) != .keyword("repeat")
       else {
         return
       }
@@ -24,10 +24,10 @@ extension FormatRule {
         innerParens = formatter.nestedParens(in: i...closingIndex)
       }
       var isClosure = false
-      let previousIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: i) ?? -1
+      let previousIndex = formatter.index(of: .nonSpaceOrCommentOrLineBreak, before: i) ?? -1
       let prevToken = formatter.token(at: previousIndex) ?? .space("")
       let nextToken =
-        formatter.next(.nonSpaceOrCommentOrLinebreak, after: closingIndex) ?? .space("")
+        formatter.next(.nonSpaceOrCommentOrLineBreak, after: closingIndex) ?? .space("")
       switch nextToken {
       case .operator("->", .infix), .keyword("throws"), .keyword("rethrows"),
         .identifier("async"), .keyword("in"):
@@ -69,7 +69,7 @@ extension FormatRule {
         // Parens before closure
         guard closingIndex == formatter.index(of: .nonSpace, after: i),
           let openingIndex = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: closingIndex,
+            of: .nonSpaceOrCommentOrLineBreak, after: closingIndex,
             if: {
               $0 == .startOfScope("{")
             },
@@ -81,7 +81,7 @@ extension FormatRule {
         formatter.removeParen(at: closingIndex)
         formatter.removeParen(at: i)
       case _ where isClosure:
-        if formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i) == closingIndex
+        if formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: i) == closingIndex
           || formatter.index(of: .delimiter(":"), in: i + 1..<closingIndex) != nil
           || formatter.tokens[i + 1..<closingIndex].contains(.identifier("self"))
         {
@@ -99,14 +99,14 @@ extension FormatRule {
       where !conditionals.contains(name) && !["let", "var", "return"].contains(name):
         return
       case .endOfScope("}"), .endOfScope(")"), .endOfScope("]"), .endOfScope(">"):
-        if formatter.tokens[previousIndex + 1..<i].contains(where: \.isLinebreak) {
+        if formatter.tokens[previousIndex + 1..<i].contains(where: \.isLineBreak) {
           fallthrough
         }
         return  // Probably a method invocation
       case .delimiter(","), .endOfScope, .keyword:
         let nextToken =
           formatter
-          .next(.nonSpaceOrCommentOrLinebreak, after: closingIndex) ?? .space("")
+          .next(.nonSpaceOrCommentOrLineBreak, after: closingIndex) ?? .space("")
         guard formatter.index(of: .endOfScope("}"), before: closingIndex) == nil,
           ![.endOfScope("}"), .endOfScope(">")].contains(prevToken)
             || ![.startOfScope("{"), .delimiter(",")].contains(nextToken)
@@ -123,7 +123,7 @@ extension FormatRule {
           fallthrough
         }
         if formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           in: i + 1..<closingIndex,
         ) == nil
           || formatter.index(of: .delimiter(","), in: i + 1..<closingIndex) != nil
@@ -167,13 +167,13 @@ extension FormatRule {
           return
         }
         let nextNonLinebreak = formatter.next(.nonSpaceOrComment, after: closingIndex)
-        if let index = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
+        if let index = formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: i),
           case .operator = formatter.tokens[index]
         {
           if nextToken.isOperator(".")
             || (index == i + 1
               && formatter.token(at: i - 1)?
-                .isSpaceOrCommentOrLinebreak == false)
+                .isSpaceOrCommentOrLineBreak == false)
           {
             return
           }
@@ -186,7 +186,7 @@ extension FormatRule {
         }
         guard
           formatter
-            .index(of: .nonSpaceOrCommentOrLinebreak, after: i) != closingIndex,
+            .index(of: .nonSpaceOrCommentOrLineBreak, after: i) != closingIndex,
           formatter.index(
             in: i + 1..<closingIndex,
             where: {
@@ -254,7 +254,7 @@ extension FormatRule {
           return
         }
         if formatter
-          .next(.nonSpaceOrCommentOrLinebreak, after: i) == .keyword("#file")
+          .next(.nonSpaceOrCommentOrLineBreak, after: i) == .keyword("#file")
         {
           return
         }
@@ -291,13 +291,13 @@ extension Formatter {
   func nestedParens(in range: ClosedRange<Int>) -> ClosedRange<Int>? {
     guard
       let startIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak, after: range.lowerBound,
+        of: .nonSpaceOrCommentOrLineBreak, after: range.lowerBound,
         if: {
           $0 == .startOfScope("(")
         },
       ),
       let endIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak, before: range.upperBound,
+        of: .nonSpaceOrCommentOrLineBreak, before: range.upperBound,
         if: {
           $0 == .endOfScope(")")
         },

@@ -86,7 +86,7 @@ extension RedundantPropertyRule: SwiftSyntaxCorrectableRule {
 extension RedundantPropertyRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
     override func visitPost(_ node: CodeBlockItemListSyntax) {
-      for (propertyItem, returnItem) in node.redundantPropertyReturnPairs() {
+      for (propertyItem, _) in node.redundantPropertyReturnPairs() {
         guard
           let binding = propertyItem.item.as(VariableDeclSyntax.self)?
             .bindings.first

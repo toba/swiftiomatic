@@ -55,7 +55,7 @@ extension TypedThrowsRule: AsyncEnrichableRule {
           RuleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
-            location: Location(file: filePath, line: query.line, character: query.column),
+            location: Location(file: filePath, line: query.line, column: query.column),
             reason:
               "\(query.label) throws only '\(errorType)' but declares untyped 'throws'",
             confidence: query.hasRethrows ? .medium : .high,

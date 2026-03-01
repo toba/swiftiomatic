@@ -10,10 +10,10 @@ extension SwiftSource {
             return
         }
         guard let stringData = string.data(using: .utf8) else {
-            queuedFatalError("can't encode '\(string)' with UTF8")
+            Console.fatalError("can't encode '\(string)' with UTF8")
         }
         guard let path, let fileHandle = FileHandle(forWritingAtPath: path) else {
-            queuedFatalError("can't write to path '\(String(describing: path))'")
+            Console.fatalError("can't write to path '\(String(describing: path))'")
         }
         _ = fileHandle.seekToEndOfFile()
         fileHandle.write(stringData)
@@ -30,10 +30,10 @@ extension SwiftSource {
             return
         }
         guard let path else {
-            queuedFatalError("file needs a path to call write(_:)")
+            Console.fatalError("file needs a path to call write(_:)")
         }
         guard let stringData = String(string).data(using: .utf8) else {
-            queuedFatalError("can't encode '\(string)' with UTF8")
+            Console.fatalError("can't encode '\(string)' with UTF8")
         }
         do {
             try stringData.write(
@@ -41,7 +41,7 @@ extension SwiftSource {
                 options: .atomic,
             )
         } catch {
-            queuedFatalError("can't write file to \(path)")
+            Console.fatalError("can't write file to \(path)")
         }
         invalidateCache()
     }

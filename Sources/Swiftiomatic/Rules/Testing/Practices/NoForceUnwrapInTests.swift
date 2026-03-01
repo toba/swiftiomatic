@@ -57,7 +57,7 @@ extension FormatRule {
 
         // Preserve `try!`s, this is handled separately by the `noForceTryInTests` rule
         if let previousToken = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: forceUnwrapOperator,
+          of: .nonSpaceOrCommentOrLineBreak, before: forceUnwrapOperator,
         ),
           formatter.tokens[previousToken] == .keyword("try")
         {
@@ -113,7 +113,7 @@ extension FormatRule {
 
             // Check if this is a function call or subscript call by looking at the token before the scope
             if let prevIndex = formatter.index(
-              of: .nonSpaceOrCommentOrLinebreak, before: scopeStart,
+              of: .nonSpaceOrCommentOrLineBreak, before: scopeStart,
             ) {
               let prevToken = formatter.tokens[prevIndex]
               if prevToken.isIdentifier || prevToken.isOperator(ofType: .postfix)
@@ -131,7 +131,7 @@ extension FormatRule {
           // If we are about to convert an `as!` to an `as?`, and the as? is part of a broader expression with a chained value
           // like `(foo as! Bar).baaz`, we have to add an extra `?` after the enclosing parens: `(foo as? Bar)?.baaz`.
           if let previousToken = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             before: i,
           ),
             formatter.tokens[previousToken] == .keyword("as"),
@@ -147,7 +147,7 @@ extension FormatRule {
           var shouldRemoveForceUnwrap = false
           if let nextToken =
             formatter
-            .index(of: .nonSpaceOrCommentOrLinebreak, after: i)
+            .index(of: .nonSpaceOrCommentOrLineBreak, after: i)
           {
             if ["is", "as"].contains(formatter.tokens[nextToken].string)
               || !expressionRange.range.contains(nextToken)
@@ -160,7 +160,7 @@ extension FormatRule {
 
           // Convert `try!`s within the unwrap expression to `try` instead of `try?`
           if let previousToken = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             before: i,
           ),
             formatter.tokens[previousToken] == .keyword("try")
@@ -180,7 +180,7 @@ extension FormatRule {
 
         // If this expression is the LHS of an assignment operator, changing `foo!.bar = baaz` to `foo?.bar = baaz` is a safe change as-is
         if let tokenAfterExpression = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound,
+          of: .nonSpaceOrCommentOrLineBreak, after: expressionRange.upperBound,
         ),
           formatter.tokens[tokenAfterExpression] == .operator("=", .infix)
         {
@@ -189,7 +189,7 @@ extension FormatRule {
 
         // If this expression is followed by ==, changing `foo!.bar == bar` to `foo?.bar == bar` is a safe change as-is
         if let tokenAfterExpression = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound,
+          of: .nonSpaceOrCommentOrLineBreak, after: expressionRange.upperBound,
         ),
           formatter.tokens[tokenAfterExpression] == .operator("==", .infix)
         {
@@ -203,11 +203,11 @@ extension FormatRule {
           .startOfScope(at: expressionRange.lowerBound),
           formatter.tokens[containingParenScope] == .startOfScope("("),
           let functionNameIndex = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, before: containingParenScope,
+            of: .nonSpaceOrCommentOrLineBreak, before: containingParenScope,
           ),
           formatter.tokens[functionNameIndex].isIdentifier,
           let tokenAfterExpression = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound,
+            of: .nonSpaceOrCommentOrLineBreak, after: expressionRange.upperBound,
           ),
           !formatter.tokens[tokenAfterExpression].isOperator
         {
@@ -233,7 +233,7 @@ extension FormatRule {
         ),
           formatter.tokens[startOfScopeContainingExpression] == .startOfScope("{"),
           let tokenBeforeExpression = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, before: expressionRange.lowerBound,
+            of: .nonSpaceOrCommentOrLineBreak, before: expressionRange.lowerBound,
           ),
           !formatter.tokens[tokenBeforeExpression].isOperator
         {
@@ -389,7 +389,7 @@ extension Formatter {
       }
 
       if token == .keyword("as"),
-        let nextToken = self.index(of: .nonSpaceOrLinebreak, after: index),
+        let nextToken = self.index(of: .nonSpaceOrLineBreak, after: index),
         self.tokens[nextToken] != .operator("!", .postfix)
       {
         return true
@@ -453,12 +453,12 @@ extension Formatter {
   /// For example, `(foo as! Bar).quux` returns the `.quux` component.
   func parseTokenAfterForceCastParenScope(asIndex: Int) -> Int? {
     guard tokens[asIndex] == .keyword("as"),
-      let tokenAfterAs = index(of: .nonSpaceOrCommentOrLinebreak, after: asIndex),
+      let tokenAfterAs = index(of: .nonSpaceOrCommentOrLineBreak, after: asIndex),
       tokens[tokenAfterAs] == .operator("!", .postfix),
       let containingScopeIndex = startOfScope(at: asIndex),
       tokens[containingScopeIndex] == .startOfScope("("),
       let endOfScope = endOfScope(at: containingScopeIndex),
-      let tokenAfterParenScope = index(of: .nonLinebreak, after: endOfScope),
+      let tokenAfterParenScope = index(of: .nonLineBreak, after: endOfScope),
       tokens[tokenAfterParenScope].isOperator || tokens[tokenAfterParenScope].isStartOfScope
     else { return nil }
 

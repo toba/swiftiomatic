@@ -9,7 +9,7 @@ extension FormatRule {
     formatter.forEach(.startOfScope("{")) { i, _ in
       if let prevToken = formatter.token(at: i - 1) {
         switch prevToken {
-        case .space, .linebreak, .operator(_, .prefix), .operator(_, .infix),
+        case .space, .lineBreak, .operator(_, .prefix), .operator(_, .infix),
           .startOfScope where !prevToken.isStringDelimiter:
           break
         default:

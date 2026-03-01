@@ -110,7 +110,7 @@ extension RedundantViewBuilderRule {
         return false
       }
       guard modified else { return super.visit(node) }
-      return super.visit(AttributeListSyntax(newAttributes))
+      return super.visit(newAttributes)
     }
   }
 }

@@ -59,22 +59,22 @@ extension FormatRule {
       lastHeaderTokenIndex += headerTokens.count
     }
     let headerLinebreaks = headerTokens.reduce(0) { result, token -> Int in
-      result + (token.isLinebreak ? 1 : 0)
+      result + (token.isLineBreak ? 1 : 0)
     }
     if lastHeaderTokenIndex < formatter.tokens.count - 1 {
-      headerTokens.append(.linebreak(formatter.options.linebreak, headerLinebreaks + 1))
+      headerTokens.append(.lineBreak(formatter.options.linebreak, headerLinebreaks + 1))
       if lastHeaderTokenIndex < formatter.tokens.count - 2,
         !formatter.tokens[lastHeaderTokenIndex + 1...lastHeaderTokenIndex + 2].allSatisfy(
-          \.isLinebreak,
+          \.isLineBreak,
         )
       {
-        headerTokens.append(.linebreak(formatter.options.linebreak, headerLinebreaks + 2))
+        headerTokens.append(.lineBreak(formatter.options.linebreak, headerLinebreaks + 2))
       }
     }
     if let index = formatter.index(
       of: .nonSpace, after: lastHeaderTokenIndex,
       if: {
-        $0.isLinebreak
+        $0.isLineBreak
       },
     ) {
       lastHeaderTokenIndex = index

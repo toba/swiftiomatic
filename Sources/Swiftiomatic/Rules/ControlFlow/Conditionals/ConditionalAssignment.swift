@@ -19,7 +19,7 @@ extension FormatRule {
 
       // Traverse any nested if/switch branches until we find the first code branch
       while let firstTokenInBranch = formatter.index(
-        of: .nonSpaceOrCommentOrLinebreak, after: startOfFirstBranch,
+        of: .nonSpaceOrCommentOrLineBreak, after: startOfFirstBranch,
       ),
         ["if", "switch"].contains(formatter.tokens[firstTokenInBranch].string),
         let nestedConditionalBranches =
@@ -33,11 +33,11 @@ extension FormatRule {
       // Check if the first branch starts with the pattern `lvalue =`.
       guard
         let firstTokenIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: startOfFirstBranch,
+          of: .nonSpaceOrCommentOrLineBreak, after: startOfFirstBranch,
         ),
         let lvalueRange = formatter.parseExpressionRange(startingAt: firstTokenIndex),
         let equalsIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: lvalueRange.upperBound,
+          of: .nonSpaceOrCommentOrLineBreak, after: lvalueRange.upperBound,
         ),
         formatter.tokens[equalsIndex] == .operator("=", .infix)
       else { return }
@@ -68,7 +68,7 @@ extension FormatRule {
         property.value == nil,
         let typeRange = property.typeRange,
         let nextTokenAfterProperty = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: typeRange.upperBound,
+          of: .nonSpaceOrCommentOrLineBreak, after: typeRange.upperBound,
         ),
         nextTokenAfterProperty == startOfConditional
       {
@@ -87,7 +87,7 @@ extension FormatRule {
         // let foo: Foo = if condition {
         //
         if formatter.tokens[rangeBetweenTypeAndConditional]
-          .allSatisfy(\.isSpaceOrLinebreak)
+          .allSatisfy(\.isSpaceOrLineBreak)
         {
           formatter.replaceTokens(
             in: rangeBetweenTypeAndConditional,
@@ -214,7 +214,7 @@ extension Formatter {
     else if tokens[conditionKeywordIndex] == .keyword("if"),
       let lastCondition = branches.last,
       let tokenBeforeLastCondition = index(
-        of: .nonSpaceOrCommentOrLinebreak, before: lastCondition.startOfBranch,
+        of: .nonSpaceOrCommentOrLineBreak, before: lastCondition.startOfBranch,
       )
     {
       return tokens[tokenBeforeLastCondition] == .keyword("else")
@@ -233,7 +233,7 @@ extension Formatter {
   ) -> Bool {
     guard
       let firstTokenIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak,
+        of: .nonSpaceOrCommentOrLineBreak,
         after: branch.startOfBranch,
       )
     else { return false }
@@ -248,7 +248,7 @@ extension Formatter {
       }
 
       let isOnlyStatementInScope =
-        next(.nonSpaceOrCommentOrLinebreak, after: lastConditionalStatement.endOfBranch)?
+        next(.nonSpaceOrCommentOrLineBreak, after: lastConditionalStatement.endOfBranch)?
         .isEndOfScope == true
 
       let isExhaustive = conditionalBranchesAreExhaustive(
@@ -265,10 +265,10 @@ extension Formatter {
     else if let firstExpressionRange = parseExpressionRange(startingAt: firstTokenIndex),
       tokens[firstExpressionRange] == tokens[lvalueRange],
       let equalsIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak, after: firstExpressionRange.upperBound,
+        of: .nonSpaceOrCommentOrLineBreak, after: firstExpressionRange.upperBound,
       ),
       tokens[equalsIndex] == .operator("=", .infix),
-      let valueStartIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex)
+      let valueStartIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: equalsIndex)
     {
       // We know this branch starts with `identifier =`, but have to check that the
       // remaining code in the branch is a single statement. To do that we can
@@ -315,15 +315,15 @@ extension Formatter {
     forEachRecursiveConditionalBranch(in: conditionalBranches) { branch in
       guard
         let firstTokenIndex = index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: branch.startOfBranch,
         ),
         let firstExpressionRange = parseExpressionRange(startingAt: firstTokenIndex),
         let equalsIndex = index(
-          of: .nonSpaceOrCommentOrLinebreak, after: firstExpressionRange.upperBound,
+          of: .nonSpaceOrCommentOrLineBreak, after: firstExpressionRange.upperBound,
         ),
         tokens[equalsIndex] == .operator("=", .infix),
-        let valueStartIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex)
+        let valueStartIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: equalsIndex)
       else { return }
 
       removeTokens(in: firstTokenIndex..<valueStartIndex)

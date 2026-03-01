@@ -20,7 +20,7 @@ package enum RuleResolver {
     RuleRegistry.registerAllRulesOnce()
     let ruleList = RuleRegistry.shared.list
 
-    return ruleList.list.compactMap { identifier, ruleType -> (any Rule)? in
+    return ruleList.rules.compactMap { identifier, ruleType -> (any Rule)? in
       // --only-rule overrides everything
       if !onlyRules.isEmpty {
         guard onlyRules.contains(identifier) else { return nil }

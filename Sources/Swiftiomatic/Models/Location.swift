@@ -7,8 +7,8 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
     let file: String?
     /// The line offset in the file for this location. 1-indexed.
     let line: Int?
-    /// The character offset in the file for this location. 1-indexed.
-    let character: Int?
+    /// The column offset in the file for this location. 1-indexed.
+    let column: Int?
 
     /// A lossless printable description of this location.
     var description: String {
@@ -16,7 +16,7 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
         // {full_path_to_file}{:line}{:character}: {error,warning}: {content}
         let fileString = file ?? "<nopath>"
         let lineString = ":\(line ?? 1)"
-        let charString = ":\(character ?? 1)"
+        let charString = ":\(column ?? 1)"
         return [fileString, lineString, charString].joined()
     }
 
@@ -29,11 +29,11 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
     ///
     /// - parameter file:      The file path on disk for this location.
     /// - parameter line:      The line offset in the file for this location. 1-indexed.
-    /// - parameter character: The character offset in the file for this location. 1-indexed.
-    init(file: String?, line: Int? = nil, character: Int? = nil) {
+    /// - parameter column: The column offset in the file for this location. 1-indexed.
+    init(file: String?, line: Int? = nil, column: Int? = nil) {
         self.file = file
         self.line = line
-        self.character = character
+        self.column = column
     }
 
     /// Creates a `Location` based on a `SwiftSource` and a byte-offset into the file.
@@ -45,10 +45,10 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
         self.file = file.path
         if let lineAndCharacter = file.stringView.lineAndCharacter(forByteOffset: offset) {
             line = lineAndCharacter.line
-            character = lineAndCharacter.character
+            column = lineAndCharacter.character
         } else {
             line = nil
-            character = nil
+            column = nil
         }
     }
 
@@ -70,10 +70,10 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
         self.file = file.path
         if let lineAndCharacter = file.stringView.lineAndCharacter(forCharacterOffset: offset) {
             line = lineAndCharacter.line
-            character = lineAndCharacter.character
+            column = lineAndCharacter.character
         } else {
             line = nil
-            character = nil
+            column = nil
         }
     }
 
@@ -97,7 +97,7 @@ struct Location: CustomStringConvertible, Comparable, Codable, Sendable {
         if lhs.line != rhs.line {
             return lhs.line < rhs.line
         }
-        return lhs.character < rhs.character
+        return lhs.column < rhs.column
     }
 }
 

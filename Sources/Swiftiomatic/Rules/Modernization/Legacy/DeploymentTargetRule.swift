@@ -89,7 +89,7 @@ extension DeploymentTargetRule {
       case .poundAvailable:
         violationType = .condition
       default:
-        queuedFatalError("Unknown availability check type.")
+        Console.fatalError("Unknown availability check type.")
       }
 
       for elem in node.availabilityArguments {

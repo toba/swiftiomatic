@@ -321,10 +321,12 @@ enum SwiftUIPropertiesSortMode: String, CaseIterable {
     case firstAppearanceSort = "first-appearance-sort"
 }
 
-enum EquatableMacro: Equatable, RawRepresentable, CustomStringConvertible {
-    /// No equatable macro
+/// A named macro with an associated module, used for configurable macro options
+/// such as an Equatable conformance macro or a URL literal macro.
+enum NamedMacro: Equatable, RawRepresentable, CustomStringConvertible {
+    /// No macro configured
     case none
-    /// The name and the module for the macro, e.g. `@Equatable,EquatableMacroLib`
+    /// The name and the module for the macro, e.g. `@Equatable,EquatableMacroLib` or `#URL,URLFoundation`
     case macro(String, module: String)
 
     init?(rawValue: String) {
@@ -357,37 +359,6 @@ enum BlankLineAfterSwitchCase: String, CaseIterable {
     case always
     /// Add blank lines after multiline switch cases only
     case multilineOnly = "multiline-only"
-}
-
-enum URLMacro: Equatable, RawRepresentable, CustomStringConvertible {
-    /// No URL macro
-    case none
-    /// The name and the module for the macro, e.g. `#URL,URLFoundation`
-    case macro(String, module: String)
-
-    init?(rawValue: String) {
-        let components = rawValue.components(separatedBy: ",")
-        if components.count == 2 {
-            self = .macro(components[0], module: components[1])
-        } else if rawValue == "none" {
-            self = .none
-        } else {
-            return nil
-        }
-    }
-
-    var rawValue: String {
-        switch self {
-            case .none:
-                return "none"
-            case let .macro(name, module: module):
-                return "\(name),\(module)"
-        }
-    }
-
-    var description: String {
-        rawValue
-    }
 }
 
 /// Mode for preferring synthesized memberwise init for internal structs
@@ -552,8 +523,8 @@ package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
     var preservedPrivateDeclarations: Set<String>
     var additionalXCTestSymbols: Set<String>
     var defaultTestSuiteAttributes: [String]
-    var equatableMacro: EquatableMacro
-    var urlMacro: URLMacro
+    var equatableMacro: NamedMacro
+    var urlMacro: NamedMacro
     var preferFileMacro: Bool
     var lineBetweenConsecutiveGuards: Bool
     var blankLineAfterSwitchCase: BlankLineAfterSwitchCase
@@ -698,8 +669,8 @@ package struct FormatOptions: CustomStringConvertible, @unchecked Sendable {
         preservedPrivateDeclarations: Set<String> = [],
         additionalXCTestSymbols: Set<String> = [],
         defaultTestSuiteAttributes: [String] = [],
-        equatableMacro: EquatableMacro = .none,
-        urlMacro: URLMacro = .none,
+        equatableMacro: NamedMacro = .none,
+        urlMacro: NamedMacro = .none,
         preferFileMacro: Bool = true,
         lineBetweenConsecutiveGuards: Bool = false,
         blankLineAfterSwitchCase: BlankLineAfterSwitchCase = .multilineOnly,

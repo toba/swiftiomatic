@@ -20,8 +20,8 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
     /// The justification for this violation.
     let reason: String
 
-    /// The confidence level of this violation. `nil` means high confidence.
-    let confidence: Confidence?
+    /// The confidence level of this violation.
+    let confidence: Confidence
 
     /// A suggested fix for the violation.
     let suggestion: String?
@@ -50,7 +50,7 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
         severity: ViolationSeverity = .warning,
         location: Location,
         reason: String? = nil,
-        confidence: Confidence? = nil,
+        confidence: Confidence = .high,
         suggestion: String? = nil,
     ) {
         ruleIdentifier = ruleDescription.identifier
@@ -65,7 +65,7 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
         if self.reason.trimmingTrailingCharacters(in: .whitespaces).last == ".",
            RuleRegistry.shared.rule(forID: ruleIdentifier) != nil
         {
-            queuedFatalError(
+            Console.fatalError(
                 """
                 Reasons shall not end with a period. Got "\(self
                     .reason)". Either rewrite the rule's description \
@@ -104,10 +104,10 @@ package struct RuleViolation: CustomStringConvertible, Codable, Hashable {
             ruleID: ruleIdentifier,
             source: .lint,
             severity: severity == .error ? .error : .warning,
-            confidence: confidence ?? .high,
+            confidence: confidence,
             file: location.file ?? "<unknown>",
             line: location.line ?? 0,
-            column: location.character ?? 0,
+            column: location.column ?? 0,
             message: reason,
             suggestion: suggestion,
             canAutoFix: isCorrectableType,

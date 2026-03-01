@@ -12,7 +12,7 @@ struct MultilineParametersConfiguration: SeverityBasedRuleConfiguration {
       return
     }
     guard maxNumberOfSingleLineParameters >= 1 else {
-      Issue.inconsistentConfiguration(
+      SwiftiomaticError.inconsistentConfiguration(
         ruleID: Parent.identifier,
         message: "Option '\($maxNumberOfSingleLineParameters.key)' should be >= 1.",
       ).print()
@@ -20,7 +20,7 @@ struct MultilineParametersConfiguration: SeverityBasedRuleConfiguration {
     }
 
     if maxNumberOfSingleLineParameters > 1, !allowsSingleLine {
-      Issue.inconsistentConfiguration(
+      SwiftiomaticError.inconsistentConfiguration(
         ruleID: Parent.identifier,
         message: """
           Option '\($maxNumberOfSingleLineParameters.key)' has no effect when \
@@ -31,7 +31,7 @@ struct MultilineParametersConfiguration: SeverityBasedRuleConfiguration {
   }
 
   typealias Parent = MultilineParametersRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$allowsSingleLine.key] {
       try allowsSingleLine.apply(value, ruleID: Parent.identifier)
@@ -40,6 +40,6 @@ struct MultilineParametersConfiguration: SeverityBasedRuleConfiguration {
       try maxNumberOfSingleLineParameters.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

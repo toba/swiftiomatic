@@ -13,12 +13,12 @@ extension FormatRule {
         formatter.isConstant(at: prevIndex),
         let startIndex = formatter.startOfValue(at: prevIndex),
         !formatter.isOperator(
-          at: formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: startIndex),
+          at: formatter.index(of: .nonSpaceOrCommentOrLineBreak, before: startIndex),
         ),
         let nextIndex = formatter.index(of: .nonSpace, after: i),
         !formatter.isConstant(at: nextIndex)
           || formatter.isOperator(
-            at: formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: nextIndex),
+            at: formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: nextIndex),
           ),
         let endIndex = formatter.endOfExpression(
           at: nextIndex,
@@ -54,7 +54,7 @@ extension FormatRule {
 
 extension Formatter {
   func valuesInRangeAreConstant(_ range: CountableRange<Int>) -> Bool {
-    var index = index(of: .nonSpaceOrCommentOrLinebreak, in: range)
+    var index = index(of: .nonSpaceOrCommentOrLineBreak, in: range)
     while var i = index {
       switch tokens[i] {
       case .startOfScope where isConstant(at: i):
@@ -65,7 +65,7 @@ extension Formatter {
         fallthrough
       case _ where isConstant(at: i), .delimiter(","), .delimiter(":"):
         index = self.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           in: i + 1..<range.upperBound,
         )
       case .identifier:

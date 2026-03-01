@@ -85,7 +85,7 @@ extension FormatRule {
         if formatter.tokens[rhsStartIndex].isOperator(".") {
           // Preserve the formatting as-is if the identifier is manually excluded
           if let identifierAfterDot = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: rhsStartIndex,
+            of: .nonSpaceOrCommentOrLineBreak, after: rhsStartIndex,
           ),
             formatter.options.preservedPropertyTypes.contains(
               formatter.tokens[identifierAfterDot].string,
@@ -110,7 +110,7 @@ extension FormatRule {
           formatter.forEachRecursiveConditionalBranch(in: conditonalBranches) { branch in
             guard
               let firstTokenInBranch = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch,
+                of: .nonSpaceOrCommentOrLineBreak, after: branch.startOfBranch,
               )
             else {
               hasInvalidConditionalBranch = true
@@ -123,7 +123,7 @@ extension FormatRule {
 
             // Preserve the formatting as-is if the identifier is manually excluded
             if let identifierAfterDot = formatter.index(
-              of: .nonSpaceOrCommentOrLinebreak, after: rhsStartIndex,
+              of: .nonSpaceOrCommentOrLineBreak, after: rhsStartIndex,
             ),
               formatter.options.preservedPropertyTypes.contains(
                 formatter.tokens[identifierAfterDot].string,
@@ -139,7 +139,7 @@ extension FormatRule {
           formatter.forEachRecursiveConditionalBranch(in: conditonalBranches) { branch in
             guard
               let dotIndex = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch,
+                of: .nonSpaceOrCommentOrLineBreak, after: branch.startOfBranch,
               )
             else { return }
 
@@ -155,7 +155,7 @@ extension FormatRule {
         else if type.isArray,
           formatter.tokens[rhsStartIndex] == .startOfScope("["),
           let nextToken = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: rhsStartIndex,
           ),
           formatter.tokens[nextToken] == .endOfScope("]"),
@@ -171,11 +171,11 @@ extension FormatRule {
         else if type.isDictionary,
           formatter.tokens[rhsStartIndex] == .startOfScope("["),
           let secondToken = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: rhsStartIndex,
+            of: .nonSpaceOrCommentOrLineBreak, after: rhsStartIndex,
           ),
           formatter.tokens[secondToken] == .delimiter(":"),
           let thirdToken = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: secondToken,
           ),
           formatter.tokens[thirdToken] == .endOfScope("]"),
@@ -191,7 +191,7 @@ extension FormatRule {
         else if type.isSet,
           formatter.tokens[rhsStartIndex] == .startOfScope("["),
           let nextToken = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: rhsStartIndex,
           ),
           formatter.tokens[nextToken] == .endOfScope("]"),
@@ -221,11 +221,11 @@ extension FormatRule {
           ),
           property.type == nil,
           let indexAfterIdentifier = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: property.identifierIndex,
+            of: .nonSpaceOrCommentOrLineBreak, after: property.identifierIndex,
           ),
           formatter.tokens[indexAfterIdentifier] != .delimiter(":"),
           let indexAfterType = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: rhsType.range.upperBound,
+            of: .nonSpaceOrCommentOrLineBreak, after: rhsType.range.upperBound,
           ),
           [.operator(".", .infix), .startOfScope("(")]
             .contains(formatter.tokens[indexAfterType]),
@@ -268,7 +268,7 @@ extension FormatRule {
           }
 
           let initializerHasNoArguments =
-            formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: indexAfterType)
+            formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: indexAfterType)
             == endOfInitCallScope
 
           // If this is an empty array initializer, use `[]` instead of `.init()`
@@ -316,7 +316,7 @@ extension FormatRule {
           // Don't convert `let foo = Foo.self` to `let foo: Foo = .self`, since `.self` returns the metatype
           let symbolsToExclude = formatter.options.preservedPropertyTypes + ["self"]
           if let indexAfterDot = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: indexAfterType,
+            of: .nonSpaceOrCommentOrLineBreak, after: indexAfterType,
           ),
             symbolsToExclude.contains(formatter.tokens[indexAfterDot].string)
           {

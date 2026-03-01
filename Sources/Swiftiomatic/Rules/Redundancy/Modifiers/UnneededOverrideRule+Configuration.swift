@@ -6,7 +6,7 @@ struct UnneededOverrideConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "excluded_methods")
   private(set) var excludedMethods = Set<String>()
   typealias Parent = UnneededOverrideRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$affectInits.key] {
       try affectInits.apply(value, ruleID: Parent.identifier)
@@ -15,6 +15,6 @@ struct UnneededOverrideConfiguration: SeverityBasedRuleConfiguration {
       try excludedMethods.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

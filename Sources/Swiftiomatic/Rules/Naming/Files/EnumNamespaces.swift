@@ -12,14 +12,14 @@ extension FormatRule {
     formatter.forEachToken(where: { [.keyword("class"), .keyword("struct")].contains($0) }) {
       i, token in
       if token == .keyword("class") {
-        guard let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i),
+        guard let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: i),
           // exit if structs only
           formatter.options.enumNamespaces != .structsOnly,
           // exit if class is a type modifier
           !(formatter.tokens[nextIndex].isKeywordOrAttribute
             || formatter.isModifier(at: nextIndex)),
           // exit for class as protocol conformance
-          formatter.last(.nonSpaceOrCommentOrLinebreak, before: i) != .delimiter(":"),
+          formatter.last(.nonSpaceOrCommentOrLineBreak, before: i) != .delimiter(":"),
           // exit if not closed for extension
           formatter.modifiersForDeclaration(at: i, contains: "final")
         else {
@@ -28,7 +28,7 @@ extension FormatRule {
       }
       guard let braceIndex = formatter.index(of: .startOfScope("{"), after: i),
         // exit if import statement
-        formatter.last(.nonSpaceOrCommentOrLinebreak, before: i) != .keyword("import"),
+        formatter.last(.nonSpaceOrCommentOrLineBreak, before: i) != .keyword("import"),
         // exit if has attribute(s)
         !formatter.modifiersForDeclaration(at: i, contains: { $1.isAttribute }),
         // exit if type is conforming any other types
@@ -68,7 +68,7 @@ extension FormatRule {
 extension Formatter {
   func rangeHostsOnlyStaticMembersAtTopLevel(_ range: Range<Int>) -> Bool {
     // exit for empty declarations
-    guard next(.nonSpaceOrCommentOrLinebreak, in: range) != nil else {
+    guard next(.nonSpaceOrCommentOrLineBreak, in: range) != nil else {
       return false
     }
 
@@ -123,7 +123,7 @@ extension Formatter {
       guard case .identifier("self") = tokens[i] else {
         continue
       }
-      if let token = last(.nonSpaceOrCommentOrLinebreak, before: i),
+      if let token = last(.nonSpaceOrCommentOrLineBreak, before: i),
         [.operator("=", .infix), .delimiter(":"), .startOfScope("(")].contains(token)
       {
         return true

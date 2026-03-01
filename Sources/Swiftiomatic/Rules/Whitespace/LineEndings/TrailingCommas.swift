@@ -68,7 +68,7 @@ extension FormatRule {
         // like `func foo<T>(args...)` or `Foo<Bar>(args...)`.
         else if formatter.options.swiftVersion >= "6.1",
           let tokenBeforeStartOfScope = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, before: startOfScope,
+            of: .nonSpaceOrCommentOrLineBreak, before: startOfScope,
           ),
           formatter.tokens[tokenBeforeStartOfScope] == .endOfScope(">")
         {
@@ -102,7 +102,7 @@ extension FormatRule {
           // There is also a bug in Swift 6.2 where closure tuple return types don't support trailing commas.
           if formatter.options.swiftVersion == "6.2",
             let tokenBeforeStartOfScope = formatter.index(
-              of: .nonSpaceOrCommentOrLinebreak, before: startOfScope,
+              of: .nonSpaceOrCommentOrLineBreak, before: startOfScope,
             ),
             formatter.tokens[tokenBeforeStartOfScope] == .operator("->", .infix),
             formatter.isInClosureArguments(at: tokenBeforeStartOfScope)
@@ -119,7 +119,7 @@ extension FormatRule {
         // where trailing commas are allowed in Swift 6.2 and later.
         else if formatter.options.swiftVersion >= "6.1",
           let tokenBeforeStartOfScope = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, before: startOfScope,
+            of: .nonSpaceOrCommentOrLineBreak, before: startOfScope,
           )
         {
           // `{ (...) }`, `return (...)` etc are always tuple values
@@ -154,7 +154,7 @@ extension FormatRule {
         // In Swift 6.2 and later, trailing commas are always supported in closure argument lists.
         if formatter.options.swiftVersion >= "6.2",
           let tokenAfterEndOfScope = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: i,
           ),
           [.identifier("async"), .keyword("throws"), .operator("->", .infix)].contains(
@@ -178,11 +178,11 @@ extension FormatRule {
           // https://github.com/swiftlang/swift/issues/81474
           // All of these cases have the form `keyword identifier<...>`, like `class Foo<...>` or `func foo<...>`.
           if let identifierIndex = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, before: startOfScope,
+            of: .nonSpaceOrCommentOrLineBreak, before: startOfScope,
           ),
             formatter.tokens[identifierIndex].isIdentifier,
             let keywordIndex = formatter.index(
-              of: .nonSpaceOrCommentOrLinebreak, before: identifierIndex,
+              of: .nonSpaceOrCommentOrLineBreak, before: identifierIndex,
             ),
             let keyword = formatter.token(at: keywordIndex),
             keyword.isKeyword,
@@ -314,10 +314,10 @@ extension Formatter {
 
     // Remove or insert the comma
     switch tokens[prevTokenIndex] {
-    case .linebreak:
+    case .lineBreak:
       guard
         let prevTokenIndex = index(
-          of: .nonSpaceOrCommentOrLinebreak, before: prevTokenIndex + 1,
+          of: .nonSpaceOrCommentOrLineBreak, before: prevTokenIndex + 1,
         )
       else {
         break
@@ -347,8 +347,8 @@ extension Formatter {
   /// Returns the range of each comma-separated element in the given range
   func commaSeparatedElementsInScope(startOfScope: Int) -> [ClosedRange<Int>] {
     guard let endOfScope = endOfScope(at: startOfScope),
-      let firstTokenInScope = index(of: .nonSpaceOrLinebreak, after: startOfScope),
-      let lastTokenInScope = index(of: .nonSpaceOrLinebreak, before: endOfScope),
+      let firstTokenInScope = index(of: .nonSpaceOrLineBreak, after: startOfScope),
+      let lastTokenInScope = index(of: .nonSpaceOrLineBreak, before: endOfScope),
       firstTokenInScope != endOfScope,
       firstTokenInScope < lastTokenInScope
     else { return [] }
@@ -357,8 +357,8 @@ extension Formatter {
     var commasSeparatedElements = [ClosedRange<Int>]()
 
     while let nextCommaIndex = index(of: .delimiter(","), in: currentIndex..<endOfScope),
-      let tokenBeforeComma = index(of: .nonSpaceOrLinebreak, before: nextCommaIndex),
-      let tokenAfterComma = index(of: .nonSpaceOrCommentOrLinebreak, after: nextCommaIndex)
+      let tokenBeforeComma = index(of: .nonSpaceOrLineBreak, before: nextCommaIndex),
+      let tokenAfterComma = index(of: .nonSpaceOrCommentOrLineBreak, after: nextCommaIndex)
     {
       commasSeparatedElements.append(currentIndex...tokenBeforeComma)
       currentIndex = tokenAfterComma

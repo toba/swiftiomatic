@@ -7,9 +7,9 @@ extension FormatRule {
     sharedOptions: ["linebreaks"],
   ) { formatter in
     formatter.forEach(.keyword("import")) { currentImportIndex, _ in
-      guard let endOfLine = formatter.index(of: .linebreak, after: currentImportIndex),
+      guard let endOfLine = formatter.index(of: .lineBreak, after: currentImportIndex),
         let nextImportIndex = formatter.index(
-          of: .nonSpaceOrLinebreak, after: endOfLine,
+          of: .nonSpaceOrLineBreak, after: endOfLine,
           if: {
             $0 == .keyword("@testable") || $0 == .keyword("import")
           },

@@ -1,15 +1,15 @@
 ---
 # 4qf-xuu
 title: Fix all Swift review findings in Rules/
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-03-01T06:27:04Z
-updated_at: 2026-03-01T06:44:03Z
+updated_at: 2026-03-01T06:50:04Z
 sync:
     github:
         issue_number: "118"
-        synced_at: "2026-03-01T06:46:19Z"
+        synced_at: "2026-03-01T08:00:21Z"
 ---
 
 Fix 40 findings (12 high, 18 medium, 10 low) from swift-review audit of Sources/Swiftiomatic/Rules/.

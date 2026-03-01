@@ -16,15 +16,15 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "forbidden_pattern")
   private var forbiddenPattern: String?
 
-  private var _forbiddenRegex: RegularExpression?
-  private var _requiredRegex: RegularExpression?
+  private var _forbiddenRegex: CachedRegex?
+  private var _requiredRegex: CachedRegex?
 
   // sm:disable:next force_try
-  private static let defaultRegex = try! RegularExpression(
+  private static let defaultRegex = try! CachedRegex(
     pattern: "\\bCopyright\\b", options: [.caseInsensitive],
   )
 
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     guard let configuration = configuration as? [String: String] else {
       throw .invalidConfiguration(ruleID: Parent.identifier)
     }
@@ -36,7 +36,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
       self.requiredString = requiredString
       if !requiredString.contains(Self.fileNamePlaceholder) {
         _requiredRegex = try .from(
-          pattern: RegularExpression.escapedPattern(for: requiredString),
+          pattern: CachedRegex.escapedPattern(for: requiredString),
           for: Parent.identifier,
         )
       }
@@ -51,7 +51,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
       self.forbiddenString = forbiddenString
       if !forbiddenString.contains(Self.fileNamePlaceholder) {
         _forbiddenRegex = try .from(
-          pattern: RegularExpression.escapedPattern(for: forbiddenString),
+          pattern: CachedRegex.escapedPattern(for: forbiddenString),
           for: Parent.identifier,
         )
       }
@@ -62,7 +62,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
       }
     }
 
-    if let severityString = configuration[$severityConfiguration.key] as? String {
+    if let severityString = configuration[$severityConfiguration.key] {
       try severityConfiguration.apply(configuration: ["severity": severityString])
     }
   }
@@ -71,35 +71,35 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
     for file: SwiftSource,
     using pattern: String,
     escapeFileName: Bool,
-  ) -> RegularExpression? {
+  ) -> CachedRegex? {
     let replacedPattern =
       file.path.map { path in
         let fileName = path.bridge().lastPathComponent
         let escapedName =
-          escapeFileName ? RegularExpression.escapedPattern(for: fileName) : fileName
+          escapeFileName ? CachedRegex.escapedPattern(for: fileName) : fileName
         return pattern.replacingOccurrences(
           of: Self.fileNamePlaceholder,
           with: escapedName,
         )
       } ?? pattern
-    return try? RegularExpression(pattern: replacedPattern)
+    return try? CachedRegex(pattern: replacedPattern)
   }
 
   private func regexFromString(for file: SwiftSource, using string: String)
-    -> RegularExpression?
+    -> CachedRegex?
   {
     // For string matching, escape the pattern so it matches literally
-    let escapedPattern = RegularExpression.escapedPattern(for: string)
+    let escapedPattern = CachedRegex.escapedPattern(for: string)
     return makeRegex(for: file, using: escapedPattern, escapeFileName: false)
   }
 
   private func regexFromPattern(for file: SwiftSource, using pattern: String)
-    -> RegularExpression?
+    -> CachedRegex?
   {
     makeRegex(for: file, using: pattern, escapeFileName: true)
   }
 
-  func forbiddenRegex(for file: SwiftSource) -> RegularExpression? {
+  func forbiddenRegex(for file: SwiftSource) -> CachedRegex? {
     if let cached = _forbiddenRegex {
       return cached
     }
@@ -119,7 +119,7 @@ struct FileHeaderConfiguration: SeverityBasedRuleConfiguration {
     return nil
   }
 
-  func requiredRegex(for file: SwiftSource) -> RegularExpression? {
+  func requiredRegex(for file: SwiftSource) -> CachedRegex? {
     if let cached = _requiredRegex {
       return cached
     }

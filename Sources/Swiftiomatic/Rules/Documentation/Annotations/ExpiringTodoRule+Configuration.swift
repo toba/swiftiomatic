@@ -7,7 +7,7 @@ struct ExpiringTodoConfiguration: RuleConfiguration {
     fileprivate(set) var opening: String
     fileprivate(set) var closing: String
 
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
       guard let dateDelimiters = value as? [String: String],
         let openingDelimiter = dateDelimiters["opening"],
         let closingDelimiter = dateDelimiters["closing"]
@@ -51,7 +51,7 @@ struct ExpiringTodoConfiguration: RuleConfiguration {
   @ConfigurationElement(key: "date_separator")
   private(set) var dateSeparator = "/"
   typealias Parent = ExpiringTodoRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     if let value = configuration[$approachingExpirySeverity.key] {
       try approachingExpirySeverity.apply(value, ruleID: Parent.identifier)
     }
@@ -74,6 +74,6 @@ struct ExpiringTodoConfiguration: RuleConfiguration {
       try dateSeparator.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

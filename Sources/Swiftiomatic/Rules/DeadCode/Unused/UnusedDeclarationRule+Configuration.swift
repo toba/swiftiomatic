@@ -9,7 +9,7 @@ struct UnusedDeclarationConfiguration: SeverityBasedRuleConfiguration {
   )
   private(set) var relatedUSRsToSkip = Set<String>()
   typealias Parent = UnusedDeclarationRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$includePublicAndOpen.key] {
       try includePublicAndOpen.apply(value, ruleID: Parent.identifier)
@@ -18,6 +18,6 @@ struct UnusedDeclarationConfiguration: SeverityBasedRuleConfiguration {
       try relatedUSRsToSkip.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

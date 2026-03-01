@@ -7,6 +7,10 @@ import Foundation
 enum YamlParser {
     /// Parses the input YAML string as an untyped dictionary.
     ///
+    /// YAML is inherently untyped — the Yams library returns `Any` for all values.
+    /// Callers are responsible for casting values to concrete types immediately
+    /// after parsing (see ``Configuration/loadUnified(from:)``).
+    ///
     /// - parameter yaml: YAML-formatted string.
     /// - parameter env:  The environment to use to expand variables in the YAML.
     ///
@@ -16,14 +20,14 @@ enum YamlParser {
     static func parse(
         _ yaml: String,
         env: [String: String] = ProcessInfo.processInfo.environment,
-    ) throws(Issue) -> [String: Any] {
+    ) throws(SwiftiomaticError) -> [String: Any] {
         do {
             return try Yams.load(
                 yaml: yaml, .default,
                 .customConstructor(env: env),
             ) as? [String: Any] ?? [:]
         } catch {
-            throw Issue.yamlParsing("\(error)")
+            throw SwiftiomaticError.yamlParsing("\(error)")
         }
     }
 }

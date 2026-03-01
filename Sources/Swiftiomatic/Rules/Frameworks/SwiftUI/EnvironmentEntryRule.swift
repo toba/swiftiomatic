@@ -8,7 +8,7 @@ struct EnvironmentEntryRule: Rule {
     name: "Environment Entry",
     description: "SwiftUI EnvironmentKey conformances can be replaced with the @Entry macro",
     scope: .suggest,
-    minSwiftVersion: .six,
+    minSwiftVersion: .v6,
     nonTriggeringExamples: [
       Example(
         """

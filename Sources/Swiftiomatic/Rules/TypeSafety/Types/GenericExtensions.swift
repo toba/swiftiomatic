@@ -12,14 +12,14 @@ extension FormatRule {
       guard  // Angle brackets syntax in extensions is only supported in Swift 5.7+
         formatter.options.swiftVersion >= "5.7",
         let typeNameIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: extensionIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: extensionIndex,
         ),
         let extendedType = formatter.token(at: typeNameIndex)?.string,
         // If there's already an open angle bracket after the generic type name
         // then the extension is already using the target syntax, so there's
         // no work to do
         formatter
-          .next(.nonSpaceOrCommentOrLinebreak, after: typeNameIndex) != .startOfScope("<"),
+          .next(.nonSpaceOrCommentOrLineBreak, after: typeNameIndex) != .startOfScope("<"),
         let openBraceIndex = formatter.index(of: .startOfScope("{"), after: typeNameIndex),
         let whereIndex = formatter.index(of: .keyword("where"), after: typeNameIndex),
         whereIndex < openBraceIndex
@@ -117,7 +117,7 @@ extension FormatRule {
       formatter.removeTokens(in: sourceRangesToRemove)
 
       // if the where clause is completely empty now, we need to the where token as well
-      if let newOpenBraceIndex = formatter.index(of: .nonSpaceOrLinebreak, after: whereIndex),
+      if let newOpenBraceIndex = formatter.index(of: .nonSpaceOrLineBreak, after: whereIndex),
         formatter.token(at: newOpenBraceIndex) == .startOfScope("{")
       {
         formatter.removeTokens(in: whereIndex..<newOpenBraceIndex)

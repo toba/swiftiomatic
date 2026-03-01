@@ -41,11 +41,11 @@ extension FormatRule {
         let range = arg.valueRange
         guard
           let first = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             in: range.lowerBound..<range.upperBound + 1,
           ),
           let last = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, before: range.upperBound + 1,
+            of: .nonSpaceOrCommentOrLineBreak, before: range.upperBound + 1,
             if: { _ in true },
           ),
           formatter.tokens[first] == .startOfScope("{"),
@@ -59,7 +59,7 @@ extension FormatRule {
 
       // Ensure the function doesn't already have a trailing closure
       guard let functionCallClosingParen = formatter.endOfScope(at: functionOpenParen),
-        formatter.next(.nonSpaceOrCommentOrLinebreak, after: functionCallClosingParen)
+        formatter.next(.nonSpaceOrCommentOrLineBreak, after: functionCallClosingParen)
           != .startOfScope("{")
       else { return }
 
@@ -79,7 +79,7 @@ extension FormatRule {
           ),
           formatter.index(of: .endOfScope("}"), before: openingBraceIndex) == nil,
           var startIndex = formatter.index(
-            of: .nonSpaceOrLinebreak,
+            of: .nonSpaceOrLineBreak,
             before: openingBraceIndex,
           )
         else { return }
@@ -125,7 +125,7 @@ extension FormatRule {
             at: functionCallClosingParen,
           )...formatter.endOfLine(at: functionCallClosingParen)
         let tokenBeforeClosingParen = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: functionCallClosingParen,
+          of: .nonSpaceOrCommentOrLineBreak, before: functionCallClosingParen,
         )
 
         if formatter.tokens(in: lineWithClosingParen)?.string.trimmingCharacters(
@@ -151,7 +151,7 @@ extension FormatRule {
 
           if index == trailingClosures.indices.first,
             let indexBeforeFirstClosure = formatter.index(
-              of: .nonSpaceOrCommentOrLinebreak, before: closure.valueRange.lowerBound,
+              of: .nonSpaceOrCommentOrLineBreak, before: closure.valueRange.lowerBound,
             )
           {
             // If all of the arguments were closures, remove the parens completely
@@ -181,7 +181,7 @@ extension FormatRule {
 
           else if let closureLabelIndex = closure.labelIndex?.autoUpdating(in: formatter),
             let commaIndex = formatter.index(
-              of: .nonSpaceOrCommentOrLinebreak, before: closureLabelIndex,
+              of: .nonSpaceOrCommentOrLineBreak, before: closureLabelIndex,
             ),
             formatter.tokens[commaIndex] == .delimiter(",")
           {

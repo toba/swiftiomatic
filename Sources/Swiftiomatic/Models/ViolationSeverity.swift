@@ -3,9 +3,9 @@ package enum ViolationSeverity: String, AcceptableByConfigurationElement, Compar
     Codable,
     Sendable, InlinableOption
 {
-    /// Non-fatal. Non-fatal severity.
+    /// Non-fatal severity. Issues are reported but do not cause a non-zero exit code.
     case warning
-    /// Fatal. Fatal severity.
+    /// Fatal severity. Issues cause a non-zero exit code and block CI.
     case error
 
     // MARK: Comparable

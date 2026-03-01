@@ -69,7 +69,7 @@ enum Glob {
                     return fullPath
                 }
         } catch {
-            Issue.genericWarning("Error parsing file system item: \(error)").print()
+            SwiftiomaticError.genericWarning("Error parsing file system item: \(error)").print()
         }
 
         // Check the base directory for the glob star as well.

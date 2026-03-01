@@ -7,7 +7,7 @@ import Testing
     let defaultValue = IndentationWidthConfiguration().indentationWidth
 
     for indentation in [0, -1, -5] {
-      let console = try await Issue.captureConsole {
+      let console = try await Console.captureConsole {
         var testee = IndentationWidthConfiguration()
         try testee.apply(configuration: ["indentation_width": indentation])
 

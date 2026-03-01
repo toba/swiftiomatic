@@ -9,16 +9,16 @@ struct CyclomaticComplexityConfiguration: RuleConfiguration {
   }
 
   typealias Parent = CyclomaticComplexityRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     do {
       try length.apply(configuration, ruleID: Parent.identifier)
-    } catch let issue where issue == Issue.nothingApplied(ruleID: Parent.identifier) {
+    } catch let issue where issue == SwiftiomaticError.nothingApplied(ruleID: Parent.identifier) {
       // Acceptable. Continue.
     }
     if let value = configuration[$ignoresCaseStatements.key] {
       try ignoresCaseStatements.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

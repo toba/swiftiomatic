@@ -34,7 +34,7 @@ import Testing
     var configuration = ImplicitReturnConfiguration()
     let config = ["included": ["foreach"]] as [String: any Sendable]
 
-    checkError(Issue.invalidConfiguration(ruleID: ImplicitReturnRule.identifier)) {
+    checkError(SwiftiomaticError.invalidConfiguration(ruleID: ImplicitReturnRule.identifier)) {
       try configuration.apply(configuration: config)
     }
   }

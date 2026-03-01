@@ -20,7 +20,7 @@ extension FormatRule {
         .keyword("enum"):
         isSpaceableScopeType =
           (formatter
-            .last(.nonSpaceOrCommentOrLinebreak, before: i) != .keyword("import"))
+            .last(.nonSpaceOrCommentOrLineBreak, before: i) != .keyword("import"))
       case .keyword("func"), .keyword("var"):
         isSpaceableScopeType = false
       case .startOfScope("{"):
@@ -34,7 +34,7 @@ extension FormatRule {
             before: i,
           ),
           formatter
-            .lastIndex(of: .linebreak, in: openingBraceIndex + 1..<i) != nil
+            .lastIndex(of: .lineBreak, in: openingBraceIndex + 1..<i) != nil
         else {
           // Inline braces
           break
@@ -53,25 +53,25 @@ extension FormatRule {
         {
           i = closingParenIndex
         }
-        guard let nextTokenIndex = formatter.index(of: .nonSpaceOrLinebreak, after: i),
+        guard let nextTokenIndex = formatter.index(of: .nonSpaceOrLineBreak, after: i),
           formatter.isEnabled, formatter.options.insertBlankLines,
           let firstLinebreakIndex = formatter.index(
-            of: .linebreak,
+            of: .lineBreak,
             in: i + 1..<nextTokenIndex,
           ),
           formatter.index(
-            of: .linebreak,
+            of: .lineBreak,
             in: firstLinebreakIndex + 1..<nextTokenIndex,
           ) == nil
         else {
           break
         }
         if var nextNonCommentIndex =
-          formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: i)
+          formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: i)
         {
           while formatter.tokens[nextNonCommentIndex] == .startOfScope("#if"),
             let nextIndex = formatter.index(
-              of: .nonSpaceOrCommentOrLinebreak,
+              of: .nonSpaceOrCommentOrLineBreak,
               after: formatter.endOfLine(at: nextNonCommentIndex),
             )
           {
@@ -88,7 +88,7 @@ extension FormatRule {
               before: i,
             ),
               formatter.last(
-                .nonSpaceOrCommentOrLinebreak,
+                .nonSpaceOrCommentOrLineBreak,
                 before: previousBraceIndex,
               )
                 == .keyword("repeat")
@@ -101,7 +101,7 @@ extension FormatRule {
                 of: .delimiter(":"),
                 after: nextNonCommentIndex,
               ),
-              formatter.next(.nonSpaceOrCommentOrLinebreak, after: colonIndex)
+              formatter.next(.nonSpaceOrCommentOrLineBreak, after: colonIndex)
                 == .startOfScope("{")
             {
               break outer

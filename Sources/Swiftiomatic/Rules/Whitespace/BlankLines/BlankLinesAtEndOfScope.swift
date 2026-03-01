@@ -21,7 +21,7 @@ extension FormatRule {
         .nonSpaceOrComment,
         after: endOfScope,
       ),
-        !nextTokenAfterClosingScope.isLinebreak
+        !nextTokenAfterClosingScope.isLineBreak
       {
         return
       }

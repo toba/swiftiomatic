@@ -18,11 +18,11 @@ extension FormatRule {
         in: startIndex + 1..<endIndex,
       ),
         let nextIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: commaIndex,
         )
       {
-        if formatter.index(of: .linebreak, in: commaIndex..<nextIndex) == nil {
+        if formatter.index(of: .lineBreak, in: commaIndex..<nextIndex) == nil {
           formatter.insertLinebreak(at: commaIndex + 1)
           let delta = formatter.insertSpace(indent, at: commaIndex + 2)
           endIndex += 1 + delta

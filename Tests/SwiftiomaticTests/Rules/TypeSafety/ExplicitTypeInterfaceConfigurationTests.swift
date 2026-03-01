@@ -24,7 +24,7 @@ import Testing
   }
 
   @Test func invalidKeyInCustomConfiguration() async throws {
-    let console = try await Issue.captureConsole {
+    let console = try await Console.captureConsole {
       var config = ExplicitTypeInterfaceConfiguration()
       try config.apply(configuration: ["invalidKey": "error"])
     }
@@ -36,14 +36,14 @@ import Testing
 
   @Test func invalidTypeOfCustomConfiguration() {
     var config = ExplicitTypeInterfaceConfiguration()
-    checkError(Issue.invalidConfiguration(ruleID: ExplicitTypeInterfaceRule.identifier)) {
+    checkError(SwiftiomaticError.invalidConfiguration(ruleID: ExplicitTypeInterfaceRule.identifier)) {
       try config.apply(configuration: ["severity": "invalidKey"])
     }
   }
 
   @Test func invalidTypeOfValueInCustomConfiguration() {
     var config = ExplicitTypeInterfaceConfiguration()
-    checkError(Issue.invalidConfiguration(ruleID: ExplicitTypeInterfaceRule.identifier)) {
+    checkError(SwiftiomaticError.invalidConfiguration(ruleID: ExplicitTypeInterfaceRule.identifier)) {
       try config.apply(configuration: ["severity": "foo"])
     }
   }

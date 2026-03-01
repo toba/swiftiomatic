@@ -10,7 +10,7 @@ extension FormatRule {
     formatter.forEach(.identifier("filter")) { filterIndex, _ in
       guard
         let nextIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: filterIndex,
         )
       else { return }
@@ -24,12 +24,12 @@ extension FormatRule {
 
       if formatter.tokens[nextIndex] == .startOfScope("("),
         let startOfClosureIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: nextIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: nextIndex,
         ),
         formatter.tokens[startOfClosureIndex] == .startOfScope("{"),
         let endOfClosureIndex = formatter.endOfScope(at: startOfClosureIndex),
         let tokenAfterClosure = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: endOfClosureIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: endOfClosureIndex,
         ),
         formatter.tokens[tokenAfterClosure] == .endOfScope(")")
       {
@@ -55,11 +55,11 @@ extension FormatRule {
       // Check if there's a `.count` property access after the filter call
       guard
         let dotIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: closeParen ?? endOfClosure,
+          of: .nonSpaceOrCommentOrLineBreak, after: closeParen ?? endOfClosure,
         ),
         formatter.tokens[dotIndex] == .operator(".", .infix),
         let countIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: dotIndex,
         ),
         formatter.tokens[countIndex] == .identifier("count")
@@ -67,7 +67,7 @@ extension FormatRule {
 
       // Ensure the `.count` is a property access, not a method call.
       if let tokenAfterCount = formatter.index(
-        of: .nonSpaceOrCommentOrLinebreak, after: countIndex,
+        of: .nonSpaceOrCommentOrLineBreak, after: countIndex,
       ),
         formatter.tokens[tokenAfterCount].isStartOfScope
       {

@@ -25,7 +25,7 @@ extension FormatRule {
 
       guard
         let nextNonSpaceAndNonLinebreakIndex = formatter.index(
-          of: .nonSpaceOrLinebreak, after: endOfGuardScope,
+          of: .nonSpaceOrLineBreak, after: endOfGuardScope,
         )
       else {
         return

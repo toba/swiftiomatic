@@ -19,7 +19,7 @@ extension FormatRule {
         //
         // To guard against this, we verify that there is only
         // comment or whitespace tokens on the remainder of this line
-        guard formatter.next(.nonSpace, after: endIndex)?.isLinebreak != false else {
+        guard formatter.next(.nonSpace, after: endIndex)?.isLineBreak != false else {
           return
         }
 
@@ -36,10 +36,10 @@ extension FormatRule {
         }
         formatter.replaceToken(at: i, with: .startOfScope("//"))
         if let nextToken = formatter.token(at: i + 1),
-          nextToken.isSpaceOrLinebreak
+          nextToken.isSpaceOrLineBreak
             || nextToken
               .string == (isDocComment ? "/" : ""),
-          let nextIndex = formatter.index(of: .nonSpaceOrLinebreak, after: i + 1),
+          let nextIndex = formatter.index(of: .nonSpaceOrLineBreak, after: i + 1),
           nextIndex > i + 2
         {
           let range = i + 1..<nextIndex
@@ -56,7 +56,7 @@ extension FormatRule {
         if let i = formatter.index(
           of: .nonSpace, before: endIndex,
           if: {
-            $0.isLinebreak
+            $0.isLineBreak
           },
         ) {
           let range = i...endIndex
@@ -84,7 +84,7 @@ extension FormatRule {
               index -= 1
               endIndex -= 1
             }
-          case .linebreak:
+          case .lineBreak:
             endIndex += formatter.insertSpace(indent, at: index + 1)
             guard let i = formatter.index(of: .nonSpace, after: index) else {
               index += 1

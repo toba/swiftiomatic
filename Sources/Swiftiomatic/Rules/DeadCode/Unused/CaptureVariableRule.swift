@@ -307,7 +307,7 @@ extension SwiftSource {
       let response = try? Request.index(file: path, arguments: compilerArguments)
         .sendIfNotDisabled()
     else {
-      Issue.indexingError(path: path, ruleID: CaptureVariableRule.identifier).print()
+      SwiftiomaticError.indexingError(path: path, ruleID: CaptureVariableRule.identifier).print()
       return nil
     }
 
@@ -317,6 +317,6 @@ extension SwiftSource {
 
 extension SourceKitDictionary {
   fileprivate var usr: String? {
-    value["key.usr"] as? String
+    value["key.usr"]?.stringValue
   }
 }

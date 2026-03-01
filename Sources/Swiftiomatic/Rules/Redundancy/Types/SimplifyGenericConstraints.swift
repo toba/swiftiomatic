@@ -32,7 +32,7 @@ extension FormatRule {
       // Find the type name
       guard
         let typeNameIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: keywordIndex,
         )
       else { return }
@@ -40,7 +40,7 @@ extension FormatRule {
       // Check for generic parameters
       guard
         let genericStartIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: typeNameIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: typeNameIndex,
         ),
         formatter.tokens[genericStartIndex] == .startOfScope("<"),
         let genericEndIndex = formatter.endOfScope(at: genericStartIndex)
@@ -135,7 +135,7 @@ extension Formatter {
         // Find the last non-space/comment/linebreak token in the constraint
         guard
           let lastSignificantIndex = index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             before: conformance.sourceRange.upperBound + 1,
             if: { _ in true },
           )
@@ -177,14 +177,14 @@ extension Formatter {
     // Check if the where clause is now empty and remove it if so
     // Find the next significant token after the where keyword
     if let tokenAfterWhereIndex = index(
-      of: .nonSpaceOrCommentOrLinebreak,
+      of: .nonSpaceOrCommentOrLineBreak,
       after: whereClauseIndex,
     ) {
       let tokenAfterWhere = tokens[tokenAfterWhereIndex]
       if tokenAfterWhere == .startOfScope("{") {
         // Where clause followed by opening brace - remove everything between where and {
         removeTokens(in: whereClauseIndex.index..<tokenAfterWhereIndex)
-      } else if tokenAfterWhere.isLinebreak || tokenAfterWhere == .endOfScope("}") {
+      } else if tokenAfterWhere.isLineBreak || tokenAfterWhere == .endOfScope("}") {
         // Where clause followed by linebreak or closing brace - means it's empty
         // Remove the where keyword and any whitespace/linebreaks after it
         // Also remove the space before where if present
@@ -193,7 +193,7 @@ extension Formatter {
           ? whereClauseIndex.index - 1
           : whereClauseIndex.index
 
-        if let linebreakIndex = index(of: .linebreak, after: whereClauseIndex) {
+        if let linebreakIndex = index(of: .lineBreak, after: whereClauseIndex) {
           removeTokens(in: startIndex..<linebreakIndex)
         }
       }
@@ -206,7 +206,7 @@ extension Formatter {
         : whereClauseIndex.index
 
       var endIndex = whereClauseIndex.index + 1
-      while endIndex < tokens.count, !tokens[endIndex].isLinebreak {
+      while endIndex < tokens.count, !tokens[endIndex].isLineBreak {
         endIndex += 1
       }
       removeTokens(in: startIndex..<endIndex)
@@ -216,14 +216,14 @@ extension Formatter {
     if let openBraceIndex = index(of: .startOfScope("{"), after: whereClauseIndex.index) {
       // Search backwards from the brace to find any trailing comma
       if let commaIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak,
+        of: .nonSpaceOrCommentOrLineBreak,
         before: openBraceIndex,
         if: { $0 == .delimiter(",") },
       ) {
         removeToken(at: commaIndex)
         // Clean up extra whitespace around the removed comma
         if tokens[commaIndex - 1].isSpace,
-          tokens[commaIndex].isSpaceOrLinebreak
+          tokens[commaIndex].isSpaceOrLineBreak
         {
           removeToken(at: commaIndex - 1)
         }
@@ -244,7 +244,7 @@ extension Formatter {
       while currentIndex < updatedGenericEndIndex {
         guard
           let typeIndex = index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: currentIndex - 1,
           ),
           typeIndex < updatedGenericEndIndex
@@ -253,13 +253,13 @@ extension Formatter {
         if tokens[typeIndex].string == typeName {
           // Check if this generic parameter already has inline constraints
           let hasInlineConstraints =
-            index(of: .nonSpaceOrCommentOrLinebreak, after: typeIndex)
+            index(of: .nonSpaceOrCommentOrLineBreak, after: typeIndex)
             .map { tokens[$0] == .delimiter(":") } ?? false
 
           // Find the end of this generic parameter declaration
           // It ends at a comma or the closing >
           var endIndex = typeIndex
-          while let nextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: endIndex),
+          while let nextIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: endIndex),
             nextIndex < updatedGenericEndIndex,
             tokens[nextIndex] != .delimiter(",")
           {
@@ -300,7 +300,7 @@ extension Formatter {
 
     var currentIndex = genericStartIndex + 1
     while currentIndex < genericEndIndex {
-      guard let typeIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex - 1),
+      guard let typeIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex - 1),
         typeIndex < genericEndIndex
       else { break }
 

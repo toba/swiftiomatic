@@ -12,7 +12,7 @@ struct NoMagicNumbersConfiguration: SeverityBasedRuleConfiguration {
   )
   private(set) var allowedNumbers = Set<Double>()
   typealias Parent = NoMagicNumbersRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$testParentClasses.key] {
       try testParentClasses.apply(value, ruleID: Parent.identifier)
@@ -21,6 +21,6 @@ struct NoMagicNumbersConfiguration: SeverityBasedRuleConfiguration {
       try allowedNumbers.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

@@ -80,13 +80,12 @@ package final class Formatter {
         // Should only be run once
         assert(directives.isEmpty)
 
-        var cumulativeOptions = options
         var line = 1
         var lineIndex = 0
         var tokenIndex = 0
         for (i, token) in tokens.enumerated() {
             switch token {
-                case let .linebreak(_, ln):
+                case let .lineBreak(_, ln):
                     line = ln + 1
                     lineIndex = i
                     tokenIndex = 0
@@ -162,12 +161,12 @@ package final class Formatter {
         let line: Int
         let tokenIndex: Int
         switch tokens[index] {
-            case let .linebreak(_, ln):
+            case let .lineBreak(_, ln):
                 line = ln + 1
                 tokenIndex = 0
             default:
-                if let i = tokens[..<index].lastIndex(where: { $0.isLinebreak }),
-                   case let .linebreak(_, ln) = tokens[i]
+                if let i = tokens[..<index].lastIndex(where: { $0.isLineBreak }),
+                   case let .lineBreak(_, ln) = tokens[i]
                 {
                     line = ln + 1
                     tokenIndex = index - i - 1
@@ -587,7 +586,7 @@ extension Formatter {
         while enumerationIndex < tokens.count {
             let token = tokens[enumerationIndex]
             switch token {
-                case .startOfScope("//"), .startOfScope("/*"), .endOfScope("*/"), .linebreak:
+                case .startOfScope("//"), .startOfScope("/*"), .endOfScope("*/"), .lineBreak:
                     updateEnablement(at: enumerationIndex)
                 default:
                     break
@@ -642,7 +641,7 @@ extension Formatter {
             }
             if let scope = scopeStack.last, token.isEndOfScope(scope) {
                 scopeStack.removeLast()
-                if case .linebreak = token, scopeStack.isEmpty, matches(token) {
+                if case .lineBreak = token, scopeStack.isEmpty, matches(token) {
                     return i
                 }
             } else if token.isSwitchCaseOrDefault, scopeStack.last == .startOfScope("#if") {
@@ -738,13 +737,13 @@ extension Formatter {
                 case .startOfScope where matches(token):
                     return i
                 case .startOfScope("//")
-                where self.token(at: range.upperBound)?.isLinebreak == true:
+                where self.token(at: range.upperBound)?.isLineBreak == true:
                     break
                 case .startOfScope:
                     return nil
                 case _ where scopeStack.isEmpty && matches(token):
                     return i
-                case .linebreak:
+                case .lineBreak:
                     linebreakEncountered = true
                 case .endOfScope("case"), .endOfScope("default"):
                     if ![.endOfScope("#endif"), .endOfScope("}")].contains(scopeStack.last) {
@@ -847,7 +846,7 @@ extension Formatter {
     /// Returns the original line number at the specified index
     func originalLine(at index: Int) -> OriginalLine {
         for token in tokens[0 ..< index].reversed() {
-            if case let .linebreak(_, line) = token {
+            if case let .lineBreak(_, line) = token {
                 return line + 1
             }
         }
@@ -876,8 +875,8 @@ extension Formatter {
         // search backward and replace whitespace with a single " "
         // if we find a line comment (// ...) do not make this change
         let tokenType =
-            preservingComments ? TokenType.nonSpaceOrLinebreak : TokenType
-                .nonSpaceOrCommentOrLinebreak
+            preservingComments ? TokenType.nonSpaceOrLineBreak : TokenType
+                .nonSpaceOrCommentOrLineBreak
         guard let notWhitespace = index(of: tokenType, before: tokenIndex) else { return 0 }
         if preservingComments, tokens[notWhitespace].isCommentBody { return 0 }
 
@@ -896,12 +895,12 @@ extension Formatter {
     func linebreakToken(for index: AnyIndex) -> Token {
         let index = index.index
         let lineNumber: Int
-        if case let .linebreak(_, index)? = token(at: index) {
+        if case let .lineBreak(_, index)? = token(at: index) {
             lineNumber = index
         } else {
             lineNumber = originalLine(at: index)
         }
-        return .linebreak(options.linebreak, lineNumber)
+        return .lineBreak(options.linebreak, lineNumber)
     }
 
     /// Formatting linebreaks
@@ -912,7 +911,7 @@ extension Formatter {
             guard let token = token(at: index) else {
                 return
             }
-            if token.isLinebreak {
+            if token.isLineBreak {
                 if alreadyHasLinebreaksCount == linebreaksCount {
                     removeToken(at: index)
                 } else {
@@ -965,7 +964,7 @@ extension String {
 extension Collection<Token> {
     /// Ranges of lines within this array of tokens
     var lineRanges: [ClosedRange<Index>] {
-        lineRanges(isLinebreak: \.isLinebreak)
+        lineRanges(isLineBreak: \.isLineBreak)
     }
 
     /// All of the lines within this array of tokens
@@ -979,12 +978,12 @@ extension Collection<Token> {
 extension String {
     /// Ranges of lines within this string
     var lineRanges: [ClosedRange<Index>] {
-        lineRanges(isLinebreak: { $0 == "\n" })
+        lineRanges(isLineBreak: { $0 == "\n" })
     }
 }
 
 private extension Collection {
-    func lineRanges(isLinebreak: (Element) -> Bool) -> [ClosedRange<Index>] {
+    func lineRanges(isLineBreak: (Element) -> Bool) -> [ClosedRange<Index>] {
         var lineRanges: [ClosedRange<Index>] = []
         var currentLine: ClosedRange<Index>?
 
@@ -995,7 +994,7 @@ private extension Collection {
                 currentLine = currentLine!.lowerBound ... index
             }
 
-            if isLinebreak(token) {
+            if isLineBreak(token) {
                 lineRanges.append(currentLine!)
                 currentLine = nil
             }

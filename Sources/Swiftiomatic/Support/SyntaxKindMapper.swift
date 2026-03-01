@@ -54,7 +54,7 @@ enum SyntaxKindMapper {
                 length: byteRange.length,
             )
 
-            return ResolvedSyntaxToken(value: token)
+            return ResolvedSyntaxToken(token: token)
         }
     }
 }

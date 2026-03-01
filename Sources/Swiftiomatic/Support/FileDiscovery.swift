@@ -5,7 +5,7 @@ package enum FileDiscovery {
     /// Default directory names to exclude.
     static let excludedDirectories: Set<String> = [
         ".build", ".git", "Pods", "DerivedData", "Carthage",
-        "GRDB", ".swiftpm",
+        ".swiftpm",
     ]
 
     /// Default file suffixes to exclude.

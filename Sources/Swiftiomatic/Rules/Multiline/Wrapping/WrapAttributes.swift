@@ -13,7 +13,7 @@ extension FormatRule {
       // Ignore sequential attributes
       guard let endIndex = formatter.endOfAttribute(at: i),
         var keywordIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: endIndex,
         ),
         formatter.tokens[keywordIndex].isKeyword || formatter.isModifier(at: keywordIndex)
@@ -72,7 +72,7 @@ extension FormatRule {
       case .prevLine:
         // Make sure there's a newline immediately following the attribute
         if let nextIndex = formatter.index(of: .nonSpaceOrComment, after: endIndex),
-          formatter.token(at: nextIndex)?.isLinebreak != true
+          formatter.token(at: nextIndex)?.isLineBreak != true
         {
           formatter.insertSpace(formatter.currentIndentForLine(at: i), at: nextIndex)
           formatter.insertLinebreak(at: nextIndex)
@@ -84,11 +84,11 @@ extension FormatRule {
       case .sameLine:
         // Make sure there isn't a newline immediately following the attribute
         if let nextIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: endIndex,
         ),
           formatter.tokens[(endIndex + 1)..<nextIndex]
-            .contains(where: \.isLinebreak)
+            .contains(where: \.isLineBreak)
         {
           // If unwrapping the attribute causes the line to exceed the max width,
           // leave it as-is. The existing formatting is likely better than how
@@ -167,12 +167,12 @@ extension Formatter {
 
     guard
       let startOfScopeIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak,
+        of: .nonSpaceOrCommentOrLineBreak,
         after: attributeIndex,
       ),
       tokens[startOfScopeIndex] == .startOfScope("("),
       let firstTokenInBody = index(
-        of: .nonSpaceOrCommentOrLinebreak,
+        of: .nonSpaceOrCommentOrLineBreak,
         after: startOfScopeIndex,
       ),
       let endOfScopeIndex = endOfScope(at: startOfScopeIndex),
@@ -181,7 +181,7 @@ extension Formatter {
 
     // If the first argument is named with a parameter label, then this is a complex attribute:
     if tokens[firstTokenInBody].isIdentifierOrKeyword,
-      let followingToken = index(of: .nonSpaceOrCommentOrLinebreak, after: firstTokenInBody),
+      let followingToken = index(of: .nonSpaceOrCommentOrLineBreak, after: firstTokenInBody),
       tokens[followingToken] == .delimiter(":")
     {
       return true

@@ -17,7 +17,7 @@ private struct CacheTestHelper {
 
   fileprivate init(dict: [String: Any], cache: LinterCache) {
     ruleList = RuleList(rules: RuleWithLevelsMock.self)
-    ruleDescription = ruleList.list.values.first!.description
+    ruleDescription = ruleList.rules.values.first!.description
     configuration = try! Configuration(dict: dict, ruleList: ruleList)
     self.cache = cache
   }
@@ -28,13 +28,13 @@ private struct CacheTestHelper {
       RuleViolation(
         ruleDescription: ruleDescription,
         severity: .warning,
-        location: Location(file: file, line: 10, character: 2),
+        location: Location(file: file, line: 10, column: 2),
         reason: "Something is not right",
       ),
       RuleViolation(
         ruleDescription: ruleDescription,
         severity: .error,
-        location: Location(file: file, line: 5, character: nil),
+        location: Location(file: file, line: 5, column: nil),
         reason: "Something is wrong",
       ),
     ]

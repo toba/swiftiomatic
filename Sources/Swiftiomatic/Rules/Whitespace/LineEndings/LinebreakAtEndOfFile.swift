@@ -11,7 +11,7 @@ extension FormatRule {
     var wasLinebreak = true
     formatter.forEachToken(onlyWhereEnabled: false) { _, token in
       switch token {
-      case .linebreak:
+      case .lineBreak:
         wasLinebreak = true
       case .space:
         break

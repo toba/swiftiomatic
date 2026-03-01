@@ -9,7 +9,7 @@ struct ObjectLiteralConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration 
   private(set) var imageLiteral = true
   @ConfigurationElement(key: "color_literal")
   private(set) var colorLiteral = true
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$imageLiteral.key] {
       try imageLiteral.apply(value, ruleID: Parent.identifier)
@@ -18,6 +18,6 @@ struct ObjectLiteralConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration 
       try colorLiteral.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

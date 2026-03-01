@@ -181,7 +181,7 @@ struct LiteralExpressionEndIndentationRule: Rule, OptInRule {
     )
   }
 
-  fileprivate static let notWhitespace: RegularExpression = "[^\\s]"
+  fileprivate static let notWhitespace: CachedRegex = "[^\\s]"
 }
 
 extension LiteralExpressionEndIndentationRule: CorrectableRule {

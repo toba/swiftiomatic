@@ -154,7 +154,7 @@ extension AttributeNameSpacingRule {
       replacement: String,
       reason: String,
     ) {
-      let correction = SyntaxViolation.ViolationCorrection(
+      let correction = SyntaxViolation.Correction(
         start: startPosition,
         end: endPosition,
         replacement: replacement,

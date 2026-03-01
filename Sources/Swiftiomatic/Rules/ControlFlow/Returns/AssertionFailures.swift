@@ -18,13 +18,13 @@ extension FormatRule {
             },
           ),
           let identifierIndex = formatter.index(
-            of: .nonSpaceOrLinebreak, after: scopeStart,
+            of: .nonSpaceOrLineBreak, after: scopeStart,
             if: {
               $0 == .identifier("false")
             },
           ),
           var endIndex = formatter.index(
-            of: .nonSpaceOrLinebreak,
+            of: .nonSpaceOrLineBreak,
             after: identifierIndex,
           )
         else {

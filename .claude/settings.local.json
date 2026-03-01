@@ -63,7 +63,9 @@
       "mcp__xc-project__list_swift_packages",
       "mcp__xc-project__get_build_settings",
       "mcp__xc-project__remove_target",
-      "mcp__xc-build__clean"
+      "mcp__xc-build__clean",
+      "mcp__xc-build__list_schemes",
+      "mcp__xc-swift__swift_diagnostics"
     ]
   },
   "enableAllProjectMcpServers": true,

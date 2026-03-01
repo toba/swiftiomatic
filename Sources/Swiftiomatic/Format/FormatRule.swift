@@ -70,7 +70,7 @@ package final class FormatRule: Hashable, Comparable, CustomStringConvertible, @
     }
 }
 
-nonisolated(unsafe) package let FormatRules = FormatRuleCatalog()
+package let FormatRules = FormatRuleCatalog()
 
 private let rulesByName: [String: FormatRule] = {
     var rules = [String: FormatRule]()

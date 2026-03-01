@@ -12,7 +12,7 @@ extension FormatRule {
     }
     formatter.forEach(.endOfScope(">")) { i, _ in
       if formatter.token(at: i - 1)?.isSpace == true,
-        formatter.token(at: i - 2)?.isLinebreak == false
+        formatter.token(at: i - 2)?.isLineBreak == false
       {
         formatter.removeToken(at: i - 1)
       }

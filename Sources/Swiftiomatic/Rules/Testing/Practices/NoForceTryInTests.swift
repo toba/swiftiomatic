@@ -23,7 +23,7 @@ extension FormatRule {
         guard formatter.tokens[index] == .keyword("try") else { continue }
         guard
           let nextTokenIndex = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: index,
           )
         else { return }

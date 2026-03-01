@@ -6,7 +6,7 @@ struct PreferKeyPathConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "ignore_identity_closures")
   private(set) var ignoreIdentityClosures = false
   typealias Parent = PreferKeyPathRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$restrictToStandardFunctions.key] {
       try restrictToStandardFunctions.apply(value, ruleID: Parent.identifier)
@@ -15,6 +15,6 @@ struct PreferKeyPathConfiguration: SeverityBasedRuleConfiguration {
       try ignoreIdentityClosures.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

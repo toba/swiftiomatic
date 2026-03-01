@@ -55,7 +55,7 @@ extension FormatRule {
         for (index, property) in multiplePropertyDecl.properties.enumerated() {
           // Add newline and indentation before each declaration except the first
           if index > 0 {
-            allReplacementTokens.append(.linebreak(formatter.options.linebreak, 1))
+            allReplacementTokens.append(.lineBreak(formatter.options.linebreak, 1))
 
             let indent = formatter.currentIndentForLine(at: i)
             if !indent.isEmpty {
@@ -125,7 +125,7 @@ extension FormatRule {
         for (index, identifier) in tupleDecl.identifiers.enumerated() {
           // Add newline and indentation before each declaration except the first
           if index > 0 {
-            allReplacementTokens.append(.linebreak(formatter.options.linebreak, 1))
+            allReplacementTokens.append(.lineBreak(formatter.options.linebreak, 1))
 
             let indent = formatter.currentIndentForLine(at: i)
             if !indent.isEmpty {
@@ -238,7 +238,7 @@ extension Formatter {
     guard ["let", "var"].contains(tokens[introducerIndex].string) else { return nil }
 
     var properties = [MultiplePropertyDeclaration.Property]()
-    guard var searchIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: introducerIndex)
+    guard var searchIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: introducerIndex)
     else {
       return nil
     }
@@ -248,11 +248,11 @@ extension Formatter {
       var typeInformation: (colonIndex: Int, type: TypeName)?
 
       if let colonIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak,
+        of: .nonSpaceOrCommentOrLineBreak,
         after: propertyIdentifierIndex,
       ),
         tokens[colonIndex] == .delimiter(":"),
-        let startOfTypeIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: colonIndex),
+        let startOfTypeIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: colonIndex),
         let type = parseType(at: startOfTypeIndex)
       {
         typeInformation = (
@@ -267,11 +267,11 @@ extension Formatter {
       var valueInformation: (assignmentIndex: Int, expressionRange: ClosedRange<Int>)?
 
       if let assignmentIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak, after: endOfTypeOrIdentifier,
+        of: .nonSpaceOrCommentOrLineBreak, after: endOfTypeOrIdentifier,
       ),
         tokens[assignmentIndex] == .operator("=", .infix),
         let startOfExpression = index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: assignmentIndex,
         ),
         let expressionRange = parseExpressionRange(
@@ -288,7 +288,7 @@ extension Formatter {
       let lastTokenInProperty =
         valueInformation?.expressionRange.last ?? typeInformation?.type.range.upperBound
         ?? propertyIdentifierIndex
-      if let nextToken = index(of: .nonSpaceOrCommentOrLinebreak, after: lastTokenInProperty),
+      if let nextToken = index(of: .nonSpaceOrCommentOrLineBreak, after: lastTokenInProperty),
         tokens[nextToken] == .delimiter(",")
       {
         trailingCommaIndex = nextToken
@@ -306,7 +306,7 @@ extension Formatter {
 
       guard let trailingCommaIndex,
         let followingIndex = index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: trailingCommaIndex,
         )
       else {
@@ -355,7 +355,7 @@ extension Formatter {
     guard ["let", "var"].contains(tokens[introducerIndex].string) else { return nil }
 
     // Look for opening parenthesis after let/var
-    guard let parenIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: introducerIndex),
+    guard let parenIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: introducerIndex),
       tokens[parenIndex] == .startOfScope("("),
       let endOfTuple = endOfScope(at: parenIndex)
     else { return nil }
@@ -369,7 +369,7 @@ extension Formatter {
 
     guard identifiers.count > 1 else { return nil }
 
-    guard var parseIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: endOfTuple) else {
+    guard var parseIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: endOfTuple) else {
       return nil
     }
 
@@ -379,7 +379,7 @@ extension Formatter {
 
     // Parse the optional type, which can be a tuple or non-tuple
     if tokens[parseIndex] == .delimiter(":") {
-      guard let typeStart = index(of: .nonSpaceOrCommentOrLinebreak, after: parseIndex),
+      guard let typeStart = index(of: .nonSpaceOrCommentOrLineBreak, after: parseIndex),
         let type = parseType(at: typeStart)
       else { return nil }
 
@@ -399,7 +399,7 @@ extension Formatter {
       }
 
       if let nextIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak,
+        of: .nonSpaceOrCommentOrLineBreak,
         after: type.range.upperBound,
       ) {
         parseIndex = nextIndex
@@ -409,7 +409,7 @@ extension Formatter {
     }
 
     if tokens[parseIndex] == .operator("=", .infix) {
-      guard let valueStart = index(of: .nonSpaceOrCommentOrLinebreak, after: parseIndex),
+      guard let valueStart = index(of: .nonSpaceOrCommentOrLineBreak, after: parseIndex),
         let expressionRange = parseExpressionRange(
           startingAt: valueStart, allowConditionalExpressions: true,
         )

@@ -98,7 +98,7 @@ extension Formatter {
     var chainStartIndex = operatorIndex
     var penultimateToken: Token?
     walk: while let prevIndex = index(
-      of: .nonSpaceOrCommentOrLinebreak,
+      of: .nonSpaceOrCommentOrLineBreak,
       before: chainStartIndex,
     ),
       let prevToken = token(at: prevIndex)
@@ -175,7 +175,7 @@ extension Formatter {
   ) -> Int {
     var chainEndIndex = operatorIndex
     var previousToken: Token?
-    walk: while let nextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: chainEndIndex),
+    walk: while let nextIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: chainEndIndex),
       let nextToken = token(at: nextIndex)
     {
       defer { previousToken = nextToken }

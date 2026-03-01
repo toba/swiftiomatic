@@ -6,7 +6,7 @@ struct TransitiveModuleConfiguration<Parent: Rule>: Equatable, AcceptableByConfi
   /// The set of modules that can be transitively imported by `importedModule`.
   let transitivelyImportedModules: [String]
 
-  init(fromAny configuration: Any, context _: String) throws(Issue) {
+  init(fromAny configuration: Any, context _: String) throws(SwiftiomaticError) {
     guard let configurationDict = configuration as? [String: Any],
       Set(configurationDict.keys) == ["module", "allowed_transitive_imports"],
       let importedModule = configurationDict["module"] as? String,
@@ -37,7 +37,7 @@ struct UnusedImportConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "always_keep_imports")
   private(set) var alwaysKeepImports = [String]()
   typealias Parent = UnusedImportRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$requireExplicitImports.key] {
       try requireExplicitImports.apply(value, ruleID: Parent.identifier)
@@ -49,6 +49,6 @@ struct UnusedImportConfiguration: SeverityBasedRuleConfiguration {
       try alwaysKeepImports.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

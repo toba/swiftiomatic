@@ -23,7 +23,7 @@ extension String {
         if let indexRange = nsRangeToIndexRange(nsrange) {
             return String(self[indexRange])
         }
-        queuedFatalError("invalid range")
+        Console.fatalError("invalid range")
     }
 
     func substring(from: Int, length: Int? = nil) -> String {
@@ -145,16 +145,15 @@ extension String {
     }
 
     func characterPosition(of utf8Offset: Int) -> Int? {
-        guard utf8Offset != 0 else {
-            return 0
-        }
-        guard utf8Offset > 0, utf8Offset < lengthOfBytes(using: .utf8) else {
-            return nil
-        }
-        for (offset, index) in indices.enumerated()
-            where self[...index].lengthOfBytes(using: .utf8) == utf8Offset
-        {
-            return offset + 1
+        guard utf8Offset != 0 else { return 0 }
+        guard utf8Offset > 0, utf8Offset < utf8.count else { return nil }
+        var byteCount = 0
+        for (charIndex, index) in indices.enumerated() {
+            let nextIndex = self.index(after: index)
+            byteCount += utf8[index..<nextIndex].count
+            if byteCount == utf8Offset {
+                return charIndex + 1
+            }
         }
         return nil
     }

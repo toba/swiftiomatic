@@ -2,12 +2,12 @@
 struct SeverityConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, InlinableOption,
     Sendable
 {
-    /// Configuration with a warning severity.
+    /// Configuration with an error severity.
     static var error: Self {
         Self(.error)
     }
 
-    /// Configuration with an error severity.
+    /// Configuration with a warning severity.
     static var warning: Self {
         Self(.warning)
     }
@@ -27,7 +27,7 @@ struct SeverityConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Inli
         self.severity = severity
     }
 
-    mutating func apply(configuration: [String: Any]) throws(Issue) {
+    mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
         if let severityString = configuration[$severity.key] as? String {
             if let severity = ViolationSeverity(rawValue: severityString.lowercased()) {
                 self.severity = severity
@@ -41,7 +41,7 @@ struct SeverityConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration, Inli
 
     /// Applies a value from a parent configuration element.
     /// Accepts either a `[String: Any]` dict or a bare severity string.
-    mutating func apply(_ value: Any, ruleID: String) throws(Issue) {
+    mutating func apply(_ value: Any, ruleID: String) throws(SwiftiomaticError) {
         if let dict = value as? [String: Any] {
             try apply(configuration: dict)
         } else if let string = value as? String {

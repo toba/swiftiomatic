@@ -3,7 +3,7 @@ import Foundation
 func regex(
   _ pattern: String,
   options: NSRegularExpression.Options? = nil,
-) -> RegularExpression {
+) -> CachedRegex {
   // all patterns used for regular expressions in Swiftiomatic are string literals which have been
   // confirmed to work, so it's ok to force-try here.
 

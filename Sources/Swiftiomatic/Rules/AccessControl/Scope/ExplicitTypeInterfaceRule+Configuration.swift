@@ -20,7 +20,7 @@ struct ExplicitTypeInterfaceConfiguration: SeverityBasedRuleConfiguration {
   }
 
   typealias Parent = ExplicitTypeInterfaceRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$excluded.key] {
       try excluded.apply(value, ruleID: Parent.identifier)
@@ -29,6 +29,6 @@ struct ExplicitTypeInterfaceConfiguration: SeverityBasedRuleConfiguration {
       try allowRedundancy.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

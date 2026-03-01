@@ -30,7 +30,7 @@ struct MissingDocsConfiguration: RuleConfiguration {
     $evaluateEffectiveAccessControlLevel.key => .flag(evaluateEffectiveAccessControlLevel)
   }
 
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     if let shouldExcludeExtensions = configuration[$excludesExtensions.key] as? Bool {
       excludesExtensions = shouldExcludeExtensions
     }
@@ -55,7 +55,7 @@ struct MissingDocsConfiguration: RuleConfiguration {
     }
   }
 
-  private func parameters(from dict: [String: Any]) throws(Issue) -> [RuleParameter<
+  private func parameters(from dict: [String: Any]) throws(SwiftiomaticError) -> [RuleParameter<
     AccessControlLevel,
   >]? {
     var parameters: [RuleParameter<AccessControlLevel>] = []
@@ -68,7 +68,7 @@ struct MissingDocsConfiguration: RuleConfiguration {
       if let array = [String].array(of: value) {
         let rules: [RuleParameter<AccessControlLevel>] =
           try array
-          .map { val throws(Issue) -> RuleParameter<AccessControlLevel> in
+          .map { val throws(SwiftiomaticError) -> RuleParameter<AccessControlLevel> in
             guard let acl = AccessControlLevel(description: val) else {
               throw .invalidConfiguration(ruleID: Parent.identifier)
             }

@@ -103,7 +103,7 @@ import Testing
       .startOfScope("#!"),
       .commentBody("/usr/bin/swift"),
       .space(" "),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
     ]
     #expect(tokenize(input) == output)
   }
@@ -113,10 +113,10 @@ import Testing
     let output: [Token] = [
       .startOfScope("//"),
       .commentBody("Hello World"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .error("#!/usr/bin/swift"),
       .space(" "),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
     ]
     #expect(tokenize(input) == output)
   }
@@ -194,7 +194,7 @@ import Testing
   @Test func carriageReturnLinefeed() {
     let input = "\r\n"
     let output: [Token] = [
-      .linebreak("\r\n", 1)
+      .lineBreak("\r\n", 1)
     ]
     #expect(tokenize(input) == output)
   }
@@ -202,7 +202,7 @@ import Testing
   @Test func verticalTab() {
     let input = "\u{000B}"
     let output: [Token] = [
-      .linebreak("\u{000B}", 1)
+      .lineBreak("\u{000B}", 1)
     ]
     #expect(tokenize(input) == output)
   }
@@ -210,7 +210,7 @@ import Testing
   @Test func formfeed() {
     let input = "\u{000C}"
     let output: [Token] = [
-      .linebreak("\u{000C}", 1)
+      .lineBreak("\u{000C}", 1)
     ]
     #expect(tokenize(input) == output)
   }

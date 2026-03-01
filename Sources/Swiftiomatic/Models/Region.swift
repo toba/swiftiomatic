@@ -73,10 +73,10 @@ package struct Region: Equatable, Sendable {
         }
 
         let startPosition = locationConverter.position(
-            ofLine: startLine, column: min(1000, start.character ?? 1),
+            ofLine: startLine, column: min(1000, start.column ?? 1),
         )
         let endPosition = locationConverter.position(
-            ofLine: endLine, column: min(1000, end.character ?? 1),
+            ofLine: endLine, column: min(1000, end.column ?? 1),
         )
         let startLocation = locationConverter.location(for: startPosition)
         let endLocation = locationConverter.location(for: endPosition)

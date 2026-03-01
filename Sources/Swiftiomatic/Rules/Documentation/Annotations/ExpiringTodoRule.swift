@@ -56,7 +56,7 @@ extension ExpiringTodoRule: OptInRule {}
 
 extension ExpiringTodoRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
-    private lazy var expiryRegex: RegularExpression = {
+    private lazy var expiryRegex: CachedRegex = {
       let pattern = #"""
         \b(?:TODO|FIXME)(?::|\b)(?:(?!\b(?:TODO|FIXME)(?::|\b)).)*?\#
         \\#(configuration.dateDelimiters.opening)\#

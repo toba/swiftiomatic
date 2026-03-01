@@ -60,9 +60,9 @@ extension FormatRule {
           // Remove from the space before = to the end of the value
           let startIndex =
             formatter.index(
-              of: .nonSpaceOrCommentOrLinebreak,
+              of: .nonSpaceOrCommentOrLineBreak,
               before: valueInfo.assignmentIndex,
-              if: { !$0.isSpaceOrCommentOrLinebreak },
+              if: { !$0.isSpaceOrCommentOrLineBreak },
             ) ?? valueInfo.assignmentIndex - 1
           formatter
             .removeTokens(

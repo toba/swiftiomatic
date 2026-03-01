@@ -9,19 +9,19 @@ extension FormatRule {
     formatter.forEach(.identifier("count")) { i, _ in
       guard
         let dotIndex = formatter.index(
-          of: .nonSpaceOrLinebreak, before: i,
+          of: .nonSpaceOrLineBreak, before: i,
           if: {
             $0.isOperator(".")
           },
         ),
         let opIndex = formatter.index(
-          of: .nonSpaceOrLinebreak, after: i,
+          of: .nonSpaceOrLineBreak, after: i,
           if: {
             $0.isOperator
           },
         ),
         let endIndex = formatter.index(
-          of: .nonSpaceOrLinebreak, after: opIndex,
+          of: .nonSpaceOrLineBreak, after: opIndex,
           if: {
             $0 == .number("0", .integer)
           },
@@ -33,7 +33,7 @@ extension FormatRule {
       var index = dotIndex
       var wasIdentifier = false
       loop: while true {
-        guard let prev = formatter.index(of: .nonSpaceOrCommentOrLinebreak, before: index)
+        guard let prev = formatter.index(of: .nonSpaceOrCommentOrLineBreak, before: index)
         else {
           break
         }

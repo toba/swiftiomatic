@@ -3,14 +3,14 @@ import Foundation
 struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption {
   typealias Severity = SeverityConfiguration<Parent>
   typealias SeverityLevels = SeverityLevelsConfiguration<Parent>
-  typealias StartWithLowercaseConfiguration = ChildOptionSeverityConfiguration<Parent>
+  typealias StartWithLowercaseConfiguration = OptionSeverityConfiguration<Parent>
 
   @ConfigurationElement(key: "min_length")
   private(set) var minLength = SeverityLevels(warning: 0, error: 0)
   @ConfigurationElement(key: "max_length")
   private(set) var maxLength = SeverityLevels(warning: 0, error: 0)
   @ConfigurationElement(key: "excluded")
-  private(set) var excludedRegularExpressions = Set<RegularExpression>()
+  private(set) var excludedCachedRegexs = Set<CachedRegex>()
   @ConfigurationElement(key: "allowed_symbols")
   private(set) var allowedSymbols = Set<String>()
   @ConfigurationElement(key: "unallowed_symbols_severity")
@@ -42,9 +42,9 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption {
   ) {
     minLength = SeverityLevels(warning: minLengthWarning, error: minLengthError)
     maxLength = SeverityLevels(warning: maxLengthWarning, error: maxLengthError)
-    excludedRegularExpressions = Set(
+    excludedCachedRegexs = Set(
       excluded.compactMap {
-        try? RegularExpression(pattern: "^\($0)$")
+        try? CachedRegex(pattern: "^\($0)$")
       },
     )
     self.allowedSymbols = Set(allowedSymbols)
@@ -52,7 +52,7 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption {
     self.validatesStartWithLowercase = validatesStartWithLowercase
   }
 
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     if let minLengthConfig = configuration[$minLength.key] {
       if let dict = minLengthConfig as? [String: Any] {
         try minLength.apply(configuration: dict)
@@ -67,10 +67,10 @@ struct NameConfiguration<Parent: Rule>: RuleConfiguration, InlinableOption {
         try maxLength.apply(configuration: ["_values": array])
       }
     }
-    if let excluded = [String].array(of: configuration[$excludedRegularExpressions.key]) {
-      excludedRegularExpressions = Set(
+    if let excluded = [String].array(of: configuration[$excludedCachedRegexs.key]) {
+      excludedCachedRegexs = Set(
         excluded.compactMap {
-          try? RegularExpression(pattern: "^\($0)$")
+          try? CachedRegex(pattern: "^\($0)$")
         },
       )
     }
@@ -109,6 +109,6 @@ extension NameConfiguration {
 
 extension NameConfiguration {
   func shouldExclude(name: String) -> Bool {
-    excludedRegularExpressions.contains { $0.hasMatch(in: name) }
+    excludedCachedRegexs.contains { $0.hasMatch(in: name) }
   }
 }

@@ -28,7 +28,7 @@ final class FormatSelectionCommand: NSObject, XCSourceEditorCommand {
         let source = selectedLines.joined()
 
         do {
-            let formatted = try Swiftiomatic.format(source)
+            let formatted = try SwiftiomaticLib.format(source)
             guard formatted != source else {
                 completionHandler(nil)
                 return

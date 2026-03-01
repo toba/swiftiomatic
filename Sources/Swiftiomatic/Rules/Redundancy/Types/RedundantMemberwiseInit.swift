@@ -117,7 +117,7 @@ extension FormatRule {
         // Don't remove failable inits (init? or init!)
         // Check if there's a ? or ! after the init keyword
         if let nextIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: initDeclaration.keywordIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: initDeclaration.keywordIndex,
         ),
           let nextToken = formatter.token(at: nextIndex),
           nextToken.isOperator("?") || nextToken.isOperator("!")
@@ -222,7 +222,7 @@ extension FormatRule {
 
         if isRedundant {
           while let nextToken = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: bodyIndex - 1,
+            of: .nonSpaceOrCommentOrLineBreak, after: bodyIndex - 1,
           ),
             nextToken < bodyEnd
           {
@@ -231,13 +231,13 @@ extension FormatRule {
             if token == .identifier("self") {
               guard
                 let dotIndex = formatter.index(
-                  of: .nonSpaceOrCommentOrLinebreak, after: nextToken,
+                  of: .nonSpaceOrCommentOrLineBreak, after: nextToken,
                   if: {
                     $0.isOperator(".")
                   },
                 ),
                 let propIndex = formatter.index(
-                  of: .nonSpaceOrCommentOrLinebreak,
+                  of: .nonSpaceOrCommentOrLineBreak,
                   after: dotIndex,
                 ),
                 let propToken = formatter.token(at: propIndex),
@@ -247,7 +247,7 @@ extension FormatRule {
                   after: propIndex,
                 ),
                 let valueIndex = formatter.index(
-                  of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex,
+                  of: .nonSpaceOrCommentOrLineBreak, after: equalsIndex,
                 ),
                 let valueToken = formatter.token(at: valueIndex),
                 valueToken.isIdentifier,
@@ -262,12 +262,12 @@ extension FormatRule {
               // Check if this is a closure invocation: `self.prop = param()`
               var nextAfterValue = valueIndex + 1
               if let parenIndex = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: valueIndex,
+                of: .nonSpaceOrCommentOrLineBreak, after: valueIndex,
               ),
                 formatter.tokens[parenIndex] == .startOfScope("("),
                 let endParen = formatter.endOfScope(at: parenIndex),
                 formatter.index(
-                  of: .nonSpaceOrCommentOrLinebreak,
+                  of: .nonSpaceOrCommentOrLineBreak,
                   in: parenIndex + 1..<endParen,
                 )
                   == nil
@@ -363,7 +363,7 @@ extension FormatRule {
           }
           if actualStartIndex > 0 {
             if let prevToken = formatter.token(at: actualStartIndex - 1),
-              prevToken.isLinebreak
+              prevToken.isLineBreak
             {
               actualStartIndex -= 1
             }
@@ -374,7 +374,7 @@ extension FormatRule {
             let next = formatter.token(at: actualEndIndex + 1)!
             if next.isSpace {
               actualEndIndex += 1
-            } else if next.isLinebreak {
+            } else if next.isLineBreak {
               // Include one newline to clean up, but stop there
               actualEndIndex += 1
               break
@@ -481,7 +481,7 @@ extension Formatter {
     }
 
     // Find the end of the type after the colon
-    guard let typeStartIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: colonIndex)
+    guard let typeStartIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: colonIndex)
     else {
       return false
     }
@@ -494,7 +494,7 @@ extension Formatter {
 
     // Look for '=' token after the type
     if let equalsIndex = index(of: .operator("=", .infix), after: typeEndIndex),
-      index(of: .nonSpaceOrCommentOrLinebreak, in: typeEndIndex + 1..<equalsIndex) == nil
+      index(of: .nonSpaceOrCommentOrLineBreak, in: typeEndIndex + 1..<equalsIndex) == nil
     {
       return true
     }
@@ -534,7 +534,7 @@ extension Formatter {
     var result = [tokens[index]]
 
     // Check if there's a generic clause following the attribute
-    if let nextIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index),
+    if let nextIndex = self.index(of: .nonSpaceOrCommentOrLineBreak, after: index),
       tokens[nextIndex] == .startOfScope("<"),
       let endOfGeneric = endOfScope(at: nextIndex)
     {

@@ -28,7 +28,7 @@ extension SwiftSource {
       let start = Location(
         file: path,
         line: command.line,
-        character: command.range?.upperBound,
+        column: command.range?.upperBound,
       )
       let end = endOf(next: nextCommand)
       guard start < end else { continue }
@@ -64,7 +64,7 @@ extension SwiftSource {
       commands
       .filter { command in
         let commandLocation = Location(
-          file: path, line: command.line, character: command.range?.upperBound,
+          file: path, line: command.line, column: command.range?.upperBound,
         )
         return rangeStart <= commandLocation && commandLocation <= rangeEnd
       }
@@ -73,7 +73,7 @@ extension SwiftSource {
 
   private func endOf(next command: Command?) -> Location {
     guard let nextCommand = command else {
-      return Location(file: path, line: .max, character: .max)
+      return Location(file: path, line: .max, column: .max)
     }
     let nextLine: Int
     let nextCharacter: Int?
@@ -88,6 +88,6 @@ extension SwiftSource {
       nextLine = max(nextCommand.line - 1, 0)
       nextCharacter = .max
     }
-    return Location(file: path, line: nextLine, character: nextCharacter)
+    return Location(file: path, line: nextLine, column: nextCharacter)
   }
 }

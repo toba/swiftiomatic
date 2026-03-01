@@ -6,17 +6,17 @@ extension FormatRule {
     help: "Add space before and/or after comments.",
   ) { formatter in
     formatter.forEach(.startOfScope("//")) { i, _ in
-      if let prevToken = formatter.token(at: i - 1), !prevToken.isSpaceOrLinebreak {
+      if let prevToken = formatter.token(at: i - 1), !prevToken.isSpaceOrLineBreak {
         formatter.insert(.space(" "), at: i)
       }
     }
     formatter.forEach(.endOfScope("*/")) { i, _ in
       guard let startIndex = formatter.index(of: .startOfScope("/*"), before: i),
         case .commentBody(let commentStart)? = formatter.next(
-          .nonSpaceOrLinebreak, after: startIndex,
+          .nonSpaceOrLineBreak, after: startIndex,
         ),
         case .commentBody(let commentEnd)? = formatter.last(
-          .nonSpaceOrLinebreak,
+          .nonSpaceOrLineBreak,
           before: i,
         ),
         !commentStart.hasPrefix("@"), !commentEnd.hasSuffix("@")
@@ -24,7 +24,7 @@ extension FormatRule {
         return
       }
       if let nextToken = formatter.token(at: i + 1) {
-        if !nextToken.isSpaceOrLinebreak {
+        if !nextToken.isSpaceOrLineBreak {
           if nextToken != .delimiter(",") {
             formatter.insert(.space(" "), at: i + 1)
           }
@@ -32,7 +32,7 @@ extension FormatRule {
           formatter.removeToken(at: i + 1)
         }
       }
-      if let prevToken = formatter.token(at: startIndex - 1), !prevToken.isSpaceOrLinebreak {
+      if let prevToken = formatter.token(at: startIndex - 1), !prevToken.isSpaceOrLineBreak {
         if case .commentBody(let text) = prevToken,
           text.last?.unicodeScalars.last?.isSpace == true
         {

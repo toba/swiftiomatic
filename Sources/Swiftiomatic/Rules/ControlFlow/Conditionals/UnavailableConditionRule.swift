@@ -145,7 +145,7 @@ extension UnavailableConditionRule {
       case .poundUnavailable:
         return "Use #available instead of #unavailable with an empty body"
       default:
-        queuedFatalError("Unknown availability check type.")
+        Console.fatalError("Unknown availability check type.")
       }
     }
   }

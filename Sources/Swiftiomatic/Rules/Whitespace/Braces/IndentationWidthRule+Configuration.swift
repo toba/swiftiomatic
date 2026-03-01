@@ -7,7 +7,7 @@ struct IndentationWidthConfiguration: SeverityBasedRuleConfiguration {
     key: "indentation_width",
     postprocessor: {
       if $0 < 1 {
-        Issue.invalidConfiguration(ruleID: Parent.identifier).print()
+        SwiftiomaticError.invalidConfiguration(ruleID: Parent.identifier).print()
         $0 = Self.defaultIndentationWidth
       }
     },
@@ -20,7 +20,7 @@ struct IndentationWidthConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "include_multiline_strings")
   private(set) var includeMultilineStrings = true
   typealias Parent = IndentationWidthRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$indentationWidth.key] {
       try indentationWidth.apply(value, ruleID: Parent.identifier)
@@ -35,6 +35,6 @@ struct IndentationWidthConfiguration: SeverityBasedRuleConfiguration {
       try includeMultilineStrings.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

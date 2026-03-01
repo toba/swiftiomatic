@@ -8,7 +8,7 @@ struct PreferSwiftTestingRule: Rule {
     name: "Prefer Swift Testing",
     description: "XCTest-based test suites can be migrated to the Swift Testing framework",
     scope: .suggest,
-    minSwiftVersion: .six,
+    minSwiftVersion: .v6,
     nonTriggeringExamples: [
       Example(
         """

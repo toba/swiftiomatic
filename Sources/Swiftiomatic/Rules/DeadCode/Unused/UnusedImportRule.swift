@@ -96,7 +96,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
 
   private func importUsage(in file: SwiftSource, compilerArguments: [String]) -> [ImportUsage] {
     guard compilerArguments.isNotEmpty else {
-      Issue.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
+      SwiftiomaticError.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
       return []
     }
 
@@ -206,7 +206,7 @@ extension SwiftSource {
           SourceKitDictionary.init,
         )
       else {
-        Issue.missingCursorInfo(path: path, ruleID: UnusedImportRule.identifier).print()
+        SwiftiomaticError.missingCursorInfo(path: path, ruleID: UnusedImportRule.identifier).print()
         continue
       }
       if nextIsModuleImport {
@@ -251,7 +251,7 @@ extension SwiftSource {
       let index = (try? Request.index(file: path, arguments: arguments).sendIfNotDisabled())
         .map(SourceKitDictionary.init)
     else {
-      Issue.indexingError(path: path, ruleID: UnusedImportRule.identifier).print()
+      SwiftiomaticError.indexingError(path: path, ruleID: UnusedImportRule.identifier).print()
       return []
     }
 
@@ -276,7 +276,7 @@ extension SwiftSource {
           let cursorInfo = (try? cursorInfoRequest.sendIfNotDisabled())
             .map(SourceKitDictionary.init)
         else {
-          Issue.missingCursorInfo(path: path, ruleID: UnusedImportRule.identifier).print()
+          SwiftiomaticError.missingCursorInfo(path: path, ruleID: UnusedImportRule.identifier).print()
           continue
         }
 
@@ -327,9 +327,9 @@ extension SwiftSource {
     {
       usrFragments.insert(rootModuleName)
       if rootModuleName == moduleToLog, let filePath = path,
-        let usr = cursorInfo.value["key.usr"] as? String
+        let usr = cursorInfo.value["key.usr"]?.stringValue
       {
-        queuedPrintError(
+        Console.printError(
           "[SWIFTIOMATIC_LOG_MODULE_USAGE] \(rootModuleName) referenced by USR '\(usr)' in file '\(filePath)'",
         )
       }

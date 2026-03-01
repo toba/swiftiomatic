@@ -203,7 +203,7 @@ extension FileHeaderRule {
     }
 
     private func checkRequiredPattern(
-      _ requiredRegex: RegularExpression?,
+      _ requiredRegex: CachedRegex?,
       in headerContent: String,
       startingAt headerStart: AbsolutePosition,
     ) {

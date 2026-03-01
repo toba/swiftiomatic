@@ -6,7 +6,7 @@ struct SwitchCaseAlignmentConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "ignore_one_liners")
   private(set) var ignoreOneLiners = false
   typealias Parent = SwitchCaseAlignmentRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$indentedCases.key] {
       try indentedCases.apply(value, ruleID: Parent.identifier)
@@ -15,6 +15,6 @@ struct SwitchCaseAlignmentConfiguration: SeverityBasedRuleConfiguration {
       try ignoreOneLiners.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

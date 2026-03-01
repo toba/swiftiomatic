@@ -17,7 +17,7 @@ extension FormatRule {
       var insertedLinebreak = false
       var sortedTokens = sortedRanges.flatMap { inputRange -> [Token] in
         var tokens = Array(formatter.tokens[inputRange.range])
-        if tokens.first?.isLinebreak == false {
+        if tokens.first?.isLineBreak == false {
           insertedLinebreak = true
           tokens.insert(
             formatter.linebreakToken(for: tokens.startIndex),

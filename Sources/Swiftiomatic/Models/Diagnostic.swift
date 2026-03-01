@@ -7,7 +7,7 @@ package struct Diagnostic: Codable, Sendable, Comparable {
     package let ruleID: String
 
     /// Which engine produced this diagnostic.
-    package let source: Source
+    package let source: DiagnosticSource
 
     /// Warning or error.
     package let severity: DiagnosticSeverity
@@ -41,7 +41,7 @@ package struct Diagnostic: Codable, Sendable, Comparable {
 }
 
 /// Which analysis engine produced a diagnostic.
-package enum Source: String, CaseIterable, Codable, Sendable {
+package enum DiagnosticSource: String, CaseIterable, Codable, Sendable {
     case suggest
     case lint
     case format
@@ -60,8 +60,4 @@ package enum Source: String, CaseIterable, Codable, Sendable {
 package enum DiagnosticSeverity: String, Codable, Sendable, CaseIterable, Comparable {
     case warning
     case error
-
-    package static func < (lhs: DiagnosticSeverity, rhs: DiagnosticSeverity) -> Bool {
-        allCases.firstIndex(of: lhs)! < allCases.firstIndex(of: rhs)!
-    }
 }

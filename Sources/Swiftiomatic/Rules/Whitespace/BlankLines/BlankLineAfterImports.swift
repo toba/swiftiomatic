@@ -7,7 +7,7 @@ extension FormatRule {
     sharedOptions: ["linebreaks"],
   ) { formatter in
     formatter.forEach(.keyword("import")) { currentImportIndex, _ in
-      guard let endOfLine = formatter.index(of: .linebreak, after: currentImportIndex),
+      guard let endOfLine = formatter.index(of: .lineBreak, after: currentImportIndex),
         var nextIndex = formatter.index(of: .nonSpace, after: endOfLine)
       else {
         return
@@ -21,7 +21,7 @@ extension FormatRule {
         keyword = formatter.tokens[nextIndex]
       }
       switch formatter.tokens[nextIndex] {
-      case .linebreak, .keyword("import"), .keyword("#else"), .keyword("#elseif"),
+      case .lineBreak, .keyword("import"), .keyword("#else"), .keyword("#elseif"),
         .endOfScope("#endif"):
         break
       default:

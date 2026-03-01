@@ -6,7 +6,7 @@ struct FileNameConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "excluded")
   private(set) var excluded = Set(["main.swift", "LinuxMain.swift"])
   @ConfigurationElement(key: "excluded_paths")
-  private(set) var excludedPaths = Set<RegularExpression>()
+  private(set) var excludedPaths = Set<CachedRegex>()
   @ConfigurationElement(key: "prefix_pattern")
   private(set) var prefixPattern = ""
   @ConfigurationElement(key: "suffix_pattern")
@@ -16,7 +16,7 @@ struct FileNameConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "require_fully_qualified_names")
   private(set) var requireFullyQualifiedNames = false
   typealias Parent = FileNameRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$excluded.key] {
       try excluded.apply(value, ruleID: Parent.identifier)
@@ -37,7 +37,7 @@ struct FileNameConfiguration: SeverityBasedRuleConfiguration {
       try requireFullyQualifiedNames.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }
 

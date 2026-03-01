@@ -20,7 +20,7 @@ extension FormatRule {
           return
         }
         switch prevToken {
-        case .linebreak, .startOfScope("/*"), .startOfScope("//"), .commentBody:
+        case .lineBreak, .startOfScope("/*"), .startOfScope("//"), .commentBody:
           return
         case .endOfScope("*/")
         where nextToken == .startOfScope("/*")
@@ -30,7 +30,7 @@ extension FormatRule {
           break
         }
         switch nextToken {
-        case .linebreak, .endOfScope("*/"), .commentBody:
+        case .lineBreak, .endOfScope("*/"), .commentBody:
           return
         default:
           formatter.replaceToken(at: i, with: .space(" "))

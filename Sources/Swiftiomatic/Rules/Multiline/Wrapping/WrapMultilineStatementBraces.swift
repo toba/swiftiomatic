@@ -7,7 +7,7 @@ extension FormatRule {
     sharedOptions: ["linebreaks"],
   ) { formatter in
     formatter.forEach(.startOfScope("{")) { i, _ in
-      guard formatter.last(.nonSpaceOrComment, before: i)?.isLinebreak == false,
+      guard formatter.last(.nonSpaceOrComment, before: i)?.isLineBreak == false,
         formatter.shouldWrapMultilineStatementBrace(at: i),
         let endIndex = formatter.endOfScope(at: i)
       else {

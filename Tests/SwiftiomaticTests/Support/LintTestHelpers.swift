@@ -66,7 +66,7 @@ private func macOSSDKPath() -> String {
     ?? "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
 }
 
-let allRuleIdentifiers = Set(RuleRegistry.shared.list.list.keys)
+let allRuleIdentifiers = Set(RuleRegistry.shared.list.rules.keys)
 
 // MARK: - Configuration Helpers
 
@@ -179,7 +179,7 @@ extension Collection<RuleViolation> {
     map { violation in
       let locationWithoutFile = Location(
         file: nil, line: violation.location.line,
-        character: violation.location.character,
+        column: violation.location.column,
       )
       return violation.with(location: locationWithoutFile)
     }
@@ -228,7 +228,7 @@ func makeConfig(
         ]
       return Configuration(
         rulesMode: .onlyConfiguration(identifiers),
-        allRulesWrapped: rules.map { ($0, false) },
+        allRulesWrapped: rules.map { ConfiguredRule(rule: $0, initializedWithNonEmptyConfiguration: false) },
       )
     }
   }
@@ -253,7 +253,7 @@ private func render(violations: [RuleViolation], in contents: String) -> String 
   var contents = StringView(contents).lines.map(\.content)
   for violation in violations.sorted(by: { $0.location > $1.location }) {
     guard let line = violation.location.line,
-      let character = violation.location.character
+      let character = violation.location.column
     else { continue }
 
     let message =
@@ -280,7 +280,7 @@ private func render(violations: [RuleViolation], in contents: String) -> String 
 private func render(locations: [Location], in contents: String) -> String {
   var contents = StringView(contents).lines.map(\.content)
   for location in locations.sorted(by: >) {
-    guard let line = location.line, let character = location.character else { continue }
+    guard let line = location.line, let character = location.column else { continue }
     let content = NSMutableString(string: contents[line - 1])
     content.insert("↓", at: character - 1)
     contents[line - 1] = content.bridge()
@@ -416,8 +416,8 @@ private let _ensureRegistered: Void = {
 func verifyRule(
   _ ruleDescription: RuleDescription,
   ruleConfiguration: Any? = nil,
-  commentDoesNotViolate commentDoesNotViolate: Bool = true,
-  stringDoesNotViolate stringDoesNotViolate: Bool = true,
+  commentDoesNotViolate: Bool = true,
+  stringDoesNotViolate: Bool = true,
   skipCommentTests: Bool = false,
   skipStringTests: Bool = false,
   skipDisableCommandTests: Bool = false,

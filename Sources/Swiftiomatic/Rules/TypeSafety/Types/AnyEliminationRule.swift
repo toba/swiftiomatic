@@ -54,7 +54,7 @@ extension AnyEliminationRule: AsyncEnrichableRule {
           RuleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
-            location: Location(file: filePath, line: query.line, character: query.column),
+            location: Location(file: filePath, line: query.line, column: query.column),
             reason: "Type '\(query.typeStr)' resolves to 'Any' — type safety is erased",
             confidence: .high,
             suggestion:

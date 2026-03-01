@@ -32,7 +32,7 @@ struct RequiredEnumCaseConfiguration: RuleConfiguration {
     }
   }
 
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     guard let config = configuration as? [String: [String: String]] else {
       throw .invalidConfiguration(ruleID: Parent.identifier)
     }

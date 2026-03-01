@@ -113,7 +113,7 @@ extension Array {
 
         subscript(index: Int) -> T {
             get {
-                queuedFatalError("Do not call this getter.")
+                Console.fatalError("Do not call this getter.")
             }
             set(newValue) {
                 buffer[index] = newValue

@@ -4,12 +4,12 @@ struct PrivateOverFilePrivateConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "validate_extensions")
   var validateExtensions = false
   typealias Parent = PrivateOverFilePrivateRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$validateExtensions.key] {
       try validateExtensions.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

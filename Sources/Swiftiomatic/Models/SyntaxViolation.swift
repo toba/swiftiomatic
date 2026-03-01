@@ -4,7 +4,7 @@ import SwiftSyntax
 struct SyntaxViolation: Comparable, Hashable {
     /// The correction of a violation that is basically the violation's range in the source code and a
     /// replacement for this range that would fix the violation.
-    struct ViolationCorrection: Hashable {
+    struct Correction: Hashable {
         /// Start position of the violation range.
         let start: AbsolutePosition
         /// End position of the violation range.
@@ -21,9 +21,9 @@ struct SyntaxViolation: Comparable, Hashable {
     let severity: ViolationSeverity?
     /// An optional correction of the violation to be used in rewriting (see ``SwiftSyntaxCorrectableRule``). Can be
     /// left unset when creating a violation, especially if the rule is not correctable or provides a custom rewriter.
-    let correction: ViolationCorrection?
-    /// The confidence level of this violation. `nil` means high confidence (the default).
-    let confidence: Confidence?
+    let correction: Correction?
+    /// The confidence level of this violation.
+    let confidence: Confidence
     /// A suggested fix for the violation.
     let suggestion: String?
 
@@ -34,14 +34,14 @@ struct SyntaxViolation: Comparable, Hashable {
     ///   - reason: The reason for the violation if different from the rule's description.
     ///   - severity: The severity of the violation if different from the rule's default configured severity.
     ///   - correction: An optional correction of the violation to be used in rewriting.
-    ///   - confidence: The confidence level. `nil` means high (definitive).
+    ///   - confidence: The confidence level.
     ///   - suggestion: A suggested fix for the violation.
     init(
         position: AbsolutePosition,
         reason: String? = nil,
         severity: ViolationSeverity? = nil,
-        correction: ViolationCorrection? = nil,
-        confidence: Confidence? = nil,
+        correction: Correction? = nil,
+        confidence: Confidence = .high,
         suggestion: String? = nil,
     ) {
         self.position = position
@@ -72,7 +72,7 @@ extension [SyntaxViolation] {
     /// - parameter position: The position for the violation to append.
     /// - parameter correction: An optional correction to be applied when running with `--fix`.
     mutating func append(
-        at position: AbsolutePosition, correction: SyntaxViolation.ViolationCorrection? = nil,
+        at position: AbsolutePosition, correction: SyntaxViolation.Correction? = nil,
     ) {
         append(SyntaxViolation(position: position, correction: correction))
     }

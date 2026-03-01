@@ -56,6 +56,7 @@ final class LinterCache {
         fileManager: some LintableFileDiscovering = FileManager.default,
     ) {
         location = configuration.cacheURL
+        configuration.prepareCacheDirectory()
         state = Mutex(CacheState(readCache: Cache(), writeCache: Cache()))
         self.fileManager = fileManager
         swiftVersion = .current

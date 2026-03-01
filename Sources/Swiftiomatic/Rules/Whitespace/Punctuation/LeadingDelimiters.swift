@@ -10,7 +10,7 @@ extension FormatRule {
         let endOfLine = formatter.index(
           of: .nonSpace, before: i,
           if: {
-            $0.isLinebreak
+            $0.isLineBreak
           },
         )
       else {

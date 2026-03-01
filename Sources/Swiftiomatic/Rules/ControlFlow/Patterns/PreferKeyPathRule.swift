@@ -127,7 +127,7 @@ extension PreferKeyPathRule {
         onlyStmt.accesses(identifier: node.onlyParameter)
       {
         if onlyStmt.is(DeclReferenceExprSyntax.self),
-          configuration.ignoreIdentityClosures || SwiftVersion.current < .six
+          configuration.ignoreIdentityClosures || SwiftVersion.current < .v6
         {
           return
         }
@@ -299,7 +299,7 @@ extension ExprSyntax {
         as ExprSyntax
     }
 
-    if !ignoreIdentityClosures, SwiftVersion.current >= .six,
+    if !ignoreIdentityClosures, SwiftVersion.current >= .v6,
       `is`(DeclReferenceExprSyntax.self)
     {
       return "\\.self"

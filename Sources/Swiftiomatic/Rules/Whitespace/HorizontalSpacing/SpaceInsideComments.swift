@@ -45,7 +45,7 @@ extension FormatRule {
       if let i = formatter.index(of: .endOfScope("*/"), after: i),
         let prevToken = formatter.token(at: i - 1)
       {
-        if !prevToken.isSpaceOrLinebreak, !prevToken.string.hasSuffix("*"),
+        if !prevToken.isSpaceOrLineBreak, !prevToken.string.hasSuffix("*"),
           !prevToken.string.trimmingCharacters(in: .whitespaces).isEmpty
         {
           formatter.insert(.space(" "), at: i)

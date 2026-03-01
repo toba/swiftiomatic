@@ -44,7 +44,7 @@ import Testing
     @ConfigurationElement(key: "levels")
     var nestedSeverityLevels = SeverityLevelsConfiguration<Parent>(warning: 3, error: 2)
 
-    mutating func apply(configuration: [String: Any]) throws(Swiftiomatic.Issue) {
+    mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
       // Set keys for elements that need them
       if $flag.key.isEmpty { $flag.key = "flag" }
       if $string.key.isEmpty { $string.key = "string" }
@@ -100,7 +100,7 @@ import Testing
       do {
         try severityConfig.apply(configuration, ruleID: Parent.identifier)
       } catch let issue
-        where issue == Swiftiomatic.Issue.nothingApplied(ruleID: Parent.identifier)
+        where issue == SwiftiomaticError.nothingApplied(ruleID: Parent.identifier)
       {
         // Acceptable
       }
@@ -110,7 +110,7 @@ import Testing
       do {
         try inlinedSeverityLevels.apply(configuration, ruleID: Parent.identifier)
       } catch let issue
-        where issue == Swiftiomatic.Issue.nothingApplied(ruleID: Parent.identifier)
+        where issue == SwiftiomaticError.nothingApplied(ruleID: Parent.identifier)
       {
         // Acceptable
       }
@@ -119,7 +119,7 @@ import Testing
       }
       if !supportedKeys.isSuperset(of: configuration.keys) {
         let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)
-        Swiftiomatic.Issue.invalidConfigurationKeys(
+        SwiftiomaticError.invalidConfigurationKeys(
           ruleID: Parent.identifier,
           keys: unknownKeys,
         )
@@ -613,7 +613,7 @@ import Testing
   }
 
   @Test func deprecationWarning() async throws {
-    let console = try await Swiftiomatic.Issue.captureConsole {
+    let console = try await Console.captureConsole {
       var configuration = MockConfiguration()
       try configuration.apply(configuration: ["set": [6, 7]])
     }
@@ -624,7 +624,7 @@ import Testing
   }
 
   @Test func noDeprecationWarningIfNoDeprecatedPropertySet() async throws {
-    let console = try await Swiftiomatic.Issue.captureConsole {
+    let console = try await Console.captureConsole {
       var configuration = MockConfiguration()
       try configuration.apply(configuration: ["flag": false])
     }
@@ -632,7 +632,7 @@ import Testing
   }
 
   @Test func invalidKeys() async throws {
-    let console = try await Swiftiomatic.Issue.captureConsole {
+    let console = try await Console.captureConsole {
       var configuration = MockConfiguration()
       try configuration.apply(configuration: [
         "severity": "error",

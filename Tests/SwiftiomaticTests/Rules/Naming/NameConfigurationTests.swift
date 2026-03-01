@@ -61,7 +61,7 @@ import Testing
       maxLengthWarning: 0,
       maxLengthError: 0,
     )
-    checkError(Issue.invalidConfiguration(ruleID: MockRule.identifier)) {
+    checkError(SwiftiomaticError.invalidConfiguration(ruleID: MockRule.identifier)) {
       try nameConfig.apply(configuration: config)
     }
   }

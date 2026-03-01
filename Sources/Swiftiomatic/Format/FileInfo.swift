@@ -85,9 +85,7 @@ struct ReplacementOptions: CustomStringConvertible {
         self.init(dateFormat: options.dateFormat, timeZone: options.timeZone)
     }
 
-    var description: String {
-        "\(dateFormat)@\(timeZone)"
-    }
+    var description: String { "\(dateFormat)@\(timeZone)" }
 }
 
 enum ReplacementType: Equatable, CustomStringConvertible {
@@ -102,29 +100,25 @@ enum ReplacementType: Equatable, CustomStringConvertible {
     static func == (lhs: ReplacementType, rhs: ReplacementType) -> Bool {
         switch (lhs, rhs) {
             case let (.constant(lhsVal), .constant(rhsVal)):
-                return lhsVal == rhsVal
+                lhsVal == rhsVal
             case let (.dynamic(lhsClosure), .dynamic(rhsClosure)):
-                return lhsClosure as AnyObject === rhsClosure as AnyObject
+                lhsClosure as AnyObject === rhsClosure as AnyObject
             default:
-                return false
+                false
         }
     }
 
     func resolve(_ info: FileInfo, _ options: ReplacementOptions) -> String? {
         switch self {
-            case let .constant(value):
-                return value
-            case let .dynamic(fn):
-                return fn(info, options)
+            case let .constant(value): value
+            case let .dynamic(fn): fn(info, options)
         }
     }
 
     var description: String {
         switch self {
-            case let .constant(value):
-                return value
-            case .dynamic:
-                return "dynamic"
+            case let .constant(value): value
+            case .dynamic: "dynamic"
         }
     }
 }
@@ -183,37 +177,25 @@ enum DateFormat: Equatable, RawRepresentable, CustomStringConvertible {
 
     init?(rawValue: String) {
         switch rawValue {
-            case "dmy":
-                self = .dayMonthYear
-            case "iso":
-                self = .iso
-            case "mdy":
-                self = .monthDayYear
-            case "system":
-                self = .system
-            default:
-                self = .custom(rawValue)
+            case "dmy": self = .dayMonthYear
+            case "iso": self = .iso
+            case "mdy": self = .monthDayYear
+            case "system": self = .system
+            default: self = .custom(rawValue)
         }
     }
 
     var rawValue: String {
         switch self {
-            case .dayMonthYear:
-                return "dmy"
-            case .iso:
-                return "iso"
-            case .monthDayYear:
-                return "mdy"
-            case .system:
-                return "system"
-            case let .custom(str):
-                return str
+            case .dayMonthYear: return "dmy"
+            case .iso: return "iso"
+            case .monthDayYear: return "mdy"
+            case .system: return "system"
+            case let .custom(str): return str
         }
     }
 
-    var description: String {
-        rawValue
-    }
+    var description: String { rawValue }
 }
 
 /// Timezone to use when printing dates
@@ -240,27 +222,19 @@ enum FormatTimeZone: Equatable, RawRepresentable, CustomStringConvertible {
 
     var rawValue: String {
         switch self {
-            case .system:
-                return "system"
-            case let .abbreviation(abbreviation):
-                return abbreviation
-            case let .identifier(identifier):
-                return identifier
+            case .system: "system"
+            case let .abbreviation(abbreviation): abbreviation
+            case let .identifier(identifier): identifier
         }
     }
 
     var timeZone: TimeZone? {
         switch self {
-            case .system:
-                return TimeZone.current
-            case let .abbreviation(abbreviation):
-                return TimeZone(abbreviation: abbreviation)
-            case let .identifier(identifier):
-                return TimeZone(identifier: identifier)
+            case .system: TimeZone.current
+            case let .abbreviation(abbreviation): TimeZone(abbreviation: abbreviation)
+            case let .identifier(identifier): TimeZone(identifier: identifier)
         }
     }
 
-    var description: String {
-        rawValue
-    }
+    var description: String { rawValue }
 }

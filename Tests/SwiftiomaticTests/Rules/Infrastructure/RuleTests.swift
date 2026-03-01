@@ -55,7 +55,7 @@ import Testing
       } else if let value = configuration as? Int {
         normalized = ["_values": [value]]
       } else {
-        throw Issue.invalidConfiguration(ruleID: Self.identifier)
+        throw SwiftiomaticError.invalidConfiguration(ruleID: Self.identifier)
       }
       try self.configuration.apply(configuration: normalized)
     }

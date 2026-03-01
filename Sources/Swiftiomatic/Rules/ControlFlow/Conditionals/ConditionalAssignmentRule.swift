@@ -9,7 +9,7 @@ struct ConditionalAssignmentRule: Rule {
     description:
       "if/switch statements that assign to the same variable in every branch can use if/switch expressions",
     scope: .suggest,
-    minSwiftVersion: .six,
+    minSwiftVersion: .v6,
     nonTriggeringExamples: [
       Example(
         """
@@ -94,8 +94,6 @@ extension ConditionalAssignmentRule {
         return branchAssigns(block.statements, to: name)
       case .ifExpr(let nestedIf):
         return ifExprAssignsInAllBranches(nestedIf, to: name)
-      default:
-        return false
       }
     }
 

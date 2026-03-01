@@ -7,7 +7,7 @@ extension Formatter {
     func startOfLine(at index: Int, excludingIndent: Bool = false) -> Int {
         var index = min(index, tokens.count)
         while let token = token(at: index - 1) {
-            if case .linebreak = token {
+            if case .lineBreak = token {
                 break
             }
             index -= 1
@@ -22,7 +22,7 @@ extension Formatter {
     func endOfLine(at index: Int) -> Int {
         var index = index
         while let token = token(at: index) {
-            if case .linebreak = token {
+            if case .lineBreak = token {
                 break
             }
             index += 1
@@ -135,7 +135,7 @@ extension Formatter {
     func startOfScope(at index: Int) -> Int? {
         self.index(of: .startOfScope, before: index).flatMap {
             if [.startOfScope("//"), .startOfScope("#!")].contains(tokens[$0]),
-               self.index(of: .linebreak, after: $0) ?? index < index
+               self.index(of: .lineBreak, after: $0) ?? index < index
             {
                 return nil
             }
@@ -194,7 +194,7 @@ extension Formatter {
     func endOfExpression(at index: Int, upTo delimiters: [Token]) -> Int? {
         var index: Int? = index
         if token(at: index!)?.isEndOfScope == true {
-            index = self.index(of: .nonSpaceOrLinebreak, after: index!)
+            index = self.index(of: .nonSpaceOrLineBreak, after: index!)
         }
         var lastIndex = index
         var wasOperator = true
@@ -232,7 +232,7 @@ extension Formatter {
                     return lastIndex
             }
             lastIndex = i
-            index = self.index(of: .nonSpaceOrCommentOrLinebreak, after: i)
+            index = self.index(of: .nonSpaceOrCommentOrLineBreak, after: i)
         }
         return lastIndex
     }
@@ -270,7 +270,7 @@ extension Formatter {
     func isTypePosition(at index: Int) -> Bool {
         guard
             let prevIndex = self.index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 before: index,
             )
         else {
@@ -320,7 +320,7 @@ extension Formatter {
         }
         switch token {
             case .startOfScope("("):
-                if last(.nonSpaceOrLinebreak, before: index) == .keyword("throws") {
+                if last(.nonSpaceOrLineBreak, before: index) == .keyword("throws") {
                     return .throwsType
                 }
                 fallthrough
@@ -330,24 +330,24 @@ extension Formatter {
                 }
                 var isType = false
                 if let nextIndex = self.index(
-                    of: .nonSpaceOrCommentOrLinebreak, after: endIndex,
+                    of: .nonSpaceOrCommentOrLineBreak, after: endIndex,
                     if: {
                         $0.isOperator(".")
                     },
                 ),
                     [.identifier("self"), .identifier("init")]
-                    .contains(next(.nonSpaceOrCommentOrLinebreak, after: nextIndex))
+                    .contains(next(.nonSpaceOrCommentOrLineBreak, after: nextIndex))
                 {
                     isType = true
                 } else if next(.nonSpaceOrComment, after: endIndex) == .startOfScope("(") {
                     isType = true
                 } else if var prevIndex = self.index(
-                    of: .nonSpaceOrCommentOrLinebreak,
+                    of: .nonSpaceOrCommentOrLineBreak,
                     before: index,
                 ) {
                     if tokens[prevIndex].isAttribute {
                         prevIndex = self.index(
-                            of: .nonSpaceOrCommentOrLinebreak,
+                            of: .nonSpaceOrCommentOrLineBreak,
                             before: prevIndex,
                         ) ?? prevIndex
                     }
@@ -363,7 +363,7 @@ extension Formatter {
                         case .endOfScope where token.isStringDelimiter, .identifier,
                              .endOfScope(")"),
                              .endOfScope("]"):
-                            if tokens[prevIndex + 1 ..< index].contains(where: \.isLinebreak) {
+                            if tokens[prevIndex + 1 ..< index].contains(where: \.isLineBreak) {
                                 break
                             }
                             return token == .startOfScope("(") ? .functionCall : .subscript
@@ -425,7 +425,7 @@ extension Formatter {
         }
 
         if token == .keyword("class"),
-           let nextToken = next(.nonSpaceOrCommentOrLinebreak, after: index)
+           let nextToken = next(.nonSpaceOrCommentOrLineBreak, after: index)
         {
             return nextToken.isDeclarationTypeKeyword || nextToken.isModifierKeyword
         }
@@ -454,11 +454,11 @@ extension Formatter {
     /// modifier matching the specified predicate
     func modifiersForDeclaration(at index: Int, contains: (Int, String) -> Bool) -> Bool {
         var index = index
-        while var prevIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, before: index) {
+        while var prevIndex = self.index(of: .nonSpaceOrCommentOrLineBreak, before: index) {
             switch tokens[prevIndex] {
                 case let token where isModifier(at: prevIndex) || token.isAttribute:
                     if case .identifier = token,
-                       let nextToken = last(.nonSpaceOrCommentOrLinebreak, before: prevIndex),
+                       let nextToken = last(.nonSpaceOrCommentOrLineBreak, before: prevIndex),
                        nextToken == .keyword("case") || nextToken.isOperator(ofType: .infix)
                        || nextToken.isOperator(ofType: .prefix)
                     {
@@ -470,7 +470,7 @@ extension Formatter {
                     // Use the full modifier name instead of just the first token.
                     var modifierRange = prevIndex ... prevIndex
                     if let nextIndex = self.index(
-                        of: .nonSpaceOrCommentOrLinebreak,
+                        of: .nonSpaceOrCommentOrLineBreak,
                         after: prevIndex,
                     ),
                         tokens[nextIndex] == .startOfScope("<") || tokens[nextIndex] ==
@@ -486,7 +486,7 @@ extension Formatter {
                 case .endOfScope(")"):
                     guard let startIndex = self.index(of: .startOfScope("("), before: prevIndex),
                           let identifierIndex = self.index(
-                              of: .nonSpaceOrCommentOrLinebreak, before: startIndex,
+                              of: .nonSpaceOrCommentOrLineBreak, before: startIndex,
                               if: {
                                   $0.isAttribute || FormatRuleCatalog.allModifiers.contains($0.string)
                                       || $0 == .endOfScope(">")
@@ -495,7 +495,7 @@ extension Formatter {
                     else {
                         return false
                     }
-                    if let prevToken = last(.nonSpaceOrCommentOrLinebreak, before: identifierIndex),
+                    if let prevToken = last(.nonSpaceOrCommentOrLineBreak, before: identifierIndex),
                        prevToken == .delimiter(",") || prevToken.isDeclarationTypeKeyword
                     {
                         return false
@@ -504,7 +504,7 @@ extension Formatter {
                 case .endOfScope(">"):
                     guard let startIndex = self.index(of: .startOfScope("<"), before: prevIndex),
                           last(
-                              .nonSpaceOrCommentOrLinebreak,
+                              .nonSpaceOrCommentOrLineBreak,
                               before: startIndex,
                               if: { $0.isAttribute },
                           ) != nil
@@ -683,13 +683,13 @@ extension Formatter {
             if let endIndex = endOfScope(at: i),
                [.startOfScope("("), .operator(".", .infix)]
                .contains(next(.nonSpaceOrComment, after: endIndex) ?? .space(""))
-               || next(.nonSpaceOrCommentOrLinebreak, after: endIndex) == .startOfScope("{")
+               || next(.nonSpaceOrCommentOrLineBreak, after: endIndex) == .startOfScope("{")
             {
                 return true
             }
             return false
         }
-        guard var prevIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: i) else {
+        guard var prevIndex = index(of: .nonSpaceOrCommentOrLineBreak, before: i) else {
             return true
         }
         switch tokens[prevIndex] {
@@ -709,13 +709,13 @@ extension Formatter {
                 return !isStartOfClosure(at: startOfScope)
             case .endOfScope(")"), .endOfScope(">"):
                 guard var startOfScope = index(of: .startOfScope, before: prevIndex),
-                      var prev = index(of: .nonSpaceOrCommentOrLinebreak, before: startOfScope)
+                      var prev = index(of: .nonSpaceOrCommentOrLineBreak, before: startOfScope)
                 else {
                     return true
                 }
                 if tokens[prevIndex] == .endOfScope(">"), tokens[prev] == .endOfScope(")") {
                     startOfScope = index(of: .startOfScope, before: prev) ?? startOfScope
-                    prev = index(of: .nonSpaceOrCommentOrLinebreak, before: startOfScope) ?? prev
+                    prev = index(of: .nonSpaceOrCommentOrLineBreak, before: startOfScope) ?? prev
                 }
                 switch tokens[prev] {
                     case .identifier:
@@ -747,7 +747,7 @@ extension Formatter {
                         else {
                             return false
                         }
-                        return last(.nonSpaceOrCommentOrLinebreak, before: prevIndex) !=
+                        return last(.nonSpaceOrCommentOrLineBreak, before: prevIndex) !=
                             .keyword("func")
                     default:
                         return false
@@ -755,7 +755,7 @@ extension Formatter {
                 fallthrough
             case .identifier, .number, .operator("?", .postfix), .operator("!", .postfix),
                  .endOfScope where tokens[prevIndex].isStringDelimiter:
-                if let nextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: i),
+                if let nextIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: i),
                    isAccessorKeyword(at: nextIndex) || isAccessorKeyword(at: prevIndex)
                 {
                     return false
@@ -782,11 +782,11 @@ extension Formatter {
                             switch tokens[nextIndex] {
                                 case .operator("=", .infix):
                                     return true
-                                case .linebreak:
+                                case .lineBreak:
                                     guard
                                         let nextIndex =
                                         self.index(
-                                            of: .nonSpaceOrCommentOrLinebreak,
+                                            of: .nonSpaceOrCommentOrLineBreak,
                                             after: nextIndex,
                                         )
                                     else {
@@ -879,18 +879,18 @@ extension Formatter {
             || ["get", "set", "willSet", "didSet", "init", "_modify"].contains(
                 token(at: i)?.string ?? "",
             ),
-            var prevIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: i)
+            var prevIndex = index(of: .nonSpaceOrCommentOrLineBreak, before: i)
         else {
             return false
         }
         if tokens[prevIndex] == .endOfScope("}"),
            let startIndex = index(of: .startOfScope("{"), before: prevIndex),
-           let prev = index(of: .nonSpaceOrCommentOrLinebreak, before: startIndex)
+           let prev = index(of: .nonSpaceOrCommentOrLineBreak, before: startIndex)
         {
             prevIndex = prev
             if tokens[prevIndex] == .endOfScope(")"),
                let startIndex = index(of: .startOfScope("("), before: prevIndex),
-               let prev = index(of: .nonSpaceOrCommentOrLinebreak, before: startIndex)
+               let prev = index(of: .nonSpaceOrCommentOrLineBreak, before: startIndex)
             {
                 prevIndex = prev
             }
@@ -916,7 +916,7 @@ extension Formatter {
     func isConditionalAssignment(at i: Int) -> Bool {
         guard let startOfConditional = startOfConditionalStatement(at: i),
               let previousToken = lastToken(
-                  before: startOfConditional, where: { !$0.isSpaceOrCommentOrLinebreak },
+                  before: startOfConditional, where: { !$0.isSpaceOrCommentOrLineBreak },
               )
         else { return false }
 
@@ -945,7 +945,7 @@ extension Formatter {
 
         if tokens[index] == .keyword("case"),
            let i = self.index(
-               of: .nonSpaceOrCommentOrLinebreak,
+               of: .nonSpaceOrCommentOrLineBreak,
                before: index,
                if: { $0 != .delimiter(",") },
            )
@@ -958,7 +958,7 @@ extension Formatter {
                 guard
                     let prevIndex =
                     self
-                        .index(of: .nonSpaceOrCommentOrLinebreak, before: index)
+                        .index(of: .nonSpaceOrCommentOrLineBreak, before: index)
                 else {
                     return nil
                 }
@@ -1066,12 +1066,12 @@ extension Formatter {
             case .identifier:
                 guard
                     let dotIndex = index(
-                        of: .nonSpaceOrCommentOrLinebreak, before: i,
+                        of: .nonSpaceOrCommentOrLineBreak, before: i,
                         if: {
                             $0.isOperator(".")
                         },
                     ), let prevTokenIndex = index(
-                        of: .nonSpaceOrCommentOrLinebreak,
+                        of: .nonSpaceOrCommentOrLineBreak,
                         before: dotIndex,
                     )
                 else {
@@ -1086,18 +1086,18 @@ extension Formatter {
     /// If the token at the specified index is part of an @attribute, returns the index of the last
     /// token in the attribute
     func endOfAttribute(at i: Int) -> Int? {
-        guard let startIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: i) else {
+        guard let startIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: i) else {
             return i
         }
         switch tokens[startIndex] {
             case .startOfScope("(")
-            where !tokens[i + 1 ..< startIndex].contains(where: \.isLinebreak):
+            where !tokens[i + 1 ..< startIndex].contains(where: \.isLineBreak):
                 guard let closeParenIndex = index(of: .endOfScope(")"), after: startIndex) else {
                     return nil
                 }
                 return closeParenIndex
             case .operator(".", .infix):
-                guard let nextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: startIndex)
+                guard let nextIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: startIndex)
                 else {
                     return nil
                 }
@@ -1150,7 +1150,7 @@ extension Formatter {
                     case "in":
                         return lastSignificantKeyword(at: i) != "for"
                     case "return":
-                        guard let nextToken = next(.nonSpaceOrCommentOrLinebreak, after: i) else {
+                        guard let nextToken = next(.nonSpaceOrCommentOrLineBreak, after: i) else {
                             return true
                         }
                         switch nextToken {
@@ -1184,7 +1184,7 @@ extension Formatter {
                 }
             default:
                 if let attributeIndex = startOfAttribute(at: i),
-                   let prevIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: attributeIndex)
+                   let prevIndex = index(of: .nonSpaceOrCommentOrLineBreak, before: attributeIndex)
                 {
                     return isEndOfStatement(at: prevIndex, in: scope)
                 }
@@ -1212,7 +1212,7 @@ extension Formatter {
                 // For case statements and closures, we already indent
                 return scope == "case" || (scope == "{" && lastSignificantKeyword(at: i) != "for")
             case .keyword("is"):
-                guard let lastToken = last(.nonSpaceOrCommentOrLinebreak, before: i) else {
+                guard let lastToken = last(.nonSpaceOrCommentOrLineBreak, before: i) else {
                     return false
                 }
                 return [.endOfScope("case"), .keyword("case"), .delimiter(",")].contains(lastToken)
@@ -1221,8 +1221,8 @@ extension Formatter {
                  .identifier where isTrailingClosureLabel(at: i):
                 return false
             case .startOfScope("{") where isStartOfClosure(at: i):
-                guard last(.nonSpaceOrComment, before: i)?.isLinebreak == true,
-                      let prevIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: i),
+                guard last(.nonSpaceOrComment, before: i)?.isLineBreak == true,
+                      let prevIndex = index(of: .nonSpaceOrCommentOrLineBreak, before: i),
                       let prevToken = self.token(at: prevIndex)
                 else {
                     return false
@@ -1232,17 +1232,17 @@ extension Formatter {
                 }
                 if [.endOfScope(")"), .endOfScope("]")].contains(prevToken),
                    let startIndex = index(of: .startOfScope, before: prevIndex),
-                   !tokens[startIndex ..< prevIndex].contains(where: \.isLinebreak)
+                   !tokens[startIndex ..< prevIndex].contains(where: \.isLineBreak)
                    || currentIndentForLine(at: startIndex) == currentIndentForLine(at: prevIndex)
                 {
                     return false
                 }
                 return true
             case .identifier("async"):
-                if next(.nonSpaceOrCommentOrLinebreak, after: i) == .keyword("let") {
+                if next(.nonSpaceOrCommentOrLineBreak, after: i) == .keyword("let") {
                     return true
                 }
-                if last(.nonSpaceOrCommentOrLinebreak, before: i) == .endOfScope(")"),
+                if last(.nonSpaceOrCommentOrLineBreak, before: i) == .endOfScope(")"),
                    lastSignificantKeyword(at: i) == "func"
                 {
                     return false
@@ -1252,7 +1252,7 @@ extension Formatter {
                  .number where !treatingCollectionKeysAsStart, .keyword where token.isMacro,
                  .identifier:
                 if !treatingCollectionKeysAsStart,
-                   let prevIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: i),
+                   let prevIndex = index(of: .nonSpaceOrCommentOrLineBreak, before: i),
                    case let prevToken = tokens[prevIndex],
                    [
                        .delimiter(","), .startOfScope("["), .startOfScope("("),
@@ -1268,7 +1268,7 @@ extension Formatter {
                 }
                 fallthrough
             case .keyword("try"), .keyword("await"):
-                guard let prevToken = last(.nonSpaceOrCommentOrLinebreak, before: i) else {
+                guard let prevToken = last(.nonSpaceOrCommentOrLineBreak, before: i) else {
                     return true
                 }
                 switch prevToken {
@@ -1286,10 +1286,10 @@ extension Formatter {
                 guard let prevToken = last(.nonSpaceOrComment, before: i) else {
                     return true
                 }
-                guard prevToken.isLinebreak else {
+                guard prevToken.isLineBreak else {
                     return false
                 }
-                if let prevToken = last(.nonSpaceOrCommentOrLinebreak, before: i),
+                if let prevToken = last(.nonSpaceOrCommentOrLineBreak, before: i),
                    prevToken == .keyword("return") || prevToken.isOperator(ofType: .infix)
                    || currentScope(at: i)?.isMultilineStringDelimiter == true
                 {
@@ -1312,9 +1312,9 @@ extension Formatter {
 
     func isTrailingClosureLabel(at i: Int) -> Bool {
         if case .identifier? = token(at: i),
-           last(.nonSpaceOrCommentOrLinebreak, before: i) == .endOfScope("}"),
+           last(.nonSpaceOrCommentOrLineBreak, before: i) == .endOfScope("}"),
            let nextIndex = index(of: .nonSpaceOrComment, after: i, if: { $0 == .delimiter(":") }),
-           let nextNextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: nextIndex),
+           let nextNextIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: nextIndex),
            isStartOfClosure(at: nextNextIndex)
         {
             return true
@@ -1352,7 +1352,7 @@ extension Formatter {
                 let prevIndex = index(
                     before: startIndex,
                     where: {
-                        !$0.isSpaceOrCommentOrLinebreak && !$0.isEndOfScope
+                        !$0.isSpaceOrCommentOrLineBreak && !$0.isEndOfScope
                     },
                 )
             else {
@@ -1374,7 +1374,7 @@ extension Formatter {
             }
 
             if case let .identifier(name) = tokens[prevIndex], name.first?.isUppercase == true {
-                switch last(.nonSpaceOrCommentOrLinebreak, before: prevIndex) {
+                switch last(.nonSpaceOrCommentOrLineBreak, before: prevIndex) {
                     case .identifier("some"), .delimiter, .startOfScope, .endOfScope,
                          .operator(_, .infix), .operator(_, .prefix), nil:
                         return true
@@ -1418,7 +1418,7 @@ extension Formatter {
                 case "_", "$":
                     return true
                 case "self":
-                    if last(.nonSpaceOrCommentOrLinebreak, before: i)?.isOperator(".") == true {
+                    if last(.nonSpaceOrCommentOrLineBreak, before: i)?.isOperator(".") == true {
                         return true
                     }
                     fallthrough
@@ -1427,7 +1427,7 @@ extension Formatter {
                         return true
                     }
                 case "Self", "Any":
-                    if let prevToken = last(.nonSpaceOrCommentOrLinebreak, before: i),
+                    if let prevToken = last(.nonSpaceOrCommentOrLineBreak, before: i),
                        [.delimiter(":"), .operator("->", .infix)].contains(prevToken)
                     {
                         // TODO: check for other cases where it's safe to use unescaped
@@ -1438,14 +1438,14 @@ extension Formatter {
                         // TODO: check it's actually inside a type declaration, otherwise backticks aren't needed
                         return true
                     }
-                    if last(.nonSpaceOrCommentOrLinebreak, before: i)?.isOperator(".") == true {
+                    if last(.nonSpaceOrCommentOrLineBreak, before: i)?.isOperator(".") == true {
                         return true
                     }
                     return false
                 case "get", "set", "willSet", "didSet", "init", "_modify":
                     return isAccessorKeyword(at: i, checkKeyword: false)
                 case "actor":
-                    if last(.nonSpaceOrCommentOrLinebreak, before: i)?
+                    if last(.nonSpaceOrCommentOrLineBreak, before: i)?
                         .isOperator(ofType: .infix) == true
                     {
                         return false
@@ -1455,7 +1455,7 @@ extension Formatter {
             }
         }
         if let prevIndex = index(
-            of: .nonSpaceOrCommentOrLinebreak, before: i,
+            of: .nonSpaceOrCommentOrLineBreak, before: i,
             if: {
                 $0.isOperator(".")
             },
@@ -1479,13 +1479,13 @@ extension Formatter {
     /// Is token at argument position
     func isArgumentPosition(at i: Int) -> Bool {
         assert(tokens[i].isIdentifierOrKeyword)
-        guard let nextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: i) else {
+        guard let nextIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: i) else {
             return false
         }
         let nextToken = tokens[nextIndex]
         if nextToken == .delimiter(":")
             || (nextToken.isIdentifier
-                && next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) == .delimiter(":")),
+                && next(.nonSpaceOrCommentOrLineBreak, after: nextIndex) == .delimiter(":")),
             currentScope(at: i) == .startOfScope("(")
         {
             return true
@@ -1497,7 +1497,7 @@ extension Formatter {
     func isCommentedCode(at i: Int) -> Bool {
         if token(at: i) == .startOfScope("//"), token(at: i - 1)?.isSpace != true {
             switch token(at: i + 1) {
-                case nil, .linebreak:
+                case nil, .lineBreak:
                     return true
                 case let .space(space) where space.hasPrefix(options.indent):
                     return true
@@ -1513,7 +1513,7 @@ extension Formatter {
         guard case .identifier = token(at: i) else {
             return false
         }
-        return next(.nonSpaceOrCommentOrLinebreak, after: i) == .delimiter(":")
+        return next(.nonSpaceOrCommentOrLineBreak, after: i) == .delimiter(":")
     }
 
     /// Returns true if the token at the specified index is the opening delimiter of a parameter list
@@ -1521,15 +1521,15 @@ extension Formatter {
     func isParameterList(at i: Int) -> Bool {
         assert([.startOfScope("("), .startOfScope("<")].contains(tokens[i]))
         guard let endIndex = endOfScope(at: i),
-              let nextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: endIndex)
+              let nextIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: endIndex)
         else { return false }
         switch tokens[nextIndex] {
             case .operator("->", .infix), .keyword("throws"), .keyword("rethrows"):
                 return true
             case .keyword("in"):
-                return last(.nonSpaceOrLinebreak, before: i) != .keyword("for")
+                return last(.nonSpaceOrLineBreak, before: i) != .keyword("for")
             case .identifier("async"):
-                if let nextToken = next(.nonSpaceOrCommentOrLinebreak, after: nextIndex),
+                if let nextToken = next(.nonSpaceOrCommentOrLineBreak, after: nextIndex),
                    [.operator("->", .infix), .keyword("throws"), .keyword("rethrows")]
                    .contains(nextToken)
                 {
@@ -1559,7 +1559,7 @@ extension Formatter {
     /// Returns if the `case` keyword at the specified index is part of an enum (as opposed to `if case`)
     func isEnumCase(at i: Int) -> Bool {
         assert(tokens[i] == .keyword("case"))
-        switch last(.nonSpaceOrCommentOrLinebreak, before: i) {
+        switch last(.nonSpaceOrCommentOrLineBreak, before: i) {
             case .identifier, .endOfScope(")"), .startOfScope("{"):
                 return true
             default:
@@ -1627,10 +1627,10 @@ extension Formatter {
         }
 
         if let nextTokenIndex = index(
-            of: .nonSpaceOrCommentOrLinebreak, after: baseType.range.upperBound,
+            of: .nonSpaceOrCommentOrLineBreak, after: baseType.range.upperBound,
         ),
             continuationOperators.contains(tokens[nextTokenIndex]),
-            let followingToken = index(of: .nonSpaceOrCommentOrLinebreak, after: nextTokenIndex),
+            let followingToken = index(of: .nonSpaceOrCommentOrLineBreak, after: nextTokenIndex),
             let followingType = parseType(
                 at: followingToken, excludeLowercaseIdentifiers: excludeLowercaseIdentifiers,
             )
@@ -1665,12 +1665,12 @@ extension Formatter {
             // Validate that the inner type is also valid
             guard
                 let innerTypeStartIndex = index(
-                    of: .nonSpaceOrCommentOrLinebreak,
+                    of: .nonSpaceOrCommentOrLineBreak,
                     after: startOfTypeIndex,
                 ),
                 let innerType = parseType(at: innerTypeStartIndex),
                 let indexAfterType = index(
-                    of: .nonSpaceOrCommentOrLinebreak, after: innerType.range.upperBound,
+                    of: .nonSpaceOrCommentOrLineBreak, after: innerType.range.upperBound,
                 )
             else { return nil }
 
@@ -1679,12 +1679,12 @@ extension Formatter {
             if indexAfterType != endOfScope {
                 guard tokens[indexAfterType] == .delimiter(":"),
                       let secondTypeIndex = index(
-                          of: .nonSpaceOrCommentOrLinebreak,
+                          of: .nonSpaceOrCommentOrLineBreak,
                           after: indexAfterType,
                       ),
                       let secondType = parseType(at: secondTypeIndex),
                       let indexAfterSecondType = index(
-                          of: .nonSpaceOrCommentOrLinebreak, after: secondType.range.upperBound,
+                          of: .nonSpaceOrCommentOrLineBreak, after: secondType.range.upperBound,
                       ),
                       indexAfterSecondType == endOfScope
                 else { return nil }
@@ -1705,12 +1705,12 @@ extension Formatter {
 
             // If we find a return arrow, this is a closure with a return type.
             if let closureReturnIndex = index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 after: searchIndex,
             ),
                 tokens[closureReturnIndex] == .operator("->", .infix),
                 let returnTypeIndex = index(
-                    of: .nonSpaceOrCommentOrLinebreak,
+                    of: .nonSpaceOrCommentOrLineBreak,
                     after: closureReturnIndex,
                 ),
                 let returnTypeRange = parseType(at: returnTypeIndex)?.range
@@ -1731,7 +1731,7 @@ extension Formatter {
         }
 
         // Parse types of the form `Foo<...>`
-        if let nextTokenIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: startOfTypeIndex),
+        if let nextTokenIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: startOfTypeIndex),
            tokens[nextTokenIndex] == .startOfScope("<"),
            let endOfScope = endOfScope(at: nextTokenIndex)
         {
@@ -1743,7 +1743,7 @@ extension Formatter {
             "any", "some", "borrowing", "consuming", "sending", "repeat", "each", "~", "inout",
         ])
         if typePrefixes.contains(startToken.string) || startToken.isAttribute,
-           let nextToken = index(of: .nonSpaceOrCommentOrLinebreak, after: startOfTypeIndex),
+           let nextToken = index(of: .nonSpaceOrCommentOrLineBreak, after: startOfTypeIndex),
            let followingType = parseType(at: nextToken)
         {
             return TypeName(
@@ -1810,7 +1810,7 @@ extension Formatter {
         let prefixKeywords = ["await", "repeat", "each"]
         if tokens[startIndex].isOperator(ofType: .prefix)
             || prefixKeywords.contains(tokens[startIndex].string),
-            let nextTokenIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: startIndex),
+            let nextTokenIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: startIndex),
             let followingExpression = parseExpressionRange(
                 startingAt: nextTokenIndex,
                 allowConditionalExpressions: allowConditionalExpressions,
@@ -1822,7 +1822,7 @@ extension Formatter {
         // Any value can be preceded by `try`
         if tokens[startIndex].string == "try" {
             guard var nextTokenAfterTry = index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 after: startIndex,
             )
             else { return nil }
@@ -1832,7 +1832,7 @@ extension Formatter {
             if tokens[nextTokenAfterTry].isUnwrapOperator {
                 guard
                     let nextTokenAfterTryOperator = index(
-                        of: .nonSpaceOrCommentOrLinebreak, after: nextTokenAfterTry,
+                        of: .nonSpaceOrCommentOrLineBreak, after: nextTokenAfterTry,
                     )
                 else { return nil }
                 nextTokenAfterTry = nextTokenAfterTryOperator
@@ -1878,7 +1878,7 @@ extension Formatter {
                 return nil
         }
 
-        while let nextTokenIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: endOfExpression),
+        while let nextTokenIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: endOfExpression),
               let nextToken = token(at: nextTokenIndex)
         {
             switch nextToken {
@@ -1886,7 +1886,7 @@ extension Formatter {
                 case .startOfScope("("), .startOfScope("["), .startOfScope("<"):
                     // If there's a linebreak between an expression and a paren or subscript,
                     // then it's not parsed as a method call and is actually a separate expression
-                    if tokens[endOfExpression ..< nextTokenIndex].contains(where: \.isLinebreak) {
+                    if tokens[endOfExpression ..< nextTokenIndex].contains(where: \.isLineBreak) {
                         return startIndex ... endOfExpression
                     }
 
@@ -1897,7 +1897,7 @@ extension Formatter {
                 case .delimiter("."), .operator(".", _):
                     guard
                         let nextIdentifierIndex = index(
-                            of: .nonSpaceOrCommentOrLinebreak,
+                            of: .nonSpaceOrCommentOrLineBreak,
                             after: nextTokenIndex,
                         ),
                         tokens[nextIdentifierIndex].isIdentifier
@@ -1913,7 +1913,7 @@ extension Formatter {
                 //  - However, the assignment operator (`=`) is special and _isn't_ an expression
                 case let .operator(operatorString, .infix) where operatorString != "=":
                     guard let nextTokenIndex = index(
-                        of: .nonSpaceOrCommentOrLinebreak,
+                        of: .nonSpaceOrCommentOrLineBreak,
                         after: nextTokenIndex,
                     ),
                         let nextExpression = parseExpressionRange(startingAt: nextTokenIndex)
@@ -1925,7 +1925,7 @@ extension Formatter {
                 case .keyword("is"), .keyword("as"):
                     guard
                         var nextTokenAfterKeyword = index(
-                            of: .nonSpaceOrCommentOrLinebreak, after: nextTokenIndex,
+                            of: .nonSpaceOrCommentOrLineBreak, after: nextTokenIndex,
                         )
                     else { return nil }
 
@@ -1934,7 +1934,7 @@ extension Formatter {
                     if tokens[nextTokenAfterKeyword].isUnwrapOperator {
                         guard
                             let nextTokenAfterOperator = index(
-                                of: .nonSpaceOrCommentOrLinebreak, after: nextTokenAfterKeyword,
+                                of: .nonSpaceOrCommentOrLineBreak, after: nextTokenAfterKeyword,
                             )
                         else { return nil }
                         nextTokenAfterKeyword = nextTokenAfterOperator
@@ -1964,12 +1964,12 @@ extension Formatter {
                 // like (expression) trailingClosure: { ... }
                 case .identifier:
                     guard let colonIndex = index(
-                        of: .nonSpaceOrCommentOrLinebreak,
+                        of: .nonSpaceOrCommentOrLineBreak,
                         after: nextTokenIndex,
                     ),
                         tokens[colonIndex] == .delimiter(":"),
                         let startOfClosureIndex = index(
-                            of: .nonSpaceOrCommentOrLinebreak,
+                            of: .nonSpaceOrCommentOrLineBreak,
                             after: colonIndex,
                         ),
                         tokens[startOfClosureIndex] == .startOfScope("{"),
@@ -1996,13 +1996,13 @@ extension Formatter {
         let token = tokens[endIndex]
 
         // First, check what comes BEFORE this token to see if we're part of a larger expression
-        if let prevIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: endIndex) {
+        if let prevIndex = index(of: .nonSpaceOrCommentOrLineBreak, before: endIndex) {
             let prevToken = tokens[prevIndex]
 
             // Check for dot notation (foo.bar)
             if prevToken == .operator(".", .infix) || prevToken == .delimiter(".") {
                 guard let beforeDotIndex = index(
-                    of: .nonSpaceOrCommentOrLinebreak,
+                    of: .nonSpaceOrCommentOrLineBreak,
                     before: prevIndex,
                 ),
                     let previousExpression = parseExpressionRange(endingAt: beforeDotIndex)
@@ -2013,7 +2013,7 @@ extension Formatter {
             // Check for infix operators (foo + bar, but not foo = bar)
             if prevToken.isOperator(ofType: .infix), prevToken.string != "=" {
                 guard let beforeOperatorIndex = index(
-                    of: .nonSpaceOrCommentOrLinebreak,
+                    of: .nonSpaceOrCommentOrLineBreak,
                     before: prevIndex,
                 ),
                     let previousExpression = parseExpressionRange(endingAt: beforeOperatorIndex)
@@ -2034,7 +2034,7 @@ extension Formatter {
             // Check for type casting keywords (as, is)
             if prevToken == .keyword("as") || prevToken == .keyword("is") {
                 guard let beforeKeywordIndex = index(
-                    of: .nonSpaceOrCommentOrLinebreak,
+                    of: .nonSpaceOrCommentOrLineBreak,
                     before: prevIndex,
                 ),
                     let previousExpression = parseExpressionRange(endingAt: beforeKeywordIndex)
@@ -2044,10 +2044,10 @@ extension Formatter {
 
             // Check for as?, as! (unwrap operator after "as")
             if prevToken.isUnwrapOperator,
-               let asIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: prevIndex),
+               let asIndex = index(of: .nonSpaceOrCommentOrLineBreak, before: prevIndex),
                tokens[asIndex] == .keyword("as")
             {
-                guard let beforeAsIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: asIndex),
+                guard let beforeAsIndex = index(of: .nonSpaceOrCommentOrLineBreak, before: asIndex),
                       let previousExpression = parseExpressionRange(endingAt: beforeAsIndex)
                 else { return nil }
                 return previousExpression.lowerBound ... endIndex
@@ -2062,7 +2062,7 @@ extension Formatter {
             // Check for operators after prefix keywords (try!, try?, await!)
             if prevToken.isUnwrapOperator || prevToken == .operator("?", .postfix) {
                 if let beforeOperatorIndex = index(
-                    of: .nonSpaceOrCommentOrLinebreak,
+                    of: .nonSpaceOrCommentOrLineBreak,
                     before: prevIndex,
                 ),
                     prefixKeywords.contains(tokens[beforeOperatorIndex].string)
@@ -2074,7 +2074,7 @@ extension Formatter {
 
         // Handle postfix and infix operators (!, ?, +) that can be preceded by other parts of the expression
         if token.isOperator(ofType: .postfix) || token.isOperator(ofType: .infix) {
-            guard let prevIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: endIndex),
+            guard let prevIndex = index(of: .nonSpaceOrCommentOrLineBreak, before: endIndex),
                   let previousExpression = parseExpressionRange(endingAt: prevIndex)
             else { return nil }
             return previousExpression.lowerBound ... endIndex
@@ -2085,7 +2085,7 @@ extension Formatter {
             guard let startOfScope = index(of: .startOfScope, before: endIndex) else { return nil }
 
             // Check if there's something before the scope (method call, subscript)
-            if let prevIndex = index(of: .nonSpaceOrCommentOrLinebreak, before: startOfScope),
+            if let prevIndex = index(of: .nonSpaceOrCommentOrLineBreak, before: startOfScope),
                let previousExpression = parseExpressionRange(endingAt: prevIndex)
             {
                 return previousExpression.lowerBound ... endIndex
@@ -2117,7 +2117,7 @@ extension Formatter {
         {
             var parseToken = index
             while let previousToken = self.index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 before: parseToken,
             ) {
                 // Check if this previous token is the start of a subexpression that contains the given index
@@ -2222,7 +2222,7 @@ extension Formatter {
             {
                 // The type body excludes any leading linebreaks or trailing spaces.
                 let body: [Declaration]
-                if let startOfBody = self.index(of: .nonLinebreak, after: bodyOpenBrace),
+                if let startOfBody = self.index(of: .nonLineBreak, after: bodyOpenBrace),
                    let endOfBody = self.index(of: .nonSpace, before: endOfScope),
                    startOfBody <= endOfBody
                 {
@@ -2247,7 +2247,7 @@ extension Formatter {
                 // The conditional compilation body excludes any leading linebreaks or trailing spaces.
                 let body: [Declaration]
                 if let startOfBody = self.index(
-                    of: .nonLinebreak, after: endOfLine(at: declaration.keywordIndex),
+                    of: .nonLineBreak, after: endOfLine(at: declaration.keywordIndex),
                 ),
                     let endOfBody = self.index(of: .nonSpace, before: endOfScope),
                     startOfBody <= endOfBody
@@ -2356,7 +2356,7 @@ extension Formatter {
         if let nextDeclarationKeywordIndex,
            let lastIndexBeforeNextDeclaration = index(
                before: startOfModifiers(at: nextDeclarationKeywordIndex, includingAttributes: true),
-               where: { !$0.isSpaceOrCommentOrLinebreak },
+               where: { !$0.isSpaceOrCommentOrLineBreak },
            ).map({ endOfLine(at: $0) })
         {
             // If we have an existing `endOfDeclaration` index from a parsing implementation like
@@ -2376,12 +2376,12 @@ extension Formatter {
         //  - This includes any spaces on blank lines, but doesn't include the
         //    indentation associated with the next declaration.
         while let linebreakSearchIndex = endOfDeclaration,
-              token(at: linebreakSearchIndex + 1)?.isSpaceOrLinebreak == true
+              token(at: linebreakSearchIndex + 1)?.isSpaceOrLineBreak == true
         {
             // Only spaces between linebreaks (e.g. spaces on blank lines) are included
             if token(at: linebreakSearchIndex + 1)?.isSpace == true {
-                guard token(at: linebreakSearchIndex)?.isLinebreak == true,
-                      token(at: linebreakSearchIndex + 2)?.isLinebreak == true
+                guard token(at: linebreakSearchIndex)?.isLineBreak == true,
+                      token(at: linebreakSearchIndex + 2)?.isLineBreak == true
                 else { break }
             }
 
@@ -2423,7 +2423,7 @@ extension Formatter {
         guard let endOfScopeIndex = endOfScope(at: startOfScopeIndex),
               startOfScopeIndex + 1 != endOfScopeIndex,
               let firstTokenInBody = index(
-                  of: .nonSpaceOrCommentOrLinebreak,
+                  of: .nonSpaceOrCommentOrLineBreak,
                   after: startOfScopeIndex + 1,
               ),
               let expressionRange = parseExpressionRange(
@@ -2431,7 +2431,7 @@ extension Formatter {
               )
         else { return false }
 
-        return index(of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound)
+        return index(of: .nonSpaceOrCommentOrLineBreak, after: expressionRange.upperBound)
             == endOfScopeIndex
     }
 
@@ -2534,7 +2534,7 @@ extension Formatter {
     func parsePropertyDeclaration(atIntroducerIndex introducerIndex: Int) -> PropertyDeclaration? {
         guard ["let", "var"].contains(tokens[introducerIndex].string),
               let propertyIdentifierIndex = index(
-                  of: .nonSpaceOrCommentOrLinebreak, after: introducerIndex,
+                  of: .nonSpaceOrCommentOrLineBreak, after: introducerIndex,
               ),
               let propertyIdentifier = token(at: propertyIdentifierIndex),
               propertyIdentifier.isIdentifier
@@ -2543,11 +2543,11 @@ extension Formatter {
         var typeInformation: (colonIndex: Int, type: TypeName, range: AutoUpdatingRange)?
 
         if let colonIndex = index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: propertyIdentifierIndex,
         ),
             tokens[colonIndex] == .delimiter(":"),
-            let startOfTypeIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: colonIndex),
+            let startOfTypeIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: colonIndex),
             let type = parseType(at: startOfTypeIndex)
         {
             typeInformation = (
@@ -2561,12 +2561,12 @@ extension Formatter {
         var valueInformation: (assignmentIndex: Int, expressionRange: ClosedRange<Int>)?
 
         if let assignmentIndex = index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: endOfTypeOrIdentifier,
         ),
             tokens[assignmentIndex] == .operator("=", .infix),
             let startOfExpression = index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 after: assignmentIndex,
             ),
             let expressionRange = parseExpressionRange(
@@ -2584,7 +2584,7 @@ extension Formatter {
         var body: (scopeRange: ClosedRange<Int>, range: ClosedRange<Int>)?
 
         if let startOfBodyIndex = index(
-            of: .nonSpaceOrCommentOrLinebreak, after: endOfTypeOrIdentifierOrValue,
+            of: .nonSpaceOrCommentOrLineBreak, after: endOfTypeOrIdentifierOrValue,
         ),
             tokens[startOfBodyIndex] == .startOfScope("{"),
             let endOfScope = endOfScope(at: startOfBodyIndex)
@@ -2594,10 +2594,10 @@ extension Formatter {
             let rangeInsideBody: ClosedRange<Int>
             if startOfBodyIndex + 1 != endOfScope {
                 if let firstTokenInBody = index(
-                    of: .nonSpaceOrCommentOrLinebreak, after: startOfBodyIndex + 1,
+                    of: .nonSpaceOrCommentOrLineBreak, after: startOfBodyIndex + 1,
                 ),
                     let lastTokenInBody = index(
-                        of: .nonSpaceOrCommentOrLinebreak,
+                        of: .nonSpaceOrCommentOrLineBreak,
                         before: endOfScope,
                     ),
                     firstTokenInBody <= lastTokenInBody
@@ -2636,14 +2636,14 @@ extension Formatter {
                 importRanges.removeAll()
             }
             // Get start of line
-            var startIndex = index(of: .linebreak, before: i) ?? 0
+            var startIndex = index(of: .lineBreak, before: i) ?? 0
             // Check for attributes
             var previousKeywordIndex = index(of: .keywordOrAttribute, before: i)
             while let previousIndex = previousKeywordIndex {
                 var nextStart: Int? // workaround for Swift Linux bug
                 if tokens[previousIndex].isAttribute {
                     if previousIndex < startIndex {
-                        nextStart = index(of: .linebreak, before: previousIndex) ?? 0
+                        nextStart = index(of: .lineBreak, before: previousIndex) ?? 0
                     }
                     previousKeywordIndex = index(of: .keywordOrAttribute, before: previousIndex)
                     startIndex = nextStart ?? startIndex
@@ -2656,19 +2656,19 @@ extension Formatter {
             }
             // Gather comments
             let codeStartIndex = startIndex
-            var prevIndex = index(of: .linebreak, before: startIndex) ?? 0
+            var prevIndex = index(of: .lineBreak, before: startIndex) ?? 0
             while startIndex > 0,
                   next(.nonSpace, after: prevIndex)?.isComment == true,
-                  next(.nonSpaceOrComment, after: prevIndex)?.isLinebreak == true
+                  next(.nonSpaceOrComment, after: prevIndex)?.isLineBreak == true
             {
                 if prevIndex == 0, index(of: .startOfScope("#if"), before: startIndex) != nil {
                     break
                 }
                 startIndex = prevIndex
-                prevIndex = index(of: .linebreak, before: startIndex) ?? 0
+                prevIndex = index(of: .lineBreak, before: startIndex) ?? 0
             }
             // Check if comment is potentially a file header
-            if last(.nonSpaceOrCommentOrLinebreak, before: startIndex) == nil {
+            if last(.nonSpaceOrCommentOrLineBreak, before: startIndex) == nil {
                 for case let .commentBody(body) in tokens[startIndex ..< codeStartIndex] {
                     if body.contains("created") || body.contains("Created")
                         || body.contains(options.fileInfo.fileName ?? ".swift")
@@ -2680,13 +2680,13 @@ extension Formatter {
                 }
             }
             // Get end of line
-            let endIndex = index(of: .linebreak, after: i) ?? tokens.count
+            let endIndex = index(of: .lineBreak, after: i) ?? tokens.count
             // Get name
             if let firstPartIndex = index(of: .identifier, after: i) {
                 var name = tokens[firstPartIndex].string
                 var partIndex = firstPartIndex
                 loop: while let nextPartIndex = index(
-                    of: .nonSpaceOrCommentOrLinebreak,
+                    of: .nonSpaceOrCommentOrLineBreak,
                     after: partIndex,
                 ) {
                     switch tokens[nextPartIndex] {
@@ -2712,14 +2712,14 @@ extension Formatter {
                 pushStack()
                 return
             }
-            if next(.spaceOrCommentOrLinebreak, after: endIndex)?.isLinebreak == true {
+            if next(.spaceOrCommentOrLineBreak, after: endIndex)?.isLineBreak == true {
                 // Blank line after - consider this the end of a block
                 pushStack()
                 return
             }
-            if var nextTokenIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: endIndex) {
+            if var nextTokenIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: endIndex) {
                 while tokens[nextTokenIndex].isAttribute {
-                    guard let nextIndex = index(of: .nonSpaceOrLinebreak, after: nextTokenIndex)
+                    guard let nextIndex = index(of: .nonSpaceOrLineBreak, after: nextTokenIndex)
                     else {
                         // End of imports
                         pushStack()
@@ -3010,7 +3010,7 @@ extension Formatter {
 
         // Check if this is a closure `{ value in ... }` clause
         if let indexAfterOpenBrace = index(
-            of: .nonSpaceOrCommentOrLinebreak, after: closureOpenBraceIndex,
+            of: .nonSpaceOrCommentOrLineBreak, after: closureOpenBraceIndex,
         ),
             tokens[indexAfterOpenBrace].isIdentifier
         {
@@ -3021,7 +3021,7 @@ extension Formatter {
 
                 guard
                     let nextIndex = index(
-                        of: .nonSpaceOrCommentOrLinebreak,
+                        of: .nonSpaceOrCommentOrLineBreak,
                         after: currentArgumentListIndex,
                     )
                 else {
@@ -3031,7 +3031,7 @@ extension Formatter {
                 // Skip over any commas
                 if tokens[nextIndex] == .delimiter(",") {
                     currentArgumentListIndex =
-                        index(of: .nonSpaceOrCommentOrLinebreak, after: nextIndex) ?? nextIndex
+                        index(of: .nonSpaceOrCommentOrLineBreak, after: nextIndex) ?? nextIndex
                 } else {
                     currentArgumentListIndex = nextIndex
                 }
@@ -3047,15 +3047,15 @@ extension Formatter {
 
         // Check if this is a closure `{ (value: ValueType) in ... }` clause
         else if let indexAfterOpenBrace = index(
-            of: .nonSpaceOrCommentOrLinebreak, after: closureOpenBraceIndex,
+            of: .nonSpaceOrCommentOrLineBreak, after: closureOpenBraceIndex,
         ),
             tokens[indexAfterOpenBrace] == .startOfScope("("),
             let endOfArgumentsScopeIndex = endOfScope(at: indexAfterOpenBrace),
             let firstTokenInArgumentsList = index(
-                of: .nonSpaceOrCommentOrLinebreak, after: indexAfterOpenBrace,
+                of: .nonSpaceOrCommentOrLineBreak, after: indexAfterOpenBrace,
             ),
             let indexAfterArguments = index(
-                of: .nonSpaceOrCommentOrLinebreak, after: endOfArgumentsScopeIndex,
+                of: .nonSpaceOrCommentOrLineBreak, after: endOfArgumentsScopeIndex,
             ),
             tokens[indexAfterArguments] == .keyword("in")
         {
@@ -3103,7 +3103,7 @@ extension Formatter {
         }
         if keyword == "class" {
             var nextIndex = index
-            while let i = self.index(of: .nonSpaceOrCommentOrLinebreak, after: nextIndex) {
+            while let i = self.index(of: .nonSpaceOrCommentOrLineBreak, after: nextIndex) {
                 let nextToken = tokens[i]
                 if nextToken.isDeclarationTypeKeyword {
                     return nextToken.string
@@ -3227,7 +3227,7 @@ extension Formatter {
     func linewrapIndent(at index: Int) -> String {
         guard
             let commaIndex = self.index(
-                of: .nonSpaceOrCommentOrLinebreak, before: index + 1,
+                of: .nonSpaceOrCommentOrLineBreak, before: index + 1,
                 if: {
                     $0 == .delimiter(",")
                 },
@@ -3238,8 +3238,8 @@ extension Formatter {
                 return !token.isEndOfScope && !token.isSpaceOrComment
             })
         else {
-            if next(.nonSpaceOrCommentOrLinebreak, after: index) == .operator(".", .infix),
-               var prevIndex = self.index(of: .nonSpaceOrLinebreak, before: index)
+            if next(.nonSpaceOrCommentOrLineBreak, after: index) == .operator(".", .infix),
+               var prevIndex = self.index(of: .nonSpaceOrLineBreak, before: index)
             {
                 if case .endOfScope = tokens[prevIndex] {
                     prevIndex = self.index(of: .startOfScope, before: index) ?? prevIndex
@@ -3254,7 +3254,7 @@ extension Formatter {
             return options.indent
         }
         if case .endOfScope = tokens[firstToken],
-           next(.nonSpaceOrCommentOrLinebreak, after: firstNonBrace - 1) == .delimiter(",")
+           next(.nonSpaceOrCommentOrLineBreak, after: firstNonBrace - 1) == .delimiter(",")
         {
             return ""
         }
@@ -3285,7 +3285,7 @@ extension Formatter {
             case .identifier("Swift"):
                 guard
                     let dotIndex = self.index(
-                        of: .nonSpaceOrLinebreak, after: index,
+                        of: .nonSpaceOrLineBreak, after: index,
                         if: {
                             $0 == .operator(".", .infix)
                         },
@@ -3327,12 +3327,12 @@ extension Formatter {
         }
         var start = 0
         var lastHeaderTokenIndex = -1
-        if var startIndex = index(of: .nonSpaceOrLinebreak, after: -1) {
+        if var startIndex = index(of: .nonSpaceOrLineBreak, after: -1) {
             if tokens[startIndex] == .startOfScope("#!") {
-                guard let endIndex = index(of: .linebreak, after: startIndex) else {
+                guard let endIndex = index(of: .lineBreak, after: startIndex) else {
                     return nil
                 }
-                startIndex = index(of: .nonSpaceOrLinebreak, after: endIndex) ?? endIndex
+                startIndex = index(of: .nonSpaceOrLineBreak, after: endIndex) ?? endIndex
                 start = startIndex
                 lastHeaderTokenIndex = startIndex - 1
             }
@@ -3352,7 +3352,7 @@ extension Formatter {
                         }
                     }
                     var lastIndex = startIndex
-                    while let index = index(of: .linebreak, after: lastIndex) {
+                    while let index = index(of: .lineBreak, after: lastIndex) {
                         switch token(at: index + 1) ?? .space("") {
                             case .startOfScope("//"):
                                 if case let .commentBody(body)? = next(.nonSpace, after: index + 1),
@@ -3364,9 +3364,9 @@ extension Formatter {
                                 }
                                 lastIndex = index
                                 continue
-                            case .linebreak:
+                            case .lineBreak:
                                 lastHeaderTokenIndex = index + 1
-                            case .space where token(at: index + 2)?.isLinebreak == true:
+                            case .space where token(at: index + 2)?.isLineBreak == true:
                                 lastHeaderTokenIndex = index + 2
                             default:
                                 break
@@ -3384,7 +3384,7 @@ extension Formatter {
                     }
                     while let endIndex = index(of: .endOfScope("*/"), after: startIndex) {
                         lastHeaderTokenIndex = endIndex
-                        if let linebreakIndex = index(of: .linebreak, after: endIndex) {
+                        if let linebreakIndex = index(of: .lineBreak, after: endIndex) {
                             lastHeaderTokenIndex = linebreakIndex
                         }
                         guard let nextIndex = index(of: .nonSpace, after: lastHeaderTokenIndex)
@@ -3393,7 +3393,7 @@ extension Formatter {
                         }
                         guard tokens[nextIndex] == .startOfScope("/*") else {
                             if let endIndex = index(
-                                of: .nonSpaceOrLinebreak,
+                                of: .nonSpaceOrLineBreak,
                                 after: lastHeaderTokenIndex,
                             ) {
                                 lastHeaderTokenIndex = endIndex - 1
@@ -3402,7 +3402,7 @@ extension Formatter {
                         }
                         startIndex = nextIndex
                     }
-                case .endOfScope("*/"), .linebreak:
+                case .endOfScope("*/"), .lineBreak:
                     updateEnablement(at: startIndex)
                 default:
                     break
@@ -3438,7 +3438,7 @@ extension Formatter {
         var parseIndex = startOfModifiers
         var endOfComment: Int?
 
-        while let endOfPreviousLine = index(of: .linebreak, before: parseIndex),
+        while let endOfPreviousLine = index(of: .lineBreak, before: parseIndex),
               let endOfPreviousLineContent = index(of: .nonSpace, before: endOfPreviousLine),
               tokens[endOfPreviousLineContent].isComment,
               let startOfScope = startOfScope(at: endOfPreviousLineContent)
@@ -3460,7 +3460,7 @@ extension Formatter {
         -> (equalsIndex: Int, andTokenIndices: [Int], endIndex: Int)?
     {
         guard let equalsIndex = index(of: .operator("=", .infix), after: typealiasIndex),
-              let startOfType = index(of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex),
+              let startOfType = index(of: .nonSpaceOrCommentOrLineBreak, after: equalsIndex),
               let fullProtocolCompositionType = parseType(at: startOfType)
         else { return nil }
 
@@ -3469,11 +3469,11 @@ extension Formatter {
 
         while let nextType = parseType(at: currentIndex, excludeProtocolCompositions: true),
               let nextAndToken = index(
-                  of: .nonSpaceOrCommentOrLinebreak,
+                  of: .nonSpaceOrCommentOrLineBreak,
                   after: nextType.range.upperBound,
               ),
               tokens[nextAndToken] == .operator("&", .infix),
-              let tokenAfterAndToken = index(of: .nonSpaceOrCommentOrLinebreak, after: nextAndToken)
+              let tokenAfterAndToken = index(of: .nonSpaceOrCommentOrLineBreak, after: nextAndToken)
         {
             andTokenIndices.append(nextAndToken)
             currentIndex = tokenAfterAndToken
@@ -3559,7 +3559,7 @@ extension Formatter {
         // Only function declarations (not subscripts / inits) have names
         if tokens[keywordIndex] == .keyword("func") {
             // The `func` / `subscript` keyword is always followed by the method name
-            guard let funcNameIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: keywordIndex)
+            guard let funcNameIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: keywordIndex)
             else {
                 return nil
             }
@@ -3571,7 +3571,7 @@ extension Formatter {
 
         // If this is a failable initializer (`init?`), skip over the ? token
         if tokens[keywordIndex] == .keyword("init"),
-           let nextToken = index(of: .nonSpaceOrCommentOrLinebreak, after: keywordIndex),
+           let nextToken = index(of: .nonSpaceOrCommentOrLineBreak, after: keywordIndex),
            tokens[nextToken] == .operator("?", .postfix)
         {
             currentIndex = nextToken
@@ -3580,7 +3580,7 @@ extension Formatter {
         // Parse the optional generic parameters in `<...>`
         var genericParameterRange: ClosedRange<Int>?
         if let startOfGenericParameters = index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: currentIndex,
         ),
             tokens[startOfGenericParameters] == .startOfScope("<"),
@@ -3591,7 +3591,7 @@ extension Formatter {
         }
 
         // All functions have an arguments list, following the optional generic parameters
-        guard let startOfArguments = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex),
+        guard let startOfArguments = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex),
               tokens[startOfArguments] == .startOfScope("("),
               let endOfArguments = endOfScope(at: startOfArguments)
         else { return nil }
@@ -3626,7 +3626,7 @@ extension Formatter {
 
         // Parse the optional where clause
         var whereClauseRange: ClosedRange<Int>?
-        if let whereKeyword = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex),
+        if let whereKeyword = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex),
            tokens[whereKeyword] == .keyword("where")
         {
             let parsedWhereClauseRange = parseGenericTypes(from: whereKeyword).range
@@ -3637,7 +3637,7 @@ extension Formatter {
         // Parse the optional body.
         // If this is a protocol declaration, there will be no body.
         var bodyRange: ClosedRange<Int>?
-        if let bodyOpenBrace = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex),
+        if let bodyOpenBrace = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex),
            tokens[bodyOpenBrace] == .startOfScope("{"),
            let bodyClosingBrace = endOfScope(at: bodyOpenBrace)
         {
@@ -3746,8 +3746,8 @@ extension Formatter {
         var effectsRange: ClosedRange<Int>?
 
         var currentIndex = startIndex
-        let firstIndexAfterArguments = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex)
-        while let effectIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex),
+        let firstIndexAfterArguments = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex)
+        while let effectIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex),
               let effect = token(at: effectIndex)?.string,
               ["async", "throws", "rethrows"].contains(effect),
               let firstIndexAfterArguments
@@ -3755,7 +3755,7 @@ extension Formatter {
             // `throws` can optionally be typed throws with a `(Type)` component
             if effect == "throws",
                let startOfTypedThrows = index(
-                   of: .nonSpaceOrCommentOrLinebreak,
+                   of: .nonSpaceOrCommentOrLineBreak,
                    after: effectIndex,
                ),
                tokens[startOfTypedThrows] == .startOfScope("("),
@@ -3792,10 +3792,10 @@ extension Formatter {
     func parseFunctionDeclarationReturnClause(at startIndex: Int) -> (
         returnOperatorIndex: Int, returnType: TypeName,
     )? {
-        guard let returnIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: startIndex),
+        guard let returnIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: startIndex),
               tokens[returnIndex] == .operator("->", .infix),
               let indexAfterReturnOperator = index(
-                  of: .nonSpaceOrCommentOrLinebreak,
+                  of: .nonSpaceOrCommentOrLineBreak,
                   after: returnIndex,
               ),
               let parsedReturnType = parseType(at: indexAfterReturnOperator)
@@ -3822,7 +3822,7 @@ extension Formatter {
     {
         assert(tokens[startOfScope] == .startOfScope("("))
         guard let endOfScope = endOfScope(at: startOfScope),
-              index(of: .nonSpaceOrCommentOrLinebreak, after: startOfScope) != endOfScope
+              index(of: .nonSpaceOrCommentOrLineBreak, after: startOfScope) != endOfScope
         else { return [] }
 
         var argumentLabels: [FunctionCallArgument] = []
@@ -3835,7 +3835,7 @@ extension Formatter {
                 endOfScope
 
             // If we find a trailing comma, then there's nothing else to parse
-            if index(of: .nonSpaceOrCommentOrLinebreak, after: endOfPreviousArgument) ==
+            if index(of: .nonSpaceOrCommentOrLineBreak, after: endOfPreviousArgument) ==
                 endOfScope
             {
                 return argumentLabels
@@ -3845,7 +3845,7 @@ extension Formatter {
                 of: .delimiter(":"), in: (endOfPreviousArgument + 1) ..< endOfCurrentArgument,
             ),
                 let argumentLabelIndex = index(
-                    of: .nonSpaceOrCommentOrLinebreak,
+                    of: .nonSpaceOrCommentOrLineBreak,
                     before: colonIndex,
                 ),
                 tokens[argumentLabelIndex].isIdentifier
@@ -3855,10 +3855,10 @@ extension Formatter {
                 var valueEnd = endOfCurrentArgument - 1
 
                 if !preserveWhitespace {
-                    while valueStart <= valueEnd, tokens[valueStart].isSpaceOrLinebreak {
+                    while valueStart <= valueEnd, tokens[valueStart].isSpaceOrLineBreak {
                         valueStart += 1
                     }
-                    while valueEnd >= valueStart, tokens[valueEnd].isSpaceOrLinebreak {
+                    while valueEnd >= valueStart, tokens[valueEnd].isSpaceOrLineBreak {
                         valueEnd -= 1
                     }
                 }
@@ -3884,10 +3884,10 @@ extension Formatter {
                 var valueEnd = endOfCurrentArgument - 1
 
                 if !preserveWhitespace {
-                    while valueStart <= valueEnd, tokens[valueStart].isSpaceOrLinebreak {
+                    while valueStart <= valueEnd, tokens[valueStart].isSpaceOrLineBreak {
                         valueStart += 1
                     }
-                    while valueEnd >= valueStart, tokens[valueEnd].isSpaceOrLinebreak {
+                    while valueEnd >= valueStart, tokens[valueEnd].isSpaceOrLineBreak {
                         valueEnd -= 1
                     }
                 }
@@ -3932,14 +3932,14 @@ extension Formatter {
     )] {
         assert(Token.swiftTypeKeywords.contains(tokens[keywordIndex].string))
 
-        guard let startOfType = index(of: .nonSpaceOrCommentOrLinebreak, after: keywordIndex),
+        guard let startOfType = index(of: .nonSpaceOrCommentOrLineBreak, after: keywordIndex),
               let typeName = parseType(at: startOfType),
               let indexAfterType = index(
-                  of: .nonSpaceOrCommentOrLinebreak, after: typeName.range.upperBound,
+                  of: .nonSpaceOrCommentOrLineBreak, after: typeName.range.upperBound,
               ),
               tokens[indexAfterType] == .delimiter(":"),
               let firstConformanceIndex = index(
-                  of: .nonSpaceOrCommentOrLinebreak,
+                  of: .nonSpaceOrCommentOrLineBreak,
                   after: indexAfterType,
               )
         else { return [] }
@@ -3951,7 +3951,7 @@ extension Formatter {
             conformances.append((conformance: type, index: nextConformanceIndex))
 
             if let nextTokenIndex = index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 after: type.range.upperBound,
             ) {
                 nextConformanceIndex = nextTokenIndex
@@ -3961,7 +3961,7 @@ extension Formatter {
                 // then we reached the end of the conformance list.
                 guard tokens[nextTokenIndex] == .delimiter(","),
                       let followingConformanceIndex = index(
-                          of: .nonSpaceOrCommentOrLinebreak, after: nextTokenIndex,
+                          of: .nonSpaceOrCommentOrLineBreak, after: nextTokenIndex,
                       )
                 else {
                     return conformances
@@ -3978,10 +3978,10 @@ extension Formatter {
     /// e.g. can remove `Foo` from `Type: Foo, Bar {` (becomes `Type: Bar {`).
     func removeConformance(at conformanceIndex: Int) {
         guard let previousToken = index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             before: conformanceIndex,
         ),
-            let nextToken = index(of: .nonSpaceOrCommentOrLinebreak, after: conformanceIndex)
+            let nextToken = index(of: .nonSpaceOrCommentOrLineBreak, after: conformanceIndex)
         else { return }
 
         // The first conformance will be preceded by a colon.
@@ -4068,7 +4068,7 @@ extension Formatter {
         // Conditional compilation blocks don't have a "name"
         guard tokens[keywordIndex].string != "#if" else { return nil }
 
-        guard let nameIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: keywordIndex) else {
+        guard let nameIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: keywordIndex) else {
             return nil
         }
 
@@ -4112,7 +4112,7 @@ extension Formatter {
                 // For if statements without else
                 endIndex = braceIndex
             } else if let prevTokenIndex = index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 before: braceIndex,
             ),
                 tokens[prevTokenIndex] == .keyword("else")
@@ -4130,7 +4130,7 @@ extension Formatter {
         while currentPos < endIndex {
             // Skip whitespace and comments
             guard let conditionStart = index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 after: currentPos - 1,
             ),
                 conditionStart < endIndex
@@ -4143,9 +4143,9 @@ extension Formatter {
                commaIndex < endIndex
             {
                 conditionEnd =
-                    index(of: .nonSpaceOrCommentOrLinebreak, before: commaIndex) ?? conditionStart
+                    index(of: .nonSpaceOrCommentOrLineBreak, before: commaIndex) ?? conditionStart
             } else {
-                conditionEnd = index(of: .nonSpaceOrCommentOrLinebreak, before: endIndex) ??
+                conditionEnd = index(of: .nonSpaceOrCommentOrLineBreak, before: endIndex) ??
                     conditionStart
             }
 
@@ -4187,7 +4187,7 @@ extension Formatter {
     /// Handles `foo(`, `foo?(`, and `foo!(`.
     func parseFunctionIdentifier(beforeStartOfScope startOfScope: Int) -> Int? {
         assert(tokens[startOfScope] == .startOfScope("("))
-        guard let previousToken = index(of: .nonSpaceOrCommentOrLinebreak, before: startOfScope)
+        guard let previousToken = index(of: .nonSpaceOrCommentOrLineBreak, before: startOfScope)
         else {
             return nil
         }
@@ -4204,7 +4204,7 @@ extension Formatter {
 
         if [.operator("?", .postfix), .operator("!", .postfix)].contains(tokens[previousToken]),
            let tokenBeforeOperator = index(
-               of: .nonSpaceOrCommentOrLinebreak,
+               of: .nonSpaceOrCommentOrLineBreak,
                before: previousToken,
            ),
            isFunctionIdentifier(tokens[tokenBeforeOperator])

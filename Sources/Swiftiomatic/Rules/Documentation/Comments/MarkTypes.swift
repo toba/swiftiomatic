@@ -199,7 +199,7 @@ extension FormatRule {
         let startOfLine = formatter.startOfLine(at: commentToRemove.lowerBound)
         let endOfLine = formatter.endOfLine(at: commentToRemove.lowerBound)
 
-        if formatter.token(at: endOfLine + 1)?.isLinebreak == true {
+        if formatter.token(at: endOfLine + 1)?.isLineBreak == true {
           formatter.removeToken(at: endOfLine + 1)
         }
 

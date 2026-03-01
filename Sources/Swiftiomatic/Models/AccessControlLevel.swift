@@ -49,8 +49,4 @@ enum AccessControlLevel: String, CustomStringConvertible, Sendable {
     }
 }
 
-extension AccessControlLevel: CaseIterable, Comparable {
-    static func < (lhs: AccessControlLevel, rhs: AccessControlLevel) -> Bool {
-        allCases.firstIndex(of: lhs)! < allCases.firstIndex(of: rhs)!
-    }
-}
+extension AccessControlLevel: CaseIterable, Comparable {}

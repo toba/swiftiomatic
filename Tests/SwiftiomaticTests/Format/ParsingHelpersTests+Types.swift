@@ -716,7 +716,7 @@ extension ParsingHelpersTests {
       expressions.append(expression)
 
       if let nextExpressionIndex = formatter.index(
-        of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound,
+        of: .nonSpaceOrCommentOrLineBreak, after: expressionRange.upperBound,
       ) {
         parseIndex = nextExpressionIndex
       } else {

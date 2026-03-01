@@ -68,7 +68,7 @@ import Testing
     #expect(!(tokens.isEmpty))
 
     // Check that we have expected token types
-    let tokenTypes = Set(tokens.map(\.value.type))
+    let tokenTypes = Set(tokens.map(\.token.type))
     #expect(tokenTypes.contains(SourceKitSyntaxKind.comment.rawValue))
     #expect(tokenTypes.contains(SourceKitSyntaxKind.keyword.rawValue))
     #expect(tokenTypes.contains(SourceKitSyntaxKind.identifier.rawValue))
@@ -84,9 +84,9 @@ import Testing
 
     // Find the "let" keyword token
     let letToken = tokens.first { token in
-      if token.value.type == SourceKitSyntaxKind.keyword.rawValue {
-        let start = token.value.offset.value
-        let end = token.value.offset.value + token.value.length.value
+      if token.token.type == SourceKitSyntaxKind.keyword.rawValue {
+        let start = token.token.offset.value
+        let end = token.token.offset.value + token.token.length.value
         let startIndex = contents.index(contents.startIndex, offsetBy: start)
         let endIndex = contents.index(contents.startIndex, offsetBy: end)
         let substring = String(contents[startIndex..<endIndex])
@@ -95,15 +95,15 @@ import Testing
       return false
     }
     #expect(letToken != nil)
-    #expect(letToken?.value.offset.value == 0)
-    #expect(letToken?.value.length.value == 3)
+    #expect(letToken?.token.offset.value == 0)
+    #expect(letToken?.token.length.value == 3)
 
     // Find the number token
-    let numberToken = tokens.first { $0.value.type == SourceKitSyntaxKind.number.rawValue }
+    let numberToken = tokens.first { $0.token.type == SourceKitSyntaxKind.number.rawValue }
     #expect(numberToken != nil)
     // "42" starts at offset 8 and has length 2
-    #expect(numberToken?.value.offset.value == 8)
-    #expect(numberToken?.value.length.value == 2)
+    #expect(numberToken?.token.offset.value == 8)
+    #expect(numberToken?.token.length.value == 2)
   }
 
   @Test func complexCodeStructure() {
@@ -127,7 +127,7 @@ import Testing
     let tokens = SyntaxKindMapper.sourceKitSyntaxKinds(for: file)
 
     // Verify we have various token types
-    let tokenTypes = Set(tokens.map(\.value.type))
+    let tokenTypes = Set(tokens.map(\.token.type))
     #expect(tokenTypes.contains(SourceKitSyntaxKind.keyword.rawValue))  // import, class, var, let, func
     #expect(
       tokenTypes

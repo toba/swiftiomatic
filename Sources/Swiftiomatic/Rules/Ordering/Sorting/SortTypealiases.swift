@@ -13,7 +13,7 @@ extension FormatRule {
             at: typealiasIndex,
           ),
         let typealiasNameIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: equalsIndex,
+          of: .nonSpaceOrCommentOrLineBreak, before: equalsIndex,
         )
       else {
         return
@@ -34,7 +34,7 @@ extension FormatRule {
       for delimiter in delimiters.indices {
         let endOfPreviousElement = parsedElements.last?.endIndex ?? typealiasNameIndex
         let elementStartIndex =
-          formatter.index(of: .nonSpaceOrLinebreak, after: endOfPreviousElement)
+          formatter.index(of: .nonSpaceOrLineBreak, after: endOfPreviousElement)
           ?? delimiters[delimiter]
 
         // Start with the end index just being the end of the type name
@@ -47,7 +47,7 @@ extension FormatRule {
           let nextDelimiterIndex = delimiters[delimiter + 1]
           elementEndIndex =
             formatter.index(
-              of: .nonSpaceOrCommentOrLinebreak,
+              of: .nonSpaceOrCommentOrLineBreak,
               before: nextDelimiterIndex,
             )
             ?? (nextDelimiterIndex - 1)
@@ -71,7 +71,7 @@ extension FormatRule {
         let tokens = Array(formatter.tokens[elementStartIndex...elementEndIndex])
         let typeName =
           tokens
-          .filter { !$0.isSpaceOrCommentOrLinebreak && !$0.isOperator }
+          .filter { !$0.isSpaceOrCommentOrLineBreak && !$0.isOperator }
           .map(\.string).joined()
 
         // While we're here, also filter out any duplicates.
@@ -145,7 +145,7 @@ extension FormatRule {
           let nextToken =
             formatter
             .nextToken(after: parsedElements[elementIndex].endIndex),
-          !nextToken.isLinebreak
+          !nextToken.isLineBreak
         {
           sortedElements[elementIndex].allTokens
             .append(
@@ -161,7 +161,7 @@ extension FormatRule {
           let previousToken = formatter.lastToken(
             before: parsedElements[elementIndex].startIndex, where: { !$0.isSpace },
           ),
-          !previousToken.isLinebreak
+          !previousToken.isLineBreak
         {
           sortedElements[elementIndex].allTokens
             .insert(
@@ -176,7 +176,7 @@ extension FormatRule {
       for (originalElement, newElement) in zip(parsedElements, sortedElements).reversed() {
         if newElement.isDuplicate,
           let tokenBeforeElement = formatter.index(
-            of: .nonSpaceOrLinebreak, before: originalElement.startIndex,
+            of: .nonSpaceOrLineBreak, before: originalElement.startIndex,
           )
         {
           formatter
@@ -197,7 +197,7 @@ extension FormatRule {
         after: typealiasIndex,
       ),
         let startOfType = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: newEqualsIndex,
         ),
         let (_, _, endOfComposition) = formatter.parseProtocolCompositionTypealias(

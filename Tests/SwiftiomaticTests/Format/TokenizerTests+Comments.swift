@@ -30,7 +30,7 @@ extension TokenizerTests {
     let output: [Token] = [
       .startOfScope("//"),
       .commentBody("foo"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .identifier("bar"),
     ]
     #expect(tokenize(input) == output)
@@ -65,7 +65,7 @@ extension TokenizerTests {
     let output: [Token] = [
       .startOfScope("/*"),
       .commentBody("foo"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .commentBody("bar"),
       .endOfScope("*/"),
     ]
@@ -77,7 +77,7 @@ extension TokenizerTests {
     let output: [Token] = [
       .startOfScope("/*"),
       .commentBody("foo"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .space("  "),
       .commentBody("bar"),
       .endOfScope("*/"),
@@ -91,7 +91,7 @@ extension TokenizerTests {
       .startOfScope("/*"),
       .space(" "),
       .commentBody("foo"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .space(" "),
       .endOfScope("*/"),
     ]
@@ -144,22 +144,22 @@ extension TokenizerTests {
       """
     let output: [Token] = [
       .startOfScope("/*"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .space(" "),
       .commentBody("func foo() {"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .space(" "),
       .commentBody("  if bar {"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .space(" "),
       .commentBody("    print(baz)"),
-      .linebreak("\n", 4),
+      .lineBreak("\n", 4),
       .space(" "),
       .commentBody("  }"),
-      .linebreak("\n", 5),
+      .lineBreak("\n", 5),
       .space(" "),
       .commentBody("}"),
-      .linebreak("\n", 6),
+      .lineBreak("\n", 6),
       .space(" "),
       .endOfScope("*/"),
     ]
@@ -177,13 +177,13 @@ extension TokenizerTests {
     let output: [Token] = [
       .startOfScope("/*"),
       .commentBody("*"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .commentBody("func foo() {"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .commentBody("    bar()"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .commentBody("}"),
-      .linebreak("\n", 4),
+      .lineBreak("\n", 4),
       .endOfScope("*/"),
     ]
     #expect(tokenize(input) == output)
@@ -202,27 +202,27 @@ extension TokenizerTests {
       """
     let output: [Token] = [
       .startOfScope("/*"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .space(" "),
       .commentBody("func foo() {"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .space(" "),
       .commentBody("    "),
       .startOfScope("/*"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .space(" "),
       .commentBody("     * Nested comment"),
-      .linebreak("\n", 4),
+      .lineBreak("\n", 4),
       .space(" "),
       .commentBody("     "),
       .endOfScope("*/"),
-      .linebreak("\n", 5),
+      .lineBreak("\n", 5),
       .space(" "),
       .commentBody("    bar {}"),
-      .linebreak("\n", 6),
+      .lineBreak("\n", 6),
       .space(" "),
       .commentBody("}"),
-      .linebreak("\n", 7),
+      .lineBreak("\n", 7),
       .space(" "),
       .endOfScope("*/"),
     ]

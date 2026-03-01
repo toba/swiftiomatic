@@ -53,14 +53,14 @@ extension FormatRule {
             switchCaseRanges[switchCase.offset].afterDelimiterRange,
           ]
 
-          if newComments.last?.isLinebreak == oldComments.last?.isLinebreak {
+          if newComments.last?.isLineBreak == oldComments.last?.isLineBreak {
             formatter.replaceTokens(
               in: switchCaseRanges[switchCase.offset].afterDelimiterRange,
               with: newComments,
             )
           } else if newComments.count > 1,
-            newComments.last?.isLinebreak == true,
-            oldComments.last?.isLinebreak == false
+            newComments.last?.isLineBreak == true,
+            oldComments.last?.isLineBreak == false
           {
             // indent the new content
             newComments.append(.space(String(repeating: " ", count: maxIndentCount)))
@@ -102,12 +102,12 @@ extension Formatter {
     forEach(.endOfScope("case")) { i, _ in
       var switchCaseRanges: [SwitchCaseRange] = []
       guard let lastDelimiterIndex = index(of: .startOfScope(":"), after: i),
-        let endIndex = index(after: lastDelimiterIndex, where: { $0.isLinebreak })
+        let endIndex = index(after: lastDelimiterIndex, where: { $0.isLineBreak })
       else { return }
 
       var idx = i
       while idx < endIndex,
-        let startOfCaseIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: idx),
+        let startOfCaseIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: idx),
         let delimiterIndex = index(
           after: idx,
           where: {
@@ -116,7 +116,7 @@ extension Formatter {
         ),
         let delimiterToken = token(at: delimiterIndex),
         let endOfCaseIndex = lastIndex(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           in: startOfCaseIndex..<delimiterIndex,
         )
       {
@@ -124,14 +124,14 @@ extension Formatter {
 
         let startOfCommentIdx = delimiterIndex + 1
         if startOfCommentIdx <= endIndex,
-          token(at: startOfCommentIdx)?.isSpaceOrCommentOrLinebreak == true,
+          token(at: startOfCommentIdx)?.isSpaceOrCommentOrLineBreak == true,
           let nextNonSpaceOrComment = index(
             of: .nonSpaceOrComment,
             after: startOfCommentIdx,
           )
         {
-          if token(at: startOfCommentIdx)?.isLinebreak == true
-            || token(at: nextNonSpaceOrComment)?.isSpaceOrCommentOrLinebreak == false
+          if token(at: startOfCommentIdx)?.isLineBreak == true
+            || token(at: nextNonSpaceOrComment)?.isSpaceOrCommentOrLineBreak == false
           {
             afterDelimiterRange = startOfCommentIdx..<(startOfCommentIdx + 1)
           } else if endIndex > startOfCommentIdx {

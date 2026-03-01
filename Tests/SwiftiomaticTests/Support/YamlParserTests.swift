@@ -55,7 +55,7 @@ import Testing
 
   @Test func parseInvalidStringThrows() {
     checkError(
-      Issue.yamlParsing("2:1: error: parser: did not find expected <document start>:\na\n^"),
+      SwiftiomaticError.yamlParsing("2:1: error: parser: did not find expected <document start>:\na\n^"),
     ) {
       _ = try YamlParser.parse("|\na", env: [:])
     }

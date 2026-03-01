@@ -43,7 +43,7 @@ extension FormatRule {
             after: guardIndex,
           ),
           let prevTokenIndex = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, before: elseBraceIndex,
+            of: .nonSpaceOrCommentOrLineBreak, before: elseBraceIndex,
           ),
           formatter.tokens[prevTokenIndex] == .keyword("else"),
           let endOfElseScope = formatter.endOfScope(at: elseBraceIndex)
@@ -53,7 +53,7 @@ extension FormatRule {
 
         // Check if the else block matches our pattern
         let elseBodyTokens = formatter.tokens[(elseBraceIndex + 1)..<endOfElseScope]
-          .filter { !$0.isSpaceOrCommentOrLinebreak }
+          .filter { !$0.isSpaceOrCommentOrLineBreak }
 
         let isValidElseBlock: Bool = {
           // Common case: just return
@@ -104,7 +104,7 @@ extension FormatRule {
             // Check for let/var declarations
             if token == .keyword("let") || token == .keyword("var"),
               let nextIndex = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 after: i,
               ),
               case .identifier(let name) = formatter.tokens[nextIndex]
@@ -115,7 +115,7 @@ extension FormatRule {
             // Check for function parameters
             if case .identifier(let name) = token,
               i > 0,
-              let prevNonSpace = formatter.index(of: .nonSpaceOrLinebreak, before: i),
+              let prevNonSpace = formatter.index(of: .nonSpaceOrLineBreak, before: i),
               formatter.tokens[prevNonSpace] == .delimiter(",")
                 || formatter.tokens[prevNonSpace] == .startOfScope("(")
             {

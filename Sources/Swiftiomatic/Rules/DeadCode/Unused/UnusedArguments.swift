@@ -18,7 +18,7 @@ extension FormatRule {
       let isOperator =
         (token.string == "subscript")
         || (token.string == "func"
-          && formatter.next(.nonSpaceOrCommentOrLinebreak, after: i)?
+          && formatter.next(.nonSpaceOrCommentOrLineBreak, after: i)?
             .isOperator == true)
 
       guard let declaration = formatter.parseFunctionDeclaration(keywordIndex: i),
@@ -123,7 +123,7 @@ extension FormatRule {
           argCountStack[argCountStack.count - 1] = argNames.count
         case .identifier("async")
         where
-          formatter.last(.nonSpaceOrLinebreak, before: index)?.isIdentifier == true,
+          formatter.last(.nonSpaceOrLineBreak, before: index)?.isIdentifier == true,
           .operator("->", .infix), .keyword("throws"):
           // Everything after this was part of return value
           let count = argCountStack.last ?? 0
@@ -135,7 +135,7 @@ extension FormatRule {
         case .identifier:
           guard argCountStack.count < 3,
             let prevToken = formatter.last(
-              .nonSpaceOrCommentOrLinebreak,
+              .nonSpaceOrCommentOrLineBreak,
               before: index,
             ),
             [
@@ -150,13 +150,13 @@ extension FormatRule {
           }
           let name = token.unescaped()
           if let nextIndex = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: index,
           ),
             let nextToken = formatter.token(at: nextIndex),
             case .identifier = nextToken,
             formatter
-              .next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) == .delimiter(":")
+              .next(.nonSpaceOrCommentOrLineBreak, after: nextIndex) == .delimiter(":")
           {
             let internalName = nextToken.unescaped()
             if internalName != "_" {
@@ -261,7 +261,7 @@ extension Formatter {
       if isStartOfStatement(at: i, treatingCollectionKeysAsStart: false),
         // Immediately following an `=` operator, if or switch keywords
         // are expressions rather than statements.
-        lastToken(before: i, where: { !$0.isSpaceOrCommentOrLinebreak })?
+        lastToken(before: i, where: { !$0.isSpaceOrCommentOrLineBreak })?
           .isOperator("=") != true
       {
         pushLocals()
@@ -283,14 +283,14 @@ extension Formatter {
         guard let index = argNames.firstIndex(of: name), !locals.contains(name) else {
           break
         }
-        if last(.nonSpaceOrCommentOrLinebreak, before: i)?.isOperator(".") == false,
-          next(.nonSpaceOrCommentOrLinebreak, after: i) != .delimiter(":")
+        if last(.nonSpaceOrCommentOrLineBreak, before: i)?.isOperator(".") == false,
+          next(.nonSpaceOrCommentOrLineBreak, after: i) != .delimiter(":")
             || startOfScope(at: i).map({
               scopeType(at: $0) == .dictionary
             }) ?? false
         {
           if isDeclaration {
-            switch next(.nonSpaceOrCommentOrLinebreak, after: i) {
+            switch next(.nonSpaceOrCommentOrLineBreak, after: i) {
             case .delimiter(",") where !isConditional, .endOfScope(")"),
               .operator(
                 "=",

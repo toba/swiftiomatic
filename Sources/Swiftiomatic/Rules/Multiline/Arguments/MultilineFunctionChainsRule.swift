@@ -1,6 +1,6 @@
 import Foundation
 
-struct MultilineFunctionChainsRule: ASTRule, OptInRule {
+struct MultilineFunctionChainsRule: SourceKitASTRule, OptInRule {
   var configuration = SeverityConfiguration<Self>(.warning)
 
   static let description = RuleDescription(
@@ -168,7 +168,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     return noLeadingNewlineViolations.map(\.dotOffset)
   }
 
-  private static let whitespaceDotRegex: RegularExpression = "\\s*\\."
+  private static let whitespaceDotRegex: CachedRegex = "\\s*\\."
 
   private func callDotOffset(file: SwiftSource, callRange: ByteRange) -> Int? {
     guard let range = file.stringView.byteRangeToNSRange(callRange),
@@ -180,7 +180,7 @@ struct MultilineFunctionChainsRule: ASTRule, OptInRule {
     return matchNSRange.location + matchNSRange.length - 1
   }
 
-  private static let newlineWhitespaceDotRegex: RegularExpression = "\\n\\s*\\."
+  private static let newlineWhitespaceDotRegex: CachedRegex = "\\n\\s*\\."
 
   private func callHasLeadingNewline(file: SwiftSource, callRange: ByteRange) -> Bool {
     guard let range = file.stringView.byteRangeToNSRange(callRange) else {

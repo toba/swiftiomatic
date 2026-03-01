@@ -3,7 +3,7 @@ import Foundation
 // sm:disable file_length
 
 private let warnSourceKitFailedOnceImpl: Void = {
-    Issue.genericWarning("SourceKit-based rules will be skipped because sourcekitd has failed.")
+    SwiftiomaticError.genericWarning("SourceKit-based rules will be skipped because sourcekitd has failed.")
         .print()
 }()
 
@@ -230,7 +230,7 @@ extension [Region] {
             lastRegionEnd = region.end
         }
 
-        let end = Location(file: first?.start.file, line: .max, character: .max)
+        let end = Location(file: first?.start.file, line: .max, column: .max)
         for ruleIdentifier in startMap.keys.sorted() {
             if let start = startMap[ruleIdentifier] {
                 let newRegion = Region(
@@ -403,7 +403,7 @@ struct CollectedLinter: @unchecked Sendable {
         }
 
         for (deprecatedIdentifier, identifier) in deprecatedToValidIdentifier {
-            Issue.renamedIdentifier(old: deprecatedIdentifier, new: identifier).print()
+            SwiftiomaticError.renamedIdentifier(old: deprecatedIdentifier, new: identifier).print()
         }
 
         // Free some memory used for this file's caches. They shouldn't be needed after this point.
@@ -447,10 +447,10 @@ struct CollectedLinter: @unchecked Sendable {
         }
 
         if file.parserDiagnostics.isNotEmpty {
-            queuedPrintError(
+            Console.printError(
                 "warning: Skipping correcting file because it produced Swift parser errors: \(file.path ?? "<nopath>")",
             )
-            queuedPrintError(toJSON(["diagnostics": file.parserDiagnostics]))
+            Console.printError(toJSON(["diagnostics": file.parserDiagnostics]))
             return [:]
         }
 

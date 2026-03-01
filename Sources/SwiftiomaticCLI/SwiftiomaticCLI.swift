@@ -130,7 +130,7 @@ struct Analyze: AsyncParsableCommand {
         // Output
         if quiet {
             let grouped = Dictionary(grouping: diagnostics) { $0.source }
-            for source in Source.allCases {
+            for source in DiagnosticSource.allCases {
                 if let items = grouped[source], !items.isEmpty {
                     print("\(source.rawValue): \(items.count)")
                 }
@@ -164,7 +164,7 @@ struct Analyze: AsyncParsableCommand {
         var totalCorrections = 0
 
         // 1. Format engine writes formatted files (token-level fixes)
-        let formatEngine = buildFormatEngine(config: cfg)
+        let formatEngine = cfg.makeFormatEngine()
         for file in files {
             do {
                 let source = try String(contentsOfFile: file, encoding: .utf8)
@@ -209,7 +209,7 @@ struct Analyze: AsyncParsableCommand {
     // MARK: - Format-Lint Integration
 
     private func runFormatLint(cfg: Configuration) -> [Diagnostic] {
-        let engine = buildFormatEngine(config: cfg)
+        let engine = cfg.makeFormatEngine()
         let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
         var diagnostics: [Diagnostic] = []
 
@@ -226,19 +226,6 @@ struct Analyze: AsyncParsableCommand {
         return diagnostics
     }
 
-    private func buildFormatEngine(config: Configuration) -> FormatEngine {
-        var options = FormatOptions.default
-        options.indent = config.formatIndent
-        options.maxWidth = config.formatMaxWidth
-        if let version = Version(rawValue: config.formatSwiftVersion) {
-            options.swiftVersion = version
-        }
-        return FormatEngine(
-            enable: config.enabledFormatRules,
-            disable: config.disabledFormatRules,
-            options: options,
-        )
-    }
 }
 
 // MARK: - List Rules
@@ -251,7 +238,7 @@ struct ListRules: ParsableCommand {
     )
 
     @Option(name: .long, help: "Filter by source: suggest, lint, or format")
-    var source: Source?
+    var source: DiagnosticSource?
 
     @Option(name: .long, help: "Output format: text or json")
     var format: OutputFormat = .text
@@ -323,4 +310,4 @@ enum OutputFormat: String, ExpressibleByArgument {
 }
 
 extension Confidence: ExpressibleByArgument {}
-extension Source: ExpressibleByArgument {}
+extension DiagnosticSource: ExpressibleByArgument {}

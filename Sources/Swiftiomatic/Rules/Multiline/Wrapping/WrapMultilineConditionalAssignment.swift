@@ -10,18 +10,18 @@ extension FormatRule {
     formatter.forEach(.keyword) { startOfCondition, keywordToken in
       guard [.keyword("if"), .keyword("switch")].contains(keywordToken),
         let assignmentIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: startOfCondition,
+          of: .nonSpaceOrCommentOrLineBreak, before: startOfCondition,
         ),
         formatter.tokens[assignmentIndex] == .operator("=", .infix),
         let endOfPropertyDefinition = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: assignmentIndex,
+          of: .nonSpaceOrCommentOrLineBreak, before: assignmentIndex,
         )
       else { return }
 
       // Verify the RHS of the assignment is an if/switch expression
       guard
         let startOfConditionalExpression = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: assignmentIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: assignmentIndex,
         ),
         ["if", "switch"].contains(formatter.tokens[startOfConditionalExpression].string),
         let conditionalBranches =
@@ -37,16 +37,16 @@ extension FormatRule {
 
       // The `=` should be on the same line as the rest of the property
       if !formatter.onSameLine(endOfPropertyDefinition, assignmentIndex),
-        formatter.last(.nonSpaceOrComment, before: assignmentIndex)?.isLinebreak == true,
+        formatter.last(.nonSpaceOrComment, before: assignmentIndex)?.isLineBreak == true,
         let previousToken = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: assignmentIndex,
+          of: .nonSpaceOrCommentOrLineBreak, before: assignmentIndex,
         ),
         formatter.onSameLine(endOfPropertyDefinition, previousToken)
       {
         // Move the assignment operator to follow the previous token.
         // Also remove any trailing space after the previous position
         // of the assignment operator.
-        if formatter.tokens[assignmentIndex + 1].isSpaceOrLinebreak {
+        if formatter.tokens[assignmentIndex + 1].isSpaceOrLineBreak {
           formatter.removeToken(at: assignmentIndex + 1)
         }
 
@@ -57,7 +57,7 @@ extension FormatRule {
       // And there should be a line break between the `=` and the `if` / `switch` keyword
       else if !formatter.tokens[(assignmentIndex + 1)..<startOfConditionalExpression]
         .contains(
-          where: \.isLinebreak,
+          where: \.isLineBreak,
         )
       {
         formatter.insertLinebreak(at: startOfConditionalExpression - 1)

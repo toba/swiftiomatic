@@ -15,7 +15,7 @@ extension FormatRule {
 
       // Check if this is a trailing comment (has non-space tokens before it on the same line)
       let isTrailingComment: Bool
-      if let previousToken = formatter.index(of: .nonSpaceOrLinebreak, before: index) {
+      if let previousToken = formatter.index(of: .nonSpaceOrLineBreak, before: index) {
         let commentLine = formatter.startOfLine(at: index)
         let previousTokenLine = formatter.startOfLine(at: previousToken)
         isTrailingComment = (commentLine == previousTokenLine)
@@ -26,7 +26,7 @@ extension FormatRule {
       // Only group comments if this is not a trailing comment
       if token == .startOfScope("//"), !isTrailingComment {
         var i = index
-        while let prevLineIndex = formatter.index(of: .linebreak, before: i),
+        while let prevLineIndex = formatter.index(of: .lineBreak, before: i),
           case let lineStartIndex = formatter.startOfLine(
             at: prevLineIndex,
             excludingIndent: true,
@@ -37,7 +37,7 @@ extension FormatRule {
           i = lineStartIndex
         }
         i = index
-        while let nextLineIndex = formatter.index(of: .linebreak, after: i),
+        while let nextLineIndex = formatter.index(of: .lineBreak, after: i),
           let lineStartIndex = formatter.index(of: .nonSpace, after: nextLineIndex),
           formatter.token(at: lineStartIndex) == .startOfScope("//")
         {
@@ -79,7 +79,7 @@ extension FormatRule {
         let linebreaksBetweenDeclarations = formatter.tokens[
           declarationKeyword...nextDeclarationKeyword,
         ]
-        .filter(\.isLinebreak).count
+        .filter(\.isLineBreak).count
 
         // If there is only a single line break between the start of this declaration and the subsequent declaration,
         // then they are written sequentially in a block. In this case, don't convert regular comments to doc comments.
@@ -161,7 +161,7 @@ extension Formatter {
   ) -> Bool? {
     guard let startIndex = indices.min(),
       let nextDeclarationIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak,
+        of: .nonSpaceOrCommentOrLineBreak,
         after: endOfComment,
       )
     else { return false }
@@ -195,14 +195,14 @@ extension Formatter {
     // If there are blank lines between comment and declaration, comment is not treated as doc comment
     let trailingTokens = tokens[(endOfComment - 1)...nextDeclarationIndex]
     let lines = trailingTokens.split(
-      omittingEmptySubsequences: false, whereSeparator: \.isLinebreak,
+      omittingEmptySubsequences: false, whereSeparator: \.isLineBreak,
     )
     if lines.contains(where: { $0.allSatisfy(\.isSpace) }) {
       return false
     }
 
     // Only comments at the start of a line can be doc comments
-    if let previousToken = index(of: .nonSpaceOrLinebreak, before: startIndex) {
+    if let previousToken = index(of: .nonSpaceOrLineBreak, before: startIndex) {
       let commentLine = startOfLine(at: startIndex)
       let previousTokenLine = startOfLine(at: previousToken)
 

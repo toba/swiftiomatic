@@ -181,7 +181,7 @@ extension OpeningBraceRule {
     }
 
     private func violationCorrection(_ node: some BracedSyntax) -> SyntaxViolation
-      .ViolationCorrection?
+      .Correction?
     {
       let leftBrace = node.leftBrace
       guard let previousToken = leftBrace.previousToken(viewMode: .sourceAccurate) else {

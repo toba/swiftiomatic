@@ -32,7 +32,7 @@ struct InclusiveLanguageConfiguration: SeverityBasedRuleConfiguration {
   }
 
   typealias Parent = InclusiveLanguageRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$additionalTerms.key] {
       try additionalTerms.apply(value, ruleID: Parent.identifier)
@@ -44,6 +44,6 @@ struct InclusiveLanguageConfiguration: SeverityBasedRuleConfiguration {
       try overrideAllowedTerms.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

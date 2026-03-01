@@ -88,7 +88,7 @@ func testFormatting(
     #expect(
       !formatResult.changes.isEmpty,
       """
-      Rules applied changes but unexpectedly produced no `Formatter.Change`s. \
+      Rules applied changes but unexpectedly produced no `Swiftiomatic.Formatter.Change`s. \
       This would result in no messages being printed when running with --lint. \
       This can happen in cases where a rule only moves lines, but doesn't modify their contents. \
       You can fix this by using `formatter.moveTokens`.

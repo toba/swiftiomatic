@@ -24,7 +24,7 @@ import Testing
   }
 
   @Test func invalidKeyInCustomConfiguration() async throws {
-    let console = try await Issue.captureConsole {
+    let console = try await Console.captureConsole {
       var config = NoEmptyBlockConfiguration()
       try config.apply(configuration: ["invalidKey": "error"])
     }
@@ -36,14 +36,14 @@ import Testing
 
   @Test func invalidTypeOfCustomConfiguration() {
     var config = NoEmptyBlockConfiguration()
-    checkError(Issue.invalidConfiguration(ruleID: NoEmptyBlockRule.identifier)) {
+    checkError(SwiftiomaticError.invalidConfiguration(ruleID: NoEmptyBlockRule.identifier)) {
       try config.apply(configuration: ["severity": "invalidKey"])
     }
   }
 
   @Test func invalidTypeOfValueInCustomConfiguration() {
     var config = NoEmptyBlockConfiguration()
-    checkError(Issue.invalidConfiguration(ruleID: NoEmptyBlockRule.identifier)) {
+    checkError(SwiftiomaticError.invalidConfiguration(ruleID: NoEmptyBlockRule.identifier)) {
       try config.apply(configuration: ["severity": "foo"])
     }
   }

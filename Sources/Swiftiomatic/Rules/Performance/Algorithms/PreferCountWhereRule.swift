@@ -8,7 +8,7 @@ struct PreferCountWhereRule: Rule {
     name: "Prefer count(where:)",
     description: "Use `count(where:)` instead of `filter(_:).count` for better performance",
     scope: .lint,
-    minSwiftVersion: .six,
+    minSwiftVersion: .v6,
     nonTriggeringExamples: [
       Example("let count = array.count"),
       Example("let count = array.count(where: { $0 > 0 })"),

@@ -7,7 +7,7 @@ struct NumberSeparatorConfiguration: SeverityBasedRuleConfiguration {
       .symbol("\(min) ..< \(max)")
     }
 
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
       guard let values = value as? [String: Any],
         let min = values["min"] as? Double,
         let max = values["max"] as? Double
@@ -32,7 +32,7 @@ struct NumberSeparatorConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "exclude_ranges")
   private(set) var excludeRanges = [ExcludeRange]()
   typealias Parent = NumberSeparatorRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$minimumLength.key] {
       try minimumLength.apply(value, ruleID: Parent.identifier)
@@ -44,6 +44,6 @@ struct NumberSeparatorConfiguration: SeverityBasedRuleConfiguration {
       try excludeRanges.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

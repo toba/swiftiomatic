@@ -13,7 +13,7 @@ extension FormatRule {
           .parsePropertyDeclaration(atIntroducerIndex: introducerIndex),
         let (assignmentIndex, expressionRange) = property.value,
         let returnIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound,
+          of: .nonSpaceOrCommentOrLineBreak, after: expressionRange.upperBound,
         ),
         formatter.tokens[returnIndex] == .keyword("return"),
         let returnedValueIndex = formatter.index(
@@ -42,7 +42,7 @@ extension FormatRule {
       // we should preserve it.
       let rangeBetweenExpressionAndReturn =
         (expressionRange.upperBound + 1)..<(returnRange.lowerBound - 1)
-      if formatter.tokens[rangeBetweenExpressionAndReturn].allSatisfy(\.isSpaceOrLinebreak) {
+      if formatter.tokens[rangeBetweenExpressionAndReturn].allSatisfy(\.isSpaceOrLineBreak) {
         formatter.removeTokens(in: rangeBetweenExpressionAndReturn)
       }
 

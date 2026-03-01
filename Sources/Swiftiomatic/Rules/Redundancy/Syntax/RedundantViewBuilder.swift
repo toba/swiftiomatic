@@ -129,7 +129,7 @@ extension Formatter {
     let hasTrailingLinebreak =
       nextNonSpaceIndex != nil
       && tokens[nextNonSpaceIndex!]
-        .isLinebreak
+        .isLineBreak
     let hasTrailingSpace =
       attributeIndex + 1 < tokens.count
       && tokens[attributeIndex + 1]
@@ -145,7 +145,7 @@ extension Formatter {
       let prevIndex = attributeIndex - 1
       if tokens[prevIndex].isSpace,
         prevIndex > 0,
-        tokens[prevIndex - 1].isLinebreak
+        tokens[prevIndex - 1].isLineBreak
       {
         startIndex = prevIndex
       }
@@ -159,7 +159,7 @@ extension Formatter {
   func scopeBodyIsSingleNonConditionalExpression(at startOfScopeIndex: Int) -> Bool {
     guard
       let firstTokenInBody = index(
-        of: .nonSpaceOrCommentOrLinebreak,
+        of: .nonSpaceOrCommentOrLineBreak,
         after: startOfScopeIndex,
       ),
       tokens[firstTokenInBody] != .keyword("if"),

@@ -58,7 +58,7 @@ struct DeadSymbolsRule: CollectingRule, OptInRule {
         RuleViolation(
           ruleDescription: Self.description,
           severity: configuration.severity,
-          location: Location(file: filePath, line: decl.line, character: decl.column),
+          location: Location(file: filePath, line: decl.line, column: decl.column),
           reason: "Dead private \(decl.kind): '\(decl.name)' — no references found",
           confidence: .medium,
           suggestion: "Remove if unused, or change visibility if needed elsewhere",

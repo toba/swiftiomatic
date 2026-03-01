@@ -42,7 +42,7 @@ struct FormatCommand: ParsableCommand {
         }
 
         let cfg = loadConfig()
-        let engine = buildEngine(config: cfg)
+        let engine = cfg.makeFormatEngine(additionalEnable: enable, additionalDisable: disable)
         let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
 
         if files.isEmpty {
@@ -141,20 +141,6 @@ struct FormatCommand: ParsableCommand {
 
     private func loadConfig() -> Configuration {
         Configuration.loadUnified(configPath: config)
-    }
-
-    private func buildEngine(config: Configuration) -> FormatEngine {
-        let allEnabled = config.enabledFormatRules + enable
-        let allDisabled = config.disabledFormatRules + disable
-
-        var options = FormatOptions.default
-        options.indent = config.formatIndent
-        options.maxWidth = config.formatMaxWidth
-        if let version = Version(rawValue: config.formatSwiftVersion) {
-            options.swiftVersion = version
-        }
-
-        return FormatEngine(enable: allEnabled, disable: allDisabled, options: options)
     }
 
     private func printError(_ message: String) {

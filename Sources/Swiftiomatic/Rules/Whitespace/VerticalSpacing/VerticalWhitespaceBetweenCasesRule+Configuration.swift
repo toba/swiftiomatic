@@ -9,12 +9,12 @@ struct VerticalWhitespaceBetweenCasesConfiguration: SeverityBasedRuleConfigurati
   @ConfigurationElement(key: "separation")
   private(set) var separation: SeparationStyle = .always
   typealias Parent = VerticalWhitespaceBetweenCasesRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$separation.key] {
       try separation.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

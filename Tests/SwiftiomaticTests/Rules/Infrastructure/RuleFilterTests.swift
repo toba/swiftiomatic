@@ -22,7 +22,7 @@ import Testing
 
     let filteredRules = rulesFilter.rules(excluding: [.enabled])
 
-    #expect(Set(filteredRules.list.keys) == Set([RuleMock2.identifier]))
+    #expect(Set(filteredRules.rules.keys) == Set([RuleMock2.identifier]))
   }
 
   @Test func rulesFilterExcludesDisabledRules() {
@@ -45,7 +45,7 @@ import Testing
     let filteredRules = rulesFilter.rules(excluding: [.disabled])
 
     #expect(
-      Set(filteredRules.list.keys)
+      Set(filteredRules.rules.keys)
         == Set([
           RuleMock1.identifier,
           CorrectableRuleMock.identifier,
@@ -72,7 +72,7 @@ import Testing
 
     let filteredRules = rulesFilter.rules(excluding: [.uncorrectable])
 
-    #expect(Set(filteredRules.list.keys) == Set([CorrectableRuleMock.identifier]))
+    #expect(Set(filteredRules.rules.keys) == Set([CorrectableRuleMock.identifier]))
   }
 
   @Test func rulesFilterExcludesUncorrectableDisabledRules() {
@@ -94,7 +94,7 @@ import Testing
 
     let filteredRules = rulesFilter.rules(excluding: [.disabled, .uncorrectable])
 
-    #expect(Set(filteredRules.list.keys) == Set([CorrectableRuleMock.identifier]))
+    #expect(Set(filteredRules.rules.keys) == Set([CorrectableRuleMock.identifier]))
   }
 
   @Test func rulesFilterExcludesUncorrectableEnabledRules() {
@@ -115,7 +115,7 @@ import Testing
 
     let filteredRules = rulesFilter.rules(excluding: [.enabled, .uncorrectable])
 
-    #expect(Set(filteredRules.list.keys) == Set([CorrectableRuleMock.identifier]))
+    #expect(Set(filteredRules.rules.keys) == Set([CorrectableRuleMock.identifier]))
   }
 }
 

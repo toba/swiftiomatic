@@ -42,7 +42,7 @@ import Testing
       )
 
       checkError(
-        Issue
+        SwiftiomaticError
           .invalidConfiguration(ruleID: ImplicitlyUnwrappedOptionalRule.identifier)
       ) {
         try configuration.apply(configuration: badConfig)

@@ -22,7 +22,7 @@ extension FormatRule {
           },
         ), formatter.tokens[colonIndex] == .delimiter(":"),
         let typeEndIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           before: equalsIndex,
         )
       else { return }
@@ -72,7 +72,7 @@ extension FormatRule {
           let valueStartIndex =
             formatter
             .index(
-              of: .nonSpaceOrCommentOrLinebreak,
+              of: .nonSpaceOrCommentOrLineBreak,
               after: indexBeforeStartOfType,
             ),
           !formatter.isConditionalStatement(at: i),
@@ -95,7 +95,7 @@ extension FormatRule {
               )
             }
           } else if let nextIndex = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: j,
             if: { $0 == .operator(".", .infix) },
           ),
@@ -112,7 +112,7 @@ extension FormatRule {
 
       // In Swift 5.9+ (SE-0380) we need to handle if / switch expressions by checking each branch
       if let tokenAfterEquals = formatter.index(
-        of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex,
+        of: .nonSpaceOrCommentOrLineBreak, after: equalsIndex,
       ),
         let conditionalBranches = formatter.conditionalBranches(at: tokenAfterEquals),
         formatter.allRecursiveConditionalBranches(
@@ -207,9 +207,9 @@ extension Formatter {
     var j = j
     var wasValue = false
 
-    while let typeIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: i),
+    while let typeIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: i),
       typeIndex <= typeEndIndex,
-      let valueIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: j)
+      let valueIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: j)
     {
       let typeToken = tokens[typeIndex]
       let valueToken = tokens[valueIndex]
@@ -248,7 +248,7 @@ extension Formatter {
 
     // Check for ternary
     if let endOfExpression = endOfExpression(at: j, upTo: [.operator("?", .infix)]),
-      next(.nonSpaceOrCommentOrLinebreak, after: endOfExpression) == .operator("?", .infix)
+      next(.nonSpaceOrCommentOrLineBreak, after: endOfExpression) == .operator("?", .infix)
     {
       return (false, i, j, wasValue)
     }

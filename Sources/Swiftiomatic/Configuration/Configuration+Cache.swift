@@ -22,8 +22,7 @@ extension Configuration {
     /// The directory where ``LinterCache`` stores its per-file violation caches.
     ///
     /// Resolves to `<cachePath>/Swiftiomatic/<version>/<buildID>/`, falling back to
-    /// `~/Library/Caches/` when no custom ``cachePath`` is set. The directory is
-    /// created on access if it doesn't exist.
+    /// `~/Library/Caches/` when no custom ``cachePath`` is set.
     var cacheURL: URL {
         let baseURL: URL
         if let path = cachePath {
@@ -38,16 +37,17 @@ extension Configuration {
             ExecutableInfo.buildID,
         ].compactMap(\.self).joined(separator: "/")
 
-        let folder = baseURL.appendingPathComponent(versionedDirectory)
+        return baseURL.appendingPathComponent(versionedDirectory)
+    }
 
+    /// Creates the cache directory at ``cacheURL`` if it doesn't already exist.
+    func prepareCacheDirectory() {
         do {
             try FileManager.default.createDirectory(
-                at: folder, withIntermediateDirectories: true, attributes: nil,
+                at: cacheURL, withIntermediateDirectories: true, attributes: nil,
             )
         } catch {
-            Issue.genericWarning("Cannot create cache: " + error.localizedDescription).print()
+            SwiftiomaticError.genericWarning("Cannot create cache: " + error.localizedDescription).print()
         }
-
-        return folder
     }
 }

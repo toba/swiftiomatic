@@ -6,7 +6,7 @@ extension FormatRule {
     help: "Use specified linebreak character for all linebreaks (CR, LF or CRLF).",
     options: ["linebreaks"],
   ) { formatter in
-    formatter.forEach(.linebreak) { i, _ in
+    formatter.forEach(.lineBreak) { i, _ in
       formatter.replaceToken(at: i, with: formatter.linebreakToken(for: i))
     }
   } examples: {

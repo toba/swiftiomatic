@@ -7,7 +7,7 @@ extension FormatRule {
   ) { formatter in
     formatter.forEach(.startOfScope("{")) { i, _ in
       if let nextToken = formatter.token(at: i + 1) {
-        if !nextToken.isSpaceOrLinebreak,
+        if !nextToken.isSpaceOrLineBreak,
           ![.endOfScope("}"), .startOfScope("{")].contains(nextToken)
         {
           formatter.insert(.space(" "), at: i + 1)
@@ -16,7 +16,7 @@ extension FormatRule {
     }
     formatter.forEach(.endOfScope("}")) { i, _ in
       if let prevToken = formatter.token(at: i - 1) {
-        if !prevToken.isSpaceOrLinebreak,
+        if !prevToken.isSpaceOrLineBreak,
           ![.endOfScope("}"), .startOfScope("{")].contains(prevToken)
         {
           formatter.insert(.space(" "), at: i)

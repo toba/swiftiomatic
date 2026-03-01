@@ -10,15 +10,15 @@ extension FormatRule {
     formatter.forEach(.startOfScope("{")) { i, _ in
       guard let closingBraceIndex = formatter.endOfScope(at: i),
         // Check this isn't an inline block
-        formatter.index(of: .linebreak, in: i + 1..<closingBraceIndex) != nil,
-        let prevToken = formatter.last(.nonSpaceOrCommentOrLinebreak, before: i),
+        formatter.index(of: .lineBreak, in: i + 1..<closingBraceIndex) != nil,
+        let prevToken = formatter.last(.nonSpaceOrCommentOrLineBreak, before: i),
         ![.delimiter(","), .keyword("in")].contains(prevToken),
         !prevToken.is(.startOfScope)
       else {
         return
       }
       if let penultimateToken = formatter.last(.nonSpaceOrComment, before: closingBraceIndex),
-        !penultimateToken.isLinebreak
+        !penultimateToken.isLineBreak
       {
         formatter.insertSpace(formatter.currentIndentForLine(at: i), at: closingBraceIndex)
         formatter.insertLinebreak(at: closingBraceIndex)
@@ -32,9 +32,9 @@ extension FormatRule {
         case .identifier, .keyword, .endOfScope, .number,
           .operator("?", .postfix), .operator("!", .postfix):
           formatter.insertLinebreak(at: i)
-          if let breakIndex = formatter.index(of: .linebreak, after: i + 1),
+          if let breakIndex = formatter.index(of: .lineBreak, after: i + 1),
             let nextIndex = formatter.index(
-              of: .nonSpace, after: breakIndex, if: { $0.isLinebreak },
+              of: .nonSpace, after: breakIndex, if: { $0.isLineBreak },
             )
           {
             formatter.removeTokens(in: breakIndex..<nextIndex)
@@ -48,8 +48,8 @@ extension FormatRule {
         }
       } else {
         // Implement K&R-style braces, where opening brace appears on the same line
-        guard let prevIndex = formatter.index(of: .nonSpaceOrLinebreak, before: i),
-          formatter.tokens[prevIndex..<i].contains(where: \.isLinebreak),
+        guard let prevIndex = formatter.index(of: .nonSpaceOrLineBreak, before: i),
+          formatter.tokens[prevIndex..<i].contains(where: \.isLineBreak),
           !formatter.tokens[prevIndex].isComment
         else {
           return

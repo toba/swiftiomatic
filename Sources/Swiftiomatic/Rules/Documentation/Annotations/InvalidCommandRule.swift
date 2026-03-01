@@ -77,7 +77,7 @@ struct InvalidCommandRule: Rule, SyntaxOnlyRule {
       location: Location(
         file: file.path,
         line: command.line,
-        character: command.range?.lowerBound,
+        column: command.range?.lowerBound,
       ),
       reason: reason,
     )

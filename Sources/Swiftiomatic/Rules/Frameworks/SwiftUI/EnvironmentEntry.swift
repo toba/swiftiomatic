@@ -152,7 +152,7 @@ extension Formatter {
 
       // Remove `EnvironmentValues.property` getter and setters
       if let nonSpaceTokenIndexBeforeBody = index(
-        of: .nonSpaceOrLinebreak, before: bodyScopeRange.lowerBound,
+        of: .nonSpaceOrLineBreak, before: bodyScopeRange.lowerBound,
       ),
         nonSpaceTokenIndexBeforeBody != bodyScopeRange.lowerBound
       {

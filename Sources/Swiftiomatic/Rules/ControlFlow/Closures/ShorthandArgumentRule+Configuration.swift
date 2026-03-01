@@ -8,7 +8,7 @@ struct ShorthandArgumentConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "always_disallow_member_access")
   private(set) var alwaysDisallowMemberAccess = false
   typealias Parent = ShorthandArgumentRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$allowUntilLineAfterOpeningBrace.key] {
       try allowUntilLineAfterOpeningBrace.apply(value, ruleID: Parent.identifier)
@@ -20,6 +20,6 @@ struct ShorthandArgumentConfiguration: SeverityBasedRuleConfiguration {
       try alwaysDisallowMemberAccess.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

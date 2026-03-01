@@ -363,12 +363,12 @@ extension TypeDeclaration {
     var genericParameters: (types: [Formatter.GenericType], range: ClosedRange<Int>)? {
         guard
             let identifierIndex = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 after: keywordIndex,
             ),
             tokens[identifierIndex].isIdentifier,
             let openAngleBracketIndex = formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: identifierIndex,
+                of: .nonSpaceOrCommentOrLineBreak, after: identifierIndex,
             ),
             tokens[openAngleBracketIndex] == .startOfScope("<")
         else { return nil }
@@ -441,12 +441,12 @@ extension Collection<Declaration> {
 }
 
 extension Declaration {
-    /// The range of tokens before the first `nonSpaceOrCommentOrLinebreak` token
+    /// The range of tokens before the first `nonSpaceOrCommentOrLineBreak` token
     /// where leading comments like MARKs, directives, and documentation are located.
     var leadingCommentRange: Range<Int> {
         let firstTokenIndex =
             formatter.index(
-                of: .nonSpaceOrCommentOrLinebreak,
+                of: .nonSpaceOrCommentOrLineBreak,
                 after: range.lowerBound - 1,
             ) ?? range.lowerBound
 

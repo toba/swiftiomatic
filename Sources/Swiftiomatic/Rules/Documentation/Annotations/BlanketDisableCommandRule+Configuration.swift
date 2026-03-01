@@ -12,7 +12,7 @@ struct BlanketDisableCommandConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "always_blanket_disable")
   private(set) var alwaysBlanketDisableRuleIdentifiers: Set<String> = []
   typealias Parent = BlanketDisableCommandRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$allowedRuleIdentifiers.key] {
       try allowedRuleIdentifiers.apply(value, ruleID: Parent.identifier)
@@ -21,6 +21,6 @@ struct BlanketDisableCommandConfiguration: SeverityBasedRuleConfiguration {
       try alwaysBlanketDisableRuleIdentifiers.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

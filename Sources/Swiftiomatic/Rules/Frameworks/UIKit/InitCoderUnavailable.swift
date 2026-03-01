@@ -15,7 +15,7 @@ extension FormatRule {
       // look for required init?(coder
       guard var initIndex = formatter.index(of: .keyword("init"), after: i) else { return }
       if let nextIndex = formatter.index(
-        of: .nonSpaceOrCommentOrLinebreak, after: initIndex,
+        of: .nonSpaceOrCommentOrLineBreak, after: initIndex,
         if: {
           $0 == .operator("?", .postfix)
         },
@@ -25,13 +25,13 @@ extension FormatRule {
 
       guard
         let parenIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: initIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: initIndex,
           if: {
             $0 == .startOfScope("(")
           },
         ),
         let coderIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: parenIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: parenIndex,
           if: {
             $0 == .identifier("coder")
           },
@@ -42,7 +42,7 @@ extension FormatRule {
       // make sure the implementation is empty or fatalError
       guard
         let firstTokenIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: braceIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: braceIndex,
           if: {
             [.endOfScope("}"), .identifier("fatalError")].contains($0)
           },

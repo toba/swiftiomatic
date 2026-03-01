@@ -9,7 +9,7 @@ struct TestCaseAccessibilityConfiguration: SeverityBasedRuleConfiguration {
   )
   private(set) var testParentClasses = Set<String>()
   typealias Parent = TestCaseAccessibilityRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$allowedPrefixes.key] {
       try allowedPrefixes.apply(value, ruleID: Parent.identifier)
@@ -18,6 +18,6 @@ struct TestCaseAccessibilityConfiguration: SeverityBasedRuleConfiguration {
       try testParentClasses.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

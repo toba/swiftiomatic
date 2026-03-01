@@ -83,7 +83,7 @@ extension Formatter {
     // Get function name
     guard
       let nameIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak,
+        of: .nonSpaceOrCommentOrLineBreak,
         after: function.keywordIndex,
       ),
       case .identifier(let name) = tokens[nameIndex]
@@ -130,7 +130,7 @@ extension Formatter {
   func addTestPrefixIfNeeded(_ function: Declaration) {
     guard
       let nameIndex = index(
-        of: .nonSpaceOrCommentOrLinebreak,
+        of: .nonSpaceOrCommentOrLineBreak,
         after: function.keywordIndex,
       ),
       case .identifier(let name) = tokens[nameIndex]

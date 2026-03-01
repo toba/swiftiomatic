@@ -40,14 +40,10 @@ extension String {
     }
 
     /// Is this an attribute name?
-    var isAttribute: Bool {
-        hasPrefix("@")
-    }
+    var isAttribute: Bool { hasPrefix("@") }
 
     /// Is this a macro name or conditional compilation directive?
-    var isMacroOrAttribute: Bool {
-        isMacro || isAttribute
-    }
+    var isMacroOrAttribute: Bool { isMacro || isAttribute }
 
     /// Is this string a valid operator?
     var isOperator: Bool {
@@ -56,9 +52,7 @@ extension String {
     }
 
     /// Is this string a comment directive (MARK:, TODO:, sm:, etc)?
-    var isCommentDirective: Bool {
-        commentDirective != nil
-    }
+    var isCommentDirective: Bool { commentDirective != nil }
 
     /// Returns comment directive prefix (MARK:, TODO:, sm:, etc)?
     var commentDirective: String? {
@@ -80,7 +74,7 @@ extension String {
 enum TokenType {
     case space
     case comment
-    case linebreak
+    case lineBreak
     case endOfStatement
     case startOfScope
     case endOfScope
@@ -96,17 +90,17 @@ enum TokenType {
 
     /// OR types
     case spaceOrComment
-    case spaceOrLinebreak
-    case spaceOrCommentOrLinebreak
+    case spaceOrLineBreak
+    case spaceOrCommentOrLineBreak
     case keywordOrAttribute
     case identifierOrKeyword
 
     /// NOT types
     case nonSpace
-    case nonLinebreak
+    case nonLineBreak
     case nonSpaceOrComment
-    case nonSpaceOrLinebreak
-    case nonSpaceOrCommentOrLinebreak
+    case nonSpaceOrLineBreak
+    case nonSpaceOrCommentOrLineBreak
 }
 
 /// Numeric literal types
@@ -132,7 +126,7 @@ typealias OriginalLine = Int
 /// All token types
 enum Token: Hashable {
     case number(String, NumberType)
-    case linebreak(String, OriginalLine)
+    case lineBreak(String, OriginalLine)
     case startOfScope(String)
     case endOfScope(String)
     case delimiter(String)
@@ -151,7 +145,7 @@ private extension Token {
         switch (self, token) {
             case (.number, .number),
                  (.operator, .operator),
-                 (.linebreak, .linebreak),
+                 (.lineBreak, .lineBreak),
                  (.startOfScope, .startOfScope),
                  (.endOfScope, .endOfScope),
                  (.delimiter, .delimiter),
@@ -164,7 +158,7 @@ private extension Token {
                 return true
             case (.number, _),
                  (.operator, _),
-                 (.linebreak, _),
+                 (.lineBreak, _),
                  (.startOfScope, _),
                  (.endOfScope, _),
                  (.delimiter, _),
@@ -177,7 +171,6 @@ private extension Token {
                 return false
         }
     }
-
 }
 
 extension Token {
@@ -202,9 +195,7 @@ extension Token {
                     }
                 }
                 let isRegex = slashCount == 1
-                guard quoteCount > 0 || isRegex else {
-                    return nil
-                }
+                guard quoteCount > 0 || isRegex else { return nil }
                 return StringDelimiterType(
                     isRegex: isRegex,
                     isMultiline: quoteCount == 3 || (isRegex && hashCount > 0),
@@ -221,7 +212,7 @@ extension Token {
     var string: String {
         switch self {
             case let .number(string, _),
-                 let .linebreak(string, _),
+                 let .lineBreak(string, _),
                  let .startOfScope(string),
                  let .endOfScope(string),
                  let .delimiter(string),
@@ -246,7 +237,7 @@ extension Token {
                 return string.reduce(0) { count, character in
                     count + (character == "\t" ? tabWidth : 1)
                 }
-            case .linebreak:
+            case .lineBreak:
                 return 0
             default:
                 return string.count
@@ -264,20 +255,13 @@ extension Token {
                         _ = input.readCharacters { $0 == "#" }
                         if let c = input.popFirst() {
                             switch c {
-                                case "\0":
-                                    output.append("\0")
-                                case "\\":
-                                    output.append("\\")
-                                case "t":
-                                    output.append("\t")
-                                case "n":
-                                    output.append("\n")
-                                case "r":
-                                    output.append("\r")
-                                case "\"":
-                                    output.append("\"")
-                                case "\'":
-                                    output.append("\'")
+                                case "\0": output.append("\0")
+                                case "\\": output.append("\\")
+                                case "t": output.append("\t")
+                                case "n": output.append("\n")
+                                case "r": output.append("\r")
+                                case "\"": output.append("\"")
+                                case "\'": output.append("\'")
                                 case "u":
                                     guard input.read("{"),
                                           let hex = input.readCharacters(where: { $0.isHexDigit }),
@@ -327,148 +311,58 @@ extension Token {
     /// Test if token is of the specified type
     func `is`(_ type: TokenType) -> Bool {
         switch type {
-            case .space:
-                return isSpace
-            case .comment:
-                return isComment
-            case .spaceOrComment:
-                return isSpaceOrComment
-            case .spaceOrLinebreak:
-                return isSpaceOrLinebreak
-            case .spaceOrCommentOrLinebreak:
-                return isSpaceOrCommentOrLinebreak
-            case .linebreak:
-                return isLinebreak
-            case .endOfStatement:
-                return isEndOfStatement
-            case .startOfScope:
-                return isStartOfScope
-            case .endOfScope:
-                return isEndOfScope
-            case .keyword:
-                return isKeyword
-            case .keywordOrAttribute:
-                return isKeywordOrAttribute
-            case .identifier:
-                return isIdentifier
-            case .identifierOrKeyword:
-                return isIdentifierOrKeyword
-            case .attribute:
-                return isAttribute
-            case .delimiter:
-                return isDelimiter
-            case .operator:
-                return isOperator
-            case .unwrapOperator:
-                return isUnwrapOperator
-            case .rangeOperator:
-                return isRangeOperator
-            case .number:
-                return isNumber
-            case .error:
-                return isError
-            case .nonSpace:
-                return !isSpace
-            case .nonLinebreak:
-                return !isLinebreak
-            case .nonSpaceOrComment:
-                return !isSpaceOrComment
-            case .nonSpaceOrLinebreak:
-                return !isSpaceOrLinebreak
-            case .nonSpaceOrCommentOrLinebreak:
-                return !isSpaceOrCommentOrLinebreak
+            case .space: isSpace
+            case .comment: isComment
+            case .spaceOrComment: isSpaceOrComment
+            case .spaceOrLineBreak: isSpaceOrLineBreak
+            case .spaceOrCommentOrLineBreak: isSpaceOrCommentOrLineBreak
+            case .lineBreak: isLineBreak
+            case .endOfStatement: isEndOfStatement
+            case .startOfScope: isStartOfScope
+            case .endOfScope: isEndOfScope
+            case .keyword: isKeyword
+            case .keywordOrAttribute: isKeywordOrAttribute
+            case .identifier: isIdentifier
+            case .identifierOrKeyword: isIdentifierOrKeyword
+            case .attribute: isAttribute
+            case .delimiter: isDelimiter
+            case .operator: isOperator
+            case .unwrapOperator: isUnwrapOperator
+            case .rangeOperator: isRangeOperator
+            case .number: isNumber
+            case .error: isError
+            case .nonSpace: !isSpace
+            case .nonLineBreak: !isLineBreak
+            case .nonSpaceOrComment: !isSpaceOrComment
+            case .nonSpaceOrLineBreak: !isSpaceOrLineBreak
+            case .nonSpaceOrCommentOrLineBreak: !isSpaceOrCommentOrLineBreak
         }
     }
 
-    var isAttribute: Bool {
-        isKeywordOrAttribute && string.isAttribute
-    }
-
-    var isDelimiter: Bool {
-        hasType(of: .delimiter(""))
-    }
-
-    var isOperator: Bool {
-        hasType(of: .operator("", .none))
-    }
-
-    var isUnwrapOperator: Bool {
-        isOperator("?", .postfix) || isOperator("!", .postfix)
-    }
-
-    var isRangeOperator: Bool {
-        isOperator("...") || isOperator("..<")
-    }
-
-    var isNumber: Bool {
-        hasType(of: .number("", .integer))
-    }
-
-    var isError: Bool {
-        hasType(of: .error(""))
-    }
-
-    var isStartOfScope: Bool {
-        hasType(of: .startOfScope(""))
-    }
-
-    var isEndOfScope: Bool {
-        hasType(of: .endOfScope(""))
-    }
-
-    var isKeyword: Bool {
-        isKeywordOrAttribute && !string.isAttribute
-    }
-
-    var isKeywordOrAttribute: Bool {
-        hasType(of: .keyword(""))
-    }
-
-    var isIdentifier: Bool {
-        hasType(of: .identifier(""))
-    }
-
-    var isIdentifierOrKeyword: Bool {
-        isIdentifier || isKeywordOrAttribute
-    }
-
-    var isSpace: Bool {
-        hasType(of: .space(""))
-    }
-
-    var isLinebreak: Bool {
-        hasType(of: .linebreak("", 0))
-    }
-
-    var isEndOfStatement: Bool {
-        self == .delimiter(";") || isLinebreak
-    }
-
-    var isSpaceOrLinebreak: Bool {
-        isSpace || isLinebreak
-    }
-
-    var isSpaceOrComment: Bool {
-        isSpace || isComment
-    }
-
-    var isSpaceOrCommentOrLinebreak: Bool {
-        isSpaceOrComment || isLinebreak
-    }
-
-    var isNonSpaceOrCommentOrLinebreak: Bool {
-        !isSpaceOrCommentOrLinebreak
-    }
-
-    var isCommentOrLinebreak: Bool {
-        isComment || isLinebreak
-    }
+    var isAttribute: Bool { isKeywordOrAttribute && string.isAttribute }
+    var isDelimiter: Bool { hasType(of: .delimiter("")) }
+    var isOperator: Bool { hasType(of: .operator("", .none)) }
+    var isUnwrapOperator: Bool { isOperator("?", .postfix) || isOperator("!", .postfix) }
+    var isRangeOperator: Bool { isOperator("...") || isOperator("..<") }
+    var isNumber: Bool { hasType(of: .number("", .integer)) }
+    var isError: Bool { hasType(of: .error("")) }
+    var isStartOfScope: Bool { hasType(of: .startOfScope("")) }
+    var isEndOfScope: Bool { hasType(of: .endOfScope("")) }
+    var isKeyword: Bool { isKeywordOrAttribute && !string.isAttribute }
+    var isKeywordOrAttribute: Bool { hasType(of: .keyword("")) }
+    var isIdentifier: Bool { hasType(of: .identifier("")) }
+    var isIdentifierOrKeyword: Bool { isIdentifier || isKeywordOrAttribute }
+    var isSpace: Bool { hasType(of: .space("")) }
+    var isLineBreak: Bool { hasType(of: .lineBreak("", 0)) }
+    var isEndOfStatement: Bool { self == .delimiter(";") || isLineBreak }
+    var isSpaceOrLineBreak: Bool { isSpace || isLineBreak }
+    var isSpaceOrComment: Bool { isSpace || isComment }
+    var isSpaceOrCommentOrLineBreak: Bool { isSpaceOrComment || isLineBreak }
+    var isNonSpaceOrCommentOrLineBreak: Bool { !isSpaceOrCommentOrLineBreak }
+    var isCommentOrLineBreak: Bool { isComment || isLineBreak }
 
     var isMacro: Bool {
-        if case let .keyword(string) = self {
-            return string.isMacro
-        }
-        return false
+        if case let .keyword(string) = self { string.isMacro } else { false }
     }
 
     var isSwitchCaseOrDefault: Bool {
@@ -479,24 +373,15 @@ extension Token {
     }
 
     func isOperator(_ string: String) -> Bool {
-        if case .operator(string, _) = self {
-            return true
-        }
-        return false
+        if case .operator(string, _) = self { true } else { false }
     }
 
     func isOperator(ofType type: OperatorType) -> Bool {
-        if case .operator(_, type) = self {
-            return true
-        }
-        return false
+        if case .operator(_, type) = self { true } else { false }
     }
 
     func isOperator(_ string: String, _ type: OperatorType) -> Bool {
-        if case .operator(string, type) = self {
-            return true
-        }
-        return false
+        if case .operator(string, type) = self { true } else { false }
     }
 
     var isComment: Bool {
@@ -513,19 +398,15 @@ extension Token {
 
     var isCommentBody: Bool {
         switch self {
-            case .commentBody:
-                return true
-            default:
-                return false
+            case .commentBody: true
+            default: false
         }
     }
 
     var isStringBody: Bool {
         switch self {
-            case .stringBody:
-                return true
-            default:
-                return false
+            case .stringBody: true
+            default: false
         }
     }
 
@@ -550,23 +431,16 @@ extension Token {
                     return false
                 }
                 switch opening {
-                    case "(":
-                        return closing == ")"
-                    case "[":
-                        return closing == "]"
-                    case "<":
-                        return closing == ">"
+                    case "(": return closing == ")"
+                    case "[": return closing == "]"
+                    case "<": return closing == ">"
                     case "{", ":":
                         switch closing {
-                            case "}", "case", "default":
-                                return true
-                            default:
-                                return false
+                            case "}", "case", "default": return true
+                            default: return false
                         }
-                    case "/*":
-                        return closing == "*/"
-                    case "#if":
-                        return closing == "#endif"
+                    case "/*": return closing == "*/"
+                    case "#if": return closing == "#endif"
                     default:
                         if let delimiterType = stringDelimiterType {
                             let quotes = delimiterType
@@ -576,12 +450,10 @@ extension Token {
                         }
                         return false
                 }
-            case .linebreak:
+            case .lineBreak:
                 switch token {
-                    case .startOfScope("//"), .startOfScope("#!"):
-                        return true
-                    default:
-                        return false
+                    case .startOfScope("//"), .startOfScope("#!"): return true
+                    default: return false
                 }
             case .delimiter(":"), .startOfScope(":"):
                 switch token {
@@ -644,8 +516,8 @@ extension Collection<Token> where Index == Int {
                 index += 1
             }
 
-            // Skip over any linebreaks, and any indentation following the linebreak
-            if self[index].isLinebreak {
+            // Skip over any line breaks, and any indentation following the line break
+            if self[index].isLineBreak {
                 index += 1
                 while self[index].isSpace, index < indices.endIndex {
                     index += 1
@@ -679,7 +551,7 @@ extension Token: Encodable {
         try container.encode(string, forKey: .string)
 
         switch self {
-            case let .linebreak(_, originalLine):
+            case let .lineBreak(_, originalLine):
                 try container.encode(originalLine, forKey: .originalLine)
             case let .number(_, numberType):
                 try container.encode(numberType.rawValue, forKey: .numberType)
@@ -693,7 +565,7 @@ extension Token: Encodable {
     private var typeName: String {
         switch self {
             case .number: return "number"
-            case .linebreak: return "linebreak"
+            case .lineBreak: return "linebreak"
             case .startOfScope: return "startOfScope"
             case .endOfScope: return "endOfScope"
             case .delimiter: return "delimiter"

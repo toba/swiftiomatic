@@ -18,12 +18,12 @@ extension FormatRule {
           },
         )
       {
-        if let prevLinebreak = formatter.index(of: .linebreak, before: scopeStart),
+        if let prevLinebreak = formatter.index(of: .lineBreak, before: scopeStart),
           case .commentBody? = formatter.last(.nonSpace, before: prevLinebreak)
         {
           return
         }
-        if let nextLinebreak = formatter.index(of: .linebreak, after: i),
+        if let nextLinebreak = formatter.index(of: .lineBreak, after: i),
           case .startOfScope("//")? = formatter.next(.nonSpace, after: nextLinebreak)
         {
           return

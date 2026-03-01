@@ -6,7 +6,7 @@ struct ColonConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "apply_to_dictionaries")
   private(set) var applyToDictionaries = true
   typealias Parent = ColonRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$flexibleRightSpacing.key] {
       try flexibleRightSpacing.apply(value, ruleID: Parent.identifier)
@@ -15,6 +15,6 @@ struct ColonConfiguration: SeverityBasedRuleConfiguration {
       try applyToDictionaries.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

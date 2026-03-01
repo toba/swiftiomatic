@@ -12,12 +12,12 @@ struct UnitTestConfiguration<Parent: Rule>: SeverityBasedRuleConfiguration {
     postprocessor: { $0.formUnion(["QuickSpec", "XCTestCase"]) },
   )
   private(set) var testParentClasses = Set<String>()
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$testParentClasses.key] {
       try testParentClasses.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

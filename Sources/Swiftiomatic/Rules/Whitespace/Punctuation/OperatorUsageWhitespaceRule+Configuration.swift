@@ -8,7 +8,7 @@ struct OperatorUsageWhitespaceConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "allowed_no_space_operators")
   private(set) var allowedNoSpaceOperators = ["...", "..<"]
   typealias Parent = OperatorUsageWhitespaceRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$linesLookAround.key] {
       try linesLookAround.apply(value, ruleID: Parent.identifier)
@@ -20,6 +20,6 @@ struct OperatorUsageWhitespaceConfiguration: SeverityBasedRuleConfiguration {
       try allowedNoSpaceOperators.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

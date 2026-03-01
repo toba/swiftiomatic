@@ -61,7 +61,7 @@ extension CollectingRule {
     -> [RuleViolation]
   {
     guard let info = storage.collectedInfo(for: self) else {
-      queuedFatalError("Attempt to validate a CollectingRule before collecting info for it")
+      Console.fatalError("Attempt to validate a CollectingRule before collecting info for it")
     }
     return validate(file: file, collectedInfo: info, compilerArguments: compilerArguments)
   }
@@ -79,11 +79,11 @@ extension CollectingRule {
   }
 
   func validate(file _: SwiftSource) -> [RuleViolation] {
-    queuedFatalError("Must call `validate(file:collectedInfo:)` for CollectingRule")
+    Console.fatalError("Must call `validate(file:collectedInfo:)` for CollectingRule")
   }
 
   func validate(file _: SwiftSource, compilerArguments _: [String]) -> [RuleViolation] {
-    queuedFatalError(
+    Console.fatalError(
       "Must call `validate(file:collectedInfo:compilerArguments:)` for CollectingRule",
     )
   }
@@ -91,13 +91,13 @@ extension CollectingRule {
 
 extension CollectingRule where Self: AnalyzerRule {
   func collectInfo(for _: SwiftSource) -> FileInfo {
-    queuedFatalError(
+    Console.fatalError(
       "Must call `collect(infoFor:compilerArguments:)` for AnalyzerRule & CollectingRule",
     )
   }
 
   func validate(file _: SwiftSource) -> [RuleViolation] {
-    queuedFatalError(
+    Console.fatalError(
       "Must call `validate(file:collectedInfo:compilerArguments:)` for AnalyzerRule & CollectingRule",
     )
   }
@@ -105,7 +105,7 @@ extension CollectingRule where Self: AnalyzerRule {
   func validate(file _: SwiftSource, collectedInfo _: [SwiftSource: FileInfo])
     -> [RuleViolation]
   {
-    queuedFatalError(
+    Console.fatalError(
       "Must call `validate(file:collectedInfo:compilerArguments:)` for AnalyzerRule & CollectingRule",
     )
   }

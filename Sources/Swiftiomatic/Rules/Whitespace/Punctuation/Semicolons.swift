@@ -10,9 +10,9 @@ extension FormatRule {
     formatter.forEach(.delimiter(";")) { i, _ in
       if let nextToken =
         formatter
-        .next(.nonSpaceOrCommentOrLinebreak, after: i, if: { $0 != .endOfScope("}") }),
+        .next(.nonSpaceOrCommentOrLineBreak, after: i, if: { $0 != .endOfScope("}") }),
         let prevTokenIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           before: i,
         )
       {
@@ -25,11 +25,11 @@ extension FormatRule {
           // Not safe to remove or replace
         } else if case .identifier = prevToken,
           formatter.last(
-            .nonSpaceOrCommentOrLinebreak, before: prevTokenIndex,
+            .nonSpaceOrCommentOrLineBreak, before: prevTokenIndex,
           ) == .keyword("var")
         {
           // Not safe to remove or replace
-        } else if formatter.next(.nonSpaceOrComment, after: i)?.isLinebreak == true {
+        } else if formatter.next(.nonSpaceOrComment, after: i)?.isLineBreak == true {
           // Safe to remove
           formatter.removeToken(at: i)
         } else if formatter.options.semicolons == .never {

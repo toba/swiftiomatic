@@ -30,7 +30,7 @@ package struct RuleConfigurationDescription: Equatable, Sendable {
     fileprivate init(options: [RuleConfigurationOption], exclusiveOptions: Set<String> = []) {
         if options.contains(.noOptions) {
             if options.count > 1 {
-                queuedFatalError(
+                Console.fatalError(
                     """
                     Cannot create a configuration description with a mixture of `noOption`
                     and other options or multiple `noOptions`s. If any, descriptions must only
@@ -66,7 +66,7 @@ package struct RuleConfigurationDescription: Equatable, Sendable {
                 return []
             }
         guard options.isNotEmpty else {
-            queuedFatalError(
+            Console.fatalError(
                 """
                 Rule configuration '\(configuration)' does not have any parameters.
                 A custom description must be provided. If really no documentation is
@@ -217,7 +217,7 @@ extension OptionType: Documentable {
     func yaml() -> String {
         switch self {
             case .empty:
-                queuedFatalError("Empty options shall not be serialized.")
+                Console.fatalError("Empty options shall not be serialized.")
             case let .flag(value):
                 return String(describing: value)
             case let .string(value):
@@ -323,7 +323,7 @@ protocol AcceptableByConfigurationElement {
     /// - Parameters:
     ///   - value: Value from a configuration.
     ///   - ruleID: The rule's identifier in which context the configuration parsing runs.
-    init(fromAny value: Any, context ruleID: String) throws(Issue)
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError)
 
     /// Make the object an option.
     ///
@@ -343,7 +343,7 @@ protocol AcceptableByConfigurationElement {
     /// - Parameters:
     ///   - value: New underlying data for the object.
     ///   - ruleID: The rule's identifier in which context the configuration parsing runs.
-    mutating func apply(_ value: Any, ruleID: String) throws(Issue)
+    mutating func apply(_ value: Any, ruleID: String) throws(SwiftiomaticError)
 }
 
 extension AcceptableByConfigurationElement where Self: RawRepresentable, RawValue == String {
@@ -351,7 +351,7 @@ extension AcceptableByConfigurationElement where Self: RawRepresentable, RawValu
         .symbol(rawValue)
     }
 
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
         if let value = value as? String, let newSelf = Self(rawValue: value) {
             self = newSelf
         } else {
@@ -366,7 +366,7 @@ extension AcceptableByConfigurationElement {
         RuleConfigurationDescription(options: [key => asOption()])
     }
 
-    mutating func apply(_ value: Any, ruleID: String) throws(Issue) {
+    mutating func apply(_ value: Any, ruleID: String) throws(SwiftiomaticError) {
         self = try Self(fromAny: value, context: ruleID)
     }
 }
@@ -448,7 +448,7 @@ struct ConfigurationElement<T: AcceptableByConfigurationElement & Equatable & Se
     var wrappedValue: T {
         didSet {
             if case let .suggestAlternative(id, name) = deprecationNotice {
-                Issue.deprecatedConfigurationOption(ruleID: id, key: key, alternative: name).print()
+                SwiftiomaticError.deprecatedConfigurationOption(ruleID: id, key: key, alternative: name).print()
             }
             if wrappedValue != oldValue {
                 postprocessor(&wrappedValue)
@@ -563,7 +563,7 @@ extension ConfigurationElement: AnyConfigurationElement {
 private protocol DirectlyCastableConfigurationElement: AcceptableByConfigurationElement {}
 
 extension DirectlyCastableConfigurationElement {
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
         guard let value = value as? Self else {
             throw .invalidConfiguration(ruleID: ruleID)
         }
@@ -578,7 +578,7 @@ extension Optional: AcceptableByConfigurationElement
         self?.asOption() ?? .empty
     }
 
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
         self = try Wrapped(fromAny: value, context: ruleID)
     }
 }
@@ -590,7 +590,7 @@ struct Symbol: Equatable, AcceptableByConfigurationElement {
         .symbol(value)
     }
 
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
         guard let value = value as? String else {
             throw .invalidConfiguration(ruleID: ruleID)
         }
@@ -615,9 +615,9 @@ extension Array: AcceptableByConfigurationElement where Element: AcceptableByCon
         .list(map { $0.asOption() })
     }
 
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
         let values = value as? [Any] ?? [value]
-        self = try values.map { value throws(Issue) in
+        self = try values.map { value throws(SwiftiomaticError) in
             try Element(fromAny: value, context: ruleID)
         }
     }
@@ -630,7 +630,7 @@ extension Set: AcceptableByConfigurationElement
         sorted().asOption()
     }
 
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
         self = try Set([Element](fromAny: value, context: ruleID))
     }
 }
@@ -646,7 +646,7 @@ extension Double: AcceptableByConfigurationElement {
         .float(self)
     }
 
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
         if let value = value as? Self {
             self = value
         } else if let value = value as? Int {
@@ -657,12 +657,12 @@ extension Double: AcceptableByConfigurationElement {
     }
 }
 
-extension RegularExpression: AcceptableByConfigurationElement {
+extension CachedRegex: AcceptableByConfigurationElement {
     func asOption() -> OptionType {
         .string(pattern)
     }
 
-    init(fromAny value: Any, context ruleID: String) throws(Issue) {
+    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
         guard let value = value as? String else {
             throw .invalidConfiguration(ruleID: ruleID)
         }
@@ -684,7 +684,7 @@ extension AcceptableByConfigurationElement where Self: RuleConfiguration {
         return RuleConfigurationDescription(options: [key => asOption()])
     }
 
-    mutating func apply(_ value: Any, ruleID: String) throws(Issue) {
+    mutating func apply(_ value: Any, ruleID: String) throws(SwiftiomaticError) {
         if let dict = value as? [String: Any] {
             try apply(configuration: dict)
         } else {
@@ -692,7 +692,7 @@ extension AcceptableByConfigurationElement where Self: RuleConfiguration {
         }
     }
 
-    init(fromAny _: Any, context _: String) throws(Issue) {
+    init(fromAny _: Any, context _: String) throws(SwiftiomaticError) {
         throw .genericError("Do not call this initializer")
     }
 }
@@ -706,7 +706,7 @@ extension SeverityConfiguration {
             return description
         }
         guard let option = description.options.onlyElement?.value, case .symbol = option else {
-            queuedFatalError(
+            Console.fatalError(
                 """
                 Severity configurations must have exactly one option that is a violation severity.
                 """,

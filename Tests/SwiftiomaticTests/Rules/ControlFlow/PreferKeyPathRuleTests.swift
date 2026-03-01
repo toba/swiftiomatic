@@ -11,7 +11,7 @@ import Testing
   ]
 
   @Test func identityExpressionInSwift6() async {
-    guard SwiftVersion.current >= .six else {
+    guard SwiftVersion.current >= .v6 else {
       withKnownIssue("Skipped when Swift version < 6") {}
       return
     }

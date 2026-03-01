@@ -18,12 +18,12 @@ struct FileTypesOrderConfiguration: SeverityBasedRuleConfiguration {
     [.libraryContentProvider],
   ]
   typealias Parent = FileTypesOrderRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$order.key] {
       try order.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

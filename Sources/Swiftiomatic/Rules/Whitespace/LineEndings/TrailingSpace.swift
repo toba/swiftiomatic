@@ -10,10 +10,10 @@ extension FormatRule {
   ) { formatter in
     formatter.forEach(.space) { i, _ in
       switch formatter.token(at: i + 1) {
-      case nil, .linebreak:
+      case nil, .lineBreak:
         if formatter.options.truncateBlankLines
           || formatter.token(at: i - 1)?
-            .isLinebreak == false
+            .isLineBreak == false
         {
           formatter.removeToken(at: i)
         }

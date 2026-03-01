@@ -11,57 +11,25 @@ package struct SwiftVersion: RawRepresentable, Codable, VersionComparable, Senda
     }
 }
 
-/// A comparable `major.minor.patch` version number.
-package protocol VersionComparable: Comparable {
-    /// The version string.
-    var rawValue: String { get }
-}
-
-extension VersionComparable {
-    package static func == (lhs: Self, rhs: Self) -> Bool {
-        if let lhsComparators = lhs.comparators, let rhsComparators = rhs.comparators {
-            return lhsComparators == rhsComparators
-        }
-        return lhs.rawValue == rhs.rawValue
-    }
-
-    package static func < (lhs: Self, rhs: Self) -> Bool {
-        if let lhsComparators = lhs.comparators, let rhsComparators = rhs.comparators {
-            return lhsComparators.lexicographicallyPrecedes(rhsComparators)
-        }
-        return lhs.rawValue < rhs.rawValue
-    }
-
-    private var comparators: [Int]? {
-        let components = rawValue.split(separator: ".").compactMap { Int($0) }
-        guard let major = components.first else {
-            return nil
-        }
-        let minor = components.dropFirst(1).first ?? 0
-        let patch = components.dropFirst(2).first ?? 0
-        return [major, minor, patch]
-    }
-}
-
 extension SwiftVersion {
     /// Swift 6
-    static let six = SwiftVersion(rawValue: "6.0.0")
+    static let v6 = SwiftVersion(rawValue: "6.0.0")
     /// Swift 6.1
-    static let sixDotOne = SwiftVersion(rawValue: "6.1.0")
+    static let v6_1 = SwiftVersion(rawValue: "6.1.0")
     /// Swift 6.1.1
-    static let sixDotOneDotOne = SwiftVersion(rawValue: "6.1.1")
+    static let v6_1_1 = SwiftVersion(rawValue: "6.1.1")
     /// Swift 6.1.2
-    static let sixDotOneDotTwo = SwiftVersion(rawValue: "6.1.2")
+    static let v6_1_2 = SwiftVersion(rawValue: "6.1.2")
     /// Swift 6.2
-    static let sixDotTwo = SwiftVersion(rawValue: "6.2.0")
+    static let v6_2 = SwiftVersion(rawValue: "6.2.0")
     /// Swift 6.2.1
-    static let sixDotTwoDotOne = SwiftVersion(rawValue: "6.2.1")
+    static let v6_2_1 = SwiftVersion(rawValue: "6.2.1")
     /// Swift 6.2.2
-    static let sixDotTwoDotTwo = SwiftVersion(rawValue: "6.2.2")
+    static let v6_2_2 = SwiftVersion(rawValue: "6.2.2")
     /// Swift 6.2.3
-    static let sixDotTwoDotThree = SwiftVersion(rawValue: "6.2.3")
+    static let v6_2_3 = SwiftVersion(rawValue: "6.2.3")
     /// Swift 6.3
-    static let sixDotThree = SwiftVersion(rawValue: "6.3.0")
+    static let v6_3 = SwiftVersion(rawValue: "6.3.0")
 
     /// The current detected Swift compiler version, based on the currently accessible SourceKit version.
     ///
@@ -115,7 +83,7 @@ extension SwiftVersion {
         #elseif compiler(>=6.0.0)
         return SwiftVersion(rawValue: "6.0.0")
         #else
-        return .six
+        return .v6
         #endif
     }()
 }

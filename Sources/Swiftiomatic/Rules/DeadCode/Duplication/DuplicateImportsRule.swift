@@ -32,7 +32,7 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
   }
 
   func makeVisitor(file _: SwiftSource) -> ViolationCollectingVisitor<ConfigurationType> {
-    queuedFatalError("Unreachable: `validate(file:)` will be used instead")
+    Console.fatalError("Unreachable: `validate(file:)` will be used instead")
   }
 
   func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<ConfigurationType>? {

@@ -12,7 +12,7 @@ struct MultilineArgumentsConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "only_enforce_after_first_closure_on_first_line")
   private(set) var onlyEnforceAfterFirstClosureOnFirstLine = false
   typealias Parent = MultilineArgumentsRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     if $onlyEnforceAfterFirstClosureOnFirstLine.key.isEmpty {
       $onlyEnforceAfterFirstClosureOnFirstLine.key =
         "only_enforce_after_first_closure_on_first_line"
@@ -25,6 +25,6 @@ struct MultilineArgumentsConfiguration: SeverityBasedRuleConfiguration {
       try onlyEnforceAfterFirstClosureOnFirstLine.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

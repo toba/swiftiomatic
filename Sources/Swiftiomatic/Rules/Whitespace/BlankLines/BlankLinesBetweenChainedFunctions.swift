@@ -7,10 +7,10 @@ extension FormatRule {
   ) { formatter in
     formatter.forEach(.operator(".", .infix)) { i, _ in
       let endOfLine = formatter.endOfLine(at: i)
-      if let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: endOfLine),
+      if let nextIndex = formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: endOfLine),
         formatter.tokens[nextIndex] == .operator(".", .infix),
         // Make sure to preserve any code comment between the two lines
-        let nextTokenOrComment = formatter.index(of: .nonSpaceOrLinebreak, after: endOfLine)
+        let nextTokenOrComment = formatter.index(of: .nonSpaceOrLineBreak, after: endOfLine)
       {
         if formatter.tokens[nextTokenOrComment].isComment {
           if formatter.options.enabledRules

@@ -8,7 +8,7 @@ struct AttributesConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "always_on_line_above")
   private(set) var alwaysOnNewLine = Set<String>()
   typealias Parent = AttributesRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$attributesWithArgumentsAlwaysOnNewLine.key] {
       try attributesWithArgumentsAlwaysOnNewLine.apply(value, ruleID: Parent.identifier)
@@ -20,6 +20,6 @@ struct AttributesConfiguration: SeverityBasedRuleConfiguration {
       try alwaysOnNewLine.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

@@ -83,7 +83,7 @@ extension TokenizerTests {
       .startOfScope("\""),
       .stringBody("foo"),
       .error(""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .identifier("bar"),
     ]
     #expect(tokenize(input) == output)
@@ -95,7 +95,7 @@ extension TokenizerTests {
       .startOfScope("\""),
       .stringBody("foo"),
       .error(""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .startOfScope("\""),
       .error(""),
     ]
@@ -108,13 +108,13 @@ extension TokenizerTests {
     let input = "\"\"\"\n    hello\n    world\n    \"\"\""
     let output: [Token] = [
       .startOfScope("\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .space("    "),
       .stringBody("hello"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .space("    "),
       .stringBody("world"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .space("    "),
       .endOfScope("\"\"\""),
     ]
@@ -125,11 +125,11 @@ extension TokenizerTests {
     let input = "\"\"\"\n    hello\n    world\n\"\"\""
     let output: [Token] = [
       .startOfScope("\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .stringBody("    hello"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .stringBody("    world"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .endOfScope("\"\"\""),
     ]
     #expect(tokenize(input) == output)
@@ -139,7 +139,7 @@ extension TokenizerTests {
     let input = "\"\"\"\n\"\"\""
     let output: [Token] = [
       .startOfScope("\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .endOfScope("\"\"\""),
     ]
     #expect(tokenize(input) == output)
@@ -149,11 +149,11 @@ extension TokenizerTests {
     let input = "\"\"\"\n    hello \\\n    world\n\"\"\""
     let output: [Token] = [
       .startOfScope("\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .stringBody("    hello \\"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .stringBody("    world"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .endOfScope("\"\"\""),
     ]
     #expect(tokenize(input) == output)
@@ -164,7 +164,7 @@ extension TokenizerTests {
     let output: [Token] = [
       .space("    "),
       .startOfScope("\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .space("    "),
       .stringBody("\\"),
       .startOfScope("("),
@@ -176,7 +176,7 @@ extension TokenizerTests {
       .number("1", .integer),
       .endOfScope(")"),
       .endOfScope(")"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .space("    "),
       .endOfScope("\"\"\""),
     ]
@@ -193,15 +193,15 @@ extension TokenizerTests {
       """
     let output: [Token] = [
       .startOfScope("\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .stringBody("\\"),
       .startOfScope("("),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .space("    "),
       .number("6", .integer),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .endOfScope(")"),
-      .linebreak("\n", 4),
+      .lineBreak("\n", 4),
       .endOfScope("\"\"\""),
     ]
     #expect(tokenize(input) == output)
@@ -221,30 +221,30 @@ extension TokenizerTests {
       """
     let output: [Token] = [
       .startOfScope("\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .stringBody("    foo"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .stringBody("        \\"),
       .startOfScope("("),
       .identifier("bar"),
       .space(" "),
       .startOfScope("{"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .space("            "),
       .startOfScope("\"\"\""),
-      .linebreak("\n", 4),
+      .lineBreak("\n", 4),
       .space("            "),
       .stringBody("    baz"),
-      .linebreak("\n", 5),
+      .lineBreak("\n", 5),
       .space("            "),
       .endOfScope("\"\"\""),
-      .linebreak("\n", 6),
+      .lineBreak("\n", 6),
       .space("        "),
       .endOfScope("}"),
       .endOfScope(")"),
-      .linebreak("\n", 7),
+      .lineBreak("\n", 7),
       .stringBody("    quux"),
-      .linebreak("\n", 8),
+      .lineBreak("\n", 8),
       .endOfScope("\"\"\""),
     ]
     #expect(tokenize(input) == output)
@@ -265,32 +265,32 @@ extension TokenizerTests {
       """
     let output: [Token] = [
       .startOfScope("\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .stringBody("    foo"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .stringBody("        \\"),
       .startOfScope("("),
       .identifier("bar"),
       .space(" "),
       .startOfScope("{"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .space("            "),
       .startOfScope("\"\"\""),
-      .linebreak("\n", 4),
+      .lineBreak("\n", 4),
       .space("            "),
       .stringBody("    baz"),
-      .linebreak("\n", 5),
+      .lineBreak("\n", 5),
       .space("            "),
       .endOfScope("\"\"\""),
-      .linebreak("\n", 6),
+      .lineBreak("\n", 6),
       .space("            "),
       .endOfScope("}"),
-      .linebreak("\n", 7),
+      .lineBreak("\n", 7),
       .space("        "),
       .endOfScope(")"),
-      .linebreak("\n", 8),
+      .lineBreak("\n", 8),
       .stringBody("    quux"),
-      .linebreak("\n", 9),
+      .lineBreak("\n", 9),
       .endOfScope("\"\"\""),
     ]
     #expect(tokenize(input) == output)
@@ -300,9 +300,9 @@ extension TokenizerTests {
     let input = "\"\"\"\n\\\"\"\"\n\"\"\""
     let output: [Token] = [
       .startOfScope("\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .stringBody("\\\"\"\""),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .endOfScope("\"\"\""),
     ]
     #expect(tokenize(input) == output)
@@ -313,9 +313,9 @@ extension TokenizerTests {
     let output: [Token] = [
       .startOfScope("\"\"\""),
       .space("   "),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .stringBody("    hello \\"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .endOfScope("\"\"\""),
       .space(" "),
     ]
@@ -331,11 +331,11 @@ extension TokenizerTests {
       """
     let output: [Token] = [
       .startOfScope("\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .stringBody("Test"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .stringBody(""),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .endOfScope("\"\"\""),
     ]
     #expect(tokenize(input) == output)
@@ -480,13 +480,13 @@ extension TokenizerTests {
     let input = "#\"\"\"\n    hello\n    world\n    \"\"\"#"
     let output: [Token] = [
       .startOfScope("#\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .space("    "),
       .stringBody("hello"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .space("    "),
       .stringBody("world"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .space("    "),
       .endOfScope("\"\"\"#"),
     ]
@@ -497,10 +497,10 @@ extension TokenizerTests {
     let input = "#\"\"\"\n    \\(5)\n    \"\"\"#"
     let output: [Token] = [
       .startOfScope("#\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .space("    "),
       .stringBody("\\(5)"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .space("    "),
       .endOfScope("\"\"\"#"),
     ]
@@ -511,13 +511,13 @@ extension TokenizerTests {
     let input = "#\"\"\"\n    \\#(5)\n    \"\"\"#"
     let output: [Token] = [
       .startOfScope("#\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .space("    "),
       .stringBody("\\#"),
       .startOfScope("("),
       .number("5", .integer),
       .endOfScope(")"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .space("    "),
       .endOfScope("\"\"\"#"),
     ]
@@ -528,10 +528,10 @@ extension TokenizerTests {
     let input = "##\"\"\"\n    \\#(5)\n    \"\"\"##"
     let output: [Token] = [
       .startOfScope("##\"\"\""),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .space("    "),
       .stringBody("\\#(5)"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .space("    "),
       .endOfScope("\"\"\"##"),
     ]

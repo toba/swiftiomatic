@@ -32,7 +32,7 @@ struct NestingConfiguration: RuleConfiguration {
   }
 
   typealias Parent = NestingRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     if let value = configuration[$typeLevel.key] {
       try typeLevel.apply(value, ruleID: Parent.identifier)
     }
@@ -52,6 +52,6 @@ struct NestingConfiguration: RuleConfiguration {
       try ignoreCodingKeys.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

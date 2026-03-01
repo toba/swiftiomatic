@@ -31,21 +31,21 @@ extension TokenizerTests {
       """
     let output: [Token] = [
       .identifier("foo"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .startOfScope("#if"),
       .space(" "),
       .identifier("bar"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .operator(".", .infix),
       .identifier("bar"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .keyword("#else"),
-      .linebreak("\n", 4),
+      .lineBreak("\n", 4),
       .operator(".", .infix),
       .identifier("baz"),
-      .linebreak("\n", 5),
+      .lineBreak("\n", 5),
       .endOfScope("#endif"),
-      .linebreak("\n", 6),
+      .lineBreak("\n", 6),
       .operator(".", .infix),
       .identifier("quux"),
     ]
@@ -58,7 +58,7 @@ extension TokenizerTests {
     let input = "foo\nbar"
     let output: [Token] = [
       .identifier("foo"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .identifier("bar"),
     ]
     #expect(tokenize(input) == output)
@@ -68,7 +68,7 @@ extension TokenizerTests {
     let input = "foo\rbar"
     let output: [Token] = [
       .identifier("foo"),
-      .linebreak("\r", 1),
+      .lineBreak("\r", 1),
       .identifier("bar"),
     ]
     #expect(tokenize(input) == output)
@@ -78,7 +78,7 @@ extension TokenizerTests {
     let input = "foo\r\nbar"
     let output: [Token] = [
       .identifier("foo"),
-      .linebreak("\r\n", 1),
+      .lineBreak("\r\n", 1),
       .identifier("bar"),
     ]
     #expect(tokenize(input) == output)
@@ -89,7 +89,7 @@ extension TokenizerTests {
     let output: [Token] = [
       .startOfScope("//"),
       .commentBody("foo"),
-      .linebreak("\r\n", 1),
+      .lineBreak("\r\n", 1),
       .startOfScope("//"),
       .commentBody("bar"),
     ]
@@ -101,7 +101,7 @@ extension TokenizerTests {
     let output: [Token] = [
       .startOfScope("/*"),
       .commentBody("foo"),
-      .linebreak("\r\n", 1),
+      .lineBreak("\r\n", 1),
       .commentBody("bar"),
       .endOfScope("*/"),
     ]
@@ -557,7 +557,7 @@ extension TokenizerTests {
       .operator("=", .infix),
       .space(" "),
       .identifier("actor"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .identifier("self"),
       .operator(".", .infix),
       .identifier("bar"),
@@ -596,7 +596,7 @@ extension TokenizerTests {
       .operator("=", .infix),
       .space(" "),
       .identifier("actor"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .keyword("let"),
       .space(" "),
       .identifier("bar"),
@@ -761,7 +761,7 @@ extension TokenizerTests {
       .number("42", .integer),
       .space(" "),
       .endOfScope("}"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .keyword("enum"),
       .space(" "),
       .identifier("ColorVariant"),
@@ -779,7 +779,7 @@ extension TokenizerTests {
       .identifier("`200`"),
       .space(" "),
       .endOfScope("}"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .keyword("let"),
       .space(" "),
       .identifier("`1.circle`"),
@@ -789,7 +789,7 @@ extension TokenizerTests {
       .startOfScope("\""),
       .stringBody("SF Symbol"),
       .endOfScope("\""),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .keyword("struct"),
       .space(" "),
       .identifier("`class`"),

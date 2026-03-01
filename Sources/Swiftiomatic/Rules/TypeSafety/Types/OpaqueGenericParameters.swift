@@ -141,7 +141,7 @@ extension FormatRule {
             tokenIndex != declaration.argumentsRange.lowerBound,
             let endOfScope = formatter.endOfScope(at: tokenIndex),
             let tokenAfterParen = formatter.next(
-              .nonSpaceOrCommentOrLinebreak,
+              .nonSpaceOrCommentOrLineBreak,
               after: endOfScope,
             ),
             [.operator("->", .infix), .keyword("throws"), .identifier("async")].contains(
@@ -222,7 +222,7 @@ extension FormatRule {
 
         // if where clause is completely empty, we need to remove the where token as well
         if let tokenAfterWhereKeyword = formatter.index(
-          of: .nonSpaceOrLinebreak, after: whereClauseRange.lowerBound,
+          of: .nonSpaceOrLineBreak, after: whereClauseRange.lowerBound,
         ),
           whereClauseRange.upperBound <= tokenAfterWhereKeyword
         {
@@ -231,12 +231,12 @@ extension FormatRule {
 
         // remove trailing comma
         else if let commaIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           before: whereClauseRange.upperBound + 1, if: { $0 == .delimiter(",") },
         ) {
           formatter.removeToken(at: commaIndex)
           if formatter.tokens[commaIndex - 1].isSpace,
-            formatter.tokens[commaIndex].isSpaceOrLinebreak
+            formatter.tokens[commaIndex].isSpaceOrLineBreak
           {
             formatter.removeToken(at: commaIndex - 1)
           }
@@ -255,7 +255,7 @@ extension FormatRule {
         {
           // If this instance of the type is followed by a `.` or `?` then we have to wrap the new type in parens
           // (e.g. changing `Foo.Type` to `some Any.Type` breaks the build, it needs to be `(some Any).Type`)
-          if let nextToken = formatter.next(.nonSpaceOrCommentOrLinebreak, after: index),
+          if let nextToken = formatter.next(.nonSpaceOrCommentOrLineBreak, after: index),
             [.operator(".", .infix), .operator("?", .postfix)].contains(nextToken)
           {
             opaqueParameter.insert(.startOfScope("("), at: 0)
@@ -277,7 +277,7 @@ extension FormatRule {
         at: genericParameterRange.lowerBound,
       ),
         let trailingCommaIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: newGenericSignatureEndIndex,
+          of: .nonSpaceOrCommentOrLineBreak, before: newGenericSignatureEndIndex,
         ),
         formatter.tokens[trailingCommaIndex] == .delimiter(",")
       {
@@ -286,7 +286,7 @@ extension FormatRule {
 
       // If we removed all of the generic types, we also have to remove the angle brackets
       if let newGenericSignatureEndIndex = formatter.index(
-        of: .nonSpaceOrLinebreak, after: genericParameterRange.lowerBound,
+        of: .nonSpaceOrLineBreak, after: genericParameterRange.lowerBound,
       ),
         formatter.token(at: newGenericSignatureEndIndex) == .endOfScope(">")
       {

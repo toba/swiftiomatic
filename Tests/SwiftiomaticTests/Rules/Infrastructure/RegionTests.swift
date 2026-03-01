@@ -19,8 +19,8 @@ import Testing
     // disable
     do {
       let file = SwiftSource(contents: "// sm:disable rule_id\n")
-      let start = Location(file: nil, line: 1, character: 22)
-      let end = Location(file: nil, line: .max, character: .max)
+      let start = Location(file: nil, line: 1, column: 22)
+      let end = Location(file: nil, line: .max, column: .max)
       #expect(
         file.regions() == [
           Region(
@@ -34,8 +34,8 @@ import Testing
     // enable
     do {
       let file = SwiftSource(contents: "// sm:enable rule_id\n")
-      let start = Location(file: nil, line: 1, character: 21)
-      let end = Location(file: nil, line: .max, character: .max)
+      let start = Location(file: nil, line: 1, column: 21)
+      let end = Location(file: nil, line: .max, column: .max)
       #expect(file.regions() == [Region(start: start, end: end, disabledRuleIdentifiers: [])])
     }
   }
@@ -49,13 +49,13 @@ import Testing
       #expect(
         file.regions() == [
           Region(
-            start: Location(file: nil, line: 1, character: 22),
-            end: Location(file: nil, line: 2, character: 20),
+            start: Location(file: nil, line: 1, column: 22),
+            end: Location(file: nil, line: 2, column: 20),
             disabledRuleIdentifiers: ["rule_id"],
           ),
           Region(
-            start: Location(file: nil, line: 2, character: 21),
-            end: Location(file: nil, line: .max, character: .max),
+            start: Location(file: nil, line: 2, column: 21),
+            end: Location(file: nil, line: .max, column: .max),
             disabledRuleIdentifiers: [],
           ),
         ],
@@ -69,13 +69,13 @@ import Testing
       #expect(
         file.regions() == [
           Region(
-            start: Location(file: nil, line: 1, character: 21),
-            end: Location(file: nil, line: 2, character: 21),
+            start: Location(file: nil, line: 1, column: 21),
+            end: Location(file: nil, line: 2, column: 21),
             disabledRuleIdentifiers: [],
           ),
           Region(
-            start: Location(file: nil, line: 2, character: 22),
-            end: Location(file: nil, line: .max, character: .max),
+            start: Location(file: nil, line: 2, column: 22),
+            end: Location(file: nil, line: .max, column: .max),
             disabledRuleIdentifiers: ["rule_id"],
           ),
         ],
@@ -91,13 +91,13 @@ import Testing
     #expect(
       file.regions() == [
         Region(
-          start: Location(file: nil, line: 2, character: nil),
-          end: Location(file: nil, line: 2, character: .max - 1),
+          start: Location(file: nil, line: 2, column: nil),
+          end: Location(file: nil, line: 2, column: .max - 1),
           disabledRuleIdentifiers: ["1", "2", "3"],
         ),
         Region(
-          start: Location(file: nil, line: 2, character: .max),
-          end: Location(file: nil, line: .max, character: .max),
+          start: Location(file: nil, line: 2, column: .max),
+          end: Location(file: nil, line: .max, column: .max),
           disabledRuleIdentifiers: [],
         ),
       ],
@@ -118,33 +118,33 @@ import Testing
     #expect(
       file.regions() == [
         Region(
-          start: Location(file: nil, line: 1, character: 16),
-          end: Location(file: nil, line: 2, character: 15),
+          start: Location(file: nil, line: 1, column: 16),
+          end: Location(file: nil, line: 2, column: 15),
           disabledRuleIdentifiers: ["1"],
         ),
         Region(
-          start: Location(file: nil, line: 2, character: 16),
-          end: Location(file: nil, line: 3, character: 15),
+          start: Location(file: nil, line: 2, column: 16),
+          end: Location(file: nil, line: 3, column: 15),
           disabledRuleIdentifiers: ["1", "2"],
         ),
         Region(
-          start: Location(file: nil, line: 3, character: 16),
-          end: Location(file: nil, line: 4, character: 14),
+          start: Location(file: nil, line: 3, column: 16),
+          end: Location(file: nil, line: 4, column: 14),
           disabledRuleIdentifiers: ["1", "2", "3"],
         ),
         Region(
-          start: Location(file: nil, line: 4, character: 15),
-          end: Location(file: nil, line: 5, character: 14),
+          start: Location(file: nil, line: 4, column: 15),
+          end: Location(file: nil, line: 5, column: 14),
           disabledRuleIdentifiers: ["2", "3"],
         ),
         Region(
-          start: Location(file: nil, line: 5, character: 15),
-          end: Location(file: nil, line: 6, character: 14),
+          start: Location(file: nil, line: 5, column: 15),
+          end: Location(file: nil, line: 6, column: 14),
           disabledRuleIdentifiers: ["3"],
         ),
         Region(
-          start: Location(file: nil, line: 6, character: 15),
-          end: Location(file: nil, line: .max, character: .max),
+          start: Location(file: nil, line: 6, column: 15),
+          end: Location(file: nil, line: .max, column: .max),
           disabledRuleIdentifiers: [],
         ),
       ],

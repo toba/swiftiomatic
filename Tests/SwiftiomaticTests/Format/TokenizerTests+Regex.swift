@@ -108,7 +108,7 @@ extension TokenizerTests {
       .operator("=", .infix),
       .space(" "),
       .identifier("b"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .startOfScope("/"),
       .stringBody("\\)"),
       .endOfScope("/"),
@@ -205,9 +205,9 @@ extension TokenizerTests {
       .operator("=", .infix),
       .space(" "),
       .startOfScope("#/"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .stringBody("foo"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .endOfScope("/#"),
     ]
     #expect(tokenize(input) == output)
@@ -228,11 +228,11 @@ extension TokenizerTests {
       .operator("=", .infix),
       .space(" "),
       .startOfScope("##/"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .stringBody("foo"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .stringBody("bar"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .endOfScope("/##"),
     ]
     #expect(tokenize(input) == output)
@@ -316,7 +316,7 @@ extension TokenizerTests {
       .identifier("Foo"),
       .operator(".", .infix),
       .identifier("bar"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
       .identifier("baz"),
     ]
     #expect(tokenize(input) == output)
@@ -344,7 +344,7 @@ extension TokenizerTests {
       .startOfScope("("),
       .operator("/", .none),
       .endOfScope(")"),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 2),
     ]
     #expect(tokenize(input) == output)
   }

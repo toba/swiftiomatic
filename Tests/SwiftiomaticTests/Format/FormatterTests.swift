@@ -60,7 +60,7 @@ import Testing
       .startOfScope("//"),
       .space(" "),
       .commentBody("bar"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
     ]
     let formatter = Formatter(input, options: .default)
     let index = formatter.index(before: 4, where: { !$0.isSpaceOrComment })
@@ -75,7 +75,7 @@ import Testing
       .commentBody("bar"),
       .space(" "),
       .endOfScope("*/"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
     ]
     let formatter = Formatter(input, options: .default)
     let index = formatter.index(before: 6, where: { !$0.isSpaceOrComment })
@@ -496,10 +496,10 @@ import Testing
 
   @Test func linebreakAfterLinebreakReturnsCorrectIndex() {
     let formatter = Formatter([
-      .linebreak("\n", 1),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
+      .lineBreak("\n", 1),
     ])
-    #expect(formatter.linebreakToken(for: 1) == .linebreak("\n", 1))
+    #expect(formatter.linebreakToken(for: 1) == .lineBreak("\n", 1))
   }
 
   @Test func originalLinePreservedAfterFormatting() {
@@ -507,11 +507,11 @@ import Testing
       .identifier("foo"),
       .space(" "),
       .startOfScope("{"),
-      .linebreak("\n", 1),
-      .linebreak("\n", 2),
+      .lineBreak("\n", 1),
+      .lineBreak("\n", 2),
       .space("    "),
       .identifier("bar"),
-      .linebreak("\n", 3),
+      .lineBreak("\n", 3),
       .endOfScope("}"),
     ])
     FormatRule.blankLinesAtStartOfScope.apply(with: formatter)
@@ -520,10 +520,10 @@ import Testing
         .identifier("foo"),
         .space(" "),
         .startOfScope("{"),
-        .linebreak("\n", 2),
+        .lineBreak("\n", 2),
         .space("    "),
         .identifier("bar"),
-        .linebreak("\n", 3),
+        .lineBreak("\n", 3),
         .endOfScope("}"),
       ],
     )
@@ -737,23 +737,23 @@ import Testing
 
   @Test func replaceAllTokensTracksMoves() {
     let input: [Token] = [
-      tokenize("foo()"), [.linebreak("\n", 0)],
-      [.linebreak("\n", 1)],
-      tokenize("foobar()"), [.linebreak("\n", 2)],
-      [.linebreak("\n", 3)],
-      tokenize("bar()"), [.linebreak("\n", 4)],
-      [.linebreak("\n", 5)],
-      tokenize("baaz()"), [.linebreak("\n", 6)],
+      tokenize("foo()"), [.lineBreak("\n", 0)],
+      [.lineBreak("\n", 1)],
+      tokenize("foobar()"), [.lineBreak("\n", 2)],
+      [.lineBreak("\n", 3)],
+      tokenize("bar()"), [.lineBreak("\n", 4)],
+      [.lineBreak("\n", 5)],
+      tokenize("baaz()"), [.lineBreak("\n", 6)],
     ].flatMap(\.self)
 
     let output: [Token] = [
-      tokenize("bar()"), [.linebreak("\n", 4)],
-      [.linebreak("\n", 1)],
-      tokenize("barfoo()"), [.linebreak("\n", 2)],
-      [.linebreak("\n", 3)],
-      tokenize("foo()"), [.linebreak("\n", 0)],
-      [.linebreak("\n", 5)],
-      tokenize("quux()"), [.linebreak("\n", 6)],
+      tokenize("bar()"), [.lineBreak("\n", 4)],
+      [.lineBreak("\n", 1)],
+      tokenize("barfoo()"), [.lineBreak("\n", 2)],
+      [.lineBreak("\n", 3)],
+      tokenize("foo()"), [.lineBreak("\n", 0)],
+      [.lineBreak("\n", 5)],
+      tokenize("quux()"), [.lineBreak("\n", 6)],
     ].flatMap(\.self)
 
     let formatter = Formatter(input, trackChanges: true)
@@ -761,7 +761,7 @@ import Testing
     #expect(sourceCode(for: formatter.tokens) == sourceCode(for: output))
 
     // The changes should include both moves and non-moves
-    #expect(formatter.changes.contains(where: \.isMove))
+    #expect(formatter.changes.contains { $0.isMove })
     #expect(formatter.changes.contains { !$0.isMove })
   }
 }

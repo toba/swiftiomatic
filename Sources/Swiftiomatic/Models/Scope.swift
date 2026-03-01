@@ -1,5 +1,5 @@
 /// Where a rule participates in the analysis pipeline.
-enum Scope: String, CaseIterable, Codable, Sendable {
+package enum Scope: String, CaseIterable, Codable, Sendable {
     /// Definitive checks — wrong code, anti-patterns, style violations.
     case lint
     /// Formatting only — whitespace, indentation, brace placement.

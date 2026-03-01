@@ -13,7 +13,7 @@ private let responseCache = Cache { file -> [String: SourceKitValue]? in
   do {
     return try Request.editorOpen(file: file.file).sendIfNotDisabled()
   } catch let error as Request.Error {
-    queuedPrintError(error.description)
+    Console.printError(error.description)
     return nil
   } catch {
     return nil

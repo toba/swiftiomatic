@@ -8,7 +8,7 @@ struct RedundantTypeAnnotationConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "consider_default_literal_types_redundant")
   private(set) var considerDefaultLiteralTypesRedundant = false
   typealias Parent = RedundantTypeAnnotationRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$ignoreAttributes.key] {
       try ignoreAttributes.apply(value, ruleID: Parent.identifier)
@@ -20,6 +20,6 @@ struct RedundantTypeAnnotationConfiguration: SeverityBasedRuleConfiguration {
       try considerDefaultLiteralTypesRedundant.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

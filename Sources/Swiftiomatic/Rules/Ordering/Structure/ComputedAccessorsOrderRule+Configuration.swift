@@ -9,12 +9,12 @@ struct ComputedAccessorsOrderConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "order")
   private(set) var order = Order.getSet
   typealias Parent = ComputedAccessorsOrderRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$order.key] {
       try order.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

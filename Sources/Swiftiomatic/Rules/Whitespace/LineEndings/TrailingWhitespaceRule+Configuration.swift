@@ -8,7 +8,7 @@ struct TrailingWhitespaceConfiguration: SeverityBasedRuleConfiguration {
   @ConfigurationElement(key: "ignores_literals")
   private(set) var ignoresLiterals = false
   typealias Parent = TrailingWhitespaceRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$ignoresEmptyLines.key] {
       try ignoresEmptyLines.apply(value, ruleID: Parent.identifier)
@@ -20,6 +20,6 @@ struct TrailingWhitespaceConfiguration: SeverityBasedRuleConfiguration {
       try ignoresLiterals.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

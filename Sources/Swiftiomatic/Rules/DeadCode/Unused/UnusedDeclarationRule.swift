@@ -30,13 +30,13 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
 
   func collectInfo(for file: SwiftSource, compilerArguments: [String]) -> Self.FileUSRs {
     guard compilerArguments.isNotEmpty else {
-      Issue.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
+      SwiftiomaticError.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()
       return .empty
     }
 
     guard let index = file.index(compilerArguments: compilerArguments), index.value.isNotEmpty
     else {
-      Issue.indexingError(path: file.path, ruleID: Self.identifier).print()
+      SwiftiomaticError.indexingError(path: file.path, ruleID: Self.identifier).print()
       return .empty
     }
 
@@ -44,7 +44,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
       let editorOpen = (try? Request.editorOpen(file: file.file).sendIfNotDisabled())
         .map(SourceKitDictionary.init)
     else {
-      Issue.fileNotReadable(path: file.path, ruleID: Self.identifier).print()
+      SwiftiomaticError.fileNotReadable(path: file.path, ruleID: Self.identifier).print()
       return .empty
     }
 

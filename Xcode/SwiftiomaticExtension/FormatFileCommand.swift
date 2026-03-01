@@ -10,7 +10,7 @@ final class FormatFileCommand: NSObject, XCSourceEditorCommand {
         let source = buffer.completeBuffer
 
         do {
-            let formatted = try Swiftiomatic.format(source)
+            let formatted = try SwiftiomaticLib.format(source)
             guard formatted != source else {
                 completionHandler(nil)
                 return

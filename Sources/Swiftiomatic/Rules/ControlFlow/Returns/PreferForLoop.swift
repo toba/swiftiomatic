@@ -9,14 +9,14 @@ extension FormatRule {
       // Make sure this is a function call preceded by a `.`
       guard
         let functionCallDotIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: forEachIndex,
+          of: .nonSpaceOrCommentOrLineBreak, before: forEachIndex,
         ),
         formatter.tokens[functionCallDotIndex] == .operator(".", .infix),
         let indexAfterForEach = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: forEachIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: forEachIndex,
         ),
         let indexBeforeFunctionCallDot = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: functionCallDotIndex,
+          of: .nonSpaceOrCommentOrLineBreak, before: functionCallDotIndex,
         )
       else { return }
 
@@ -39,7 +39,7 @@ extension FormatRule {
       case .startOfScope("("):
         guard let endOfFunctionCall = formatter.endOfScope(at: indexAfterForEach),
           let indexAfterOpenParen = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: indexAfterForEach,
+            of: .nonSpaceOrCommentOrLineBreak, after: indexAfterForEach,
           ),
           formatter.tokens[indexAfterOpenParen] == .startOfScope("{"),
           let endOfClosureScope = formatter.endOfScope(at: indexAfterOpenParen)
@@ -59,14 +59,14 @@ extension FormatRule {
         !formatter.options.preserveSingleLineForEach
           || formatter
             .tokens[closureOpenBraceIndex..<closureCloseBraceIndex]
-            .contains(where: \.isLinebreak)
+            .contains(where: \.isLineBreak)
       else { return }
 
       // Ignore closures with capture lists for now since they're rare
       // in this context and add complexity
       guard
         let firstIndexInClosureBody = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: closureOpenBraceIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: closureOpenBraceIndex,
         ),
         formatter.tokens[firstIndexInClosureBody] != .startOfScope("[")
       else { return }
@@ -79,12 +79,12 @@ extension FormatRule {
       var currentIndex = forEachIndex
 
       while let previousDotIndex = formatter.index(
-        of: .nonSpaceOrLinebreak,
+        of: .nonSpaceOrLineBreak,
         before: currentIndex,
       ),
         formatter.tokens[previousDotIndex] == .operator(".", .infix),
         let tokenBeforeDotIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, before: previousDotIndex,
+          of: .nonSpaceOrCommentOrLineBreak, before: previousDotIndex,
         )
       {
         guard
@@ -107,7 +107,7 @@ extension FormatRule {
       // If there is a `try` before the `forEach` we cannot know if the subject is async/throwing or the body,
       // which makes it impossible to know if we should move it or *remove* it, so we must abort (same for await).
       if let tokenIndexBeforeForLoop = formatter.index(
-        of: .nonSpaceOrCommentOrLinebreak, before: currentIndex,
+        of: .nonSpaceOrCommentOrLineBreak, before: currentIndex,
       ),
         var prevToken = formatter.token(at: tokenIndexBeforeForLoop)
       {
@@ -137,7 +137,7 @@ extension FormatRule {
       //    .map { $0.uppercased() } { print($0) }
       //
       // would be a pretty obvious downgrade.
-      if formatter.tokens[forLoopSubjectRange].contains(where: \.isLinebreak) {
+      if formatter.tokens[forLoopSubjectRange].contains(where: \.isLineBreak) {
         return
       }
 
@@ -210,7 +210,7 @@ extension FormatRule {
             after: closureBodyIndex,
           ),
           !(tokenAfterReturnKeyword
-            .isLinebreak || tokenAfterReturnKeyword == .endOfScope("}"))
+            .isLineBreak || tokenAfterReturnKeyword == .endOfScope("}"))
         {
           return
         }

@@ -5,7 +5,7 @@ import Testing
 @Suite(.rulesRegistered) struct MultilineParametersConfigurationTests {
   @Test func invalidMaxNumberOfSingleLineParameters() async throws {
     for maxNumberOfSingleLineParameters in [0, -1] {
-      let console = try await Issue.captureConsole {
+      let console = try await Console.captureConsole {
         var config = MultilineParametersConfiguration()
         try config.apply(
           configuration: [
@@ -23,7 +23,7 @@ import Testing
   }
 
   @Test func invalidMaxNumberOfSingleLineParametersWithSingleLineEnabled() async throws {
-    let console = try await Issue.captureConsole {
+    let console = try await Console.captureConsole {
       var config = MultilineParametersConfiguration()
       try config.apply(
         configuration: [

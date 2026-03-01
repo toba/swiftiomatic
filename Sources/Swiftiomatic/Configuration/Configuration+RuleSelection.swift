@@ -98,13 +98,13 @@ extension Configuration {
                     invalidRuleIdsWarnedAbout.withLock { warned in
                         for invalidRuleIdentifier in invalidRuleIdentifiers.subtracting(warned) {
                             warned.insert(invalidRuleIdentifier)
-                            queuedPrintError(
+                            Console.printError(
                                 "warning: '\(invalidRuleIdentifier)' is not a valid rule identifier",
                             )
                         }
                     }
 
-                    queuedPrintError(
+                    Console.printError(
                         "Valid rule identifiers:\n\(valid.sorted().joined(separator: "\n"))",
                     )
                 }

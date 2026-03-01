@@ -1,5 +1,8 @@
-/// A configured rule paired with whether it was initialized with a non-empty configuration.
-typealias ConfiguredRule = (rule: any Rule, initializedWithNonEmptyConfiguration: Bool)
+/// A rule paired with whether it was initialized with a non-empty configuration.
+struct ConfiguredRule: Sendable {
+    let rule: any Rule
+    let initializedWithNonEmptyConfiguration: Bool
+}
 
 /// All possible rule list configuration errors.
 enum RuleListError: Error {
@@ -10,7 +13,7 @@ enum RuleListError: Error {
 /// A list of available rules.
 struct RuleList: Sendable {
     /// The rules contained in this list.
-    let list: [String: any Rule.Type]
+    let rules: [String: any Rule.Type]
     private let aliases: [String: String]
 
     // MARK: - Initializers
@@ -37,7 +40,7 @@ struct RuleList: Sendable {
             }
             tmpAliases[identifier] = identifier
         }
-        list = tmpList
+        self.rules = tmpList
         aliases = tmpAliases
     }
 
@@ -46,37 +49,37 @@ struct RuleList: Sendable {
     package func allRulesWrapped(configurationDict: [String: Any] = [:])
         throws(RuleListError) -> [ConfiguredRule]
     {
-        var rules = [String: ConfiguredRule]()
+        var configured = [String: ConfiguredRule]()
 
         // Add rules where configuration exists
         for (key, configuration) in configurationDict {
             guard let identifier = identifier(for: key),
-                  let ruleType = list[identifier] else { continue }
-            guard rules[identifier] == nil else { throw .duplicatedConfigurations(rule: ruleType) }
+                  let ruleType = self.rules[identifier] else { continue }
+            guard configured[identifier] == nil else { throw .duplicatedConfigurations(rule: ruleType) }
             do {
                 let configuredRule = try ruleType.init(configuration: configuration)
                 let isConfigured =
                     (configuration as? [String: Any])?.isEmpty == false
                         || ([Any].array(of: configuration))?.isEmpty == false
-                rules[identifier] = ConfiguredRule(
+                configured[identifier] = ConfiguredRule(
                     rule: configuredRule,
                     initializedWithNonEmptyConfiguration: isConfigured,
                 )
                 continue
-            } catch let issue as Issue {
+            } catch let issue as SwiftiomaticError {
                 issue.print()
             } catch {
-                Issue.invalidConfiguration(ruleID: identifier).print()
+                SwiftiomaticError.invalidConfiguration(ruleID: identifier).print()
             }
-            rules[identifier] = (ruleType.init(), false)
+            configured[identifier] = ConfiguredRule(rule: ruleType.init(), initializedWithNonEmptyConfiguration: false)
         }
 
         // Add remaining rules without configuring them
-        for (identifier, ruleType) in list where rules[identifier] == nil {
-            rules[identifier] = (ruleType.init(), false)
+        for (identifier, ruleType) in self.rules where configured[identifier] == nil {
+            configured[identifier] = ConfiguredRule(rule: ruleType.init(), initializedWithNonEmptyConfiguration: false)
         }
 
-        return Array(rules.values)
+        return Array(configured.values)
     }
 
     package func identifier(for alias: String) -> String? {
@@ -84,7 +87,7 @@ struct RuleList: Sendable {
     }
 
     package func allValidIdentifiers() -> [String] {
-        list.flatMap { _, rule -> [String] in
+        rules.flatMap { _, rule -> [String] in
             rule.description.allIdentifiers
         }
     }
@@ -92,13 +95,13 @@ struct RuleList: Sendable {
 
 extension RuleList: Equatable {
     static func == (lhs: RuleList, rhs: RuleList) -> Bool {
-        let lhsKeys = Array(lhs.list.keys.sorted())
-        let rhsKeys = Array(rhs.list.keys.sorted())
+        let lhsKeys = Array(lhs.rules.keys.sorted())
+        let rhsKeys = Array(rhs.rules.keys.sorted())
         guard lhsKeys == rhsKeys, lhs.aliases == rhs.aliases else {
             return false
         }
         for key in lhsKeys {
-            if lhs.list[key]!.description != rhs.list[key]!.description {
+            if lhs.rules[key]!.description != rhs.rules[key]!.description {
                 return false
             }
         }

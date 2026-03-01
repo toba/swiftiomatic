@@ -33,7 +33,7 @@ extension TodoRule: SwiftSyntaxRule {
 
 extension TodoRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<ConfigurationType> {
-    private lazy var keywordRegex: RegularExpression = {
+    private lazy var keywordRegex: CachedRegex = {
       let searchKeywords = configuration.only.map(\.rawValue).joined(separator: "|")
       return regex(#"\b((?:\#(searchKeywords))(?::|\b))"#)
     }()

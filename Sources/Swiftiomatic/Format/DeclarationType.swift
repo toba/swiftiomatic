@@ -233,7 +233,7 @@ extension Declaration {
                         //    immediately follows the `func` keyword:
                         //    https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#grammar_function-name
                         let methodName = formatter.next(
-                            .nonSpaceOrCommentOrLinebreak,
+                            .nonSpaceOrCommentOrLineBreak,
                             after: keywordIndex,
                         )
                         if let methodName, lifecycleMethods.contains(methodName.string) {
@@ -275,35 +275,33 @@ extension Declaration {
     var swiftUIPropertyWrapper: String? {
         swiftUIPropertyWrappers.first(where: { hasModifier($0) })
     }
-
-    /// Represents all the native SwiftUI property wrappers that conform to `DynamicProperty` and cause a SwiftUI view to re-render.
-    /// Most of these are listed here: https://developer.apple.com/documentation/swiftui/dynamicproperty
-    private var swiftUIPropertyWrappers: Set<String> {
-        [
-            "@AccessibilityFocusState",
-            "@AppStorage",
-            "@Bindable",
-            "@Binding",
-            "@Environment",
-            "@EnvironmentObject",
-            "@NSApplicationDelegateAdaptor",
-            "@FetchRequest",
-            "@FocusedBinding",
-            "@FocusState",
-            "@FocusedValue",
-            "@FocusedObject",
-            "@GestureState",
-            "@Namespace",
-            "@ObservedObject",
-            "@PhysicalMetric",
-            "@Query",
-            "@ScaledMetric",
-            "@SceneStorage",
-            "@SectionedFetchRequest",
-            "@State",
-            "@StateObject",
-            "@UIApplicationDelegateAdaptor",
-            "@WKExtensionDelegateAdaptor",
-        ]
-    }
 }
+
+/// All native SwiftUI property wrappers that conform to `DynamicProperty` and cause a view to re-render.
+/// https://developer.apple.com/documentation/swiftui/dynamicproperty
+private let swiftUIPropertyWrappers: Set<String> = [
+    "@AccessibilityFocusState",
+    "@AppStorage",
+    "@Bindable",
+    "@Binding",
+    "@Environment",
+    "@EnvironmentObject",
+    "@NSApplicationDelegateAdaptor",
+    "@FetchRequest",
+    "@FocusedBinding",
+    "@FocusState",
+    "@FocusedValue",
+    "@FocusedObject",
+    "@GestureState",
+    "@Namespace",
+    "@ObservedObject",
+    "@PhysicalMetric",
+    "@Query",
+    "@ScaledMetric",
+    "@SceneStorage",
+    "@SectionedFetchRequest",
+    "@State",
+    "@StateObject",
+    "@UIApplicationDelegateAdaptor",
+    "@WKExtensionDelegateAdaptor",
+]

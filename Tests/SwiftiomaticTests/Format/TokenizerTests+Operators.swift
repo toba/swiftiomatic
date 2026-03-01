@@ -246,7 +246,7 @@ extension TokenizerTests {
       .identifier("foo"),
       .space(" "),
       .operator("+", .infix),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .identifier("bar"),
     ]
     #expect(tokenize(input) == output)
@@ -256,7 +256,7 @@ extension TokenizerTests {
     let input = "foo\n+ bar"
     let output: [Token] = [
       .identifier("foo"),
-      .linebreak("\n", 1),
+      .lineBreak("\n", 1),
       .operator("+", .infix),
       .space(" "),
       .identifier("bar"),

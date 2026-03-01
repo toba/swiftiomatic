@@ -44,7 +44,7 @@ extension FormatRule {
       if i < currentIndex {
         return
       }
-      if token.isLinebreak {
+      if token.isLineBreak {
         indent = formatter.currentIndentForLine(at: i + 1)
         alreadyLinewrapped = isLinewrapToken(formatter.last(.nonSpaceOrComment, before: i))
         currentIndex = i + 1

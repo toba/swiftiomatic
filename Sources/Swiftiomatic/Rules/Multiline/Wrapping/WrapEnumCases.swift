@@ -39,13 +39,13 @@ extension FormatRule {
           }
           nextNonSpaceIndex =
             formatter
-            .index(of: .linebreak, after: enumCase.value.upperBound) ?? nextNonSpaceIndex
+            .index(of: .lineBreak, after: enumCase.value.upperBound) ?? nextNonSpaceIndex
         } else {
           formatter.removeTokens(in: enumCase.value.upperBound..<nextNonSpaceIndex)
           nextNonSpaceIndex = enumCase.value.upperBound
         }
 
-        if !formatter.tokens[nextNonSpaceIndex].isLinebreak {
+        if !formatter.tokens[nextNonSpaceIndex].isLineBreak {
           formatter.insertLinebreak(at: nextNonSpaceIndex)
         }
 
@@ -92,7 +92,7 @@ extension Formatter {
       var caseRanges: [EnumCaseRange] = []
 
       // Split the case declaration on commas to get individual case ranges
-      var currentStart = index(of: .nonSpaceOrCommentOrLinebreak, after: caseIndex) ?? caseIndex
+      var currentStart = index(of: .nonSpaceOrCommentOrLineBreak, after: caseIndex) ?? caseIndex
       var searchIndex = caseIndex
 
       while let commaIndex = index(of: .delimiter(","), after: searchIndex),
@@ -107,19 +107,19 @@ extension Formatter {
         )
 
         // Move to start of next case
-        currentStart = index(of: .nonSpaceOrCommentOrLinebreak, after: commaIndex) ?? commaIndex
+        currentStart = index(of: .nonSpaceOrCommentOrLineBreak, after: commaIndex) ?? commaIndex
         searchIndex = commaIndex
       }
 
       // Add the final case
       let finalCaseEnd =
         lastIndex(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           in: currentStart..<(declaration.range.upperBound + 1),
         )
         ?? declaration.range.upperBound
 
-      let endToken = token(at: finalCaseEnd) ?? .linebreak("\n", 1)
+      let endToken = token(at: finalCaseEnd) ?? .lineBreak("\n", 1)
       caseRanges.append(
         EnumCaseRange(
           value: currentStart..<finalCaseEnd,
@@ -139,7 +139,7 @@ extension Formatter {
   func shouldWrapCaseRangeGroup(_ caseRangeGroup: [Formatter.EnumCaseRange]) -> Bool {
     guard let firstIndex = caseRangeGroup.first?.value.lowerBound,
       let scopeStart = startOfScope(at: firstIndex),
-      tokens[scopeStart..<firstIndex].contains(where: \.isLinebreak)
+      tokens[scopeStart..<firstIndex].contains(where: \.isLineBreak)
     else {
       // Don't wrap if first case is on same line as opening `{`
       return false

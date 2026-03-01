@@ -13,6 +13,7 @@ enum FormatError: Error, CustomStringConvertible, LocalizedError {
         with validOptions: [String],
     ) -> Self {
         let message = "Unsupported --\(argumentName) value '\(option)'"
+
         guard let match = option.bestMatch(in: validOptions) else {
             return .options("\(message). Valid options are \(validOptions.formattedList())")
         }

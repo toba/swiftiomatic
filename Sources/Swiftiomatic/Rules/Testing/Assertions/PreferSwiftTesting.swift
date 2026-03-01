@@ -137,7 +137,7 @@ extension TypeDeclaration {
         ),
         let endOfArguments = formatter.endOfScope(at: startOfArguments),
         let effect = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: endOfArguments,
         ),
         ["async", "throws"].contains(tokens[effect].string)
@@ -268,7 +268,7 @@ extension Formatter {
       if tokens[index].string.hasPrefix("XC") {
         let previousToken = lastToken(
           before: index,
-          where: { !$0.isSpaceOrCommentOrLinebreak },
+          where: { !$0.isSpaceOrCommentOrLineBreak },
         )
         switch identifier {
         case "XCTestCase":
@@ -340,7 +340,7 @@ extension Formatter {
         var tokens = tokenize(value.wrappedInParensIfContainsOperatorOrTry())
         if let firstTokenIndex =
           tokens
-          .firstIndex(where: { !$0.isSpaceOrCommentOrLinebreak })
+          .firstIndex(where: { !$0.isSpaceOrCommentOrLineBreak })
         {
           tokens.insert(.operator("!", .prefix), at: firstTokenIndex)
         }
@@ -461,7 +461,7 @@ extension Formatter {
       // Trailing closure variant is unsupported for now
       if let endOfFunctionCall = endOfScope(at: startOfFunctionCall),
         let startOfTrailingClosure = index(
-          of: .nonSpaceOrCommentOrLinebreak, after: endOfFunctionCall,
+          of: .nonSpaceOrCommentOrLineBreak, after: endOfFunctionCall,
         ),
         tokens[startOfTrailingClosure] == .startOfScope("{")
       {
@@ -566,7 +566,7 @@ extension Formatter {
     at keywordIndex: Int,
     toLifecycleMethod lifecycleMethodName: String
   ) {
-    guard let nameIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: keywordIndex),
+    guard let nameIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: keywordIndex),
       let startOfArgumentsIndex = index(of: .startOfScope("("), after: nameIndex),
       let endOfArgumentsIndex = endOfScope(at: startOfArgumentsIndex),
       let startOfFunctionBody = index(of: .startOfScope("{"), after: endOfArgumentsIndex),
@@ -577,11 +577,11 @@ extension Formatter {
     if let superCall = index(
       of: .identifier("super"), in: startOfFunctionBody + 1..<endOfFunctionBody,
     ),
-      let dotIndex = index(of: .nonSpaceOrLinebreak, after: superCall),
+      let dotIndex = index(of: .nonSpaceOrLineBreak, after: superCall),
       tokens[dotIndex] == .operator(".", .infix),
-      let methodName = index(of: .nonSpaceOrCommentOrLinebreak, after: dotIndex),
+      let methodName = index(of: .nonSpaceOrCommentOrLineBreak, after: dotIndex),
       tokens[methodName] == tokens[nameIndex],
-      let startOfCall = index(of: .nonSpaceOrCommentOrLinebreak, after: methodName),
+      let startOfCall = index(of: .nonSpaceOrCommentOrLineBreak, after: methodName),
       tokens[startOfCall] == .startOfScope("("),
       let endOfCall = endOfScope(at: startOfCall)
     {
@@ -614,10 +614,10 @@ extension String {
 
     // If the entire value is a string literal, we can use it directly as
     // a Swift Testing comment literal.
-    if let startOfString = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: -1),
+    if let startOfString = formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: -1),
       formatter.tokens[startOfString].isStringDelimiter,
       let endOfString = formatter.endOfScope(at: startOfString),
-      formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: endOfString) == nil
+      formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: endOfString) == nil
     {
       return self
     }
@@ -634,9 +634,9 @@ extension String {
   func wrappedInParensIfContainsOperatorOrTry() -> String {
     let formatter = Formatter(tokenize(self))
 
-    guard let firstTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLinebreak, after: -1),
+    guard let firstTokenIndex = formatter.index(of: .nonSpaceOrCommentOrLineBreak, after: -1),
       let lastTokenIndex = formatter.lastIndex(
-        of: .nonSpaceOrCommentOrLinebreak, in: formatter.tokens.indices,
+        of: .nonSpaceOrCommentOrLineBreak, in: formatter.tokens.indices,
       )
     else { return formatter.tokens.string }
 

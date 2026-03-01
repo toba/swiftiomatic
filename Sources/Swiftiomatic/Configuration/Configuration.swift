@@ -51,11 +51,11 @@ package struct Configuration {
     /// Format max line width.
     package var formatMaxWidth: Int = 120
 
-    /// Format Swift version string.
-    package var formatSwiftVersion: String = "6.2"
+    /// Format Swift version.
+    package var formatSwiftVersion: Version = "6.2"
 
     /// Minimum confidence level for suggest checks.
-    var suggestMinConfidence: String = "low"
+    var suggestMinConfidence: Confidence = .low
 
     // MARK: Public Computed
 
@@ -181,7 +181,7 @@ package struct Configuration {
             guard !absolutePath.isEmpty,
                   FileManager.default.fileExists(atPath: absolutePath)
             else {
-                throw Issue.initialFileNotFound(path: absolutePath)
+                throw SwiftiomaticError.initialFileNotFound(path: absolutePath)
             }
 
             let contents = try String(contentsOfFile: absolutePath, encoding: .utf8)
@@ -196,18 +196,18 @@ package struct Configuration {
             configuration.rootDirectory = currentWorkingDirectory
             self.init(copying: configuration)
         } catch {
-            if case Issue.initialFileNotFound = error, !hasCustomConfigurationFile {
+            if case SwiftiomaticError.initialFileNotFound = error, !hasCustomConfigurationFile {
                 self.init(rulesMode: rulesMode, cachePath: cachePath)
                 return
             }
             if useDefaultConfigOnFailure ?? !hasCustomConfigurationFile {
-                queuedPrintError(
-                    "\(Issue.wrap(error: error).localizedDescription) – Falling back to default configuration",
+                Console.printError(
+                    "\(SwiftiomaticError.wrap(error: error).localizedDescription) – Falling back to default configuration",
                 )
                 self.init(rulesMode: rulesMode, cachePath: cachePath)
             } else {
-                queuedPrintError(Issue.wrap(error: error).asError.localizedDescription)
-                queuedFatalError("Could not read configuration")
+                Console.printError(SwiftiomaticError.wrap(error: error).asError.localizedDescription)
+                Console.fatalError("Could not read configuration")
             }
         }
     }
@@ -232,6 +232,9 @@ package struct Configuration {
     }
 
     /// Loads a YAML file at the given path and returns the top-level dictionary.
+    ///
+    /// Returns `[String: Any]` because YAML is inherently untyped — values are cast to
+    /// concrete types in ``loadUnified(from:)``.
     private static func loadYAML(from path: String) throws -> [String: Any] {
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         guard
@@ -266,8 +269,9 @@ package struct Configuration {
 
         // Suggest section
         if let suggest = yaml["suggest"] as? [String: Any] {
-            if let confidence = suggest["min_confidence"] as? String {
-                config.suggestMinConfidence = confidence
+            if let confidence = suggest["min_confidence"] as? String,
+               let level = Confidence(rawValue: confidence) {
+                config.suggestMinConfidence = level
             }
         }
 
@@ -289,8 +293,9 @@ package struct Configuration {
                 if let maxWidth = options["maxwidth"] as? Int {
                     config.formatMaxWidth = maxWidth
                 }
-                if let version = options["swiftversion"] as? String {
-                    config.formatSwiftVersion = version
+                if let version = options["swiftversion"] as? String,
+                   let parsed = Version(rawValue: version) {
+                    config.formatSwiftVersion = parsed
                 }
             }
         }
@@ -313,6 +318,25 @@ package struct Configuration {
             return (try? loadUnified(from: found)) ?? .default
         }
         return .default
+    }
+}
+
+// MARK: - FormatEngine Factory
+
+extension Configuration {
+    package func makeFormatEngine(
+        additionalEnable: [String] = [],
+        additionalDisable: [String] = []
+    ) -> FormatEngine {
+        var options = FormatOptions.default
+        options.indent = formatIndent
+        options.maxWidth = formatMaxWidth
+        options.swiftVersion = formatSwiftVersion
+        return FormatEngine(
+            enable: enabledFormatRules + additionalEnable,
+            disable: disabledFormatRules + additionalDisable,
+            options: options,
+        )
     }
 }
 

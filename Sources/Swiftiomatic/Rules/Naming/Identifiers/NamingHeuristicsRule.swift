@@ -70,7 +70,7 @@ extension NamingHeuristicsRule: AsyncEnrichableRule {
             ruleDescription: Self.description,
             severity: configuration.severity,
             location: Location(
-              file: filePath, line: candidate.line, character: candidate.column,
+              file: filePath, line: candidate.line, column: candidate.column,
             ),
             reason: Self.boolNamingReason(candidate.name),
             confidence: .low,

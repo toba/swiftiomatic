@@ -51,7 +51,7 @@ struct StructuralDuplicationRule: CollectingRule, OptInRule {
           RuleViolation(
             ruleDescription: Self.description,
             severity: configuration.severity,
-            location: Location(file: filePath, line: member.line, character: 1),
+            location: Location(file: filePath, line: member.line, column: 1),
             reason: "Function '\(member.name)' is structurally identical to \(peers)",
             confidence: confidence,
             suggestion: "Consider extracting shared logic into a common function",

@@ -277,7 +277,7 @@ extension Formatter {
     let funcIndex = equatableImplementation.keywordIndex
 
     guard let startOfBody = index(of: .startOfScope("{"), after: funcIndex),
-      let firstIndexInBody = index(of: .nonSpaceOrCommentOrLinebreak, after: startOfBody),
+      let firstIndexInBody = index(of: .nonSpaceOrCommentOrLineBreak, after: startOfBody),
       let endOfBody = endOfScope(at: startOfBody)
     else { return nil }
 
@@ -286,7 +286,7 @@ extension Formatter {
 
     // Skip over any `return` keyword that may be present
     if tokens[currentIndex] == .keyword("return"),
-      let nextIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex)
+      let nextIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex)
     {
       currentIndex = nextIndex
     }
@@ -294,29 +294,29 @@ extension Formatter {
     while currentIndex < endOfBody {
       // Parse the current `lhs.{property} == rhs.{property}` pattern
       guard tokens[currentIndex] == .identifier("lhs"),
-        let lhsDotIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex),
+        let lhsDotIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex),
         tokens[lhsDotIndex] == .operator(".", .infix),
         let lhsPropertyName = index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: lhsDotIndex,
         ),
         tokens[lhsPropertyName].isIdentifierOrKeyword,
         let equalsIndex = index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: lhsPropertyName,
         ),
         tokens[equalsIndex] == .operator("==", .infix),
-        let rhsIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: equalsIndex),
+        let rhsIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: equalsIndex),
         tokens[rhsIndex] == .identifier("rhs"),
-        let rhsDotIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: rhsIndex),
+        let rhsDotIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: rhsIndex),
         tokens[rhsDotIndex] == .operator(".", .infix),
         let rhsPropertyName = index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: rhsDotIndex,
         ),
         tokens[rhsPropertyName] == tokens[lhsPropertyName],
         let indexAfterComparison = index(
-          of: .nonSpaceOrCommentOrLinebreak,
+          of: .nonSpaceOrCommentOrLineBreak,
           after: rhsPropertyName,
         )
       else {
@@ -329,7 +329,7 @@ extension Formatter {
       // Skip over any `&&` operators connecting two comparisons
       if tokens[indexAfterComparison] == .operator("&&", .infix),
         let indexAfterAndOperator = index(
-          of: .nonSpaceOrCommentOrLinebreak, after: indexAfterComparison,
+          of: .nonSpaceOrCommentOrLineBreak, after: indexAfterComparison,
         )
       {
         currentIndex = indexAfterAndOperator

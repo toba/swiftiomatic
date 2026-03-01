@@ -12,11 +12,11 @@ package protocol RuleConfiguration: Equatable, Sendable {
   /// - parameter configuration: The untyped configuration value to apply.
   ///
   /// - throws: Throws if the configuration is not in the expected format.
-  mutating func apply(configuration: [String: Any]) throws(Issue)
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError)
 
   /// Run a sanity check on the configuration, perform optional postprocessing steps and/or warn about potential
   /// issues.
-  mutating func validate() throws(Issue)
+  mutating func validate() throws(SwiftiomaticError)
 }
 
 /// A configuration for a rule that allows to configure at least the severity.
@@ -32,10 +32,10 @@ extension SeverityBasedRuleConfiguration {
   }
 
   /// Apply severity from the configuration if present, silently ignoring when absent.
-  mutating func applySeverityIfPresent(_ configuration: [String: Any]) throws(Issue) {
+  mutating func applySeverityIfPresent(_ configuration: [String: Any]) throws(SwiftiomaticError) {
     do {
       try severityConfiguration.apply(configuration, ruleID: Parent.identifier)
-    } catch let issue where issue == Issue.nothingApplied(ruleID: Parent.identifier) {
+    } catch let issue where issue == SwiftiomaticError.nothingApplied(ruleID: Parent.identifier) {
       // Acceptable — severity is optional.
     }
   }
@@ -62,7 +62,7 @@ extension RuleConfiguration {
   func warnAboutUnknownKeys(in configuration: [String: Any]) {
     if !supportedKeys.isSuperset(of: configuration.keys) {
       let unknownKeys = Set(configuration.keys).subtracting(supportedKeys)
-      Issue.invalidConfigurationKeys(ruleID: Parent.identifier, keys: unknownKeys).print()
+      SwiftiomaticError.invalidConfigurationKeys(ruleID: Parent.identifier, keys: unknownKeys).print()
     }
   }
 }

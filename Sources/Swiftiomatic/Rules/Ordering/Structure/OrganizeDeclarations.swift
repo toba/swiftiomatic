@@ -414,7 +414,7 @@ extension Formatter {
       )
       guard let markCommentRange = matchingComments.first,
         let newlineBeforeMarkComment = self.index(
-          of: .linebreak, before: markCommentRange.lowerBound,
+          of: .lineBreak, before: markCommentRange.lowerBound,
         )
       else { continue }
 
@@ -469,7 +469,7 @@ extension Formatter {
         let markDeclaration = tokenize("\(indentation)// \(markCommentBody)")
         let eligibleCommentRange =
           declaration.range.lowerBound..<self.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: declaration.range.lowerBound - 1,
+            of: .nonSpaceOrCommentOrLineBreak, after: declaration.range.lowerBound - 1,
           )!
 
         // Remove any comments other than the expected mark comment if present
@@ -499,9 +499,9 @@ extension Formatter {
             let tokenAfterComment = self.index(
               of: .nonSpaceOrComment, after: matchingComment.upperBound,
             ),
-            tokens[tokenAfterComment].isLinebreak,
+            tokens[tokenAfterComment].isLineBreak,
             let nextToken = self.index(of: .nonSpaceOrComment, after: tokenAfterComment),
-            !tokens[nextToken].isLinebreak
+            !tokens[nextToken].isLineBreak
           {
             insertLinebreak(at: tokenAfterComment)
           }
@@ -592,9 +592,9 @@ extension Formatter {
       // Otherwise, we don't want to remove it.
       let tokensBeforeComment =
         tokens[declaration.range.lowerBound..<commentRange.lowerBound]
-      guard !tokensBeforeComment.contains(where: { !$0.isSpaceOrCommentOrLinebreak }),
+      guard !tokensBeforeComment.contains(where: { !$0.isSpaceOrCommentOrLineBreak }),
         let nextNonwhitespaceIndex = index(
-          of: .nonSpaceOrLinebreak,
+          of: .nonSpaceOrLineBreak,
           after: commentRange.upperBound,
         )
       else {
@@ -1067,7 +1067,7 @@ extension Formatter {
     }
     let lineCount =
       tokens[startOfScope...endOfScope]
-      .filter(\.isLinebreak)
+      .filter(\.isLineBreak)
       .count
       - 1
     return lineCount >= markThreshold

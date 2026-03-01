@@ -43,7 +43,7 @@ extension Configuration {
                     ] += 1 }
                         .filter { $0.1 > 1 }
                     for duplicateRule in duplicateRules {
-                        Issue.listedMultipleTime(ruleID: duplicateRule.0, times: duplicateRule.1)
+                        SwiftiomaticError.listedMultipleTime(ruleID: duplicateRule.0, times: duplicateRule.1)
                             .print()
                     }
                 }
@@ -55,7 +55,7 @@ extension Configuration {
                 self = .onlyCommandLine(Set(onlyRule))
             } else if onlyRules.isNotEmpty {
                 if disabledRules.isNotEmpty || optInRules.isNotEmpty {
-                    throw Issue.genericWarning(
+                    throw SwiftiomaticError.genericWarning(
                         "'\(Configuration.Key.disabledRules.rawValue)' or "
                             + "'\(Configuration.Key.optInRules.rawValue)' cannot be used in combination "
                             + "with '\(Configuration.Key.onlyRules.rawValue)'",
@@ -69,7 +69,7 @@ extension Configuration {
 
                 let effectiveOptInRules: [String]
                 if optInRules.contains(RuleIdentifier.all.stringRepresentation) {
-                    let allOptInRules = RuleRegistry.shared.list.list
+                    let allOptInRules = RuleRegistry.shared.list.rules
                         .compactMap { ruleID, ruleType in
                             ruleType is any OptInRule
                                 .Type && !(ruleType is any AnalyzerRule.Type) ? ruleID : nil
@@ -81,7 +81,7 @@ extension Configuration {
 
                 let effectiveAnalyzerRules: [String]
                 if analyzerRules.contains(RuleIdentifier.all.stringRepresentation) {
-                    let allAnalyzerRules = RuleRegistry.shared.list.list
+                    let allAnalyzerRules = RuleRegistry.shared.list.rules
                         .compactMap { ruleID, ruleType in
                             ruleType is any AnalyzerRule.Type ? ruleID : nil
                         }

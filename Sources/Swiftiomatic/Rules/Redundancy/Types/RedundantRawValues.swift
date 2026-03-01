@@ -8,14 +8,14 @@ extension FormatRule {
     formatter.forEach(.keyword("enum")) { i, _ in
       guard
         let nameIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: i, if: { $0.isIdentifier },
+          of: .nonSpaceOrCommentOrLineBreak, after: i, if: { $0.isIdentifier },
         ),
         let colonIndex = formatter.index(
-          of: .nonSpaceOrCommentOrLinebreak, after: nameIndex,
+          of: .nonSpaceOrCommentOrLineBreak, after: nameIndex,
           if: { $0 == .delimiter(":") },
         ),
         formatter
-          .next(.nonSpaceOrCommentOrLinebreak, after: colonIndex) == .identifier("String"),
+          .next(.nonSpaceOrCommentOrLineBreak, after: colonIndex) == .identifier("String"),
         let braceIndex = formatter.index(of: .startOfScope("{"), after: colonIndex)
       else {
         return
@@ -24,20 +24,20 @@ extension FormatRule {
       while var index = lastIndex {
         guard
           let nameIndex = formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: index,
+            of: .nonSpaceOrCommentOrLineBreak, after: index,
             if: {
               $0.isIdentifier
             },
           )
         else { break }
         if let equalsIndex = formatter.index(
-          of: .nonSpaceOrLinebreak, after: nameIndex,
+          of: .nonSpaceOrLineBreak, after: nameIndex,
           if: {
             $0 == .operator("=", .infix)
           },
         ),
           let quoteIndex = formatter.index(
-            of: .nonSpaceOrLinebreak, after: equalsIndex,
+            of: .nonSpaceOrLineBreak, after: equalsIndex,
             if: {
               $0 == .startOfScope("\"")
             },
@@ -57,7 +57,7 @@ extension FormatRule {
         }
         lastIndex =
           formatter.index(
-            of: .nonSpaceOrCommentOrLinebreak, after: index,
+            of: .nonSpaceOrCommentOrLineBreak, after: index,
             if: {
               $0 == .delimiter(",")
             },

@@ -5,8 +5,8 @@ extension FormatRule {
   static let consecutiveBlankLines = FormatRule(
     help: "Replace consecutive blank lines with a single blank line.",
   ) { formatter in
-    formatter.forEach(.linebreak) { i, _ in
-      guard let prevIndex = formatter.index(of: .nonSpace, before: i, if: { $0.isLinebreak })
+    formatter.forEach(.lineBreak) { i, _ in
+      guard let prevIndex = formatter.index(of: .nonSpace, before: i, if: { $0.isLineBreak })
       else {
         return
       }
@@ -14,7 +14,7 @@ extension FormatRule {
         return
       }
       if let nextIndex = formatter.index(of: .nonSpace, after: i) {
-        if formatter.tokens[nextIndex].isLinebreak {
+        if formatter.tokens[nextIndex].isLineBreak {
           formatter.removeTokens(in: i + 1...nextIndex)
         }
       } else if !formatter.options.fragment {

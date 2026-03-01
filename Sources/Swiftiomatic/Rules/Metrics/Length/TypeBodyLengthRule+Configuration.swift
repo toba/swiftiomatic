@@ -19,16 +19,16 @@ struct TypeBodyLengthConfiguration: SeverityLevelsBasedRuleConfiguration {
   @ConfigurationElement(key: "excluded_types")
   private(set) var excludedTypes = Set<TypeBodyLengthCheckType>([.extension, .protocol])
   typealias Parent = TypeBodyLengthRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     do {
       try severityConfiguration.apply(configuration, ruleID: Parent.identifier)
-    } catch let issue where issue == Issue.nothingApplied(ruleID: Parent.identifier) {
+    } catch let issue where issue == SwiftiomaticError.nothingApplied(ruleID: Parent.identifier) {
       // Acceptable — severity is optional.
     }
     if let value = configuration[$excludedTypes.key] {
       try excludedTypes.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

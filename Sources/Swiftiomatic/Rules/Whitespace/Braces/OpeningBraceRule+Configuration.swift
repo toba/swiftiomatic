@@ -21,7 +21,7 @@ struct OpeningBraceConfiguration: SeverityBasedRuleConfiguration {
   }
 
   typealias Parent = OpeningBraceRule
-  mutating func apply(configuration: [String: Any]) throws(Issue) {
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$ignoreMultilineTypeHeaders.key] {
       try ignoreMultilineTypeHeaders.apply(value, ruleID: Parent.identifier)
@@ -36,6 +36,6 @@ struct OpeningBraceConfiguration: SeverityBasedRuleConfiguration {
       try allowMultilineFunc.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
-    try validate()
+    validate()
   }
 }

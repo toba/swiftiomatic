@@ -9,7 +9,7 @@ package enum TextFormatter {
         let grouped = Dictionary(grouping: diagnostics) { $0.source }
 
         // Output in Source case order
-        for (sectionNumber, source) in Source.allCases.enumerated() {
+        for (sectionNumber, source) in DiagnosticSource.allCases.enumerated() {
             guard let sourceDiags = grouped[source], !sourceDiags.isEmpty else {
                 continue
             }
@@ -30,7 +30,7 @@ package enum TextFormatter {
 
         // Summary
         output += "## Summary\n\n"
-        for (sectionNumber, source) in Source.allCases.enumerated() {
+        for (sectionNumber, source) in DiagnosticSource.allCases.enumerated() {
             let count = grouped[source]?.count ?? 0
             if count > 0 {
                 output += "  §\(sectionNumber + 1) \(source.displayName): \(count)\n"

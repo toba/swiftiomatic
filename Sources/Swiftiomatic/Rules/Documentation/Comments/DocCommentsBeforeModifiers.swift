@@ -19,7 +19,7 @@ extension FormatRule {
       {
         if formatter.isDocComment(startOfComment: index) {
           // Extend range to include trailing white space
-          while formatter.token(at: endIndex + 1)?.isSpaceOrLinebreak ?? false {
+          while formatter.token(at: endIndex + 1)?.isSpaceOrLineBreak ?? false {
             endIndex += 1
           }
           let commentRange = index...endIndex

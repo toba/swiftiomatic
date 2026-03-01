@@ -7,8 +7,8 @@ extension Formatter {
     func shouldWrapMultilineStatementBrace(at index: Int) -> Bool {
         assert(tokens[index] == .startOfScope("{"))
         guard let endIndex = endOfScope(at: index),
-              tokens[index + 1 ..< endIndex].contains(where: \.isLinebreak),
-              let prevIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, before: index),
+              tokens[index + 1 ..< endIndex].contains(where: \.isLineBreak),
+              let prevIndex = self.index(of: .nonSpaceOrCommentOrLineBreak, before: index),
               let prevToken = token(at: prevIndex), !prevToken.isStartOfScope,
               !prevToken.isDelimiter
         else {
@@ -35,8 +35,8 @@ extension Formatter {
                 switch keywordOrAttribute {
                     case "@autoclosure":
                         if options.swiftVersion < "3",
-                           let nextIndex = self.index(of: .nonSpaceOrLinebreak, after: index),
-                           next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) ==
+                           let nextIndex = self.index(of: .nonSpaceOrLineBreak, after: index),
+                           next(.nonSpaceOrCommentOrLineBreak, after: nextIndex) ==
                            .identifier("escaping")
                         {
                             assert(tokens[nextIndex] == .startOfScope("("))
@@ -46,7 +46,7 @@ extension Formatter {
                     case "@escaping", "@noescape", "@Sendable", "@MainActor":
                         return true
                     case _ where keywordOrAttribute.isAttribute:
-                        if next(.nonSpaceOrCommentOrLinebreak, after: index) == .startOfScope("[") {
+                        if next(.nonSpaceOrCommentOrLineBreak, after: index) == .startOfScope("[") {
                             return true
                         }
                         if let i = self.index(of: .startOfScope("("), after: index) {
@@ -94,14 +94,14 @@ extension Formatter {
                 .union(staticSelf ? [] : options.selfRequired)
         guard
             let dotIndex = index(
-                of: .nonSpaceOrLinebreak, after: i,
+                of: .nonSpaceOrLineBreak, after: i,
                 if: {
                     $0 == .operator(".", .infix)
                 },
             ), !exclude.contains(selfKeyword),
-            let nextIndex = index(of: .nonSpaceOrLinebreak, after: dotIndex),
+            let nextIndex = index(of: .nonSpaceOrLineBreak, after: dotIndex),
             let token = token(at: nextIndex), token.isIdentifier,
-            case let name = token.unescaped(), include.map { $0.contains(name) } ?? true,
+            case let name = token.unescaped(), include.map({ $0.contains(name) }) ?? true,
                  !isSymbol(at: nextIndex, in: exclusionList),
                  !backticksRequired(at: nextIndex, ignoreLeadingDot: true)
         else {
@@ -114,7 +114,7 @@ extension Formatter {
                     break
                 case .startOfScope("("):
                     if let prevIndex = self.index(
-                        of: .nonSpaceOrCommentOrLinebreak,
+                        of: .nonSpaceOrCommentOrLineBreak,
                         before: scopeStart,
                     ),
                         isSymbol(
@@ -157,7 +157,7 @@ extension Formatter {
                 where last(.nonSpace, before: index)?.isOperator == false:
                     if name == removeSelfKeyword, isEnabled,
                        let nextIndex = self.index(
-                           of: .nonSpaceOrCommentOrLinebreak,
+                           of: .nonSpaceOrCommentOrLineBreak,
                            after: index, if: { $0 == .operator(".", .infix) },
                        ),
                        case .identifier? = next(
@@ -168,7 +168,7 @@ extension Formatter {
                         _ = removeSelf(at: index, exclude: names.union(locals))
                         break
                     }
-                    switch next(.nonSpaceOrCommentOrLinebreak, after: index) {
+                    switch next(.nonSpaceOrCommentOrLineBreak, after: index) {
                         case .delimiter(":") where !scopeIndexStack.isEmpty, .operator(".", _):
                             break outer
                         default:
@@ -183,7 +183,7 @@ extension Formatter {
                     var isPermittedImplicitSelfRebinding = false
                     if name == "self",
                        scopeAllowsImplicitSelfRebinding,
-                       let equalsIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index)
+                       let equalsIndex = self.index(of: .nonSpaceOrCommentOrLineBreak, after: index)
                     {
                         // If we find the end of the condition instead of an = token,
                         // then this was a shorthand `if let self` condition.
@@ -194,12 +194,12 @@ extension Formatter {
                             isPermittedImplicitSelfRebinding = true
                         } else if tokens[equalsIndex] == Token.operator("=", .infix),
                                   let rhsSelfIndex = self.index(
-                                      of: .nonSpaceOrCommentOrLinebreak,
+                                      of: .nonSpaceOrCommentOrLineBreak,
                                       after: equalsIndex,
                                   ),
                                   tokens[rhsSelfIndex] == .identifier("self"),
                                   let nextToken = next(
-                                      .nonSpaceOrCommentOrLinebreak,
+                                      .nonSpaceOrCommentOrLineBreak,
                                       after: rhsSelfIndex,
                                   ),
                                   nextToken == .startOfScope("{") || nextToken == .delimiter(",")
@@ -264,7 +264,7 @@ extension Formatter {
                             case .number, .identifier:
                                 index = max(index, nextIndex)
                                 if next(
-                                    .nonSpaceOrCommentOrLinebreak, after: index,
+                                    .nonSpaceOrCommentOrLineBreak, after: index,
                                     if: {
                                         $0.isOperator(ofType: .infix) || $0
                                             .isOperator(ofType: .postfix)
@@ -298,7 +298,7 @@ extension Formatter {
                                 index = nextIndex
                                 names.formUnion(locals)
                                 break inner
-                            case .endOfScope("*/"), .linebreak:
+                            case .endOfScope("*/"), .lineBreak:
                                 updateEnablement(at: nextIndex)
                             default:
                                 break
@@ -332,7 +332,7 @@ extension Formatter {
                         return
                     }
                     index = nextIndex
-                case .endOfScope("*/"), .linebreak:
+                case .endOfScope("*/"), .lineBreak:
                     updateEnablement(at: index)
                 default:
                     break
@@ -349,7 +349,7 @@ extension Formatter {
                 let lastIndex = index(
                     of: .nonSpace, before: endOfScope,
                     if: {
-                        $0.isLinebreak
+                        $0.isLineBreak
                     },
                 )
             else {
@@ -363,7 +363,7 @@ extension Formatter {
             endOfScope = lastIndex
             // Remove trailing comma
             if let prevCommaIndex = index(
-                of: .nonSpaceOrCommentOrLinebreak, before: endOfScope,
+                of: .nonSpaceOrCommentOrLineBreak, before: endOfScope,
                 if: {
                     $0 == .delimiter(",")
                 },
@@ -375,19 +375,19 @@ extension Formatter {
 
         func keepParameterLabelsOnSameLine(startOfScope i: Int, endOfScope: inout Int) {
             var endIndex = endOfScope
-            while let index = self.lastIndex(of: .linebreak, in: i + 1 ..< endIndex) {
+            while let index = self.lastIndex(of: .lineBreak, in: i + 1 ..< endIndex) {
                 endIndex = index
                 // Check if this linebreak sits between two identifiers
                 // (e.g. the external and internal argument labels)
                 guard
                     let lastIndex = self.index(
-                        of: .nonSpaceOrLinebreak, before: index,
+                        of: .nonSpaceOrLineBreak, before: index,
                         if: {
                             $0.isIdentifier
                         },
                     ),
                     let nextIndex = self.index(
-                        of: .nonSpaceOrLinebreak, after: index,
+                        of: .nonSpaceOrLineBreak, after: index,
                         if: {
                             $0.isIdentifier
                         },
@@ -461,7 +461,7 @@ extension Formatter {
 
                         // TODO: handle where clause
                         if let nextIndex = index(
-                            of: .nonSpaceOrCommentOrLinebreak,
+                            of: .nonSpaceOrCommentOrLineBreak,
                             after: cursorIndex - 1,
                         ),
                             tokens[nextIndex] == .startOfScope("{")
@@ -508,7 +508,7 @@ extension Formatter {
             }
 
             // Insert linebreak after each comma
-            var index = index(of: .nonSpaceOrCommentOrLinebreak, before: endOfScope)!
+            var index = index(of: .nonSpaceOrCommentOrLineBreak, before: endOfScope)!
             if tokens[index] != .delimiter(",") {
                 index += 1
             }
@@ -519,14 +519,14 @@ extension Formatter {
                     linebreakIndex = index + 1
                 }
                 if !isCommentedCode(at: linebreakIndex + 1) {
-                    if tokens[linebreakIndex].isLinebreak,
-                       next(.nonSpace, after: linebreakIndex).map({ !$0.isLinebreak }) ?? false
+                    if tokens[linebreakIndex].isLineBreak,
+                       next(.nonSpace, after: linebreakIndex).map({ !$0.isLineBreak }) ?? false
                     {
                         endOfScope += insertSpace(indent + options.indent, at: linebreakIndex + 1)
                     } else if !allowGrouping
                         || (maxWidth > 0 && lineLength(at: linebreakIndex) > maxWidth
                             && lineLength(upTo: linebreakIndex) <= maxWidth),
-                        !tokens[linebreakIndex].isLinebreak
+                        !tokens[linebreakIndex].isLineBreak
                     {
                         insertLinebreak(at: linebreakIndex)
                         endOfScope += 1 + insertSpace(
@@ -550,12 +550,12 @@ extension Formatter {
             if insertLinebreakAfterOpeningParen,
                let nextIndex = self.index(of: .nonSpaceOrComment, after: i)
             {
-                if !tokens[nextIndex].isLinebreak {
+                if !tokens[nextIndex].isLineBreak {
                     insertLinebreak(at: nextIndex)
                     endOfScope += 1
                 }
                 if nextIndex + 1 < endOfScope,
-                   next(.nonSpace, after: nextIndex)?.isLinebreak == false
+                   next(.nonSpace, after: nextIndex)?.isLineBreak == false
                 {
                     var indent = indent
                     if let nextNonSpaceIndex = self.index(of: .nonSpace, after: nextIndex),
@@ -569,7 +569,7 @@ extension Formatter {
             }
 
             let hasLineBreakAfterOpeningParen =
-                nextToken(after: i, where: { !$0.isComment })?.isLinebreak == true
+                nextToken(after: i, where: { !$0.isComment })?.isLineBreak == true
 
             if closingParenOnSameLine {
                 removeLinebreakBeforeEndOfScope(at: &endOfScope)
@@ -577,7 +577,7 @@ extension Formatter {
                 // Insert linebreak before closing paren
                 if let lastIndex = self.index(of: .nonSpace, before: endOfScope) {
                     endOfScope += insertSpace(indent, at: lastIndex + 1)
-                    if !tokens[lastIndex].isLinebreak {
+                    if !tokens[lastIndex].isLineBreak {
                         insertLinebreak(at: lastIndex + 1)
                         endOfScope += 1
                     }
@@ -590,7 +590,7 @@ extension Formatter {
             )
         }
         func wrapArgumentsAfterFirst(startOfScope i: Int, endOfScope: Int, allowGrouping: Bool) {
-            guard var firstArgumentIndex = index(of: .nonSpaceOrLinebreak,
+            guard var firstArgumentIndex = index(of: .nonSpaceOrLineBreak,
                                                  in: i + 1 ..< endOfScope)
             else {
                 return
@@ -628,7 +628,7 @@ extension Formatter {
                     index = commaIndex + 1
                     continue
                 }
-                if tokens[linebreakIndex].isLinebreak {
+                if tokens[linebreakIndex].isLineBreak {
                     if linebreakIndex + 1 != endOfScope, !isCommentedCode(at: linebreakIndex + 1) {
                         endOfScope += insertSpace(indent, at: linebreakIndex + 1)
                     }
@@ -691,7 +691,7 @@ extension Formatter {
             let rangeBetweenTypealiasAndEquals = (typealiasIndex + 1) ..< equalsIndex
             if options.wrapTypealiases == .afterFirst,
                let linebreakIndex = rangeBetweenTypealiasAndEquals
-               .first(where: { tokens[$0].isLinebreak })
+               .first(where: { tokens[$0].isLineBreak })
             {
                 removeToken(at: linebreakIndex)
                 if tokens[linebreakIndex].isSpace, tokens[linebreakIndex] != .space(" ") {
@@ -704,7 +704,7 @@ extension Formatter {
         forEach(.operator("?", .infix)) { conditionIndex, _ in
             guard options.wrapTernaryOperators != .default,
                   let expressionStartIndex = index(
-                      of: .nonSpaceOrCommentOrLinebreak,
+                      of: .nonSpaceOrCommentOrLineBreak,
                       before: conditionIndex,
                   ),
                   !isInStringLiteralWithWrappingDisabled(at: conditionIndex)
@@ -764,7 +764,7 @@ extension Formatter {
 
             if lastIndex < i,
                let i = (lastIndex + 1 ..< i).last(where: {
-                   tokens[$0].isLinebreak
+                   tokens[$0].isLineBreak
                })
             {
                 lastIndex = i
@@ -810,7 +810,7 @@ extension Formatter {
             }
             guard mode != .disabled,
                   let firstIdentifierIndex =
-                  index(of: .nonSpaceOrCommentOrLinebreak, after: i),
+                  index(of: .nonSpaceOrCommentOrLineBreak, after: i),
                   !isInStringLiteralWithWrappingDisabled(at: i)
             else {
                 lastIndex = i
@@ -823,7 +823,7 @@ extension Formatter {
             }
 
             if completePartialWrapping,
-               let firstLinebreakIndex = index(of: .linebreak, in: i + 1 ..< endOfScope)
+               let firstLinebreakIndex = index(of: .lineBreak, in: i + 1 ..< endOfScope)
             {
                 switch mode {
                     case .beforeFirst:
@@ -949,10 +949,10 @@ extension Formatter {
 
             // Only wrap when this is a control flow condition that spans multiple lines
             guard let endIndex = self.index(of: endOfConditionsToken, after: index),
-                  let nextTokenIndex = self.index(of: .nonSpaceOrLinebreak, after: index),
+                  let nextTokenIndex = self.index(of: .nonSpaceOrLineBreak, after: index),
                   !(onSameLine(index, endIndex)
                       || self
-                      .index(of: .nonSpaceOrLinebreak, after: endOfLine(at: index)) == endIndex)
+                      .index(of: .nonSpaceOrLineBreak, after: endOfLine(at: index)) == endIndex)
             else { return }
 
             switch options.wrapConditions {
@@ -969,13 +969,13 @@ extension Formatter {
                     let indent = currentIndentForLine(at: index) + options.indent
                     while let index = linebreakIndex, index < endIndex {
                         insertSpace(indent, at: index + 1)
-                        linebreakIndex = self.index(of: .linebreak, after: index)
+                        linebreakIndex = self.index(of: .lineBreak, after: index)
                     }
                 case .afterFirst:
                     // Unwrap if the next non-whitespace-or-comment
                     // is not on the same line as the control flow keyword
                     if !onSameLine(index, nextTokenIndex),
-                       let linebreakIndex = self.index(of: .linebreak, in: index ..< nextTokenIndex)
+                       let linebreakIndex = self.index(of: .lineBreak, in: index ..< nextTokenIndex)
                     {
                         removeToken(at: linebreakIndex)
                     }
@@ -988,7 +988,7 @@ extension Formatter {
                         upTo: index,
                     ) +
                         indent
-                    while let index = self.index(of: .linebreak, after: lastIndex),
+                    while let index = self.index(of: .lineBreak, after: lastIndex),
                           index < endIndex
                     {
                         insertSpace(indent, at: index + 1)
@@ -1018,8 +1018,8 @@ extension Formatter {
             // which means this statement is already being wrapped in some way
             // and should be re-wrapped to the expected way if necessary
             let delimitersAdjacentToLinebreak = delimiterIndices.count(where: { delimiterIndex in
-                last(.nonSpaceOrComment, before: delimiterIndex)?.is(.linebreak) == true
-                    || next(.nonSpaceOrComment, after: delimiterIndex)?.is(.linebreak) == true
+                last(.nonSpaceOrComment, before: delimiterIndex)?.is(.lineBreak) == true
+                    || next(.nonSpaceOrComment, after: delimiterIndex)?.is(.lineBreak) == true
             })
 
             if !(overMaximumWidth || delimitersAdjacentToLinebreak > 0) {
@@ -1032,7 +1032,7 @@ extension Formatter {
 
             for indexToWrap in delimiterIndices.reversed() {
                 // if this item isn't already on its own line, then wrap it
-                if last(.nonSpaceOrComment, before: indexToWrap)?.is(.linebreak) == false {
+                if last(.nonSpaceOrComment, before: indexToWrap)?.is(.lineBreak) == false {
                     // Remove the space immediately before this token if present,
                     // so it isn't orphaned on the previous line once we wrap
                     if tokens[indexToWrap - 1].isSpace {
@@ -1045,7 +1045,7 @@ extension Formatter {
                     // While we're here, make sure there's exactly one space after the delimiter
                     let updatedAndIndex = indexToWrap + 1
                     if let nextExpressionIndex = index(
-                        of: .nonSpaceOrCommentOrLinebreak, after: updatedAndIndex,
+                        of: .nonSpaceOrCommentOrLineBreak, after: updatedAndIndex,
                     ) {
                         replaceTokens(
                             in: (updatedAndIndex + 1) ..< nextExpressionIndex,
@@ -1088,7 +1088,7 @@ extension Formatter {
                 return
             }
             let i = self.index(of: .nonSpace, before: i + 1) ?? i
-            if token(at: i + 1)?.isLinebreak == true || token(at: i)?.isLinebreak == true {
+            if token(at: i + 1)?.isLineBreak == true || token(at: i)?.isLineBreak == true {
                 return
             }
             lastBreakPoint = i
@@ -1100,7 +1100,7 @@ extension Formatter {
         while i < endIndex {
             var token = tokens[i]
             switch token {
-                case .linebreak:
+                case .lineBreak:
                     return nil
                 case .keyword("#colorLiteral"), .keyword("#imageLiteral"):
                     guard let startIndex = self.index(of: .startOfScope("("), after: i),
@@ -1210,7 +1210,7 @@ extension Formatter {
             // If the scope is empty we don't need to do anything
             !tokens[indexOfFirstTokenInNewScope].isEndOfScope,
             // If there is already a newline after the brace we can just stop
-            !tokens[indexOfFirstTokenInNewScope].isLinebreak
+            !tokens[indexOfFirstTokenInNewScope].isLineBreak
         else {
             return
         }
@@ -1230,7 +1230,7 @@ extension Formatter {
         insertSpace(indent, at: movedTokenIndex)
 
         guard var closingBraceIndex = index(of: .endOfScope("}"), after: movedTokenIndex),
-              !(movedTokenIndex ..< closingBraceIndex).contains(where: { tokens[$0].isLinebreak })
+              !(movedTokenIndex ..< closingBraceIndex).contains(where: { tokens[$0].isLineBreak })
         else {
             // The closing brace is already on its own line so we don't need to do anything else
             return
@@ -1295,7 +1295,7 @@ extension Formatter {
 
         let isStartOfScope = tokens[index].isStartOfScope
         let spaceBefore = token(at: index - 1)?.isSpace == true
-        let spaceAfter = token(at: index + 1)?.isSpaceOrLinebreak == true
+        let spaceAfter = token(at: index + 1)?.isSpaceOrLineBreak == true
         removeToken(at: index)
         if isStartOfScope {
             if tokenOutsideParenRequiresSpacing(at: index - 1),
@@ -1334,7 +1334,7 @@ extension Formatter {
 
         func insertEffectKeyword(at index: Int) {
             var index = index
-            while tokens[index].isSpaceOrLinebreak {
+            while tokens[index].isSpaceOrLineBreak {
                 index += 1
             }
 
@@ -1414,7 +1414,7 @@ extension Formatter {
                      .endOfScope(">"), .endOfScope("]"), .endOfScope(")"),
                      .endOfScope where tokens[i].isStringDelimiter:
                     switch prevToken {
-                        case .operator(_, .infix), .operator(_, .postfix), .stringBody, .linebreak,
+                        case .operator(_, .infix), .operator(_, .postfix), .stringBody, .lineBreak,
                              .startOfScope("<"), .startOfScope("["), .startOfScope("("),
                              _ where currentScope(at: i + 1)?.isMultilineStringDelimiter == true:
                             break
@@ -1425,11 +1425,11 @@ extension Formatter {
                         insertIndex = startOfScope(at: i) ?? i
                         continue
                     }
-                case .linebreak:
+                case .lineBreak:
                     if prevToken.isOperator(ofType: .infix) || prevToken.isStringBody {
                         break
                     } else if let i = index(
-                        of: .nonSpaceOrLinebreak, before: i,
+                        of: .nonSpaceOrLineBreak, before: i,
                         if: {
                             $0.isOperator(ofType: .infix)
                         },
@@ -1484,7 +1484,7 @@ extension Formatter {
 
         // Check if there's typed throws (throws(...))
         if effect == "throws",
-           let nextTokenIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: effectIndex),
+           let nextTokenIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: effectIndex),
            tokens[nextTokenIndex] == .startOfScope("("),
            let endOfScope = endOfScope(at: nextTokenIndex)
         {
@@ -1515,7 +1515,7 @@ extension Formatter {
         // The body should contain exactly one expression.
         // We can confirm this by parsing the body with `parseExpressionRange`,
         // and checking that the token after that expression is just the end of the scope.
-        guard var firstTokenInBody = index(of: .nonSpaceOrCommentOrLinebreak, after: startOfBody)
+        guard var firstTokenInBody = index(of: .nonSpaceOrCommentOrLineBreak, after: startOfBody)
         else {
             return false
         }
@@ -1524,7 +1524,7 @@ extension Formatter {
         if includingReturnStatements, tokens[firstTokenInBody] == .keyword("return") {
             guard
                 let tokenAfterReturnKeyword = index(
-                    of: .nonSpaceOrCommentOrLinebreak, after: firstTokenInBody,
+                    of: .nonSpaceOrCommentOrLineBreak, after: firstTokenInBody,
                 )
             else { return false }
             firstTokenInBody = tokenAfterReturnKeyword
@@ -1564,14 +1564,14 @@ extension Formatter {
 
             let endOfStatement = conditionalBranches.last?.endOfBranch ?? firstTokenInBody
             let isOnlyStatement =
-                index(of: .nonSpaceOrCommentOrLinebreak, after: endOfStatement) == endOfScopeIndex
+                index(of: .nonSpaceOrCommentOrLineBreak, after: endOfStatement) == endOfScopeIndex
 
             return isSupportedSingleStatement && isOnlyStatement
         }
 
         guard let expressionRange = parseExpressionRange(startingAt: firstTokenInBody),
               let nextIndexAfterExpression = index(
-                  of: .nonSpaceOrCommentOrLinebreak, after: expressionRange.upperBound,
+                  of: .nonSpaceOrCommentOrLineBreak, after: expressionRange.upperBound,
               )
         else {
             return false
@@ -1602,15 +1602,15 @@ extension Formatter {
             case .keyword("await"):
                 // Skip over any `try`, `try?`, `try!`, or `await` token,
                 // which are valid before an if/switch expression.
-                if let nextToken = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index) {
+                if let nextToken = self.index(of: .nonSpaceOrCommentOrLineBreak, after: index) {
                     return conditionalBranches(at: nextToken)
                 }
                 return nil
             case .keyword("try"):
-                if let nextIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, after: index) {
+                if let nextIndex = self.index(of: .nonSpaceOrCommentOrLineBreak, after: index) {
                     if tokens[nextIndex].isUnwrapOperator,
                        let tokenAfterOperator = self.index(
-                           of: .nonSpaceOrCommentOrLinebreak,
+                           of: .nonSpaceOrCommentOrLineBreak,
                            after: nextIndex,
                        )
                     {
@@ -1644,12 +1644,12 @@ extension Formatter {
         {
             branches.append((startOfBranch: startOfBody, endOfBranch: endOfBody))
             if conditionalBranchIndex > ifIndex,
-               next(.nonSpaceOrCommentOrLinebreak, after: conditionalBranchIndex) != .keyword("if")
+               next(.nonSpaceOrCommentOrLineBreak, after: conditionalBranchIndex) != .keyword("if")
             {
                 // An `if` statement can only have one `else` branch that's not an `else if`
                 break
             }
-            nextConditionalBranchIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: endOfBody)
+            nextConditionalBranchIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: endOfBody)
         }
 
         return branches
@@ -1675,7 +1675,7 @@ extension Formatter {
         assert(tokens[switchIndex] == .keyword("switch"))
         guard let startOfSwitchScope = index(of: .startOfScope("{"), after: switchIndex),
               let firstCaseIndex = index(
-                  of: .nonSpaceOrCommentOrLinebreak,
+                  of: .nonSpaceOrCommentOrLineBreak,
                   after: startOfSwitchScope,
               ),
               tokens[firstCaseIndex].isSwitchCaseOrDefault
@@ -1726,7 +1726,7 @@ extension Formatter {
         else { return nil }
 
         // If the next case has the `@unknown` prefix, make sure that token isn't included in the body of this branch.
-        if let unknownKeyword = index(of: .nonSpaceOrCommentOrLinebreak, before: endOfBody),
+        if let unknownKeyword = index(of: .nonSpaceOrCommentOrLineBreak, before: endOfBody),
            tokens[unknownKeyword] == .keyword("@unknown")
         {
             endOfBody = unknownKeyword
@@ -1752,7 +1752,7 @@ extension Formatter {
            let asIndex = index(of: .keyword("as"), after: startOfScopeIndex),
            let endOfScopeIndex = endOfScope(at: startOfScopeIndex),
            asIndex < endOfScopeIndex,
-           next(.nonSpaceOrCommentOrLinebreak, after: asIndex)?.isUnwrapOperator == true,
+           next(.nonSpaceOrCommentOrLineBreak, after: asIndex)?.isUnwrapOperator == true,
            // Make sure the as? is at the top level, not nested in some
            // inner scope like a function call or closure
            startOfScope(at: asIndex) == startOfScopeIndex
@@ -1772,7 +1772,7 @@ extension Formatter {
     ) {
         for branch in branches.reversed() {
             if let tokenAfterEquals = index(
-                of: .nonSpaceOrCommentOrLinebreak, after: branch.startOfBranch,
+                of: .nonSpaceOrCommentOrLineBreak, after: branch.startOfBranch,
             ),
                 let conditionalBranches = conditionalBranches(at: tokenAfterEquals)
             {
@@ -1844,13 +1844,13 @@ extension Formatter {
             while let tokenAfterStartOfScope = index(
                 of: .nonSpace, after: startOfBranchExcludingLeadingComments,
             ),
-                tokens[tokenAfterStartOfScope].isLinebreak,
+                tokens[tokenAfterStartOfScope].isLineBreak,
                 let commentAfterStartOfScope = index(of: .nonSpace, after: tokenAfterStartOfScope),
                 tokens[commentAfterStartOfScope].isComment,
                 let endOfComment = endOfScope(at: commentAfterStartOfScope),
                 let tokenBeforeEndOfComment = index(of: .nonSpace, before: endOfComment)
             {
-                if tokens[endOfComment].isLinebreak {
+                if tokens[endOfComment].isLineBreak {
                     startOfBranchExcludingLeadingComments = tokenBeforeEndOfComment
                 } else {
                     startOfBranchExcludingLeadingComments = endOfComment
@@ -1861,7 +1861,7 @@ extension Formatter {
             while let tokenBeforeEndOfScope = index(
                 of: .nonSpace, before: endOfBranchExcludingTrailingComments,
             ),
-                tokens[tokenBeforeEndOfScope].isLinebreak,
+                tokens[tokenBeforeEndOfScope].isLineBreak,
                 let commentBeforeEndOfScope = index(of: .nonSpace, before: tokenBeforeEndOfScope),
                 tokens[commentBeforeEndOfScope].isComment,
                 let startOfComment = startOfScope(at: commentBeforeEndOfScope),
@@ -1872,10 +1872,10 @@ extension Formatter {
 
             guard
                 let firstTokenInBody = index(
-                    of: .nonSpaceOrLinebreak, after: startOfBranchExcludingLeadingComments,
+                    of: .nonSpaceOrLineBreak, after: startOfBranchExcludingLeadingComments,
                 ),
                 let lastTokenInBody = index(
-                    of: .nonSpaceOrLinebreak, before: endOfBranchExcludingTrailingComments,
+                    of: .nonSpaceOrLineBreak, before: endOfBranchExcludingTrailingComments,
                 )
             else { return nil }
 
@@ -1889,14 +1889,14 @@ extension Formatter {
             if let tokenBeforeEndOfScope = index(
                 of: .nonSpace, before: endOfBranchExcludingTrailingComments,
             ),
-                tokens[tokenBeforeEndOfScope].isLinebreak
+                tokens[tokenBeforeEndOfScope].isLineBreak
             {
                 linebreakBeforeEndOfScope = tokenBeforeEndOfScope
             }
 
             if let linebreakBeforeEndOfScope,
                let tokenBeforeBlankLine = index(of: .nonSpace, before: linebreakBeforeEndOfScope),
-               tokens[tokenBeforeBlankLine].isLinebreak
+               tokens[tokenBeforeBlankLine].isLineBreak
             {
                 linebreakBeforeBlankLine = tokenBeforeBlankLine
                 isFollowedByBlankLine = true
@@ -1918,12 +1918,12 @@ extension Formatter {
     func isFunctionCall(at index: Int) -> Bool {
         if let openingParenIndex = self.index(of: .startOfScope("("), before: index + 1) {
             if let prevTokenIndex = self.index(
-                of: .nonSpaceOrCommentOrLinebreak, before: openingParenIndex,
+                of: .nonSpaceOrCommentOrLineBreak, before: openingParenIndex,
             ),
                 tokens[prevTokenIndex].isIdentifier
             {
                 if let keywordIndex = self.index(
-                    of: .nonSpaceOrCommentOrLinebreak,
+                    of: .nonSpaceOrCommentOrLineBreak,
                     before: prevTokenIndex,
                 ),
                     tokens[keywordIndex] == .keyword("func") || tokens[keywordIndex] ==
@@ -1940,7 +1940,7 @@ extension Formatter {
     /// Whether a give else is part of a guard statement
     func isGuardElse(at index: Int) -> Bool {
         guard tokens[index] == .keyword("else"),
-              let previousIndex = self.index(of: .nonSpaceOrCommentOrLinebreak, before: index)
+              let previousIndex = self.index(of: .nonSpaceOrCommentOrLineBreak, before: index)
         else {
             return false
         }
@@ -2027,7 +2027,7 @@ extension Formatter {
 
         let lineCount =
             tokens[startOfScope ... endOfScope]
-                .filter(\.isLinebreak)
+                .filter(\.isLineBreak)
                 .count
                 - 1
 
@@ -2038,7 +2038,7 @@ extension Formatter {
     func removeTestPrefix(fromFunctionAt funcKeywordIndex: Int) {
         // The name of a function always immediately follows the `func` keyword
         guard let methodNameIndex = index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: funcKeywordIndex,
         ),
             tokens[methodNameIndex].isIdentifier
@@ -2073,7 +2073,7 @@ extension Formatter {
     func updateFunctionName(forFunctionAt funcKeywordIndex: Int, to newMethodName: String) {
         // The name of a function always immediately follows the `func` keyword
         guard let methodNameIndex = index(
-            of: .nonSpaceOrCommentOrLinebreak,
+            of: .nonSpaceOrCommentOrLineBreak,
             after: funcKeywordIndex,
         ),
             tokens[methodNameIndex].isIdentifier
@@ -2252,7 +2252,7 @@ extension Formatter {
         var currentIndex = genericSignatureStartIndex
 
         while currentIndex < tokens.count {
-            guard let lhsTypeIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex),
+            guard let lhsTypeIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex),
                   let lhsType = parseType(at: lhsTypeIndex)
             else { break }
 
@@ -2262,7 +2262,7 @@ extension Formatter {
             var conformanceType: GenericType.GenericConformance.ConformanceType?
 
             // This can either be a protocol constraint of the form `T: Fooable`
-            if let colonIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex),
+            if let colonIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex),
                tokens[colonIndex] == .delimiter(":")
             {
                 conformanceType = .protocolConstraint
@@ -2270,7 +2270,7 @@ extension Formatter {
             }
 
             // or a concrete type of the form `T == Foo`
-            else if let equalsIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex),
+            else if let equalsIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex),
                     tokens[equalsIndex].isOperator,
                     tokens[equalsIndex].string == "=="
             {
@@ -2279,7 +2279,7 @@ extension Formatter {
             }
 
             var rhsType: TypeName?
-            if let rhsTypeIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex),
+            if let rhsTypeIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex),
                let type = parseType(at: rhsTypeIndex)
             {
                 rhsType = type
@@ -2288,14 +2288,14 @@ extension Formatter {
 
             // The generic clause can continue with a comma.
             let hasMoreElements: Bool
-            if let commaIndex = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex),
+            if let commaIndex = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex),
                tokens[commaIndex] == .delimiter(",")
             {
                 currentIndex = commaIndex
                 hasMoreElements = true
 
                 // Include any trailing spaces, comments, or newlines with this type.
-                if let nextToken = index(of: .nonSpaceOrCommentOrLinebreak, after: currentIndex) {
+                if let nextToken = index(of: .nonSpaceOrCommentOrLineBreak, after: currentIndex) {
                     currentIndex = nextToken - 1
                 }
             } else {
@@ -2450,7 +2450,7 @@ extension Formatter {
                         case .keyword("class"), .keyword("static"):
                             classOrStatic = true
                         case .keyword("repeat"):
-                            if next(.nonSpaceOrCommentOrLinebreak, after: i) == .startOfScope("{") {
+                            if next(.nonSpaceOrCommentOrLineBreak, after: i) == .startOfScope("{") {
                                 guard let nextIndex = self.index(of: .keyword("while"), after: i)
                                 else {
                                     fatalError("Expected while", at: i)
@@ -2521,7 +2521,7 @@ extension Formatter {
                                 )
                             }
                         case .keyword("func"):
-                            guard let nameToken = next(.nonSpaceOrCommentOrLinebreak, after: i)
+                            guard let nameToken = next(.nonSpaceOrCommentOrLineBreak, after: i)
                             else {
                                 break
                             }
@@ -2543,7 +2543,7 @@ extension Formatter {
                             i = endOfScope(at: i) ?? (tokens.count - 1)
                         case .endOfScope("}"), .endOfScope("case"), .endOfScope("default"):
                             break outer
-                        case .endOfScope("*/"), .linebreak:
+                        case .endOfScope("*/"), .lineBreak:
                             updateEnablement(at: i)
                         default:
                             break
@@ -2591,8 +2591,8 @@ extension Formatter {
                         classOrStatic = true
                     case .keyword("class")
                     where
-                    next(.nonSpaceOrCommentOrLinebreak, after: index)?.isIdentifier == false:
-                        if last(.nonSpaceOrCommentOrLinebreak, before: index) != .delimiter(":") {
+                    next(.nonSpaceOrCommentOrLineBreak, after: index)?.isIdentifier == false:
+                        if last(.nonSpaceOrCommentOrLineBreak, before: index) != .delimiter(":") {
                             if !isTypeRoot {
                                 fatalError(
                                     "The class modifier is not valid outside a type body",
@@ -2615,7 +2615,7 @@ extension Formatter {
                              where ["extension", "struct", "enum", "class", "actor"]
                              .contains(lastKeyword):
                         let keyword = tokens[index].string
-                        guard last(.nonSpaceOrCommentOrLinebreak, before: index) !=
+                        guard last(.nonSpaceOrCommentOrLineBreak, before: index) !=
                             .keyword("import")
                         else {
                             break
@@ -2656,7 +2656,7 @@ extension Formatter {
                         switch lastKeyword {
                             case "lazy" where options.swiftVersion < "4":
                                 loop: while let nextIndex = self.index(
-                                    of: .nonSpaceOrCommentOrLinebreak,
+                                    of: .nonSpaceOrCommentOrLineBreak,
                                     after: index,
                                 ) {
                                     switch tokens[nextIndex] {
@@ -2885,7 +2885,7 @@ extension Formatter {
                            let captureListStartIndex = self.index(
                                in: (index + 1) ..< inIndex,
                                where: {
-                                   !$0.isSpaceOrCommentOrLinebreak && !$0.isAttribute
+                                   !$0.isSpaceOrCommentOrLineBreak && !$0.isAttribute
                                },
                            ),
                            tokens[captureListStartIndex] == .startOfScope("["),
@@ -2900,7 +2900,7 @@ extension Formatter {
                         // e.g. `{ foo, bar in`
                         else if let inIndex,
                                 let firstTokenInClosure = self.index(
-                                    of: .nonSpaceOrCommentOrLinebreak,
+                                    of: .nonSpaceOrCommentOrLineBreak,
                                     after: index,
                                 ),
                                 isInClosureArguments(at: firstTokenInClosure)
@@ -3036,19 +3036,19 @@ extension Formatter {
                         guard isEnabled, explicitSelf != .insert, !isTypeRoot, !usingDynamicLookup,
                               !staticSelf || classOrStatic,
                               let dotIndex = self.index(
-                                  of: .nonSpaceOrLinebreak, after: index,
+                                  of: .nonSpaceOrLineBreak, after: index,
                                   if: {
                                       $0 == .operator(".", .infix)
                                   },
                               ),
-                              let nextIndex = self.index(of: .nonSpaceOrLinebreak, after: dotIndex)
+                              let nextIndex = self.index(of: .nonSpaceOrLineBreak, after: dotIndex)
                         else {
                             break
                         }
                         if explicitSelf == .insert {
                             break
                         } else if explicitSelf == .initOnly, isInit {
-                            if next(.nonSpaceOrCommentOrLinebreak, after: nextIndex) == .operator(
+                            if next(.nonSpaceOrCommentOrLineBreak, after: nextIndex) == .operator(
                                 "=",
                                 .infix,
                             ) {
@@ -3057,7 +3057,7 @@ extension Formatter {
                                 of: .endOfScope(")"),
                                 after: nextIndex,
                             ),
-                                next(.nonSpaceOrCommentOrLinebreak, after: scopeEnd) ==
+                                next(.nonSpaceOrCommentOrLineBreak, after: scopeEnd) ==
                                 .operator(
                                     "=",
                                     .infix,
@@ -3073,12 +3073,12 @@ extension Formatter {
                     case .identifier("type"): // Special case for type(of:)
                         guard
                             let parenIndex = self.index(
-                                of: .nonSpaceOrCommentOrLinebreak, after: index,
+                                of: .nonSpaceOrCommentOrLineBreak, after: index,
                                 if: {
                                     $0 == .startOfScope("(")
                                 },
                             ),
-                            next(.nonSpaceOrCommentOrLinebreak, after: parenIndex) ==
+                            next(.nonSpaceOrCommentOrLineBreak, after: parenIndex) ==
                             .identifier("of")
                         else {
                             fallthrough
@@ -3090,13 +3090,13 @@ extension Formatter {
                         if explicitSelf == .insert {
                             // continue
                         } else if explicitSelf == .initOnly, isInit {
-                            if next(.nonSpaceOrCommentOrLinebreak, after: index) == .operator(
+                            if next(.nonSpaceOrCommentOrLineBreak, after: index) == .operator(
                                 "=",
                                 .infix,
                             ) {
                                 // continue
                             } else if let scopeEnd = self.index(of: .endOfScope(")"), after: index),
-                                      next(.nonSpaceOrCommentOrLinebreak, after: scopeEnd) ==
+                                      next(.nonSpaceOrCommentOrLineBreak, after: scopeEnd) ==
                                       .operator(
                                           "=",
                                           .infix,
@@ -3119,7 +3119,7 @@ extension Formatter {
                         }
                         let isAssignment: Bool
                         if ["for", "var", "let"].contains(lastKeyword),
-                           let prevToken = last(.nonSpaceOrCommentOrLinebreak, before: index)
+                           let prevToken = last(.nonSpaceOrCommentOrLineBreak, before: index)
                         {
                             switch prevToken {
                                 case .identifier, .number, .endOfScope,
@@ -3142,7 +3142,7 @@ extension Formatter {
                         let name = token.unescaped()
                         guard members.contains(name), !localNames.contains(name),
                               !isAssignment
-                              || last(.nonSpaceOrCommentOrLinebreak, before: index) == .operator(
+                              || last(.nonSpaceOrCommentOrLineBreak, before: index) == .operator(
                                   "=",
                                   .infix,
                               ),
@@ -3150,7 +3150,7 @@ extension Formatter {
                         else {
                             break
                         }
-                        if let lastToken = last(.nonSpaceOrCommentOrLinebreak, before: index),
+                        if let lastToken = last(.nonSpaceOrCommentOrLineBreak, before: index),
                            lastToken.isOperator(".")
                         {
                             break
@@ -3185,7 +3185,7 @@ extension Formatter {
                             index += 1
                             return
                         }
-                    case .linebreak:
+                    case .lineBreak:
                         updateEnablement(at: index)
                     default:
                         break
@@ -3207,7 +3207,7 @@ extension Formatter {
             var foundAccessors = false
             var localNames = localNames
             while var nextIndex = self.index(
-                of: .nonSpaceOrCommentOrLinebreak, after: index,
+                of: .nonSpaceOrCommentOrLineBreak, after: index,
                 if: {
                     switch $0 {
                         case .keyword where $0.isAttribute:
@@ -3234,7 +3234,7 @@ extension Formatter {
                 foundAccessors = true
                 index = startIndex + 1
                 if let parenStart = self.index(
-                    of: .nonSpaceOrCommentOrLinebreak, after: nextIndex,
+                    of: .nonSpaceOrCommentOrLineBreak, after: nextIndex,
                     if: {
                         $0 == .startOfScope("(")
                     },
@@ -3244,7 +3244,7 @@ extension Formatter {
                     var token = tokens[nextIndex]
                     while token.isAttribute,
                           let endIndex = endOfAttribute(at: nextIndex),
-                          let index = self.index(of: .nonSpaceOrCommentOrLinebreak, after: endIndex)
+                          let index = self.index(of: .nonSpaceOrCommentOrLineBreak, after: endIndex)
                     {
                         nextIndex = index
                         token = tokens[nextIndex]
@@ -3313,7 +3313,7 @@ extension Formatter {
             while index < endIndex {
                 guard let externalNameIndex = self.index(of: .identifier, after: index),
                       let nextIndex = self.index(
-                          of: .nonSpaceOrCommentOrLinebreak,
+                          of: .nonSpaceOrCommentOrLineBreak,
                           after: externalNameIndex,
                       )
                 else { break }
@@ -3439,7 +3439,7 @@ extension Formatter {
     func removeTrailingBlankLinesIfPresent(in range: ClosedRange<Int>) {
         let range = range.autoUpdating(in: self)
         while tokens[range.range].numberOfTrailingLinebreaks() > 1 {
-            guard let lastNewlineIndex = lastIndex(of: .linebreak, in: Range(range.range))
+            guard let lastNewlineIndex = lastIndex(of: .lineBreak, in: Range(range.range))
             else { break }
 
             removeToken(at: lastNewlineIndex)
@@ -3460,7 +3460,7 @@ extension Formatter {
     func removeLeadingBlankLinesIfPresent(in range: ClosedRange<Int>) {
         let range = range.autoUpdating(in: self)
         while tokens[range].numberOfLeadingLinebreaks() > 1 {
-            guard let firstNewlineIndex = index(of: .linebreak, in: Range(range.range))
+            guard let firstNewlineIndex = index(of: .lineBreak, in: Range(range.range))
             else { break }
             removeTokens(in: range.lowerBound ... firstNewlineIndex)
         }
@@ -3477,9 +3477,9 @@ extension RandomAccessCollection where Element == Token, Index == Int {
         var searchIndex = indices.first!
 
         while searchIndex <= indices.last!,
-              self[searchIndex].isSpaceOrLinebreak
+              self[searchIndex].isSpaceOrLineBreak
         {
-            if self[searchIndex].isLinebreak {
+            if self[searchIndex].isLineBreak {
                 numberOfLeadingLinebreaks += 1
             }
 
@@ -3498,9 +3498,9 @@ extension RandomAccessCollection where Element == Token, Index == Int {
         var searchIndex = indices.last!
 
         while searchIndex >= indices.first!,
-              self[searchIndex].isSpaceOrLinebreak
+              self[searchIndex].isSpaceOrLineBreak
         {
-            if self[searchIndex].isLinebreak {
+            if self[searchIndex].isLineBreak {
                 numberOfTrailingLinebreaks += 1
             }
 
