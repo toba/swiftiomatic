@@ -5,13 +5,14 @@ import Testing
 @Suite(.rulesRegistered) struct TrailingCommaRuleTests {
   @Test func trailingCommaRuleWithDefaultConfiguration() async throws {
     // Verify TrailingCommaRule with test values for when mandatory_comma is false (default).
+    let baseExamples = TestExamples(from: TrailingCommaRule.configuration)
     let triggeringExamples =
-      TrailingCommaRule.description.triggeringExamples + [
+      baseExamples.triggeringExamples + [
         Example(
           "class C {\n #if true\n func f() {\n let foo = [1, 2, 3↓,]\n }\n #endif\n}",
         )
       ]
-    await verifyRule(TrailingCommaRule.description.with(triggeringExamples: triggeringExamples))
+    await verifyRule(baseExamples.with(triggeringExamples: triggeringExamples))
 
     // Ensure the rule produces the correct reason string.
     let failingCase = Example("let array = [\n\t1,\n\t2,\n]\n")

@@ -7,7 +7,7 @@ import Testing
     // Verify Colon rule with test values for when flexible_right_spacing
     // is true.
     let nonTriggeringExamples =
-      ColonRule.description.nonTriggeringExamples + [
+      TestExamples(from: ColonRule.configuration).nonTriggeringExamples + [
         Example("let abc:  Void\n"),
         Example("let abc:  (Void, String, Int)\n"),
         Example("let abc:  ([Void], String, Int)\n"),
@@ -69,16 +69,15 @@ import Testing
       Example("let abc = [1: [3↓ : 2], 3: 4]\n"): Example("let abc = [1: [3: 2], 3: 4]\n"),
       Example("let abc = [1: [3↓ : 2], 3:  4]\n"): Example("let abc = [1: [3: 2], 3:  4]\n"),
     ]
-    let description = ColonRule.description.with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(corrections: corrections)
+    let description = TestExamples(from: ColonRule.configuration)
+      .with(nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples, corrections: corrections)
 
     await verifyRule(description, ruleConfiguration: ["flexible_right_spacing": true])
   }
 
   @Test func colonWithoutApplyToDictionaries() async {
     let nonTriggeringExamples =
-      ColonRule.description.nonTriggeringExamples + [
+      TestExamples(from: ColonRule.configuration).nonTriggeringExamples + [
         Example("let abc = [Void:Void]()\n"),
         Example("let abc = [Void : Void]()\n"),
         Example("let abc = [Void:  Void]()\n"),
@@ -145,9 +144,8 @@ import Testing
       ),
     ]
 
-    let description = ColonRule.description.with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(corrections: corrections)
+    let description = TestExamples(from: ColonRule.configuration)
+      .with(nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples, corrections: corrections)
 
     await verifyRule(description, ruleConfiguration: ["apply_to_dictionaries": false])
   }

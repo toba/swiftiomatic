@@ -4,26 +4,26 @@ import Testing
 
 @Suite(.rulesRegistered) struct SwitchCaseAlignmentRuleTests {
   @Test func switchCaseAlignmentWithoutIndentedCases() async {
-    let baseDescription = SwitchCaseAlignmentRule.description
     let examples = SwitchCaseAlignmentConfiguration.Examples(indentedCases: false)
 
-    let description = baseDescription.with(
-      nonTriggeringExamples: examples.nonTriggeringExamples,
-      triggeringExamples: examples.triggeringExamples,
-    )
+    let testExamples = TestExamples(from: SwitchCaseAlignmentRule.configuration)
+      .with(
+        nonTriggeringExamples: examples.nonTriggeringExamples,
+        triggeringExamples: examples.triggeringExamples,
+      )
 
-    await verifyRule(description)
+    await verifyRule(testExamples)
   }
 
   @Test func switchCaseAlignmentWithIndentedCases() async {
-    let baseDescription = SwitchCaseAlignmentRule.description
     let examples = SwitchCaseAlignmentConfiguration.Examples(indentedCases: true)
 
-    let description = baseDescription.with(
-      nonTriggeringExamples: examples.nonTriggeringExamples,
-      triggeringExamples: examples.triggeringExamples,
-    )
+    let testExamples = TestExamples(from: SwitchCaseAlignmentRule.configuration)
+      .with(
+        nonTriggeringExamples: examples.nonTriggeringExamples,
+        triggeringExamples: examples.triggeringExamples,
+      )
 
-    await verifyRule(description, ruleConfiguration: ["indented_cases": true])
+    await verifyRule(testExamples, ruleConfiguration: ["indented_cases": true])
   }
 }

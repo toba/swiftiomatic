@@ -4,150 +4,150 @@ import Testing
 
 @Suite(.rulesRegistered) struct AccessibilityLabelForImageRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(AccessibilityLabelForImageRule.description)
+    await verifyRule(AccessibilityLabelForImageRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct AccessibilityTraitForButtonRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(AccessibilityTraitForButtonRule.description)
+    await verifyRule(AccessibilityTraitForButtonRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct AnonymousArgumentInMultilineClosureRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(AnonymousArgumentInMultilineClosureRule.description)
+    await verifyRule(AnonymousArgumentInMultilineClosureRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ArrayInitRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ArrayInitRule.description)
+    await verifyRule(ArrayInitRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct AsyncWithoutAwaitRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(AsyncWithoutAwaitRule.description)
+    await verifyRule(AsyncWithoutAwaitRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct AttributeNameSpacingRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(AttributeNameSpacingRule.description)
+    await verifyRule(AttributeNameSpacingRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct AttributesRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(AttributesRule.description)
+    await verifyRule(AttributesRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct BalancedXCTestLifecycleRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(BalancedXCTestLifecycleRule.description)
+    await verifyRule(BalancedXCTestLifecycleRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct BlanketDisableCommandRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(BlanketDisableCommandRule.description)
+    await verifyRule(BlanketDisableCommandRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct BlockBasedKVORuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(BlockBasedKVORule.description)
+    await verifyRule(BlockBasedKVORule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct CaptureVariableRuleGeneratedTests {
   @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
-    await verifyRule(CaptureVariableRule.description)
+    await verifyRule(CaptureVariableRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ClassDelegateProtocolRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ClassDelegateProtocolRule.description)
+    await verifyRule(ClassDelegateProtocolRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ClosingBraceRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ClosingBraceRule.description)
+    await verifyRule(ClosingBraceRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ClosureBodyLengthRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ClosureBodyLengthRule.description)
+    await verifyRule(ClosureBodyLengthRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ClosureEndIndentationRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ClosureEndIndentationRule.description)
+    await verifyRule(ClosureEndIndentationRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ClosureParameterPositionRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ClosureParameterPositionRule.description)
+    await verifyRule(ClosureParameterPositionRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ClosureSpacingRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ClosureSpacingRule.description)
+    await verifyRule(ClosureSpacingRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct CollectionAlignmentRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(CollectionAlignmentRule.description)
+    await verifyRule(CollectionAlignmentRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ColonRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ColonRule.description)
+    await verifyRule(ColonRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct CommaInheritanceRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(CommaInheritanceRule.description)
+    await verifyRule(CommaInheritanceRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct CommaRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(CommaRule.description)
+    await verifyRule(CommaRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct CommentSpacingRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(CommentSpacingRule.description)
+    await verifyRule(CommentSpacingRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct CompilerProtocolInitRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(CompilerProtocolInitRule.description)
+    await verifyRule(CompilerProtocolInitRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ComputedAccessorsOrderRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ComputedAccessorsOrderRule.description)
+    await verifyRule(ComputedAccessorsOrderRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ConditionalReturnsOnNewlineRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ConditionalReturnsOnNewlineRule.description)
+    await verifyRule(ConditionalReturnsOnNewlineRule.configuration)
   }
 }

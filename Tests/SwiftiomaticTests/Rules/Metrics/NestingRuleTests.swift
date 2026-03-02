@@ -617,9 +617,10 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
       },
     )
 
-    let description = NestingRule.description.with(nonTriggeringExamples: nonTriggeringExamples)
+    let examples = TestExamples(from: NestingRule.configuration)
+      .with(nonTriggeringExamples: nonTriggeringExamples)
 
     await verifyRule(
-      description, ruleConfiguration: ["ignore_typealiases_and_associatedtypes": true])
+      examples, ruleConfiguration: ["ignore_typealiases_and_associatedtypes": true])
   }
 }

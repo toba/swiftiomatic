@@ -4,150 +4,150 @@ import Testing
 
 @Suite(.rulesRegistered) struct LegacyConstructorRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(LegacyConstructorRule.description)
+    await verifyRule(LegacyConstructorRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct LegacyHashingRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(LegacyHashingRule.description)
+    await verifyRule(LegacyHashingRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct LegacyMultipleRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(LegacyMultipleRule.description)
+    await verifyRule(LegacyMultipleRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct LegacyNSGeometryFunctionsRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(LegacyNSGeometryFunctionsRule.description)
+    await verifyRule(LegacyNSGeometryFunctionsRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct LegacyObjcTypeRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(LegacyObjcTypeRule.description)
+    await verifyRule(LegacyObjcTypeRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct LegacyRandomRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(LegacyRandomRule.description)
+    await verifyRule(LegacyRandomRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct LetVarWhitespaceRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(LetVarWhitespaceRule.description)
+    await verifyRule(LetVarWhitespaceRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct LineLengthRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(LineLengthRule.description)
+    await verifyRule(LineLengthRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct LiteralExpressionEndIndentationRuleGeneratedTests {
   @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
-    await verifyRule(LiteralExpressionEndIndentationRule.description)
+    await verifyRule(LiteralExpressionEndIndentationRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct LocalDocCommentRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(LocalDocCommentRule.description)
+    await verifyRule(LocalDocCommentRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct LowerACLThanParentRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(LowerACLThanParentRule.description)
+    await verifyRule(LowerACLThanParentRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct MarkRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(MarkRule.description)
+    await verifyRule(MarkRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct MissingDocsRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(MissingDocsRule.description)
+    await verifyRule(MissingDocsRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct ModifierOrderRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ModifierOrderRule.description)
+    await verifyRule(ModifierOrderRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct MultilineArgumentsBracketsRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(MultilineArgumentsBracketsRule.description)
+    await verifyRule(MultilineArgumentsBracketsRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct MultilineArgumentsRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(MultilineArgumentsRule.description)
+    await verifyRule(MultilineArgumentsRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct MultilineCallArgumentsRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(MultilineCallArgumentsRule.description)
+    await verifyRule(MultilineCallArgumentsRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct MultilineFunctionChainsRuleGeneratedTests {
   @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
-    await verifyRule(MultilineFunctionChainsRule.description)
+    await verifyRule(MultilineFunctionChainsRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct MultilineLiteralBracketsRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(MultilineLiteralBracketsRule.description)
+    await verifyRule(MultilineLiteralBracketsRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct MultilineParametersBracketsRuleGeneratedTests {
   @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
-    await verifyRule(MultilineParametersBracketsRule.description)
+    await verifyRule(MultilineParametersBracketsRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct MultilineParametersRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(MultilineParametersRule.description)
+    await verifyRule(MultilineParametersRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct MultipleClosuresWithTrailingClosureRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(MultipleClosuresWithTrailingClosureRule.description)
+    await verifyRule(MultipleClosuresWithTrailingClosureRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct NSLocalizedStringKeyRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(NSLocalizedStringKeyRule.description)
+    await verifyRule(NSLocalizedStringKeyRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct NSLocalizedStringRequireBundleRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(NSLocalizedStringRequireBundleRule.description)
+    await verifyRule(NSLocalizedStringRequireBundleRule.configuration)
   }
 }
 
 @Suite(.rulesRegistered) struct NSNumberInitAsFunctionReferenceRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(NSNumberInitAsFunctionReferenceRule.description)
+    await verifyRule(NSNumberInitAsFunctionReferenceRule.configuration)
   }
 }
