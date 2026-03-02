@@ -8,6 +8,8 @@ let package = Package(
     products: [
         .library(name: "SwiftiomaticLib", targets: ["Swiftiomatic"]),
         .executable(name: "swiftiomatic", targets: ["SwiftiomaticCLI"]),
+        .plugin(name: "Format Source Code", targets: ["FormatPlugin"]),
+        .plugin(name: "Lint Source Code", targets: ["LintPlugin"]),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax.git", branch: "main"),
@@ -66,6 +68,24 @@ let package = Package(
         ),
         .target(
             name: "SourceKitC",
+        ),
+        .plugin(
+            name: "FormatPlugin",
+            capability: .command(
+                intent: .sourceCodeFormatting(),
+                permissions: [.writeToPackageDirectory(reason: "Formats Swift source files")]
+            ),
+            dependencies: ["SwiftiomaticCLI"],
+            path: "Plugins/FormatPlugin"
+        ),
+        .plugin(
+            name: "LintPlugin",
+            capability: .command(
+                intent: .custom(verb: "lint-source-code", description: "Lint Swift source files"),
+                permissions: []
+            ),
+            dependencies: ["SwiftiomaticCLI"],
+            path: "Plugins/LintPlugin"
         ),
         .testTarget(
             name: "SwiftiomaticTests",
