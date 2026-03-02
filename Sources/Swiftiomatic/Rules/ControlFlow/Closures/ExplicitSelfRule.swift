@@ -8,7 +8,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
   func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {
     violationRanges(in: file, compilerArguments: compilerArguments).map {
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file, characterOffset: $0.location),
       )

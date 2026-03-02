@@ -17,7 +17,7 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
   func validate(file: SwiftSource) -> [RuleViolation] {
     file.duplicateImportsViolationPositions().map { position in
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file, position: position),
       )

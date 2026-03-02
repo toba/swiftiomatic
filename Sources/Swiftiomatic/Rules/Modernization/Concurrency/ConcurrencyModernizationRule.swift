@@ -42,7 +42,7 @@ extension ConcurrencyModernizationRule: AsyncEnrichableRule {
         // Confirmed DispatchQueue — emit with high confidence
         violations.append(
           RuleViolation(
-            ruleDescription: Self.description,
+            configuration: Self.configuration,
             severity: options.severity,
             location: Location(file: filePath, line: query.line, column: query.column),
             reason: "DispatchQueue.async can be replaced with structured concurrency",

@@ -36,7 +36,7 @@ struct DeadSymbolsRule: CollectingRule {
       .filter { $0.file == filePath && !allReferences.contains($0.name) }
       .map { decl in
         RuleViolation(
-          ruleDescription: Self.description,
+          configuration: Self.configuration,
           severity: options.severity,
           location: Location(file: filePath, line: decl.line, column: decl.column),
           reason: "Dead private \(decl.kind): '\(decl.name)' — no references found",

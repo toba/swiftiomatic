@@ -37,7 +37,7 @@ extension AnyEliminationRule: AsyncEnrichableRule {
       if resolved.typeName == "Any" || resolved.typeName == "Swift.Any" {
         violations.append(
           RuleViolation(
-            ruleDescription: Self.description,
+            configuration: Self.configuration,
             severity: options.severity,
             location: Location(file: filePath, line: query.line, column: query.column),
             reason: "Type '\(query.typeStr)' resolves to 'Any' — type safety is erased",

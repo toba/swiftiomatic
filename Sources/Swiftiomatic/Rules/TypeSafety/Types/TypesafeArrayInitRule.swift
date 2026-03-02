@@ -41,7 +41,7 @@ struct TypesafeArrayInitRule: AnalyzerRule {
           return false
         }
         return pointsToSystemMapType(pointee: request)
-      }.map { RuleViolation(ruleDescription: Self.description, location: $0.location) }
+      }.map { RuleViolation(configuration: Self.configuration, location: $0.location) }
   }
 
   private func pointsToSystemMapType(pointee: [String: SourceKitValue]) -> Bool {

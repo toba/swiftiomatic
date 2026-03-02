@@ -5,11 +5,13 @@ struct TestMockRuleConfiguration: RuleConfiguration {
   let id: String
   let name: String
   let summary: String
+  let deprecatedAliases: Set<String>
 
-  init(id: String, name: String = "", summary: String = "") {
+  init(id: String, name: String = "", summary: String = "", deprecatedAliases: Set<String> = []) {
     self.id = id
     self.name = name
     self.summary = summary
+    self.deprecatedAliases = deprecatedAliases
   }
 }
 

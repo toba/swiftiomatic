@@ -40,7 +40,7 @@ extension TypedThrowsRule: AsyncEnrichableRule {
       if allTypes.count == 1, let errorType = allTypes.first {
         violations.append(
           RuleViolation(
-            ruleDescription: Self.description,
+            configuration: Self.configuration,
             severity: options.severity,
             location: Location(file: filePath, line: query.line, column: query.column),
             reason:

@@ -53,7 +53,7 @@ extension NamingHeuristicsRule: AsyncEnrichableRule {
       {
         violations.append(
           RuleViolation(
-            ruleDescription: Self.description,
+            configuration: Self.configuration,
             severity: options.severity,
             location: Location(
               file: filePath, line: candidate.line, column: candidate.column,

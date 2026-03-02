@@ -21,7 +21,7 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
       let violationIndex = file.contents.index(after: group1Sub.startIndex)
 
       return RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severityConfiguration.severity,
         location: Location(file: file, stringIndex: violationIndex),
       )

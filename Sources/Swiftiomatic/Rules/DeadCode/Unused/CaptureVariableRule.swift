@@ -26,7 +26,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
       }
       .map {
         RuleViolation(
-          ruleDescription: Self.description,
+          configuration: Self.configuration,
           severity: options.severity,
           location: Location(file: file, byteOffset: $0.offset),
         )

@@ -26,7 +26,7 @@ extension VerticalWhitespaceOpeningBracesRule {
       let violationIndex = file.contents.index(after: group2Sub.startIndex)
 
       return RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file, stringIndex: violationIndex),
       )

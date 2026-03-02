@@ -10,7 +10,7 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
   func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {
     importUsage(in: file, compilerArguments: compilerArguments).map { importUsage in
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(
           file: file,

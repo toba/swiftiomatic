@@ -65,7 +65,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
     )
     .map {
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severityConfiguration.severity,
         location: Location(file: file, byteOffset: $0),
       )

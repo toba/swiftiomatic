@@ -40,7 +40,7 @@ struct StructuralDuplicationRule: CollectingRule {
 
         violations.append(
           RuleViolation(
-            ruleDescription: Self.description,
+            configuration: Self.configuration,
             severity: options.severity,
             location: Location(file: filePath, line: member.line, column: 1),
             reason: "Function '\(member.name)' is structurally identical to \(peers)",

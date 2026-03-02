@@ -18,7 +18,7 @@ import Testing
         #expect(collectedInfo[file] == 42)
         return [
           RuleViolation(
-            ruleDescription: Self.description,
+            configuration: Self.configuration,
             location: Location(file: file, byteOffset: 0),
           )
         ]
@@ -47,7 +47,7 @@ import Testing
         #expect(values.contains("baz"))
         return [
           RuleViolation(
-            ruleDescription: Self.description,
+            configuration: Self.configuration,
             location: Location(file: file, byteOffset: 0),
           )
         ]
@@ -81,7 +81,7 @@ import Testing
         #expect(collectedInfo[file] == compilerArguments)
         return [
           RuleViolation(
-            ruleDescription: Self.description,
+            configuration: Self.configuration,
             location: Location(file: file, byteOffset: 0),
           )
         ]
@@ -111,7 +111,7 @@ import Testing
         if collectedInfo[file] == "baz" {
           return [
             RuleViolation(
-              ruleDescription: Self.description,
+              configuration: Self.configuration,
               location: Location(file: file, byteOffset: 2),
             )
           ]
@@ -149,7 +149,7 @@ import Testing
         collectedInfo[file] == "baz"
           ? [
             .init(
-              ruleDescription: Spec.description,
+              configuration: Spec.configuration,
               location: Location(file: file, byteOffset: 2),
             )
           ]

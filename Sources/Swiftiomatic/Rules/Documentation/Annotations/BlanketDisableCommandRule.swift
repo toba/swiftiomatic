@@ -71,7 +71,7 @@ struct BlanketDisableCommandRule: Rule, SyntaxOnlyRule {
     reason: String,
   ) -> RuleViolation {
     RuleViolation(
-      ruleDescription: Self.description,
+      configuration: Self.configuration,
       severity: options.severity,
       location: command.location(of: ruleIdentifier, in: file),
       reason: reason,

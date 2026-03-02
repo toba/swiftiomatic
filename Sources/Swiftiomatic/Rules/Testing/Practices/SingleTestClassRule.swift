@@ -13,7 +13,7 @@ struct SingleTestClassRule: SyntaxOnlyRule {
 
     return classes.map { position in
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file, position: position.position),
         reason: "\(classes.count) test classes found in this file",

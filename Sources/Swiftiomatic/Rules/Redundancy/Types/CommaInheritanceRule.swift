@@ -13,7 +13,7 @@ struct CommaInheritanceRule: SubstitutionCorrectableRule,
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(in: file).map {
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file, stringIndex: $0.lowerBound),
       )

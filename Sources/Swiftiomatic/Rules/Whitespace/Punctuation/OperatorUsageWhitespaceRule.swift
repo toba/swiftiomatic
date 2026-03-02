@@ -9,7 +9,7 @@ struct OperatorUsageWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(file: file).map { range, _ in
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severityConfiguration.severity,
         location: Location(file: file, byteOffset: range.location),
       )

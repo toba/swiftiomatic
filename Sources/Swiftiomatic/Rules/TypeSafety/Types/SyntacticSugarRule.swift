@@ -12,7 +12,7 @@ struct SyntacticSugarRule: CorrectableRule, SyntaxOnlyRule {
       flattenViolations(visitor.violations)
     }.map { violation in
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file, byteOffset: ByteCount(violation.position)),
         reason: violation.type.violationReason,

@@ -38,45 +38,6 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
         ].joined()
     }
 
-    /// Creates a `RuleViolation` by specifying its properties directly.
-    ///
-    /// - Parameters:
-    ///   - ruleDescription: The description of the rule that generated this violation.
-    ///   - severity: The severity of this violation.
-    ///   - location: The location of this violation.
-    ///   - reason: The justification for this violation. If not specified the rule's description will
-    ///     be used.
-    init(
-        ruleDescription: RuleDescription,
-        severity: Severity = .warning,
-        location: Location,
-        reason: String? = nil,
-        confidence: Confidence = .high,
-        suggestion: String? = nil,
-    ) {
-        ruleIdentifier = ruleDescription.identifier
-        self.ruleDescription = ruleDescription.description
-        ruleName = ruleDescription.name
-        self.severity = severity
-        self.location = location
-        self.reason = reason ?? ruleDescription.description
-        self.confidence = confidence
-        self.suggestion = suggestion
-        #if DEBUG
-        if self.reason.trimmingTrailingCharacters(in: .whitespaces).last == ".",
-           RuleRegistry.shared.rule(forID: ruleIdentifier) != nil
-        {
-            Console.fatalError(
-                """
-                Reasons shall not end with a period. Got "\(self
-                    .reason)". Either rewrite the rule's description \
-                or set a custom reason in the RuleViolation's constructor.
-                """,
-            )
-        }
-        #endif
-    }
-
     /// Creates a `RuleViolation` from a ``RuleConfiguration`` source.
     ///
     /// - Parameters:

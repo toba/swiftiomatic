@@ -17,7 +17,7 @@ import Testing
     #expect(
       try await ruleViolations(example, rule: FunctionBodyLengthRule.identifier, configuration: ["warning": 2, "error": 4]) == [
         RuleViolation(
-          ruleDescription: FunctionBodyLengthRule.description,
+          configuration: FunctionBodyLengthRule.configuration,
           severity: .warning,
           location: Location(file: nil, line: 1, column: 1),
           reason: """
@@ -43,7 +43,7 @@ import Testing
     #expect(
       try await ruleViolations(example, rule: FunctionBodyLengthRule.identifier, configuration: ["warning": 1, "error": 2]) == [
         RuleViolation(
-          ruleDescription: FunctionBodyLengthRule.description,
+          configuration: FunctionBodyLengthRule.configuration,
           severity: .error,
           location: Location(file: nil, line: 1, column: 1),
           reason: """

@@ -82,7 +82,7 @@ struct FileTypesOrderRule: Rule {
             .contains(fileType.substring(from: 0, length: 1)) ? "An" : "A"
 
         let ruleViolation = RuleViolation(
-          ruleDescription: Self.description,
+          configuration: Self.configuration,
           severity: options.severityConfiguration.severity,
           location: Location(file: file, byteOffset: fileTypeOffset.offset),
           reason:

@@ -30,7 +30,7 @@ struct PeriodSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(in: file).map { range in
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file, stringIndex: range.lowerBound),
       )

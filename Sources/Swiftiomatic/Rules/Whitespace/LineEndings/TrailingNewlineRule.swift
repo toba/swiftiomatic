@@ -28,7 +28,7 @@ struct TrailingNewlineRule: CorrectableRule, SyntaxOnlyRule {
     }
     return [
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file.path, line: max(file.lines.count, 1)),
       )

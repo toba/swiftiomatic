@@ -63,7 +63,7 @@ extension StatementPositionRule {
   fileprivate func defaultValidate(file: SwiftSource) -> [RuleViolation] {
     defaultViolationRanges(in: file, matching: Self.defaultPattern).compactMap { range in
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file, stringIndex: range.lowerBound),
       )
@@ -101,7 +101,7 @@ extension StatementPositionRule {
   fileprivate func uncuddledValidate(file: SwiftSource) -> [RuleViolation] {
     uncuddledViolationRanges(in: file).compactMap { range in
       RuleViolation(
-        ruleDescription: Self.uncuddledDescription,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file, stringIndex: range.lowerBound),
       )

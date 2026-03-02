@@ -9,7 +9,7 @@ struct ColonRule: SubstitutionCorrectableRule, SyntaxOnlyRule {
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(in: file).map { range in
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severityConfiguration.severity,
         location: Location(file: file, stringIndex: range.lowerBound),
       )

@@ -12,7 +12,7 @@ struct MultilineFunctionChainsRule: SourceKitASTRule {
   ) -> [RuleViolation] {
     violatingOffsets(file: file, kind: kind, dictionary: dictionary).map { offset in
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: file, characterOffset: offset),
       )

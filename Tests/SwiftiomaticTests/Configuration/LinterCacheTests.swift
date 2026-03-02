@@ -8,7 +8,7 @@ private struct CacheTestHelper {
   fileprivate let configuration: Configuration
 
   private let ruleList: RuleList
-  private let ruleDescription: RuleDescription
+  private let ruleConfig: any RuleConfiguration
   private let cache: LinterCache
 
   private var fileManager: TestFileManager {
@@ -17,7 +17,7 @@ private struct CacheTestHelper {
 
   fileprivate init(dict: [String: Any], cache: LinterCache) {
     ruleList = RuleList(rules: RuleWithLevelsMock.self)
-    ruleDescription = ruleList.rules.values.first!.description
+    ruleConfig = ruleList.rules.values.first!.anyConfiguration
     configuration = try! Configuration(dict: dict, ruleList: ruleList)
     self.cache = cache
   }
@@ -26,13 +26,13 @@ private struct CacheTestHelper {
     touch(file: file)
     return [
       RuleViolation(
-        ruleDescription: ruleDescription,
+        configuration: ruleConfig,
         severity: .warning,
         location: Location(file: file, line: 10, column: 2),
         reason: "Something is not right",
       ),
       RuleViolation(
-        ruleDescription: ruleDescription,
+        configuration: ruleConfig,
         severity: .error,
         location: Location(file: file, line: 5, column: nil),
         reason: "Something is wrong",

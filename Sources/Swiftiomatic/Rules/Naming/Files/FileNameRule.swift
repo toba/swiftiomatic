@@ -52,7 +52,7 @@ struct FileNameRule: SyntaxOnlyRule {
 
     return [
       RuleViolation(
-        ruleDescription: Self.description,
+        configuration: Self.configuration,
         severity: options.severity,
         location: Location(file: filePath, line: 1),
       )

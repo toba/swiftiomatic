@@ -83,7 +83,7 @@ struct MultilineParametersBracketsRule: Rule {
 
     let matchNSRange = NSRange(invalidMatch.range, in: prefix)
     return RuleViolation(
-      ruleDescription: Self.description,
+      configuration: Self.configuration,
       severity: options.severity,
       location: Location(file: file, characterOffset: matchNSRange.location + 1),
     )
@@ -112,7 +112,7 @@ struct MultilineParametersBracketsRule: Rule {
     let matchNSRange = NSRange(invalidMatch.range, in: suffix)
     let characterOffset = lastParamRange.upperBound + matchNSRange.upperBound - 1
     return RuleViolation(
-      ruleDescription: Self.description,
+      configuration: Self.configuration,
       severity: options.severity,
       location: Location(file: file, characterOffset: characterOffset),
     )

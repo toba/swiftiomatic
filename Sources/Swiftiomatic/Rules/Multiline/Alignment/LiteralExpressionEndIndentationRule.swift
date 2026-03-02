@@ -21,7 +21,7 @@ struct LiteralExpressionEndIndentationRule: Rule {
       + "got \(violation.indentationRanges.actual.length)"
 
     return RuleViolation(
-      ruleDescription: Self.description,
+      configuration: Self.configuration,
       severity: options.severity,
       location: Location(file: file, byteOffset: violation.endOffset),
       reason: reason,

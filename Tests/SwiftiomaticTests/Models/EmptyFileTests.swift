@@ -42,14 +42,8 @@ private struct RuleMock<ShouldLintEmptyFiles: ShouldLintEmptyFilesProtocol>: Cor
   var options = SeverityConfiguration<Self>(.warning)
 
   static var configuration: TestMockRuleConfiguration {
-    TestMockRuleConfiguration(id: "rule_mock<\(ShouldLintEmptyFiles.self)>")
-  }
-
-  static var description: RuleDescription {
-    RuleDescription(
-      identifier: "rule_mock<\(ShouldLintEmptyFiles.self)>",
-      name: "",
-      description: "",
+    TestMockRuleConfiguration(
+      id: "rule_mock<\(ShouldLintEmptyFiles.self)>",
       deprecatedAliases: ["mock"],
     )
   }
@@ -59,7 +53,7 @@ private struct RuleMock<ShouldLintEmptyFiles: ShouldLintEmptyFilesProtocol>: Cor
   }
 
   func validate(file: SwiftSource) -> [RuleViolation] {
-    [RuleViolation(ruleDescription: Self.description, location: Location(file: file.path))]
+    [RuleViolation(configuration: Self.configuration, location: Location(file: file.path))]
   }
 
   func correct(file _: SwiftSource) -> Int {
