@@ -7,12 +7,11 @@ struct ModifierOrderRule {
     static let isCorrectable = true
     static let isOptIn = true
     var options = ModifierOrderOptions()
-
 }
 
 extension ViolationMessage {
     fileprivate static func modifierShouldComeBefore(
-        _ first: String, before second: String
+        _ first: String, before second: String,
     ) -> Self {
         "\(first) modifier should come before \(second)"
     }
@@ -27,8 +26,6 @@ extension ModifierOrderRule: SwiftSyntaxCorrectableRule {
         Rewriter(configuration: options, file: file)
     }
 }
-
-extension ModifierOrderRule {}
 
 extension ModifierOrderRule {
     fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {

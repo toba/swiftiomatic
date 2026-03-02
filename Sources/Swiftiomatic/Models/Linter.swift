@@ -4,7 +4,8 @@ import SwiftSyntax
 // sm:disable file_length
 
 private let warnSourceKitFailedOnceImpl: Void = {
-    SwiftiomaticError.genericWarning("SourceKit-based rules will be skipped because sourcekitd has failed.")
+    SwiftiomaticError
+        .genericWarning("SourceKit-based rules will be skipped because sourcekitd has failed.")
         .print()
 }()
 
@@ -148,7 +149,7 @@ extension Rule {
         _ violations: [RuleViolation],
         file: SwiftSource,
         regions: [Region],
-        benchmark: Bool,
+        benchmark _: Bool,
         ruleTime: (String, Double)?,
         superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
     ) -> LintResult {
@@ -471,7 +472,8 @@ struct CollectedLinter: @unchecked Sendable {
         let syntaxTree = file.syntaxTree
 
         // Create visitors and check shouldRun for each rule
-        var visitors: [(id: String, visitor: SyntaxVisitor & ViolationCollectingVisitorProtocol)] = []
+        var visitors: [(id: String, visitor: SyntaxVisitor & ViolationCollectingVisitorProtocol)] =
+            []
         var ruleForIndex: [(rule: any SwiftSyntaxRule, shouldRun: Bool)] = []
 
         for rule in rules {
@@ -487,7 +489,11 @@ struct CollectedLinter: @unchecked Sendable {
         }
 
         guard visitors.isNotEmpty else {
-            return rules.map { _ in LintResult(violations: [], ruleTime: nil, deprecatedToValidIDPairs: []) }
+            return rules.map { _ in LintResult(
+                violations: [],
+                ruleTime: nil,
+                deprecatedToValidIDPairs: [],
+            ) }
         }
 
         // Single tree walk
@@ -508,7 +514,11 @@ struct CollectedLinter: @unchecked Sendable {
             let ruleID = type(of: rule).identifier
 
             guard entry.shouldRun else {
-                results.append(LintResult(violations: [], ruleTime: nil, deprecatedToValidIDPairs: []))
+                results.append(LintResult(
+                    violations: [],
+                    ruleTime: nil,
+                    deprecatedToValidIDPairs: [],
+                ))
                 continue
             }
 

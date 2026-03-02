@@ -43,7 +43,8 @@ enum PipelineEmitter {
         let sortedRuleIDs = Set(rules.map(\.ruleID)).sorted()
 
         // Merge rules with the same ID (e.g. from multiple visitor classes)
-        var mergedRules: [String: (visitNodeTypes: Set<String>, visitPostNodeTypes: Set<String>)] = [:]
+        var mergedRules: [String: (visitNodeTypes: Set<String>, visitPostNodeTypes: Set<String>)] =
+            [:]
         for rule in rules {
             var existing = mergedRules[rule.ruleID] ?? (visitNodeTypes: [], visitPostNodeTypes: [])
             existing.visitNodeTypes.formUnion(rule.visitNodeTypes)

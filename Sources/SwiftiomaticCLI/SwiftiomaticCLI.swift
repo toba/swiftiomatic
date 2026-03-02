@@ -225,7 +225,6 @@ struct Analyze: AsyncParsableCommand {
 
         return diagnostics
     }
-
 }
 
 // MARK: - List Rules

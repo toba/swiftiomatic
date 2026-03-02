@@ -1,6 +1,6 @@
 import Foundation
-import ArgumentParser
 import Swiftiomatic
+import ArgumentParser
 
 struct FormatCommand: ParsableCommand {
     static let configuration = CommandConfiguration(

@@ -1,5 +1,5 @@
-import Foundation
 import Testing
+import Foundation
 import SwiftFormat
 
 @Suite("swift-format integration smoke tests")

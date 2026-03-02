@@ -12,7 +12,7 @@ public enum SwiftiomaticLib {
     }
 
     /// Run lint-scope rules on a single source string and return diagnostics sorted by location.
-    public static func lint(_ source: String, fileName: String = "<stdin>") -> [Diagnostic] {
+    public static func lint(_ source: String, fileName _: String = "<stdin>") -> [Diagnostic] {
         RuleRegistry.registerAllRulesOnce()
         let file = SwiftSource(contents: source)
 

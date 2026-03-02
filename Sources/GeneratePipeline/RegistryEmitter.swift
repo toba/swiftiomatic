@@ -14,7 +14,10 @@ enum RegistryEmitter {
         lines.append("}()")
         lines.append("")
         lines.append("extension RuleRegistry {")
-        lines.append("  /// Register all rules, should only be called once before any linting code is executed")
+        lines
+            .append(
+                "  /// Register all rules, should only be called once before any linting code is executed",
+            )
         lines.append("  public static func registerAllRulesOnce() {")
         lines.append("    _ = _registerAllRulesOnceImpl")
         lines.append("  }")

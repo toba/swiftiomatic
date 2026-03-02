@@ -25,7 +25,7 @@ struct GeneratePipeline {
         for filePath in ruleFiles {
             let (rules, ruleTypes) = RuleCollector.collectRules(
                 from: filePath,
-                codeBlockNodeTypes: codeBlockNodeTypes
+                codeBlockNodeTypes: codeBlockNodeTypes,
             )
             allRules.append(contentsOf: rules)
             allRuleTypes.append(contentsOf: ruleTypes)
@@ -34,7 +34,9 @@ struct GeneratePipeline {
         // Filter to pipeline-eligible rules
         let eligible = allRules.filter(\.isPipelineEligible)
 
-        print("Found \(allRules.count) SwiftSyntax rules, \(eligible.count) pipeline-eligible, \(allRuleTypes.count) total rule types")
+        print(
+            "Found \(allRules.count) SwiftSyntax rules, \(eligible.count) pipeline-eligible, \(allRuleTypes.count) total rule types",
+        )
 
         // Generate the pipeline
         let pipelineOutput = PipelineEmitter.emit(rules: eligible)

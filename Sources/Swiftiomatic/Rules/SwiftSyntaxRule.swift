@@ -86,7 +86,9 @@ extension SwiftSyntaxRule {
     }
 
     /// Create a type-erased visitor for use in the lint pipeline
-    func makePipelineVisitor(file: SwiftSource) -> SyntaxVisitor & ViolationCollectingVisitorProtocol {
+    func makePipelineVisitor(file: SwiftSource) -> SyntaxVisitor &
+        ViolationCollectingVisitorProtocol
+    {
         makeVisitor(file: file)
     }
 }

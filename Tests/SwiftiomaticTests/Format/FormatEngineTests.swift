@@ -1,11 +1,9 @@
-import Foundation
 import Testing
-
+import Foundation
 @testable import Swiftiomatic
 
 @Suite("FormatEngine tests")
 struct FormatEngineTests {
-
     // MARK: - Format
 
     @Test("Format normalizes whitespace in simple source")
@@ -30,11 +28,11 @@ struct FormatEngineTests {
     func formatPreservesSemantics() throws {
         let engine = FormatEngine()
         let input = """
-            func greet(name: String) -> String {
-                return "Hello, \\(name)!"
-            }
+        func greet(name: String) -> String {
+            return "Hello, \\(name)!"
+        }
 
-            """
+        """
         let output = try engine.format(input)
         #expect(output.contains("func greet"))
         #expect(output.contains("return"))
@@ -138,7 +136,7 @@ struct FormatEngineTests {
     }
 
     @Test("makeFormatEngine maps configuration correctly")
-    func makeFormatEngineFromConfiguration() throws {
+    func makeFormatEngineFromConfiguration() {
         var cfg = Configuration()
         cfg.formatIndent = "  "
         cfg.formatMaxWidth = 80
@@ -148,7 +146,7 @@ struct FormatEngineTests {
     }
 
     @Test("makeFormatEngine maps tab indentation")
-    func makeFormatEngineTabIndent() throws {
+    func makeFormatEngineTabIndent() {
         var cfg = Configuration()
         cfg.formatIndent = "\t"
         let engine = cfg.makeFormatEngine()

@@ -36,7 +36,7 @@ let package = Package(
                 .enableUpcomingFeature("MemberImportVisibility"),
                 .enableUpcomingFeature("DisableOutwardActorIsolation"),
                 .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-            ]
+            ],
         ),
         .executableTarget(
             name: "SwiftiomaticCLI",
@@ -51,7 +51,7 @@ let package = Package(
                 .enableUpcomingFeature("MemberImportVisibility"),
                 .enableUpcomingFeature("DisableOutwardActorIsolation"),
                 .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-            ]
+            ],
         ),
         .executableTarget(
             name: "GeneratePipeline",
@@ -62,10 +62,10 @@ let package = Package(
             swiftSettings: [
                 .swiftLanguageMode(.v6),
                 .enableExperimentalFeature("ApproachableConcurrency"),
-            ]
+            ],
         ),
         .target(
-            name: "SourceKitC"
+            name: "SourceKitC",
         ),
         .testTarget(
             name: "SwiftiomaticTests",
@@ -83,7 +83,7 @@ let package = Package(
             swiftSettings: [
                 .swiftLanguageMode(.v6),
                 .enableExperimentalFeature("ApproachableConcurrency"),
-            ]
+            ],
         ),
-    ]
+    ],
 )

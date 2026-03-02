@@ -1,22 +1,20 @@
-import Foundation
 import Testing
-
+import Foundation
 @testable import Swiftiomatic
 
 @Suite("Format configuration YAML tests")
 struct FormatConfigurationTests {
-
     @Test("YAML format section maps to FormatEngineConfiguration")
     func yamlFormatSection() throws {
         let yaml = """
-            format:
-              indent: "  "
-              max_width: 80
-              maximum_blank_lines: 2
-              line_break_before_control_flow_keywords: true
-              line_break_before_each_argument: true
-              trailing_commas: false
-            """
+        format:
+          indent: "  "
+          max_width: 80
+          maximum_blank_lines: 2
+          line_break_before_control_flow_keywords: true
+          line_break_before_each_argument: true
+          trailing_commas: false
+        """
         let tmpFile = NSTemporaryDirectory() + "test-config-\(UUID()).yaml"
         try yaml.write(toFile: tmpFile, atomically: true, encoding: .utf8)
         defer { try? FileManager.default.removeItem(atPath: tmpFile) }
@@ -33,9 +31,9 @@ struct FormatConfigurationTests {
     @Test("YAML integer indent maps to spaces")
     func yamlIntegerIndent() throws {
         let yaml = """
-            format:
-              indent: 2
-            """
+        format:
+          indent: 2
+        """
         let tmpFile = NSTemporaryDirectory() + "test-config-\(UUID()).yaml"
         try yaml.write(toFile: tmpFile, atomically: true, encoding: .utf8)
         defer { try? FileManager.default.removeItem(atPath: tmpFile) }

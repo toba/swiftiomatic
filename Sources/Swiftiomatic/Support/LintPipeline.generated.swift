@@ -441,1245 +441,1245 @@ final class LintPipeline: SyntaxVisitor {
         super.init(viewMode: .sourceAccurate)
         for (idx, entry) in visitors.enumerated() {
             self.visitors.append(entry.visitor)
-            self.visitorProtocols.append(entry.visitor)
-            self.skipSets.append(entry.visitor.skippableDeclarations)
+            visitorProtocols.append(entry.visitor)
+            skipSets.append(entry.visitor.skippableDeclarations)
             switch entry.id {
-            case "accessibility_label_for_image":
-                structDecl_visit.append(idx)
-                functionCallExpr_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "accessibility_trait_for_button":
-                structDecl_visit.append(idx)
-                functionCallExpr_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "acronyms":
-                functionDecl_visitPost.append(idx)
-                identifierPattern_visitPost.append(idx)
-                typeAliasDecl_visitPost.append(idx)
-
-            case "agent_review":
-                enumDecl_visitPost.append(idx)
-                functionCallExpr_visitPost.append(idx)
-                memberAccessExpr_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "and_operator":
-                conditionElement_visitPost.append(idx)
-
-            case "anonymous_argument_in_multiline_closure":
-                closureExpr_visit.append(idx)
-                declReferenceExpr_visitPost.append(idx)
-
-            case "any_elimination":
-                asExpr_visitPost.append(idx)
-                dictionaryType_visitPost.append(idx)
-                returnClause_visitPost.append(idx)
-                typeAnnotation_visitPost.append(idx)
-
-            case "any_object_protocol":
-                protocolDecl_visitPost.append(idx)
-
-            case "application_main":
-                attribute_visitPost.append(idx)
-
-            case "array_init":
-                functionCallExpr_visitPost.append(idx)
-
-            case "async_without_await":
-                accessorDecl_visit.append(idx)
-                actorDecl_visit.append(idx)
-                classDecl_visit.append(idx)
-                closureExpr_visit.append(idx)
-                enumDecl_visit.append(idx)
-                functionDecl_visit.append(idx)
-                functionParameter_visit.append(idx)
-                initializerDecl_visit.append(idx)
-                structDecl_visit.append(idx)
-                variableDecl_visit.append(idx)
-                accessorDecl_visitPost.append(idx)
-                actorDecl_visitPost.append(idx)
-                awaitExpr_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                closureExpr_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                forStmt_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "attribute_name_spacing":
-                attribute_visitPost.append(idx)
-                declModifier_visitPost.append(idx)
-
-            case "attributes":
-                attributeList_visitPost.append(idx)
-
-            case "balanced_xctest_lifecycle":
-                classDecl_visitPost.append(idx)
-
-            case "blank_line_after_imports":
-                sourceFile_visitPost.append(idx)
-
-            case "blank_lines_after_guard_statements":
-                codeBlock_visitPost.append(idx)
-
-            case "blank_lines_around_mark":
-                token_visit.append(idx)
-
-            case "blank_lines_between_chained_functions":
-                token_visit.append(idx)
-
-            case "blank_lines_between_imports":
-                sourceFile_visitPost.append(idx)
-
-            case "blank_lines_between_scopes":
-                memberBlock_visitPost.append(idx)
-                sourceFile_visitPost.append(idx)
-
-            case "block_based_kvo":
-                functionDecl_visitPost.append(idx)
-
-            case "block_comments":
-                token_visit.append(idx)
-
-            case "class_delegate_protocol":
-                protocolDecl_visitPost.append(idx)
-
-            case "closing_brace":
-                token_visitPost.append(idx)
-
-            case "closure_body_length":
-                closureExpr_visitPost.append(idx)
-
-            case "closure_end_indentation":
-                closureExpr_visitPost.append(idx)
-
-            case "closure_parameter_position":
-                closureExpr_visitPost.append(idx)
-
-            case "closure_spacing":
-                closureExpr_visitPost.append(idx)
-
-            case "collection_alignment":
-                arrayExpr_visitPost.append(idx)
-                dictionaryElementList_visitPost.append(idx)
-
-            case "colon":
-                declNameArguments_visit.append(idx)
-                dictionaryElement_visit.append(idx)
-                objCSelectorPiece_visit.append(idx)
-                operatorPrecedenceAndTypes_visit.append(idx)
-                switchCaseLabel_visit.append(idx)
-                switchDefaultLabel_visit.append(idx)
-                ternaryExpr_visit.append(idx)
-                unresolvedTernaryExpr_visit.append(idx)
-                token_visitPost.append(idx)
-
-            case "comma_inheritance":
-                inheritedType_visitPost.append(idx)
-
-            case "compiler_protocol_init":
-                functionCallExpr_visitPost.append(idx)
-
-            case "computed_accessors_order":
-                accessorBlock_visitPost.append(idx)
-
-            case "concurrency_modernization":
-                classDecl_visitPost.append(idx)
-                functionCallExpr_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                memberAccessExpr_visitPost.append(idx)
-
-            case "conditional_assignment":
-                codeBlockItemList_visitPost.append(idx)
-
-            case "conditional_returns_on_newline":
-                guardStmt_visitPost.append(idx)
-                ifExpr_visitPost.append(idx)
-
-            case "consecutive_spaces":
-                token_visit.append(idx)
-
-            case "contains_over_filter_count":
-                exprList_visitPost.append(idx)
-
-            case "contains_over_filter_is_empty":
-                memberAccessExpr_visitPost.append(idx)
-
-            case "contrasted_opening_brace":
-                accessorDecl_visitPost.append(idx)
-                actorDecl_visitPost.append(idx)
-                catchClause_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                closureExpr_visitPost.append(idx)
-                deferStmt_visitPost.append(idx)
-                doStmt_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                forStmt_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                guardStmt_visitPost.append(idx)
-                ifExpr_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-                patternBinding_visitPost.append(idx)
-                precedenceGroupDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                repeatStmt_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                switchExpr_visitPost.append(idx)
-                whileStmt_visitPost.append(idx)
-
-            case "control_statement":
-                catchClause_visitPost.append(idx)
-                guardStmt_visitPost.append(idx)
-                ifExpr_visitPost.append(idx)
-                switchExpr_visitPost.append(idx)
-                whileStmt_visitPost.append(idx)
-
-            case "convenience_type":
-                classDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                subscriptDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "cyclomatic_complexity":
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-
-            case "delegate_to_async_stream":
-                protocolDecl_visitPost.append(idx)
-
-            case "deployment_target":
-                attribute_visitPost.append(idx)
-                availabilityCondition_visitPost.append(idx)
-
-            case "direct_return":
-                codeBlockItemList_visitPost.append(idx)
-
-            case "discarded_notification_center_observer":
-                accessorBlock_visit.append(idx)
-                accessorDecl_visit.append(idx)
-                closureExpr_visit.append(idx)
-                functionDecl_visit.append(idx)
-                sourceFile_visit.append(idx)
-                accessorBlock_visitPost.append(idx)
-                accessorDecl_visitPost.append(idx)
-                closureExpr_visitPost.append(idx)
-                functionCallExpr_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                sourceFile_visitPost.append(idx)
-
-            case "discouraged_assert":
-                functionCallExpr_visitPost.append(idx)
-
-            case "discouraged_direct_init":
-                functionCallExpr_visitPost.append(idx)
-
-            case "discouraged_none_name":
-                enumCaseElement_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "discouraged_object_literal":
-                macroExpansionExpr_visitPost.append(idx)
-
-            case "discouraged_optional_boolean":
-                functionCallExpr_visitPost.append(idx)
-                optionalChainingExpr_visitPost.append(idx)
-                optionalType_visitPost.append(idx)
-
-            case "discouraged_optional_collection":
-                optionalType_visitPost.append(idx)
-
-            case "doc_comments":
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                typeAliasDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "doc_comments_before_modifiers":
-                classDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "duplicate_conditions":
-                ifExpr_visitPost.append(idx)
-                switchCaseList_visitPost.append(idx)
-
-            case "duplicate_enum_cases":
-                enumDecl_visitPost.append(idx)
-
-            case "duplicated_key_in_dictionary_literal":
-                dictionaryElementList_visitPost.append(idx)
-
-            case "dynamic_inline":
-                functionDecl_visitPost.append(idx)
-
-            case "empty_braces":
-                codeBlock_visitPost.append(idx)
-                memberBlock_visitPost.append(idx)
-
-            case "empty_collection_literal":
-                token_visitPost.append(idx)
-
-            case "empty_enum_arguments":
-                matchingPatternCondition_visitPost.append(idx)
-                switchCaseItem_visitPost.append(idx)
-
-            case "empty_extensions":
-                extensionDecl_visitPost.append(idx)
-
-            case "empty_parameters":
-                functionType_visitPost.append(idx)
-
-            case "empty_parentheses_with_trailing_closure":
-                functionCallExpr_visitPost.append(idx)
-
-            case "empty_string":
-                stringLiteralExpr_visitPost.append(idx)
-
-            case "empty_xctest_method":
-                classDecl_visit.append(idx)
-                functionDecl_visitPost.append(idx)
-
-            case "enum_case_associated_values_count":
-                enumCaseElement_visitPost.append(idx)
-
-            case "enum_namespaces":
-                classDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "environment_entry":
-                enumDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "expiring_todo":
-                sourceFile_visit.append(idx)
-
-            case "explicit_acl":
-                actorDecl_visit.append(idx)
-                classDecl_visit.append(idx)
-                closureExpr_visit.append(idx)
-                codeBlock_visit.append(idx)
-                enumDecl_visit.append(idx)
-                extensionDecl_visit.append(idx)
-                structDecl_visit.append(idx)
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                subscriptDecl_visitPost.append(idx)
-                typeAliasDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "explicit_enum_raw_value":
-                enumCaseElement_visitPost.append(idx)
-
-            case "explicit_init":
-                functionCallExpr_visitPost.append(idx)
-
-            case "explicit_top_level_acl":
-                closureExpr_visit.append(idx)
-                codeBlock_visit.append(idx)
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                typeAliasDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "explicit_type_interface":
-                variableDecl_visitPost.append(idx)
-
-            case "extension_access_control":
-                extensionDecl_visitPost.append(idx)
-
-            case "extension_access_modifier":
-                extensionDecl_visitPost.append(idx)
-
-            case "fallthrough":
-                fallThroughStmt_visitPost.append(idx)
-
-            case "fatal_error_message":
-                functionCallExpr_visitPost.append(idx)
-
-            case "file_header":
-                sourceFile_visit.append(idx)
-
-            case "file_length":
-                sourceFile_visitPost.append(idx)
-
-            case "file_macro":
-                token_visit.append(idx)
-
-            case "final_test_case":
-                classDecl_visitPost.append(idx)
-
-            case "fire_and_forget_task":
-                initializerDecl_visit.append(idx)
-                variableDecl_visit.append(idx)
-                functionCallExpr_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "first_where":
-                memberAccessExpr_visitPost.append(idx)
-
-            case "flatmap_over_map_reduce":
-                functionCallExpr_visitPost.append(idx)
-
-            case "for_where":
-                forStmt_visitPost.append(idx)
-
-            case "force_cast":
-                asExpr_visitPost.append(idx)
-                unresolvedAsExpr_visitPost.append(idx)
-
-            case "force_try":
-                tryExpr_visitPost.append(idx)
-
-            case "force_unwrapping":
-                forceUnwrapExpr_visitPost.append(idx)
-
-            case "function_body_length":
-                deinitializerDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-                subscriptDecl_visitPost.append(idx)
-
-            case "function_default_parameter_at_end":
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-
-            case "function_name_whitespace":
-                functionDecl_visitPost.append(idx)
-
-            case "function_parameter_count":
-                functionDecl_visitPost.append(idx)
-
-            case "generic_consolidation":
-                functionParameter_visitPost.append(idx)
-                typeAnnotation_visitPost.append(idx)
-
-            case "generic_type_name":
-                genericParameter_visitPost.append(idx)
-
-            case "header_file_name":
-                sourceFile_visitPost.append(idx)
-
-            case "hoist_await":
-                arrayExpr_visitPost.append(idx)
-                functionCallExpr_visitPost.append(idx)
-
-            case "hoist_try":
-                arrayExpr_visitPost.append(idx)
-                functionCallExpr_visitPost.append(idx)
-
-            case "ibinspectable_in_extension":
-                attribute_visitPost.append(idx)
-
-            case "identifier_name":
-                accessorParameters_visitPost.append(idx)
-                closureParameter_visitPost.append(idx)
-                closureShorthandParameter_visitPost.append(idx)
-                enumCaseElement_visitPost.append(idx)
-                enumCaseParameter_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                functionParameter_visitPost.append(idx)
-                genericParameter_visitPost.append(idx)
-                identifierPattern_visitPost.append(idx)
-
-            case "implicit_getter":
-                accessorBlock_visitPost.append(idx)
-
-            case "implicit_optional_initialization":
-                patternBinding_visitPost.append(idx)
-
-            case "implicit_return":
-                accessorDecl_visitPost.append(idx)
-                closureExpr_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-                patternBinding_visitPost.append(idx)
-                subscriptDecl_visitPost.append(idx)
-
-            case "implicitly_unwrapped_optional":
-                variableDecl_visit.append(idx)
-                implicitlyUnwrappedOptionalType_visitPost.append(idx)
-
-            case "inclusive_language":
-                stringLiteralExpr_visit.append(idx)
-                accessorParameters_visitPost.append(idx)
-                actorDecl_visitPost.append(idx)
-                associatedTypeDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumCaseElement_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                functionParameter_visitPost.append(idx)
-                genericParameter_visitPost.append(idx)
-                identifierPattern_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                typeAliasDecl_visitPost.append(idx)
-
-            case "incompatible_concurrency_annotation":
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                subscriptDecl_visitPost.append(idx)
-
-            case "is_disjoint":
-                memberAccessExpr_visitPost.append(idx)
-
-            case "joined_default_parameter":
-                functionCallExpr_visitPost.append(idx)
-
-            case "last_where":
-                memberAccessExpr_visitPost.append(idx)
-
-            case "leading_delimiters":
-                token_visit.append(idx)
-
-            case "legacy_constant":
-                declReferenceExpr_visitPost.append(idx)
-                functionCallExpr_visitPost.append(idx)
-
-            case "legacy_constructor":
-                functionCallExpr_visitPost.append(idx)
-
-            case "legacy_hashing":
-                variableDecl_visitPost.append(idx)
-
-            case "legacy_objc_type":
-                declReferenceExpr_visitPost.append(idx)
-                identifierType_visitPost.append(idx)
-                memberType_visitPost.append(idx)
-
-            case "legacy_random":
-                functionCallExpr_visitPost.append(idx)
-
-            case "let_var_whitespace":
-                codeBlockItemList_visitPost.append(idx)
-                memberBlockItemList_visitPost.append(idx)
-
-            case "line_length":
-                sourceFile_visit.append(idx)
-                sourceFile_visitPost.append(idx)
-
-            case "linebreaks":
-                token_visit.append(idx)
-
-            case "lower_acl_than_parent":
-                declModifier_visitPost.append(idx)
-
-            case "mark":
-                token_visitPost.append(idx)
-
-            case "mark_types":
-                sourceFile_visitPost.append(idx)
-
-            case "missing_docs":
-                actorDecl_visit.append(idx)
-                classDecl_visit.append(idx)
-                closureExpr_visit.append(idx)
-                codeBlock_visit.append(idx)
-                enumDecl_visit.append(idx)
-                extensionDecl_visit.append(idx)
-                functionDecl_visit.append(idx)
-                initializerDecl_visit.append(idx)
-                protocolDecl_visit.append(idx)
-                structDecl_visit.append(idx)
-                subscriptDecl_visit.append(idx)
-                variableDecl_visit.append(idx)
-                actorDecl_visitPost.append(idx)
-                associatedTypeDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumCaseDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                typeAliasDecl_visitPost.append(idx)
-
-            case "modifier_order":
-                declModifierList_visitPost.append(idx)
-
-            case "modifiers_on_same_line":
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "multiline_arguments":
-                functionCallExpr_visitPost.append(idx)
-
-            case "multiline_arguments_brackets":
-                functionCallExpr_visitPost.append(idx)
-
-            case "multiline_call_arguments":
-                functionCallExpr_visitPost.append(idx)
-
-            case "multiline_literal_brackets":
-                arrayExpr_visitPost.append(idx)
-                dictionaryExpr_visitPost.append(idx)
-
-            case "multiline_parameters":
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-
-            case "multiple_closures_with_trailing_closure":
-                functionCallExpr_visitPost.append(idx)
-
-            case "naming_heuristics":
-                functionDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "nesting":
-                actorDecl_visit.append(idx)
-                classDecl_visit.append(idx)
-                closureExpr_visit.append(idx)
-                codeBlockItem_visit.append(idx)
-                enumDecl_visit.append(idx)
-                extensionDecl_visit.append(idx)
-                functionDecl_visit.append(idx)
-                protocolDecl_visit.append(idx)
-                structDecl_visit.append(idx)
-                actorDecl_visitPost.append(idx)
-                associatedTypeDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                typeAliasDecl_visitPost.append(idx)
-
-            case "nimble_operator":
-                functionCallExpr_visitPost.append(idx)
-
-            case "no_empty_block":
-                closureExpr_visitPost.append(idx)
-                codeBlock_visitPost.append(idx)
-
-            case "no_explicit_ownership":
-                functionDecl_visitPost.append(idx)
-                functionParameter_visitPost.append(idx)
-
-            case "no_extension_access_modifier":
-                extensionDecl_visitPost.append(idx)
-
-            case "no_fallthrough_only":
-                switchCaseList_visitPost.append(idx)
-
-            case "no_grouping_extension":
-                actorDecl_visit.append(idx)
-                classDecl_visit.append(idx)
-                enumDecl_visit.append(idx)
-                extensionDecl_visit.append(idx)
-                structDecl_visit.append(idx)
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "no_space_in_method_call":
-                functionCallExpr_visitPost.append(idx)
-
-            case "non_optional_string_data_conversion":
-                memberAccessExpr_visitPost.append(idx)
-
-            case "non_overridable_class_declaration":
-                classDecl_visit.append(idx)
-                classDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "notification_center_detachment":
-                deinitializerDecl_visit.append(idx)
-                functionCallExpr_visitPost.append(idx)
-
-            case "ns_number_init_as_function_reference":
-                memberAccessExpr_visitPost.append(idx)
-
-            case "nslocalizedstring_key":
-                functionCallExpr_visitPost.append(idx)
-
-            case "nslocalizedstring_require_bundle":
-                functionCallExpr_visitPost.append(idx)
-
-            case "nsobject_prefer_isequal":
-                functionDecl_visitPost.append(idx)
-
-            case "number_formatting":
-                integerLiteralExpr_visitPost.append(idx)
-
-            case "number_separator":
-                floatLiteralExpr_visitPost.append(idx)
-                integerLiteralExpr_visitPost.append(idx)
-
-            case "object_literal":
-                functionCallExpr_visitPost.append(idx)
-
-            case "observation_pitfalls":
-                forStmt_visitPost.append(idx)
-
-            case "one_declaration_per_file":
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "opening_brace":
-                accessorDecl_visitPost.append(idx)
-                actorDecl_visitPost.append(idx)
-                catchClause_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                closureExpr_visitPost.append(idx)
-                deferStmt_visitPost.append(idx)
-                doStmt_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                forStmt_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                guardStmt_visitPost.append(idx)
-                ifExpr_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-                patternBinding_visitPost.append(idx)
-                precedenceGroupDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                repeatStmt_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                switchExpr_visitPost.append(idx)
-                whileStmt_visitPost.append(idx)
-
-            case "optional_data_string_conversion":
-                declReferenceExpr_visitPost.append(idx)
-
-            case "optional_enum_case_matching":
-                switchCaseItem_visitPost.append(idx)
-
-            case "organize_declarations":
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "orphaned_doc_comment":
-                token_visitPost.append(idx)
-
-            case "overridden_super_call":
-                functionDecl_visitPost.append(idx)
-
-            case "pattern_matching_keywords":
-                switchCaseItem_visitPost.append(idx)
-
-            case "performance_anti_patterns":
-                arrayExpr_visitPost.append(idx)
-                declReferenceExpr_visitPost.append(idx)
-                forStmt_visitPost.append(idx)
-                functionCallExpr_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                functionParameter_visitPost.append(idx)
-                memberAccessExpr_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "prefer_asset_symbols":
-                functionCallExpr_visitPost.append(idx)
-
-            case "prefer_count_where":
-                memberAccessExpr_visitPost.append(idx)
-
-            case "prefer_final_classes":
-                classDecl_visitPost.append(idx)
-
-            case "prefer_for_loop":
-                functionCallExpr_visitPost.append(idx)
-
-            case "prefer_key_path":
-                closureExpr_visitPost.append(idx)
-
-            case "prefer_nimble":
-                functionCallExpr_visitPost.append(idx)
-
-            case "prefer_self_in_static_references":
-                actorDecl_visit.append(idx)
-                attribute_visit.append(idx)
-                classDecl_visit.append(idx)
-                codeBlockItemList_visit.append(idx)
-                enumDecl_visit.append(idx)
-                extensionDecl_visit.append(idx)
-                functionParameterClause_visit.append(idx)
-                genericArgumentList_visit.append(idx)
-                initializerClause_visit.append(idx)
-                macroExpansionExpr_visit.append(idx)
-                memberAccessExpr_visit.append(idx)
-                memberBlock_visit.append(idx)
-                protocolDecl_visit.append(idx)
-                returnClause_visit.append(idx)
-                structDecl_visit.append(idx)
-                typeAliasDecl_visit.append(idx)
-                typeAnnotation_visit.append(idx)
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                codeBlockItemList_visitPost.append(idx)
-                declReferenceExpr_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                identifierType_visitPost.append(idx)
-                memberBlock_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "prefer_self_type_over_type_of_self":
-                memberAccessExpr_visitPost.append(idx)
-
-            case "prefer_swift_testing":
-                classDecl_visitPost.append(idx)
-
-            case "prefer_zero_over_explicit_init":
-                functionCallExpr_visitPost.append(idx)
-
-            case "prefixed_toplevel_constant":
-                closureExpr_visit.append(idx)
-                codeBlock_visit.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "private_action":
-                extensionDecl_visit.append(idx)
-                functionDecl_visitPost.append(idx)
-
-            case "private_outlet":
-                memberBlockItem_visitPost.append(idx)
-
-            case "private_over_fileprivate":
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                typeAliasDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "private_subject":
-                variableDecl_visitPost.append(idx)
-
-            case "private_swiftui_state":
-                actorDecl_visit.append(idx)
-                classDecl_visit.append(idx)
-                structDecl_visit.append(idx)
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "private_unit_test":
-                classDecl_visit.append(idx)
-                classDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-
-            case "prohibited_interface_builder":
-                functionDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "prohibited_super_call":
-                functionDecl_visitPost.append(idx)
-
-            case "protocol_property_accessors_order":
-                accessorBlock_visitPost.append(idx)
-
-            case "quick_discouraged_focused_test":
-                classDecl_visit.append(idx)
-                functionDecl_visit.append(idx)
-                functionCallExpr_visitPost.append(idx)
-
-            case "quick_discouraged_pending_test":
-                classDecl_visit.append(idx)
-                functionDecl_visit.append(idx)
-                functionCallExpr_visitPost.append(idx)
-
-            case "raw_value_for_camel_cased_codable_enum":
-                enumDecl_visit.append(idx)
-                enumCaseElement_visitPost.append(idx)
-
-            case "reduce_boolean":
-                functionCallExpr_visitPost.append(idx)
-
-            case "reduce_into":
-                functionCallExpr_visitPost.append(idx)
-
-            case "redundant_backticks":
-                token_visitPost.append(idx)
-
-            case "redundant_closure":
-                functionCallExpr_visitPost.append(idx)
-
-            case "redundant_discardable_let":
-                accessorBlock_visit.append(idx)
-                closureExpr_visit.append(idx)
-                codeBlockItemList_visit.append(idx)
-                codeBlock_visit.append(idx)
-                accessorBlock_visitPost.append(idx)
-                closureExpr_visitPost.append(idx)
-                codeBlockItemList_visitPost.append(idx)
-                codeBlock_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "redundant_equatable":
-                structDecl_visitPost.append(idx)
-
-            case "redundant_extension_acl":
-                extensionDecl_visitPost.append(idx)
-
-            case "redundant_fileprivate":
-                declModifier_visitPost.append(idx)
-
-            case "redundant_get":
-                accessorBlock_visitPost.append(idx)
-
-            case "redundant_internal":
-                declModifier_visitPost.append(idx)
-
-            case "redundant_memberwise_init":
-                structDecl_visitPost.append(idx)
-
-            case "redundant_nil_coalescing":
-                token_visitPost.append(idx)
-
-            case "redundant_objc_attribute":
-                attributeList_visitPost.append(idx)
-
-            case "redundant_parens":
-                conditionElement_visitPost.append(idx)
-                returnStmt_visitPost.append(idx)
-
-            case "redundant_property":
-                codeBlockItemList_visitPost.append(idx)
-
-            case "redundant_public":
-                declModifier_visitPost.append(idx)
-
-            case "redundant_sendable":
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "redundant_set_access_control":
-                variableDecl_visitPost.append(idx)
-
-            case "redundant_static_self":
-                memberAccessExpr_visitPost.append(idx)
-
-            case "redundant_string_enum_value":
-                enumDecl_visitPost.append(idx)
-
-            case "redundant_type_annotation":
-                optionalBindingCondition_visitPost.append(idx)
-                patternBinding_visitPost.append(idx)
-
-            case "redundant_view_builder":
-                attribute_visitPost.append(idx)
-
-            case "redundant_void_return":
-                returnClause_visitPost.append(idx)
-
-            case "required_deinit":
-                classDecl_visitPost.append(idx)
-                deinitializerDecl_visitPost.append(idx)
-
-            case "required_enum_case":
-                enumDecl_visitPost.append(idx)
-
-            case "return_arrow_whitespace":
-                closureSignature_visitPost.append(idx)
-                functionSignature_visitPost.append(idx)
-                functionType_visitPost.append(idx)
-
-            case "return_value_from_void_function":
-                returnStmt_visitPost.append(idx)
-
-            case "self_binding":
-                optionalBindingCondition_visitPost.append(idx)
-
-            case "self_in_property_initialization":
-                variableDecl_visitPost.append(idx)
-
-            case "shorthand_argument":
-                closureExpr_visitPost.append(idx)
-
-            case "shorthand_optional_binding":
-                optionalBindingCondition_visitPost.append(idx)
-
-            case "single_property_per_line":
-                variableDecl_visitPost.append(idx)
-
-            case "sort_declarations":
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "sort_imports":
-                sourceFile_visitPost.append(idx)
-
-            case "sort_switch_cases":
-                switchCaseLabel_visitPost.append(idx)
-
-            case "sort_typealiases":
-                typeAliasDecl_visitPost.append(idx)
-
-            case "sorted_enum_cases":
-                enumDecl_visit.append(idx)
-                enumCaseDecl_visitPost.append(idx)
-
-            case "sorted_first_last":
-                memberAccessExpr_visitPost.append(idx)
-
-            case "sorted_imports":
-                importDecl_visitPost.append(idx)
-                sourceFile_visitPost.append(idx)
-
-            case "space_around_brackets":
-                subscriptCallExpr_visitPost.append(idx)
-
-            case "space_around_comments":
-                token_visit.append(idx)
-
-            case "space_around_generics":
-                token_visit.append(idx)
-
-            case "space_around_parens":
-                functionCallExpr_visitPost.append(idx)
-                initializerClause_visitPost.append(idx)
-
-            case "space_inside_brackets":
-                token_visit.append(idx)
-
-            case "space_inside_generics":
-                token_visit.append(idx)
-
-            case "space_inside_parens":
-                token_visit.append(idx)
-
-            case "static_operator":
-                functionDecl_visitPost.append(idx)
-
-            case "static_over_final_class":
-                classDecl_visit.append(idx)
-                classDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                subscriptDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "strict_fileprivate":
-                declModifier_visitPost.append(idx)
-
-            case "strong_iboutlet":
-                variableDecl_visitPost.append(idx)
-
-            case "strongified_self":
-                optionalBindingCondition_visitPost.append(idx)
-
-            case "superfluous_else":
-                ifExpr_visitPost.append(idx)
-
-            case "swift62_modernization":
-                accessorDecl_visitPost.append(idx)
-                functionCallExpr_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                typeAnnotation_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "swift_testing_test_case_names":
-                functionDecl_visitPost.append(idx)
-
-            case "swiftui_layout":
-                functionCallExpr_visit.append(idx)
-                functionCallExpr_visitPost.append(idx)
-
-            case "switch_case_alignment":
-                switchExpr_visitPost.append(idx)
-
-            case "switch_case_on_newline":
-                switchCase_visitPost.append(idx)
-
-            case "test_case_accessibility":
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                typeAliasDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
-
-            case "todo":
-                token_visitPost.append(idx)
-
-            case "toggle_bool":
-                exprList_visitPost.append(idx)
-
-            case "trailing_closure":
-                conditionElementList_visit.append(idx)
-                forStmt_visit.append(idx)
-                functionCallExpr_visitPost.append(idx)
-
-            case "trailing_comma":
-                arrayElementList_visitPost.append(idx)
-                dictionaryElementList_visitPost.append(idx)
-
-            case "trailing_semicolon":
-                token_visitPost.append(idx)
-
-            case "trailing_whitespace":
-                sourceFile_visit.append(idx)
-
-            case "type_body_length":
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "type_contents_order":
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
-            case "type_name":
-                actorDecl_visitPost.append(idx)
-                associatedTypeDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                protocolDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-                typeAliasDecl_visitPost.append(idx)
-
-            case "typed_throws":
-                catchClause_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-
-            case "unavailable_condition":
-                ifExpr_visitPost.append(idx)
-
-            case "unavailable_function":
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-
-            case "unhandled_throwing_task":
-                functionCallExpr_visitPost.append(idx)
-
-            case "unneeded_break_in_switch":
-                switchCase_visitPost.append(idx)
-
-            case "unneeded_override":
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-
-            case "unneeded_parentheses_in_closure_argument":
-                closureSignature_visitPost.append(idx)
-
-            case "unneeded_synthesized_initializer":
-                structDecl_visit.append(idx)
-
-            case "unowned_variable_capture":
-                token_visitPost.append(idx)
-
-            case "untyped_error_in_catch":
-                catchClause_visitPost.append(idx)
-
-            case "unused_closure_parameter":
-                closureExpr_visitPost.append(idx)
-
-            case "unused_control_flow_label":
-                labeledStmt_visitPost.append(idx)
-
-            case "unused_enumerated":
-                closureExpr_visit.append(idx)
-                functionCallExpr_visit.append(idx)
-                closureExpr_visitPost.append(idx)
-                declReferenceExpr_visitPost.append(idx)
-                forStmt_visitPost.append(idx)
-
-            case "unused_optional_binding":
-                optionalBindingCondition_visitPost.append(idx)
-
-            case "unused_setter_value":
-                accessorDecl_visitPost.append(idx)
-
-            case "url_macro":
-                forceUnwrapExpr_visitPost.append(idx)
-
-            case "valid_ibinspectable":
-                variableDecl_visitPost.append(idx)
-
-            case "vertical_parameter_alignment":
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-
-            case "vertical_parameter_alignment_on_call":
-                functionCallExpr_visitPost.append(idx)
-
-            case "vertical_whitespace":
-                token_visit.append(idx)
-
-            case "vertical_whitespace_between_cases":
-                switchCaseList_visitPost.append(idx)
-
-            case "void_function_in_ternary":
-                ternaryExpr_visitPost.append(idx)
-                unresolvedTernaryExpr_visitPost.append(idx)
-
-            case "void_return":
-                returnClause_visitPost.append(idx)
-
-            case "weak_delegate":
-                variableDecl_visitPost.append(idx)
-
-            case "xct_specific_matcher":
-                functionCallExpr_visitPost.append(idx)
-
-            case "xctfail_message":
-                functionCallExpr_visitPost.append(idx)
-
-            case "yoda_condition":
-                guardStmt_visitPost.append(idx)
-                ifExpr_visitPost.append(idx)
-                repeatStmt_visitPost.append(idx)
-                whileStmt_visitPost.append(idx)
-
-            default:
-                break
+                case "accessibility_label_for_image":
+                    structDecl_visit.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "accessibility_trait_for_button":
+                    structDecl_visit.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "acronyms":
+                    functionDecl_visitPost.append(idx)
+                    identifierPattern_visitPost.append(idx)
+                    typeAliasDecl_visitPost.append(idx)
+
+                case "agent_review":
+                    enumDecl_visitPost.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+                    memberAccessExpr_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "and_operator":
+                    conditionElement_visitPost.append(idx)
+
+                case "anonymous_argument_in_multiline_closure":
+                    closureExpr_visit.append(idx)
+                    declReferenceExpr_visitPost.append(idx)
+
+                case "any_elimination":
+                    asExpr_visitPost.append(idx)
+                    dictionaryType_visitPost.append(idx)
+                    returnClause_visitPost.append(idx)
+                    typeAnnotation_visitPost.append(idx)
+
+                case "any_object_protocol":
+                    protocolDecl_visitPost.append(idx)
+
+                case "application_main":
+                    attribute_visitPost.append(idx)
+
+                case "array_init":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "async_without_await":
+                    accessorDecl_visit.append(idx)
+                    actorDecl_visit.append(idx)
+                    classDecl_visit.append(idx)
+                    closureExpr_visit.append(idx)
+                    enumDecl_visit.append(idx)
+                    functionDecl_visit.append(idx)
+                    functionParameter_visit.append(idx)
+                    initializerDecl_visit.append(idx)
+                    structDecl_visit.append(idx)
+                    variableDecl_visit.append(idx)
+                    accessorDecl_visitPost.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    awaitExpr_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    closureExpr_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    forStmt_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "attribute_name_spacing":
+                    attribute_visitPost.append(idx)
+                    declModifier_visitPost.append(idx)
+
+                case "attributes":
+                    attributeList_visitPost.append(idx)
+
+                case "balanced_xctest_lifecycle":
+                    classDecl_visitPost.append(idx)
+
+                case "blank_line_after_imports":
+                    sourceFile_visitPost.append(idx)
+
+                case "blank_lines_after_guard_statements":
+                    codeBlock_visitPost.append(idx)
+
+                case "blank_lines_around_mark":
+                    token_visit.append(idx)
+
+                case "blank_lines_between_chained_functions":
+                    token_visit.append(idx)
+
+                case "blank_lines_between_imports":
+                    sourceFile_visitPost.append(idx)
+
+                case "blank_lines_between_scopes":
+                    memberBlock_visitPost.append(idx)
+                    sourceFile_visitPost.append(idx)
+
+                case "block_based_kvo":
+                    functionDecl_visitPost.append(idx)
+
+                case "block_comments":
+                    token_visit.append(idx)
+
+                case "class_delegate_protocol":
+                    protocolDecl_visitPost.append(idx)
+
+                case "closing_brace":
+                    token_visitPost.append(idx)
+
+                case "closure_body_length":
+                    closureExpr_visitPost.append(idx)
+
+                case "closure_end_indentation":
+                    closureExpr_visitPost.append(idx)
+
+                case "closure_parameter_position":
+                    closureExpr_visitPost.append(idx)
+
+                case "closure_spacing":
+                    closureExpr_visitPost.append(idx)
+
+                case "collection_alignment":
+                    arrayExpr_visitPost.append(idx)
+                    dictionaryElementList_visitPost.append(idx)
+
+                case "colon":
+                    declNameArguments_visit.append(idx)
+                    dictionaryElement_visit.append(idx)
+                    objCSelectorPiece_visit.append(idx)
+                    operatorPrecedenceAndTypes_visit.append(idx)
+                    switchCaseLabel_visit.append(idx)
+                    switchDefaultLabel_visit.append(idx)
+                    ternaryExpr_visit.append(idx)
+                    unresolvedTernaryExpr_visit.append(idx)
+                    token_visitPost.append(idx)
+
+                case "comma_inheritance":
+                    inheritedType_visitPost.append(idx)
+
+                case "compiler_protocol_init":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "computed_accessors_order":
+                    accessorBlock_visitPost.append(idx)
+
+                case "concurrency_modernization":
+                    classDecl_visitPost.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "conditional_assignment":
+                    codeBlockItemList_visitPost.append(idx)
+
+                case "conditional_returns_on_newline":
+                    guardStmt_visitPost.append(idx)
+                    ifExpr_visitPost.append(idx)
+
+                case "consecutive_spaces":
+                    token_visit.append(idx)
+
+                case "contains_over_filter_count":
+                    exprList_visitPost.append(idx)
+
+                case "contains_over_filter_is_empty":
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "contrasted_opening_brace":
+                    accessorDecl_visitPost.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    catchClause_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    closureExpr_visitPost.append(idx)
+                    deferStmt_visitPost.append(idx)
+                    doStmt_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    extensionDecl_visitPost.append(idx)
+                    forStmt_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    guardStmt_visitPost.append(idx)
+                    ifExpr_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+                    patternBinding_visitPost.append(idx)
+                    precedenceGroupDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    repeatStmt_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    switchExpr_visitPost.append(idx)
+                    whileStmt_visitPost.append(idx)
+
+                case "control_statement":
+                    catchClause_visitPost.append(idx)
+                    guardStmt_visitPost.append(idx)
+                    ifExpr_visitPost.append(idx)
+                    switchExpr_visitPost.append(idx)
+                    whileStmt_visitPost.append(idx)
+
+                case "convenience_type":
+                    classDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    subscriptDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "cyclomatic_complexity":
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+
+                case "delegate_to_async_stream":
+                    protocolDecl_visitPost.append(idx)
+
+                case "deployment_target":
+                    attribute_visitPost.append(idx)
+                    availabilityCondition_visitPost.append(idx)
+
+                case "direct_return":
+                    codeBlockItemList_visitPost.append(idx)
+
+                case "discarded_notification_center_observer":
+                    accessorBlock_visit.append(idx)
+                    accessorDecl_visit.append(idx)
+                    closureExpr_visit.append(idx)
+                    functionDecl_visit.append(idx)
+                    sourceFile_visit.append(idx)
+                    accessorBlock_visitPost.append(idx)
+                    accessorDecl_visitPost.append(idx)
+                    closureExpr_visitPost.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    sourceFile_visitPost.append(idx)
+
+                case "discouraged_assert":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "discouraged_direct_init":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "discouraged_none_name":
+                    enumCaseElement_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "discouraged_object_literal":
+                    macroExpansionExpr_visitPost.append(idx)
+
+                case "discouraged_optional_boolean":
+                    functionCallExpr_visitPost.append(idx)
+                    optionalChainingExpr_visitPost.append(idx)
+                    optionalType_visitPost.append(idx)
+
+                case "discouraged_optional_collection":
+                    optionalType_visitPost.append(idx)
+
+                case "doc_comments":
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    typeAliasDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "doc_comments_before_modifiers":
+                    classDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "duplicate_conditions":
+                    ifExpr_visitPost.append(idx)
+                    switchCaseList_visitPost.append(idx)
+
+                case "duplicate_enum_cases":
+                    enumDecl_visitPost.append(idx)
+
+                case "duplicated_key_in_dictionary_literal":
+                    dictionaryElementList_visitPost.append(idx)
+
+                case "dynamic_inline":
+                    functionDecl_visitPost.append(idx)
+
+                case "empty_braces":
+                    codeBlock_visitPost.append(idx)
+                    memberBlock_visitPost.append(idx)
+
+                case "empty_collection_literal":
+                    token_visitPost.append(idx)
+
+                case "empty_enum_arguments":
+                    matchingPatternCondition_visitPost.append(idx)
+                    switchCaseItem_visitPost.append(idx)
+
+                case "empty_extensions":
+                    extensionDecl_visitPost.append(idx)
+
+                case "empty_parameters":
+                    functionType_visitPost.append(idx)
+
+                case "empty_parentheses_with_trailing_closure":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "empty_string":
+                    stringLiteralExpr_visitPost.append(idx)
+
+                case "empty_xctest_method":
+                    classDecl_visit.append(idx)
+                    functionDecl_visitPost.append(idx)
+
+                case "enum_case_associated_values_count":
+                    enumCaseElement_visitPost.append(idx)
+
+                case "enum_namespaces":
+                    classDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "environment_entry":
+                    enumDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "expiring_todo":
+                    sourceFile_visit.append(idx)
+
+                case "explicit_acl":
+                    actorDecl_visit.append(idx)
+                    classDecl_visit.append(idx)
+                    closureExpr_visit.append(idx)
+                    codeBlock_visit.append(idx)
+                    enumDecl_visit.append(idx)
+                    extensionDecl_visit.append(idx)
+                    structDecl_visit.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    extensionDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    subscriptDecl_visitPost.append(idx)
+                    typeAliasDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "explicit_enum_raw_value":
+                    enumCaseElement_visitPost.append(idx)
+
+                case "explicit_init":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "explicit_top_level_acl":
+                    closureExpr_visit.append(idx)
+                    codeBlock_visit.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    typeAliasDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "explicit_type_interface":
+                    variableDecl_visitPost.append(idx)
+
+                case "extension_access_control":
+                    extensionDecl_visitPost.append(idx)
+
+                case "extension_access_modifier":
+                    extensionDecl_visitPost.append(idx)
+
+                case "fallthrough":
+                    fallThroughStmt_visitPost.append(idx)
+
+                case "fatal_error_message":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "file_header":
+                    sourceFile_visit.append(idx)
+
+                case "file_length":
+                    sourceFile_visitPost.append(idx)
+
+                case "file_macro":
+                    token_visit.append(idx)
+
+                case "final_test_case":
+                    classDecl_visitPost.append(idx)
+
+                case "fire_and_forget_task":
+                    initializerDecl_visit.append(idx)
+                    variableDecl_visit.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "first_where":
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "flatmap_over_map_reduce":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "for_where":
+                    forStmt_visitPost.append(idx)
+
+                case "force_cast":
+                    asExpr_visitPost.append(idx)
+                    unresolvedAsExpr_visitPost.append(idx)
+
+                case "force_try":
+                    tryExpr_visitPost.append(idx)
+
+                case "force_unwrapping":
+                    forceUnwrapExpr_visitPost.append(idx)
+
+                case "function_body_length":
+                    deinitializerDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+                    subscriptDecl_visitPost.append(idx)
+
+                case "function_default_parameter_at_end":
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+
+                case "function_name_whitespace":
+                    functionDecl_visitPost.append(idx)
+
+                case "function_parameter_count":
+                    functionDecl_visitPost.append(idx)
+
+                case "generic_consolidation":
+                    functionParameter_visitPost.append(idx)
+                    typeAnnotation_visitPost.append(idx)
+
+                case "generic_type_name":
+                    genericParameter_visitPost.append(idx)
+
+                case "header_file_name":
+                    sourceFile_visitPost.append(idx)
+
+                case "hoist_await":
+                    arrayExpr_visitPost.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+
+                case "hoist_try":
+                    arrayExpr_visitPost.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+
+                case "ibinspectable_in_extension":
+                    attribute_visitPost.append(idx)
+
+                case "identifier_name":
+                    accessorParameters_visitPost.append(idx)
+                    closureParameter_visitPost.append(idx)
+                    closureShorthandParameter_visitPost.append(idx)
+                    enumCaseElement_visitPost.append(idx)
+                    enumCaseParameter_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    functionParameter_visitPost.append(idx)
+                    genericParameter_visitPost.append(idx)
+                    identifierPattern_visitPost.append(idx)
+
+                case "implicit_getter":
+                    accessorBlock_visitPost.append(idx)
+
+                case "implicit_optional_initialization":
+                    patternBinding_visitPost.append(idx)
+
+                case "implicit_return":
+                    accessorDecl_visitPost.append(idx)
+                    closureExpr_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+                    patternBinding_visitPost.append(idx)
+                    subscriptDecl_visitPost.append(idx)
+
+                case "implicitly_unwrapped_optional":
+                    variableDecl_visit.append(idx)
+                    implicitlyUnwrappedOptionalType_visitPost.append(idx)
+
+                case "inclusive_language":
+                    stringLiteralExpr_visit.append(idx)
+                    accessorParameters_visitPost.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    associatedTypeDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumCaseElement_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    functionParameter_visitPost.append(idx)
+                    genericParameter_visitPost.append(idx)
+                    identifierPattern_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    typeAliasDecl_visitPost.append(idx)
+
+                case "incompatible_concurrency_annotation":
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    subscriptDecl_visitPost.append(idx)
+
+                case "is_disjoint":
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "joined_default_parameter":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "last_where":
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "leading_delimiters":
+                    token_visit.append(idx)
+
+                case "legacy_constant":
+                    declReferenceExpr_visitPost.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+
+                case "legacy_constructor":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "legacy_hashing":
+                    variableDecl_visitPost.append(idx)
+
+                case "legacy_objc_type":
+                    declReferenceExpr_visitPost.append(idx)
+                    identifierType_visitPost.append(idx)
+                    memberType_visitPost.append(idx)
+
+                case "legacy_random":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "let_var_whitespace":
+                    codeBlockItemList_visitPost.append(idx)
+                    memberBlockItemList_visitPost.append(idx)
+
+                case "line_length":
+                    sourceFile_visit.append(idx)
+                    sourceFile_visitPost.append(idx)
+
+                case "linebreaks":
+                    token_visit.append(idx)
+
+                case "lower_acl_than_parent":
+                    declModifier_visitPost.append(idx)
+
+                case "mark":
+                    token_visitPost.append(idx)
+
+                case "mark_types":
+                    sourceFile_visitPost.append(idx)
+
+                case "missing_docs":
+                    actorDecl_visit.append(idx)
+                    classDecl_visit.append(idx)
+                    closureExpr_visit.append(idx)
+                    codeBlock_visit.append(idx)
+                    enumDecl_visit.append(idx)
+                    extensionDecl_visit.append(idx)
+                    functionDecl_visit.append(idx)
+                    initializerDecl_visit.append(idx)
+                    protocolDecl_visit.append(idx)
+                    structDecl_visit.append(idx)
+                    subscriptDecl_visit.append(idx)
+                    variableDecl_visit.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    associatedTypeDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumCaseDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    extensionDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    typeAliasDecl_visitPost.append(idx)
+
+                case "modifier_order":
+                    declModifierList_visitPost.append(idx)
+
+                case "modifiers_on_same_line":
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "multiline_arguments":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "multiline_arguments_brackets":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "multiline_call_arguments":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "multiline_literal_brackets":
+                    arrayExpr_visitPost.append(idx)
+                    dictionaryExpr_visitPost.append(idx)
+
+                case "multiline_parameters":
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+
+                case "multiple_closures_with_trailing_closure":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "naming_heuristics":
+                    functionDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "nesting":
+                    actorDecl_visit.append(idx)
+                    classDecl_visit.append(idx)
+                    closureExpr_visit.append(idx)
+                    codeBlockItem_visit.append(idx)
+                    enumDecl_visit.append(idx)
+                    extensionDecl_visit.append(idx)
+                    functionDecl_visit.append(idx)
+                    protocolDecl_visit.append(idx)
+                    structDecl_visit.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    associatedTypeDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    extensionDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    typeAliasDecl_visitPost.append(idx)
+
+                case "nimble_operator":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "no_empty_block":
+                    closureExpr_visitPost.append(idx)
+                    codeBlock_visitPost.append(idx)
+
+                case "no_explicit_ownership":
+                    functionDecl_visitPost.append(idx)
+                    functionParameter_visitPost.append(idx)
+
+                case "no_extension_access_modifier":
+                    extensionDecl_visitPost.append(idx)
+
+                case "no_fallthrough_only":
+                    switchCaseList_visitPost.append(idx)
+
+                case "no_grouping_extension":
+                    actorDecl_visit.append(idx)
+                    classDecl_visit.append(idx)
+                    enumDecl_visit.append(idx)
+                    extensionDecl_visit.append(idx)
+                    structDecl_visit.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    extensionDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "no_space_in_method_call":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "non_optional_string_data_conversion":
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "non_overridable_class_declaration":
+                    classDecl_visit.append(idx)
+                    classDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "notification_center_detachment":
+                    deinitializerDecl_visit.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+
+                case "ns_number_init_as_function_reference":
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "nslocalizedstring_key":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "nslocalizedstring_require_bundle":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "nsobject_prefer_isequal":
+                    functionDecl_visitPost.append(idx)
+
+                case "number_formatting":
+                    integerLiteralExpr_visitPost.append(idx)
+
+                case "number_separator":
+                    floatLiteralExpr_visitPost.append(idx)
+                    integerLiteralExpr_visitPost.append(idx)
+
+                case "object_literal":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "observation_pitfalls":
+                    forStmt_visitPost.append(idx)
+
+                case "one_declaration_per_file":
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "opening_brace":
+                    accessorDecl_visitPost.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    catchClause_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    closureExpr_visitPost.append(idx)
+                    deferStmt_visitPost.append(idx)
+                    doStmt_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    extensionDecl_visitPost.append(idx)
+                    forStmt_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    guardStmt_visitPost.append(idx)
+                    ifExpr_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+                    patternBinding_visitPost.append(idx)
+                    precedenceGroupDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    repeatStmt_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    switchExpr_visitPost.append(idx)
+                    whileStmt_visitPost.append(idx)
+
+                case "optional_data_string_conversion":
+                    declReferenceExpr_visitPost.append(idx)
+
+                case "optional_enum_case_matching":
+                    switchCaseItem_visitPost.append(idx)
+
+                case "organize_declarations":
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "orphaned_doc_comment":
+                    token_visitPost.append(idx)
+
+                case "overridden_super_call":
+                    functionDecl_visitPost.append(idx)
+
+                case "pattern_matching_keywords":
+                    switchCaseItem_visitPost.append(idx)
+
+                case "performance_anti_patterns":
+                    arrayExpr_visitPost.append(idx)
+                    declReferenceExpr_visitPost.append(idx)
+                    forStmt_visitPost.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    functionParameter_visitPost.append(idx)
+                    memberAccessExpr_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "prefer_asset_symbols":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "prefer_count_where":
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "prefer_final_classes":
+                    classDecl_visitPost.append(idx)
+
+                case "prefer_for_loop":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "prefer_key_path":
+                    closureExpr_visitPost.append(idx)
+
+                case "prefer_nimble":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "prefer_self_in_static_references":
+                    actorDecl_visit.append(idx)
+                    attribute_visit.append(idx)
+                    classDecl_visit.append(idx)
+                    codeBlockItemList_visit.append(idx)
+                    enumDecl_visit.append(idx)
+                    extensionDecl_visit.append(idx)
+                    functionParameterClause_visit.append(idx)
+                    genericArgumentList_visit.append(idx)
+                    initializerClause_visit.append(idx)
+                    macroExpansionExpr_visit.append(idx)
+                    memberAccessExpr_visit.append(idx)
+                    memberBlock_visit.append(idx)
+                    protocolDecl_visit.append(idx)
+                    returnClause_visit.append(idx)
+                    structDecl_visit.append(idx)
+                    typeAliasDecl_visit.append(idx)
+                    typeAnnotation_visit.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    codeBlockItemList_visitPost.append(idx)
+                    declReferenceExpr_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    extensionDecl_visitPost.append(idx)
+                    identifierType_visitPost.append(idx)
+                    memberBlock_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "prefer_self_type_over_type_of_self":
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "prefer_swift_testing":
+                    classDecl_visitPost.append(idx)
+
+                case "prefer_zero_over_explicit_init":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "prefixed_toplevel_constant":
+                    closureExpr_visit.append(idx)
+                    codeBlock_visit.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "private_action":
+                    extensionDecl_visit.append(idx)
+                    functionDecl_visitPost.append(idx)
+
+                case "private_outlet":
+                    memberBlockItem_visitPost.append(idx)
+
+                case "private_over_fileprivate":
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    extensionDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    typeAliasDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "private_subject":
+                    variableDecl_visitPost.append(idx)
+
+                case "private_swiftui_state":
+                    actorDecl_visit.append(idx)
+                    classDecl_visit.append(idx)
+                    structDecl_visit.append(idx)
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "private_unit_test":
+                    classDecl_visit.append(idx)
+                    classDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+
+                case "prohibited_interface_builder":
+                    functionDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "prohibited_super_call":
+                    functionDecl_visitPost.append(idx)
+
+                case "protocol_property_accessors_order":
+                    accessorBlock_visitPost.append(idx)
+
+                case "quick_discouraged_focused_test":
+                    classDecl_visit.append(idx)
+                    functionDecl_visit.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+
+                case "quick_discouraged_pending_test":
+                    classDecl_visit.append(idx)
+                    functionDecl_visit.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+
+                case "raw_value_for_camel_cased_codable_enum":
+                    enumDecl_visit.append(idx)
+                    enumCaseElement_visitPost.append(idx)
+
+                case "reduce_boolean":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "reduce_into":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "redundant_backticks":
+                    token_visitPost.append(idx)
+
+                case "redundant_closure":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "redundant_discardable_let":
+                    accessorBlock_visit.append(idx)
+                    closureExpr_visit.append(idx)
+                    codeBlockItemList_visit.append(idx)
+                    codeBlock_visit.append(idx)
+                    accessorBlock_visitPost.append(idx)
+                    closureExpr_visitPost.append(idx)
+                    codeBlockItemList_visitPost.append(idx)
+                    codeBlock_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "redundant_equatable":
+                    structDecl_visitPost.append(idx)
+
+                case "redundant_extension_acl":
+                    extensionDecl_visitPost.append(idx)
+
+                case "redundant_fileprivate":
+                    declModifier_visitPost.append(idx)
+
+                case "redundant_get":
+                    accessorBlock_visitPost.append(idx)
+
+                case "redundant_internal":
+                    declModifier_visitPost.append(idx)
+
+                case "redundant_memberwise_init":
+                    structDecl_visitPost.append(idx)
+
+                case "redundant_nil_coalescing":
+                    token_visitPost.append(idx)
+
+                case "redundant_objc_attribute":
+                    attributeList_visitPost.append(idx)
+
+                case "redundant_parens":
+                    conditionElement_visitPost.append(idx)
+                    returnStmt_visitPost.append(idx)
+
+                case "redundant_property":
+                    codeBlockItemList_visitPost.append(idx)
+
+                case "redundant_public":
+                    declModifier_visitPost.append(idx)
+
+                case "redundant_sendable":
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "redundant_set_access_control":
+                    variableDecl_visitPost.append(idx)
+
+                case "redundant_static_self":
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "redundant_string_enum_value":
+                    enumDecl_visitPost.append(idx)
+
+                case "redundant_type_annotation":
+                    optionalBindingCondition_visitPost.append(idx)
+                    patternBinding_visitPost.append(idx)
+
+                case "redundant_view_builder":
+                    attribute_visitPost.append(idx)
+
+                case "redundant_void_return":
+                    returnClause_visitPost.append(idx)
+
+                case "required_deinit":
+                    classDecl_visitPost.append(idx)
+                    deinitializerDecl_visitPost.append(idx)
+
+                case "required_enum_case":
+                    enumDecl_visitPost.append(idx)
+
+                case "return_arrow_whitespace":
+                    closureSignature_visitPost.append(idx)
+                    functionSignature_visitPost.append(idx)
+                    functionType_visitPost.append(idx)
+
+                case "return_value_from_void_function":
+                    returnStmt_visitPost.append(idx)
+
+                case "self_binding":
+                    optionalBindingCondition_visitPost.append(idx)
+
+                case "self_in_property_initialization":
+                    variableDecl_visitPost.append(idx)
+
+                case "shorthand_argument":
+                    closureExpr_visitPost.append(idx)
+
+                case "shorthand_optional_binding":
+                    optionalBindingCondition_visitPost.append(idx)
+
+                case "single_property_per_line":
+                    variableDecl_visitPost.append(idx)
+
+                case "sort_declarations":
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "sort_imports":
+                    sourceFile_visitPost.append(idx)
+
+                case "sort_switch_cases":
+                    switchCaseLabel_visitPost.append(idx)
+
+                case "sort_typealiases":
+                    typeAliasDecl_visitPost.append(idx)
+
+                case "sorted_enum_cases":
+                    enumDecl_visit.append(idx)
+                    enumCaseDecl_visitPost.append(idx)
+
+                case "sorted_first_last":
+                    memberAccessExpr_visitPost.append(idx)
+
+                case "sorted_imports":
+                    importDecl_visitPost.append(idx)
+                    sourceFile_visitPost.append(idx)
+
+                case "space_around_brackets":
+                    subscriptCallExpr_visitPost.append(idx)
+
+                case "space_around_comments":
+                    token_visit.append(idx)
+
+                case "space_around_generics":
+                    token_visit.append(idx)
+
+                case "space_around_parens":
+                    functionCallExpr_visitPost.append(idx)
+                    initializerClause_visitPost.append(idx)
+
+                case "space_inside_brackets":
+                    token_visit.append(idx)
+
+                case "space_inside_generics":
+                    token_visit.append(idx)
+
+                case "space_inside_parens":
+                    token_visit.append(idx)
+
+                case "static_operator":
+                    functionDecl_visitPost.append(idx)
+
+                case "static_over_final_class":
+                    classDecl_visit.append(idx)
+                    classDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    subscriptDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "strict_fileprivate":
+                    declModifier_visitPost.append(idx)
+
+                case "strong_iboutlet":
+                    variableDecl_visitPost.append(idx)
+
+                case "strongified_self":
+                    optionalBindingCondition_visitPost.append(idx)
+
+                case "superfluous_else":
+                    ifExpr_visitPost.append(idx)
+
+                case "swift62_modernization":
+                    accessorDecl_visitPost.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    typeAnnotation_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "swift_testing_test_case_names":
+                    functionDecl_visitPost.append(idx)
+
+                case "swiftui_layout":
+                    functionCallExpr_visit.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+
+                case "switch_case_alignment":
+                    switchExpr_visitPost.append(idx)
+
+                case "switch_case_on_newline":
+                    switchCase_visitPost.append(idx)
+
+                case "test_case_accessibility":
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    typeAliasDecl_visitPost.append(idx)
+                    variableDecl_visitPost.append(idx)
+
+                case "todo":
+                    token_visitPost.append(idx)
+
+                case "toggle_bool":
+                    exprList_visitPost.append(idx)
+
+                case "trailing_closure":
+                    conditionElementList_visit.append(idx)
+                    forStmt_visit.append(idx)
+                    functionCallExpr_visitPost.append(idx)
+
+                case "trailing_comma":
+                    arrayElementList_visitPost.append(idx)
+                    dictionaryElementList_visitPost.append(idx)
+
+                case "trailing_semicolon":
+                    token_visitPost.append(idx)
+
+                case "trailing_whitespace":
+                    sourceFile_visit.append(idx)
+
+                case "type_body_length":
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    extensionDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "type_contents_order":
+                    actorDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    extensionDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+
+                case "type_name":
+                    actorDecl_visitPost.append(idx)
+                    associatedTypeDecl_visitPost.append(idx)
+                    classDecl_visitPost.append(idx)
+                    enumDecl_visitPost.append(idx)
+                    protocolDecl_visitPost.append(idx)
+                    structDecl_visitPost.append(idx)
+                    typeAliasDecl_visitPost.append(idx)
+
+                case "typed_throws":
+                    catchClause_visitPost.append(idx)
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+
+                case "unavailable_condition":
+                    ifExpr_visitPost.append(idx)
+
+                case "unavailable_function":
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+
+                case "unhandled_throwing_task":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "unneeded_break_in_switch":
+                    switchCase_visitPost.append(idx)
+
+                case "unneeded_override":
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+
+                case "unneeded_parentheses_in_closure_argument":
+                    closureSignature_visitPost.append(idx)
+
+                case "unneeded_synthesized_initializer":
+                    structDecl_visit.append(idx)
+
+                case "unowned_variable_capture":
+                    token_visitPost.append(idx)
+
+                case "untyped_error_in_catch":
+                    catchClause_visitPost.append(idx)
+
+                case "unused_closure_parameter":
+                    closureExpr_visitPost.append(idx)
+
+                case "unused_control_flow_label":
+                    labeledStmt_visitPost.append(idx)
+
+                case "unused_enumerated":
+                    closureExpr_visit.append(idx)
+                    functionCallExpr_visit.append(idx)
+                    closureExpr_visitPost.append(idx)
+                    declReferenceExpr_visitPost.append(idx)
+                    forStmt_visitPost.append(idx)
+
+                case "unused_optional_binding":
+                    optionalBindingCondition_visitPost.append(idx)
+
+                case "unused_setter_value":
+                    accessorDecl_visitPost.append(idx)
+
+                case "url_macro":
+                    forceUnwrapExpr_visitPost.append(idx)
+
+                case "valid_ibinspectable":
+                    variableDecl_visitPost.append(idx)
+
+                case "vertical_parameter_alignment":
+                    functionDecl_visitPost.append(idx)
+                    initializerDecl_visitPost.append(idx)
+
+                case "vertical_parameter_alignment_on_call":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "vertical_whitespace":
+                    token_visit.append(idx)
+
+                case "vertical_whitespace_between_cases":
+                    switchCaseList_visitPost.append(idx)
+
+                case "void_function_in_ternary":
+                    ternaryExpr_visitPost.append(idx)
+                    unresolvedTernaryExpr_visitPost.append(idx)
+
+                case "void_return":
+                    returnClause_visitPost.append(idx)
+
+                case "weak_delegate":
+                    variableDecl_visitPost.append(idx)
+
+                case "xct_specific_matcher":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "xctfail_message":
+                    functionCallExpr_visitPost.append(idx)
+
+                case "yoda_condition":
+                    guardStmt_visitPost.append(idx)
+                    ifExpr_visitPost.append(idx)
+                    repeatStmt_visitPost.append(idx)
+                    whileStmt_visitPost.append(idx)
+
+                default:
+                    break
             }
         }
-        self.skipDepths = Array(repeating: 0, count: visitors.count)
+        skipDepths = Array(repeating: 0, count: visitors.count)
     }
 
     override func visit(_ node: AccessorBlockSyntax) -> SyntaxVisitorContinueKind {
@@ -1707,7 +1707,7 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == ActorDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
@@ -1736,7 +1736,7 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == ClassDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
@@ -1849,7 +1849,7 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == EnumDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
@@ -1866,7 +1866,7 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == ExtensionDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
@@ -1907,7 +1907,7 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == FunctionDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
@@ -1972,7 +1972,7 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == InitializerDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
@@ -2049,7 +2049,7 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == ProtocolDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
@@ -2102,7 +2102,7 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == StructDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
@@ -2119,7 +2119,7 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == SubscriptDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
@@ -2220,7 +2220,7 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == VariableDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
@@ -2273,7 +2273,7 @@ final class LintPipeline: SyntaxVisitor {
         for idx in actorDecl_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == ActorDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
@@ -2348,7 +2348,7 @@ final class LintPipeline: SyntaxVisitor {
         for idx in classDecl_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == ClassDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
@@ -2542,7 +2542,7 @@ final class LintPipeline: SyntaxVisitor {
         for idx in enumDecl_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == EnumDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
@@ -2564,7 +2564,7 @@ final class LintPipeline: SyntaxVisitor {
         for idx in extensionDecl_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == ExtensionDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
@@ -2620,7 +2620,7 @@ final class LintPipeline: SyntaxVisitor {
         for idx in functionDecl_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == FunctionDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
@@ -2740,7 +2740,7 @@ final class LintPipeline: SyntaxVisitor {
         for idx in initializerDecl_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == InitializerDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
@@ -2877,7 +2877,7 @@ final class LintPipeline: SyntaxVisitor {
         for idx in protocolDecl_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == ProtocolDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
@@ -2938,7 +2938,7 @@ final class LintPipeline: SyntaxVisitor {
         for idx in structDecl_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == StructDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
@@ -2960,7 +2960,7 @@ final class LintPipeline: SyntaxVisitor {
         for idx in subscriptDecl_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == SubscriptDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
@@ -3089,7 +3089,7 @@ final class LintPipeline: SyntaxVisitor {
         for idx in variableDecl_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
-        for idx in 0..<visitors.count {
+        for idx in 0 ..< visitors.count {
             if skipSets[idx].contains(where: { $0 == VariableDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }

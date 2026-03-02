@@ -16,20 +16,20 @@ struct ViolationMessage: Hashable, Sendable, CustomStringConvertible,
     var description: String { text }
 
     /// Whether the message contains the given substring.
-    func contains<S: StringProtocol>(_ other: S) -> Bool {
+    func contains(_ other: some StringProtocol) -> Bool {
         text.contains(other)
     }
 
     init(stringLiteral value: String) {
-        self.text = value
+        text = value
     }
 
     init(stringInterpolation: DefaultStringInterpolation) {
-        self.text = String(stringInterpolation: stringInterpolation)
+        text = String(stringInterpolation: stringInterpolation)
     }
 
     init(from decoder: any Decoder) throws {
-        self.text = try decoder.singleValueContainer().decode(String.self)
+        text = try decoder.singleValueContainer().decode(String.self)
     }
 
     func encode(to encoder: any Encoder) throws {

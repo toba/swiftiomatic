@@ -9,7 +9,7 @@ struct NestingRule {
 
 extension ViolationMessage {
     fileprivate static func nestingTooDeep(
-        _ targetName: String, threshold: Int, pluralSuffix: String
+        _ targetName: String, threshold: Int, pluralSuffix: String,
     ) -> Self {
         "\(targetName) should be nested at most \(threshold) level\(pluralSuffix) deep"
     }
@@ -182,7 +182,11 @@ extension NestingRule {
             violations.append(
                 SyntaxViolation(
                     position: triggeringToken.positionAfterSkippingLeadingTrivia,
-                    message: .nestingTooDeep(targetName, threshold: threshold, pluralSuffix: pluralSuffix),
+                    message: .nestingTooDeep(
+                        targetName,
+                        threshold: threshold,
+                        pluralSuffix: pluralSuffix,
+                    ),
                     severity: severity,
                 ),
             )

@@ -186,7 +186,10 @@ extension Rule {
         RuleExamples(
             nonTriggering: nonTriggeringExamples.map { CodeExample(code: $0.code) },
             triggering: triggeringExamples.map { CodeExample(code: $0.code) },
-            corrections: corrections.map { CorrectionExample(before: $0.key.code, after: $0.value.code) },
+            corrections: corrections.map { CorrectionExample(
+                before: $0.key.code,
+                after: $0.value.code,
+            ) },
         )
     }
 }
@@ -208,7 +211,7 @@ extension Rule {
         } else {
             throw SwiftiomaticError.invalidConfiguration(ruleID: Self.identifier)
         }
-        try self.options.apply(configuration: normalized)
+        try options.apply(configuration: normalized)
     }
 
     func validate(file: SwiftSource, using _: RuleStorage, compilerArguments: [String])
@@ -345,7 +348,6 @@ extension CorrectableRule {
         correct(file: file, compilerArguments: compilerArguments)
     }
 }
-
 
 /// :nodoc:
 extension [any Rule] {

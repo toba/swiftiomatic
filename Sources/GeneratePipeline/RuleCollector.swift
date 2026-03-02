@@ -22,7 +22,7 @@ enum RuleCollector {
     /// Collect all rules defined in the given source file
     static func collectRules(
         from filePath: String,
-        codeBlockNodeTypes: Set<String>
+        codeBlockNodeTypes: Set<String>,
     ) -> (rules: [RuleInfo], ruleTypes: [RuleTypeInfo]) {
         guard let source = try? String(contentsOfFile: filePath, encoding: .utf8) else {
             return ([], [])
@@ -30,7 +30,7 @@ enum RuleCollector {
         let tree = Parser.parse(source: source)
         let collector = RuleFileVisitor(
             viewMode: .sourceAccurate,
-            codeBlockNodeTypes: codeBlockNodeTypes
+            codeBlockNodeTypes: codeBlockNodeTypes,
         )
         collector.walk(tree)
         return (collector.rules, collector.ruleTypes)
@@ -66,7 +66,7 @@ private final class RuleFileVisitor: SyntaxVisitor {
                 isCollecting: false,
                 isAnalyzer: false,
                 isSourceKitAST: false,
-                conformsToSwiftSyntaxRule: false
+                conformsToSwiftSyntaxRule: false,
             )
         }
         return .visitChildren
@@ -78,12 +78,12 @@ private final class RuleFileVisitor: SyntaxVisitor {
 
         // Check for protocol conformances
         if let inheritanceClause = node.inheritanceClause {
-            let conformances = inheritanceClause.inheritedTypes.map {
-                $0.type.trimmedDescription
-            }
+            let conformances = inheritanceClause.inheritedTypes.map(\.type.trimmedDescription)
             if var info = ruleStructs[extendedType] {
                 for conformance in conformances {
-                    if conformance == "SwiftSyntaxRule" || conformance == "SwiftSyntaxCorrectableRule" {
+                    if conformance == "SwiftSyntaxRule" || conformance ==
+                        "SwiftSyntaxCorrectableRule"
+                    {
                         info.conformsToSwiftSyntaxRule = true
                     }
                     if conformance == "AnalyzerRule" {
@@ -130,7 +130,7 @@ private final class RuleFileVisitor: SyntaxVisitor {
                 // Extract just the base type name, stripping generic parameters
                 let baseName: String
                 if let angleBracketIndex = typeName.firstIndex(of: "<") {
-                    baseName = String(typeName[typeName.startIndex..<angleBracketIndex])
+                    baseName = String(typeName[typeName.startIndex ..< angleBracketIndex])
                 } else {
                     baseName = typeName
                 }
@@ -182,7 +182,7 @@ private final class RuleFileVisitor: SyntaxVisitor {
             parentClassName: parent,
             enclosingRuleType: enclosingType,
             visitNodeTypes: visitNodeTypes,
-            visitPostNodeTypes: visitPostNodeTypes
+            visitPostNodeTypes: visitPostNodeTypes,
         )
 
         return .skipChildren
@@ -237,7 +237,7 @@ private final class RuleFileVisitor: SyntaxVisitor {
                 ruleID: ruleInfo.ruleID,
                 visitNodeTypes: visitNodeTypes,
                 visitPostNodeTypes: visitPostNodeTypes,
-                isPipelineEligible: eligible
+                isPipelineEligible: eligible,
             ))
         }
 
@@ -245,14 +245,14 @@ private final class RuleFileVisitor: SyntaxVisitor {
         for (_, structInfo) in ruleStructs {
             ruleTypes.append(RuleTypeInfo(
                 typeName: structInfo.typeName,
-                ruleID: structInfo.ruleID
+                ruleID: structInfo.ruleID,
             ))
         }
     }
 
     private func extractStaticStringProperty(
         from memberBlock: MemberBlockSyntax,
-        named propertyName: String
+        named propertyName: String,
     ) -> String? {
         for member in memberBlock.members {
             if let varDecl = member.decl.as(VariableDeclSyntax.self),

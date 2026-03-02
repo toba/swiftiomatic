@@ -45,7 +45,7 @@ struct SyntaxViolation: Comparable, Hashable {
         suggestion: String? = nil,
     ) {
         self.position = position
-        self.reason = message
+        reason = message
         self.severity = severity
         self.correction = correction
         self.confidence = confidence

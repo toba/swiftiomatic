@@ -1,5 +1,5 @@
-import Foundation
 import Yams
+import Foundation
 
 /// The configuration struct, user-defined in the `.swiftiomatic.yaml` file
 public struct Configuration {
@@ -214,7 +214,8 @@ public struct Configuration {
                 )
                 self.init(rulesMode: rulesMode, cachePath: cachePath)
             } else {
-                Console.printError(SwiftiomaticError.wrap(error: error).asError.localizedDescription)
+                Console
+                    .printError(SwiftiomaticError.wrap(error: error).asError.localizedDescription)
                 Console.fatalError("Could not read configuration")
             }
         }
@@ -291,7 +292,8 @@ public struct Configuration {
         // Suggest section
         if let suggest = yaml["suggest"] as? [String: Any] {
             if let confidence = suggest["min_confidence"] as? String,
-               let level = Confidence(rawValue: confidence) {
+               let level = Confidence(rawValue: confidence)
+            {
                 config.suggestMinConfidence = level
             }
         }
@@ -307,7 +309,8 @@ public struct Configuration {
                 config.formatMaxWidth = maxWidth
             }
             if let version = format["swift_version"] as? String,
-               let parsed = Version(rawValue: version) {
+               let parsed = Version(rawValue: version)
+            {
                 config.formatSwiftVersion = parsed
             }
             if let maxBlanks = format["maximum_blank_lines"] as? Int {
@@ -398,8 +401,11 @@ extension Configuration {
         if formatMaximumBlankLines != defaults.formatMaximumBlankLines {
             format["maximum_blank_lines"] = formatMaximumBlankLines
         }
-        if formatLineBreakBeforeControlFlowKeywords != defaults.formatLineBreakBeforeControlFlowKeywords {
-            format["line_break_before_control_flow_keywords"] = formatLineBreakBeforeControlFlowKeywords
+        if formatLineBreakBeforeControlFlowKeywords != defaults
+            .formatLineBreakBeforeControlFlowKeywords
+        {
+            format["line_break_before_control_flow_keywords"] =
+                formatLineBreakBeforeControlFlowKeywords
         }
         if formatLineBreakBeforeEachArgument != defaults.formatLineBreakBeforeEachArgument {
             format["line_break_before_each_argument"] = formatLineBreakBeforeEachArgument

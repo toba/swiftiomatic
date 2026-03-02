@@ -46,7 +46,7 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
     ///   - location: The location of this violation.
     ///   - message: The typed message for this violation. Falls back to the rule's summary.
     init<R: Rule>(
-        ruleType: R.Type,
+        ruleType _: R.Type,
         severity: Severity = .warning,
         location: Location,
         message: ViolationMessage?,
@@ -58,11 +58,11 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
         ruleName = R.name
         self.severity = severity
         self.location = location
-        self.reason = message ?? ViolationMessage(stringLiteral: R.summary)
+        reason = message ?? ViolationMessage(stringLiteral: R.summary)
         self.confidence = confidence
         self.suggestion = suggestion
         #if DEBUG
-        Self.validateReason(self.reason, ruleIdentifier: ruleIdentifier)
+        Self.validateReason(reason, ruleIdentifier: ruleIdentifier)
         #endif
     }
 
@@ -74,7 +74,7 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
     ///   - location: The location of this violation.
     ///   - reason: The justification for this violation. Falls back to the rule's summary.
     init<R: Rule>(
-        ruleType: R.Type,
+        ruleType _: R.Type,
         severity: Severity = .warning,
         location: Location,
         reason: String? = nil,

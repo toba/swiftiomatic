@@ -70,7 +70,7 @@ public struct FormatEngine: Sendable {
 
     /// Creates an engine with the given configuration
     public init(configuration: FormatEngineConfiguration = .init()) {
-        self.engineConfiguration = configuration
+        engineConfiguration = configuration
     }
 
     /// Formats Swift source code and returns the formatted output
@@ -125,7 +125,8 @@ public struct FormatEngine: Sendable {
         }
         config.lineLength = engineConfiguration.lineLength
         config.maximumBlankLines = engineConfiguration.maximumBlankLines
-        config.lineBreakBeforeControlFlowKeywords = engineConfiguration.lineBreakBeforeControlFlowKeywords
+        config.lineBreakBeforeControlFlowKeywords = engineConfiguration
+            .lineBreakBeforeControlFlowKeywords
         config.lineBreakBeforeEachArgument = engineConfiguration.lineBreakBeforeEachArgument
         config.multiElementCollectionTrailingCommas = engineConfiguration.trailingCommas
         return config
