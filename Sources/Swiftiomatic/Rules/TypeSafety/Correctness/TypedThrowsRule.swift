@@ -24,6 +24,24 @@ struct TypedThrowsRule {
 
 }
 
+extension ViolationMessage {
+  fileprivate static func throwsOnlySingleType(_ label: String, errorType: String) -> Self {
+    "\(label) throws only '\(errorType)' but declares untyped 'throws'"
+  }
+
+  fileprivate static func resultReturnType(
+    _ funcName: String, successType: String, errorType: String
+  ) -> Self {
+    "Function '\(funcName)' returns Result<\(successType), \(errorType)> — consider throws(\(errorType)) -> \(successType) instead"
+  }
+
+  fileprivate static func catchClauseDowncast(
+    errorType: String, funcName: String
+  ) -> Self {
+    "Catch clause downcasts to '\(errorType)' — function '\(funcName)' may benefit from typed throws"
+  }
+}
+
 extension TypedThrowsRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
@@ -112,8 +130,7 @@ extension TypedThrowsRule {
       violations.append(
         SyntaxViolation(
           position: node.positionAfterSkippingLeadingTrivia,
-          reason:
-            "Function '\(funcName)' returns Result<\(successType), \(errorType)> — consider throws(\(errorType)) -> \(successType) instead",
+          message: .resultReturnType(funcName, successType: successType, errorType: errorType),
           severity: .warning,
           confidence: .low,
           suggestion: "func \(funcName)(...) throws(\(errorType)) -> \(successType)",
@@ -148,8 +165,7 @@ extension TypedThrowsRule {
             violations.append(
               SyntaxViolation(
                 position: node.positionAfterSkippingLeadingTrivia,
-                reason:
-                  "Catch clause downcasts to '\(errorType)' — function '\(funcDecl.name.text)' may benefit from typed throws",
+                message: .catchClauseDowncast(errorType: errorType, funcName: funcDecl.name.text),
                 severity: .warning,
                 confidence: .medium,
                 suggestion: "func \(funcDecl.name.text)(...) throws(\(errorType))",
@@ -198,7 +214,7 @@ extension TypedThrowsRule {
       violations.append(
         SyntaxViolation(
           position: position,
-          reason: "\(label) throws only '\(errorType)' but declares untyped 'throws'",
+          message: .throwsOnlySingleType(label, errorType: errorType),
           severity: .warning,
           confidence: collector.hasRethrows ? .medium : .high,
           suggestion: "\(suggestionPrefix)throws(\(errorType))",

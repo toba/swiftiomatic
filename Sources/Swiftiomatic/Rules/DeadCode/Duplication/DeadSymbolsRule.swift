@@ -29,6 +29,15 @@ struct DeadSymbolsRule: CollectingRule {
   typealias FileInfo = SymbolContribution
 
   var options = SeverityOption<Self>(.warning)
+}
+
+extension ViolationMessage {
+  fileprivate static func deadPrivateSymbol(kind: String, name: String) -> Self {
+    "Dead private \(kind): '\(name)' — no references found"
+  }
+}
+
+extension DeadSymbolsRule {
 
   func collectInfo(for file: SwiftSource) -> SymbolContribution {
     let filePath = file.path ?? ""
@@ -62,7 +71,7 @@ struct DeadSymbolsRule: CollectingRule {
           ruleType: Self.self,
           severity: options.severity,
           location: Location(file: filePath, line: decl.line, column: decl.column),
-          reason: "Dead private \(decl.kind): '\(decl.name)' — no references found",
+          message: .deadPrivateSymbol(kind: decl.kind, name: decl.name),
           confidence: .medium,
           suggestion: "Remove if unused, or change visibility if needed elsewhere",
         )

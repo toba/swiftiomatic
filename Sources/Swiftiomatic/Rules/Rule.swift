@@ -346,47 +346,6 @@ extension CorrectableRule {
     }
 }
 
-/// A correctable rule that applies corrections by replacing ranges in the offending file
-protocol SubstitutionCorrectableRule: CorrectableRule {
-    /// Return the ranges that violate this rule and should be replaced
-    ///
-    /// - Parameters:
-    ///   - file: The file in which to find ranges of violations for this rule.
-    /// - Returns: The ranges to be replaced in the specified file.
-    func violationRanges(in file: SwiftSource) -> [Range<String.Index>]
-
-    /// Return the substitution to apply for the given violation range
-    ///
-    /// - Parameters:
-    ///   - violationRange: The range of the violation that should be replaced.
-    ///   - file: The file in which the violation should be replaced.
-    /// - Returns: The range of the correction and its contents, if one could be computed.
-    func substitution(for violationRange: Range<String.Index>, in file: SwiftSource)
-        -> (Range<String.Index>, String)?
-}
-
-extension SubstitutionCorrectableRule {
-    func correct(file: SwiftSource) -> Int {
-        let violatingRanges = file.ruleEnabled(
-            violatingRanges: violationRanges(in: file),
-            for: self,
-        )
-        guard violatingRanges.isNotEmpty else {
-            return 0
-        }
-        var numberOfCorrections = 0
-        var contents = file.contents
-        for range in violatingRanges.sorted(by: { $0.lowerBound > $1.lowerBound }) {
-            if let (rangeToRemove, substitution) = substitution(for: range, in: file) {
-                contents.replaceSubrange(rangeToRemove, with: substitution)
-                numberOfCorrections += 1
-            }
-        }
-
-        file.write(contents)
-        return numberOfCorrections
-    }
-}
 
 /// :nodoc:
 extension [any Rule] {

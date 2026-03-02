@@ -142,6 +142,6 @@ import Testing
     try? rule.options.apply(configuration: config)
     let visitor = rule.makeVisitor(file: SwiftSource(contents: ""))
     visitor.walk(Parser.parse(source: "let a = " + code))
-    return visitor.violations.compactMap(\.reason)
+    return visitor.violations.compactMap { $0.reason?.text }
   }
 }

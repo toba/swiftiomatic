@@ -1,7 +1,7 @@
 import Foundation
 import SwiftIDEUtils
 
-struct PeriodSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
+struct PeriodSpacingRule: SyntaxOnlyRule, CorrectableRule {
     static let id = "period_spacing"
     static let name = "Period Spacing"
     static let summary = "Periods should not be followed by more than one space"
@@ -69,7 +69,32 @@ struct PeriodSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
     }
   var options = SeverityOption<Self>(.warning)
 
-  func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
+  func validate(file: SwiftSource) -> [RuleViolation] {
+    violationRanges(in: file).map { range in
+      RuleViolation(
+        ruleType: Self.self,
+        severity: options.severity,
+        location: Location(file: file, stringIndex: range.lowerBound),
+      )
+    }
+  }
+
+  func correct(file: SwiftSource) -> Int {
+    let violatingRanges = file.ruleEnabled(
+      violatingRanges: violationRanges(in: file),
+      for: self,
+    )
+    guard violatingRanges.isNotEmpty else { return 0 }
+
+    var contents = file.contents
+    for range in violatingRanges.sorted(by: { $0.lowerBound > $1.lowerBound }) {
+      contents.replaceSubrange(range, with: "")
+    }
+    file.write(contents)
+    return violatingRanges.count
+  }
+
+  private func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
     let str = file.stringView.string
     return file.syntaxClassifications
       .filter(\.kind.isComment)
@@ -88,21 +113,5 @@ struct PeriodSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
           }
       }
       .flatMap(\.self)
-  }
-
-  func validate(file: SwiftSource) -> [RuleViolation] {
-    violationRanges(in: file).map { range in
-      RuleViolation(
-        ruleType: Self.self,
-        severity: options.severity,
-        location: Location(file: file, stringIndex: range.lowerBound),
-      )
-    }
-  }
-
-  func substitution(for violationRange: Range<String.Index>, in _: SwiftSource)
-    -> (Range<String.Index>, String)?
-  {
-    (violationRange, "")
   }
 }

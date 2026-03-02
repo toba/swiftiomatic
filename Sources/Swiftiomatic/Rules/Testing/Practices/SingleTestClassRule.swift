@@ -75,9 +75,15 @@ struct SingleTestClassRule: SyntaxOnlyRule {
         ruleType: Self.self,
         severity: options.severity,
         location: Location(file: file, position: position.position),
-        reason: "\(classes.count) test classes found in this file",
+        message: .multipleTestClasses(count: classes.count),
       )
     }
+  }
+}
+
+extension ViolationMessage {
+  fileprivate static func multipleTestClasses(count: Int) -> Self {
+    "\(count) test classes found in this file"
   }
 }
 

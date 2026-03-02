@@ -17,12 +17,6 @@ struct FormatCommand: ParsableCommand {
     @Option(name: .long, help: "Path to .swiftiomatic.yaml config file")
     var config: String?
 
-    @Option(name: .long, parsing: .upToNextOption, help: "Enable specific rules")
-    var enable: [String] = []
-
-    @Option(name: .long, parsing: .upToNextOption, help: "Disable specific rules")
-    var disable: [String] = []
-
     @Option(name: .long, parsing: .upToNextOption, help: "Exclusion patterns")
     var exclude: [String] = []
 
@@ -32,17 +26,9 @@ struct FormatCommand: ParsableCommand {
     @Option(name: .long, help: "Output format for lint mode: text or json")
     var format: OutputFormat = .text
 
-    @Flag(name: .long, help: "List all available formatting rules")
-    var listRules = false
-
     func run() throws {
-        if listRules {
-            printRules()
-            return
-        }
-
         let cfg = loadConfig()
-        let engine = cfg.makeFormatEngine(additionalEnable: enable, additionalDisable: disable)
+        let engine = cfg.makeFormatEngine()
         let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
 
         if files.isEmpty {
@@ -93,8 +79,8 @@ struct FormatCommand: ParsableCommand {
         for file in files {
             do {
                 let source = try String(contentsOfFile: file, encoding: .utf8)
-                let changes = try engine.lint(source, filePath: file)
-                allDiagnostics.append(contentsOf: changes.map { $0.toDiagnostic() })
+                let findings = try engine.lint(source, filePath: file)
+                allDiagnostics.append(contentsOf: findings.map { $0.toDiagnostic() })
             } catch {
                 printError("Error linting \(file): \(error)")
             }
@@ -123,21 +109,6 @@ struct FormatCommand: ParsableCommand {
     }
 
     // MARK: - Helpers
-
-    private func printRules() {
-        let defaultRuleNames = Set(FormatRules.default.map(\.name))
-        for rule in FormatRules.all {
-            let status =
-                if rule.isDeprecated {
-                    " (deprecated)"
-                } else if defaultRuleNames.contains(rule.name) {
-                    ""
-                } else {
-                    " (disabled)"
-                }
-            print("\(rule.name)\(status)")
-        }
-    }
 
     private func loadConfig() -> Configuration {
         Configuration.loadUnified(configPath: config)

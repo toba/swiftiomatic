@@ -16,7 +16,7 @@ struct SyntaxViolation: Comparable, Hashable {
     /// The violation's position.
     let position: AbsolutePosition
     /// A specific reason for the violation.
-    let reason: String?
+    let reason: ViolationMessage?
     /// The violation's severity.
     let severity: Severity?
     /// An optional correction of the violation to be used in rewriting (see ``SwiftSyntaxCorrectableRule``). Can be
@@ -27,7 +27,35 @@ struct SyntaxViolation: Comparable, Hashable {
     /// A suggested fix for the violation.
     let suggestion: String?
 
-    /// Creates a `SyntaxViolation`.
+    /// Creates a `SyntaxViolation` with a typed ``ViolationMessage``.
+    ///
+    /// - Parameters:
+    ///   - position: The violations position in the analyzed source file.
+    ///   - message: The typed message for the violation if different from the rule's description.
+    ///   - severity: The severity of the violation if different from the rule's default configured severity.
+    ///   - correction: An optional correction of the violation to be used in rewriting.
+    ///   - confidence: The confidence level.
+    ///   - suggestion: A suggested fix for the violation.
+    init(
+        position: AbsolutePosition,
+        message: ViolationMessage?,
+        severity: Severity? = nil,
+        correction: Correction? = nil,
+        confidence: Confidence = .high,
+        suggestion: String? = nil,
+    ) {
+        self.position = position
+        self.reason = message
+        self.severity = severity
+        self.correction = correction
+        self.confidence = confidence
+        self.suggestion = suggestion
+    }
+
+    /// Creates a `SyntaxViolation` with a plain string reason.
+    ///
+    /// Prefer the ``init(position:message:severity:correction:confidence:suggestion:)`` overload
+    /// with a typed ``ViolationMessage`` for compile-time safety.
     ///
     /// - Parameters:
     ///   - position: The violations position in the analyzed source file.
@@ -45,7 +73,7 @@ struct SyntaxViolation: Comparable, Hashable {
         suggestion: String? = nil,
     ) {
         self.position = position
-        self.reason = reason
+        self.reason = reason.map { ViolationMessage(stringLiteral: $0) }
         self.severity = severity
         self.correction = correction
         self.confidence = confidence

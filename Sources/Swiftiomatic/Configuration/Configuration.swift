@@ -1,5 +1,5 @@
-import Yams
 import Foundation
+import Yams
 
 /// The configuration struct, user-defined in the `.swiftiomatic.yaml` file
 public struct Configuration {
@@ -39,13 +39,7 @@ public struct Configuration {
     /// Per-rule configuration overrides keyed by rule identifier
     public var lintRuleConfigs: [String: ConfigValue] = [:]
 
-    /// Format rules explicitly enabled
-    public var enabledFormatRules: [String] = []
-
-    /// Format rules explicitly disabled
-    public var disabledFormatRules: [String] = []
-
-    /// Format indent string
+    /// Format indent string (spaces or "\t" for tabs)
     public var formatIndent: String = "    "
 
     /// Format max line width
@@ -53,6 +47,18 @@ public struct Configuration {
 
     /// Format Swift version
     public var formatSwiftVersion: Version = "6.2"
+
+    /// Maximum consecutive blank lines allowed
+    public var formatMaximumBlankLines: Int = 1
+
+    /// Whether to put control flow keywords (else, catch) on a new line
+    public var formatLineBreakBeforeControlFlowKeywords: Bool = false
+
+    /// Whether to put each argument on its own line in declarations
+    public var formatLineBreakBeforeEachArgument: Bool = false
+
+    /// Whether to add trailing commas in multiline collections
+    public var formatTrailingCommas: Bool = true
 
     /// Minimum confidence level for suggest checks
     public var suggestMinConfidence: Confidence = .low
@@ -292,26 +298,29 @@ public struct Configuration {
 
         // Format section
         if let format = yaml["format"] as? [String: Any] {
-            if let rules = format["rules"] as? [String: Any] {
-                if let enable = rules["enable"] as? [String] {
-                    config.enabledFormatRules = enable
-                }
-                if let disable = rules["disable"] as? [String] {
-                    config.disabledFormatRules = disable
-                }
+            if let indent = format["indent"] as? String {
+                config.formatIndent = indent
+            } else if let indentWidth = format["indent"] as? Int {
+                config.formatIndent = String(repeating: " ", count: indentWidth)
             }
-
-            if let options = format["options"] as? [String: Any] {
-                if let indent = options["indent"] as? String {
-                    config.formatIndent = indent
-                }
-                if let maxWidth = options["maxwidth"] as? Int {
-                    config.formatMaxWidth = maxWidth
-                }
-                if let version = options["swiftversion"] as? String,
-                   let parsed = Version(rawValue: version) {
-                    config.formatSwiftVersion = parsed
-                }
+            if let maxWidth = format["max_width"] as? Int {
+                config.formatMaxWidth = maxWidth
+            }
+            if let version = format["swift_version"] as? String,
+               let parsed = Version(rawValue: version) {
+                config.formatSwiftVersion = parsed
+            }
+            if let maxBlanks = format["maximum_blank_lines"] as? Int {
+                config.formatMaximumBlankLines = maxBlanks
+            }
+            if let lineBreakKeywords = format["line_break_before_control_flow_keywords"] as? Bool {
+                config.formatLineBreakBeforeControlFlowKeywords = lineBreakKeywords
+            }
+            if let lineBreakArgs = format["line_break_before_each_argument"] as? Bool {
+                config.formatLineBreakBeforeEachArgument = lineBreakArgs
+            }
+            if let trailingCommas = format["trailing_commas"] as? Bool {
+                config.formatTrailingCommas = trailingCommas
             }
         }
 
@@ -345,23 +354,20 @@ public struct Configuration {
 extension Configuration {
     /// Create a ``FormatEngine`` configured from this configuration's format settings
     ///
-    /// - Parameters:
-    ///   - additionalEnable: Extra format rule names to enable beyond the configuration.
-    ///   - additionalDisable: Extra format rule names to disable beyond the configuration.
     /// - Returns: A configured ``FormatEngine``.
-    public func makeFormatEngine(
-        additionalEnable: [String] = [],
-        additionalDisable: [String] = []
-    ) -> FormatEngine {
-        var options = FormatOptions.default
-        options.indent = formatIndent
-        options.maxWidth = formatMaxWidth
-        options.swiftVersion = formatSwiftVersion
-        return FormatEngine(
-            enable: enabledFormatRules + additionalEnable,
-            disable: disabledFormatRules + additionalDisable,
-            options: options,
-        )
+    public func makeFormatEngine() -> FormatEngine {
+        var config = FormatEngineConfiguration()
+        if formatIndent == "\t" {
+            config.useTabs = true
+        } else {
+            config.indentWidth = formatIndent.count
+        }
+        config.lineLength = formatMaxWidth
+        config.maximumBlankLines = formatMaximumBlankLines
+        config.lineBreakBeforeControlFlowKeywords = formatLineBreakBeforeControlFlowKeywords
+        config.lineBreakBeforeEachArgument = formatLineBreakBeforeEachArgument
+        config.trailingCommas = formatTrailingCommas
+        return FormatEngine(configuration: config)
     }
 }
 
@@ -386,16 +392,21 @@ extension Configuration {
 
         // Format section
         var format: [String: Any] = [:]
-        var formatRules: [String: Any] = [:]
-        if !enabledFormatRules.isEmpty { formatRules["enable"] = enabledFormatRules }
-        if !disabledFormatRules.isEmpty { formatRules["disable"] = disabledFormatRules }
-        if !formatRules.isEmpty { format["rules"] = formatRules }
-
-        var formatOptions: [String: Any] = [:]
         let defaults = Configuration.default
-        if formatIndent != defaults.formatIndent { formatOptions["indent"] = formatIndent }
-        if formatMaxWidth != defaults.formatMaxWidth { formatOptions["maxwidth"] = formatMaxWidth }
-        if !formatOptions.isEmpty { format["options"] = formatOptions }
+        if formatIndent != defaults.formatIndent { format["indent"] = formatIndent }
+        if formatMaxWidth != defaults.formatMaxWidth { format["max_width"] = formatMaxWidth }
+        if formatMaximumBlankLines != defaults.formatMaximumBlankLines {
+            format["maximum_blank_lines"] = formatMaximumBlankLines
+        }
+        if formatLineBreakBeforeControlFlowKeywords != defaults.formatLineBreakBeforeControlFlowKeywords {
+            format["line_break_before_control_flow_keywords"] = formatLineBreakBeforeControlFlowKeywords
+        }
+        if formatLineBreakBeforeEachArgument != defaults.formatLineBreakBeforeEachArgument {
+            format["line_break_before_each_argument"] = formatLineBreakBeforeEachArgument
+        }
+        if formatTrailingCommas != defaults.formatTrailingCommas {
+            format["trailing_commas"] = formatTrailingCommas
+        }
         if !format.isEmpty { yaml["format"] = format }
 
         // Suggest section

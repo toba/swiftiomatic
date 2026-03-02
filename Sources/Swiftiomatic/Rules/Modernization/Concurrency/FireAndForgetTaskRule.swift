@@ -26,6 +26,22 @@ struct FireAndForgetTaskRule {
 
 }
 
+extension ViolationMessage {
+  fileprivate static func taskInViewLifecycle(_ location: String) -> Self {
+    "Task created in SwiftUI View \(location) — runs on every evaluation, not tied to view lifecycle"
+  }
+
+  fileprivate static func fireAndForgetInTeardown(_ scope: String) -> Self {
+    "Fire-and-forget Task in \(scope) — work continues after teardown with no cancellation handle"
+  }
+
+  fileprivate static let fireAndForgetTask: Self =
+    "Fire-and-forget Task — result not captured, cancellation not possible"
+
+  fileprivate static let onAppearContainsTask: Self =
+    ".onAppear contains Task { } — use .task modifier instead for automatic cancellation"
+}
+
 extension FireAndForgetTaskRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
@@ -97,8 +113,7 @@ extension FireAndForgetTaskRule {
         violations.append(
           SyntaxViolation(
             position: node.positionAfterSkippingLeadingTrivia,
-            reason:
-              "Task created in SwiftUI View \(location) — runs on every evaluation, not tied to view lifecycle",
+            message: .taskInViewLifecycle(location),
             severity: .warning,
             confidence: .medium,
             suggestion: "Use .task { } modifier to tie the Task to the view's lifecycle",
@@ -113,8 +128,7 @@ extension FireAndForgetTaskRule {
         violations.append(
           SyntaxViolation(
             position: node.positionAfterSkippingLeadingTrivia,
-            reason:
-              "Fire-and-forget Task in \(scope.description) — work continues after teardown with no cancellation handle",
+            message: .fireAndForgetInTeardown(scope.description),
             severity: .error,
             confidence: .high,
             suggestion: "Assign to a stored property or use structured concurrency",
@@ -124,7 +138,7 @@ extension FireAndForgetTaskRule {
         violations.append(
           SyntaxViolation(
             position: node.positionAfterSkippingLeadingTrivia,
-            reason: "Fire-and-forget Task — result not captured, cancellation not possible",
+            message: .fireAndForgetTask,
             severity: .warning,
             confidence: .medium,
             suggestion: "Assign to a variable if cancellation matters: `let task = Task { ... }`",
@@ -140,8 +154,7 @@ extension FireAndForgetTaskRule {
         violations.append(
           SyntaxViolation(
             position: node.positionAfterSkippingLeadingTrivia,
-            reason:
-              ".onAppear contains Task { } — use .task modifier instead for automatic cancellation",
+            message: .onAppearContainsTask,
             severity: .warning,
             confidence: .high,
             suggestion: "Replace .onAppear { Task { ... } } with .task { ... }",
@@ -156,8 +169,7 @@ extension FireAndForgetTaskRule {
           violations.append(
             SyntaxViolation(
               position: node.positionAfterSkippingLeadingTrivia,
-              reason:
-                ".onAppear contains Task { } — use .task modifier instead for automatic cancellation",
+              message: .onAppearContainsTask,
               severity: .warning,
               confidence: .high,
               suggestion: "Replace .onAppear { Task { ... } } with .task { ... }",

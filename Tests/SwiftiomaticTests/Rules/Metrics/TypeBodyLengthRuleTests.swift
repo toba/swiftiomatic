@@ -61,7 +61,7 @@ import Testing
       allViolations.append(contentsOf: try await ruleViolations(example, rule: TypeBodyLengthRule.identifier, configuration: ["warning": 2]))
     }
     let types = allViolations.compactMap {
-      $0.reason.split(separator: " ", maxSplits: 1).first
+      $0.reason.text.split(separator: " ", maxSplits: 1).first
     }
 
     #expect(

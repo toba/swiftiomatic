@@ -268,7 +268,7 @@ private func render(violations: [RuleViolation], in contents: String) -> String 
       + [
         "\(violation.severity.rawValue): ",
         "\(violation.ruleName) Violation: ",
-        violation.reason,
+        violation.reason.text,
         " (\(violation.ruleIdentifier))",
       ].joined()
     if line >= contents.count {

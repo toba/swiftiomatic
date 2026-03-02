@@ -7,6 +7,14 @@ struct NestingRule {
     var options = NestingOptions()
 }
 
+extension ViolationMessage {
+    fileprivate static func nestingTooDeep(
+        _ targetName: String, threshold: Int, pluralSuffix: String
+    ) -> Self {
+        "\(targetName) should be nested at most \(threshold) level\(pluralSuffix) deep"
+    }
+}
+
 extension NestingRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
@@ -174,7 +182,7 @@ extension NestingRule {
             violations.append(
                 SyntaxViolation(
                     position: triggeringToken.positionAfterSkippingLeadingTrivia,
-                    reason: "\(targetName) should be nested at most \(threshold) level\(pluralSuffix) deep",
+                    message: .nestingTooDeep(targetName, threshold: threshold, pluralSuffix: pluralSuffix),
                     severity: severity,
                 ),
             )

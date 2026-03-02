@@ -1,87 +1,133 @@
 import Foundation
+@preconcurrency import SwiftFormat
+
+/// A record of a formatting issue found by the swift-format linter
+public struct FormatFinding: Sendable, Equatable {
+    /// The category/rule that produced this finding
+    public let category: String
+
+    /// Human-readable description
+    public let message: String
+
+    /// Source file path
+    public let filePath: String?
+
+    /// 1-indexed line number
+    public let line: Int
+
+    /// 1-indexed column number
+    public let column: Int
+
+    /// Converts this finding into a unified ``Diagnostic`` for reporting
+    public func toDiagnostic() -> Diagnostic {
+        Diagnostic(
+            ruleID: category,
+            source: .format,
+            severity: .warning,
+            confidence: .high,
+            file: filePath ?? "<unknown>",
+            line: line,
+            column: column,
+            message: message,
+            suggestion: nil,
+            canAutoFix: true,
+        )
+    }
+}
+
+/// Configuration for the format engine, mapped from `.swiftiomatic.yaml`
+public struct FormatEngineConfiguration: Sendable {
+    /// Number of spaces per indent level (0 means use tabs)
+    public var indentWidth: Int = 4
+
+    /// Whether to indent with tabs instead of spaces
+    public var useTabs: Bool = false
+
+    /// Maximum line length before wrapping
+    public var lineLength: Int = 120
+
+    /// Maximum consecutive blank lines allowed
+    public var maximumBlankLines: Int = 1
+
+    /// Whether to put `else`/`catch` on a new line
+    public var lineBreakBeforeControlFlowKeywords: Bool = false
+
+    /// Whether to put each argument on its own line
+    public var lineBreakBeforeEachArgument: Bool = false
+
+    /// Trailing comma behavior in multiline collections
+    public var trailingCommas: Bool = true
+
+    public init() {}
+}
 
 /// A configured formatting engine that can format or lint Swift source code
 ///
-/// Wraps a set of ``FormatRule`` values and ``FormatOptions`` into a
-/// reusable, thread-safe entry point for formatting or linting operations.
+/// Uses swift-format's Oppen-style pretty-printer for formatting and whitespace linting.
 public struct FormatEngine: Sendable {
-    public let rules: [FormatRule]
-    public let options: FormatOptions
+    /// The engine configuration
+    public let engineConfiguration: FormatEngineConfiguration
 
-    /// Creates an engine with the given rules and options
-    ///
-    /// - Parameters:
-    ///   - rules: The format rules to apply. Defaults to ``FormatRules/default``.
-    ///   - options: The formatting options to use. Defaults to ``FormatOptions/default``.
-    public init(
-        rules: [FormatRule] = FormatRules.default,
-        options: FormatOptions = .default,
-    ) {
-        self.rules = rules
-        self.options = options
+    /// Creates an engine with the given configuration
+    public init(configuration: FormatEngineConfiguration = .init()) {
+        self.engineConfiguration = configuration
     }
 
     /// Formats Swift source code and returns the formatted output
-    ///
-    /// - Parameters:
-    ///   - source: The Swift source code string to format.
     public func format(_ source: String) throws -> String {
-        let tokens = tokenize(source)
-        let output = try applyRules(
-            rules,
-            to: tokens,
-            with: options,
-            trackChanges: true,
-            range: nil,
+        let formatter = SwiftFormatter(configuration: makeSwiftFormatConfiguration())
+        var output = ""
+        try formatter.format(
+            source: source,
+            assumingFileURL: nil,
+            selection: .infinite,
+            to: &output,
         )
-        return sourceCode(for: output.tokens)
+        return output
     }
 
-    /// Lints Swift source code and returns the changes that would be made
-    ///
-    /// - Parameters:
-    ///   - source: The Swift source code string to lint.
-    public func lint(_ source: String) throws -> [Formatter.Change] {
-        let tokens = tokenize(source)
-        return try applyRules(rules, to: tokens, with: options, trackChanges: true, range: nil)
-            .changes
+    /// Lints Swift source code and returns findings (formatting issues)
+    public func lint(_ source: String) throws -> [FormatFinding] {
+        try lint(source, filePath: nil)
     }
 
     /// Lints Swift source code with a file path for diagnostic output
-    ///
-    /// - Parameters:
-    ///   - source: The Swift source code string to lint.
-    ///   - filePath: The file path included in each reported ``Formatter/Change``.
-    public func lint(_ source: String, filePath: String) throws -> [Formatter.Change] {
-        var opts = options
-        opts.fileInfo = FileInfo(filePath: filePath)
-        let tokens = tokenize(source)
-        return try applyRules(rules, to: tokens, with: opts, trackChanges: true, range: nil).changes
+    public func lint(_ source: String, filePath: String) throws -> [FormatFinding] {
+        try lint(source, filePath: filePath as String?)
     }
 
-    /// Creates an engine by selectively enabling or disabling rules by name
-    ///
-    /// - Parameters:
-    ///   - enable: Rule names to add to the default set.
-    ///   - disable: Rule names to remove from the active set.
-    ///   - options: The formatting options to use.
-    public init(
-        enable: [String] = [],
-        disable: [String] = [],
-        options: FormatOptions = .default,
-    ) {
-        var activeRules = FormatRules.default
-        if !enable.isEmpty {
-            let extraRules = FormatRules.named(enable)
-            for rule in extraRules where !activeRules.contains(rule) {
-                activeRules.append(rule)
-            }
+    private func lint(_ source: String, filePath: String?) throws -> [FormatFinding] {
+        nonisolated(unsafe) var findings: [FormatFinding] = []
+        let linter = SwiftLinter(configuration: makeSwiftFormatConfiguration()) { finding in
+            let line = finding.location?.line ?? 1
+            let column = finding.location?.column ?? 1
+            findings.append(FormatFinding(
+                category: "\(finding.category)",
+                message: "\(finding.message)",
+                filePath: filePath,
+                line: line,
+                column: column,
+            ))
         }
-        if !disable.isEmpty {
-            let disabledRules = Set(FormatRules.named(disable))
-            activeRules.removeAll { disabledRules.contains($0) }
+
+        let url = URL(filePath: filePath ?? "/tmp/stdin.swift")
+        try linter.lint(source: source, assumingFileURL: url)
+        return findings
+    }
+
+    /// Maps ``FormatEngineConfiguration`` to swift-format's ``SwiftFormat/Configuration``
+    private func makeSwiftFormatConfiguration() -> SwiftFormat.Configuration {
+        var config = SwiftFormat.Configuration()
+        if engineConfiguration.useTabs {
+            config.indentation = .tabs(1)
+        } else {
+            config.indentation = .spaces(engineConfiguration.indentWidth)
         }
-        rules = activeRules
-        self.options = options
+        config.lineLength = engineConfiguration.lineLength
+        config.maximumBlankLines = engineConfiguration.maximumBlankLines
+        config.lineBreakBeforeControlFlowKeywords = engineConfiguration.lineBreakBeforeControlFlowKeywords
+        config.lineBreakBeforeEachArgument = engineConfiguration.lineBreakBeforeEachArgument
+        config.multiElementCollectionTrailingCommas = engineConfiguration.trailingCommas
+        return config
     }
 }

@@ -10,6 +10,14 @@ struct ModifierOrderRule {
 
 }
 
+extension ViolationMessage {
+    fileprivate static func modifierShouldComeBefore(
+        _ first: String, before second: String
+    ) -> Self {
+        "\(first) modifier should come before \(second)"
+    }
+}
+
 extension ModifierOrderRule: SwiftSyntaxCorrectableRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
@@ -53,7 +61,7 @@ extension ModifierOrderRule {
                 violations.append(
                     .init(
                         position: introducer.positionAfterSkippingLeadingTrivia,
-                        reason: "\(diff.0.keyword) modifier should come before \(diff.1.keyword)",
+                        message: .modifierShouldComeBefore(diff.0.keyword, before: diff.1.keyword),
                     ),
                 )
             }

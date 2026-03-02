@@ -1,7 +1,7 @@
 import Foundation
 import SwiftIDEUtils
 
-struct CommentSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
+struct CommentSpacingRule: SyntaxOnlyRule, CorrectableRule {
     static let id = "comment_spacing"
     static let name = "Comment Spacing"
     static let summary = "Prefer at least one space after slashes for comments"
@@ -169,7 +169,32 @@ struct CommentSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
     }
   var options = SeverityOption<Self>(.warning)
 
-  func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
+  func validate(file: SwiftSource) -> [RuleViolation] {
+    violationRanges(in: file).map { range in
+      RuleViolation(
+        ruleType: Self.self,
+        severity: options.severity,
+        location: Location(file: file, stringIndex: range.lowerBound),
+      )
+    }
+  }
+
+  func correct(file: SwiftSource) -> Int {
+    let violatingRanges = file.ruleEnabled(
+      violatingRanges: violationRanges(in: file),
+      for: self,
+    )
+    guard violatingRanges.isNotEmpty else { return 0 }
+
+    var contents = file.contents
+    for range in violatingRanges.sorted(by: { $0.lowerBound > $1.lowerBound }) {
+      contents.replaceSubrange(range, with: " ")
+    }
+    file.write(contents)
+    return violatingRanges.count
+  }
+
+  private func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
     // Find all comment tokens in the file and regex search them for violations
     let str = file.stringView.string
     return file.syntaxClassifications
@@ -191,21 +216,5 @@ struct CommentSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
           }
       }
       .flatMap(\.self)
-  }
-
-  func validate(file: SwiftSource) -> [RuleViolation] {
-    violationRanges(in: file).map { range in
-      RuleViolation(
-        ruleType: Self.self,
-        severity: options.severity,
-        location: Location(file: file, stringIndex: range.lowerBound),
-      )
-    }
-  }
-
-  func substitution(for violationRange: Range<String.Index>, in _: SwiftSource)
-    -> (Range<String.Index>, String)?
-  {
-    (violationRange, " ")
   }
 }

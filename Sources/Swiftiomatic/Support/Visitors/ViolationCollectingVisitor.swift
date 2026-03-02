@@ -1,5 +1,11 @@
 import SwiftSyntax
 
+/// Protocol enabling the lint pipeline to read violations from type-erased visitors
+protocol ViolationCollectingVisitorProtocol: AnyObject {
+    var violations: [SyntaxViolation] { get }
+    var skippableDeclarations: [any DeclSyntaxProtocol.Type] { get }
+}
+
 /// Base `SyntaxVisitor` that accumulates ``SyntaxViolation`` positions during AST traversal
 ///
 /// Subclasses override `visitPost` methods to append to ``violations``.
@@ -83,6 +89,8 @@ class ViolationCollectingVisitor<Configuration: RuleOptions>: SyntaxVisitor {
             .contains { $0 == node.syntaxNodeType } ? .skipChildren : .visitChildren
     }
 }
+
+extension ViolationCollectingVisitor: ViolationCollectingVisitorProtocol {}
 
 extension [any DeclSyntaxProtocol.Type] {
     /// All visitable declaration syntax types

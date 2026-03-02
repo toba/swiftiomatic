@@ -12,7 +12,7 @@ import Testing
       "Availability attribute is using a version (10.11) that is satisfied by "
       + "the deployment target (10.14) for platform macOS"
     #expect(violations.count == 1)
-    #expect(violations.first?.reason == expectedMessage)
+    #expect(violations.first?.reason.text == expectedMessage)
   }
 
   @Test(.disabled("Rule produces 0 violations in this configuration"))
@@ -24,7 +24,7 @@ import Testing
       "Availability condition is using a version (4) that is satisfied by "
       + "the deployment target (5.0.1) for platform watchOS"
     #expect(violations.count == 1)
-    #expect(violations.first?.reason == expectedMessage)
+    #expect(violations.first?.reason.text == expectedMessage)
   }
 
   @Test(.disabled("Rule produces 0 violations in this configuration"))
@@ -36,6 +36,6 @@ import Testing
       "Availability negative condition is using a version (14) that is satisfied by "
       + "the deployment target (15.0) for platform iOS"
     #expect(violations.count == 1)
-    #expect(violations.first?.reason == expectedMessage)
+    #expect(violations.first?.reason.text == expectedMessage)
   }
 }

@@ -13,14 +13,8 @@ public enum RuleCatalog {
             entries.append(makeEntry(from: ruleType))
         }
 
-        // Format rules (token-based, via SwiftFormat engine)
-        let defaultRuleNames = Set(FormatRules.default.map(\.name))
-        for rule in FormatRules.all {
-            let adapter = FormatRuleConfigurationAdapter(
-                rule, isDefault: defaultRuleNames.contains(rule.name),
-            )
-            entries.append(adapter.toEntry())
-        }
+        // Format rules are now handled by swift-format's pretty-printer.
+        // The catalog reports only lint and suggest rules.
 
         return entries.sorted { ($0.scope.rawValue, $0.id) < ($1.scope.rawValue, $1.id) }
     }

@@ -34,7 +34,7 @@ extension SwiftSyntaxRule where OptionsType: SeverityBasedRuleOptions {
             ruleType: Self.self,
             severity: violation.severity ?? options.severity,
             location: Location(file: file, position: violation.position),
-            reason: violation.reason,
+            message: violation.reason,
             confidence: violation.confidence,
             suggestion: violation.suggestion,
         )
@@ -75,7 +75,7 @@ extension SwiftSyntaxRule {
             ruleType: Self.self,
             severity: severity,
             location: Location(file: file, position: violation.position),
-            reason: violation.reason,
+            message: violation.reason,
             confidence: violation.confidence,
             suggestion: violation.suggestion,
         )
@@ -83,5 +83,10 @@ extension SwiftSyntaxRule {
 
     func preprocess(file: SwiftSource) -> SourceFileSyntax? {
         file.syntaxTree
+    }
+
+    /// Create a type-erased visitor for use in the lint pipeline
+    func makePipelineVisitor(file: SwiftSource) -> SyntaxVisitor & ViolationCollectingVisitorProtocol {
+        makeVisitor(file: file)
     }
 }

@@ -23,7 +23,7 @@ import Testing
       : Example(source, configuration: configuration!)
 
     let violations = await ruleViolations(example)
-    #expect(violations.first?.reason == expected)
+    #expect(violations.first?.reason.text == expected)
   }
 
   private func ruleViolations(

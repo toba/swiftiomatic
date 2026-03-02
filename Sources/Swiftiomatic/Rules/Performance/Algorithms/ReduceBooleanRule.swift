@@ -28,6 +28,12 @@ struct ReduceBooleanRule {
 
 }
 
+extension ViolationMessage {
+  fileprivate static func useFunctionInstead(_ function: String) -> Self {
+    "Use `\(function)` instead"
+  }
+}
+
 extension ReduceBooleanRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
@@ -51,7 +57,7 @@ extension ReduceBooleanRule {
       violations.append(
         SyntaxViolation(
           position: calledExpression.declName.baseName.positionAfterSkippingLeadingTrivia,
-          reason: "Use `\(suggestedFunction)` instead",
+          message: .useFunctionInstead(suggestedFunction),
         ),
       )
     }

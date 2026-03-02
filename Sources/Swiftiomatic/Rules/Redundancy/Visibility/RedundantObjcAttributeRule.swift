@@ -5,34 +5,47 @@ private let attributeNamesImplyingObjc: Set<String> = [
   "IBAction", "IBOutlet", "IBInspectable", "GKInspectable", "IBDesignable", "NSManaged",
 ]
 
-struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule {
+struct RedundantObjcAttributeRule {
     static let id = "redundant_objc_attribute"
     static let name = "Redundant @objc Attribute"
     static let summary = "Objective-C attribute (@objc) is redundant in declaration"
     static let isCorrectable = true
   var options = SeverityOption<Self>(.warning)
+}
 
+extension RedundantObjcAttributeRule: SwiftSyntaxCorrectableRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    final class Visitor: ViolationCollectingVisitor<OptionsType> {
-      override func visitPost(_ node: AttributeListSyntax) {
-        if let objcAttribute = node.violatingObjCAttribute {
-          violations.append(objcAttribute.positionAfterSkippingLeadingTrivia)
-        }
-      }
-    }
-    return Visitor(configuration: options, file: file)
+    Visitor(configuration: options, file: file)
   }
 
-  func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
-    makeVisitor(file: file)
-      .walk(tree: file.syntaxTree, handler: \.violations)
-      .compactMap { violation in
-        let end = AbsolutePosition(
-          utf8Offset: violation.position.utf8Offset
-            + "@objc"
-            .count)
-        return file.stringView.stringRange(start: violation.position, end: end)
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+    override func visitPost(_ node: AttributeListSyntax) {
+      guard let objcAttribute = node.violatingObjCAttribute else { return }
+
+      let start = objcAttribute.positionAfterSkippingLeadingTrivia
+      // Extend removal through trailing whitespace/newlines to the next meaningful token
+      let end: AbsolutePosition
+      if let nextToken = objcAttribute.lastToken(viewMode: .sourceAccurate)?
+        .nextToken(viewMode: .sourceAccurate)
+      {
+        end = nextToken.positionAfterSkippingLeadingTrivia
+      } else {
+        end = objcAttribute.endPosition
       }
+
+      let correction = SyntaxViolation.Correction(
+        start: start,
+        end: end,
+        replacement: "",
+      )
+      violations.append(
+        SyntaxViolation(
+          position: start,
+          severity: configuration.severity,
+          correction: correction,
+        ),
+      )
+    }
   }
 }
 
@@ -105,20 +118,5 @@ extension AttributeListSyntax {
       return objcAttribute
     }
     return nil
-  }
-}
-
-extension RedundantObjcAttributeRule {
-  func substitution(for violationRange: Range<String.Index>, in file: SwiftSource)
-    -> (Range<String.Index>, String)?
-  {
-    let contents = file.contents
-    var endIndex = violationRange.upperBound
-    while endIndex < contents.endIndex,
-      contents[endIndex].isWhitespace || contents[endIndex].isNewline
-    {
-      endIndex = contents.index(after: endIndex)
-    }
-    return (violationRange.lowerBound..<endIndex, "")
   }
 }

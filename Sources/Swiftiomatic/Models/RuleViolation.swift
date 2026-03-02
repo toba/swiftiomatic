@@ -18,7 +18,7 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
     private(set) var location: Location
 
     /// The justification for this violation.
-    let reason: String
+    let reason: ViolationMessage
 
     /// The confidence level of this violation.
     let confidence: Confidence
@@ -33,9 +33,37 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
             "\(location): ",
             "\(severity.rawValue): ",
             "\(ruleName) Violation: ",
-            reason,
+            reason.text,
             " (\(ruleIdentifier))",
         ].joined()
+    }
+
+    /// Creates a `RuleViolation` from a ``Rule`` type's static metadata using a typed ``ViolationMessage``.
+    ///
+    /// - Parameters:
+    ///   - ruleType: The rule type whose static metadata provides id, name, and summary.
+    ///   - severity: The severity of this violation.
+    ///   - location: The location of this violation.
+    ///   - message: The typed message for this violation. Falls back to the rule's summary.
+    init<R: Rule>(
+        ruleType: R.Type,
+        severity: Severity = .warning,
+        location: Location,
+        message: ViolationMessage?,
+        confidence: Confidence = .high,
+        suggestion: String? = nil,
+    ) {
+        ruleIdentifier = R.id
+        ruleDescription = R.summary
+        ruleName = R.name
+        self.severity = severity
+        self.location = location
+        self.reason = message ?? ViolationMessage(stringLiteral: R.summary)
+        self.confidence = confidence
+        self.suggestion = suggestion
+        #if DEBUG
+        Self.validateReason(self.reason, ruleIdentifier: ruleIdentifier)
+        #endif
     }
 
     /// Creates a `RuleViolation` from a ``Rule`` type's static metadata.
@@ -58,21 +86,12 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
         ruleName = R.name
         self.severity = severity
         self.location = location
-        self.reason = reason ?? R.summary
+        self.reason = reason.map { ViolationMessage(stringLiteral: $0) }
+            ?? ViolationMessage(stringLiteral: R.summary)
         self.confidence = confidence
         self.suggestion = suggestion
         #if DEBUG
-        if self.reason.trimmingTrailingCharacters(in: .whitespaces).last == ".",
-           RuleRegistry.shared.rule(forID: ruleIdentifier) != nil
-        {
-            Console.fatalError(
-                """
-                Reasons shall not end with a period. Got "\(self
-                    .reason)". Either rewrite the rule's summary \
-                or set a custom reason in the RuleViolation's constructor.
-                """,
-            )
-        }
+        Self.validateReason(self.reason, ruleIdentifier: ruleIdentifier)
         #endif
     }
 
@@ -90,7 +109,8 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
         ruleName = ruleType.name
         self.severity = severity
         self.location = location
-        self.reason = reason ?? ruleType.summary
+        self.reason = reason.map { ViolationMessage(stringLiteral: $0) }
+            ?? ViolationMessage(stringLiteral: ruleType.summary)
         self.confidence = confidence
         self.suggestion = suggestion
     }
@@ -129,9 +149,25 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
             file: location.file ?? "<unknown>",
             line: location.line ?? 0,
             column: location.column ?? 0,
-            message: reason,
+            message: reason.text,
             suggestion: suggestion,
             canAutoFix: isCorrectableType,
         )
     }
+
+    #if DEBUG
+    private static func validateReason(_ reason: ViolationMessage, ruleIdentifier: String) {
+        if reason.text.trimmingTrailingCharacters(in: .whitespaces).last == ".",
+           RuleRegistry.shared.rule(forID: ruleIdentifier) != nil
+        {
+            Console.fatalError(
+                """
+                Reasons shall not end with a period. Got "\(reason
+                    .text)". Either rewrite the rule's summary \
+                or set a custom reason in the RuleViolation's constructor.
+                """,
+            )
+        }
+    }
+    #endif
 }

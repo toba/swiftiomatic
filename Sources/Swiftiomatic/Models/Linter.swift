@@ -1,4 +1,5 @@
 import Foundation
+import SwiftSyntax
 
 // sm:disable file_length
 
@@ -130,18 +131,28 @@ extension Rule {
         superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
         compilerArguments: [String],
     ) -> LintResult {
-        let ruleID = Self.identifier
+        let violations = validate(file: file, using: storage, compilerArguments: compilerArguments)
+        return filterViolations(
+            violations,
+            file: file,
+            regions: regions,
+            benchmark: benchmark,
+            ruleTime: nil,
+            superfluousDisableCommandRule: superfluousDisableCommandRule,
+        )
+    }
 
-        let violations: [RuleViolation]
-        let ruleTime: (String, Double)?
-        if benchmark {
-            let start = ContinuousClock.now
-            violations = validate(file: file, using: storage, compilerArguments: compilerArguments)
-            ruleTime = (ruleID, (ContinuousClock.now - start).timeInterval)
-        } else {
-            violations = validate(file: file, using: storage, compilerArguments: compilerArguments)
-            ruleTime = nil
-        }
+    /// Filter pre-computed violations through region/disable-command logic
+    // sm:disable:next function_parameter_count
+    fileprivate func filterViolations(
+        _ violations: [RuleViolation],
+        file: SwiftSource,
+        regions: [Region],
+        benchmark: Bool,
+        ruleTime: (String, Double)?,
+        superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
+    ) -> LintResult {
+        let ruleID = Self.identifier
 
         let (disabledViolationsAndRegions, enabledViolationsAndRegions) =
             violations
@@ -379,7 +390,39 @@ struct CollectedLinter: @unchecked Sendable {
             rules.first(where: {
                 $0 is SuperfluousDisableCommandRule
             }) as? SuperfluousDisableCommandRule
-        let validationResults: [LintResult] = rules.parallelMap {
+
+        // Partition rules into pipeline-eligible and fallback
+        var pipelineRules: [(rule: any SwiftSyntaxRule, index: Int)] = []
+        var fallbackRules: [any Rule] = []
+
+        for rule in rules {
+            let ruleID = type(of: rule).identifier
+            if let syntaxRule = rule as? any SwiftSyntaxRule,
+               pipelineEligibleRuleIDs.contains(ruleID),
+               !(rule is any CollectingRuleMarker)
+            {
+                pipelineRules.append((syntaxRule, pipelineRules.count))
+            } else {
+                fallbackRules.append(rule)
+            }
+        }
+
+        // Run pipeline rules via single tree walk
+        let pipelineResults: [LintResult]
+        if pipelineRules.isNotEmpty {
+            pipelineResults = runPipeline(
+                rules: pipelineRules.map(\.rule),
+                file: file,
+                regions: regions,
+                benchmark: benchmark,
+                superfluousDisableCommandRule: superfluousDisableCommandRule,
+            )
+        } else {
+            pipelineResults = []
+        }
+
+        // Run fallback rules via existing per-rule parallel walk
+        let fallbackResults: [LintResult] = fallbackRules.parallelMap {
             $0.lint(
                 file: file, regions: regions, benchmark: benchmark,
                 storage: storage,
@@ -387,6 +430,8 @@ struct CollectedLinter: @unchecked Sendable {
                 compilerArguments: compilerArguments,
             )
         }
+
+        let validationResults = pipelineResults + fallbackResults
         let undefinedSuperfluousCommandViolations = undefinedSuperfluousCommandViolations(
             regions: regions, configuration: configuration,
             superfluousDisableCommandRule: superfluousDisableCommandRule,
@@ -413,6 +458,92 @@ struct CollectedLinter: @unchecked Sendable {
         file.invalidateCache()
 
         return (violations, ruleTimes)
+    }
+
+    // sm:disable:next function_parameter_count
+    private func runPipeline(
+        rules: [any SwiftSyntaxRule],
+        file: SwiftSource,
+        regions: [Region],
+        benchmark: Bool,
+        superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
+    ) -> [LintResult] {
+        let syntaxTree = file.syntaxTree
+
+        // Create visitors and check shouldRun for each rule
+        var visitors: [(id: String, visitor: SyntaxVisitor & ViolationCollectingVisitorProtocol)] = []
+        var ruleForIndex: [(rule: any SwiftSyntaxRule, shouldRun: Bool)] = []
+
+        for rule in rules {
+            let ruleID = type(of: rule).identifier
+            let shouldRun = CurrentRule.$identifier.withValue(ruleID) {
+                rule.shouldRun(onFile: file)
+            }
+            ruleForIndex.append((rule, shouldRun))
+            if shouldRun {
+                let visitor = rule.makePipelineVisitor(file: file)
+                visitors.append((ruleID, visitor))
+            }
+        }
+
+        guard visitors.isNotEmpty else {
+            return rules.map { _ in LintResult(violations: [], ruleTime: nil, deprecatedToValidIDPairs: []) }
+        }
+
+        // Single tree walk
+        let pipeline = LintPipeline(visitors: visitors)
+        let pipelineStart = benchmark ? ContinuousClock.now : nil
+        pipeline.walk(syntaxTree)
+        let pipelineDuration = pipelineStart.map { ContinuousClock.now - $0 }
+
+        // Collect violations from each visitor
+        let collectedViolations = pipeline.collectViolations()
+
+        // Map pipeline visitor indices back to rule indices and build LintResults
+        var visitorIdx = 0
+        var results: [LintResult] = []
+
+        for (ruleIdx, entry) in ruleForIndex.enumerated() {
+            let rule = entry.rule
+            let ruleID = type(of: rule).identifier
+
+            guard entry.shouldRun else {
+                results.append(LintResult(violations: [], ruleTime: nil, deprecatedToValidIDPairs: []))
+                continue
+            }
+
+            let syntaxViolations = collectedViolations[visitorIdx].violations
+            visitorIdx += 1
+
+            // Convert SyntaxViolation -> RuleViolation using the rule's makeViolation
+            let ruleViolations = syntaxViolations
+                .sorted()
+                .map { rule.makeViolation(file: file, violation: $0) }
+
+            // Compute per-rule time as fraction of total pipeline time
+            let ruleTime: (String, Double)?
+            if let pipelineDuration {
+                let fraction = pipelineDuration.timeInterval / Double(visitors.count)
+                ruleTime = (ruleID, fraction)
+            } else {
+                ruleTime = nil
+            }
+
+            // Run region filtering via existing logic
+            let lintResult = CurrentRule.$identifier.withValue(ruleID) {
+                rule.filterViolations(
+                    ruleViolations,
+                    file: file,
+                    regions: regions,
+                    benchmark: benchmark,
+                    ruleTime: ruleTime,
+                    superfluousDisableCommandRule: superfluousDisableCommandRule,
+                )
+            }
+            results.append(lintResult)
+        }
+
+        return results
     }
 
     private func cachedRuleViolations(benchmark: Bool = false) -> (

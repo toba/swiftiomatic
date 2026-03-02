@@ -163,7 +163,7 @@ struct Analyze: AsyncParsableCommand {
 
         var totalCorrections = 0
 
-        // 1. Format engine writes formatted files (token-level fixes)
+        // 1. Format engine writes formatted files (swift-format pretty-printer)
         let formatEngine = cfg.makeFormatEngine()
         for file in files {
             do {
@@ -216,8 +216,8 @@ struct Analyze: AsyncParsableCommand {
         for file in files {
             do {
                 let source = try String(contentsOfFile: file, encoding: .utf8)
-                let changes = try engine.lint(source, filePath: file)
-                diagnostics += changes.map { $0.toDiagnostic() }
+                let findings = try engine.lint(source, filePath: file)
+                diagnostics += findings.map { $0.toDiagnostic() }
             } catch {
                 // Skip files that can't be parsed by the format engine
             }

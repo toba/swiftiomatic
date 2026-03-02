@@ -1,9 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct CommaInheritanceRule: SubstitutionCorrectableRule,
-  SyntaxOnlyRule
-{
+struct CommaInheritanceRule {
     static let id = "comma_inheritance"
     static let name = "Comma Inheritance Rule"
     static let summary = "Use commas to separate types in inheritance lists"
@@ -76,59 +74,43 @@ struct CommaInheritanceRule: SubstitutionCorrectableRule,
     }
   var options = SeverityOption<Self>(.warning)
 
-  // MARK: - Rule
-
-  func validate(file: SwiftSource) -> [RuleViolation] {
-    violationRanges(in: file).map {
-      RuleViolation(
-        ruleType: Self.self,
-        severity: options.severity,
-        location: Location(file: file, stringIndex: $0.lowerBound),
-      )
-    }
-  }
-
-  // MARK: - SubstitutionCorrectableRule
-
-  func substitution(for violationRange: Range<String.Index>, in _: SwiftSource)
-    -> (Range<String.Index>, String)?
-  {
-    (violationRange, ", ")
-  }
-
-  func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
-    let visitor = CommaInheritanceRuleVisitor(viewMode: .sourceAccurate)
-    return visitor.walk(file: file) { visitor -> [ByteRange] in
-      visitor.violationRanges
-    }.compactMap {
-      file.stringView.byteRangeToStringRange($0)
-    }
-  }
 }
 
-private final class CommaInheritanceRuleVisitor: SyntaxVisitor {
-  private(set) var violationRanges: [ByteRange] = []
+extension CommaInheritanceRule: SwiftSyntaxCorrectableRule {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+    Visitor(configuration: options, file: file)
+  }
 
-  override func visitPost(_ node: InheritedTypeSyntax) {
-    for type in node.children(viewMode: .sourceAccurate) {
-      guard let composition = type.as(CompositionTypeSyntax.self) else {
-        continue
-      }
-
-      for ampersand in composition.elements.compactMap(\.ampersand) {
-        let position: AbsolutePosition
-        if let previousToken = ampersand.previousToken(viewMode: .sourceAccurate) {
-          position = previousToken.endPositionBeforeTrailingTrivia
-        } else {
-          position = ampersand.position
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+    override func visitPost(_ node: InheritedTypeSyntax) {
+      for type in node.children(viewMode: .sourceAccurate) {
+        guard let composition = type.as(CompositionTypeSyntax.self) else {
+          continue
         }
 
-        violationRanges.append(
-          ByteRange(
-            location: ByteCount(position),
-            length: ByteCount(ampersand.endPosition.utf8Offset - position.utf8Offset),
-          ),
-        )
+        for ampersand in composition.elements.compactMap(\.ampersand) {
+          let start: AbsolutePosition
+          if let previousToken = ampersand.previousToken(viewMode: .sourceAccurate) {
+            start = previousToken.endPositionBeforeTrailingTrivia
+          } else {
+            start = ampersand.position
+          }
+
+          let end = ampersand.endPosition
+          let correction = SyntaxViolation.Correction(
+            start: start,
+            end: end,
+            replacement: ", ",
+          )
+
+          violations.append(
+            SyntaxViolation(
+              position: start,
+              severity: configuration.severity,
+              correction: correction,
+            ),
+          )
+        }
       }
     }
   }
