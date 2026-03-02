@@ -17,7 +17,7 @@ import Testing
     #expect(
       try await ruleViolations(example, rule: TypeBodyLengthRule.identifier, configuration: ["warning": 2, "error": 4]) == [
         RuleViolation(
-          configuration: TypeBodyLengthRule.configuration,
+          ruleType: TypeBodyLengthRule.self,
           severity: .warning,
           location: Location(file: nil, line: 1, column: 1),
           reason: """
@@ -43,7 +43,7 @@ import Testing
     #expect(
       try await ruleViolations(example, rule: TypeBodyLengthRule.identifier, configuration: ["warning": 1, "error": 2]) == [
         RuleViolation(
-          configuration: TypeBodyLengthRule.configuration,
+          ruleType: TypeBodyLengthRule.self,
           severity: .error,
           location: Location(file: nil, line: 1, column: 1),
           reason: """
@@ -57,7 +57,7 @@ import Testing
 
   @Test func violationMessages() async throws {
     var allViolations: [RuleViolation] = []
-    for example in TypeBodyLengthRule.configuration.triggeringExamples {
+    for example in TypeBodyLengthRule.triggeringExamples {
       allViolations.append(contentsOf: try await ruleViolations(example, rule: TypeBodyLengthRule.identifier, configuration: ["warning": 2]))
     }
     let types = allViolations.compactMap {

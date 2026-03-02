@@ -1,9 +1,32 @@
 import SwiftSyntax
 
 struct TrailingSemicolonRule {
+    static let id = "trailing_semicolon"
+    static let name = "Trailing Semicolon"
+    static let summary = "Lines should not have trailing semicolons"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let a = 0"),
+              Example("let a = 0; let b = 0"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let a = 0↓;\n"),
+              Example("let a = 0↓;\nlet b = 1"),
+              Example("let a = 0↓; // a comment\n"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let a = 0↓;\n"): Example("let a = 0\n"),
+              Example("let a = 0↓;\nlet b = 1"): Example("let a = 0\nlet b = 1"),
+              Example("let foo = 12↓;  // comment\n"): Example("let foo = 12  // comment\n"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = TrailingSemicolonConfiguration()
 }
 
 extension TrailingSemicolonRule: SwiftSyntaxCorrectableRule {

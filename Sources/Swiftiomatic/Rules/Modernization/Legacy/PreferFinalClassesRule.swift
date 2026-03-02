@@ -1,9 +1,31 @@
 import SwiftSyntax
 
 struct PreferFinalClassesRule {
+    static let id = "prefer_final_classes"
+    static let name = "Prefer Final Classes"
+    static let summary = "Classes should be marked `final` unless designed for subclassing"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("final class Foo {}"),
+              Example("open class Foo {}"),
+              Example("class Foo: NSObject {}"),
+              Example(
+                """
+                /// Base class for all handlers
+                class BaseHandler {}
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("↓class Foo {}"),
+              Example("↓class Foo { func bar() {} }"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = PreferFinalClassesConfiguration()
 }
 
 extension PreferFinalClassesRule: SwiftSyntaxRule {

@@ -1,9 +1,31 @@
 import SwiftSyntax
 
 struct SpaceAroundBracketsRule {
+    static let id = "space_around_brackets"
+    static let name = "Space Around Brackets"
+    static let summary = "There should be no space between an identifier and opening bracket, and space after closing bracket before identifiers"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("foo[0]"),
+              Example("foo as [String]"),
+              Example("let a = [1, 2]"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("foo↓ [0]"),
+              Example("foo↓as[String]"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("foo↓ [0]"): Example("foo[0]")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SpaceAroundBracketsConfiguration()
 }
 
 extension SpaceAroundBracketsRule: SwiftSyntaxCorrectableRule {

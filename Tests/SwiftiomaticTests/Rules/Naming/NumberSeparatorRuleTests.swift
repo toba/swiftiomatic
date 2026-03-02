@@ -24,7 +24,7 @@ import Testing
       Example("let foo = ↓1_000.000_1"): Example("let foo = 1000.0001"),
     ]
 
-    let description = TestExamples(from: NumberSeparatorRule.configuration).with(
+    let description = TestExamples(from: NumberSeparatorRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
       corrections: corrections,
@@ -51,7 +51,7 @@ import Testing
       Example("let foo = ↓1_000.000_1"): Example("let foo = 1_000.0001"),
     ]
 
-    let description = TestExamples(from: NumberSeparatorRule.configuration).with(
+    let description = TestExamples(from: NumberSeparatorRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
       corrections: corrections,
@@ -86,7 +86,7 @@ import Testing
       Example("let foo = ↓3.343434"): Example("let foo = 3.343_434"),
     ]
 
-    let description = TestExamples(from: NumberSeparatorRule.configuration).with(
+    let description = TestExamples(from: NumberSeparatorRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
       corrections: corrections,

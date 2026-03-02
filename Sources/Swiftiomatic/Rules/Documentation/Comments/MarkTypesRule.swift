@@ -1,9 +1,38 @@
 import SwiftSyntax
 
 struct MarkTypesRule {
+    static let id = "mark_types"
+    static let name = "Mark Types"
+    static let summary = "Top-level types and extensions should have MARK comments for organization"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                // MARK: - Foo
+                class Foo {}
+                """,
+              ),
+              Example(
+                """
+                import Foundation
+                struct Foo {}
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓class Foo {}
+                class Bar {}
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = MarkTypesConfiguration()
 }
 
 extension MarkTypesRule: SwiftSyntaxRule {

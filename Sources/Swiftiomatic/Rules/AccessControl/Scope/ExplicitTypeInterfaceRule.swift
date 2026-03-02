@@ -1,9 +1,97 @@
 import SwiftSyntax
 
 struct ExplicitTypeInterfaceRule {
+    static let id = "explicit_type_interface"
+    static let name = "Explicit Type Interface"
+    static let summary = "Properties should have a type interface"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {
+                  var myVar: Int? = 0
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  let myVar: Int? = 0, s: String = ""
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  static var myVar: Int? = 0
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  class var myVar: Int? = 0
+                }
+                """,
+              ),
+              Example(
+                """
+                func f() {
+                    if case .failure(let error) = errorCompletion {}
+                }
+                """, isExcludedFromDocumentation: true,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {
+                  var ↓myVar = 0
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  let ↓mylet = 0
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  static var ↓myStaticVar = 0
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  class var ↓myClassVar = 0
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  let ↓myVar = Int(0), ↓s = ""
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  let ↓myVar = Set<Int>(0)
+                }
+                """,
+              ),
+            ]
+    }
   var options = ExplicitTypeInterfaceOptions()
 
-  static let configuration = ExplicitTypeInterfaceConfiguration()
 }
 
 extension ExplicitTypeInterfaceRule: SwiftSyntaxRule {

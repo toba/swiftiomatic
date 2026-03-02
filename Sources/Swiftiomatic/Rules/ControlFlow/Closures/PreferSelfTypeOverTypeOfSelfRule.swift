@@ -2,9 +2,139 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct PreferSelfTypeOverTypeOfSelfRule {
+    static let id = "prefer_self_type_over_type_of_self"
+    static let name = "Prefer Self Type Over Type of Self"
+    static let summary = "Prefer `Self` over `type(of: self)` when accessing properties or calling methods"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {
+                    func bar() {
+                        Self.baz()
+                    }
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                    func bar() {
+                        print(Self.baz)
+                    }
+                }
+                """,
+              ),
+              Example(
+                """
+                class A {
+                    func foo(param: B) {
+                        type(of: param).bar()
+                    }
+                }
+                """,
+              ),
+              Example(
+                """
+                class A {
+                    func foo() {
+                        print(type(of: self))
+                    }
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {
+                    func bar() {
+                        ↓type(of: self).baz()
+                    }
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                    func bar() {
+                        print(↓type(of: self).baz)
+                    }
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                    func bar() {
+                        print(↓Swift.type(of: self).baz)
+                    }
+                }
+                """,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example(
+                """
+                class Foo {
+                    func bar() {
+                        ↓type(of: self).baz()
+                    }
+                }
+                """,
+              ): Example(
+                """
+                class Foo {
+                    func bar() {
+                        Self.baz()
+                    }
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                    func bar() {
+                        print(↓type(of: self).baz)
+                    }
+                }
+                """,
+              ): Example(
+                """
+                class Foo {
+                    func bar() {
+                        print(Self.baz)
+                    }
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                    func bar() {
+                        print(↓Swift.type(of: self).baz)
+                    }
+                }
+                """,
+              ): Example(
+                """
+                class Foo {
+                    func bar() {
+                        print(Self.baz)
+                    }
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = PreferSelfTypeOverTypeOfSelfConfiguration()
 }
 
 extension PreferSelfTypeOverTypeOfSelfRule: SwiftSyntaxCorrectableRule {

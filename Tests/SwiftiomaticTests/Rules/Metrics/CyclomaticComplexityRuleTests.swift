@@ -44,13 +44,13 @@ import Testing
 
   @Test func cyclomaticComplexity() async {
     await verifyRule(
-      CyclomaticComplexityRule.configuration, commentDoesNotViolate: true,
+      CyclomaticComplexityRule.self, commentDoesNotViolate: true,
       stringDoesNotViolate: true,
     )
   }
 
   @Test func ignoresCaseStatementsConfigurationEnabled() async {
-    let baseExamples = TestExamples(from: CyclomaticComplexityRule.configuration)
+    let baseExamples = TestExamples(from: CyclomaticComplexityRule.self)
     let triggeringExamples = [complexIfExample]
     let nonTriggeringExamples = baseExamples.nonTriggeringExamples + [complexSwitchExample]
 
@@ -66,7 +66,7 @@ import Testing
   }
 
   @Test func ignoresCaseStatementsConfigurationDisabled() async {
-    let baseExamples = TestExamples(from: CyclomaticComplexityRule.configuration)
+    let baseExamples = TestExamples(from: CyclomaticComplexityRule.self)
     let triggeringExamples =
       baseExamples.triggeringExamples + [complexSwitchExample, complexSwitchInitExample]
     let nonTriggeringExamples = baseExamples.nonTriggeringExamples

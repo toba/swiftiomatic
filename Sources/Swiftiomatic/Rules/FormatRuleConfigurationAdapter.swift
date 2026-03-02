@@ -1,5 +1,5 @@
-/// Wraps a ``FormatRule`` to expose it as a ``RuleConfiguration``
-struct FormatRuleConfigurationAdapter: RuleConfiguration {
+/// Wraps a ``FormatRule`` to produce a ``RuleConfigurationEntry``
+struct FormatRuleConfigurationAdapter {
     private let rule: FormatRule
     private let isDefault: Bool
 
@@ -8,25 +8,23 @@ struct FormatRuleConfigurationAdapter: RuleConfiguration {
         self.isDefault = isDefault
     }
 
-    var id: String { rule.name }
-    var name: String { rule.name }
-    var summary: String { stripMarkdown(rule.help) }
-    var rationale: String? { nil }
-    var scope: Scope { .format }
-    var isCorrectable: Bool { true }
-    var isOptIn: Bool { !isDefault }
-    var isDeprecated: Bool { rule.isDeprecated }
-    var deprecationMessage: String? { rule.deprecationMessage }
-    var requiresSourceKit: Bool { false }
-    var requiresCompilerArguments: Bool { false }
-    var isCrossFile: Bool { false }
-    var canEnrichAsync: Bool { false }
-
-    var examples: RuleExamples {
-        RuleExamples(diffMarkdown: rule.examples)
+    /// Convert this format rule adapter to a concrete ``RuleConfigurationEntry``
+    func toEntry() -> RuleConfigurationEntry {
+        RuleConfigurationEntry(
+            id: rule.name,
+            name: rule.name,
+            summary: stripMarkdown(rule.help),
+            scope: .format,
+            isCorrectable: true,
+            isOptIn: !isDefault,
+            isDeprecated: rule.isDeprecated,
+            deprecationMessage: rule.deprecationMessage,
+            examples: RuleExamples(diffMarkdown: rule.examples),
+            configurationOptions: configOptions,
+        )
     }
 
-    var configurationOptions: [ConfigOptionDescriptor] {
+    private var configOptions: [ConfigOptionDescriptor] {
         let allOptions = rule.options + rule.sharedOptions
         let descriptorsByProperty = Dictionary(
             Descriptors.all.map { ($0.propertyName, $0) },
@@ -39,8 +37,6 @@ struct FormatRuleConfigurationAdapter: RuleConfiguration {
             return descriptor.toConfigOptionDescriptor()
         }
     }
-
-    var relatedRuleIDs: [String] { [] }
 }
 
 extension OptionDescriptor {

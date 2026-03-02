@@ -1,9 +1,26 @@
 import SwiftSyntax
 
 struct AndOperatorRule {
+    static let id = "and_operator"
+    static let name = "And Operator"
+    static let summary = "Prefer comma over `&&` in `if`, `guard`, or `while` conditions"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("if a, b {}"),
+              Example("guard a, b else { return }"),
+              Example("if a || b {}"),
+              Example("let x = a && b"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("if a ↓&& b {}"),
+              Example("guard a ↓&& b else { return }"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = AndOperatorConfiguration()
 }
 
 extension AndOperatorRule: SwiftSyntaxRule {

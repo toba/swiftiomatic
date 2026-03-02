@@ -1,9 +1,30 @@
 import SwiftSyntax
 
 struct LeadingDelimitersRule {
+    static let id = "leading_delimiters"
+    static let name = "Leading Delimiters"
+    static let summary = "Delimiters should not appear at the start of a line; move them to the end of the previous line"
+    static let scope: Scope = .format
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                guard let foo = maybeFoo,
+                      let bar = maybeBar else { return }
+                """)
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                guard let foo = maybeFoo
+                      ↓, let bar = maybeBar else { return }
+                """)
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = LeadingDelimitersConfiguration()
 }
 
 extension LeadingDelimitersRule: SwiftSyntaxRule {

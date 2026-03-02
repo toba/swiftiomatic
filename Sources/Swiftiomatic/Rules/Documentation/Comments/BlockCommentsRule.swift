@@ -1,9 +1,38 @@
 import SwiftSyntax
 
 struct BlockCommentsRule {
+    static let id = "block_comments"
+    static let name = "Block Comments"
+    static let summary = "Block comments (`/* */`) should be converted to line comments (`//`)"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                // A comment
+                // on multiple lines
+                """,
+              ),
+              Example(
+                """
+                /// A doc comment
+                func foo() {}
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓/* A comment
+                   on multiple lines */
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = BlockCommentsConfiguration()
 }
 
 extension BlockCommentsRule: SwiftSyntaxRule {

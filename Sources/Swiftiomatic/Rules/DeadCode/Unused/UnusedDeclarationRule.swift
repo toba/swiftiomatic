@@ -1,6 +1,20 @@
 import Foundation
 
 struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
+    static let id = "unused_declaration"
+    static let name = "Unused Declaration"
+    static let summary = "Declarations should be referenced at least once within all files linted"
+    static let isOptIn = true
+    static let requiresSourceKit = true
+    static let requiresCompilerArguments = true
+    static let requiresFileOnDisk = true
+    static let isCrossFile = true
+    static var nonTriggeringExamples: [Example] {
+        UnusedDeclarationRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        UnusedDeclarationRuleExamples.triggeringExamples
+    }
   struct FileUSRs: Hashable {
     var referenced: Set<String>
     var declared: Set<DeclaredUSR>
@@ -18,8 +32,6 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
   typealias FileInfo = FileUSRs
 
   var options = UnusedDeclarationOptions()
-
-  static let configuration = UnusedDeclarationConfiguration()
 
   func collectInfo(for file: SwiftSource, compilerArguments: [String]) -> Self.FileUSRs {
     guard compilerArguments.isNotEmpty else {
@@ -65,7 +77,7 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
     )
     .map {
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severityConfiguration.severity,
         location: Location(file: file, byteOffset: $0),
       )

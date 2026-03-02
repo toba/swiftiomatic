@@ -1,9 +1,40 @@
 import SwiftSyntax
 
 struct RedundantFileprivateRule {
+    static let id = "redundant_fileprivate"
+    static let name = "Redundant Fileprivate"
+    static let summary = "`fileprivate` can be replaced with `private` when only accessed within the same declaration scope"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {
+                  private var bar: Int
+                }
+                """,
+              ),
+              Example(
+                """
+                fileprivate func helper() {}
+                class Foo {
+                  func bar() { helper() }
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓fileprivate class Foo {}
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantFileprivateConfiguration()
 }
 
 extension RedundantFileprivateRule: SwiftSyntaxRule {

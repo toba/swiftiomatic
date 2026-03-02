@@ -4,9 +4,9 @@ import Testing
 
 @Suite(.rulesRegistered) struct CollectionAlignmentRuleTests {
   @Test func collectionAlignmentWithAlignLeft() async {
-    let examples = CollectionAlignmentConfiguration.Examples(alignColons: false)
+    let examples = CollectionAlignmentRule.Examples(alignColons: false)
 
-    let testExamples = TestExamples(from: CollectionAlignmentRule.configuration)
+    let testExamples = TestExamples(from: CollectionAlignmentRule.self)
       .with(
         nonTriggeringExamples: examples.nonTriggeringExamples,
         triggeringExamples: examples.triggeringExamples,
@@ -16,9 +16,9 @@ import Testing
   }
 
   @Test func collectionAlignmentWithAlignColons() async {
-    let examples = CollectionAlignmentConfiguration.Examples(alignColons: true)
+    let examples = CollectionAlignmentRule.Examples(alignColons: true)
 
-    let testExamples = TestExamples(from: CollectionAlignmentRule.configuration)
+    let testExamples = TestExamples(from: CollectionAlignmentRule.self)
       .with(
         nonTriggeringExamples: examples.nonTriggeringExamples,
         triggeringExamples: examples.triggeringExamples,

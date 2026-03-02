@@ -5,7 +5,7 @@ import Testing
 @Suite(.rulesRegistered) struct TrailingCommaRuleTests {
   @Test func trailingCommaRuleWithDefaultConfiguration() async throws {
     // Verify TrailingCommaRule with test values for when mandatory_comma is false (default).
-    let baseExamples = TestExamples(from: TrailingCommaRule.configuration)
+    let baseExamples = TestExamples(from: TrailingCommaRule.self)
     let triggeringExamples =
       baseExamples.triggeringExamples + [
         Example(
@@ -60,7 +60,7 @@ import Testing
     return result
   }()
 
-  private let mandatoryCommaExamples = TestExamples(from: TrailingCommaRule.configuration)
+  private let mandatoryCommaExamples = TestExamples(from: TrailingCommaRule.self)
     .with(
       nonTriggeringExamples: TrailingCommaRuleTests.nonTriggeringExamples,
       triggeringExamples: TrailingCommaRuleTests.triggeringExamples,

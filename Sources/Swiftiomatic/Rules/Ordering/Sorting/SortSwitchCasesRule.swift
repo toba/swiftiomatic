@@ -2,9 +2,36 @@ import Foundation
 import SwiftSyntax
 
 struct SortSwitchCasesRule {
+    static let id = "sort_switch_cases"
+    static let name = "Sort Switch Cases"
+    static let summary = "Switch case patterns with multiple comma-separated values should be sorted alphabetically"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                switch value {
+                case .a, .b, .c:
+                  break
+                }
+                """,
+              )
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                switch value {
+                case ↓.c, .a, .b:
+                  break
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SortSwitchCasesConfiguration()
 }
 
 extension SortSwitchCasesRule: SwiftSyntaxRule {

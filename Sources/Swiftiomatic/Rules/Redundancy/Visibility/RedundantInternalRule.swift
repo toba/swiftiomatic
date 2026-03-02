@@ -1,9 +1,75 @@
 import SwiftSyntax
 
 struct RedundantInternalRule {
+    static let id = "redundant_internal"
+    static let name = "Redundant Internal"
+    static let summary = "Declarations are internal by default; the `internal` modifier is redundant"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("class Foo {}"),
+              Example("let bar: String"),
+              Example("internal import Foundation"),
+              Example(
+                """
+                public extension String {
+                  internal func foo() {}
+                }
+                """,
+              ),
+              Example(
+                """
+                package extension String {
+                  internal func foo() {}
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("↓internal class Foo {}"),
+              Example("↓internal let bar: String"),
+              Example("↓internal func baaz() {}"),
+              Example("↓internal init() {}"),
+              Example(
+                """
+                extension String {
+                  ↓internal func foo() {}
+                }
+                """,
+              ),
+              Example(
+                """
+                internal extension String {
+                  ↓internal func foo() {}
+                }
+                """,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("↓internal class Foo {}"): Example("class Foo {}"),
+              Example("↓internal let bar: String"): Example("let bar: String"),
+              Example(
+                """
+                extension String {
+                  ↓internal func foo() {}
+                }
+                """,
+              ): Example(
+                """
+                extension String {
+                  func foo() {}
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantInternalConfiguration()
 }
 
 extension RedundantInternalRule: SwiftSyntaxCorrectableRule {

@@ -5,30 +5,30 @@ import Testing
 @Suite(.rulesRegistered) struct RulesTests {
   @Test func leadingWhitespace() async {
     await verifyRule(
-      LeadingWhitespaceRule.configuration, skipDisableCommandTests: true,
+      LeadingWhitespaceRule.self, skipDisableCommandTests: true,
       shouldTestMultiByteOffsets: false, testShebang: false,
     )
   }
 
   @Test func mark() async {
-    await verifyRule(MarkRule.configuration, skipCommentTests: true)
+    await verifyRule(MarkRule.self, skipCommentTests: true)
   }
 
   @Test func requiredEnumCase() async {
     let configuration = ["NetworkResponsable": ["notConnected": "error"]]
-    await verifyRule(RequiredEnumCaseRule.configuration, ruleConfiguration: configuration)
+    await verifyRule(RequiredEnumCaseRule.self, ruleConfiguration: configuration)
   }
 
   @Test func trailingNewline() async {
     await verifyRule(
-      TrailingNewlineRule.configuration, commentDoesNotViolate: false,
+      TrailingNewlineRule.self, commentDoesNotViolate: false,
       stringDoesNotViolate: false,
     )
   }
 
   @Test func orphanedDocComment() async {
     await verifyRule(
-      OrphanedDocCommentRule.configuration, commentDoesNotViolate: false, skipCommentTests: true,
+      OrphanedDocCommentRule.self, commentDoesNotViolate: false, skipCommentTests: true,
     )
   }
 }

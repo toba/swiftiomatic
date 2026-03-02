@@ -1,9 +1,29 @@
 import SwiftSyntax
 
 struct DiscouragedAssertRule {
+    static let id = "discouraged_assert"
+    static let name = "Discouraged Assert"
+    static let summary = "Prefer `assertionFailure()` and/or `preconditionFailure()` over `assert(false)`"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(#"assert(true)"#),
+              Example(#"assert(true, "foobar")"#),
+              Example(#"assert(true, "foobar", file: "toto", line: 42)"#),
+              Example(#"assert(false || true)"#),
+              Example(#"XCTAssert(false)"#),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(#"↓assert(false)"#),
+              Example(#"↓assert(false, "foobar")"#),
+              Example(#"↓assert(false, "foobar", file: "toto", line: 42)"#),
+              Example(#"↓assert(   false    , "foobar")"#),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = DiscouragedAssertConfiguration()
 }
 
 extension DiscouragedAssertRule: SwiftSyntaxRule {

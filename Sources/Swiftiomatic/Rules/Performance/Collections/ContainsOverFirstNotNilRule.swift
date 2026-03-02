@@ -1,9 +1,36 @@
 import SwiftSyntax
 
 struct ContainsOverFirstNotNilRule {
+    static let id = "contains_over_first_not_nil"
+    static let name = "Contains over First not Nil"
+    static let summary = "Prefer `contains` over `first(where:) != nil` and `firstIndex(where:) != nil`."
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        ["first", "firstIndex"].flatMap { method in
+            [
+                Example("let \(method) = myList.\(method)(where: { $0 % 2 == 0 })"),
+                Example("let \(method) = myList.\(method) { $0 % 2 == 0 }"),
+            ]
+        }
+    }
+    static var triggeringExamples: [Example] {
+        ["first", "firstIndex"].flatMap { method in
+            ["!=", "=="].flatMap { comparison in
+                [
+                    Example("↓myList.\(method) { $0 % 2 == 0 } \(comparison) nil"),
+                    Example("↓myList.\(method)(where: { $0 % 2 == 0 }) \(comparison) nil"),
+                    Example(
+                        "↓myList.map { $0 + 1 }.\(method)(where: { $0 % 2 == 0 }) \(comparison) nil"
+                    ),
+                    Example("↓myList.\(method)(where: someFunction) \(comparison) nil"),
+                    Example("↓myList.map { $0 + 1 }.\(method) { $0 % 2 == 0 } \(comparison) nil"),
+                    Example("(↓myList.\(method) { $0 % 2 == 0 }) \(comparison) nil"),
+                ]
+            }
+        }
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ContainsOverFirstNotNilConfiguration()
 }
 
 extension ContainsOverFirstNotNilRule: SwiftSyntaxRule {

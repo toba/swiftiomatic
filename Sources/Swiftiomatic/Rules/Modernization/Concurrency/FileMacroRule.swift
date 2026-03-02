@@ -1,9 +1,22 @@
 import SwiftSyntax
 
 struct FileMacroRule {
+    static let id = "file_macro"
+    static let name = "File Macro"
+    static let summary = "Prefer `#file` over `#fileID` (identical in Swift 6+)"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("func foo(file: StaticString = #file) {}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("func foo(file: StaticString = ↓#fileID) {}"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = FileMacroConfiguration()
 }
 
 extension FileMacroRule: SwiftSyntaxRule {

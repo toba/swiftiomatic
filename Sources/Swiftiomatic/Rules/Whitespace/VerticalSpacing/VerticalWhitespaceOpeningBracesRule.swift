@@ -7,14 +7,190 @@ extension SwiftSource {
 }
 
 struct VerticalWhitespaceOpeningBracesRule: Rule {
+    private static let _baseNonTriggeringExamples: [Example] = [
+        Example("[1, 2].map { $0 }.foo()"),
+        Example("[1, 2].map { $0 }.filter { num in true }"),
+        Example("// [1, 2].map { $0 }.filter { num in true }"),
+        Example(
+            """
+            /*
+                class X {
+
+                    let x = 5
+
+                }
+            */
+            """
+        ),
+    ]
+
+    private static let violatingToValidExamples: [Example: Example] = [
+        Example(
+            """
+            if x == 5 {
+            ↓
+              print("x is 5")
+            }
+            """
+        ): Example(
+            """
+            if x == 5 {
+              print("x is 5")
+            }
+            """
+        ),
+        Example(
+            """
+            if x == 5 {
+            ↓
+
+              print("x is 5")
+            }
+            """
+        ): Example(
+            """
+            if x == 5 {
+              print("x is 5")
+            }
+            """
+        ),
+        Example(
+            """
+            struct MyStruct {
+            ↓
+              let x = 5
+            }
+            """
+        ): Example(
+            """
+            struct MyStruct {
+              let x = 5
+            }
+            """
+        ),
+        Example(
+            """
+            class X {
+              struct Y {
+            ↓
+                class Z {
+                }
+              }
+            }
+            """
+        ): Example(
+            """
+            class X {
+              struct Y {
+                class Z {
+                }
+              }
+            }
+            """
+        ),
+        Example(
+            """
+            [
+            ↓
+            1,
+            2,
+            3
+            ]
+            """
+        ): Example(
+            """
+            [
+            1,
+            2,
+            3
+            ]
+            """
+        ),
+        Example(
+            """
+            foo(
+            ↓
+              x: 5,
+              y:6
+            )
+            """
+        ): Example(
+            """
+            foo(
+              x: 5,
+              y:6
+            )
+            """
+        ),
+        Example(
+            """
+            func foo() {
+            ↓
+              run(5) { x in
+                print(x)
+              }
+            }
+            """
+        ): Example(
+            """
+            func foo() {
+              run(5) { x in
+                print(x)
+              }
+            }
+            """
+        ),
+        Example(
+            """
+            KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: nil) { image, _, _, _ in
+            ↓
+                guard let img = image else { return }
+            }
+            """
+        ): Example(
+            """
+            KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: nil) { image, _, _, _ in
+                guard let img = image else { return }
+            }
+            """
+        ),
+        Example(
+            """
+            foo({ }) { _ in
+            ↓
+              self.dismiss(animated: false, completion: {
+              })
+            }
+            """
+        ): Example(
+            """
+            foo({ }) { _ in
+              self.dismiss(animated: false, completion: {
+              })
+            }
+            """
+        ),
+    ]
+    static let id = "vertical_whitespace_opening_braces"
+    static let name = "Vertical Whitespace after Opening Braces"
+    static let summary = "Don't include vertical whitespace (empty line) after opening braces"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        (Self.violatingToValidExamples.values + Self._baseNonTriggeringExamples)
+    }
+    static var triggeringExamples: [Example] {
+        Array(Self.violatingToValidExamples.keys).sorted()
+    }
+    static var corrections: [Example: Example] {
+        Self.violatingToValidExamples.removingViolationMarkers()
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
   private let pattern = "([{(\\[][ \\t]*(?:[^\\n{]+ in[ \\t]*$)?)((?:\\n[ \\t]*)+)(\\n)"
 }
 
 extension VerticalWhitespaceOpeningBracesRule {
-  static let configuration = VerticalWhitespaceOpeningBracesConfiguration()
-
   func validate(file: SwiftSource) -> [RuleViolation] {
     let patternRegex = regex(pattern)
 
@@ -26,7 +202,7 @@ extension VerticalWhitespaceOpeningBracesRule {
       let violationIndex = file.contents.index(after: group2Sub.startIndex)
 
       return RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severity,
         location: Location(file: file, stringIndex: violationIndex),
       )

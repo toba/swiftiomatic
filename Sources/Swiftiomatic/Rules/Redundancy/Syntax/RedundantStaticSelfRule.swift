@@ -1,9 +1,47 @@
 import SwiftSyntax
 
 struct RedundantStaticSelfRule {
+    static let id = "redundant_static_self"
+    static let name = "Redundant Static Self"
+    static let summary = "Explicit `Self` qualification is redundant in static context"
+    static let scope: Scope = .format
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                struct Foo {
+                  static let bar = "bar"
+                  func baz() {
+                    let _ = Self.bar
+                  }
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  static func bar() -> Self { Self() }
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                struct Foo {
+                  static let bar = "bar"
+                  static func baz() -> String {
+                    return ↓Self.bar
+                  }
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantStaticSelfConfiguration()
 }
 
 extension RedundantStaticSelfRule: SwiftSyntaxRule {

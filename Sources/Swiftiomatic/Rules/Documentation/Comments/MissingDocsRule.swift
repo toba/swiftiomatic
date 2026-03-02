@@ -1,9 +1,18 @@
 import SwiftSyntax
 
 struct MissingDocsRule {
+    static let id = "missing_docs"
+    static let name = "Missing Docs"
+    static let summary = "Declarations should be documented."
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        MissingDocsRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        MissingDocsRuleExamples.triggeringExamples
+    }
   var options = MissingDocsOptions()
 
-  static let configuration = MissingDocsConfiguration()
 }
 
 extension MissingDocsRule: SwiftSyntaxRule {

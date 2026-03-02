@@ -1,9 +1,42 @@
 import SwiftSyntax
 
 struct PreferSwiftTestingRule {
+    static let id = "prefer_swift_testing"
+    static let name = "Prefer Swift Testing"
+    static let summary = "XCTest-based test suites can be migrated to the Swift Testing framework"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                import Testing
+
+                @Suite struct MyTests {
+                  @Test func example() {
+                    #expect(true)
+                  }
+                }
+                """,
+              )
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                import XCTest
+
+                ↓class MyTests: XCTestCase {
+                  func testExample() {
+                    XCTAssertTrue(true)
+                  }
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = PreferSwiftTestingConfiguration()
 }
 
 extension PreferSwiftTestingRule: SwiftSyntaxRule {

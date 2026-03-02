@@ -1,9 +1,25 @@
 import SwiftSyntax
 
 struct OptionalDataStringConversionRule {
+    static let id = "optional_data_string_conversion"
+    static let name = "Optional Data -> String Conversion"
+    static let summary = "Prefer failable `String(bytes:encoding:)` initializer when converting `Data` to `String`"
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("String(data: data, encoding: .utf8)"),
+              Example("String(bytes: data, encoding: .utf8)"),
+              Example("String(UTF8.self)"),
+              Example("String(a, b, c, UTF8.self)"),
+              Example("String(decoding: data, encoding: UTF8.self)"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("String(decoding: data, as: UTF8.self)")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = OptionalDataStringConversionConfiguration()
 }
 
 extension OptionalDataStringConversionRule: SwiftSyntaxRule {

@@ -1,9 +1,44 @@
 import SwiftSyntax
 
 struct BlankLineAfterImportsRule {
+    static let id = "blank_line_after_imports"
+    static let name = "Blank Line After Imports"
+    static let summary = "There should be a blank line after import statements"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                import Foundation
+
+                class Foo {}
+                """),
+              Example(
+                """
+                import Foundation
+                import UIKit
+
+                class Foo {}
+                """),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                import Foundation
+                ↓class Foo {}
+                """)
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("import Foundation\n↓class Foo {}"): Example("import Foundation\n\nclass Foo {}")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = BlankLineAfterImportsConfiguration()
 }
 
 extension BlankLineAfterImportsRule: SwiftSyntaxCorrectableRule {

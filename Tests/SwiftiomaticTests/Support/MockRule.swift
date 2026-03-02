@@ -1,32 +1,13 @@
 @testable import Swiftiomatic
 
-/// A minimal ``RuleConfiguration`` for test mock rules
-struct TestMockRuleConfiguration: RuleConfiguration {
-  let id: String
-  let name: String
-  let summary: String
-  let deprecatedAliases: Set<String>
-
-  init(id: String, name: String = "", summary: String = "", deprecatedAliases: Set<String> = []) {
-    self.id = id
-    self.name = name
-    self.summary = summary
-    self.deprecatedAliases = deprecatedAliases
-  }
-}
-
-struct MockRuleConfiguration: RuleConfiguration {
-  let id = "MockRule"
-  let name = ""
-  let summary = ""
-}
-
 struct MockRule: Rule {
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = MockRuleConfiguration()
+  static let id = "MockRule"
+  static let name = ""
+  static let summary = ""
 
   init() { /* conformance for test */  }
   init(configuration _: Any) { self.init() }
@@ -34,17 +15,13 @@ struct MockRule: Rule {
   func validate(file _: SwiftSource) -> [RuleViolation] { [] }
 }
 
-struct RuleWithLevelsMockConfiguration: RuleConfiguration {
-  let id = "severity_level_mock"
-  let name = ""
-  let summary = ""
-  let deprecatedAliases: Set<String> = ["mock"]
-}
-
 struct RuleWithLevelsMock: Rule {
   var options = SeverityLevelsConfiguration<Self>(warning: 2, error: 3)
 
-  static let configuration = RuleWithLevelsMockConfiguration()
+  static let id = "severity_level_mock"
+  static let name = ""
+  static let summary = ""
+  static let deprecatedAliases: Set<String> = ["mock"]
 
   init() { /* conformance for test */  }
   init(configuration: Any) throws {

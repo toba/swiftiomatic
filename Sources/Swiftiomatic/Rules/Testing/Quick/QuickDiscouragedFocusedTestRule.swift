@@ -1,9 +1,18 @@
 import SwiftSyntax
 
 struct QuickDiscouragedFocusedTestRule {
+    static let id = "quick_discouraged_focused_test"
+    static let name = "Quick Discouraged Focused Test"
+    static let summary = "Non-focused tests won't run as long as this test is focused"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        QuickDiscouragedFocusedTestRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        QuickDiscouragedFocusedTestRuleExamples.triggeringExamples
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = QuickDiscouragedFocusedTestConfiguration()
 }
 
 extension QuickDiscouragedFocusedTestRule: SwiftSyntaxRule {

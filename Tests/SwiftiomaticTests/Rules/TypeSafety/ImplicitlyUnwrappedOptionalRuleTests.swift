@@ -17,7 +17,7 @@ import Testing
     ]
 
     let nonTriggeringExamples = [Example("if !boolean {}")]
-    let description = TestExamples(from: ImplicitlyUnwrappedOptionalRule.configuration).with(
+    let description = TestExamples(from: ImplicitlyUnwrappedOptionalRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -43,7 +43,7 @@ import Testing
       Example("let int: Int!"),
     ]
 
-    let description = TestExamples(from: ImplicitlyUnwrappedOptionalRule.configuration).with(
+    let description = TestExamples(from: ImplicitlyUnwrappedOptionalRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )

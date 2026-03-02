@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct DiscouragedObjectLiteralRuleTests {
   @Test func withImageLiteral() async {
-    let baseExamples = TestExamples(from: DiscouragedObjectLiteralRule.configuration)
+    let baseExamples = TestExamples(from: DiscouragedObjectLiteralRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example(
@@ -25,7 +25,7 @@ import Testing
   }
 
   @Test func withColorLiteral() async {
-    let baseExamples = TestExamples(from: DiscouragedObjectLiteralRule.configuration)
+    let baseExamples = TestExamples(from: DiscouragedObjectLiteralRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example("let image = #imageLiteral(resourceName: \"image.jpg\")")

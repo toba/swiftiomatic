@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct TodoRuleTests {
   @Test func todo() async {
-    await verifyRule(TodoRule.configuration, commentDoesNotViolate: false)
+    await verifyRule(TodoRule.self, commentDoesNotViolate: false)
   }
 
   @Test func todoMessage() async throws {

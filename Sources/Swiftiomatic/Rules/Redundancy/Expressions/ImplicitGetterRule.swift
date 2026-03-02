@@ -1,9 +1,17 @@
 import SwiftSyntax
 
 struct ImplicitGetterRule {
+    static let id = "implicit_getter"
+    static let name = "Implicit Getter"
+    static let summary = "Computed read-only properties and subscripts should avoid using the get keyword."
+    static var nonTriggeringExamples: [Example] {
+        ImplicitGetterRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        ImplicitGetterRuleExamples.triggeringExamples
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ImplicitGetterConfiguration()
 }
 
 extension ImplicitGetterRule: SwiftSyntaxRule {

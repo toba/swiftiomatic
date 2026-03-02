@@ -1,9 +1,32 @@
 import SwiftSyntax
 
 struct HoistTryRule {
+    static let id = "hoist_try"
+    static let name = "Hoist Try"
+    static let summary = "Move `try` keyword to the outermost expression instead of nesting it inside arguments"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let result = try foo(bar)"),
+              Example("let result = try foo(bar, baz)"),
+              Example("try foo()"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let result = foo(↓try bar())"),
+              Example("let result = foo(↓try bar(), baz)"),
+              Example("let result = [↓try foo(), ↓try bar()]"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let result = foo(↓try bar())"): Example("let result = try foo(bar())")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = HoistTryConfiguration()
 }
 
 extension HoistTryRule: SwiftSyntaxCorrectableRule {

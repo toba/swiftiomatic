@@ -1,9 +1,22 @@
 import SwiftSyntax
 
 struct FunctionNameWhitespaceRule {
+    static let id = "function_name_whitespace"
+    static let name = "Function Name Whitespace"
+    static let summary = "There should be consistent whitespace before and after function names and generic parameters."
+    static let isCorrectable = true
+    static let deprecatedAliases: Set<String> = ["operator_whitespace"]
+    static var nonTriggeringExamples: [Example] {
+        FunctionNameWhitespaceRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        FunctionNameWhitespaceRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        FunctionNameWhitespaceRuleExamples.corrections
+    }
   var options = FunctionNameWhitespaceOptions()
 
-  static let configuration = FunctionNameWhitespaceConfiguration()
 }
 
 extension FunctionNameWhitespaceRule: SwiftSyntaxCorrectableRule {

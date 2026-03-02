@@ -1,6 +1,27 @@
 import Foundation
 
 struct IndentationWidthRule: Rule {
+    static let id = "indentation_width"
+    static let name = "Indentation Width"
+    static let summary = "Indent code using either one tab or the configured amount of spaces, unindent to match previous indentations. Don't indent the first line."
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("firstLine\nsecondLine"),
+              Example("firstLine\n    secondLine"),
+              Example("firstLine\n\tsecondLine\n\t\tthirdLine\n\n\t\tfourthLine"),
+              Example("firstLine\n\tsecondLine\n\t\tthirdLine\n\t//test\n\t\tfourthLine"),
+              Example("firstLine\n    secondLine\n        thirdLine\nfourthLine"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("↓    firstLine", shouldTestMultiByteOffsets: false, shouldTestDisableCommand: false),
+              Example("firstLine\n        secondLine"),
+              Example("firstLine\n\tsecondLine\n\n↓\t\t\tfourthLine"),
+              Example("firstLine\n    secondLine\n        thirdLine\n↓ fourthLine"),
+            ]
+    }
   // MARK: - Subtypes
 
   private enum Indentation: Equatable {
@@ -18,8 +39,6 @@ struct IndentationWidthRule: Rule {
   // MARK: - Properties
 
   var options = IndentationWidthOptions()
-
-  static let configuration = IndentationWidthConfiguration()
 
   // MARK: - Initializers
 
@@ -55,7 +74,7 @@ struct IndentationWidthRule: Rule {
         // Catch mixed indentation
         violations.append(
           RuleViolation(
-            configuration: Self.configuration,
+            ruleType: Self.self,
             severity: options.severityConfiguration.severity,
             location: Location(file: file, characterOffset: line.range.location),
             reason: "Code should be indented with tabs or "
@@ -79,7 +98,7 @@ struct IndentationWidthRule: Rule {
           // There's an indentation although this is the first line!
           violations.append(
             RuleViolation(
-              configuration: Self.configuration,
+              ruleType: Self.self,
               severity: options.severityConfiguration.severity,
               location: Location(file: file, characterOffset: line.range.location),
               reason: "The first line shall not be indented",
@@ -106,7 +125,7 @@ struct IndentationWidthRule: Rule {
         let indentWidth = options.indentationWidth
         violations.append(
           RuleViolation(
-            configuration: Self.configuration,
+            ruleType: Self.self,
             severity: options.severityConfiguration.severity,
             location: Location(file: file, characterOffset: line.range.location),
             reason: isIndentation

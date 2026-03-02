@@ -1,9 +1,28 @@
 import SwiftSyntax
 
 struct ObservationPitfallsRule {
+    static let id = "observation_pitfalls"
+    static let name = "Observation Pitfalls"
+    static let summary = "Detects common pitfalls with the Observation framework"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("for await value in Observations({ [weak self] in self?.model }) { }")
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                for await value in ↓Observations({ self.model }) {
+                    print(value)
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ObservationPitfallsConfiguration()
 }
 
 extension ObservationPitfallsRule: SwiftSyntaxRule {

@@ -1,9 +1,34 @@
 import SwiftSyntax
 
 struct ContainsOverFilterCountRule {
+    static let id = "contains_over_filter_count"
+    static let name = "Contains over Filter Count"
+    static let summary = "Prefer `contains` over comparing `filter(where:).count` to 0"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [">", "==", "!="].flatMap { operation in
+            [
+                Example("let result = myList.filter(where: { $0 % 2 == 0 }).count \(operation) 1"),
+                Example("let result = myList.filter { $0 % 2 == 0 }.count \(operation) 1"),
+                Example("let result = myList.filter(where: { $0 % 2 == 0 }).count \(operation) 01"),
+            ]
+        } + [
+            Example("let result = myList.contains(where: { $0 % 2 == 0 })"),
+            Example("let result = !myList.contains(where: { $0 % 2 == 0 })"),
+            Example("let result = myList.contains(10)"),
+        ]
+    }
+    static var triggeringExamples: [Example] {
+        [">", "==", "!="].flatMap { operation in
+            [
+                Example("let result = ↓myList.filter(where: { $0 % 2 == 0 }).count \(operation) 0"),
+                Example("let result = ↓myList.filter { $0 % 2 == 0 }.count \(operation) 0"),
+                Example("let result = ↓myList.filter(where: someFunction).count \(operation) 0"),
+            ]
+        }
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ContainsOverFilterCountConfiguration()
 }
 
 extension ContainsOverFilterCountRule: SwiftSyntaxRule {

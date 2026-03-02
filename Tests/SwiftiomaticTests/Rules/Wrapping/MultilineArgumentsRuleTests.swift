@@ -17,7 +17,7 @@ import Testing
       Example("foo(↓1,\n" + "    bar: baz) { }")
     ]
 
-    let examples = TestExamples(from: MultilineArgumentsRule.configuration)
+    let examples = TestExamples(from: MultilineArgumentsRule.self)
       .with(nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples)
 
     await verifyRule(examples, ruleConfiguration: ["first_argument_location": "next_line"])
@@ -37,7 +37,7 @@ import Testing
       Example("foo(\n" + "    ↓2,\n" + "    bar: baz) { }"),
     ]
 
-    let examples = TestExamples(from: MultilineArgumentsRule.configuration)
+    let examples = TestExamples(from: MultilineArgumentsRule.self)
       .with(nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples)
 
     await verifyRule(examples, ruleConfiguration: ["first_argument_location": "same_line"])
@@ -61,7 +61,7 @@ import Testing
       Example("foo(a: a, b: b,\n" + "    c: c, d: {\n" + "    }, d: {\n" + "})"),
     ]
 
-    let examples = TestExamples(from: MultilineArgumentsRule.configuration)
+    let examples = TestExamples(from: MultilineArgumentsRule.self)
       .with(nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples)
 
     await verifyRule(

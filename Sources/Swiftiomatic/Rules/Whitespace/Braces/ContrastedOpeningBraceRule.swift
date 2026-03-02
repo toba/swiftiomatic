@@ -2,9 +2,22 @@ import Foundation
 import SwiftSyntax
 
 struct ContrastedOpeningBraceRule {
+    static let id = "contrasted_opening_brace"
+    static let name = "Contrasted Opening Brace"
+    static let summary = ""
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        ContrastedOpeningBraceRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        ContrastedOpeningBraceRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        ContrastedOpeningBraceRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ContrastedOpeningBraceConfiguration()
 }
 
 extension ContrastedOpeningBraceRule: SwiftSyntaxCorrectableRule {

@@ -1,9 +1,22 @@
 import SwiftSyntax
 
 struct ClosureEndIndentationRule {
+    static let id = "closure_end_indentation"
+    static let name = "Closure End Indentation"
+    static let summary = "Closure end should have the same indentation as the line that started it."
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        ClosureEndIndentationRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        ClosureEndIndentationRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        ClosureEndIndentationRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ClosureEndIndentationConfiguration()
 }
 
 extension ClosureEndIndentationRule: SwiftSyntaxCorrectableRule {

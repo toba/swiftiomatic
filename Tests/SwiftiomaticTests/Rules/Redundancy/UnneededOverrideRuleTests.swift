@@ -74,7 +74,7 @@ import Testing
       )
     ]
 
-    let description = TestExamples(from: UnneededOverrideRule.configuration).with(
+    let description = TestExamples(from: UnneededOverrideRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
       corrections: corrections,

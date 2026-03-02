@@ -1,9 +1,30 @@
 import SwiftSyntax
 
 struct ApplicationMainRule {
+    static let id = "application_main"
+    static let name = "Application Main"
+    static let summary = "Replace `@UIApplicationMain` and `@NSApplicationMain` with `@main`"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                @main
+                class AppDelegate: UIResponder, UIApplicationDelegate {}
+                """),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓@UIApplicationMain
+                class AppDelegate: UIResponder, UIApplicationDelegate {}
+                """),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ApplicationMainConfiguration()
 }
 
 extension ApplicationMainRule: SwiftSyntaxRule {

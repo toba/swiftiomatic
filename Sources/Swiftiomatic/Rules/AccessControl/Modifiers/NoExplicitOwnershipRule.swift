@@ -1,9 +1,30 @@
 import SwiftSyntax
 
 struct NoExplicitOwnershipRule {
+    static let id = "no_explicit_ownership"
+    static let name = "No Explicit Ownership"
+    static let summary = "Explicit ownership modifiers (`borrowing`, `consuming`) should not be used"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+                    Example("func foo(_ bar: Bar) {}"),
+                    Example("let borrowing = true"),
+                ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+                    Example("func foo(_ bar: ↓consuming Bar) {}"),
+                    Example("↓borrowing func foo() {}"),
+                ]
+    }
+    static var corrections: [Example: Example] {
+        [
+                    Example("func foo(_ bar: ↓consuming Bar) {}"): Example("func foo(_ bar: Bar) {}"),
+                ]
+    }
     var options = SeverityConfiguration<Self>(.warning)
 
-    static let configuration = NoExplicitOwnershipConfiguration()
 }
 
 extension NoExplicitOwnershipRule: SwiftSyntaxCorrectableRule {

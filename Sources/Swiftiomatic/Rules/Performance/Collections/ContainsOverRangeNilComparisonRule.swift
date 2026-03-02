@@ -1,9 +1,27 @@
 import SwiftSyntax
 
 struct ContainsOverRangeNilComparisonRule {
+    static let id = "contains_over_range_nil_comparison"
+    static let name = "Contains over Range Comparison to Nil"
+    static let summary = "Prefer `contains` over `range(of:) != nil` and `range(of:) == nil`"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let range = myString.range(of: \"Test\")"),
+              Example("myString.contains(\"Test\")"),
+              Example("!myString.contains(\"Test\")"),
+              Example("resourceString.range(of: rule.regex, options: .regularExpression) != nil"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        ["!=", "=="].flatMap { comparison in
+            [
+                Example("↓myString.range(of: \"Test\") \(comparison) nil"),
+            ]
+        }
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ContainsOverRangeNilComparisonConfiguration()
 }
 
 extension ContainsOverRangeNilComparisonRule: SwiftSyntaxRule {

@@ -41,19 +41,17 @@ private struct RuleMock<ShouldLintEmptyFiles: ShouldLintEmptyFilesProtocol>: Cor
 {
   var options = SeverityConfiguration<Self>(.warning)
 
-  static var configuration: TestMockRuleConfiguration {
-    TestMockRuleConfiguration(
-      id: "rule_mock<\(ShouldLintEmptyFiles.self)>",
-      deprecatedAliases: ["mock"],
-    )
-  }
+  static var id: String { "rule_mock<\(ShouldLintEmptyFiles.self)>" }
+  static var name: String { "" }
+  static var summary: String { "" }
+  static var deprecatedAliases: Set<String> { ["mock"] }
 
   var shouldLintEmptyFiles: Bool {
     ShouldLintEmptyFiles.shouldLintEmptyFiles
   }
 
   func validate(file: SwiftSource) -> [RuleViolation] {
-    [RuleViolation(configuration: Self.configuration, location: Location(file: file.path))]
+    [RuleViolation(ruleType: Self.self, location: Location(file: file.path))]
   }
 
   func correct(file _: SwiftSource) -> Int {

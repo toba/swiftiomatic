@@ -1,9 +1,60 @@
 import SwiftSyntax
 
 struct NSLocalizedStringRequireBundleRule {
+    static let id = "nslocalizedstring_require_bundle"
+    static let name = "NSLocalizedString Require Bundle"
+    static let summary = "Calls to NSLocalizedString should specify the bundle which contains the strings file"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                NSLocalizedString("someKey", bundle: .main, comment: "test")
+                """,
+              ),
+              Example(
+                """
+                NSLocalizedString("someKey", tableName: "a",
+                                  bundle: Bundle(for: A.self),
+                                  comment: "test")
+                """,
+              ),
+              Example(
+                """
+                NSLocalizedString("someKey", tableName: "xyz",
+                                  bundle: someBundle, value: "test"
+                                  comment: "test")
+                """,
+              ),
+              Example(
+                """
+                arbitraryFunctionCall("something")
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓NSLocalizedString("someKey", comment: "test")
+                """,
+              ),
+              Example(
+                """
+                ↓NSLocalizedString("someKey", tableName: "a", comment: "test")
+                """,
+              ),
+              Example(
+                """
+                ↓NSLocalizedString("someKey", tableName: "xyz",
+                                  value: "test", comment: "test")
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = NSLocalizedStringRequireBundleConfiguration()
 }
 
 extension NSLocalizedStringRequireBundleRule: SwiftSyntaxRule {

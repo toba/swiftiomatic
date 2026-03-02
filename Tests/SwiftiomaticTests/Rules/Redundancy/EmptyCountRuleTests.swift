@@ -64,7 +64,7 @@ import Testing
         Example("#ExampleMacro { $0.list.isEmpty }"),
     ]
 
-    let description = TestExamples(from: EmptyCountRule.configuration).with(
+    let description = TestExamples(from: EmptyCountRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
       corrections: corrections,

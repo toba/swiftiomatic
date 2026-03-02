@@ -6,7 +6,7 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
 
 @Suite(.rulesRegistered) struct NestingRuleTests {
   @Test func nestingWithAlwaysAllowOneTypeInFunctions() async {
-    let baseExamples = TestExamples(from: NestingRule.configuration)
+    let baseExamples = TestExamples(from: NestingRule.self)
     var nonTriggeringExamples = baseExamples.nonTriggeringExamples
     nonTriggeringExamples.append(
       contentsOf: detectingTypes.flatMap { type -> [Example] in
@@ -232,7 +232,7 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
   }
 
   @Test func nestingWithoutCheckNestingInClosuresAndStatements() async {
-    let baseExamples = TestExamples(from: NestingRule.configuration)
+    let baseExamples = TestExamples(from: NestingRule.self)
     var nonTriggeringExamples = baseExamples.nonTriggeringExamples
     nonTriggeringExamples.append(
       contentsOf: detectingTypes.flatMap { type -> [Example] in
@@ -566,7 +566,7 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
   }
 
   @Test func nestingWithoutTypealiasAndAssociatedtype() async {
-    let baseExamples = TestExamples(from: NestingRule.configuration)
+    let baseExamples = TestExamples(from: NestingRule.self)
     var nonTriggeringExamples = baseExamples.nonTriggeringExamples
     nonTriggeringExamples.append(
       contentsOf: detectingTypes.flatMap { type -> [Example] in

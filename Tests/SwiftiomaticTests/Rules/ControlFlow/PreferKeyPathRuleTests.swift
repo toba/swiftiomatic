@@ -16,7 +16,7 @@ import Testing
       return
     }
 
-    let description = TestExamples(from: PreferKeyPathRule.configuration)
+    let description = TestExamples(from: PreferKeyPathRule.self)
       .with(
         nonTriggeringExamples: [
           Example("f.filter { a in b }"),

@@ -125,7 +125,9 @@ private struct RuleMock1: Rule {
   var options = SeverityConfiguration<Self>(.warning)
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
-  static let configuration = TestMockRuleConfiguration(id: "RuleMock1")
+  static let id = "RuleMock1"
+  static let name = ""
+  static let summary = ""
 
   init() { /* conformance for test */  }
   init(configuration _: Any) { self.init() }
@@ -139,7 +141,9 @@ private struct RuleMock2: Rule {
   var options = SeverityConfiguration<Self>(.warning)
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
-  static let configuration = TestMockRuleConfiguration(id: "RuleMock2")
+  static let id = "RuleMock2"
+  static let name = ""
+  static let summary = ""
 
   init() { /* conformance for test */  }
   init(configuration _: Any) { self.init() }
@@ -153,7 +157,9 @@ private struct CorrectableRuleMock: CorrectableRule {
   var options = SeverityConfiguration<Self>(.warning)
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
-  static let configuration = TestMockRuleConfiguration(id: "CorrectableRuleMock")
+  static let id = "CorrectableRuleMock"
+  static let name = ""
+  static let summary = ""
 
   init() { /* conformance for test */  }
   init(configuration _: Any) { self.init() }

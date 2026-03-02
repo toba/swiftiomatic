@@ -1,9 +1,27 @@
 import Foundation
 
 struct LeadingWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
+    static let id = "leading_whitespace"
+    static let name = "Leading Whitespace"
+    static let summary = "Files should not contain leading whitespace"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("//")
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("\n//"),
+              Example(" //"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("\n //", shouldTestMultiByteOffsets: false): Example("//")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = LeadingWhitespaceConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     let countOfLeadingWhitespace = file.contents.countOfLeadingCharacters(
@@ -15,7 +33,7 @@ struct LeadingWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
 
     return [
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severity,
         location: Location(file: file.path, line: 1),
       )

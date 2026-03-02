@@ -3,14 +3,29 @@ import Foundation
 private let moduleToLog = ProcessInfo.processInfo.environment["SWIFTIOMATIC_LOG_MODULE_USAGE"]
 
 struct UnusedImportRule: CorrectableRule, AnalyzerRule {
+    static let id = "unused_import"
+    static let name = "Unused Import"
+    static let summary = "All imported modules should be required to make the file compile"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static let requiresSourceKit = true
+    static let requiresCompilerArguments = true
+    static let requiresFileOnDisk = true
+    static var nonTriggeringExamples: [Example] {
+        UnusedImportRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        UnusedImportRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        UnusedImportRuleExamples.corrections
+    }
   var options = UnusedImportOptions()
-
-  static let configuration = UnusedImportConfiguration()
 
   func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {
     importUsage(in: file, compilerArguments: compilerArguments).map { importUsage in
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severity,
         location: Location(
           file: file,

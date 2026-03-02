@@ -1,9 +1,18 @@
 import SwiftSyntax
 
 struct QuickDiscouragedCallRule {
+    static let id = "quick_discouraged_call"
+    static let name = "Quick Discouraged Call"
+    static let summary = "Discouraged call inside 'describe' and/or 'context' block."
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        QuickDiscouragedCallRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        QuickDiscouragedCallRuleExamples.triggeringExamples
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = QuickDiscouragedCallConfiguration()
 }
 
 extension QuickDiscouragedCallRule: SwiftSyntaxRule {

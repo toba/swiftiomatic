@@ -6,7 +6,7 @@ import Testing
   @Test func withIgnoresEmptyLinesEnabled() async {
     // Perform additional tests with the ignores_empty_lines setting enabled.
     // The set of non-triggering examples is extended by a whitespace-indented empty line
-    let baseExamples = TestExamples(from: TrailingWhitespaceRule.configuration)
+    let baseExamples = TestExamples(from: TrailingWhitespaceRule.self)
     let nonTriggeringExamples = baseExamples.nonTriggeringExamples + [Example(" \n")]
     let description = baseExamples.with(nonTriggeringExamples: nonTriggeringExamples)
 
@@ -18,7 +18,7 @@ import Testing
 
   @Test func withIgnoresCommentsDisabled() async {
     // Perform additional tests with the ignores_comments settings disabled.
-    let baseExamples = TestExamples(from: TrailingWhitespaceRule.configuration)
+    let baseExamples = TestExamples(from: TrailingWhitespaceRule.self)
     let triggeringComments = [
       Example("// \n"),
       Example("let name: String // \n"),
@@ -40,7 +40,7 @@ import Testing
   @Test func withIgnoresLiteralsEnabled() async {
     // Perform additional tests with the ignores_literals setting enabled.
     // This setting only ignores trailing whitespace inside multiline string literals.
-    let baseExamples = TestExamples(from: TrailingWhitespaceRule.configuration)
+    let baseExamples = TestExamples(from: TrailingWhitespaceRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example("let multiline = \"\"\"\n    content   \n    \"\"\"\n")

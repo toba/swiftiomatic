@@ -1,9 +1,59 @@
 import SwiftSyntax
 
 struct RedundantSendableRule {
+    static let id = "redundant_sendable"
+    static let name = "Redundant Sendable"
+    static let summary = "Sendable conformance is redundant on an actor-isolated type"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("struct S: Sendable {}"),
+              Example("class C: Sendable {}"),
+              Example("actor A {}"),
+              Example("@MainActor struct S {}"),
+              Example("@MyActor enum E: Sendable { case a }"),
+              Example("@MainActor protocol P: Sendable {}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("@MainActor struct ↓S: Sendable {}"),
+              Example("actor ↓A: Sendable {}"),
+              Example(
+                "@MyActor enum ↓E: Sendable { case a }",
+                configuration: ["global_actors": ["MyActor"]],
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("@MainActor struct S: Sendable {}"):
+                Example("@MainActor struct S {}"),
+              Example("actor A: Sendable /* trailing comment */{}"):
+                Example("actor A /* trailing comment */{}"),
+              Example(
+                "@MyActor enum E: Sendable { case a }",
+                configuration: ["global_actors": ["MyActor"]],
+              ):
+                Example("@MyActor enum E { case a }"),
+              Example(
+                """
+                actor A: B, Sendable, C // comment
+                {}
+                """,
+              ):
+                Example(
+                  """
+                  actor A: B, C // comment
+                  {}
+                  """,
+                ),
+              Example("@MainActor struct P: A, Sendable {}"):
+                Example("@MainActor struct P: A {}"),
+            ]
+    }
   var options = RedundantSendableOptions()
 
-  static let configuration = RedundantSendableConfiguration()
 }
 
 extension RedundantSendableRule: SwiftSyntaxCorrectableRule {

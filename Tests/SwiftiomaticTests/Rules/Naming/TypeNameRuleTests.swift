@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct TypeNameRuleTests {
   @Test func typeNameWithExcluded() async {
-    let baseExamples = TestExamples(from: TypeNameRule.configuration)
+    let baseExamples = TestExamples(from: TypeNameRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example("class apple {}"),
@@ -25,7 +25,7 @@ import Testing
   }
 
   @Test func typeNameWithAllowedSymbols() async {
-    let baseExamples = TestExamples(from: TypeNameRule.configuration)
+    let baseExamples = TestExamples(from: TypeNameRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example("class MyType$ {}"),
@@ -44,13 +44,13 @@ import Testing
       Example("class ↓My_Type$ {}")
     ]
 
-    let description = TestExamples(from: TypeNameRule.configuration)
+    let description = TestExamples(from: TypeNameRule.self)
       .with(triggeringExamples: triggeringExamples)
     await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
   }
 
   @Test func typeNameWithIgnoreStartWithLowercase() async {
-    let baseExamples = TestExamples(from: TypeNameRule.configuration)
+    let baseExamples = TestExamples(from: TypeNameRule.self)
     let triggeringExamplesToRemove = [
       Example("private typealias ↓foo = Void"),
       Example("class ↓myType {}"),

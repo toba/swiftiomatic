@@ -1,9 +1,29 @@
 import SwiftSyntax
 
 struct ClosingBraceRule {
+    static let id = "closing_brace"
+    static let name = "Closing Brace Spacing"
+    static let summary = "Closing brace with closing parenthesis should not have any whitespaces in the middle"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("[].map({ })"),
+              Example("[].map(\n  { }\n)"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("[].map({ ↓} )"),
+              Example("[].map({ ↓}\t)"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("[].map({ ↓} )"): Example("[].map({ })")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ClosingBraceConfiguration()
 }
 
 extension ClosingBraceRule: SwiftSyntaxCorrectableRule {

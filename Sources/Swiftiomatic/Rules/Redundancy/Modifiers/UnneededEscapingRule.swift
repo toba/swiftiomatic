@@ -2,9 +2,22 @@ import SwiftLexicalLookup
 import SwiftSyntax
 
 struct UnneededEscapingRule {
+    static let id = "unneeded_escaping"
+    static let name = "Unneeded Escaping"
+    static let summary = "The `@escaping` attribute should only be used when the closure actually escapes."
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        UnneededEscapingRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        UnneededEscapingRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        UnneededEscapingRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = UnneededEscapingConfiguration()
 }
 
 extension UnneededEscapingRule: SwiftSyntaxCorrectableRule {

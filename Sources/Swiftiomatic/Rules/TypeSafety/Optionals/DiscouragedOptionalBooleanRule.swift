@@ -1,9 +1,18 @@
 import SwiftSyntax
 
 struct DiscouragedOptionalBooleanRule {
+    static let id = "discouraged_optional_boolean"
+    static let name = "Discouraged Optional Boolean"
+    static let summary = "Prefer non-optional booleans over optional booleans"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        DiscouragedOptionalBooleanRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        DiscouragedOptionalBooleanRuleExamples.triggeringExamples
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = DiscouragedOptionalBooleanConfiguration()
 }
 
 extension DiscouragedOptionalBooleanRule: SwiftSyntaxRule {

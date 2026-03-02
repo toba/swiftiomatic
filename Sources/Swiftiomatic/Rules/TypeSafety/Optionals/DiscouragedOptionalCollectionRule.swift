@@ -1,9 +1,18 @@
 import SwiftSyntax
 
 struct DiscouragedOptionalCollectionRule {
+    static let id = "discouraged_optional_collection"
+    static let name = "Discouraged Optional Collection"
+    static let summary = "Prefer empty collection over optional collection"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        DiscouragedOptionalCollectionExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        DiscouragedOptionalCollectionExamples.triggeringExamples
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = DiscouragedOptionalCollectionConfiguration()
 }
 
 extension DiscouragedOptionalCollectionRule: SwiftSyntaxRule {

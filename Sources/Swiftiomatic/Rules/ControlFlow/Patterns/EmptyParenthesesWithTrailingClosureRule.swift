@@ -1,9 +1,53 @@
 import SwiftSyntax
 
 struct EmptyParenthesesWithTrailingClosureRule {
+    static let id = "empty_parentheses_with_trailing_closure"
+    static let name = "Empty Parentheses with Trailing Closure"
+    static let summary = "When using trailing closures, empty parentheses should be avoided after the method call"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("[1, 2].map { $0 + 1 }"),
+              Example("[1, 2].map({ $0 + 1 })"),
+              Example("[1, 2].reduce(0) { $0 + $1 }"),
+              Example("[1, 2].map { number in\n number + 1 \n}"),
+              Example("let isEmpty = [1, 2].isEmpty()"),
+              Example(
+                """
+                UIView.animateWithDuration(0.3, animations: {
+                   self.disableInteractionRightView.alpha = 0
+                }, completion: { _ in
+                   ()
+                })
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("[1, 2].map↓() { $0 + 1 }"),
+              Example("[1, 2].map↓( ) { $0 + 1 }"),
+              Example("[1, 2].map↓() { number in\n number + 1 \n}"),
+              Example("[1, 2].map↓(  ) { number in\n number + 1 \n}"),
+              Example("func foo() -> [Int] {\n    return [1, 2].map↓() { $0 + 1 }\n}"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("[1, 2].map↓() { $0 + 1 }"): Example("[1, 2].map { $0 + 1 }"),
+              Example("[1, 2].map↓( ) { $0 + 1 }"): Example("[1, 2].map { $0 + 1 }"),
+              Example("[1, 2].map↓() { number in\n number + 1 \n}"):
+                Example("[1, 2].map { number in\n number + 1 \n}"),
+              Example("[1, 2].map↓(  ) { number in\n number + 1 \n}"):
+                Example("[1, 2].map { number in\n number + 1 \n}"),
+              Example("func foo() -> [Int] {\n    return [1, 2].map↓() { $0 + 1 }\n}"):
+                Example("func foo() -> [Int] {\n    return [1, 2].map { $0 + 1 }\n}"),
+              Example("class C {\n#if true\nfunc f() {\n[1, 2].map↓() { $0 + 1 }\n}\n#endif\n}"):
+                Example("class C {\n#if true\nfunc f() {\n[1, 2].map { $0 + 1 }\n}\n#endif\n}"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = EmptyParenthesesWithTrailingClosureConfiguration()
 }
 
 extension EmptyParenthesesWithTrailingClosureRule: SwiftSyntaxCorrectableRule {

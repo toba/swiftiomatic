@@ -1,9 +1,22 @@
 import SwiftSyntax
 
 struct TestCaseAccessibilityRule {
+    static let id = "test_case_accessibility"
+    static let name = "Test Case Accessibility"
+    static let summary = "Test cases should only contain private non-test members"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        TestCaseAccessibilityRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        TestCaseAccessibilityRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        TestCaseAccessibilityRuleExamples.corrections
+    }
   var options = TestCaseAccessibilityOptions()
 
-  static let configuration = TestCaseAccessibilityConfiguration()
 }
 
 extension TestCaseAccessibilityRule: SwiftSyntaxCorrectableRule {

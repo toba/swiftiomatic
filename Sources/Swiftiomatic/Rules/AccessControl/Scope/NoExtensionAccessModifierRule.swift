@@ -1,9 +1,28 @@
 import SwiftSyntax
 
 struct NoExtensionAccessModifierRule {
+    static let id = "no_extension_access_modifier"
+    static let name = "No Extension Access Modifier"
+    static let summary = "Prefer not to use extension access modifiers"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("extension String {}"),
+              Example("\n\n extension String {}"),
+              Example("nonisolated extension String {}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("↓private extension String {}"),
+              Example("↓public \n extension String {}"),
+              Example("↓open extension String {}"),
+              Example("↓internal extension String {}"),
+              Example("↓fileprivate extension String {}"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.error)
 
-  static let configuration = NoExtensionAccessModifierConfiguration()
 }
 
 extension NoExtensionAccessModifierRule: SwiftSyntaxRule {

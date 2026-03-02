@@ -2,9 +2,38 @@ import Foundation
 import SwiftSyntax
 
 struct SortDeclarationsRule {
+    static let id = "sort_declarations"
+    static let name = "Sort Declarations"
+    static let summary = "Declarations marked with `// sm:sort` should have their members sorted alphabetically"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                // sm:sort
+                enum FeatureFlags {
+                  case barFeature
+                  case fooFeature
+                }
+                """,
+              )
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                // sm:sort
+                enum ↓FeatureFlags {
+                  case fooFeature
+                  case barFeature
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SortDeclarationsConfiguration()
 }
 
 extension SortDeclarationsRule: SwiftSyntaxRule {

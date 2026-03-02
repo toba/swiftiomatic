@@ -1,9 +1,31 @@
 import SwiftSyntax
 
 struct RedundantBackticksRule {
+    static let id = "redundant_backticks"
+    static let name = "Redundant Backticks"
+    static let summary = "Backtick-escaped identifiers that are not keywords in their context are redundant"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let `class` = \"value\""),
+              Example("func `init`() {}"),
+              Example("let `self` = this"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let ↓`foo` = bar"),
+              Example("func ↓`myFunc`() {}"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let ↓`foo` = bar"): Example("let foo = bar")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantBackticksConfiguration()
 }
 
 extension RedundantBackticksRule: SwiftSyntaxCorrectableRule {

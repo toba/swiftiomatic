@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct LintModifierOrderTests {
   @Test func attributeTypeMethod() async {
-    let descriptionOverride = TestExamples(from: ModifierOrderRule.configuration)
+    let descriptionOverride = TestExamples(from: ModifierOrderRule.self)
       .with(
         nonTriggeringExamples: [
           Example(
@@ -48,7 +48,7 @@ import Testing
   }
 
   @Test func rightOrderedModifierGroups() async {
-    let descriptionOverride = TestExamples(from: ModifierOrderRule.configuration)
+    let descriptionOverride = TestExamples(from: ModifierOrderRule.self)
       .with(
         nonTriggeringExamples: [
           Example("public protocol Foo: class {}\n" + "public weak internal(set) var bar: Foo? \n"),
@@ -86,7 +86,7 @@ import Testing
   }
 
   @Test func atPrefixedGroup() async {
-    let descriptionOverride = TestExamples(from: ModifierOrderRule.configuration)
+    let descriptionOverride = TestExamples(from: ModifierOrderRule.self)
       .with(
         nonTriggeringExamples: [
         Example(
@@ -213,7 +213,7 @@ import Testing
   }
 
   @Test func nonSpecifiedModifiersDontInterfere() async {
-    let descriptionOverride = TestExamples(from: ModifierOrderRule.configuration)
+    let descriptionOverride = TestExamples(from: ModifierOrderRule.self)
       .with(
         nonTriggeringExamples: [
           Example(
@@ -285,7 +285,7 @@ import Testing
   }
 
   @Test func correctionsAreAppliedCorrectly() async {
-    let descriptionOverride = TestExamples(from: ModifierOrderRule.configuration)
+    let descriptionOverride = TestExamples(from: ModifierOrderRule.self)
       .with(
         nonTriggeringExamples: [],
         triggeringExamples: [],
@@ -383,7 +383,7 @@ import Testing
   }
 
   @Test func correctionsAreNotAppliedToIrrelevantModifier() async {
-    let descriptionOverride = TestExamples(from: ModifierOrderRule.configuration)
+    let descriptionOverride = TestExamples(from: ModifierOrderRule.self)
       .with(
         nonTriggeringExamples: [],
         triggeringExamples: [],
@@ -477,7 +477,7 @@ import Testing
   }
 
   @Test func typeMethodClassCorrection() async {
-    let descriptionOverride = TestExamples(from: ModifierOrderRule.configuration)
+    let descriptionOverride = TestExamples(from: ModifierOrderRule.self)
       .with(
         nonTriggeringExamples: [],
         triggeringExamples: [],
@@ -527,7 +527,7 @@ import Testing
   }
 
   @Test func isolationModifierOrder() async {
-    let descriptionOverride = TestExamples(from: ModifierOrderRule.configuration)
+    let descriptionOverride = TestExamples(from: ModifierOrderRule.self)
       .with(
         nonTriggeringExamples: [
           Example(
@@ -607,7 +607,7 @@ import Testing
   }
 
   @Test func isolationModifierCustomOrder() async {
-    let descriptionOverride = TestExamples(from: ModifierOrderRule.configuration)
+    let descriptionOverride = TestExamples(from: ModifierOrderRule.self)
       .with(
         nonTriggeringExamples: [
           Example(

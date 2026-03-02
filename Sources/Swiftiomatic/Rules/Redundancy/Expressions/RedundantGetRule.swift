@@ -1,9 +1,114 @@
 import SwiftSyntax
 
 struct RedundantGetRule {
+    static let id = "redundant_get"
+    static let name = "Redundant Get"
+    static let summary = "Computed read-only properties should avoid using the `get` keyword"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                var foo: Int {
+                    return 5
+                }
+                """,
+              ),
+              Example(
+                """
+                var foo: Int {
+                    get { return 5 }
+                    set { _foo = newValue }
+                }
+                """,
+              ),
+              Example(
+                """
+                var enabled: Bool { @objc(isEnabled) get { true } }
+                """,
+              ),
+              Example(
+                """
+                var foo: Int {
+                    get async throws {
+                        try await getFoo()
+                    }
+                }
+                """,
+              ),
+              Example(
+                """
+                func foo() {
+                    get {
+                        self.lookup(index)
+                    }
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                var foo: Int {
+                    ↓get {
+                        return 5
+                    }
+                }
+                """,
+              ),
+              Example("var foo: Int { ↓get { return 5 } }"),
+              Example(
+                """
+                subscript(_ index: Int) {
+                    ↓get {
+                        return lookup(index)
+                    }
+                }
+                """,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example(
+                """
+                var foo: Int {
+                    ↓get {
+                        return 5
+                    }
+                }
+                """,
+              ): Example(
+                """
+                var foo: Int {
+                    return 5
+                }
+                """,
+              ),
+              Example("var foo: Int { ↓get { return 5 } }"): Example(
+                "var foo: Int { return 5 }",
+              ),
+              Example(
+                """
+                subscript(_ index: Int) {
+                    ↓get {
+                        return lookup(index)
+                    }
+                }
+                """,
+              ): Example(
+                """
+                subscript(_ index: Int) {
+                    return lookup(index)
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantGetConfiguration()
 }
 
 extension RedundantGetRule: SwiftSyntaxCorrectableRule {

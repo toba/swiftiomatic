@@ -1,9 +1,46 @@
 import SwiftSyntax
 
 struct ConditionalAssignmentRule {
+    static let id = "conditional_assignment"
+    static let name = "Conditional Assignment"
+    static let summary = "if/switch statements that assign to the same variable in every branch can use if/switch expressions"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                let x = if condition { 1 } else { 2 }
+                """,
+              ),
+              Example(
+                """
+                let x: Int
+                if condition {
+                  x = 1
+                  print("assigned")
+                } else {
+                  x = 2
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                let x: Int
+                ↓if condition {
+                  x = 1
+                } else {
+                  x = 2
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ConditionalAssignmentConfiguration()
 }
 
 extension ConditionalAssignmentRule: SwiftSyntaxRule {

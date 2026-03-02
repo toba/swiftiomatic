@@ -2,9 +2,26 @@ import Foundation
 import SwiftSyntax
 
 struct ConcurrencyModernizationRule {
+    static let id = "concurrency_modernization"
+    static let name = "Concurrency Modernization"
+    static let summary = "Flags GCD usage and legacy concurrency patterns that should use structured concurrency"
+    static let isOptIn = true
+    static let canEnrichAsync = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("Task { @MainActor in update() }"),
+              Example("await withTaskGroup(of: Void.self) { }"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("↓DispatchQueue.main.async { update() }"),
+              Example("↓DispatchGroup()"),
+              Example("func fetch(↓completion: @escaping (Result<Data, Error>) -> Void) {}"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ConcurrencyModernizationConfiguration()
 }
 
 extension ConcurrencyModernizationRule: SwiftSyntaxRule {
@@ -42,7 +59,7 @@ extension ConcurrencyModernizationRule: AsyncEnrichableRule {
         // Confirmed DispatchQueue — emit with high confidence
         violations.append(
           RuleViolation(
-            configuration: Self.configuration,
+            ruleType: Self.self,
             severity: options.severity,
             location: Location(file: filePath, line: query.line, column: query.column),
             reason: "DispatchQueue.async can be replaced with structured concurrency",

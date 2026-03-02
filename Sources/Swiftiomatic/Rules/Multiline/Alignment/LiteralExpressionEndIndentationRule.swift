@@ -1,9 +1,167 @@
 import Foundation
 
 struct LiteralExpressionEndIndentationRule: Rule {
+    static let id = "literal_expression_end_indentation"
+    static let name = "Literal Expression End Indentation"
+    static let summary = "Array and dictionary literal end should have the same indentation as the line that started it"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static let requiresSourceKit = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                [1, 2, 3]
+                """,
+              ),
+              Example(
+                """
+                [1,
+                 2
+                ]
+                """,
+              ),
+              Example(
+                """
+                [
+                   1,
+                   2
+                ]
+                """,
+              ),
+              Example(
+                """
+                [
+                   1,
+                   2]
+                """,
+              ),
+              Example(
+                """
+                   let x = [
+                       1,
+                       2
+                   ]
+                """,
+              ),
+              Example(
+                """
+                [key: 2, key2: 3]
+                """,
+              ),
+              Example(
+                """
+                [key: 1,
+                 key2: 2
+                ]
+                """,
+              ),
+              Example(
+                """
+                [
+                   key: 0,
+                   key2: 20
+                ]
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                let x = [
+                   1,
+                   2
+                   ↓]
+                """,
+              ),
+              Example(
+                """
+                   let x = [
+                       1,
+                       2
+                ↓]
+                """,
+              ),
+              Example(
+                """
+                let x = [
+                   key: value
+                   ↓]
+                """,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example(
+                """
+                let x = [
+                   key: value
+                ↓   ]
+                """,
+              ): Example(
+                """
+                let x = [
+                   key: value
+                ]
+                """,
+              ),
+              Example(
+                """
+                   let x = [
+                       1,
+                       2
+                ↓]
+                """,
+              ): Example(
+                """
+                   let x = [
+                       1,
+                       2
+                   ]
+                """,
+              ),
+              Example(
+                """
+                let x = [
+                   1,
+                   2
+                ↓   ]
+                """,
+              ): Example(
+                """
+                let x = [
+                   1,
+                   2
+                ]
+                """,
+              ),
+              Example(
+                """
+                let x = [
+                   1,
+                   2
+                ↓   ] + [
+                   3,
+                   4
+                ↓   ]
+                """,
+              ): Example(
+                """
+                let x = [
+                   1,
+                   2
+                ] + [
+                   3,
+                   4
+                ]
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = LiteralExpressionEndIndentationConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     violations(in: file).map { violation in
@@ -16,12 +174,12 @@ struct LiteralExpressionEndIndentationRule: Rule {
     in file: SwiftSource
   ) -> RuleViolation {
     let reason =
-      "\(Self.configuration.summary); "
+      "\(Self.summary); "
       + "expected indentation of \(violation.indentationRanges.expected.length), "
       + "got \(violation.indentationRanges.actual.length)"
 
     return RuleViolation(
-      configuration: Self.configuration,
+      ruleType: Self.self,
       severity: options.severity,
       location: Location(file: file, byteOffset: violation.endOffset),
       reason: reason,

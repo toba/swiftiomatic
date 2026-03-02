@@ -2,9 +2,18 @@ import Foundation
 import SwiftSyntax
 
 struct IdentifierNameRule {
+    static let id = "identifier_name"
+    static let name = "Identifier Name"
+    static let summary = "Identifier names should only contain alphanumeric characters and start with a lowercase character or should only contain capital letters. In an exception to the above, variable names may start with a capital letter when they are declared as static. Variable names should not be too long or too short."
+    static let deprecatedAliases: Set<String> = ["variable_name"]
+    static var nonTriggeringExamples: [Example] {
+        IdentifierNameRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        IdentifierNameRuleExamples.triggeringExamples
+    }
   var options = IdentifierNameOptions()
 
-  static let configuration = IdentifierNameConfiguration()
 }
 
 extension IdentifierNameRule: SwiftSyntaxRule {

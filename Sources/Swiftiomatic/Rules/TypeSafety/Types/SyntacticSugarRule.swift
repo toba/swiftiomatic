@@ -2,9 +2,20 @@ import Foundation
 import SwiftSyntax
 
 struct SyntacticSugarRule: CorrectableRule, SyntaxOnlyRule {
+    static let id = "syntactic_sugar"
+    static let name = "Syntactic Sugar"
+    static let summary = "Shorthand syntactic sugar should be used, i.e. [Int] instead of Array<Int>."
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        SyntacticSugarRuleExamples.nonTriggering
+    }
+    static var triggeringExamples: [Example] {
+        SyntacticSugarRuleExamples.triggering
+    }
+    static var corrections: [Example: Example] {
+        SyntacticSugarRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = SyntacticSugarConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     let visitor = SyntacticSugarRuleVisitor(viewMode: .sourceAccurate)
@@ -12,7 +23,7 @@ struct SyntacticSugarRule: CorrectableRule, SyntaxOnlyRule {
       flattenViolations(visitor.violations)
     }.map { violation in
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severity,
         location: Location(file: file, byteOffset: ByteCount(violation.position)),
         reason: violation.type.violationReason,

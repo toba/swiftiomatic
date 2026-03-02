@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct UnusedOptionalBindingRuleTests {
   @Test func defaultConfiguration() async {
-    let baseExamples = TestExamples(from: UnusedOptionalBindingRule.configuration)
+    let baseExamples = TestExamples(from: UnusedOptionalBindingRule.self)
     let triggeringExamples =
       baseExamples.triggeringExamples + [
         Example("guard let _ = try? alwaysThrows() else { return }")
@@ -16,7 +16,7 @@ import Testing
 
   @Test func ignoreOptionalTryEnabled() async {
     // Perform additional tests with the ignore_optional_try settings enabled.
-    let baseExamples = TestExamples(from: UnusedOptionalBindingRule.configuration)
+    let baseExamples = TestExamples(from: UnusedOptionalBindingRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example("guard let _ = try? alwaysThrows() else { return }")

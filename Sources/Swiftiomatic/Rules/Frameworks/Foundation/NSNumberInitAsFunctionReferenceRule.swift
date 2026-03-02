@@ -2,9 +2,26 @@ import SwiftSyntax
 
 /// this rule exists due to a compiler bug: https://github.com/apple/swift/issues/51036
 struct NSNumberInitAsFunctionReferenceRule {
+    static let id = "ns_number_init_as_function_reference"
+    static let name = "NSNumber Init as Function Reference"
+    static let summary = "Passing `NSNumber.init` or `NSDecimalNumber.init` as a function reference is dangerous as it can cause the wrong initializer to be used, causing crashes; use `.init(value:)` instead"
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("[0, 0.2].map(NSNumber.init(value:))"),
+              Example("let value = NSNumber.init(value: 0.0)"),
+              Example("[0, 0.2].map { NSNumber(value: $0) }"),
+              Example("[0, 0.2].map(NSDecimalNumber.init(value:))"),
+              Example("[0, 0.2].map { NSDecimalNumber(value: $0) }"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("[0, 0.2].map(↓NSNumber.init)"),
+              Example("[0, 0.2].map(↓NSDecimalNumber.init)"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = NSNumberInitAsFunctionReferenceConfiguration()
 }
 
 extension NSNumberInitAsFunctionReferenceRule: SwiftSyntaxRule {

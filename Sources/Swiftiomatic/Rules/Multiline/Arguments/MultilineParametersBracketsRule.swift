@@ -1,9 +1,121 @@
 import Foundation
 
 struct MultilineParametersBracketsRule: Rule {
+    static let id = "multiline_parameters_brackets"
+    static let name = "Multiline Parameters Brackets"
+    static let summary = "Multiline parameters should have their surrounding brackets in a new line"
+    static let isOptIn = true
+    static let requiresSourceKit = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                func foo(param1: String, param2: String, param3: String)
+                """,
+              ),
+              Example(
+                """
+                func foo(
+                    param1: String, param2: String, param3: String
+                )
+                """,
+              ),
+              Example(
+                """
+                func foo(
+                    param1: String,
+                    param2: String,
+                    param3: String
+                )
+                """,
+              ),
+              Example(
+                """
+                class SomeType {
+                    func foo(param1: String, param2: String, param3: String)
+                }
+                """,
+              ),
+              Example(
+                """
+                class SomeType {
+                    func foo(
+                        param1: String, param2: String, param3: String
+                    )
+                }
+                """,
+              ),
+              Example(
+                """
+                class SomeType {
+                    func foo(
+                        param1: String,
+                        param2: String,
+                        param3: String
+                    )
+                }
+                """,
+              ),
+              Example(
+                """
+                func foo<T>(param1: T, param2: String, param3: String) -> T { /* some code */ }
+                """,
+              ),
+              Example(
+                """
+                    func foo(a: [Int] = [
+                        1
+                    ])
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                func foo(↓param1: String, param2: String,
+                         param3: String
+                )
+                """,
+              ),
+              Example(
+                """
+                func foo(
+                    param1: String,
+                    param2: String,
+                    param3: String↓)
+                """,
+              ),
+              Example(
+                """
+                class SomeType {
+                    func foo(↓param1: String, param2: String,
+                             param3: String
+                    )
+                }
+                """,
+              ),
+              Example(
+                """
+                class SomeType {
+                    func foo(
+                        param1: String,
+                        param2: String,
+                        param3: String↓)
+                }
+                """,
+              ),
+              Example(
+                """
+                func foo<T>(↓param1: T, param2: String,
+                         param3: String
+                ) -> T
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = MultilineParametersBracketsConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     violations(in: file.structureDictionary, file: file)
@@ -83,7 +195,7 @@ struct MultilineParametersBracketsRule: Rule {
 
     let matchNSRange = NSRange(invalidMatch.range, in: prefix)
     return RuleViolation(
-      configuration: Self.configuration,
+      ruleType: Self.self,
       severity: options.severity,
       location: Location(file: file, characterOffset: matchNSRange.location + 1),
     )
@@ -112,7 +224,7 @@ struct MultilineParametersBracketsRule: Rule {
     let matchNSRange = NSRange(invalidMatch.range, in: suffix)
     let characterOffset = lastParamRange.upperBound + matchNSRange.upperBound - 1
     return RuleViolation(
-      configuration: Self.configuration,
+      ruleType: Self.self,
       severity: options.severity,
       location: Location(file: file, characterOffset: characterOffset),
     )

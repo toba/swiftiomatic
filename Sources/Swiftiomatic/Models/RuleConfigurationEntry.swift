@@ -1,8 +1,8 @@
-/// Concrete ``Codable`` struct conforming to ``RuleConfiguration``.
+/// Concrete ``Codable`` struct holding rule metadata.
 ///
 /// This is the single metadata type returned by the catalog, used by the app,
 /// and serialized to JSON by the CLI. Replaces ``RuleCatalogEntry``.
-public struct RuleConfigurationEntry: Sendable, Codable, Hashable, RuleConfiguration {
+public struct RuleConfigurationEntry: Sendable, Codable, Hashable, Identifiable {
     public let id: String
     public let name: String
     public let summary: String

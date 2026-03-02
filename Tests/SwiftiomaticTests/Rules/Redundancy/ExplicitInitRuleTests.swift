@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct ExplicitInitRuleTests {
   @Test func includeBareInit() async {
-    let baseExamples = TestExamples(from: ExplicitInitRule.configuration)
+    let baseExamples = TestExamples(from: ExplicitInitRule.self)
     let nonTriggeringExamples =
       [
         Example("let foo = Foo()"),

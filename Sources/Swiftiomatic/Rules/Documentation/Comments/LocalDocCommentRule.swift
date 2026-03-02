@@ -2,9 +2,54 @@ import SwiftIDEUtils
 import SwiftSyntax
 
 struct LocalDocCommentRule: SwiftSyntaxRule {
+    static let id = "local_doc_comment"
+    static let name = "Local Doc Comment"
+    static let summary = "Prefer regular comments over doc comments in local scopes"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                func foo() {
+                  // Local scope documentation should use normal comments.
+                  print("foo")
+                }
+                """,
+              ),
+              Example(
+                """
+                /// My great property
+                var myGreatProperty: String!
+                """,
+              ),
+              Example(
+                """
+                /// Look here for more info: https://github.com.
+                var myGreatProperty: String!
+                """,
+              ),
+              Example(
+                """
+                /// Look here for more info:
+                /// https://github.com.
+                var myGreatProperty: String!
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                func foo() {
+                  ↓/// Docstring inside a function declaration
+                  print("foo")
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = LocalDocCommentConfiguration()
 
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(

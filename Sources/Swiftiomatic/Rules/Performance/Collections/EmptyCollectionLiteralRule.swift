@@ -1,9 +1,32 @@
 import SwiftSyntax
 
 struct EmptyCollectionLiteralRule {
+    static let id = "empty_collection_literal"
+    static let name = "Empty Collection Literal"
+    static let summary = "Prefer checking `isEmpty` over comparing collection to an empty array or dictionary literal"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("myArray = []"),
+              Example("myArray.isEmpty"),
+              Example("!myArray.isEmpty"),
+              Example("myDict = [:]"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("myArray↓ == []"),
+              Example("myArray↓ != []"),
+              Example("myArray↓ == [ ]"),
+              Example("myDict↓ == [:]"),
+              Example("myDict↓ != [:]"),
+              Example("myDict↓ == [: ]"),
+              Example("myDict↓ == [ :]"),
+              Example("myDict↓ == [ : ]"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = EmptyCollectionLiteralConfiguration()
 }
 
 extension EmptyCollectionLiteralRule: SwiftSyntaxRule {

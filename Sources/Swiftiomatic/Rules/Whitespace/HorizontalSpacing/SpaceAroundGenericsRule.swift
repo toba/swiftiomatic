@@ -1,9 +1,31 @@
 import SwiftSyntax
 
 struct SpaceAroundGenericsRule {
+    static let id = "space_around_generics"
+    static let name = "Space Around Generics"
+    static let summary = "There should be no space between an identifier and opening angle bracket"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let a: Array<Int> = []"),
+              Example("func foo<T>() {}"),
+              Example("class Foo<T> {}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let a: Array↓ <Int> = []"),
+              Example("func foo↓ <T>() {}"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let a: Array↓ <Int> = []"): Example("let a: Array<Int> = []")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SpaceAroundGenericsConfiguration()
 }
 
 extension SpaceAroundGenericsRule: SwiftSyntaxCorrectableRule {

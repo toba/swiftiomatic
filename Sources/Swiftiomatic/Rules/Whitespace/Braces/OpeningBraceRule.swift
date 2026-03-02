@@ -2,9 +2,21 @@ import Foundation
 import SwiftSyntax
 
 struct OpeningBraceRule {
+    static let id = "opening_brace"
+    static let name = "Opening Brace Spacing"
+    static let summary = ""
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        OpeningBraceRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        OpeningBraceRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        OpeningBraceRuleExamples.corrections
+    }
   var options = OpeningBraceOptions()
 
-  static let configuration = OpeningBraceConfiguration()
 }
 
 extension OpeningBraceRule: SwiftSyntaxCorrectableRule {

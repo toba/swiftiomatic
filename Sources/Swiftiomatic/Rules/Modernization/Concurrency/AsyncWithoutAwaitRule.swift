@@ -1,9 +1,22 @@
 import SwiftSyntax
 
 struct AsyncWithoutAwaitRule {
+    static let id = "async_without_await"
+    static let name = "Async Without Await"
+    static let summary = "Declaration should not be async if it doesn't use await"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        AsyncWithoutAwaitRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        AsyncWithoutAwaitRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        AsyncWithoutAwaitRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = AsyncWithoutAwaitConfiguration()
 }
 
 extension AsyncWithoutAwaitRule: SwiftSyntaxCorrectableRule {

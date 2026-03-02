@@ -6,9 +6,20 @@ private let attributeNamesImplyingObjc: Set<String> = [
 ]
 
 struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule {
+    static let id = "redundant_objc_attribute"
+    static let name = "Redundant @objc Attribute"
+    static let summary = "Objective-C attribute (@objc) is redundant in declaration"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        RedundantObjcAttributeRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        RedundantObjcAttributeRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        RedundantObjcAttributeRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = RedundantObjcAttributeConfiguration()
 
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     final class Visitor: ViolationCollectingVisitor<OptionsType> {

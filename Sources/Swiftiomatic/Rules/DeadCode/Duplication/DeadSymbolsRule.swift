@@ -1,11 +1,34 @@
 import SwiftSyntax
 
 struct DeadSymbolsRule: CollectingRule {
+    static let id = "dead_symbols"
+    static let name = "Dead Symbols"
+    static let summary = "Private symbols with no references are likely dead code"
+    static let isOptIn = true
+    static let isCrossFile = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                private func helper() {}
+                func main() { helper() }
+                """,
+              )
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓private func unused() {}
+                func main() { }
+                """,
+              )
+            ]
+    }
   typealias FileInfo = SymbolContribution
 
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = DeadSymbolsConfiguration()
 
   func collectInfo(for file: SwiftSource) -> SymbolContribution {
     let filePath = file.path ?? ""
@@ -36,7 +59,7 @@ struct DeadSymbolsRule: CollectingRule {
       .filter { $0.file == filePath && !allReferences.contains($0.name) }
       .map { decl in
         RuleViolation(
-          configuration: Self.configuration,
+          ruleType: Self.self,
           severity: options.severity,
           location: Location(file: filePath, line: decl.line, column: decl.column),
           reason: "Dead private \(decl.kind): '\(decl.name)' — no references found",

@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct PrivateOverFilePrivateRuleTests {
   @Test func privateOverFilePrivateValidatingExtensions() async {
-    let baseExamples = TestExamples(from: PrivateOverFilePrivateRule.configuration)
+    let baseExamples = TestExamples(from: PrivateOverFilePrivateRule.self)
     let triggeringExamples =
       baseExamples.triggeringExamples + [
         Example("↓fileprivate extension String {}"),
@@ -30,7 +30,7 @@ import Testing
   }
 
   @Test func privateOverFilePrivateNotValidatingExtensions() async {
-    let baseExamples = TestExamples(from: PrivateOverFilePrivateRule.configuration)
+    let baseExamples = TestExamples(from: PrivateOverFilePrivateRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example("fileprivate extension String {}")

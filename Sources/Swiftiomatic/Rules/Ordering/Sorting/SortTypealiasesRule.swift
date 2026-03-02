@@ -1,9 +1,23 @@
 import SwiftSyntax
 
 struct SortTypealiasesRule {
+    static let id = "sort_typealiases"
+    static let name = "Sort Typealiases"
+    static let summary = "Protocol composition typealiases should be sorted alphabetically"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("typealias Dependencies = Bar & Foo & Quux"),
+              Example("typealias Foo = Int"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("typealias Dependencies = ↓Foo & Bar & Quux")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SortTypealiasesConfiguration()
 }
 
 extension SortTypealiasesRule: SwiftSyntaxRule {

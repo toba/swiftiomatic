@@ -1,9 +1,19 @@
 import SwiftSyntax
 
 struct ForceCastRule {
+    static let id = "force_cast"
+    static let name = "Force Cast"
+    static let summary = "Force casts should be avoided"
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("NSNumber() as? Int")
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [Example("NSNumber() ↓as! Int")]
+    }
   var options = SeverityConfiguration<Self>(.error)
 
-  static let configuration = ForceCastConfiguration()
 }
 
 extension ForceCastRule: SwiftSyntaxRule {

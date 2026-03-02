@@ -1,9 +1,73 @@
 import SwiftSyntax
 
 struct RedundantExtensionACLRule {
+    static let id = "redundant_extension_acl"
+    static let name = "Redundant Extension ACL"
+    static let summary = "Access control modifiers on extension members are redundant when they match the extension's ACL"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                public extension URL {
+                  func queryParameter(_ name: String) -> String { "" }
+                }
+                """,
+              ),
+              Example(
+                """
+                public extension URL {
+                  internal func internalMethod() {}
+                }
+                """,
+              ),
+              Example(
+                """
+                extension URL {
+                  public func publicMethod() {}
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                public extension URL {
+                  ↓public func queryParameter(_ name: String) -> String { "" }
+                }
+                """,
+              ),
+              Example(
+                """
+                private extension URL {
+                  ↓fileprivate func foo() {}
+                }
+                """,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example(
+                """
+                public extension URL {
+                  ↓public func queryParameter(_ name: String) -> String { "" }
+                }
+                """,
+              ): Example(
+                """
+                public extension URL {
+                  func queryParameter(_ name: String) -> String { "" }
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantExtensionACLConfiguration()
 }
 
 extension RedundantExtensionACLRule: SwiftSyntaxCorrectableRule {

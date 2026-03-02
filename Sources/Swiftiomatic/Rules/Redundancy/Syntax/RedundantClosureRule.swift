@@ -1,9 +1,41 @@
 import SwiftSyntax
 
 struct RedundantClosureRule {
+    static let id = "redundant_closure"
+    static let name = "Redundant Closure"
+    static let summary = "Immediately-invoked closures with a single expression can be simplified"
+    static let scope: Scope = .format
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let x = { 42 }()"),
+              Example(
+                """
+                let x = {
+                  let y = 10
+                  return y + 1
+                }()
+                """,
+              ),
+              Example(
+                """
+                let x = { (a: Int) in a + 1 }(5)
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                let x: Int = ↓{
+                  return 42
+                }()
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantClosureConfiguration()
 }
 
 extension RedundantClosureRule: SwiftSyntaxRule {

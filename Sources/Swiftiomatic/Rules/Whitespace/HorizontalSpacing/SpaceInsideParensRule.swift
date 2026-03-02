@@ -1,9 +1,30 @@
 import SwiftSyntax
 
 struct SpaceInsideParensRule {
+    static let id = "space_inside_parens"
+    static let name = "Space Inside Parentheses"
+    static let summary = "There should be no spaces immediately inside parentheses"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("(a, b)"),
+              Example("foo(bar)"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("(↓ a, b)"),
+              Example("foo(↓ bar )"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("(↓ a, b )"): Example("(a, b)")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SpaceInsideParensConfiguration()
 }
 
 extension SpaceInsideParensRule: SwiftSyntaxCorrectableRule {

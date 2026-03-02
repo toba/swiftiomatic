@@ -1,9 +1,80 @@
 import SwiftSyntax
 
 struct RedundantPropertyRule {
+    static let id = "redundant_property"
+    static let name = "Redundant Property"
+    static let summary = "A local property assigned and immediately returned can be simplified to a direct return"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                func foo() -> Foo {
+                  return Foo()
+                }
+                """,
+              ),
+              Example(
+                """
+                func foo() -> Foo {
+                  let foo = Foo()
+                  foo.configure()
+                  return foo
+                }
+                """,
+              ),
+              Example(
+                """
+                func foo() -> Foo {
+                  var foo = Foo()
+                  foo.bar = true
+                  return foo
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                func foo() -> Foo {
+                  let ↓foo = Foo()
+                  return foo
+                }
+                """,
+              ),
+              Example(
+                """
+                func bar() -> String {
+                  let ↓result = "hello"
+                  return result
+                }
+                """,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example(
+                """
+                func foo() -> Foo {
+                  let ↓foo = Foo()
+                  return foo
+                }
+                """,
+              ): Example(
+                """
+                func foo() -> Foo {
+                  return Foo()
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantPropertyConfiguration()
 }
 
 extension RedundantPropertyRule: SwiftSyntaxCorrectableRule {

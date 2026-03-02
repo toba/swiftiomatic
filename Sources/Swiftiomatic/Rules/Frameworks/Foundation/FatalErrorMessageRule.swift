@@ -1,9 +1,48 @@
 import SwiftSyntax
 
 struct FatalErrorMessageRule {
+    static let id = "fatal_error_message"
+    static let name = "Fatal Error Message"
+    static let summary = "A fatalError call should have a message"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                func foo() {
+                  fatalError("Foo")
+                }
+                """,
+              ),
+              Example(
+                """
+                func foo() {
+                  fatalError(x)
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                func foo() {
+                  ↓fatalError("")
+                }
+                """,
+              ),
+              Example(
+                """
+                func foo() {
+                  ↓fatalError()
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = FatalErrorMessageConfiguration()
 }
 
 extension FatalErrorMessageRule: SwiftSyntaxRule {

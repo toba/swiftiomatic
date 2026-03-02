@@ -1,9 +1,51 @@
 import SwiftSyntax
 
 struct OverrideInExtensionRule: SwiftSyntaxRule {
+    static let id = "override_in_extension"
+    static let name = "Override in Extension"
+    static let summary = "Extensions shouldn't override declarations"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("extension Person {\n  var age: Int { return 42 }\n}"),
+              Example("extension Person {\n  func celebrateBirthday() {}\n}"),
+              Example("class Employee: Person {\n  override func celebrateBirthday() {}\n}"),
+              Example(
+                """
+                class Foo: NSObject {}
+                extension Foo {
+                    override var description: String { return "" }
+                }
+                """,
+              ),
+              Example(
+                """
+                struct Foo {
+                    class Bar: NSObject {}
+                }
+                extension Foo.Bar {
+                    override var description: String { return "" }
+                }
+                """,
+              ),
+              Example(
+                """
+                @objc
+                @implementation
+                extension Person {
+                    override func celebrateBirthday() {}
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("extension Person {\n  override ↓var age: Int { return 42 }\n}"),
+              Example("extension Person {\n  override ↓func celebrateBirthday() {}\n}"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = OverrideInExtensionConfiguration()
 
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     let allowedExtensions = ClassNameCollectingVisitor(

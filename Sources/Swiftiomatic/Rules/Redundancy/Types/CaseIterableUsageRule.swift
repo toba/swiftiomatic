@@ -1,11 +1,35 @@
 import SwiftSyntax
 
 struct CaseIterableUsageRule: CollectingRule {
+    static let id = "case_iterable_usage"
+    static let name = "CaseIterable Usage"
+    static let summary = "Enums conforming to CaseIterable without any .allCases references may have unnecessary conformance"
+    static let scope: Scope = .suggest
+    static let isOptIn = true
+    static let isCrossFile = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                enum Direction: CaseIterable { case north, south }
+                let all = Direction.allCases
+                """,
+              )
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓enum Status: CaseIterable { case active, inactive }
+                func check() { }
+                """,
+              )
+            ]
+    }
   typealias FileInfo = CaseIterableContribution
 
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = CaseIterableUsageConfiguration()
 
   func collectInfo(for file: SwiftSource) -> CaseIterableContribution {
     let collector = CaseIterableCollector(
@@ -40,7 +64,7 @@ struct CaseIterableUsageRule: CollectingRule {
       .filter { $0.file == filePath && !allReferences.contains($0.name) }
       .map { decl in
         RuleViolation(
-          configuration: Self.configuration,
+          ruleType: Self.self,
           severity: options.severity,
           location: Location(file: filePath, line: decl.line, column: decl.column),
           reason:

@@ -3,6 +3,19 @@ import SwiftSyntax
 // MARK: - Rule
 
 struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
+    static let id = "duplicate_imports"
+    static let name = "Duplicate Imports"
+    static let summary = "Imports should be unique"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        DuplicateImportsRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        DuplicateImportsRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        DuplicateImportsRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
   /// List of all possible import kinds
@@ -12,12 +25,10 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
     "var", "func",
   ]
 
-  static let configuration = DuplicateImportsConfiguration()
-
   func validate(file: SwiftSource) -> [RuleViolation] {
     file.duplicateImportsViolationPositions().map { position in
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severity,
         location: Location(file: file, position: position),
       )

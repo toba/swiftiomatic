@@ -1,9 +1,30 @@
 import SwiftSyntax
 
 struct SpaceInsideGenericsRule {
+    static let id = "space_inside_generics"
+    static let name = "Space Inside Generics"
+    static let summary = "There should be no spaces immediately inside angle brackets"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let a: Array<Int> = []"),
+              Example("func foo<T>() {}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let a: Array↓< Int > = []"),
+              Example("func foo↓< T >() {}"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let a: Array↓< Int > = []"): Example("let a: Array<Int> = []")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SpaceInsideGenericsConfiguration()
 }
 
 extension SpaceInsideGenericsRule: SwiftSyntaxCorrectableRule {

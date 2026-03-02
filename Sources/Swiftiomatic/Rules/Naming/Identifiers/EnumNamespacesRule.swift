@@ -1,9 +1,57 @@
 import SwiftSyntax
 
 struct EnumNamespacesRule {
+    static let id = "enum_namespaces"
+    static let name = "Enum Namespaces"
+    static let summary = "Types hosting only static members should be enums to prevent instantiation"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                enum Constants {
+                  static let foo = "foo"
+                }
+                """,
+              ),
+              Example(
+                """
+                struct Foo {
+                  let bar: Int
+                }
+                """,
+              ),
+              Example(
+                """
+                struct Foo {
+                  static let bar = 1
+                  init() {}
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓struct Constants {
+                  static let foo = "foo"
+                  static let bar = "bar"
+                }
+                """,
+              ),
+              Example(
+                """
+                final ↓class Constants {
+                  static let foo = "foo"
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = EnumNamespacesConfiguration()
 }
 
 extension EnumNamespacesRule: SwiftSyntaxRule {

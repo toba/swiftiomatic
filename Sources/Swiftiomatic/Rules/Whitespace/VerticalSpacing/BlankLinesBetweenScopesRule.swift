@@ -1,9 +1,41 @@
 import SwiftSyntax
 
 struct BlankLinesBetweenScopesRule {
+    static let id = "blank_lines_between_scopes"
+    static let name = "Blank Lines Between Scopes"
+    static let summary = "There should be a blank line before type declarations and multi-line functions"
+    static let scope: Scope = .format
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {}
+
+                class Bar {}
+                """),
+              Example(
+                """
+                func foo() {
+                  // foo
+                }
+
+                func bar() {
+                  // bar
+                }
+                """),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {}
+                ↓class Bar {}
+                """)
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = BlankLinesBetweenScopesConfiguration()
 }
 
 extension BlankLinesBetweenScopesRule: SwiftSyntaxRule {

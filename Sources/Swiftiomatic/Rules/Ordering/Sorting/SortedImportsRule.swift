@@ -2,9 +2,22 @@ import Foundation
 import SwiftSyntax
 
 struct SortedImportsRule {
+    static let id = "sorted_imports"
+    static let name = "Sorted Imports"
+    static let summary = "Imports should be sorted"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        SortedImportsRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        SortedImportsRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        SortedImportsRuleExamples.corrections
+    }
   var options = SortedImportsOptions()
 
-  static let configuration = SortedImportsConfiguration()
 }
 
 extension SortedImportsRule: SwiftSyntaxCorrectableRule {

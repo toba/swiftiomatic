@@ -1,9 +1,29 @@
 import SwiftSyntax
 
 struct IsDisjointRule {
+    static let id = "is_disjoint"
+    static let name = "Is Disjoint"
+    static let summary = "Prefer using `Set.isDisjoint(with:)` over `Set.intersection(_:).isEmpty`"
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("_ = Set(syntaxKinds).isDisjoint(with: commentAndStringKindsSet)"),
+              Example(
+                "let isObjc = !objcAttributes.isDisjoint(with: dictionary.enclosedSwiftAttributes)",
+              ),
+              Example("_ = Set(syntaxKinds).intersection(commentAndStringKindsSet)"),
+              Example("_ = !objcAttributes.intersection(dictionary.enclosedSwiftAttributes)"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("_ = Set(syntaxKinds).↓intersection(commentAndStringKindsSet).isEmpty"),
+              Example(
+                "let isObjc = !objcAttributes.↓intersection(dictionary.enclosedSwiftAttributes).isEmpty",
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = IsDisjointConfiguration()
 }
 
 extension IsDisjointRule: SwiftSyntaxRule {

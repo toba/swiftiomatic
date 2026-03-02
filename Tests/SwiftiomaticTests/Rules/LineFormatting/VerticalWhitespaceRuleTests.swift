@@ -7,7 +7,7 @@ import Testing
 
   @Test func attributesWithMaxEmptyLines() async {
     // Test with custom `max_empty_lines`
-    let maxEmptyLinesDescription = TestExamples(from: VerticalWhitespaceRule.configuration)
+    let maxEmptyLinesDescription = TestExamples(from: VerticalWhitespaceRule.self)
       .with(
         nonTriggeringExamples: [Example("let aaaa = 0\n\n\n")],
         triggeringExamples: [
@@ -24,7 +24,7 @@ import Testing
   }
 
   @Test func autoCorrectionWithMaxEmptyLines() async {
-    let maxEmptyLinesDescription = TestExamples(from: VerticalWhitespaceRule.configuration)
+    let maxEmptyLinesDescription = TestExamples(from: VerticalWhitespaceRule.self)
       .with(
         nonTriggeringExamples: [],
         triggeringExamples: [],

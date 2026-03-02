@@ -4,16 +4,84 @@ import SwiftSyntax
 struct CommaInheritanceRule: SubstitutionCorrectableRule,
   SyntaxOnlyRule
 {
+    static let id = "comma_inheritance"
+    static let name = "Comma Inheritance Rule"
+    static let summary = "Use commas to separate types in inheritance lists"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("struct A: Codable, Equatable {}"),
+              Example("enum B: Codable, Equatable {}"),
+              Example("class C: Codable, Equatable {}"),
+              Example("protocol D: Codable, Equatable {}"),
+              Example("typealias E = Equatable & Codable"),
+              Example("func foo<T: Equatable & Codable>(_ param: T) {}"),
+              Example(
+                """
+                protocol G {
+                    associatedtype Model: Codable, Equatable
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("struct A: Codable↓ & Equatable {}"),
+              Example("struct A: Codable↓  & Equatable {}"),
+              Example("struct A: Codable↓&Equatable {}"),
+              Example("struct A: Codable↓& Equatable {}"),
+              Example("enum B: Codable↓ & Equatable {}"),
+              Example("class C: Codable↓ & Equatable {}"),
+              Example("protocol D: Codable↓ & Equatable {}"),
+              Example(
+                """
+                protocol G {
+                    associatedtype Model: Codable↓ & Equatable
+                }
+                """,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("struct A: Codable↓ & Equatable {}"): Example(
+                "struct A: Codable, Equatable {}",
+              ),
+              Example("struct A: Codable↓  & Equatable {}"): Example(
+                "struct A: Codable, Equatable {}",
+              ),
+              Example("struct A: Codable↓&Equatable {}"): Example("struct A: Codable, Equatable {}"),
+              Example("struct A: Codable↓& Equatable {}"): Example("struct A: Codable, Equatable {}"),
+              Example("enum B: Codable↓ & Equatable {}"): Example("enum B: Codable, Equatable {}"),
+              Example("class C: Codable↓ & Equatable {}"): Example("class C: Codable, Equatable {}"),
+              Example("protocol D: Codable↓ & Equatable {}"): Example(
+                "protocol D: Codable, Equatable {}",
+              ),
+              Example(
+                """
+                protocol G {
+                    associatedtype Model: Codable↓ & Equatable
+                }
+                """,
+              ): Example(
+                """
+                protocol G {
+                    associatedtype Model: Codable, Equatable
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = CommaInheritanceConfiguration()
 
   // MARK: - Rule
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(in: file).map {
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severity,
         location: Location(file: file, stringIndex: $0.lowerBound),
       )

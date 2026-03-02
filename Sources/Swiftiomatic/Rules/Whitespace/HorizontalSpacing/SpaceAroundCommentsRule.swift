@@ -1,9 +1,34 @@
 import SwiftSyntax
 
 struct SpaceAroundCommentsRule {
+    static let id = "space_around_comments"
+    static let name = "Space Around Comments"
+    static let summary = "There should be a space before line comments and around block comments"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let a = 5 // comment"),
+              Example("foo() /* block */ bar()"),
+              Example(
+                """
+                // line comment
+                let a = 5
+                """),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let a = 5↓// comment")
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let a = 5↓// comment"): Example("let a = 5 // comment")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SpaceAroundCommentsConfiguration()
 }
 
 extension SpaceAroundCommentsRule: SwiftSyntaxCorrectableRule {

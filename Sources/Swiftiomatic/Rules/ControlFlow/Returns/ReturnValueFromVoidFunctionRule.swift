@@ -2,9 +2,19 @@ import SwiftBasicFormat
 import SwiftSyntax
 
 struct ReturnValueFromVoidFunctionRule {
+    static let id = "return_value_from_void_function"
+    static let name = "Return Value from Void Function"
+    static let summary = "Returning values from Void functions should be avoided"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        ReturnValueFromVoidFunctionRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        ReturnValueFromVoidFunctionRuleExamples.triggeringExamples
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ReturnValueFromVoidFunctionConfiguration()
 }
 
 extension ReturnValueFromVoidFunctionRule: SwiftSyntaxCorrectableRule {

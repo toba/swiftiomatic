@@ -3,9 +3,21 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct UnusedClosureParameterRule {
+    static let id = "unused_closure_parameter"
+    static let name = "Unused Closure Parameter"
+    static let summary = "Unused parameter in a closure should be replaced with _"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        UnusedClosureParameterRuleExamples.nonTriggering
+    }
+    static var triggeringExamples: [Example] {
+        UnusedClosureParameterRuleExamples.triggering
+    }
+    static var corrections: [Example: Example] {
+        UnusedClosureParameterRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = UnusedClosureParameterConfiguration()
 }
 
 extension UnusedClosureParameterRule: SwiftSyntaxCorrectableRule {

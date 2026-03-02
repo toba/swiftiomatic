@@ -1,9 +1,17 @@
 import SwiftSyntax
 
 struct ComputedAccessorsOrderRule {
+    static let id = "computed_accessors_order"
+    static let name = "Computed Accessors Order"
+    static let summary = "Getter and setters in computed properties and subscripts should be in a consistent order."
+    static var nonTriggeringExamples: [Example] {
+        ComputedAccessorsOrderRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        ComputedAccessorsOrderRuleExamples.triggeringExamples
+    }
   var options = ComputedAccessorsOrderOptions()
 
-  static let configuration = ComputedAccessorsOrderConfiguration()
 }
 
 extension ComputedAccessorsOrderRule: SwiftSyntaxRule {

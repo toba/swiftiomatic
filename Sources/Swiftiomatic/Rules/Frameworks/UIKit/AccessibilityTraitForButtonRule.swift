@@ -1,9 +1,30 @@
 import SwiftSyntax
 
 struct AccessibilityTraitForButtonRule {
+    static let id = "accessibility_trait_for_button"
+    static let name = "Accessibility Trait for Button"
+    static let summary = "All views with tap gestures added should include the .isButton or the .isLink accessibility traits"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        AccessibilityTraitForButtonRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        AccessibilityTraitForButtonRuleExamples.triggeringExamples
+    }
+    static let rationale: String? = """
+      The accessibility button and link traits are used to tell assistive technologies that an element is tappable. \
+      When an element has one of these traits, VoiceOver will automatically read "button" or "link" after the \
+      element's label to let the user know that they can activate it.
+
+      When using a UIKit `UIButton` or SwiftUI `Button` or `Link`, the button trait is added by default, but when \
+      you manually add a tap gesture recognizer to an element, you need to explicitly add the button or link trait. \
+
+      In most cases the button trait should be used, but for buttons that open a URL in an external browser we use \
+      the link trait instead. This rule attempts to catch uses of the SwiftUI `.onTapGesture` modifier where the \
+      `.isButton` or `.isLink` trait is not explicitly applied.
+      """
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = AccessibilityTraitForButtonConfiguration()
 }
 
 extension AccessibilityTraitForButtonRule: SwiftSyntaxRule {
@@ -40,7 +61,7 @@ extension AccessibilityTraitForButtonRule {
           SyntaxViolation(
             // Position of .onTapGesture etc.
             position: node.calledExpression.positionAfterSkippingLeadingTrivia,
-            reason: AccessibilityTraitForButtonRule.configuration.summary,
+            reason: AccessibilityTraitForButtonRule.summary,
             severity: configuration.severity,
           ),
         )

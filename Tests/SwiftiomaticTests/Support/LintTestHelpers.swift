@@ -389,8 +389,8 @@ private let _ensureRegistered: Void = {
   RuleRegistry.registerAllRulesOnce()
 }()
 
-func verifyRule(
-  _ config: some RuleConfiguration,
+func verifyRule<R: Rule>(
+  _ ruleType: R.Type,
   ruleConfiguration: Any? = nil,
   commentDoesNotViolate: Bool = true,
   stringDoesNotViolate: Bool = true,
@@ -402,7 +402,7 @@ func verifyRule(
   sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
   await verifyRule(
-    TestExamples(from: config),
+    TestExamples(from: ruleType),
     ruleConfiguration: ruleConfiguration,
     commentDoesNotViolate: commentDoesNotViolate,
     stringDoesNotViolate: stringDoesNotViolate,

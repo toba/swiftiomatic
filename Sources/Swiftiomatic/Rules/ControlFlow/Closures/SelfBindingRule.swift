@@ -3,9 +3,68 @@ import SwiftSyntax
 // MARK: - SelfBindingRule
 
 struct SelfBindingRule {
+    static let id = "self_binding"
+    static let name = "Self Binding"
+    static let summary = "Re-bind `self` to a consistent identifier name."
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("if let self = self { return }"),
+              Example("guard let self = self else { return }"),
+              Example("if let this = this { return }"),
+              Example("guard let this = this else { return }"),
+              Example("if let this = self { return }", configuration: ["bind_identifier": "this"]),
+              Example(
+                "guard let this = self else { return }",
+                configuration: ["bind_identifier": "this"],
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("if let ↓`self` = self { return }"),
+              Example("guard let ↓`self` = self else { return }"),
+              Example("if let ↓this = self { return }"),
+              Example("guard let ↓this = self else { return }"),
+              Example("if let ↓self = self { return }", configuration: ["bind_identifier": "this"]),
+              Example(
+                "guard let ↓self = self else { return }",
+                configuration: ["bind_identifier": "this"],
+              ),
+              Example("if let ↓self { return }", configuration: ["bind_identifier": "this"]),
+              Example("guard let ↓self else { return }", configuration: ["bind_identifier": "this"]),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("if let ↓`self` = self { return }"):
+                Example("if let self = self { return }"),
+              Example("guard let ↓`self` = self else { return }"):
+                Example("guard let self = self else { return }"),
+              Example("if let ↓this = self { return }"):
+                Example("if let self = self { return }"),
+              Example("guard let ↓this = self else { return }"):
+                Example("guard let self = self else { return }"),
+              Example("if let ↓self = self { return }", configuration: ["bind_identifier": "this"]):
+                Example(
+                  "if let this = self { return }",
+                  configuration: ["bind_identifier": "this"],
+                ),
+              Example("if let ↓self { return }", configuration: ["bind_identifier": "this"]):
+                Example(
+                  "if let this = self { return }",
+                  configuration: ["bind_identifier": "this"],
+                ),
+              Example("guard let ↓self else { return }", configuration: ["bind_identifier": "this"]):
+                Example(
+                  "guard let this = self else { return }",
+                  configuration: ["bind_identifier": "this"],
+                ),
+            ]
+    }
   var options = SelfBindingOptions()
 
-  static let configuration = SelfBindingConfiguration()
 }
 
 extension SelfBindingRule: SwiftSyntaxCorrectableRule {

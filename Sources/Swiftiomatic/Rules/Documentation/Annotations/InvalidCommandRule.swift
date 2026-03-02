@@ -1,9 +1,48 @@
 import Foundation
 
 struct InvalidCommandRule: Rule, SyntaxOnlyRule {
+    static let id = "invalid_command"
+    static let name = "Invalid Command"
+    static let summary = "sm: command is invalid"
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("// sm:disable unused_import"),
+              Example("// sm:enable unused_import"),
+              Example("// sm:disable:next unused_import"),
+              Example("// sm:disable:previous unused_import"),
+              Example("// sm:disable:this unused_import"),
+              Example("//sm:disable:this unused_import"),
+              Example(
+                "_ = \"🤵🏼‍♀️\" // sm:disable:this unused_import",
+                isExcludedFromDocumentation: true,
+              ),
+              Example(
+                "_ = \"🤵🏼‍♀️ 🤵🏼‍♀️\" // sm:disable:this unused_import",
+                isExcludedFromDocumentation: true,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("// ↓sm:"),
+              Example("// ↓sm: "),
+              Example("// ↓sm::"),
+              Example("// ↓sm:: "),
+              Example("// ↓sm:disable"),
+              Example("// ↓sm:dissable unused_import"),
+              Example("// ↓sm:enaaaable unused_import"),
+              Example("// ↓sm:disable:nxt unused_import"),
+              Example("// ↓sm:enable:prevus unused_import"),
+              Example("// ↓sm:enable:ths unused_import"),
+              Example("// ↓sm:enable"),
+              Example("// ↓sm:enable:"),
+              Example("// ↓sm:enable: "),
+              Example("// ↓sm:disable: unused_import"),
+              Example("// s↓sm:disable unused_import"),
+              Example("// 🤵🏼‍♀️sm:disable unused_import", isExcludedFromDocumentation: true),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = InvalidCommandConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     badPrefixViolations(in: file) + invalidCommandViolations(in: file)
@@ -25,7 +64,7 @@ struct InvalidCommandRule: Rule, SyntaxOnlyRule {
     file.invalidCommands.map { command in
       ruleViolation(
         for: command, in: file,
-        reason: command.invalidReason() ?? Self.configuration.summary,
+        reason: command.invalidReason() ?? Self.summary,
       )
     }
   }
@@ -34,7 +73,7 @@ struct InvalidCommandRule: Rule, SyntaxOnlyRule {
     -> RuleViolation
   {
     RuleViolation(
-      configuration: Self.configuration,
+      ruleType: Self.self,
       severity: options.severity,
       location: Location(
         file: file.path,

@@ -14,7 +14,7 @@ import Testing
       Example("public let Foo = 20.0"),
     ]
 
-    let description = TestExamples(from: PrefixedTopLevelConstantRule.configuration).with(
+    let description = TestExamples(from: PrefixedTopLevelConstantRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )

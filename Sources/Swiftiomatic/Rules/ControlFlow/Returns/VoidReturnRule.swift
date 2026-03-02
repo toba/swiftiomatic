@@ -2,9 +2,59 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct VoidReturnRule {
+    static let id = "void_return"
+    static let name = "Void Return"
+    static let summary = "Prefer `-> Void` over `-> ()`"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let abc: () -> Void = {}"),
+              Example("let abc: () -> (VoidVoid) = {}"),
+              Example("func foo(completion: () -> Void)"),
+              Example("let foo: (ConfigurationTests) -> () throws -> Void"),
+              Example("let foo: (ConfigurationTests) ->   () throws -> Void"),
+              Example("let foo: (ConfigurationTests) ->() throws -> Void"),
+              Example("let foo: (ConfigurationTests) -> () -> Void"),
+              Example("let foo: () -> () async -> Void"),
+              Example("let foo: () -> () async throws -> Void"),
+              Example("let foo: () -> () async -> Void"),
+              Example("func foo() -> () async throws -> Void {}"),
+              Example("func foo() async throws -> () async -> Void { return {} }"),
+              Example("func foo() -> () async -> Int { 1 }"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let abc: () -> ↓() = {}"),
+              Example("let abc: () -> ↓(Void) = {}"),
+              Example("let abc: () -> ↓(   Void ) = {}"),
+              Example("func foo(completion: () -> ↓())"),
+              Example("func foo(completion: () -> ↓(   ))"),
+              Example("func foo(completion: () -> ↓(Void))"),
+              Example("let foo: (ConfigurationTests) -> () throws -> ↓()"),
+              Example("func foo() async -> ↓()"),
+              Example("func foo() async throws -> ↓()"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let abc: () -> ↓() = {}"): Example("let abc: () -> Void = {}"),
+              Example("let abc: () -> ↓(Void) = {}"): Example("let abc: () -> Void = {}"),
+              Example("let abc: () -> ↓(   Void ) = {}"): Example("let abc: () -> Void = {}"),
+              Example("func foo(completion: () -> ↓())"): Example("func foo(completion: () -> Void)"),
+              Example("func foo(completion: () -> ↓(   ))"): Example(
+                "func foo(completion: () -> Void)",
+              ),
+              Example("func foo(completion: () -> ↓(Void))"): Example(
+                "func foo(completion: () -> Void)",
+              ),
+              Example("let foo: (ConfigurationTests) -> () throws -> ↓()"):
+                Example("let foo: (ConfigurationTests) -> () throws -> Void"),
+              Example("func foo() async throws -> ↓()"): Example("func foo() async throws -> Void"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = VoidReturnConfiguration()
 }
 
 extension VoidReturnRule: SwiftSyntaxCorrectableRule {

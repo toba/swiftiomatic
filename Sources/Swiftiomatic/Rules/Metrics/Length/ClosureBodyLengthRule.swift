@@ -1,13 +1,27 @@
 import SwiftSyntax
 
 struct ClosureBodyLengthRule {
+    static let id = "closure_body_length"
+    static let name = "Closure Body Length"
+    static let summary = "Closure bodies should not span too many lines"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        ClosureBodyLengthRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        ClosureBodyLengthRuleExamples.triggeringExamples
+    }
+    static let rationale: String? = """
+      "Closure bodies should not span too many lines" says it all.
+
+      Possibly you could refactor your closure code and extract some of it into a function.
+      """
   private static let defaultWarningThreshold = 30
 
   var options = SeverityLevelsConfiguration<Self>(
     warning: Self.defaultWarningThreshold, error: 100,
   )
 
-  static let configuration = ClosureBodyLengthConfiguration()
 }
 
 extension ClosureBodyLengthRule: SwiftSyntaxRule {

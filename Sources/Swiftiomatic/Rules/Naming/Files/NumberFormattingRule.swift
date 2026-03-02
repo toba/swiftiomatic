@@ -1,9 +1,26 @@
 import SwiftSyntax
 
 struct NumberFormattingRule {
+    static let id = "number_formatting"
+    static let name = "Number Formatting"
+    static let summary = "Large numeric literals should use underscores for grouping"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let x = 1_000_000"),
+              Example("let x = 100"),
+              Example("let x = 0xFF"),
+              Example("let x = 1_000"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let x = ↓1000000"),
+              Example("let x = ↓100000"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = NumberFormattingConfiguration()
 }
 
 extension NumberFormattingRule: SwiftSyntaxRule {

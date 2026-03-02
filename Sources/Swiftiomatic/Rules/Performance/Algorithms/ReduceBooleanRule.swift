@@ -1,9 +1,31 @@
 import SwiftSyntax
 
 struct ReduceBooleanRule {
+    static let id = "reduce_boolean"
+    static let name = "Reduce Boolean"
+    static let summary = "Prefer using `.allSatisfy()` or `.contains()` over `reduce(true)` or `reduce(false)`."
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("nums.reduce(0) { $0.0 + $0.1 }"),
+              Example("nums.reduce(0.0) { $0.0 + $0.1 }"),
+              Example("nums.reduce(initial: true) { $0.0 && $0.1 == 3 }"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let allNines = nums.↓reduce(true) { $0.0 && $0.1 == 9 }"),
+              Example("let anyNines = nums.↓reduce(false) { $0.0 || $0.1 == 9 }"),
+              Example("let allValid = validators.↓reduce(true) { $0 && $1(input) }"),
+              Example("let anyValid = validators.↓reduce(false) { $0 || $1(input) }"),
+              Example("let allNines = nums.↓reduce(true, { $0.0 && $0.1 == 9 })"),
+              Example("let anyNines = nums.↓reduce(false, { $0.0 || $0.1 == 9 })"),
+              Example("let allValid = validators.↓reduce(true, { $0 && $1(input) })"),
+              Example("let anyValid = validators.↓reduce(false, { $0 || $1(input) })"),
+              Example("nums.reduce(into: true) { (r: inout Bool, s) in r = r && (s == 3) }"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ReduceBooleanConfiguration()
 }
 
 extension ReduceBooleanRule: SwiftSyntaxRule {

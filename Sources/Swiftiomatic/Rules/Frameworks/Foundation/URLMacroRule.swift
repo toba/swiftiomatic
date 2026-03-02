@@ -1,9 +1,23 @@
 import SwiftSyntax
 
 struct URLMacroRule {
+    static let id = "url_macro"
+    static let name = "URL Macro"
+    static let summary = "Force-unwrapped `URL(string:)` can be replaced with a `#URL` macro"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let url = URL(string: variable)"),
+              Example("let url = URL(string: \"https://example.com\")"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let url = ↓URL(string: \"https://example.com\")!"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = URLMacroConfiguration()
 }
 
 extension URLMacroRule: SwiftSyntaxRule {

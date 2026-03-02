@@ -2,9 +2,21 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct UnneededOverrideRule {
+    static let id = "unneeded_override"
+    static let name = "Unneeded Overridden Functions"
+    static let summary = "Remove overridden functions that don't do anything except call their super"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        UnneededOverrideRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        UnneededOverrideRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        UnneededOverrideRuleExamples.corrections
+    }
   var options = UnneededOverrideOptions()
 
-  static let configuration = UnneededOverrideConfiguration()
 }
 
 extension UnneededOverrideRule: SwiftSyntaxCorrectableRule {

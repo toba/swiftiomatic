@@ -5,7 +5,7 @@ import Testing
 @Suite(.rulesRegistered) struct FileLengthRuleTests {
   @Test func fileLengthWithDefaultConfiguration() async {
     await verifyRule(
-      FileLengthRule.configuration, commentDoesNotViolate: false,
+      FileLengthRule.self, commentDoesNotViolate: false,
       shouldTestMultiByteOffsets: false, testShebang: false,
     )
   }
@@ -20,7 +20,7 @@ import Testing
       Example(repeatElement("print(\"swiftlint\")\n\n", count: 201).joined()),
     ]
 
-    let description = TestExamples(from: FileLengthRule.configuration).with(
+    let description = TestExamples(from: FileLengthRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )

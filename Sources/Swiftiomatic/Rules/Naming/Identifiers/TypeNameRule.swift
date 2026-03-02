@@ -2,9 +2,17 @@ import Foundation
 import SwiftSyntax
 
 struct TypeNameRule {
+    static let id = "type_name"
+    static let name = "Type Name"
+    static let summary = ""
+    static var nonTriggeringExamples: [Example] {
+        TypeNameRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        TypeNameRuleExamples.triggeringExamples
+    }
   var options = TypeNameOptions()
 
-  static let configuration = TypeNameConfiguration()
 }
 
 extension TypeNameRule: SwiftSyntaxRule {

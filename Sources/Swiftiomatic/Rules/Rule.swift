@@ -5,14 +5,63 @@ public protocol Rule: Sendable {
     /// The type of the configuration used to configure this rule
     associatedtype OptionsType: RuleOptions
 
-    /// The type of the unified metadata configuration for this rule
-    associatedtype ConfigurationType: RuleConfiguration
+    // MARK: - Required metadata (dispatches dynamically through existentials)
 
-    /// Unified metadata for this rule
-    static var configuration: ConfigurationType { get }
+    /// The rule's unique identifier (e.g. "trailing_whitespace")
+    static var id: String { get }
 
-    /// Type-erased configuration, accessible through `any Rule.Type` existentials
-    static var anyConfiguration: any RuleConfiguration { get }
+    /// Human-readable display name
+    static var name: String { get }
+
+    /// Brief description of what the rule checks or formats
+    static var summary: String { get }
+
+    /// Previous identifiers for this rule, used for backwards-compatible disable commands
+    static var deprecatedAliases: Set<String> { get }
+
+    /// Whether the rule is opt-in (not enabled by default)
+    static var isOptIn: Bool { get }
+
+    /// Where the rule participates: `.lint`, `.format`, or `.suggest`
+    static var scope: Scope { get }
+
+    /// Whether the rule is deprecated
+    static var isDeprecated: Bool { get }
+
+    /// Deprecation message, or `nil` if not deprecated
+    static var deprecationMessage: String? { get }
+
+    /// Detailed rationale in Markdown, or `nil` if none
+    static var rationale: String? { get }
+
+    /// Whether the rule requires SourceKit to operate
+    static var requiresSourceKit: Bool { get }
+
+    /// Whether the rule requires compiler arguments (analyzer rules)
+    static var requiresCompilerArguments: Bool { get }
+
+    /// The oldest Swift version supported by this rule
+    static var minSwiftVersion: SwiftVersion { get }
+
+    /// Whether the rule requires its file to exist on disk
+    static var requiresFileOnDisk: Bool { get }
+
+    /// Configurable options exposed by this rule
+    static var configurationOptions: [ConfigOptionDescriptor] { get }
+
+    /// Identifiers of related rules
+    static var relatedRuleIDs: [String] { get }
+
+    /// Raw non-triggering examples with test metadata
+    static var nonTriggeringExamples: [Example] { get }
+
+    /// Raw triggering examples with test metadata
+    static var triggeringExamples: [Example] { get }
+
+    /// Raw correction pairs with test metadata
+    static var corrections: [Example: Example] { get }
+
+    // MARK: - Runtime
 
     /// This rule's configuration
     var options: OptionsType { get set }
@@ -105,6 +154,45 @@ public protocol Rule: Sendable {
     func isEnabled(in region: Region, for ruleID: String) -> Bool
 }
 
+// MARK: - Metadata defaults
+
+extension Rule {
+    static var rationale: String? { nil }
+    static var scope: Scope { .lint }
+    static var isCorrectable: Bool { false }
+    static var isOptIn: Bool { false }
+    static var isDeprecated: Bool { false }
+    static var deprecationMessage: String? { nil }
+    static var requiresSourceKit: Bool { false }
+    static var requiresCompilerArguments: Bool { false }
+    static var isCrossFile: Bool { false }
+    static var canEnrichAsync: Bool { false }
+    static var configurationOptions: [ConfigOptionDescriptor] { [] }
+    static var relatedRuleIDs: [String] { [] }
+    static var deprecatedAliases: Set<String> { [] }
+    static var minSwiftVersion: SwiftVersion { .v6 }
+    static var requiresFileOnDisk: Bool { false }
+    static var nonTriggeringExamples: [Example] { [] }
+    static var triggeringExamples: [Example] { [] }
+    static var corrections: [Example: Example] { [:] }
+
+    /// All identifiers (current + deprecated) this rule responds to
+    static var allIdentifiers: [String] {
+        Array(deprecatedAliases) + [id]
+    }
+
+    /// Structured examples for this rule
+    static var examples: RuleExamples {
+        RuleExamples(
+            nonTriggering: nonTriggeringExamples.map { CodeExample(code: $0.code) },
+            triggering: triggeringExamples.map { CodeExample(code: $0.code) },
+            corrections: corrections.map { CorrectionExample(before: $0.key.code, after: $0.value.code) },
+        )
+    }
+}
+
+// MARK: - Default implementations
+
 extension Rule {
     var shouldLintEmptyFiles: Bool {
         false
@@ -172,89 +260,49 @@ extension Rule {
     }
 }
 
+// MARK: - Computed aliases (for backward compatibility and convenience)
+
 extension Rule {
-    /// Type-erased configuration built from the typed ``configuration``
-    static var anyConfiguration: any RuleConfiguration {
-        configuration
-    }
+    /// The rule's unique identifier (alias for ``id``)
+    static var identifier: String { id }
 
+    /// Human-readable display name (alias for ``name``)
+    static var ruleName: String { name }
 
-    /// The rule's unique identifier
-    static var identifier: String {
-        anyConfiguration.id
-    }
+    /// Brief description (alias for ``summary``)
+    static var ruleSummary: String { summary }
 
-    /// All identifiers this rule responds to (current + deprecated aliases)
-    ///
-    /// Accessible through `any Rule.Type` without associated type constraints.
-    static var allIdentifiers: [String] {
-        anyConfiguration.allIdentifiers
-    }
+    /// Detailed rationale in Markdown (alias for ``rationale``)
+    static var ruleRationale: String? { rationale }
 
-    /// Whether this rule is opt-in (not enabled by default)
-    static var isOptIn: Bool {
-        anyConfiguration.isOptIn
-    }
+    /// Previous identifiers (alias for ``deprecatedAliases``)
+    static var ruleDeprecatedAliases: Set<String> { deprecatedAliases }
 
-    /// The scope where this rule participates
-    static var ruleScope: Scope {
-        anyConfiguration.scope
-    }
+    /// Whether this rule requires compiler arguments (alias for ``requiresCompilerArguments``)
+    static var runsWithCompilerArguments: Bool { requiresCompilerArguments }
 
-    /// Human-readable display name
-    static var ruleName: String {
-        anyConfiguration.name
-    }
+    /// Whether this rule requires SourceKit (alias for ``requiresSourceKit``)
+    static var runsWithSourceKit: Bool { requiresSourceKit }
 
-    /// Brief description of what the rule checks
-    static var ruleSummary: String {
-        anyConfiguration.summary
-    }
+    /// Scope (alias for ``scope``)
+    static var ruleScope: Scope { scope }
 
-    /// Detailed rationale in Markdown
-    static var ruleRationale: String? {
-        anyConfiguration.rationale
-    }
+    /// The oldest Swift version (alias for ``minSwiftVersion``)
+    static var ruleMinSwiftVersion: SwiftVersion { minSwiftVersion }
 
-    /// Previous identifiers for backwards-compatible disable commands
-    static var ruleDeprecatedAliases: Set<String> {
-        anyConfiguration.deprecatedAliases
-    }
+    /// Non-triggering examples (alias for ``nonTriggeringExamples``)
+    static var ruleNonTriggeringExamples: [Example] { nonTriggeringExamples }
 
-    /// Whether this rule requires compiler arguments (analyzer rules)
-    static var runsWithCompilerArguments: Bool {
-        anyConfiguration.requiresCompilerArguments
-    }
+    /// Triggering examples (alias for ``triggeringExamples``)
+    static var ruleTriggeringExamples: [Example] { triggeringExamples }
 
-    /// Whether this rule requires SourceKit to operate
-    static var runsWithSourceKit: Bool {
-        anyConfiguration.requiresSourceKit
-    }
-
-    /// The oldest Swift version supported by this rule
-    static var ruleMinSwiftVersion: SwiftVersion {
-        anyConfiguration.minSwiftVersion
-    }
-
-    /// Non-triggering examples for testing and documentation
-    static var ruleNonTriggeringExamples: [Example] {
-        anyConfiguration.nonTriggeringExamples
-    }
-
-    /// Triggering examples for testing and documentation
-    static var ruleTriggeringExamples: [Example] {
-        anyConfiguration.triggeringExamples
-    }
-
-    /// Correction pairs for testing and documentation
-    static var ruleCorrections: [Example: Example] {
-        anyConfiguration.corrections
-    }
+    /// Correction pairs (alias for ``corrections``)
+    static var ruleCorrections: [Example: Example] { corrections }
 }
 
 /// A rule that is not enabled by default and must be explicitly enabled by users
 ///
-/// - Note: Deprecated. Use `RuleConfiguration.isOptIn` instead. This protocol remains
+/// - Note: Deprecated. Use `Rule.isOptIn` instead. This protocol remains
 ///   for backward compatibility but is no longer checked at runtime.
 protocol OptInRule: Rule {}
 
@@ -356,7 +404,7 @@ extension [any Rule] {
 
 /// A rule that operates purely on SwiftSyntax and does not require SourceKit
 ///
-/// - Note: Deprecated. Use `RuleConfiguration.requiresSourceKit` instead. This protocol
+/// - Note: Deprecated. Use `Rule.requiresSourceKit` instead. This protocol
 ///   remains for backward compatibility with ``SwiftSyntaxRule``.
 protocol SyntaxOnlyRule: Rule {}
 
@@ -398,8 +446,8 @@ protocol AsyncEnrichableRule: Rule {
 ///
 /// Analyzer rules perform checks that are more like static analysis than
 /// syntactic checks. They are always opt-in and require compiler arguments.
-/// Set `isOptIn: true` and `requiresCompilerArguments: true` in the rule's
-/// ``RuleConfiguration``.
+/// Set `isOptIn = true` and `requiresCompilerArguments = true` as static
+/// properties on the rule.
 protocol AnalyzerRule: Rule {}
 
 extension AnalyzerRule {

@@ -2,9 +2,26 @@ import Foundation
 import SwiftSyntax
 
 struct TypedThrowsRule {
+    static let id = "typed_throws"
+    static let name = "Typed Throws"
+    static let summary = "Functions that throw a single error type should use typed throws"
+    static let scope: Scope = .suggest
+    static let isOptIn = true
+    static let canEnrichAsync = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("func parse() throws(ParseError) { throw ParseError.invalid }"),
+              Example("func work() throws { throw ErrorA.a; throw ErrorB.b }"),
+              Example("func safe() { }"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("↓func parse() throws { throw ParseError.invalid }")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = TypedThrowsConfiguration()
 }
 
 extension TypedThrowsRule: SwiftSyntaxRule {
@@ -40,7 +57,7 @@ extension TypedThrowsRule: AsyncEnrichableRule {
       if allTypes.count == 1, let errorType = allTypes.first {
         violations.append(
           RuleViolation(
-            configuration: Self.configuration,
+            ruleType: Self.self,
             severity: options.severity,
             location: Location(file: filePath, line: query.line, column: query.column),
             reason:

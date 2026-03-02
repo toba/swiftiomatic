@@ -1,9 +1,142 @@
 import SwiftSyntax
 
 struct ValidIBInspectableRule {
-  var options = SeverityConfiguration<Self>(.warning)
+    static let id = "valid_ibinspectable"
+    static let name = "Valid IBInspectable"
+    static let summary = ""
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private var x: Int
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private var x: String?
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private var x: String!
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private var count: Int = 0
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  private var notInspectable = 0
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  private let notInspectable: Int
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  private let notInspectable: UInt8
+                }
+                """,
+              ),
+              Example(
+                """
+                extension Foo {
+                    @IBInspectable var color: UIColor {
+                        set {
+                            self.bar.textColor = newValue
+                        }
 
-  static let configuration = ValidIBInspectableConfiguration()
+                        get {
+                            return self.bar.textColor
+                        }
+                    }
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                    @IBInspectable var borderColor: UIColor? = nil {
+                        didSet {
+                            updateAppearance()
+                        }
+                    }
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓let count: Int
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var insets: UIEdgeInsets
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var count = 0
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var count: Int?
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var count: Int!
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var count: Optional<Int>
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private ↓var x: Optional<String>
+                }
+                """,
+              ),
+            ]
+    }
+  var options = SeverityConfiguration<Self>(.warning)
 
   fileprivate static let supportedTypes: Set<String> = {
     // "You can add the IBInspectable attribute to any property in a class declaration,

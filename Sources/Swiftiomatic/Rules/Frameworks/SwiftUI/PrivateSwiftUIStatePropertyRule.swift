@@ -11,9 +11,22 @@ import SwiftSyntax
 /// Declare state and state objects as private to prevent setting them from a memberwise initializer,
 /// which can conflict with the storage management that SwiftUI provides:
 struct PrivateSwiftUIStatePropertyRule {
+    static let id = "private_swiftui_state"
+    static let name = "Private SwiftUI State Properties"
+    static let summary = "SwiftUI state properties should be private"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        PrivateSwiftUIStatePropertyRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        PrivateSwiftUIStatePropertyRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        PrivateSwiftUIStatePropertyRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = PrivateSwiftUIStatePropertyConfiguration()
 }
 
 extension PrivateSwiftUIStatePropertyRule: SwiftSyntaxCorrectableRule {

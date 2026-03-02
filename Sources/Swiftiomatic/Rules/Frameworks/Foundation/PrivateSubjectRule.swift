@@ -1,9 +1,18 @@
 import SwiftSyntax
 
 struct PrivateSubjectRule {
+    static let id = "private_subject"
+    static let name = "Private Combine Subject"
+    static let summary = "Combine Subject should be private"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        PrivateSubjectRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        PrivateSubjectRuleExamples.triggeringExamples
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = PrivateSubjectConfiguration()
 }
 
 extension PrivateSubjectRule: SwiftSyntaxRule {

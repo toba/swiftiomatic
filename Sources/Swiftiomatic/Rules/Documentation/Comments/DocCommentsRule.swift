@@ -2,9 +2,48 @@ import Foundation
 import SwiftSyntax
 
 struct DocCommentsRule {
+    static let id = "doc_comments"
+    static let name = "Doc Comments"
+    static let summary = "API declarations should use doc comments (`///`) instead of regular comments (`//`)"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                /// A placeholder type
+                class Foo {}
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  // TODO: implement
+                  func bar() {}
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓// A placeholder type
+                class Foo {}
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  ↓// Does something
+                  func bar() {}
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = DocCommentsConfiguration()
 }
 
 extension DocCommentsRule: SwiftSyntaxRule {

@@ -1,9 +1,31 @@
 import SwiftSyntax
 
 struct HoistAwaitRule {
+    static let id = "hoist_await"
+    static let name = "Hoist Await"
+    static let summary = "Move `await` keyword to the outermost expression instead of nesting it inside arguments"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let result = await foo(bar)"),
+              Example("let result = await foo(bar, baz)"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let result = foo(↓await bar())"),
+              Example("let result = foo(↓await bar(), baz)"),
+              Example("let result = [↓await foo(), ↓await bar()]"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let result = foo(↓await bar())"): Example("let result = await foo(bar())")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = HoistAwaitConfiguration()
 }
 
 extension HoistAwaitRule: SwiftSyntaxCorrectableRule {

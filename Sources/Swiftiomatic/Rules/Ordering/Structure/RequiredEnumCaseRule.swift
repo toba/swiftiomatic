@@ -68,9 +68,85 @@ import SwiftSyntax
 /// }
 /// ````
 struct RequiredEnumCaseRule {
+    private static let exampleConfiguration = [
+        "NetworkResponsable": ["success": "warning", "error": "warning", "notConnected": "warning"]
+    ]
+    static let id = "required_enum_case"
+    static let name = "Required Enum Case"
+    static let summary = "Enums conforming to a specified protocol must implement a specific case(s)."
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                enum MyNetworkResponse: String, NetworkResponsable {
+                    case success, error, notConnected
+                }
+                """, configuration: Self.exampleConfiguration,
+              ),
+              Example(
+                """
+                enum MyNetworkResponse: String, NetworkResponsable {
+                    case success, error, notConnected(error: Error)
+                }
+                """, configuration: Self.exampleConfiguration,
+              ),
+              Example(
+                """
+                enum MyNetworkResponse: String, NetworkResponsable {
+                    case success
+                    case error
+                    case notConnected
+                }
+                """, configuration: Self.exampleConfiguration,
+              ),
+              Example(
+                """
+                enum MyNetworkResponse: String, NetworkResponsable {
+                    case success
+                    case error
+                    case notConnected(error: Error)
+                }
+                """, configuration: Self.exampleConfiguration,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓enum MyNetworkResponse: String, NetworkResponsable {
+                    case success, error
+                }
+                """, configuration: Self.exampleConfiguration,
+              ),
+              Example(
+                """
+                ↓enum MyNetworkResponse: String, NetworkResponsable {
+                    case success, error
+                }
+                """, configuration: Self.exampleConfiguration,
+              ),
+              Example(
+                """
+                ↓enum MyNetworkResponse: String, NetworkResponsable {
+                    case success
+                    case error
+                }
+                """, configuration: Self.exampleConfiguration,
+              ),
+              Example(
+                """
+                ↓enum MyNetworkResponse: String, NetworkResponsable {
+                    case success
+                    case error
+                }
+                """, configuration: Self.exampleConfiguration,
+              ),
+            ]
+    }
   var options = RequiredEnumCaseOptions()
 
-  static let configuration = RequiredEnumCaseConfiguration()
 }
 
 extension RequiredEnumCaseRule: SwiftSyntaxRule {

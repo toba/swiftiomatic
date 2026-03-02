@@ -1,9 +1,24 @@
 import SwiftSyntax
 
 struct PreferCountWhereRule {
+    static let id = "prefer_count_where"
+    static let name = "Prefer count(where:)"
+    static let summary = "Use `count(where:)` instead of `filter(_:).count` for better performance"
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let count = array.count"),
+              Example("let count = array.count(where: { $0 > 0 })"),
+              Example("let filtered = array.filter { $0 > 0 }"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let count = array.↓filter { $0 > 0 }.count"),
+              Example("let count = array.↓filter({ $0 > 0 }).count"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = PreferCountWhereConfiguration()
 }
 
 extension PreferCountWhereRule: SwiftSyntaxRule {

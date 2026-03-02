@@ -1,9 +1,34 @@
 import SwiftSyntax
 
 struct IBInspectableInExtensionRule {
+    static let id = "ibinspectable_in_extension"
+    static let name = "IBInspectable in Extension"
+    static let summary = "Extensions shouldn't add @IBInspectable properties"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {
+                  @IBInspectable private var x: Int
+                }
+                """,
+              )
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                extension Foo {
+                  ↓@IBInspectable private var x: Int
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = IBInspectableInExtensionConfiguration()
 }
 
 extension IBInspectableInExtensionRule: SwiftSyntaxRule {

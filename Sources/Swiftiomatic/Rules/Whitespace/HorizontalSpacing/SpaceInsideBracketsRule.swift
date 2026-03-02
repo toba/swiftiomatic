@@ -1,9 +1,30 @@
 import SwiftSyntax
 
 struct SpaceInsideBracketsRule {
+    static let id = "space_inside_brackets"
+    static let name = "Space Inside Brackets"
+    static let summary = "There should be no spaces immediately inside square brackets"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let a = [1, 2, 3]"),
+              Example("let b = foo[0]"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let a = [↓ 1, 2, 3 ]"),
+              Example("let b = foo[↓ 0 ]"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let a = [↓ 1, 2, 3 ]"): Example("let a = [1, 2, 3]")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SpaceInsideBracketsConfiguration()
 }
 
 extension SpaceInsideBracketsRule: SwiftSyntaxCorrectableRule {

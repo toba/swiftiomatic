@@ -1,14 +1,29 @@
 import Foundation
 
 struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
+    static let id = "explicit_self"
+    static let name = "Explicit Self"
+    static let summary = "Instance variables and functions should be explicitly accessed with 'self.'"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static let requiresSourceKit = true
+    static let requiresCompilerArguments = true
+    static let requiresFileOnDisk = true
+    static var nonTriggeringExamples: [Example] {
+        ExplicitSelfRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        ExplicitSelfRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        ExplicitSelfRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = ExplicitSelfConfiguration()
 
   func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {
     violationRanges(in: file, compilerArguments: compilerArguments).map {
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severity,
         location: Location(file: file, characterOffset: $0.location),
       )

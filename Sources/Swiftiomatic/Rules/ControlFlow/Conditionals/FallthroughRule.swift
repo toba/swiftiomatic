@@ -1,9 +1,38 @@
 import SwiftSyntax
 
 struct FallthroughRule {
+    static let id = "fallthrough"
+    static let name = "Fallthrough"
+    static let summary = "Fallthrough should be avoided"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                switch foo {
+                case .bar, .bar2, .bar3:
+                  something()
+                }
+                """,
+              )
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                switch foo {
+                case .bar:
+                  ↓fallthrough
+                case .bar2:
+                  something()
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = FallthroughConfiguration()
 }
 
 extension FallthroughRule: SwiftSyntaxRule {

@@ -1,11 +1,22 @@
 import SwiftSyntax
 
 struct StructuralDuplicationRule: CollectingRule {
+    static let id = "structural_duplication"
+    static let name = "Structural Duplication"
+    static let summary = "Functions with identical AST structure are likely duplicated code that should be consolidated"
+    static let isOptIn = true
+    static let isCrossFile = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("func unique1() { print(1) }\nfunc unique2() { return 2 }")
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        []
+    }
   typealias FileInfo = [FunctionFingerprint]
 
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = StructuralDuplicationConfiguration()
 
   func collectInfo(for file: SwiftSource) -> [FunctionFingerprint] {
     guard let path = file.path else { return [] }
@@ -40,7 +51,7 @@ struct StructuralDuplicationRule: CollectingRule {
 
         violations.append(
           RuleViolation(
-            configuration: Self.configuration,
+            ruleType: Self.self,
             severity: options.severity,
             location: Location(file: filePath, line: member.line, column: 1),
             reason: "Function '\(member.name)' is structurally identical to \(peers)",

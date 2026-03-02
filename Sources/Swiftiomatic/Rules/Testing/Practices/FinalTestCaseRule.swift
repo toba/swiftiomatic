@@ -1,9 +1,43 @@
 import SwiftSyntax
 
 struct FinalTestCaseRule {
+    static let id = "final_test_case"
+    static let name = "Final Test Case"
+    static let summary = "Test cases should be final"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("final class Test: XCTestCase {}"),
+              Example("open class Test: XCTestCase {}"),
+              Example("public final class Test: QuickSpec {}"),
+              Example("class Test: MyTestCase {}"),
+              Example(
+                "struct Test: MyTestCase {}",
+                configuration: ["test_parent_classes": "MyTestCase"],
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("class ↓Test: XCTestCase {}"),
+              Example("public class ↓Test: QuickSpec {}"),
+              Example(
+                "class ↓Test: MyTestCase {}",
+                configuration: ["test_parent_classes": "MyTestCase"],
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("class ↓Test: XCTestCase {}"):
+                Example("final class Test: XCTestCase {}"),
+              Example("internal class ↓Test: XCTestCase {}"):
+                Example("internal final class Test: XCTestCase {}"),
+            ]
+    }
   var options = FinalTestCaseOptions()
 
-  static let configuration = FinalTestCaseConfiguration()
 }
 
 extension FinalTestCaseRule: SwiftSyntaxCorrectableRule {

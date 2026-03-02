@@ -2,6 +2,32 @@ import Foundation
 import SwiftSyntax
 
 struct ExpiringTodoRule {
+    static let id = "expiring_todo"
+    static let name = "Expiring Todo"
+    static let summary = "TODOs and FIXMEs should be resolved prior to their expiry date."
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("// notaTODO:"),
+              Example("// notaFIXME:"),
+              Example("// TODO: [12/31/9999]"),
+              Example("// TODO(note)"),
+              Example("// FIXME(note)"),
+              Example("/* FIXME: */"),
+              Example("/* TODO: */"),
+              Example("/** FIXME: */"),
+              Example("/** TODO: */"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("// TODO: [↓10/14/2019]"),
+              Example("// FIXME: [↓10/14/2019]"),
+              Example("// FIXME: [↓1/14/2019]"),
+              Example("// FIXME: [↓10/14/2019]"),
+              Example("// TODO: [↓9999/14/10]"),
+            ]
+    }
   enum ExpiryViolationLevel {
     case approachingExpiry
     case expired
@@ -18,8 +44,6 @@ struct ExpiringTodoRule {
       }
     }
   }
-
-  static let configuration = ExpiringTodoConfiguration()
 
   var options = ExpiringTodoOptions()
 }

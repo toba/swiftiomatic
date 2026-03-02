@@ -167,14 +167,14 @@ import Testing
 
   @Test func lineLength() async {
     await verifyRule(
-      LineLengthRule.configuration,
+      LineLengthRule.self,
       commentDoesNotViolate: false,
       stringDoesNotViolate: false,
     )
   }
 
   @Test func lineLengthWithIgnoreFunctionDeclarationsEnabled() async {
-    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let baseExamples = TestExamples(from: LineLengthRule.self)
     let description = baseExamples.with(
       nonTriggeringExamples: baseExamples.nonTriggeringExamples + longFunctionDeclarations,
       triggeringExamples: longFunctionCalls,
@@ -192,7 +192,7 @@ import Testing
     let triggeringExamples = longFunctionDeclarations + [declarationWithTrailingLongComment]
     let nonTriggeringExamples = [longComment, longBlockComment, longRealBlockComment]
 
-    let description = TestExamples(from: LineLengthRule.configuration).with(
+    let description = TestExamples(from: LineLengthRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -211,7 +211,7 @@ import Testing
       Example("\(url)/" + String(repeating: "a", count: 120)),
     ]
 
-    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let baseExamples = TestExamples(from: LineLengthRule.self)
     let nonTriggeringExamples = baseExamples.nonTriggeringExamples + nonTriggeringLines
     let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
@@ -230,7 +230,7 @@ import Testing
     let triggeringLines = [plainString]
     let nonTriggeringLines = [interpolatedString]
 
-    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let baseExamples = TestExamples(from: LineLengthRule.self)
     let nonTriggeringExamples = baseExamples.nonTriggeringExamples + nonTriggeringLines
     let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
@@ -258,7 +258,7 @@ import Testing
       multilineStringWithFunction,
     ]
 
-    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let baseExamples = TestExamples(from: LineLengthRule.self)
     let nonTriggeringExamples = baseExamples.nonTriggeringExamples + nonTriggeringLines
     let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
@@ -276,7 +276,7 @@ import Testing
   @Test func lineLengthWithIgnoreInterpolatedStringsFalse() async {
     let triggeringLines = [plainString, interpolatedString]
 
-    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let baseExamples = TestExamples(from: LineLengthRule.self)
     let nonTriggeringExamples = baseExamples.nonTriggeringExamples
     let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
@@ -294,7 +294,7 @@ import Testing
   @Test func lineLengthWithExcludedLinesPatterns() async {
     let nonTriggeringLines = [plainString, interpolatedString]
 
-    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let baseExamples = TestExamples(from: LineLengthRule.self)
     let nonTriggeringExamples = baseExamples.nonTriggeringExamples + nonTriggeringLines
     let triggeringExamples = baseExamples.triggeringExamples
 
@@ -314,7 +314,7 @@ import Testing
   @Test func lineLengthWithEmptyExcludedLinesPatterns() async {
     let triggeringLines = [plainString, interpolatedString]
 
-    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let baseExamples = TestExamples(from: LineLengthRule.self)
     let nonTriggeringExamples = baseExamples.nonTriggeringExamples
     let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
@@ -342,7 +342,7 @@ import Testing
       regexLiteralMultiline,
     ]
 
-    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let baseExamples = TestExamples(from: LineLengthRule.self)
     let nonTriggeringExamples = baseExamples.nonTriggeringExamples + nonTriggeringLines
     let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 

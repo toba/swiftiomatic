@@ -1,9 +1,56 @@
 import SwiftSyntax
 
 struct OneDeclarationPerFileRule {
+    static let id = "one_declaration_per_file"
+    static let name = "One Declaration per File"
+    static let summary = "Only a single declaration is allowed in a file"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                actor Foo {}
+                """,
+              ),
+              Example(
+                """
+                class Foo {}
+                extension Foo {}
+                """,
+              ),
+              Example(
+                """
+                struct S {
+                    struct N {}
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {}
+                ↓class Bar {}
+                """,
+              ),
+              Example(
+                """
+                protocol Foo {}
+                ↓enum Bar {}
+                """,
+              ),
+              Example(
+                """
+                struct Foo {}
+                ↓struct Bar {}
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = OneDeclarationPerFileConfiguration()
 }
 
 extension OneDeclarationPerFileRule: SwiftSyntaxRule {

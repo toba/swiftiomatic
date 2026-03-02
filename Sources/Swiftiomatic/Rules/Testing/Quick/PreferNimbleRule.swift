@@ -1,9 +1,28 @@
 import SwiftSyntax
 
 struct PreferNimbleRule {
+    static let id = "prefer_nimble"
+    static let name = "Prefer Nimble"
+    static let summary = "Prefer Nimble matchers over XCTAssert functions"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("expect(foo) == 1"),
+              Example("expect(foo).to(equal(1))"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("↓XCTAssertTrue(foo)"),
+              Example("↓XCTAssertEqual(foo, 2)"),
+              Example("↓XCTAssertNotEqual(foo, 2)"),
+              Example("↓XCTAssertNil(foo)"),
+              Example("↓XCTAssert(foo)"),
+              Example("↓XCTAssertGreaterThan(foo, 10)"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = PreferNimbleConfiguration()
 }
 
 extension PreferNimbleRule: SwiftSyntaxRule {

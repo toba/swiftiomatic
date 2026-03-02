@@ -1,9 +1,29 @@
 import SwiftSyntax
 
 struct FireAndForgetTaskRule {
+    static let id = "fire_and_forget_task"
+    static let name = "Fire and Forget Task"
+    static let summary = "Enhanced fire-and-forget Task detection with scope-aware severity and .onAppear+Task analysis"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let task = Task { await work() }"),
+              Example("return Task { await work() }"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                deinit {
+                    ↓Task { await cleanup() }
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = FireAndForgetTaskConfiguration()
 }
 
 extension FireAndForgetTaskRule: SwiftSyntaxRule {

@@ -1,9 +1,36 @@
 import SwiftSyntax
 
 struct RedundantParensRule {
+    static let id = "redundant_parens"
+    static let name = "Redundant Parentheses"
+    static let summary = "Redundant parentheses around expressions in control flow statements should be removed"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("if foo == true {}"),
+              Example("while !flag {}"),
+              Example("let x = (a, b)"),
+              Example("let x = (a + b) * c"),
+              Example("switch (a, b) { default: break }"),
+              Example("func foo(bar: Int) {}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("if ↓(foo == true) {}"),
+              Example("while ↓(flag) {}"),
+              Example("guard ↓(condition) else { return }"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("if ↓(foo == true) {}"): Example("if foo == true {}"),
+              Example("while ↓(flag) {}"): Example("while flag {}"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantParensConfiguration()
 }
 
 extension RedundantParensRule: SwiftSyntaxCorrectableRule {

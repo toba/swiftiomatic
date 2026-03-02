@@ -37,7 +37,7 @@ import Testing
       )
     ]
 
-    let description = TestExamples(from: ComputedAccessorsOrderRule.configuration).with(
+    let description = TestExamples(from: ComputedAccessorsOrderRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )

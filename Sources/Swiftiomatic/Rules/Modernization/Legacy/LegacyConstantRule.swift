@@ -2,9 +2,21 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct LegacyConstantRule {
+    static let id = "legacy_constant"
+    static let name = "Legacy Constant"
+    static let summary = "Struct-scoped constants are preferred over legacy global constants"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        LegacyConstantRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        LegacyConstantRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        LegacyConstantRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = LegacyConstantConfiguration()
 }
 
 extension LegacyConstantRule: SwiftSyntaxCorrectableRule {

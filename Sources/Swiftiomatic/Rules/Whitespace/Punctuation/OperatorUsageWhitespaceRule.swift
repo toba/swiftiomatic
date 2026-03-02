@@ -2,14 +2,26 @@ import Foundation
 import SwiftSyntax
 
 struct OperatorUsageWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
+    static let id = "operator_usage_whitespace"
+    static let name = "Operator Usage Whitespace"
+    static let summary = "Operators should be surrounded by a single whitespace when they are being used"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        OperatorUsageWhitespaceRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        OperatorUsageWhitespaceRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        OperatorUsageWhitespaceRuleExamples.corrections
+    }
   var options = OperatorUsageWhitespaceOptions()
-
-  static let configuration = OperatorUsageWhitespaceConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(file: file).map { range, _ in
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severityConfiguration.severity,
         location: Location(file: file, byteOffset: range.location),
       )

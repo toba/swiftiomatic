@@ -39,24 +39,23 @@ struct RuleDocumentation {
 
     /// The contents of the file for this rule documentation
     var fileContents: String {
-        let config = ruleType.anyConfiguration
         var content = [
-            h1(config.name),
-            config.summary,
+            h1(ruleType.ruleName),
+            ruleType.ruleSummary,
             detailsSummary(ruleType.init()),
         ]
-        if let rationale = config.rationale {
+        if let rationale = ruleType.ruleRationale {
             content += [h2("Rationale")]
             content.append(rationale.formattedRationale)
         }
-        let nonTriggeringExamples = config.nonTriggeringExamples.filter {
+        let nonTriggeringExamples = ruleType.ruleNonTriggeringExamples.filter {
             !$0.isExcludedFromDocumentation
         }
         if nonTriggeringExamples.isNotEmpty {
             content += [h2("Non Triggering Examples")]
             content += nonTriggeringExamples.map(formattedCode)
         }
-        let triggeringExamples = config.triggeringExamples
+        let triggeringExamples = ruleType.ruleTriggeringExamples
             .filter { !$0.isExcludedFromDocumentation }
         if triggeringExamples.isNotEmpty {
             content += [h2("Triggering Examples")]

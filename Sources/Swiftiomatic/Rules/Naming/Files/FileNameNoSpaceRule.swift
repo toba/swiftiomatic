@@ -1,9 +1,11 @@
 import Foundation
 
 struct FileNameNoSpaceRule: SyntaxOnlyRule {
+    static let id = "file_name_no_space"
+    static let name = "File Name no Space"
+    static let summary = "File name should not contain any whitespace"
+    static let isOptIn = true
   var options = FileNameNoSpaceOptions()
-
-  static let configuration = FileNameNoSpaceConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     guard let filePath = file.path,
@@ -16,7 +18,7 @@ struct FileNameNoSpaceRule: SyntaxOnlyRule {
 
     return [
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severity,
         location: Location(file: filePath, line: 1),
       )

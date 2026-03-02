@@ -89,7 +89,7 @@ import Testing
     corrections: [Example: Example],
     kind: ImplicitReturnOptions.ReturnKind,
   ) async {
-    let description = TestExamples(from: ImplicitReturnRule.configuration).with(
+    let description = TestExamples(from: ImplicitReturnRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples.removingViolationMarker(),
       triggeringExamples: triggeringExamples,
       corrections: corrections,

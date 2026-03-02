@@ -2,9 +2,44 @@ import Foundation
 import SwiftSyntax
 
 struct SortImportsRule {
+    static let id = "sort_imports"
+    static let name = "Sort Imports"
+    static let summary = "Import statements should be sorted alphabetically"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                import Bar
+                import Foo
+                """,
+              ),
+              Example(
+                """
+                import Bar
+                @testable import Foo
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓import Foo
+                import Bar
+                """,
+              )
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("↓import Foo\nimport Bar"): Example("import Bar\nimport Foo")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SortImportsConfiguration()
 }
 
 extension SortImportsRule: SwiftSyntaxCorrectableRule {

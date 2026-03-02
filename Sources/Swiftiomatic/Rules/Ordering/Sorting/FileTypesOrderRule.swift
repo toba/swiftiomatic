@@ -5,9 +5,18 @@ private typealias FileTypeOffset = (
 )
 
 struct FileTypesOrderRule: Rule {
+    static let id = "file_types_order"
+    static let name = "File Types Order"
+    static let summary = "Specifies how the types within a file should be ordered."
+    static let isOptIn = true
+    static let requiresSourceKit = true
+    static var nonTriggeringExamples: [Example] {
+        FileTypesOrderRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        FileTypesOrderRuleExamples.triggeringExamples
+    }
   var options = FileTypesOrderOptions()
-
-  static let configuration = FileTypesOrderConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     guard let mainTypeSubstructure = mainTypeSubstructure(in: file),
@@ -82,7 +91,7 @@ struct FileTypesOrderRule: Rule {
             .contains(fileType.substring(from: 0, length: 1)) ? "An" : "A"
 
         let ruleViolation = RuleViolation(
-          configuration: Self.configuration,
+          ruleType: Self.self,
           severity: options.severityConfiguration.severity,
           location: Location(file: file, byteOffset: fileTypeOffset.offset),
           reason:

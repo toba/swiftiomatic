@@ -1,9 +1,25 @@
 import Foundation
 
 struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
+    static let id = "vertical_whitespace_closing_braces"
+    static let name = "Vertical Whitespace before Closing Braces"
+    static let summary = "Don't include vertical whitespace (empty line) before closing braces"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples
+              .values.sorted() + VerticalWhitespaceClosingBracesRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        Array(
+              VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples.keys.sorted(),
+            )
+    }
+    static var corrections: [Example: Example] {
+        VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples
+              .removingViolationMarkers()
+    }
   var options = VerticalWhitespaceClosingBracesOptions()
-
-  static let configuration = VerticalWhitespaceClosingBracesConfiguration()
 
   private let pattern = "((?:\\n[ \\t]*)+)(\\n[ \\t]*[)}\\]])"
   private let trivialLinePattern = "((?:\\n[ \\t]*)+)(\\n[ \\t)}\\]]*$)"
@@ -21,7 +37,7 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
       let violationIndex = file.contents.index(after: group1Sub.startIndex)
 
       return RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severityConfiguration.severity,
         location: Location(file: file, stringIndex: violationIndex),
       )

@@ -1,9 +1,50 @@
 import SwiftSyntax
 
 struct RedundantMemberwiseInitRule {
+    static let id = "redundant_memberwise_init"
+    static let name = "Redundant Memberwise Init"
+    static let summary = "Structs get an automatic memberwise initializer; explicit ones that mirror it are redundant"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                struct Foo {
+                  let bar: Int
+                  let baz: String
+                }
+                """,
+              ),
+              Example(
+                """
+                struct Foo {
+                  let bar: Int
+                  init(bar: Int, extra: String = "") {
+                    self.bar = bar
+                  }
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                struct Foo {
+                  let bar: Int
+                  let baz: String
+                  ↓init(bar: Int, baz: String) {
+                    self.bar = bar
+                    self.baz = baz
+                  }
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantMemberwiseInitConfiguration()
 }
 
 extension RedundantMemberwiseInitRule: SwiftSyntaxRule {

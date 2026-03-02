@@ -2,9 +2,141 @@ import Foundation
 import SwiftSyntax
 
 struct MultilineLiteralBracketsRule {
+    static let id = "multiline_literal_brackets"
+    static let name = "Multiline Literal Brackets"
+    static let summary = "Multiline literals should have their surrounding brackets in a new line"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                let trio = ["harry", "ronald", "hermione"]
+                let houseCup = ["gryffindor": 460, "hufflepuff": 370, "ravenclaw": 410, "slytherin": 450]
+                """,
+              ),
+              Example(
+                """
+                let trio = [
+                    "harry",
+                    "ronald",
+                    "hermione"
+                ]
+                let houseCup = [
+                    "gryffindor": 460,
+                    "hufflepuff": 370,
+                    "ravenclaw": 410,
+                    "slytherin": 450
+                ]
+                """,
+              ),
+              Example(
+                """
+                let trio = [
+                    "harry", "ronald", "hermione"
+                ]
+                let houseCup = [
+                    "gryffindor": 460, "hufflepuff": 370,
+                    "ravenclaw": 410, "slytherin": 450
+                ]
+                """,
+              ),
+              Example(
+                """
+                _ = [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5, 6,
+                    7, 8, 9
+                ]
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                let trio = [↓"harry",
+                            "ronald",
+                            "hermione"
+                ]
+                """,
+              ),
+              Example(
+                """
+                let houseCup = [↓"gryffindor": 460, "hufflepuff": 370,
+                                "ravenclaw": 410, "slytherin": 450
+                ]
+                """,
+              ),
+              Example(
+                """
+                let houseCup = [↓"gryffindor": 460,
+                                "hufflepuff": 370,
+                                "ravenclaw": 410,
+                                "slytherin": 450↓]
+                """,
+              ),
+              Example(
+                """
+                let trio = [
+                    "harry",
+                    "ronald",
+                    "hermione"↓]
+                """,
+              ),
+              Example(
+                """
+                let houseCup = [
+                    "gryffindor": 460, "hufflepuff": 370,
+                    "ravenclaw": 410, "slytherin": 450↓]
+                """,
+              ),
+              Example(
+                """
+                class Hogwarts {
+                    let houseCup = [
+                        "gryffindor": 460, "hufflepuff": 370,
+                        "ravenclaw": 410, "slytherin": 450↓]
+                }
+                """,
+              ),
+              Example(
+                """
+                _ = [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5, 6,
+                    7, 8, 9↓]
+                """,
+              ),
+              Example(
+                """
+                _ = [↓1, 2, 3,
+                     4, 5, 6,
+                     7, 8, 9
+                ]
+                """,
+              ),
+              Example(
+                """
+                class Hogwarts {
+                    let houseCup = [
+                        "gryffindor": 460, "hufflepuff": 370,
+                        "ravenclaw": 410, "slytherin": slytherinPoints.filter {
+                            $0.isValid
+                        }.sum()↓]
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = MultilineLiteralBracketsConfiguration()
 }
 
 extension MultilineLiteralBracketsRule: SwiftSyntaxRule {

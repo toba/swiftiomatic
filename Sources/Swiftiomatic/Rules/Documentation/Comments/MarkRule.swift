@@ -2,9 +2,21 @@ import Foundation
 import SwiftSyntax
 
 struct MarkRule {
+    static let id = "mark"
+    static let name = "Mark"
+    static let summary = "MARK comment should be in valid format. e.g. '// MARK: ...' or '// MARK: - ...'"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        MarkRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        MarkRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        MarkRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = MarkConfiguration()
 }
 
 extension MarkRule: SwiftSyntaxCorrectableRule {

@@ -6,7 +6,9 @@ import Testing
   fileprivate struct RuleMock1: Rule {
     var options = SeverityConfiguration<Self>(.warning)
     var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
-    static let configuration = TestMockRuleConfiguration(id: "RuleMock1")
+    static let id = "RuleMock1"
+    static let name = ""
+    static let summary = ""
 
     init() { /* conformance for test */  }
     init(configuration _: Any) { self.init() }
@@ -19,7 +21,9 @@ import Testing
   fileprivate struct RuleMock2: Rule {
     var options = SeverityConfiguration<Self>(.warning)
     var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
-    static let configuration = TestMockRuleConfiguration(id: "RuleMock2")
+    static let id = "RuleMock2"
+    static let name = ""
+    static let summary = ""
 
     init() { /* conformance for test */  }
     init(configuration _: Any) { self.init() }
@@ -32,7 +36,9 @@ import Testing
   fileprivate struct RuleWithLevelsMock2: Rule {
     var options = SeverityLevelsConfiguration<Self>(warning: 2, error: 3)
 
-    static let configuration = TestMockRuleConfiguration(id: "violation_level_mock2")
+    static let id = "violation_level_mock2"
+    static let name = ""
+    static let summary = ""
 
     init() { /* conformance for test */  }
     init(configuration: Any) throws {

@@ -1,9 +1,29 @@
 import SwiftSyntax
 
 struct PerformanceAntiPatternsRule {
+    static let id = "performance_anti_patterns"
+    static let name = "Performance Anti-Patterns"
+    static let summary = "Detects common performance anti-patterns like Date() for benchmarking and mutation during iteration"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let now = ContinuousClock.now"),
+              Example("array.removeAll(where: { $0.isEmpty })"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                for item in ↓items {
+                    items.remove(at: 0)
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = PerformanceAntiPatternsConfiguration()
 }
 
 extension PerformanceAntiPatternsRule: SwiftSyntaxRule {

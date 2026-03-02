@@ -3,7 +3,9 @@ import Testing
 @testable import Swiftiomatic
 
 private struct MockSeverityLevelsRule: Rule {
-  static let configuration = TestMockRuleConfiguration(id: "test_severity_levels")
+  static let id = "test_severity_levels"
+  static let name = ""
+  static let summary = ""
 
   var options = SeverityLevelsConfiguration<Self>(warning: 12, error: nil)
 

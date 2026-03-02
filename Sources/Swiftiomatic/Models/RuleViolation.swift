@@ -38,27 +38,27 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
         ].joined()
     }
 
-    /// Creates a `RuleViolation` from a ``RuleConfiguration`` source.
+    /// Creates a `RuleViolation` from a ``Rule`` type's static metadata.
     ///
     /// - Parameters:
-    ///   - configuration: The rule's configuration metadata.
+    ///   - ruleType: The rule type whose static metadata provides id, name, and summary.
     ///   - severity: The severity of this violation.
     ///   - location: The location of this violation.
     ///   - reason: The justification for this violation. Falls back to the rule's summary.
-    init(
-        configuration: some RuleConfiguration,
+    init<R: Rule>(
+        ruleType: R.Type,
         severity: Severity = .warning,
         location: Location,
         reason: String? = nil,
         confidence: Confidence = .high,
         suggestion: String? = nil,
     ) {
-        ruleIdentifier = configuration.id
-        ruleDescription = configuration.summary
-        ruleName = configuration.name
+        ruleIdentifier = R.id
+        ruleDescription = R.summary
+        ruleName = R.name
         self.severity = severity
         self.location = location
-        self.reason = reason ?? configuration.summary
+        self.reason = reason ?? R.summary
         self.confidence = confidence
         self.suggestion = suggestion
         #if DEBUG
@@ -74,6 +74,25 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
             )
         }
         #endif
+    }
+
+    /// Creates a `RuleViolation` from an existential ``Rule`` type.
+    init(
+        anyRuleType ruleType: any Rule.Type,
+        severity: Severity = .warning,
+        location: Location,
+        reason: String? = nil,
+        confidence: Confidence = .high,
+        suggestion: String? = nil,
+    ) {
+        ruleIdentifier = ruleType.id
+        ruleDescription = ruleType.summary
+        ruleName = ruleType.name
+        self.severity = severity
+        self.location = location
+        self.reason = reason ?? ruleType.summary
+        self.confidence = confidence
+        self.suggestion = suggestion
     }
 
     /// Returns the same violation, but with the `severity` that is passed in

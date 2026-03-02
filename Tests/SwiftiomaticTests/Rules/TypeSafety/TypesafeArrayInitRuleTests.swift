@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered, .disabled("requires sourcekitd")) struct TypesafeArrayInitRuleTests {
   @Test func violationRuleIdentifier() async {
-    let baseExamples = TestExamples(from: TypesafeArrayInitRule.configuration)
+    let baseExamples = TestExamples(from: TypesafeArrayInitRule.self)
     guard let triggeringExample = baseExamples.triggeringExamples.first else {
       Issue.record("No triggering examples found")
       return

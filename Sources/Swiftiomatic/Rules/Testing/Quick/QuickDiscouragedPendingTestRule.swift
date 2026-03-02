@@ -1,9 +1,18 @@
 import SwiftSyntax
 
 struct QuickDiscouragedPendingTestRule {
+    static let id = "quick_discouraged_pending_test"
+    static let name = "Quick Discouraged Pending Test"
+    static let summary = "This test won't run as long as it's marked pending"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        QuickDiscouragedPendingTestRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        QuickDiscouragedPendingTestRuleExamples.triggeringExamples
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = QuickDiscouragedPendingTestConfiguration()
 }
 
 extension QuickDiscouragedPendingTestRule: SwiftSyntaxRule {

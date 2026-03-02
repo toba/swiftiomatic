@@ -1,9 +1,27 @@
 import SwiftSyntax
 
 struct AnyEliminationRule {
+    static let id = "any_elimination"
+    static let name = "Any Elimination"
+    static let summary = "Usage of Any/AnyObject erases type safety and should be replaced with specific types or generics"
+    static let scope: Scope = .suggest
+    static let isOptIn = true
+    static let canEnrichAsync = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("var name: String = \"\""),
+              Example("func process(_ item: Codable) {}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("var value: ↓Any = 0"),
+              Example("func process(_ dict: ↓[String: Any]) {}"),
+              Example("let x = value ↓as! String"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = AnyEliminationConfiguration()
 }
 
 extension AnyEliminationRule: SwiftSyntaxRule {
@@ -37,7 +55,7 @@ extension AnyEliminationRule: AsyncEnrichableRule {
       if resolved.typeName == "Any" || resolved.typeName == "Swift.Any" {
         violations.append(
           RuleViolation(
-            configuration: Self.configuration,
+            ruleType: Self.self,
             severity: options.severity,
             location: Location(file: filePath, line: query.line, column: query.column),
             reason: "Type '\(query.typeStr)' resolves to 'Any' — type safety is erased",

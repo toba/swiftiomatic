@@ -1,9 +1,28 @@
 import SwiftSyntax
 
 struct LinebreaksRule {
+    static let id = "linebreaks"
+    static let name = "Linebreaks"
+    static let summary = "Use consistent linebreak characters (LF)"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let a = 0\nlet b = 1\n")
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let a = 0\r\n↓let b = 1\r\n")
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let a = 0\r\n↓let b = 1\r\n"): Example("let a = 0\nlet b = 1\n")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = LinebreaksConfiguration()
 }
 
 extension LinebreaksRule: SwiftSyntaxCorrectableRule {

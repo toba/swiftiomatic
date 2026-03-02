@@ -2,9 +2,11 @@ import Foundation
 import SwiftSyntax
 
 struct FileNameRule: SyntaxOnlyRule {
+    static let id = "file_name"
+    static let name = "File Name"
+    static let summary = "File name should match a type or extension declared in the file (if any)"
+    static let isOptIn = true
   var options = FileNameOptions()
-
-  static let configuration = FileNameConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     guard let filePath = file.path,
@@ -52,7 +54,7 @@ struct FileNameRule: SyntaxOnlyRule {
 
     return [
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severity,
         location: Location(file: filePath, line: 1),
       )

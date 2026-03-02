@@ -1,9 +1,32 @@
 import SwiftSyntax
 
 struct ConsecutiveSpacesRule {
+    static let id = "consecutive_spaces"
+    static let name = "Consecutive Spaces"
+    static let summary = "Multiple consecutive spaces should be replaced with a single space"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let foo = 5"),
+              Example("// comment with   multiple spaces"),
+              Example("/* block   comment */"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let  ↓foo = 5"),
+              Example("let foo =  ↓5"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let  ↓foo = 5"): Example("let foo = 5"),
+              Example("let foo =  ↓5"): Example("let foo = 5"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ConsecutiveSpacesConfiguration()
 }
 
 extension ConsecutiveSpacesRule: SwiftSyntaxCorrectableRule {

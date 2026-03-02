@@ -1,9 +1,22 @@
 import SwiftSyntax
 
 struct UnneededThrowsRule {
+    static let id = "unneeded_throws_rethrows"
+    static let name = "Unneeded (Re)Throws Keyword"
+    static let summary = "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`."
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        UnneededThrowsRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        UnneededThrowsRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        UnneededThrowsRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = UnneededThrowsConfiguration()
 }
 
 extension UnneededThrowsRule: SwiftSyntaxCorrectableRule {

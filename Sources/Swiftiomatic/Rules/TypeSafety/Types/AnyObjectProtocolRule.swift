@@ -1,9 +1,23 @@
 import SwiftSyntax
 
 struct AnyObjectProtocolRule {
+    static let id = "any_object_protocol"
+    static let name = "AnyObject Protocol"
+    static let summary = "Prefer `AnyObject` over `class` in protocol definitions"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("protocol Foo: AnyObject {}"),
+              Example("protocol Foo: Sendable {}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("protocol Foo: ↓class {}"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = AnyObjectProtocolConfiguration()
 }
 
 extension AnyObjectProtocolRule: SwiftSyntaxRule {

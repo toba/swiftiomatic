@@ -59,7 +59,7 @@ extension Rule {
                 )
                 superfluousDisableCommandViolations.append(
                     RuleViolation(
-                        configuration: type(of: superfluousDisableCommandRule).configuration,
+                        anyRuleType: type(of: superfluousDisableCommandRule),
                         severity: superfluousDisableCommandRule.options.severity,
                         location: region.start,
                         reason: reason,
@@ -72,7 +72,7 @@ extension Rule {
 
     fileprivate func shouldRun(onFile file: SwiftSource) -> Bool {
         // We shouldn't lint if the current Swift version is not supported by the rule
-        guard SwiftVersion.current >= Self.configuration.minSwiftVersion else {
+        guard SwiftVersion.current >= Self.minSwiftVersion else {
             return false
         }
 
@@ -155,7 +155,7 @@ extension Rule {
                 }
 
         let ruleIDs =
-            Self.configuration.allIdentifiers
+            Self.allIdentifiers
                 + (superfluousDisableCommandRule.map { type(of: $0) }?.allIdentifiers ?? []) + [
                     RuleIdentifier.all.stringRepresentation,
                 ]
@@ -503,7 +503,7 @@ struct CollectedLinter: @unchecked Sendable {
                     && !region.disabledRuleIdentifiers.contains(superfluousRuleIdentifier)
             }.map { id in
                 RuleViolation(
-                    configuration: type(of: superfluousDisableCommandRule).configuration,
+                    ruleType: type(of: superfluousDisableCommandRule),
                     severity: superfluousDisableCommandRule.options.severity,
                     location: region.start,
                     reason:

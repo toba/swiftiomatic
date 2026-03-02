@@ -1,9 +1,23 @@
 import SwiftSyntax
 
 struct FileLengthRule {
+    static let id = "file_length"
+    static let name = "File Length"
+    static let summary = "Files should not span too many lines."
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(repeatElement("print(\"swiftlint\")\n", count: 399).joined())
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(repeatElement("print(\"swiftlint\")\n", count: 401).joined()),
+              Example((repeatElement("print(\"swiftlint\")\n", count: 400) + ["//\n"]).joined()),
+              Example(repeatElement("print(\"swiftlint\")\n\n", count: 201).joined()),
+            ]
+    }
   var options = FileLengthOptions()
 
-  static let configuration = FileLengthConfiguration()
 }
 
 extension FileLengthRule: SwiftSyntaxRule {

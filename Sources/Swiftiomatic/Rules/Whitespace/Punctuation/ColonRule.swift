@@ -2,14 +2,25 @@ import Foundation
 import SwiftSyntax
 
 struct ColonRule: SubstitutionCorrectableRule, SyntaxOnlyRule {
+    static let id = "colon"
+    static let name = "Colon Spacing"
+    static let summary = ""
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        ColonRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        ColonRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        ColonRuleExamples.corrections
+    }
   var options = ColonOptions()
-
-  static let configuration = ColonConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(in: file).map { range in
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severityConfiguration.severity,
         location: Location(file: file, stringIndex: range.lowerBound),
       )

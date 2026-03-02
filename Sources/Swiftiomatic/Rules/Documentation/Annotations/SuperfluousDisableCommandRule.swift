@@ -1,7 +1,32 @@
 struct SuperfluousDisableCommandRule: SyntaxOnlyRule, Sendable {
+    static let id = "superfluous_disable_command"
+    static let name = "Superfluous Disable Command"
+    static let summary = ""
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let abc:Void // sm:disable:this colon"),
+              Example(
+                """
+                // sm:disable colon
+                let abc:Void
+                // sm:enable colon
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let abc: Void // sm:disable:this colon"),
+              Example(
+                """
+                // sm:disable colon
+                let abc: Void
+                // sm:enable colon
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = SuperfluousDisableCommandConfiguration()
 
   func validate(file _: SwiftSource) -> [RuleViolation] {
     // This rule is implemented in Linter.swift

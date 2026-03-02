@@ -22,7 +22,7 @@ import Testing
       Example("↓if true { return \"YES\" } else { return \"NO\" }"),
     ]
 
-    let description = TestExamples(from: ConditionalReturnsOnNewlineRule.configuration).with(
+    let description = TestExamples(from: ConditionalReturnsOnNewlineRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )

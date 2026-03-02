@@ -4,150 +4,150 @@ import Testing
 
 @Suite(.rulesRegistered) struct SuperfluousElseRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(SuperfluousElseRule.configuration)
+    await verifyRule(SuperfluousElseRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct SwitchCaseAlignmentRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(SwitchCaseAlignmentRule.configuration)
+    await verifyRule(SwitchCaseAlignmentRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct SwitchCaseOnNewlineRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(SwitchCaseOnNewlineRule.configuration)
+    await verifyRule(SwitchCaseOnNewlineRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct SyntacticSugarRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(SyntacticSugarRule.configuration)
+    await verifyRule(SyntacticSugarRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TestCaseAccessibilityRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(TestCaseAccessibilityRule.configuration)
+    await verifyRule(TestCaseAccessibilityRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TodoRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(TodoRule.configuration)
+    await verifyRule(TodoRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct ToggleBoolRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ToggleBoolRule.configuration)
+    await verifyRule(ToggleBoolRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TrailingClosureRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(TrailingClosureRule.configuration)
+    await verifyRule(TrailingClosureRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TrailingCommaRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(TrailingCommaRule.configuration)
+    await verifyRule(TrailingCommaRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TrailingNewlineRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(TrailingNewlineRule.configuration)
+    await verifyRule(TrailingNewlineRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TrailingSemicolonRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(TrailingSemicolonRule.configuration)
+    await verifyRule(TrailingSemicolonRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TrailingWhitespaceRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(TrailingWhitespaceRule.configuration)
+    await verifyRule(TrailingWhitespaceRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TypeBodyLengthRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(TypeBodyLengthRule.configuration)
+    await verifyRule(TypeBodyLengthRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TypeContentsOrderRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(TypeContentsOrderRule.configuration)
+    await verifyRule(TypeContentsOrderRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TypeNameRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(TypeNameRule.configuration)
+    await verifyRule(TypeNameRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct TypesafeArrayInitRuleGeneratedTests {
   @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
-    await verifyRule(TypesafeArrayInitRule.configuration)
+    await verifyRule(TypesafeArrayInitRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnavailableConditionRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnavailableConditionRule.configuration)
+    await verifyRule(UnavailableConditionRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnavailableFunctionRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnavailableFunctionRule.configuration)
+    await verifyRule(UnavailableFunctionRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnhandledThrowingTaskRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnhandledThrowingTaskRule.configuration)
+    await verifyRule(UnhandledThrowingTaskRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnneededBreakInSwitchRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnneededBreakInSwitchRule.configuration)
+    await verifyRule(UnneededBreakInSwitchRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnneededEscapingRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnneededEscapingRule.configuration)
+    await verifyRule(UnneededEscapingRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnneededOverrideRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnneededOverrideRule.configuration)
+    await verifyRule(UnneededOverrideRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnneededParenthesesInClosureArgumentRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnneededParenthesesInClosureArgumentRule.configuration)
+    await verifyRule(UnneededParenthesesInClosureArgumentRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnneededSynthesizedInitializerRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnneededSynthesizedInitializerRule.configuration)
+    await verifyRule(UnneededSynthesizedInitializerRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnneededThrowsRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnneededThrowsRule.configuration)
+    await verifyRule(UnneededThrowsRule.self)
   }
 }

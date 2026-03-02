@@ -1,9 +1,37 @@
 import SwiftSyntax
 
 struct ProhibitedInterfaceBuilderRule {
+    static let id = "prohibited_interface_builder"
+    static let name = "Prohibited Interface Builder"
+    static let summary = "Creating views using Interface Builder should be avoided"
+    static let isOptIn = true
+
+    private static func wrapExample(_ text: String, file: StaticString = #filePath, line: UInt = #line)
+      -> Example
+    {
+      Example(
+        """
+        class ViewController: UIViewController {
+            \(text)
+        }
+        """, file: file, line: line,
+      )
+    }
+
+    static var nonTriggeringExamples: [Example] {
+        [
+              Self.wrapExample("var label: UILabel!"),
+              Self.wrapExample("@objc func buttonTapped(_ sender: UIButton) {}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Self.wrapExample("@IBOutlet ↓var label: UILabel!"),
+              Self.wrapExample("@IBAction ↓func buttonTapped(_ sender: UIButton) {}"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ProhibitedInterfaceBuilderConfiguration()
 }
 
 extension ProhibitedInterfaceBuilderRule: SwiftSyntaxRule {

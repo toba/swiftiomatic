@@ -18,7 +18,7 @@ import Testing
         #expect(collectedInfo[file] == 42)
         return [
           RuleViolation(
-            configuration: Self.configuration,
+            ruleType: Self.self,
             location: Location(file: file, byteOffset: 0),
           )
         ]
@@ -47,7 +47,7 @@ import Testing
         #expect(values.contains("baz"))
         return [
           RuleViolation(
-            configuration: Self.configuration,
+            ruleType: Self.self,
             location: Location(file: file, byteOffset: 0),
           )
         ]
@@ -62,7 +62,9 @@ import Testing
   @Test func collectsAnalyzerFiles() async throws {
     struct Spec: MockCollectingRule, AnalyzerRule {
       var options = SeverityConfiguration<Self>(.warning)
-      static let configuration = AnalyzerMockConfiguration()
+      static let isOptIn = true
+      static let requiresCompilerArguments = true
+      static let requiresFileOnDisk = true
 
       func collectInfo(for _: SwiftSource, compilerArguments: [String]) -> [String] {
         compilerArguments
@@ -77,7 +79,7 @@ import Testing
         #expect(collectedInfo[file] == compilerArguments)
         return [
           RuleViolation(
-            configuration: Self.configuration,
+            ruleType: Self.self,
             location: Location(file: file, byteOffset: 0),
           )
         ]
@@ -107,7 +109,7 @@ import Testing
         if collectedInfo[file] == "baz" {
           return [
             RuleViolation(
-              configuration: Self.configuration,
+              ruleType: Self.self,
               location: Location(file: file, byteOffset: 2),
             )
           ]
@@ -126,7 +128,9 @@ import Testing
 
     struct AnalyzerSpec: MockCollectingRule, AnalyzerRule, CorrectableRule {
       var options = SeverityConfiguration<Self>(.warning)
-      static let configuration = AnalyzerMockConfiguration()
+      static let isOptIn = true
+      static let requiresCompilerArguments = true
+      static let requiresFileOnDisk = true
 
       func collectInfo(for file: SwiftSource) -> String {
         file.contents
@@ -141,7 +145,7 @@ import Testing
         collectedInfo[file] == "baz"
           ? [
             .init(
-              configuration: Spec.configuration,
+              ruleType: Spec.self,
               location: Location(file: file, byteOffset: 2),
             )
           ]
@@ -176,22 +180,14 @@ import Testing
   }
 }
 
-private struct AnalyzerMockConfiguration: RuleConfiguration {
-  let id = "mock_test_rule_for_swiftlint_tests"
-  let name = ""
-  let summary = ""
-  let isOptIn = true
-  let requiresCompilerArguments = true
-  let requiresFileOnDisk = true
-}
-
 private protocol MockCollectingRule: CollectingRule {}
 extension MockCollectingRule {
   @RuleOptionsDescriptionBuilder
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
-  static var configuration: TestMockRuleConfiguration {
-    TestMockRuleConfiguration(id: "mock_test_rule_for_swiftlint_tests")
-  }
+
+  static var id: String { "mock_test_rule_for_swiftlint_tests" }
+  static var name: String { "" }
+  static var summary: String { "" }
 
   static var testConfig: Configuration? {
     Configuration(rulesMode: .onlyConfiguration([identifier]), ruleList: RuleList(rules: self))

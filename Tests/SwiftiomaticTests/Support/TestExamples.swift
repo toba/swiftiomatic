@@ -1,6 +1,6 @@
 @testable import Swiftiomatic
 
-/// Test-only container for rule examples, built from a ``RuleConfiguration``.
+/// Test-only container for rule examples, built from a ``Rule`` type's static metadata.
 struct TestExamples {
   let identifier: String
   let nonTriggeringExamples: [Example]
@@ -10,14 +10,14 @@ struct TestExamples {
   let requiresFileOnDisk: Bool
   let allIdentifiers: [String]
 
-  init(from config: some RuleConfiguration) {
-    identifier = config.id
-    nonTriggeringExamples = config.nonTriggeringExamples
-    triggeringExamples = config.triggeringExamples
-    corrections = config.corrections
-    minSwiftVersion = config.minSwiftVersion
-    requiresFileOnDisk = config.requiresFileOnDisk
-    allIdentifiers = config.allIdentifiers
+  init<R: Rule>(from ruleType: R.Type) {
+    identifier = R.id
+    nonTriggeringExamples = R.nonTriggeringExamples
+    triggeringExamples = R.triggeringExamples
+    corrections = R.corrections
+    minSwiftVersion = R.minSwiftVersion
+    requiresFileOnDisk = R.requiresFileOnDisk
+    allIdentifiers = R.allIdentifiers
   }
 
   func with(

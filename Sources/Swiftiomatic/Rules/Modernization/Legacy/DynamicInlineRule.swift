@@ -1,9 +1,27 @@
 import SwiftSyntax
 
 struct DynamicInlineRule {
+    static let id = "dynamic_inline"
+    static let name = "Dynamic Inline"
+    static let summary = "Avoid using 'dynamic' and '@inline(__always)' together"
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("class C {\ndynamic func f() {}}"),
+              Example("class C {\n@inline(__always) func f() {}}"),
+              Example("class C {\n@inline(never) dynamic func f() {}}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("class C {\n@inline(__always) dynamic ↓func f() {}\n}"),
+              Example("class C {\n@inline(__always) public dynamic ↓func f() {}\n}"),
+              Example("class C {\n@inline(__always) dynamic internal ↓func f() {}\n}"),
+              Example("class C {\n@inline(__always)\ndynamic ↓func f() {}\n}"),
+              Example("class C {\n@inline(__always)\ndynamic\n↓func f() {}\n}"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.error)
 
-  static let configuration = DynamicInlineConfiguration()
 }
 
 extension DynamicInlineRule: SwiftSyntaxRule {

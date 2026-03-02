@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct IdentifierNameRuleTests {
   @Test func identifierNameWithExcluded() async {
-    let baseExamples = TestExamples(from: IdentifierNameRule.configuration)
+    let baseExamples = TestExamples(from: IdentifierNameRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example("let Apple = 0"),
@@ -24,7 +24,7 @@ import Testing
   }
 
   @Test func identifierNameWithAllowedSymbols() async {
-    let baseExamples = TestExamples(from: IdentifierNameRule.configuration)
+    let baseExamples = TestExamples(from: IdentifierNameRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example("let myLet$ = 0"),
@@ -46,13 +46,13 @@ import Testing
       Example("let ↓my_Let$ = 0")
     ]
 
-    let description = TestExamples(from: IdentifierNameRule.configuration)
+    let description = TestExamples(from: IdentifierNameRule.self)
       .with(triggeringExamples: triggeringExamples)
     await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
   }
 
   @Test func identifierNameWithIgnoreStartWithLowercase() async {
-    let baseExamples = TestExamples(from: IdentifierNameRule.configuration)
+    let baseExamples = TestExamples(from: IdentifierNameRule.self)
     let triggeringExamplesToRemove = [
       Example("let ↓MyLet = 0"),
       Example("enum Foo { case ↓MyEnum }"),
@@ -90,7 +90,7 @@ import Testing
     ]
 
     await verifyRule(
-      TestExamples(from: IdentifierNameRule.configuration).with(
+      TestExamples(from: IdentifierNameRule.self).with(
         nonTriggeringExamples: nonTriggeringExamples,
         triggeringExamples: triggeringExamples,
       ),
@@ -98,7 +98,7 @@ import Testing
     )
 
     await verifyRule(
-      TestExamples(from: IdentifierNameRule.configuration).with(
+      TestExamples(from: IdentifierNameRule.self).with(
         nonTriggeringExamples: nonTriggeringExamples
           + triggeringExamples.removingViolationMarkers(),
         triggeringExamples: [],
@@ -109,7 +109,7 @@ import Testing
 
   @Test func startsWithLowercaseCheckInCombinationWithAllowedSymbols() async {
     await verifyRule(
-      TestExamples(from: IdentifierNameRule.configuration).with(
+      TestExamples(from: IdentifierNameRule.self).with(
         nonTriggeringExamples: [
           Example("let MyLet = 0"),
           Example("enum Foo { case myCase }"),
@@ -130,7 +130,7 @@ import Testing
       Example("let 👦🏼 = \"👦🏼\"")
     ]
 
-    let description = TestExamples(from: IdentifierNameRule.configuration)
+    let description = TestExamples(from: IdentifierNameRule.self)
       .with(triggeringExamples: triggeringExamples)
     await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
   }

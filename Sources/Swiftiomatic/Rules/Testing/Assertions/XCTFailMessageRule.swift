@@ -1,9 +1,47 @@
 import SwiftSyntax
 
 struct XCTFailMessageRule {
+    static let id = "xctfail_message"
+    static let name = "XCTFail Message"
+    static let summary = "An XCTFail call should include a description of the assertion"
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                func testFoo() {
+                  XCTFail("bar")
+                }
+                """,
+              ),
+              Example(
+                """
+                func testFoo() {
+                  XCTFail(bar)
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                func testFoo() {
+                  ↓XCTFail()
+                }
+                """,
+              ),
+              Example(
+                """
+                func testFoo() {
+                  ↓XCTFail("")
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = XCTFailMessageConfiguration()
 }
 
 extension XCTFailMessageRule: SwiftSyntaxRule {

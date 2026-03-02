@@ -3,7 +3,7 @@ import Testing
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct DiscouragedDirectInitRuleTests {
-  private let baseExamples = TestExamples(from: DiscouragedDirectInitRule.configuration)
+  private let baseExamples = TestExamples(from: DiscouragedDirectInitRule.self)
 
   @Test func discouragedDirectInitWithConfiguredSeverity() async {
     await verifyRule(baseExamples, ruleConfiguration: ["severity": "error"])

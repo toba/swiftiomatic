@@ -1,9 +1,113 @@
 import SwiftSyntax
 
 struct RedundantStringEnumValueRule {
+    static let id = "redundant_string_enum_value"
+    static let name = "Redundant String Enum Value"
+    static let summary = "String enum values can be omitted when they are equal to the enumcase name"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                enum Numbers: String {
+                  case one
+                  case two
+                }
+                """,
+              ),
+              Example(
+                """
+                enum Numbers: Int {
+                  case one = 1
+                  case two = 2
+                }
+                """,
+              ),
+              Example(
+                """
+                enum Numbers: String {
+                  case one = "ONE"
+                  case two = "TWO"
+                }
+                """,
+              ),
+              Example(
+                """
+                enum Numbers: String {
+                  case one = "ONE"
+                  case two = "two"
+                }
+                """,
+              ),
+              Example(
+                """
+                enum Numbers: String {
+                  case one, two
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                enum Numbers: String {
+                  case one = ↓"one"
+                  case two = ↓"two"
+                }
+                """,
+              ),
+              Example(
+                """
+                enum Numbers: String {
+                  case one = ↓"one", two = ↓"two"
+                }
+                """,
+              ),
+              Example(
+                """
+                enum Numbers: String {
+                  case one, two = ↓"two"
+                }
+                """,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example(
+                """
+                enum Numbers: String {
+                  case one = ↓"one"
+                  case two = ↓"two"
+                }
+                """,
+              ): Example(
+                """
+                enum Numbers: String {
+                  case one
+                  case two
+                }
+                """,
+              ),
+              Example(
+                """
+                enum Numbers: String {
+                  case one, two = ↓"two"
+                }
+                """,
+              ): Example(
+                """
+                enum Numbers: String {
+                  case one, two
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantStringEnumValueConfiguration()
 }
 
 extension RedundantStringEnumValueRule: SwiftSyntaxCorrectableRule {

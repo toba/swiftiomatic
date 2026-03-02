@@ -7,9 +7,78 @@ import SwiftSyntax
 /// list of allocations. Even having an empty deinit method is useful to provide
 /// a place to put a breakpoint when chasing down leaks.
 struct RequiredDeinitRule {
+    static let id = "required_deinit"
+    static let name = "Required Deinit"
+    static let summary = "Classes should have an explicit deinit method"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Apple {
+                    deinit { }
+                }
+                """,
+              ),
+              Example("enum Banana { }"),
+              Example("protocol Cherry { }"),
+              Example("struct Damson { }"),
+              Example(
+                """
+                class Outer {
+                    deinit { print("Deinit Outer") }
+                    class Inner {
+                        deinit { print("Deinit Inner") }
+                    }
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("↓class Apple { }"),
+              Example("↓class Banana: NSObject, Equatable { }"),
+              Example(
+                """
+                ↓class Cherry {
+                    // deinit { }
+                }
+                """,
+              ),
+              Example(
+                """
+                ↓class Damson {
+                    func deinitialize() { }
+                }
+                """,
+              ),
+              Example(
+                """
+                class Outer {
+                    func hello() -> String { return "outer" }
+                    deinit { }
+                    ↓class Inner {
+                        func hello() -> String { return "inner" }
+                    }
+                }
+                """,
+              ),
+              Example(
+                """
+                ↓class Outer {
+                    func hello() -> String { return "outer" }
+                    class Inner {
+                        func hello() -> String { return "inner" }
+                        deinit { }
+                    }
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RequiredDeinitConfiguration()
 }
 
 extension RequiredDeinitRule: SwiftSyntaxRule {

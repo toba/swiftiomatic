@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct GenericTypeNameRuleTests {
   @Test func genericTypeNameWithExcluded() async {
-    let baseExamples = TestExamples(from: GenericTypeNameRule.configuration)
+    let baseExamples = TestExamples(from: GenericTypeNameRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example("func foo<apple> {}"),
@@ -25,7 +25,7 @@ import Testing
   }
 
   @Test func genericTypeNameWithAllowedSymbols() async {
-    let baseExamples = TestExamples(from: GenericTypeNameRule.configuration)
+    let baseExamples = TestExamples(from: GenericTypeNameRule.self)
     let nonTriggeringExamples =
       baseExamples.nonTriggeringExamples + [
         Example("func foo<T$>() {}"),
@@ -45,13 +45,13 @@ import Testing
       Example("func foo<↓T_$>() {}")
     ]
 
-    let description = TestExamples(from: GenericTypeNameRule.configuration)
+    let description = TestExamples(from: GenericTypeNameRule.self)
       .with(triggeringExamples: triggeringExamples)
     await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
   }
 
   @Test func genericTypeNameWithIgnoreStartWithLowercase() async {
-    let baseExamples = TestExamples(from: GenericTypeNameRule.configuration)
+    let baseExamples = TestExamples(from: GenericTypeNameRule.self)
     let triggeringExamplesToRemove = [
       Example("func foo<↓type>() {}"),
       Example("class Foo<↓type> {}"),

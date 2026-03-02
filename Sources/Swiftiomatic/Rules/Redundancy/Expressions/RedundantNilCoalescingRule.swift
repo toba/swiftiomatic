@@ -1,9 +1,29 @@
 import SwiftSyntax
 
 struct RedundantNilCoalescingRule {
+    static let id = "redundant_nil_coalescing"
+    static let name = "Redundant Nil Coalescing"
+    static let summary = "nil coalescing operator is only evaluated if the lhs is nil, coalescing operator with nil as rhs is redundant"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("var myVar: Int?; myVar ?? 0")
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("var myVar: Int? = nil; myVar ↓?? nil")
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("var myVar: Int? = nil; let foo = myVar ↓?? nil"):
+                Example("var myVar: Int? = nil; let foo = myVar")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantNilCoalescingConfiguration()
 }
 
 extension RedundantNilCoalescingRule: SwiftSyntaxCorrectableRule {

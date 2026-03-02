@@ -2,9 +2,38 @@ import Foundation
 import SwiftSyntax
 
 struct TrailingWhitespaceRule {
+    static let id = "trailing_whitespace"
+    static let name = "Trailing Whitespace"
+    static let summary = "Lines should not have trailing whitespace"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let name: String\n"), Example("//\n"), Example("// \n"),
+              Example("let name: String //\n"), Example("let name: String // \n"),
+              Example("let stringWithSpace = \"hello \"\n"),
+              Example(
+                "let multiline = \"\"\"\n    line with spaces    \n    \"\"\"   \n",
+                configuration: ["ignores_literals": true],
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let name: String↓ \n"), Example("/* */ let name: String↓ \n"),
+              Example(
+                "let codeWithSpace = 123↓    \n", configuration: ["ignores_literals": true],
+                shouldTestWrappingInComment: false,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let name: String↓ \n"): Example("let name: String\n"),
+              Example("/* */ let name: String↓ \n"): Example("/* */ let name: String\n"),
+            ]
+    }
   var options = TrailingWhitespaceOptions()
 
-  static let configuration = TrailingWhitespaceConfiguration()
 }
 
 extension TrailingWhitespaceRule: SwiftSyntaxCorrectableRule {

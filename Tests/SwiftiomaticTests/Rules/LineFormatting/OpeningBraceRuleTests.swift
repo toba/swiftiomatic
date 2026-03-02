@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct OpeningBraceRuleTests {
   @Test func defaultNonTriggeringExamplesWithMultilineOptionsTrue() async {
-    let description = TestExamples(from: OpeningBraceRule.configuration).with(
+    let description = TestExamples(from: OpeningBraceRule.self).with(
       triggeringExamples: [],
       corrections: [:],
     )
@@ -63,7 +63,7 @@ import Testing
       ),
     ]
 
-    let description = TestExamples(from: OpeningBraceRule.configuration).with(
+    let description = TestExamples(from: OpeningBraceRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
       corrections: [:],
@@ -136,7 +136,7 @@ import Testing
       ),
     ]
 
-    let description = TestExamples(from: OpeningBraceRule.configuration).with(
+    let description = TestExamples(from: OpeningBraceRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
       corrections: [:],
@@ -234,7 +234,7 @@ import Testing
       ),
     ]
 
-    let description = TestExamples(from: OpeningBraceRule.configuration).with(
+    let description = TestExamples(from: OpeningBraceRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
       corrections: [:],

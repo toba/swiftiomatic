@@ -4,7 +4,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct BlanketDisableCommandRuleTests {
   private var emptyDescription: TestExamples {
-    TestExamples(from: BlanketDisableCommandRule.configuration).with(
+    TestExamples(from: BlanketDisableCommandRule.self).with(
       nonTriggeringExamples: [],
       triggeringExamples: [],
     )

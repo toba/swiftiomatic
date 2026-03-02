@@ -2,9 +2,26 @@ import SwiftBasicFormat
 import SwiftSyntax
 
 struct VerticalWhitespaceBetweenCasesRule {
+    static let id = "vertical_whitespace_between_cases"
+    static let name = "Vertical Whitespace Between Cases"
+    static let summary = "Include a single empty line between switch cases"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
+              .values.sorted() + VerticalWhitespaceBetweenCasesRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        Array(
+              VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples.keys.sorted(),
+            )
+    }
+    static var corrections: [Example: Example] {
+        VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
+              .removingViolationMarkers()
+    }
   var options = VerticalWhitespaceBetweenCasesOptions()
 
-  static let configuration = VerticalWhitespaceBetweenCasesConfiguration()
 }
 
 extension VerticalWhitespaceBetweenCasesRule: SwiftSyntaxCorrectableRule {

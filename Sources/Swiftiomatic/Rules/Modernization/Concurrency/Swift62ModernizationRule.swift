@@ -1,9 +1,24 @@
 import SwiftSyntax
 
 struct Swift62ModernizationRule {
+    static let id = "swift62_modernization"
+    static let name = "Swift 6.2 Modernization"
+    static let summary = "Code that can benefit from Swift 6.2 features like @concurrent, Observations, weak let, and Span"
+    static let scope: Scope = .suggest
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("func work() async { }")
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("↓Task.detached { await work() }"),
+              Example("↓withObservationTracking { }"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = Swift62ModernizationConfiguration()
 }
 
 extension Swift62ModernizationRule: SwiftSyntaxRule {

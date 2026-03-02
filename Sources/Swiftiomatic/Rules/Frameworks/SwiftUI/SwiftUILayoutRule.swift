@@ -1,9 +1,22 @@
 import SwiftSyntax
 
 struct SwiftUILayoutRule {
+    static let id = "swiftui_layout"
+    static let name = "SwiftUI Layout"
+    static let summary = "Detects SwiftUI layout composition anti-patterns like nested NavigationStack or List inside ScrollView"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("NavigationStack { List { Text(\"Hello\") } }")
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("NavigationStack { ↓NavigationStack { Text(\"Hello\") } }")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = SwiftUILayoutConfiguration()
 }
 
 extension SwiftUILayoutRule: SwiftSyntaxRule {

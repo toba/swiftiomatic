@@ -1,9 +1,36 @@
 import SwiftSyntax
 
 struct EmptyBracesRule {
+    static let id = "empty_braces"
+    static let name = "Empty Braces"
+    static let summary = "Empty braces should not contain whitespace"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("func foo() {}"),
+              Example("class Bar {}"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("func foo() ↓{ }"),
+              Example(
+                """
+                func foo() ↓{
+
+                }
+                """,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("func foo() ↓{ }"): Example("func foo() {}")
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = EmptyBracesConfiguration()
 }
 
 extension EmptyBracesRule: SwiftSyntaxCorrectableRule {

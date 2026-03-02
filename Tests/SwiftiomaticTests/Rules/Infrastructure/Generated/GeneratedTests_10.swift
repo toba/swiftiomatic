@@ -4,138 +4,138 @@ import Testing
 
 @Suite(.rulesRegistered) struct UnownedVariableCaptureRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnownedVariableCaptureRule.configuration)
+    await verifyRule(UnownedVariableCaptureRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UntypedErrorInCatchRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UntypedErrorInCatchRule.configuration)
+    await verifyRule(UntypedErrorInCatchRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnusedClosureParameterRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnusedClosureParameterRule.configuration)
+    await verifyRule(UnusedClosureParameterRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnusedControlFlowLabelRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnusedControlFlowLabelRule.configuration)
+    await verifyRule(UnusedControlFlowLabelRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnusedDeclarationRuleGeneratedTests {
   @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
-    await verifyRule(UnusedDeclarationRule.configuration)
+    await verifyRule(UnusedDeclarationRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnusedEnumeratedRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnusedEnumeratedRule.configuration)
+    await verifyRule(UnusedEnumeratedRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnusedImportRuleGeneratedTests {
   @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
-    await verifyRule(UnusedImportRule.configuration)
+    await verifyRule(UnusedImportRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnusedOptionalBindingRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnusedOptionalBindingRule.configuration)
+    await verifyRule(UnusedOptionalBindingRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnusedParameterRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnusedParameterRule.configuration)
+    await verifyRule(UnusedParameterRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct UnusedSetterValueRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(UnusedSetterValueRule.configuration)
+    await verifyRule(UnusedSetterValueRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct ValidIBInspectableRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ValidIBInspectableRule.configuration)
+    await verifyRule(ValidIBInspectableRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct VerticalParameterAlignmentOnCallRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(VerticalParameterAlignmentOnCallRule.configuration)
+    await verifyRule(VerticalParameterAlignmentOnCallRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct VerticalParameterAlignmentRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(VerticalParameterAlignmentRule.configuration)
+    await verifyRule(VerticalParameterAlignmentRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct VerticalWhitespaceBetweenCasesRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(VerticalWhitespaceBetweenCasesRule.configuration)
+    await verifyRule(VerticalWhitespaceBetweenCasesRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct VerticalWhitespaceClosingBracesRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(VerticalWhitespaceClosingBracesRule.configuration)
+    await verifyRule(VerticalWhitespaceClosingBracesRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct VerticalWhitespaceOpeningBracesRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(VerticalWhitespaceOpeningBracesRule.configuration)
+    await verifyRule(VerticalWhitespaceOpeningBracesRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct VerticalWhitespaceRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(VerticalWhitespaceRule.configuration)
+    await verifyRule(VerticalWhitespaceRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct VoidFunctionInTernaryConditionRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(VoidFunctionInTernaryConditionRule.configuration)
+    await verifyRule(VoidFunctionInTernaryConditionRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct VoidReturnRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(VoidReturnRule.configuration)
+    await verifyRule(VoidReturnRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct WeakDelegateRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(WeakDelegateRule.configuration)
+    await verifyRule(WeakDelegateRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct XCTFailMessageRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(XCTFailMessageRule.configuration)
+    await verifyRule(XCTFailMessageRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct XCTSpecificMatcherRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(XCTSpecificMatcherRule.configuration)
+    await verifyRule(XCTSpecificMatcherRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct YodaConditionRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(YodaConditionRule.configuration)
+    await verifyRule(YodaConditionRule.self)
   }
 }

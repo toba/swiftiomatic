@@ -2,9 +2,29 @@ import Foundation
 import SwiftSyntax
 
 struct TodoRule {
+    static let id = "todo"
+    static let name = "Todo"
+    static let summary = "TODOs and FIXMEs should be resolved."
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("// notaTODO:"),
+              Example("// notaFIXME:"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("// ↓TODO:"),
+              Example("// ↓FIXME:"),
+              Example("// ↓TODO(note)"),
+              Example("// ↓FIXME(note)"),
+              Example("/* ↓FIXME: */"),
+              Example("/* ↓TODO: */"),
+              Example("/** ↓FIXME: */"),
+              Example("/** ↓TODO: */"),
+            ]
+    }
   var options = TodoOptions()
 
-  static let configuration = TodoConfiguration()
 }
 
 extension TodoRule: SwiftSyntaxRule {

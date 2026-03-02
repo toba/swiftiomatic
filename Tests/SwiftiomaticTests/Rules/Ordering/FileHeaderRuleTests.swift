@@ -13,7 +13,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
   }
 
   @Test func fileHeaderWithDefaultConfiguration() async {
-    await verifyRule(FileHeaderRule.configuration, skipCommentTests: true)
+    await verifyRule(FileHeaderRule.self, skipCommentTests: true)
   }
 
   @Test func fileHeaderWithRequiredString() async {
@@ -28,7 +28,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
       Example("let foo = 2\n// **Header"),
       Example("let foo = 2 // **Header"),
     ]
-    let description = TestExamples(from: FileHeaderRule.configuration).with(
+    let description = TestExamples(from: FileHeaderRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -51,7 +51,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
       Example("↓// Copyright © foo Realm"),
       Example("↓// Copyright © 2016 MyCompany"),
     ]
-    let description = TestExamples(from: FileHeaderRule.configuration).with(
+    let description = TestExamples(from: FileHeaderRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -70,7 +70,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
     let triggeringExamples = [
       Example("/* Check this url: https://github.com/apple/swift */")
     ]
-    let description = TestExamples(from: FileHeaderRule.configuration).with(
+    let description = TestExamples(from: FileHeaderRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -95,7 +95,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
       Example("// ↓**All rights reserved."),
       Example("//\n// ↓**All rights reserved."),
     ]
-    let description = TestExamples(from: FileHeaderRule.configuration).with(
+    let description = TestExamples(from: FileHeaderRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -118,7 +118,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
       Example("//↓ FileHeaderRuleTests.swift"),
       Example("//\n//↓ FileHeaderRuleTests.swift"),
     ]
-    let description = TestExamples(from: FileHeaderRule.configuration).with(
+    let description = TestExamples(from: FileHeaderRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -138,7 +138,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
       Example("// FileHeaderRule↓Tests.swift"),
       Example("//\n// FileHeaderRule↓Tests.swift"),
     ]
-    let description = TestExamples(from: FileHeaderRule.configuration).with(
+    let description = TestExamples(from: FileHeaderRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -242,7 +242,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
   }
 
   @Test func simplePattern() async {
-    let description = TestExamples(from: FileHeaderRule.configuration)
+    let description = TestExamples(from: FileHeaderRule.self)
       .with(
         nonTriggeringExamples: [
           Example(
@@ -281,7 +281,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
   }
 
   @Test func pattern() async {
-    let description = TestExamples(from: FileHeaderRule.configuration)
+    let description = TestExamples(from: FileHeaderRule.self)
       .with(
         nonTriggeringExamples: [
           Example(

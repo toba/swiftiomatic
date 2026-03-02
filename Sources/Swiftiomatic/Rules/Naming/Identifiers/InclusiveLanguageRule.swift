@@ -2,9 +2,17 @@ import Foundation
 import SwiftSyntax
 
 struct InclusiveLanguageRule {
+    static let id = "inclusive_language"
+    static let name = "Inclusive Language"
+    static let summary = ""
+    static var nonTriggeringExamples: [Example] {
+        InclusiveLanguageRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        InclusiveLanguageRuleExamples.triggeringExamples
+    }
   var options = InclusiveLanguageOptions()
 
-  static let configuration = InclusiveLanguageConfiguration()
 }
 
 extension InclusiveLanguageRule: SwiftSyntaxRule {

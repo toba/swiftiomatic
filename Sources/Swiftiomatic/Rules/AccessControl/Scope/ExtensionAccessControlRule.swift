@@ -1,9 +1,44 @@
 import SwiftSyntax
 
 struct ExtensionAccessControlRule {
+    static let id = "extension_access_control"
+    static let name = "Extension Access Control"
+    static let summary = "Members of an extension that share the same access level should have it hoisted to the extension"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                public extension Foo {
+                  func bar() {}
+                  func baz() {}
+                }
+                """,
+              ),
+              Example(
+                """
+                extension Foo {
+                  public func bar() {}
+                  internal func baz() {}
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                extension Foo {
+                  ↓public func bar() {}
+                  public func baz() {}
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ExtensionAccessControlConfiguration()
 }
 
 extension ExtensionAccessControlRule: SwiftSyntaxRule {

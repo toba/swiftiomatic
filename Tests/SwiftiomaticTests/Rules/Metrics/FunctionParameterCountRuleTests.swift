@@ -21,7 +21,7 @@ private func funcWithParameters(
       funcWithParameters(repeatElement("x: Int, ", count: 5).joined() + "x: Int")
     ]
 
-    let description = TestExamples(from: FunctionParameterCountRule.configuration).with(
+    let description = TestExamples(from: FunctionParameterCountRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -39,7 +39,7 @@ private func funcWithParameters(
       funcWithParameters(repeatElement("x: Int, ", count: 3).joined() + defaultParams)
     ]
 
-    let description = TestExamples(from: FunctionParameterCountRule.configuration).with(
+    let description = TestExamples(from: FunctionParameterCountRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )

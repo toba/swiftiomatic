@@ -2,9 +2,28 @@ import SwiftOperators
 import SwiftSyntax
 
 struct XCTSpecificMatcherRule {
+    static let id = "xct_specific_matcher"
+    static let name = "XCTest Specific Matcher"
+    static let summary = "Prefer specific XCTest matchers."
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        XCTSpecificMatcherRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        XCTSpecificMatcherRuleExamples.triggeringExamples
+    }
+    static let rationale: String? = """
+      Using specific matchers like `XCTAssertEqual`, `XCTAssertNotEqual`, `XCTAssertTrue`, `XCTAssertFalse`,
+      `XCTAssertIdentical` and `XCTAssertNotIdentical` improves code readability and clarity. They more clearly
+      state the intention of the assertion.
+
+      Consider for example `XCTAssertTrue(foo == bar)`, which requires two details to grasp: that `foo` and `bar`
+      are equal, and that the result of the comparison shall be true. Using `XCTAssertEqual(foo, bar)` makes it
+      clear that the intention is to check equality, without needing to understand the underlying logic of the
+      comparison.
+      """
   var options = XCTSpecificMatcherOptions()
 
-  static let configuration = XCTSpecificMatcherConfiguration()
 }
 
 extension XCTSpecificMatcherRule: SwiftSyntaxRule {

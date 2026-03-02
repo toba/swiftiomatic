@@ -1,9 +1,18 @@
 import SwiftSyntax
 
 struct EmptyXCTestMethodRule {
+    static let id = "empty_xctest_method"
+    static let name = "Empty XCTest Method"
+    static let summary = "Empty XCTest method should be avoided"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        EmptyXCTestMethodRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        EmptyXCTestMethodRuleExamples.triggeringExamples
+    }
   var options = EmptyXCTestMethodOptions()
 
-  static let configuration = EmptyXCTestMethodConfiguration()
 }
 
 extension EmptyXCTestMethodRule: SwiftSyntaxRule {

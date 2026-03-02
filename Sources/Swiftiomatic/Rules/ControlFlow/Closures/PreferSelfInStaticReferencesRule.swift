@@ -1,9 +1,22 @@
 import SwiftSyntax
 
 struct PreferSelfInStaticReferencesRule {
+    static let id = "prefer_self_in_static_references"
+    static let name = "Prefer Self in Static References"
+    static let summary = "Use `Self` to refer to the surrounding type name"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        PreferSelfInStaticReferencesRuleExamples.nonTriggeringExamples
+    }
+    static var triggeringExamples: [Example] {
+        PreferSelfInStaticReferencesRuleExamples.triggeringExamples
+    }
+    static var corrections: [Example: Example] {
+        PreferSelfInStaticReferencesRuleExamples.corrections
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = PreferSelfInStaticReferencesConfiguration()
 }
 
 extension PreferSelfInStaticReferencesRule: SwiftSyntaxCorrectableRule {

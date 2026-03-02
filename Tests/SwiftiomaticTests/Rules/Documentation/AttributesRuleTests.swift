@@ -29,7 +29,7 @@ import Testing
       Example("@nonobjc ↓func foo()"),
     ]
 
-    let alwaysOnSameLineDescription = TestExamples(from: AttributesRule.configuration).with(
+    let alwaysOnSameLineDescription = TestExamples(from: AttributesRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -53,7 +53,7 @@ import Testing
       Example("@nonobjc ↓func foo()"),
     ]
 
-    let alwaysOnNewLineDescription = TestExamples(from: AttributesRule.configuration).with(
+    let alwaysOnNewLineDescription = TestExamples(from: AttributesRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -107,7 +107,7 @@ import Testing
       ),
     ]
 
-    let alwaysOnNewLineDescription = TestExamples(from: AttributesRule.configuration).with(
+    let alwaysOnNewLineDescription = TestExamples(from: AttributesRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -135,7 +135,7 @@ import Testing
       )
     ]
 
-    let argumentsAlwaysOnLineDescription = TestExamples(from: AttributesRule.configuration).with(
+    let argumentsAlwaysOnLineDescription = TestExamples(from: AttributesRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -154,7 +154,7 @@ import Testing
       Example("@Environment(\\.presentationMode) private ↓var presentationMode")
     ]
 
-    let argumentsAlwaysOnLineDescription = TestExamples(from: AttributesRule.configuration).with(
+    let argumentsAlwaysOnLineDescription = TestExamples(from: AttributesRule.self).with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )

@@ -1,9 +1,28 @@
 import SwiftSyntax
 
 struct EmptyStringRule {
+    static let id = "empty_string"
+    static let name = "Empty String"
+    static let summary = "Prefer checking `isEmpty` over comparing `string` to an empty string literal"
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("myString.isEmpty"),
+              Example("!myString.isEmpty"),
+              Example("\"\"\"\nfoo==\n\"\"\""),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(#"myString↓ == """#),
+              Example(#"myString↓ != """#),
+              Example(#"myString↓=="""#),
+              Example(##"myString↓ == #""#"##),
+              Example(###"myString↓ == ##""##"###),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = EmptyStringConfiguration()
 }
 
 extension EmptyStringRule {

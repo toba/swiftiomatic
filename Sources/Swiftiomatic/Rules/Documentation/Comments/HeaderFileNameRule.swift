@@ -2,9 +2,33 @@ import Foundation
 import SwiftSyntax
 
 struct HeaderFileNameRule {
+    static let id = "header_file_name"
+    static let name = "Header File Name"
+    static let summary = "File name in header comment should match the actual file name"
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                // Correct.swift
+                struct Foo {}
+                """,
+                configuration: ["file_name": "Correct.swift"],
+              )
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓// Wrong.swift
+                struct Foo {}
+                """,
+                configuration: ["file_name": "Correct.swift"],
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = HeaderFileNameConfiguration()
 }
 
 extension HeaderFileNameRule: SwiftSyntaxRule {

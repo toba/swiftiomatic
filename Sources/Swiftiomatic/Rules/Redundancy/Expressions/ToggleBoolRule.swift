@@ -2,9 +2,39 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 
 struct ToggleBoolRule {
+    static let id = "toggle_bool"
+    static let name = "Toggle Bool"
+    static let summary = "Prefer `someBool.toggle()` over `someBool = !someBool`"
+    static let isCorrectable = true
+    static let isOptIn = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("isHidden.toggle()"),
+              Example("view.clipsToBounds.toggle()"),
+              Example("func foo() { abc.toggle() }"),
+              Example("view.clipsToBounds = !clipsToBounds"),
+              Example("disconnected = !connected"),
+              Example("result = !result.toggle()"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("↓isHidden = !isHidden"),
+              Example("↓view.clipsToBounds = !view.clipsToBounds"),
+              Example("func foo() { ↓abc = !abc }"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("↓isHidden = !isHidden"): Example("isHidden.toggle()"),
+              Example("↓view.clipsToBounds = !view.clipsToBounds"): Example(
+                "view.clipsToBounds.toggle()",
+              ),
+              Example("func foo() { ↓abc = !abc }"): Example("func foo() { abc.toggle() }"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = ToggleBoolConfiguration()
 }
 
 extension ToggleBoolRule: SwiftSyntaxCorrectableRule {

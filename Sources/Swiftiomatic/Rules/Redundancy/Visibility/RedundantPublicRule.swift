@@ -1,9 +1,48 @@
 import SwiftSyntax
 
 struct RedundantPublicRule {
+    static let id = "redundant_public"
+    static let name = "Redundant Public"
+    static let summary = "`public` on members of internal types has no effect"
+    static let scope: Scope = .suggest
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                public class Foo {
+                  public func bar() {}
+                }
+                """,
+              ),
+              Example(
+                """
+                class Foo {
+                  func bar() {}
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                class Foo {
+                  ↓public func bar() {}
+                }
+                """,
+              ),
+              Example(
+                """
+                struct Foo {
+                  ↓public let bar: String
+                }
+                """,
+              ),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantPublicConfiguration()
 }
 
 extension RedundantPublicRule: SwiftSyntaxRule {

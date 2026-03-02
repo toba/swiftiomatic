@@ -1,9 +1,85 @@
 import SwiftSyntax
 
 struct RedundantViewBuilderRule {
+    static let id = "redundant_view_builder"
+    static let name = "Redundant ViewBuilder"
+    static let summary = "`@ViewBuilder` is redundant on the `body` property of View/ViewModifier or on single-expression bodies"
+    static let scope: Scope = .format
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                struct MyView: View {
+                  var body: some View {
+                    Text("Hello")
+                  }
+                }
+                """,
+              ),
+              Example(
+                """
+                struct MyView: View {
+                  @ViewBuilder
+                  var content: some View {
+                    if showText {
+                      Text("Hello")
+                    }
+                    Text("World")
+                  }
+                }
+                """,
+              ),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                struct MyView: View {
+                  ↓@ViewBuilder
+                  var body: some View {
+                    Text("Hello")
+                  }
+                }
+                """,
+              ),
+              Example(
+                """
+                struct MyView: View {
+                  ↓@ViewBuilder
+                  var content: some View {
+                    Text("Hello")
+                  }
+                }
+                """,
+              ),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example(
+                """
+                struct MyView: View {
+                  ↓@ViewBuilder
+                  var body: some View {
+                    Text("Hello")
+                  }
+                }
+                """,
+              ): Example(
+                """
+                struct MyView: View {
+                  var body: some View {
+                    Text("Hello")
+                  }
+                }
+                """,
+              )
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = RedundantViewBuilderConfiguration()
 }
 
 extension RedundantViewBuilderRule: SwiftSyntaxCorrectableRule {

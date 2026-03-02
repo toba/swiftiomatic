@@ -2,9 +2,26 @@ import Foundation
 import SwiftSyntax
 
 struct NamingHeuristicsRule {
+    static let id = "naming_heuristics"
+    static let name = "Naming Heuristics"
+    static let summary = "Checks names against Swift API Design Guidelines: Bool assertions, protocol suffixes, factory prefixes"
+    static let isOptIn = true
+    static let canEnrichAsync = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("var isEnabled: Bool = true"),
+              Example("var hasContent: Bool = false"),
+              Example("static func makeWidget() -> Widget { }"),
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("var ↓enabled: Bool = true"),
+              Example("static func ↓createWidget() -> Widget { }"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
 
-  static let configuration = NamingHeuristicsConfiguration()
 }
 
 extension NamingHeuristicsRule: SwiftSyntaxRule {
@@ -53,7 +70,7 @@ extension NamingHeuristicsRule: AsyncEnrichableRule {
       {
         violations.append(
           RuleViolation(
-            configuration: Self.configuration,
+            ruleType: Self.self,
             severity: options.severity,
             location: Location(
               file: filePath, line: candidate.line, column: candidate.column,

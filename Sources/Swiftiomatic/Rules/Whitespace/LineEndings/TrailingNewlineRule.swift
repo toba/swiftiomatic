@@ -18,9 +18,29 @@ extension String {
 }
 
 struct TrailingNewlineRule: CorrectableRule, SyntaxOnlyRule {
+    static let id = "trailing_newline"
+    static let name = "Trailing Newline"
+    static let summary = "Files should have a single trailing newline"
+    static let isCorrectable = true
+    static var nonTriggeringExamples: [Example] {
+        [
+              Example("let a = 0\n")
+            ]
+    }
+    static var triggeringExamples: [Example] {
+        [
+              Example("let a = 0"),
+              Example("let a = 0\n\n"),
+            ]
+    }
+    static var corrections: [Example: Example] {
+        [
+              Example("let a = 0"): Example("let a = 0\n"),
+              Example("let b = 0\n\n"): Example("let b = 0\n"),
+              Example("let c = 0\n\n\n\n"): Example("let c = 0\n"),
+            ]
+    }
   var options = SeverityConfiguration<Self>(.warning)
-
-  static let configuration = TrailingNewlineConfiguration()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     if file.contents.trailingNewlineCount() == 1 {
@@ -28,7 +48,7 @@ struct TrailingNewlineRule: CorrectableRule, SyntaxOnlyRule {
     }
     return [
       RuleViolation(
-        configuration: Self.configuration,
+        ruleType: Self.self,
         severity: options.severity,
         location: Location(file: file.path, line: max(file.lines.count, 1)),
       )
