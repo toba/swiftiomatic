@@ -4,38 +4,6 @@ struct RedundantClosureRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = RedundantClosureConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_closure",
-    name: "Redundant Closure",
-    description: "Immediately-invoked closures with a single expression can be simplified",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("let x = { 42 }()"),
-      Example(
-        """
-        let x = {
-          let y = 10
-          return y + 1
-        }()
-        """,
-      ),
-      Example(
-        """
-        let x = { (a: Int) in a + 1 }(5)
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        let x: Int = ↓{
-          return 42
-        }()
-        """,
-      )
-    ],
-  )
 }
 
 extension RedundantClosureRule: SwiftSyntaxRule {

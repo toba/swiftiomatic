@@ -4,53 +4,6 @@ struct RedundantSendableRule {
   var options = RedundantSendableOptions()
 
   static let configuration = RedundantSendableConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_sendable",
-    name: "Redundant Sendable",
-    description: "Sendable conformance is redundant on an actor-isolated type",
-    nonTriggeringExamples: [
-      Example("struct S: Sendable {}"),
-      Example("class C: Sendable {}"),
-      Example("actor A {}"),
-      Example("@MainActor struct S {}"),
-      Example("@MyActor enum E: Sendable { case a }"),
-      Example("@MainActor protocol P: Sendable {}"),
-    ],
-    triggeringExamples: [
-      Example("@MainActor struct ↓S: Sendable {}"),
-      Example("actor ↓A: Sendable {}"),
-      Example(
-        "@MyActor enum ↓E: Sendable { case a }",
-        configuration: ["global_actors": ["MyActor"]],
-      ),
-    ],
-    corrections: [
-      Example("@MainActor struct S: Sendable {}"):
-        Example("@MainActor struct S {}"),
-      Example("actor A: Sendable /* trailing comment */{}"):
-        Example("actor A /* trailing comment */{}"),
-      Example(
-        "@MyActor enum E: Sendable { case a }",
-        configuration: ["global_actors": ["MyActor"]],
-      ):
-        Example("@MyActor enum E { case a }"),
-      Example(
-        """
-        actor A: B, Sendable, C // comment
-        {}
-        """,
-      ):
-        Example(
-          """
-          actor A: B, C // comment
-          {}
-          """,
-        ),
-      Example("@MainActor struct P: A, Sendable {}"):
-        Example("@MainActor struct P: A {}"),
-    ],
-  )
 }
 
 extension RedundantSendableRule: SwiftSyntaxCorrectableRule {

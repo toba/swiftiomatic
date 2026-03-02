@@ -4,39 +4,6 @@ struct ExplicitTopLevelACLRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ExplicitTopLevelACLConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "explicit_top_level_acl",
-    name: "Explicit Top Level ACL",
-    description: "Top-level declarations should specify Access Control Level keywords explicitly",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("internal enum A {}"),
-      Example("public final class B {}"),
-      Example(
-        """
-        private struct S1 {
-            struct S2 {}
-        }
-        """,
-      ),
-      Example("internal enum A { enum B {} }"),
-      Example("internal final actor Foo {}"),
-      Example("internal typealias Foo = Bar"),
-      Example("internal func a() {}"),
-      Example("extension A: Equatable {}"),
-      Example("extension A {}"),
-      Example("f { func f() {} }", isExcludedFromDocumentation: true),
-      Example("do { func f() {} }", isExcludedFromDocumentation: true),
-    ],
-    triggeringExamples: [
-      Example("↓enum A {}"),
-      Example("final ↓class B {}"),
-      Example("↓protocol P {}"),
-      Example("↓func a() {}"),
-      Example("internal let a = 0\n↓func b() {}"),
-    ],
-  )
 }
 
 extension ExplicitTopLevelACLRule: SwiftSyntaxRule {

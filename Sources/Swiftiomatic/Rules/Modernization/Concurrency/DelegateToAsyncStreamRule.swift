@@ -4,36 +4,6 @@ struct DelegateToAsyncStreamRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = DelegateToAsyncStreamConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "delegate_to_async_stream",
-    name: "Delegate to AsyncStream",
-    description:
-      "Protocol declarations where all methods are single-callback-shaped may benefit from an AsyncStream wrapper",
-    scope: .suggest,
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example(
-        """
-        protocol DataSource {
-            func numberOfItems() -> Int
-            func item(at index: Int) -> Item
-        }
-        """,
-      )
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        ↓protocol DownloadDelegate {
-            func downloadDidStart(_ download: Download)
-            func downloadDidFinish(_ download: Download, data: Data)
-            func downloadDidFail(_ download: Download, error: Error)
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension DelegateToAsyncStreamRule: SwiftSyntaxRule {

@@ -4,15 +4,6 @@ struct VerticalParameterAlignmentRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = VerticalParameterAlignmentConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "vertical_parameter_alignment",
-    name: "Vertical Parameter Alignment",
-    description:
-      "Function parameters should be aligned vertically if they're in multiple lines in a declaration",
-    nonTriggeringExamples: VerticalParameterAlignmentRuleExamples.nonTriggeringExamples,
-    triggeringExamples: VerticalParameterAlignmentRuleExamples.triggeringExamples,
-  )
 }
 
 extension VerticalParameterAlignmentRule: SwiftSyntaxRule {

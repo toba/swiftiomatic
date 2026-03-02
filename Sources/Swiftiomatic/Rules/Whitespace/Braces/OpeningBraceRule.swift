@@ -5,22 +5,6 @@ struct OpeningBraceRule {
   var options = OpeningBraceOptions()
 
   static let configuration = OpeningBraceConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "opening_brace",
-    name: "Opening Brace Spacing",
-    description: """
-      The correct positioning of braces that introduce a block of code or member list is highly controversial. \
-      No matter which style is preferred, consistency is key. Apart from different tastes, \
-      the positioning of braces can also have a significant impact on the readability of the code, \
-      especially for visually impaired developers. This rule ensures that braces are preceded \
-      by a single space and on the same line as the declaration. Comments between the declaration and the \
-      opening brace are respected. Check out the `contrasted_opening_brace` rule for a different style.
-      """,
-    nonTriggeringExamples: OpeningBraceRuleExamples.nonTriggeringExamples,
-    triggeringExamples: OpeningBraceRuleExamples.triggeringExamples,
-    corrections: OpeningBraceRuleExamples.corrections,
-  )
 }
 
 extension OpeningBraceRule: SwiftSyntaxCorrectableRule {

@@ -5,16 +5,6 @@ struct SortedImportsRule {
   var options = SortedImportsOptions()
 
   static let configuration = SortedImportsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "sorted_imports",
-    name: "Sorted Imports",
-    description: "Imports should be sorted",
-    isOptIn: true,
-    nonTriggeringExamples: SortedImportsRuleExamples.nonTriggeringExamples,
-    triggeringExamples: SortedImportsRuleExamples.triggeringExamples,
-    corrections: SortedImportsRuleExamples.corrections,
-  )
 }
 
 extension SortedImportsRule: SwiftSyntaxCorrectableRule {

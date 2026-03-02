@@ -4,25 +4,6 @@ struct ProtocolPropertyAccessorsOrderRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ProtocolPropertyAccessorsOrderConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "protocol_property_accessors_order",
-    name: "Protocol Property Accessors Order",
-    description:
-      "When declaring properties in protocols, the order of accessors should be `get set`",
-    nonTriggeringExamples: [
-      Example("protocol Foo {\n var bar: String { get set }\n }"),
-      Example("protocol Foo {\n var bar: String { get }\n }"),
-      Example("protocol Foo {\n var bar: String { set }\n }"),
-    ],
-    triggeringExamples: [
-      Example("protocol Foo {\n var bar: String { ↓set get }\n }")
-    ],
-    corrections: [
-      Example("protocol Foo {\n var bar: String { ↓set get }\n }"):
-        Example("protocol Foo {\n var bar: String { get set }\n }")
-    ],
-  )
 }
 
 extension ProtocolPropertyAccessorsOrderRule: SwiftSyntaxCorrectableRule {

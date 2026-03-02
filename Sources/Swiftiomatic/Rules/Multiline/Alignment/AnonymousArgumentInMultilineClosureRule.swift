@@ -4,57 +4,6 @@ struct AnonymousArgumentInMultilineClosureRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = AnonymousArgumentInMultilineClosureConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "anonymous_argument_in_multiline_closure",
-    name: "Anonymous Argument in Multiline Closure",
-    description: "Use named arguments in multiline closures",
-    rationale: """
-      In multiline closures, for clarity, prefer using named arguments
-
-      ```
-      closure { arg in
-          print(arg)
-      }
-      ```
-
-      to anonymous arguments
-
-      ```
-      closure {
-          print(↓$0)
-      }
-      ```
-      """,
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("closure { $0 }"),
-      Example("closure { print($0) }"),
-      Example(
-        """
-        closure { arg in
-            print(arg)
-        }
-        """,
-      ),
-      Example(
-        """
-        closure { arg in
-            nestedClosure { $0 + arg }
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        closure {
-            print(↓$0)
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension AnonymousArgumentInMultilineClosureRule: SwiftSyntaxRule {

@@ -4,15 +4,6 @@ struct MultilineArgumentsRule {
   var options = MultilineArgumentsOptions()
 
   static let configuration = MultilineArgumentsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "multiline_arguments",
-    name: "Multiline Arguments",
-    description: "Arguments should be either on the same line, or one per line",
-    isOptIn: true,
-    nonTriggeringExamples: MultilineArgumentsRuleExamples.nonTriggeringExamples,
-    triggeringExamples: MultilineArgumentsRuleExamples.triggeringExamples,
-  )
 }
 
 extension MultilineArgumentsRule: SwiftSyntaxRule {

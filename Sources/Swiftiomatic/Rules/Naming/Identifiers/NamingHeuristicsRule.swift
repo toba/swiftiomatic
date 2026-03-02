@@ -5,23 +5,6 @@ struct NamingHeuristicsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = NamingHeuristicsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "naming_heuristics",
-    name: "Naming Heuristics",
-    description:
-      "Checks names against Swift API Design Guidelines: Bool assertions, protocol suffixes, factory prefixes",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("var isEnabled: Bool = true"),
-      Example("var hasContent: Bool = false"),
-      Example("static func makeWidget() -> Widget { }"),
-    ],
-    triggeringExamples: [
-      Example("var ↓enabled: Bool = true"),
-      Example("static func ↓createWidget() -> Widget { }"),
-    ],
-  )
 }
 
 extension NamingHeuristicsRule: SwiftSyntaxRule {

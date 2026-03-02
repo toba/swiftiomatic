@@ -4,4 +4,13 @@ struct PrivateSwiftUIStatePropertyConfiguration: RuleConfiguration {
     let summary = "SwiftUI state properties should be private"
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        PrivateSwiftUIStatePropertyRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        PrivateSwiftUIStatePropertyRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        PrivateSwiftUIStatePropertyRuleExamples.corrections
+    }
 }

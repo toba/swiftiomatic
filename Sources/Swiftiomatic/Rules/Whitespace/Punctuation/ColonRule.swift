@@ -6,17 +6,6 @@ struct ColonRule: SubstitutionCorrectableRule, SyntaxOnlyRule {
 
   static let configuration = ColonConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "colon",
-    name: "Colon Spacing",
-    description: """
-      Colons should be next to the identifier when specifying a type and next to the key in dictionary literals
-      """,
-    nonTriggeringExamples: ColonRuleExamples.nonTriggeringExamples,
-    triggeringExamples: ColonRuleExamples.triggeringExamples,
-    corrections: ColonRuleExamples.corrections,
-  )
-
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(in: file).map { range in
       RuleViolation(

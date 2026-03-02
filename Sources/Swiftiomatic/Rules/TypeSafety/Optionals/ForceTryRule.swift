@@ -4,30 +4,6 @@ struct ForceTryRule {
   var options = SeverityConfiguration<Self>(.error)
 
   static let configuration = ForceTryConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "force_try",
-    name: "Force Try",
-    description: "Force tries should be avoided",
-    nonTriggeringExamples: [
-      Example(
-        """
-        func a() throws {}
-        do {
-          try a()
-        } catch {}
-        """,
-      )
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        func a() throws {}
-        ↓try! a()
-        """,
-      )
-    ],
-  )
 }
 
 extension ForceTryRule: SwiftSyntaxRule {

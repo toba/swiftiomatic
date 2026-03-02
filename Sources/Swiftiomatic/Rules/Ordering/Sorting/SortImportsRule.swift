@@ -5,38 +5,6 @@ struct SortImportsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = SortImportsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "sort_imports",
-    name: "Sort Imports",
-    description: "Import statements should be sorted alphabetically",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example(
-        """
-        import Bar
-        import Foo
-        """,
-      ),
-      Example(
-        """
-        import Bar
-        @testable import Foo
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        ↓import Foo
-        import Bar
-        """,
-      )
-    ],
-    corrections: [
-      Example("↓import Foo\nimport Bar"): Example("import Bar\nimport Foo")
-    ],
-  )
 }
 
 extension SortImportsRule: SwiftSyntaxCorrectableRule {

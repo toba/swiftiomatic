@@ -7,31 +7,6 @@ struct CaseIterableUsageRule: CollectingRule {
 
   static let configuration = CaseIterableUsageConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "case_iterable_usage",
-    name: "CaseIterable Usage",
-    description:
-      "Enums conforming to CaseIterable without any .allCases references may have unnecessary conformance",
-    scope: .suggest,
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example(
-        """
-        enum Direction: CaseIterable { case north, south }
-        let all = Direction.allCases
-        """,
-      )
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        ↓enum Status: CaseIterable { case active, inactive }
-        func check() { }
-        """,
-      )
-    ],
-  )
-
   func collectInfo(for file: SwiftSource) -> CaseIterableContribution {
     let collector = CaseIterableCollector(
       filePath: file.path ?? "",

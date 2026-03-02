@@ -6,15 +6,6 @@ struct DeploymentTargetRule {
   var options = DeploymentTargetOptions()
 
   static let configuration = DeploymentTargetConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "deployment_target",
-    name: "Deployment Target",
-    description: "Availability checks or attributes shouldn't be using older versions "
-      + "that are satisfied by the deployment target.",
-    nonTriggeringExamples: DeploymentTargetRuleExamples.nonTriggeringExamples,
-    triggeringExamples: DeploymentTargetRuleExamples.triggeringExamples,
-  )
 }
 
 extension DeploymentTargetRule: SwiftSyntaxRule {

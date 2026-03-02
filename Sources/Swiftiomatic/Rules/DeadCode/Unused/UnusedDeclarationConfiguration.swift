@@ -7,4 +7,10 @@ struct UnusedDeclarationConfiguration: RuleConfiguration {
     let requiresCompilerArguments = true
     let requiresFileOnDisk = true
     let isCrossFile = true
+    var nonTriggeringExamples: [Example] {
+        UnusedDeclarationRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        UnusedDeclarationRuleExamples.triggeringExamples
+    }
 }

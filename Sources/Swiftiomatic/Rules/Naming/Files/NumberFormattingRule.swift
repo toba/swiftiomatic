@@ -4,23 +4,6 @@ struct NumberFormattingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = NumberFormattingConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "number_formatting",
-    name: "Number Formatting",
-    description: "Large numeric literals should use underscores for grouping",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example("let x = 1_000_000"),
-      Example("let x = 100"),
-      Example("let x = 0xFF"),
-      Example("let x = 1_000"),
-    ],
-    triggeringExamples: [
-      Example("let x = ↓1000000"),
-      Example("let x = ↓100000"),
-    ],
-  )
 }
 
 extension NumberFormattingRule: SwiftSyntaxRule {

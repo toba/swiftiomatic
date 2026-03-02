@@ -4,37 +4,6 @@ struct UnownedVariableCaptureRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = UnownedVariableCaptureConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "unowned_variable_capture",
-    name: "Unowned Variable Capture",
-    description: "Prefer capturing references as weak to avoid potential crashes",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("foo { [weak self] in _ }"),
-      Example("foo { [weak self] param in _ }"),
-      Example("foo { [weak bar] in _ }"),
-      Example("foo { [weak bar] param in _ }"),
-      Example("foo { bar in _ }"),
-      Example("foo { $0 }"),
-      Example(
-        """
-        final class First {}
-        final class Second {
-            unowned var value: First
-            init(value: First) {
-                self.value = value
-            }
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example("foo { [↓unowned self] in _ }"),
-      Example("foo { [↓unowned bar] in _ }"),
-      Example("foo { [bar, ↓unowned self] in _ }"),
-    ],
-  )
 }
 
 extension UnownedVariableCaptureRule: SwiftSyntaxRule {

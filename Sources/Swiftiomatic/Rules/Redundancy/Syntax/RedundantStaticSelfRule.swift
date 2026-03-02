@@ -4,44 +4,6 @@ struct RedundantStaticSelfRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = RedundantStaticSelfConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_static_self",
-    name: "Redundant Static Self",
-    description: "Explicit `Self` qualification is redundant in static context",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example(
-        """
-        struct Foo {
-          static let bar = "bar"
-          func baz() {
-            let _ = Self.bar
-          }
-        }
-        """,
-      ),
-      Example(
-        """
-        class Foo {
-          static func bar() -> Self { Self() }
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        struct Foo {
-          static let bar = "bar"
-          static func baz() -> String {
-            return ↓Self.bar
-          }
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension RedundantStaticSelfRule: SwiftSyntaxRule {

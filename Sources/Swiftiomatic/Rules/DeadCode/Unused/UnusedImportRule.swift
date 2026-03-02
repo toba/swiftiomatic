@@ -7,19 +7,6 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
 
   static let configuration = UnusedImportConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "unused_import",
-    name: "Unused Import",
-    description: "All imported modules should be required to make the file compile",
-    isOptIn: true,
-    requiresSourceKit: true,
-    requiresCompilerArguments: true,
-    nonTriggeringExamples: UnusedImportRuleExamples.nonTriggeringExamples,
-    triggeringExamples: UnusedImportRuleExamples.triggeringExamples,
-    corrections: UnusedImportRuleExamples.corrections,
-    requiresFileOnDisk: true,
-  )
-
   func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {
     importUsage(in: file, compilerArguments: compilerArguments).map { importUsage in
       RuleViolation(

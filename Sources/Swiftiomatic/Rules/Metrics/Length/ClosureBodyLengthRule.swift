@@ -8,20 +8,6 @@ struct ClosureBodyLengthRule {
   )
 
   static let configuration = ClosureBodyLengthConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "closure_body_length",
-    name: "Closure Body Length",
-    description: "Closure bodies should not span too many lines",
-    rationale: """
-      "Closure bodies should not span too many lines" says it all.
-
-      Possibly you could refactor your closure code and extract some of it into a function.
-      """,
-    isOptIn: true,
-    nonTriggeringExamples: ClosureBodyLengthRuleExamples.nonTriggeringExamples,
-    triggeringExamples: ClosureBodyLengthRuleExamples.triggeringExamples,
-  )
 }
 
 extension ClosureBodyLengthRule: SwiftSyntaxRule {

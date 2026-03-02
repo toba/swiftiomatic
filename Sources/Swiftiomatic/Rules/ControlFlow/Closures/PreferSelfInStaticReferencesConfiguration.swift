@@ -4,4 +4,13 @@ struct PreferSelfInStaticReferencesConfiguration: RuleConfiguration {
     let summary = "Use `Self` to refer to the surrounding type name"
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        PreferSelfInStaticReferencesRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        PreferSelfInStaticReferencesRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        PreferSelfInStaticReferencesRuleExamples.corrections
+    }
 }

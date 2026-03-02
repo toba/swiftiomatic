@@ -4,33 +4,6 @@ struct ContainsOverFirstNotNilRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ContainsOverFirstNotNilConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "contains_over_first_not_nil",
-    name: "Contains over First not Nil",
-    description: "Prefer `contains` over `first(where:) != nil` and `firstIndex(where:) != nil`.",
-    isOptIn: true,
-    nonTriggeringExamples: ["first", "firstIndex"].flatMap { method in
-      [
-        Example("let \(method) = myList.\(method)(where: { $0 % 2 == 0 })"),
-        Example("let \(method) = myList.\(method) { $0 % 2 == 0 }"),
-      ]
-    },
-    triggeringExamples: ["first", "firstIndex"].flatMap { method in
-      ["!=", "=="].flatMap { comparison in
-        [
-          Example("↓myList.\(method) { $0 % 2 == 0 } \(comparison) nil"),
-          Example("↓myList.\(method)(where: { $0 % 2 == 0 }) \(comparison) nil"),
-          Example(
-            "↓myList.map { $0 + 1 }.\(method)(where: { $0 % 2 == 0 }) \(comparison) nil",
-          ),
-          Example("↓myList.\(method)(where: someFunction) \(comparison) nil"),
-          Example("↓myList.map { $0 + 1 }.\(method) { $0 % 2 == 0 } \(comparison) nil"),
-          Example("(↓myList.\(method) { $0 % 2 == 0 }) \(comparison) nil"),
-        ]
-      }
-    },
-  )
 }
 
 extension ContainsOverFirstNotNilRule: SwiftSyntaxRule {

@@ -4,16 +4,6 @@ struct ImplicitOptionalInitializationRule {
   var options = ImplicitOptionalInitializationOptions()
 
   static let configuration = ImplicitOptionalInitializationConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "implicit_optional_initialization",
-    name: "Implicit Optional Initialization",
-    description: "Optionals should be consistently initialized, either with `= nil` or without.",
-    nonTriggeringExamples: ImplicitOptionalInitializationRuleExamples.nonTriggeringExamples,
-    triggeringExamples: ImplicitOptionalInitializationRuleExamples.triggeringExamples,
-    corrections: ImplicitOptionalInitializationRuleExamples.corrections,
-    deprecatedAliases: ["redundant_optional_initialization"],
-  )
 }
 
 extension ImplicitOptionalInitializationRule: SwiftSyntaxCorrectableRule {

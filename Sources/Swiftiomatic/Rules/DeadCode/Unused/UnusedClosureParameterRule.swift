@@ -6,15 +6,6 @@ struct UnusedClosureParameterRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = UnusedClosureParameterConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "unused_closure_parameter",
-    name: "Unused Closure Parameter",
-    description: "Unused parameter in a closure should be replaced with _",
-    nonTriggeringExamples: UnusedClosureParameterRuleExamples.nonTriggering,
-    triggeringExamples: UnusedClosureParameterRuleExamples.triggering,
-    corrections: UnusedClosureParameterRuleExamples.corrections,
-  )
 }
 
 extension UnusedClosureParameterRule: SwiftSyntaxCorrectableRule {

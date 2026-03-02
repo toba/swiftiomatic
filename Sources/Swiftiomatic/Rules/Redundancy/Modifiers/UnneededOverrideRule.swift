@@ -5,15 +5,6 @@ struct UnneededOverrideRule {
   var options = UnneededOverrideOptions()
 
   static let configuration = UnneededOverrideConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "unneeded_override",
-    name: "Unneeded Overridden Functions",
-    description: "Remove overridden functions that don't do anything except call their super",
-    nonTriggeringExamples: UnneededOverrideRuleExamples.nonTriggeringExamples,
-    triggeringExamples: UnneededOverrideRuleExamples.triggeringExamples,
-    corrections: UnneededOverrideRuleExamples.corrections,
-  )
 }
 
 extension UnneededOverrideRule: SwiftSyntaxCorrectableRule {

@@ -4,4 +4,10 @@ struct ReturnValueFromVoidFunctionConfiguration: RuleConfiguration {
     let summary = "Returning values from Void functions should be avoided"
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        ReturnValueFromVoidFunctionRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        ReturnValueFromVoidFunctionRuleExamples.triggeringExamples
+    }
 }

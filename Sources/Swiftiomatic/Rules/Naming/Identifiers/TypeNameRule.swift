@@ -5,18 +5,6 @@ struct TypeNameRule {
   var options = TypeNameOptions()
 
   static let configuration = TypeNameConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "type_name",
-    name: "Type Name",
-    description: """
-      Type name should only contain alphanumeric characters, start with an uppercase character and span between \
-      3 and 40 characters in length.
-      Private types may start with an underscore.
-      """,
-    nonTriggeringExamples: TypeNameRuleExamples.nonTriggeringExamples,
-    triggeringExamples: TypeNameRuleExamples.triggeringExamples,
-  )
 }
 
 extension TypeNameRule: SwiftSyntaxRule {

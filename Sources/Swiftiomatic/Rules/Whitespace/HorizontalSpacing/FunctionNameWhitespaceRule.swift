@@ -4,17 +4,6 @@ struct FunctionNameWhitespaceRule {
   var options = FunctionNameWhitespaceOptions()
 
   static let configuration = FunctionNameWhitespaceConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "function_name_whitespace",
-    name: "Function Name Whitespace",
-    description:
-      "There should be consistent whitespace before and after function names and generic parameters.",
-    nonTriggeringExamples: FunctionNameWhitespaceRuleExamples.nonTriggeringExamples,
-    triggeringExamples: FunctionNameWhitespaceRuleExamples.triggeringExamples,
-    corrections: FunctionNameWhitespaceRuleExamples.corrections,
-    deprecatedAliases: ["operator_whitespace"],
-  )
 }
 
 extension FunctionNameWhitespaceRule: SwiftSyntaxCorrectableRule {

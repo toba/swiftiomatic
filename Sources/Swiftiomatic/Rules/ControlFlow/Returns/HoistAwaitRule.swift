@@ -4,27 +4,6 @@ struct HoistAwaitRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = HoistAwaitConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "hoist_await",
-    name: "Hoist Await",
-    description:
-      "Move `await` keyword to the outermost expression instead of nesting it inside arguments",
-    scope: .format,
-    minSwiftVersion: .v6,
-    nonTriggeringExamples: [
-      Example("let result = await foo(bar)"),
-      Example("let result = await foo(bar, baz)"),
-    ],
-    triggeringExamples: [
-      Example("let result = foo(↓await bar())"),
-      Example("let result = foo(↓await bar(), baz)"),
-      Example("let result = [↓await foo(), ↓await bar()]"),
-    ],
-    corrections: [
-      Example("let result = foo(↓await bar())"): Example("let result = await foo(bar())")
-    ],
-  )
 }
 
 extension HoistAwaitRule: SwiftSyntaxCorrectableRule {

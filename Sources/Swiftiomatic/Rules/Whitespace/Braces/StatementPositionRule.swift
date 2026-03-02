@@ -5,32 +5,6 @@ struct StatementPositionRule: CorrectableRule {
 
   static let configuration = StatementPositionConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "statement_position",
-    name: "Statement Position",
-    description:
-      "Else and catch should be on the same line, one space after the previous declaration",
-    nonTriggeringExamples: [
-      Example("} else if {"),
-      Example("} else {"),
-      Example("} catch {"),
-      Example("\"}else{\""),
-      Example("struct A { let catchphrase: Int }\nlet a = A(\n catchphrase: 0\n)"),
-      Example("struct A { let `catch`: Int }\nlet a = A(\n `catch`: 0\n)"),
-    ],
-    triggeringExamples: [
-      Example("↓}else if {"),
-      Example("↓}  else {"),
-      Example("↓}\ncatch {"),
-      Example("↓}\n\t  catch {"),
-    ],
-    corrections: [
-      Example("↓}\n else {"): Example("} else {"),
-      Example("↓}\n   else if {"): Example("} else if {"),
-      Example("↓}\n catch {"): Example("} catch {"),
-    ],
-  )
-
   static let uncuddledDescription = RuleDescription(
     identifier: "statement_position",
     name: "Statement Position",

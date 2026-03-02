@@ -4,26 +4,6 @@ struct SpaceAroundBracketsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = SpaceAroundBracketsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "space_around_brackets",
-    name: "Space Around Brackets",
-    description:
-      "There should be no space between an identifier and opening bracket, and space after closing bracket before identifiers",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("foo[0]"),
-      Example("foo as [String]"),
-      Example("let a = [1, 2]"),
-    ],
-    triggeringExamples: [
-      Example("foo↓ [0]"),
-      Example("foo↓as[String]"),
-    ],
-    corrections: [
-      Example("foo↓ [0]"): Example("foo[0]")
-    ],
-  )
 }
 
 extension SpaceAroundBracketsRule: SwiftSyntaxCorrectableRule {

@@ -5,46 +5,6 @@ struct DocCommentsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = DocCommentsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "doc_comments",
-    name: "Doc Comments",
-    description:
-      "API declarations should use doc comments (`///`) instead of regular comments (`//`)",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        /// A placeholder type
-        class Foo {}
-        """,
-      ),
-      Example(
-        """
-        class Foo {
-          // TODO: implement
-          func bar() {}
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        ↓// A placeholder type
-        class Foo {}
-        """,
-      ),
-      Example(
-        """
-        class Foo {
-          ↓// Does something
-          func bar() {}
-        }
-        """,
-      ),
-    ],
-  )
 }
 
 extension DocCommentsRule: SwiftSyntaxRule {

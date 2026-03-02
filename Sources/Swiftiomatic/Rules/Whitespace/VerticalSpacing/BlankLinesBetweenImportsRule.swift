@@ -4,32 +4,6 @@ struct BlankLinesBetweenImportsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = BlankLinesBetweenImportsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "blank_lines_between_imports",
-    name: "Blank Lines Between Imports",
-    description: "There should be no blank lines between import statements",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example(
-        """
-        import A
-        import B
-        import C
-        """)
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        import A
-
-        ↓import B
-        """)
-    ],
-    corrections: [
-      Example("import A\n\n↓import B"): Example("import A\nimport B")
-    ],
-  )
 }
 
 extension BlankLinesBetweenImportsRule: SwiftSyntaxCorrectableRule {

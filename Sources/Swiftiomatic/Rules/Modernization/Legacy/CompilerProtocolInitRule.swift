@@ -4,24 +4,6 @@ struct CompilerProtocolInitRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = CompilerProtocolInitConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "compiler_protocol_init",
-    name: "Compiler Protocol Init",
-    description:
-      "The initializers declared in compiler protocols such as `ExpressibleByArrayLiteral` "
-      + "shouldn't be called directly.",
-    nonTriggeringExamples: [
-      Example("let set: Set<Int> = [1, 2]"),
-      Example("let set = Set(array)"),
-    ],
-    triggeringExamples: [
-      Example("let set = ↓Set(arrayLiteral: 1, 2)"),
-      Example("let set = ↓Set (arrayLiteral: 1, 2)"),
-      Example("let set = ↓Set.init(arrayLiteral: 1, 2)"),
-      Example("let set = ↓Set.init(arrayLiteral : 1, 2)"),
-    ],
-  )
 }
 
 extension CompilerProtocolInitRule: SwiftSyntaxRule {

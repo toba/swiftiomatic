@@ -4,16 +4,6 @@ struct MultilineParametersRule {
   var options = MultilineParametersOptions()
 
   static let configuration = MultilineParametersConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "multiline_parameters",
-    name: "Multiline Parameters",
-    description:
-      "Functions and methods parameters should be either on the same line, or one per line",
-    isOptIn: true,
-    nonTriggeringExamples: MultilineParametersRuleExamples.nonTriggeringExamples,
-    triggeringExamples: MultilineParametersRuleExamples.triggeringExamples,
-  )
 }
 
 extension MultilineParametersRule: SwiftSyntaxRule {

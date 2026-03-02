@@ -4,25 +4,6 @@ struct EmptyStringRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = EmptyStringConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "empty_string",
-    name: "Empty String",
-    description: "Prefer checking `isEmpty` over comparing `string` to an empty string literal",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("myString.isEmpty"),
-      Example("!myString.isEmpty"),
-      Example("\"\"\"\nfoo==\n\"\"\""),
-    ],
-    triggeringExamples: [
-      Example(#"myString↓ == """#),
-      Example(#"myString↓ != """#),
-      Example(#"myString↓=="""#),
-      Example(##"myString↓ == #""#"##),
-      Example(###"myString↓ == ##""##"###),
-    ],
-  )
 }
 
 extension EmptyStringRule {

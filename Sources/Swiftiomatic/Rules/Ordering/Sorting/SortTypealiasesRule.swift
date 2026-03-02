@@ -4,20 +4,6 @@ struct SortTypealiasesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = SortTypealiasesConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "sort_typealiases",
-    name: "Sort Typealiases",
-    description: "Protocol composition typealiases should be sorted alphabetically",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example("typealias Dependencies = Bar & Foo & Quux"),
-      Example("typealias Foo = Int"),
-    ],
-    triggeringExamples: [
-      Example("typealias Dependencies = ↓Foo & Bar & Quux")
-    ],
-  )
 }
 
 extension SortTypealiasesRule: SwiftSyntaxRule {

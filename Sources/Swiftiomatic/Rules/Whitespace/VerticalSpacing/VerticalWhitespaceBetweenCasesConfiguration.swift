@@ -4,4 +4,17 @@ struct VerticalWhitespaceBetweenCasesConfiguration: RuleConfiguration {
     let summary = "Include a single empty line between switch cases"
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
+              .values.sorted() + VerticalWhitespaceBetweenCasesRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        Array(
+              VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples.keys.sorted(),
+            )
+    }
+    var corrections: [Example: Example] {
+        VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
+              .removingViolationMarkers()
+    }
 }

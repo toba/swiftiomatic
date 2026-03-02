@@ -4,4 +4,13 @@ struct OperatorUsageWhitespaceConfiguration: RuleConfiguration {
     let summary = "Operators should be surrounded by a single whitespace when they are being used"
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        OperatorUsageWhitespaceRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        OperatorUsageWhitespaceRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        OperatorUsageWhitespaceRuleExamples.corrections
+    }
 }

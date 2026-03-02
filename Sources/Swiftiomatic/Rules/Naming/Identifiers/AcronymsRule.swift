@@ -5,23 +5,6 @@ struct AcronymsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = AcronymsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "acronyms",
-    name: "Acronyms",
-    description: "Acronyms in identifiers should be uppercased (e.g. `URL` not `Url`)",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example("let destinationURL: URL"),
-      Example("let urlRouter: URLRouter"),
-      Example("let screenIDs: [String]"),
-    ],
-    triggeringExamples: [
-      Example("let ↓destinationUrl: URL"),
-      Example("let ↓urlRouter: UrlRouter"),
-      Example("let ↓screenIds: [String]"),
-    ],
-  )
 }
 
 extension AcronymsRule: SwiftSyntaxRule {

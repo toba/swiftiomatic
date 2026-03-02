@@ -4,23 +4,6 @@ struct AndOperatorRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = AndOperatorConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "and_operator",
-    name: "And Operator",
-    description: "Prefer comma over `&&` in `if`, `guard`, or `while` conditions",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example("if a, b {}"),
-      Example("guard a, b else { return }"),
-      Example("if a || b {}"),
-      Example("let x = a && b"),
-    ],
-    triggeringExamples: [
-      Example("if a ↓&& b {}"),
-      Example("guard a ↓&& b else { return }"),
-    ],
-  )
 }
 
 extension AndOperatorRule: SwiftSyntaxRule {

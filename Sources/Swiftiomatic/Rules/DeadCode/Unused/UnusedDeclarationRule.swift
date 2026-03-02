@@ -21,18 +21,6 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
 
   static let configuration = UnusedDeclarationConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "unused_declaration",
-    name: "Unused Declaration",
-    description: "Declarations should be referenced at least once within all files linted",
-    isOptIn: true,
-    requiresSourceKit: true,
-    requiresCompilerArguments: true,
-    nonTriggeringExamples: UnusedDeclarationRuleExamples.nonTriggeringExamples,
-    triggeringExamples: UnusedDeclarationRuleExamples.triggeringExamples,
-    requiresFileOnDisk: true,
-  )
-
   func collectInfo(for file: SwiftSource, compilerArguments: [String]) -> Self.FileUSRs {
     guard compilerArguments.isNotEmpty else {
       SwiftiomaticError.missingCompilerArguments(path: file.path, ruleID: Self.identifier).print()

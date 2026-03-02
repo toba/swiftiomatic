@@ -5,24 +5,6 @@ struct IncompatibleConcurrencyAnnotationRule {
   var options = IncompatibleConcurrencyAnnotationOptions()
 
   static let configuration = IncompatibleConcurrencyAnnotationConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "incompatible_concurrency_annotation",
-    name: "Incompatible Concurrency Annotation",
-    description: "Declaration should be @preconcurrency to maintain compatibility with Swift 5",
-    rationale: """
-      Declarations that use concurrency features such as `@Sendable` closures, `Sendable` generic type
-      arguments or `@MainActor` (or other global actors) should be annotated with `@preconcurrency`
-      to ensure compatibility with Swift 5.
-
-      This rule detects public declarations that require `@preconcurrency` and can automatically add
-      the annotation.
-      """,
-    isOptIn: true,
-    nonTriggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.nonTriggeringExamples,
-    triggeringExamples: IncompatibleConcurrencyAnnotationRuleExamples.triggeringExamples,
-    corrections: IncompatibleConcurrencyAnnotationRuleExamples.corrections,
-  )
 }
 
 extension IncompatibleConcurrencyAnnotationRule: SwiftSyntaxCorrectableRule {

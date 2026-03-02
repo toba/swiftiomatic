@@ -14,16 +14,6 @@ struct PrivateSwiftUIStatePropertyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = PrivateSwiftUIStatePropertyConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "private_swiftui_state",
-    name: "Private SwiftUI State Properties",
-    description: "SwiftUI state properties should be private",
-    isOptIn: true,
-    nonTriggeringExamples: PrivateSwiftUIStatePropertyRuleExamples.nonTriggeringExamples,
-    triggeringExamples: PrivateSwiftUIStatePropertyRuleExamples.triggeringExamples,
-    corrections: PrivateSwiftUIStatePropertyRuleExamples.corrections,
-  )
 }
 
 extension PrivateSwiftUIStatePropertyRule: SwiftSyntaxCorrectableRule {

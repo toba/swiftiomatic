@@ -14,15 +14,6 @@ struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
 
   static let configuration = DuplicateImportsConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "duplicate_imports",
-    name: "Duplicate Imports",
-    description: "Imports should be unique",
-    nonTriggeringExamples: DuplicateImportsRuleExamples.nonTriggeringExamples,
-    triggeringExamples: DuplicateImportsRuleExamples.triggeringExamples,
-    corrections: DuplicateImportsRuleExamples.corrections,
-  )
-
   func validate(file: SwiftSource) -> [RuleViolation] {
     file.duplicateImportsViolationPositions().map { position in
       RuleViolation(

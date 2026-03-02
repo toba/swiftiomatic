@@ -4,30 +4,6 @@ struct StrongIBOutletRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = StrongIBOutletConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "strong_iboutlet",
-    name: "Strong IBOutlet",
-    description: "@IBOutlets shouldn't be declared as weak",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      wrapExample("@IBOutlet var label: UILabel?"),
-      wrapExample("weak var label: UILabel?"),
-    ],
-    triggeringExamples: [
-      wrapExample("@IBOutlet ↓weak var label: UILabel?"),
-      wrapExample("@IBOutlet ↓unowned var label: UILabel!"),
-      wrapExample("@IBOutlet ↓weak var textField: UITextField?"),
-    ],
-    corrections: [
-      wrapExample("@IBOutlet ↓weak var label: UILabel?"):
-        wrapExample("@IBOutlet var label: UILabel?"),
-      wrapExample("@IBOutlet ↓unowned var label: UILabel!"):
-        wrapExample("@IBOutlet var label: UILabel!"),
-      wrapExample("@IBOutlet ↓weak var textField: UITextField?"):
-        wrapExample("@IBOutlet var textField: UITextField?"),
-    ],
-  )
 }
 
 extension StrongIBOutletRule: SwiftSyntaxCorrectableRule {
@@ -39,8 +15,6 @@ extension StrongIBOutletRule: SwiftSyntaxCorrectableRule {
     Rewriter(configuration: options, file: file)
   }
 }
-
-extension StrongIBOutletRule {}
 
 extension StrongIBOutletRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
@@ -79,16 +53,4 @@ extension VariableDeclSyntax {
   fileprivate var weakOrUnownedKeyword: TokenSyntax? {
     weakOrUnownedModifier?.name
   }
-}
-
-private func wrapExample(_ text: String, file: StaticString = #filePath, line: UInt = #line)
-  -> Example
-{
-  Example(
-    """
-    class ViewController: UIViewController {
-        \(text)
-    }
-    """, file: file, line: line,
-  )
 }

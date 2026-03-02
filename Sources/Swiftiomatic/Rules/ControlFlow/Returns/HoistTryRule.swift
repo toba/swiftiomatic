@@ -4,27 +4,6 @@ struct HoistTryRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = HoistTryConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "hoist_try",
-    name: "Hoist Try",
-    description:
-      "Move `try` keyword to the outermost expression instead of nesting it inside arguments",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("let result = try foo(bar)"),
-      Example("let result = try foo(bar, baz)"),
-      Example("try foo()"),
-    ],
-    triggeringExamples: [
-      Example("let result = foo(↓try bar())"),
-      Example("let result = foo(↓try bar(), baz)"),
-      Example("let result = [↓try foo(), ↓try bar()]"),
-    ],
-    corrections: [
-      Example("let result = foo(↓try bar())"): Example("let result = try foo(bar())")
-    ],
-  )
 }
 
 extension HoistTryRule: SwiftSyntaxCorrectableRule {

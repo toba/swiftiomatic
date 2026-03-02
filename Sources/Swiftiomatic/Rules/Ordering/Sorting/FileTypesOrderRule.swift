@@ -9,16 +9,6 @@ struct FileTypesOrderRule: Rule {
 
   static let configuration = FileTypesOrderConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "file_types_order",
-    name: "File Types Order",
-    description: "Specifies how the types within a file should be ordered.",
-    isOptIn: true,
-    requiresSourceKit: true,
-    nonTriggeringExamples: FileTypesOrderRuleExamples.nonTriggeringExamples,
-    triggeringExamples: FileTypesOrderRuleExamples.triggeringExamples,
-  )
-
   func validate(file: SwiftSource) -> [RuleViolation] {
     guard let mainTypeSubstructure = mainTypeSubstructure(in: file),
       let mainTypeSubstuctureOffset = mainTypeSubstructure.offset

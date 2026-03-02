@@ -22,24 +22,6 @@ struct TrailingNewlineRule: CorrectableRule, SyntaxOnlyRule {
 
   static let configuration = TrailingNewlineConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "trailing_newline",
-    name: "Trailing Newline",
-    description: "Files should have a single trailing newline",
-    nonTriggeringExamples: [
-      Example("let a = 0\n")
-    ],
-    triggeringExamples: [
-      Example("let a = 0"),
-      Example("let a = 0\n\n"),
-    ].skipWrappingInCommentTests().skipWrappingInStringTests(),
-    corrections: [
-      Example("let a = 0"): Example("let a = 0\n"),
-      Example("let b = 0\n\n"): Example("let b = 0\n"),
-      Example("let c = 0\n\n\n\n"): Example("let c = 0\n"),
-    ],
-  )
-
   func validate(file: SwiftSource) -> [RuleViolation] {
     if file.contents.trailingNewlineCount() == 1 {
       return []

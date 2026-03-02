@@ -4,24 +4,6 @@ struct ContainsOverRangeNilComparisonRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ContainsOverRangeNilComparisonConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "contains_over_range_nil_comparison",
-    name: "Contains over Range Comparison to Nil",
-    description: "Prefer `contains` over `range(of:) != nil` and `range(of:) == nil`",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("let range = myString.range(of: \"Test\")"),
-      Example("myString.contains(\"Test\")"),
-      Example("!myString.contains(\"Test\")"),
-      Example("resourceString.range(of: rule.regex, options: .regularExpression) != nil"),
-    ],
-    triggeringExamples: ["!=", "=="].flatMap { comparison in
-      [
-        Example("↓myString.range(of: \"Test\") \(comparison) nil")
-      ]
-    },
-  )
 }
 
 extension ContainsOverRangeNilComparisonRule: SwiftSyntaxRule {

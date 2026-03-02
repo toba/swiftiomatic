@@ -4,15 +4,6 @@ struct DiscouragedOptionalBooleanRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = DiscouragedOptionalBooleanConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "discouraged_optional_boolean",
-    name: "Discouraged Optional Boolean",
-    description: "Prefer non-optional booleans over optional booleans",
-    isOptIn: true,
-    nonTriggeringExamples: DiscouragedOptionalBooleanRuleExamples.nonTriggeringExamples,
-    triggeringExamples: DiscouragedOptionalBooleanRuleExamples.triggeringExamples,
-  )
 }
 
 extension DiscouragedOptionalBooleanRule: SwiftSyntaxRule {

@@ -4,4 +4,13 @@ struct ImplicitReturnConfiguration: RuleConfiguration {
     let summary = "Prefer implicit returns in closures, functions and getters"
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        ImplicitReturnRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        ImplicitReturnRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        ImplicitReturnRuleExamples.corrections
+    }
 }

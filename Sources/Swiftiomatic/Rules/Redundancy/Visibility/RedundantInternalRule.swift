@@ -4,69 +4,6 @@ struct RedundantInternalRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = RedundantInternalConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_internal",
-    name: "Redundant Internal",
-    description: "Declarations are internal by default; the `internal` modifier is redundant",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("class Foo {}"),
-      Example("let bar: String"),
-      Example("internal import Foundation"),
-      Example(
-        """
-        public extension String {
-          internal func foo() {}
-        }
-        """,
-      ),
-      Example(
-        """
-        package extension String {
-          internal func foo() {}
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example("↓internal class Foo {}"),
-      Example("↓internal let bar: String"),
-      Example("↓internal func baaz() {}"),
-      Example("↓internal init() {}"),
-      Example(
-        """
-        extension String {
-          ↓internal func foo() {}
-        }
-        """,
-      ),
-      Example(
-        """
-        internal extension String {
-          ↓internal func foo() {}
-        }
-        """,
-      ),
-    ],
-    corrections: [
-      Example("↓internal class Foo {}"): Example("class Foo {}"),
-      Example("↓internal let bar: String"): Example("let bar: String"),
-      Example(
-        """
-        extension String {
-          ↓internal func foo() {}
-        }
-        """,
-      ): Example(
-        """
-        extension String {
-          func foo() {}
-        }
-        """,
-      ),
-    ],
-  )
 }
 
 extension RedundantInternalRule: SwiftSyntaxCorrectableRule {

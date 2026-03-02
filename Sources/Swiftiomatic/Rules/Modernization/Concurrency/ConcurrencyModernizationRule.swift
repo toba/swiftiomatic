@@ -5,23 +5,6 @@ struct ConcurrencyModernizationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ConcurrencyModernizationConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "concurrency_modernization",
-    name: "Concurrency Modernization",
-    description:
-      "Flags GCD usage and legacy concurrency patterns that should use structured concurrency",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("Task { @MainActor in update() }"),
-      Example("await withTaskGroup(of: Void.self) { }"),
-    ],
-    triggeringExamples: [
-      Example("↓DispatchQueue.main.async { update() }"),
-      Example("↓DispatchGroup()"),
-      Example("func fetch(↓completion: @escaping (Result<Data, Error>) -> Void) {}"),
-    ],
-  )
 }
 
 extension ConcurrencyModernizationRule: SwiftSyntaxRule {

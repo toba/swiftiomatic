@@ -5,34 +5,6 @@ struct SortSwitchCasesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = SortSwitchCasesConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "sort_switch_cases",
-    name: "Sort Switch Cases",
-    description:
-      "Switch case patterns with multiple comma-separated values should be sorted alphabetically",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        switch value {
-        case .a, .b, .c:
-          break
-        }
-        """,
-      )
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        switch value {
-        case ↓.c, .a, .b:
-          break
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension SortSwitchCasesRule: SwiftSyntaxRule {

@@ -1,106 +1,10 @@
 import SwiftBasicFormat
 import SwiftSyntax
 
-private func embedInSwitch(
-  _ text: String,
-  case: String = "case .bar",
-  file: StaticString = #filePath,
-  line: UInt = #line,
-) -> Example {
-  Example(
-    """
-    switch foo {
-    \(`case`):
-        \(text)
-    }
-    """, file: file, line: line,
-  )
-}
-
 struct UnneededBreakInSwitchRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = UnneededBreakInSwitchConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "unneeded_break_in_switch",
-    name: "Unneeded Break in Switch",
-    description: "Avoid using unneeded break statements",
-    nonTriggeringExamples: [
-      embedInSwitch("break"),
-      embedInSwitch("break", case: "default"),
-      embedInSwitch("for i in [0, 1, 2] { break }"),
-      embedInSwitch("if true { break }"),
-      embedInSwitch("something()"),
-      Example(
-        """
-        let items = [Int]()
-        for item in items {
-            if bar() {
-                do {
-                    try foo()
-                } catch {
-                    bar()
-                    break
-                }
-            }
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      embedInSwitch("something()\n    ↓break"),
-      embedInSwitch("something()\n    ↓break // comment"),
-      embedInSwitch("something()\n    ↓break", case: "default"),
-      embedInSwitch("something()\n    ↓break", case: "case .foo, .foo2 where condition"),
-    ],
-    corrections: [
-      embedInSwitch("something()\n    ↓break"): embedInSwitch("something()"),
-      embedInSwitch("something()\n    ↓break // line comment"): embedInSwitch(
-        "something()\n     // line comment",
-      ),
-      embedInSwitch(
-        """
-        something()
-        ↓break
-        /*
-        block comment
-        */
-        """,
-      ): embedInSwitch(
-        """
-        something()
-        /*
-        block comment
-        */
-        """,
-      ),
-      embedInSwitch("something()\n    ↓break /// doc line comment"): embedInSwitch(
-        "something()\n     /// doc line comment",
-      ),
-      embedInSwitch(
-        """
-        something()
-        ↓break
-        ///
-        /// doc block comment
-        ///
-        """,
-      ): embedInSwitch(
-        """
-        something()
-        ///
-        /// doc block comment
-        ///
-        """,
-      ),
-      embedInSwitch("something()\n    ↓break", case: "default"): embedInSwitch(
-        "something()", case: "default",
-      ),
-      embedInSwitch("something()\n    ↓break", case: "case .foo, .foo2 where condition"):
-        embedInSwitch("something()", case: "case .foo, .foo2 where condition"),
-    ],
-  )
 }
 
 extension UnneededBreakInSwitchRule: SwiftSyntaxCorrectableRule {

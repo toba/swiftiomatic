@@ -5,17 +5,6 @@ struct RedundantSelfRule {
   var options = RedundantSelfOptions()
 
   static let configuration = RedundantSelfConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_self",
-    name: "Redundant Self",
-    description: "Explicit use of 'self' is not required",
-    isOptIn: true,
-    nonTriggeringExamples: RedundantSelfRuleExamples.nonTriggeringExamples,
-    triggeringExamples: RedundantSelfRuleExamples.triggeringExamples,
-    corrections: RedundantSelfRuleExamples.corrections,
-    deprecatedAliases: ["redundant_self_in_closure"],
-  )
 }
 
 extension RedundantSelfRule: SwiftSyntaxCorrectableRule {

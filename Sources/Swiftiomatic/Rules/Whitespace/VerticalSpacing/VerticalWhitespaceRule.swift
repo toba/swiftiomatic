@@ -5,53 +5,6 @@ struct VerticalWhitespaceRule {
   var options = VerticalWhitespaceOptions()
 
   static let configuration = VerticalWhitespaceConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "vertical_whitespace",
-    name: "Vertical Whitespace",
-    description: VerticalWhitespaceOptions.defaultDescriptionReason,
-    nonTriggeringExamples: [
-      Example("let abc = 0\n"),
-      Example("let abc = 0\n\n"),
-      Example("/* bcs \n\n\n\n*/"),
-      Example("// bca \n\n"),
-      Example("class CCCC {\n  \n}"),
-      Example(
-        """
-        // comment
-
-        import Foundation
-        """,
-      ),
-      Example(
-        """
-
-        // comment
-
-        import Foundation
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example("let aaaa = 0\n\n\n"),
-      Example("struct AAAA {}\n\n\n\n"),
-      Example("class BBBB {}\n\n\n"),
-      Example("class CCCC {\n  \n  \n}"),
-      Example(
-        """
-
-
-        import Foundation
-        """,
-      ),
-    ],
-    corrections: [
-      Example("let b = 0\n\n\nclass AAA {}\n"): Example("let b = 0\n\nclass AAA {}\n"),
-      Example("let c = 0\n\n\nlet num = 1\n"): Example("let c = 0\n\nlet num = 1\n"),
-      Example("// bca \n\n\n"): Example("// bca \n\n"),
-      Example("class CCCC {\n  \n  \n  \n}"): Example("class CCCC {\n  \n}"),
-    ],  // End of line autocorrections are handled by Trailing Newline Rule.
-  )
 }
 
 extension VerticalWhitespaceRule: SwiftSyntaxCorrectableRule {

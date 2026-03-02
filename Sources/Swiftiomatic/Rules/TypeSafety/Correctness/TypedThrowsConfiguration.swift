@@ -5,4 +5,16 @@ struct TypedThrowsConfiguration: RuleConfiguration {
     let scope: Scope = .suggest
     let isOptIn = true
     let canEnrichAsync = true
+    var nonTriggeringExamples: [Example] {
+        [
+              Example("func parse() throws(ParseError) { throw ParseError.invalid }"),
+              Example("func work() throws { throw ErrorA.a; throw ErrorB.b }"),
+              Example("func safe() { }"),
+            ]
+    }
+    var triggeringExamples: [Example] {
+        [
+              Example("↓func parse() throws { throw ParseError.invalid }")
+            ]
+    }
 }

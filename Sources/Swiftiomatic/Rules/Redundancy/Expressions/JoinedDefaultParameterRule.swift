@@ -4,43 +4,6 @@ struct JoinedDefaultParameterRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = JoinedDefaultParameterConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "joined_default_parameter",
-    name: "Joined Default Parameter",
-    description: "Discouraged explicit usage of the default separator",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("let foo = bar.joined()"),
-      Example("let foo = bar.joined(separator: \",\")"),
-      Example("let foo = bar.joined(separator: toto)"),
-    ],
-    triggeringExamples: [
-      Example("let foo = bar.joined(↓separator: \"\")"),
-      Example(
-        """
-        let foo = bar.filter(toto)
-                     .joined(↓separator: ""),
-        """,
-      ),
-      Example(
-        """
-        func foo() -> String {
-          return ["1", "2"].joined(↓separator: "")
-        }
-        """,
-      ),
-    ],
-    corrections: [
-      Example("let foo = bar.joined(↓separator: \"\")"): Example("let foo = bar.joined()"),
-      Example("let foo = bar.filter(toto)\n.joined(↓separator: \"\")"):
-        Example("let foo = bar.filter(toto)\n.joined()"),
-      Example("func foo() -> String {\n   return [\"1\", \"2\"].joined(↓separator: \"\")\n}"):
-        Example("func foo() -> String {\n   return [\"1\", \"2\"].joined()\n}"),
-      Example("class C {\n#if true\nlet foo = bar.joined(↓separator: \"\")\n#endif\n}"):
-        Example("class C {\n#if true\nlet foo = bar.joined()\n#endif\n}"),
-    ],
-  )
 }
 
 extension JoinedDefaultParameterRule: SwiftSyntaxCorrectableRule {

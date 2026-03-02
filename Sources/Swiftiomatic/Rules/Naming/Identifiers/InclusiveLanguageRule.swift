@@ -5,17 +5,6 @@ struct InclusiveLanguageRule {
   var options = InclusiveLanguageOptions()
 
   static let configuration = InclusiveLanguageConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "inclusive_language",
-    name: "Inclusive Language",
-    description: """
-      Identifiers should use inclusive language that avoids discrimination against groups of people based on \
-      race, gender, or socioeconomic status.
-      """,
-    nonTriggeringExamples: InclusiveLanguageRuleExamples.nonTriggeringExamples,
-    triggeringExamples: InclusiveLanguageRuleExamples.triggeringExamples,
-  )
 }
 
 extension InclusiveLanguageRule: SwiftSyntaxRule {

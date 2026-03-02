@@ -4,26 +4,6 @@ struct RedundantBackticksRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = RedundantBackticksConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_backticks",
-    name: "Redundant Backticks",
-    description:
-      "Backtick-escaped identifiers that are not keywords in their context are redundant",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("let `class` = \"value\""),
-      Example("func `init`() {}"),
-      Example("let `self` = this"),
-    ],
-    triggeringExamples: [
-      Example("let ↓`foo` = bar"),
-      Example("func ↓`myFunc`() {}"),
-    ],
-    corrections: [
-      Example("let ↓`foo` = bar"): Example("let foo = bar")
-    ],
-  )
 }
 
 extension RedundantBackticksRule: SwiftSyntaxCorrectableRule {

@@ -5,66 +5,6 @@ struct PreferTypeCheckingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = PreferTypeCheckingConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "prefer_type_checking",
-    name: "Prefer Type Checking",
-    description: "Prefer `a is X` to `a as? X != nil`",
-    nonTriggeringExamples: [
-      Example("let foo = bar as? Foo"),
-      Example("bar is Foo"),
-      Example("2*x is X"),
-      Example(
-        """
-        if foo is Bar {
-            doSomeThing()
-        }
-        """,
-      ),
-      Example(
-        """
-        if let bar = foo as? Bar {
-            foo.run()
-        }
-        """,
-      ),
-      Example("bar as Foo != nil"),
-      Example("nil != bar as Foo"),
-      Example("bar as Foo? != nil"),
-      Example("bar as? Foo? != nil"),
-    ],
-    triggeringExamples: [
-      Example("bar ↓as? Foo != nil"),
-      Example("2*x as? X != nil"),
-      Example(
-        """
-        if foo ↓as? Bar != nil {
-            doSomeThing()
-        }
-        """,
-      ),
-      Example("nil != bar ↓as? Foo"),
-      Example("nil != 2*x ↓as? X"),
-    ],
-    corrections: [
-      Example("bar ↓as? Foo != nil"): Example("bar is Foo"),
-      Example("nil != bar ↓as? Foo"): Example("bar is Foo"),
-      Example("2*x ↓as? X != nil"): Example("2*x is X"),
-      Example(
-        """
-        if foo ↓as? Bar != nil {
-            doSomeThing()
-        }
-        """,
-      ): Example(
-        """
-        if foo is Bar {
-            doSomeThing()
-        }
-        """,
-      ),
-    ],
-  )
 }
 
 extension PreferTypeCheckingRule: SwiftSyntaxCorrectableRule {

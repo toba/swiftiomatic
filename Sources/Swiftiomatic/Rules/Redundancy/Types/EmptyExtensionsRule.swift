@@ -4,34 +4,6 @@ struct EmptyExtensionsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = EmptyExtensionsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "empty_extensions",
-    name: "Empty Extensions",
-    description: "Empty extensions that don't add protocol conformance should be removed",
-    scope: .lint,
-    nonTriggeringExamples: [
-      Example(
-        """
-        extension String: Equatable {}
-        """,
-      ),
-      Example(
-        """
-        extension Foo {
-          func bar() {}
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        ↓extension String {}
-        """,
-      )
-    ],
-  )
 }
 
 extension EmptyExtensionsRule: SwiftSyntaxRule {

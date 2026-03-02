@@ -4,20 +4,6 @@ struct FileMacroRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = FileMacroConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "file_macro",
-    name: "File Macro",
-    description: "Prefer `#file` over `#fileID` (identical in Swift 6+)",
-    scope: .suggest,
-    minSwiftVersion: .v6,
-    nonTriggeringExamples: [
-      Example("func foo(file: StaticString = #file) {}"),
-    ],
-    triggeringExamples: [
-      Example("func foo(file: StaticString = ↓#fileID) {}"),
-    ],
-  )
 }
 
 extension FileMacroRule: SwiftSyntaxRule {

@@ -6,52 +6,6 @@ struct LocalDocCommentRule: SwiftSyntaxRule {
 
   static let configuration = LocalDocCommentConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "local_doc_comment",
-    name: "Local Doc Comment",
-    description: "Prefer regular comments over doc comments in local scopes",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example(
-        """
-        func foo() {
-          // Local scope documentation should use normal comments.
-          print("foo")
-        }
-        """,
-      ),
-      Example(
-        """
-        /// My great property
-        var myGreatProperty: String!
-        """,
-      ),
-      Example(
-        """
-        /// Look here for more info: https://github.com.
-        var myGreatProperty: String!
-        """,
-      ),
-      Example(
-        """
-        /// Look here for more info:
-        /// https://github.com.
-        var myGreatProperty: String!
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        func foo() {
-          ↓/// Docstring inside a function declaration
-          print("foo")
-        }
-        """,
-      )
-    ],
-  )
-
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(
       configuration: options,

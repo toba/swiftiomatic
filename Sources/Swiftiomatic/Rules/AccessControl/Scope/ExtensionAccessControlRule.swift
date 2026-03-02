@@ -4,42 +4,6 @@ struct ExtensionAccessControlRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ExtensionAccessControlConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "extension_access_control",
-    name: "Extension Access Control",
-    description:
-      "Members of an extension that share the same access level should have it hoisted to the extension",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        public extension Foo {
-          func bar() {}
-          func baz() {}
-        }
-        """,
-      ),
-      Example(
-        """
-        extension Foo {
-          public func bar() {}
-          internal func baz() {}
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        extension Foo {
-          ↓public func bar() {}
-          public func baz() {}
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension ExtensionAccessControlRule: SwiftSyntaxRule {

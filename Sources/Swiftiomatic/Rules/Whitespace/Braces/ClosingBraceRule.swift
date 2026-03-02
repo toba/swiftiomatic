@@ -4,24 +4,6 @@ struct ClosingBraceRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ClosingBraceConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "closing_brace",
-    name: "Closing Brace Spacing",
-    description:
-      "Closing brace with closing parenthesis should not have any whitespaces in the middle",
-    nonTriggeringExamples: [
-      Example("[].map({ })"),
-      Example("[].map(\n  { }\n)"),
-    ],
-    triggeringExamples: [
-      Example("[].map({ ↓} )"),
-      Example("[].map({ ↓}\t)"),
-    ],
-    corrections: [
-      Example("[].map({ ↓} )"): Example("[].map({ })")
-    ],
-  )
 }
 
 extension ClosingBraceRule: SwiftSyntaxCorrectableRule {

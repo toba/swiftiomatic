@@ -4,36 +4,6 @@ struct BlankLinesAfterGuardStatementsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = BlankLinesAfterGuardStatementsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "blank_lines_after_guard_statements",
-    name: "Blank Lines After Guard Statements",
-    description:
-      "There should be a blank line after the last guard statement before other code",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example(
-        """
-        guard let foo = bar else { return }
-
-        print(foo)
-        """),
-      Example(
-        """
-        guard let a = b else { return }
-        guard let c = d else { return }
-
-        print(a, c)
-        """),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        guard let foo = bar else { return }
-        ↓print(foo)
-        """)
-    ],
-  )
 }
 
 extension BlankLinesAfterGuardStatementsRule: SwiftSyntaxRule {

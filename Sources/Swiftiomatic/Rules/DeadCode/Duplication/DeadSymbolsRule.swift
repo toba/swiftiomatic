@@ -7,29 +7,6 @@ struct DeadSymbolsRule: CollectingRule {
 
   static let configuration = DeadSymbolsConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "dead_symbols",
-    name: "Dead Symbols",
-    description: "Private symbols with no references are likely dead code",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example(
-        """
-        private func helper() {}
-        func main() { helper() }
-        """,
-      )
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        ↓private func unused() {}
-        func main() { }
-        """,
-      )
-    ],
-  )
-
   func collectInfo(for file: SwiftSource) -> SymbolContribution {
     let filePath = file.path ?? ""
     let collector = DeclarationReferenceCollector(filePath: filePath, viewMode: .sourceAccurate)

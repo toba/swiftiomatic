@@ -4,45 +4,6 @@ struct ConditionalAssignmentRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ConditionalAssignmentConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "conditional_assignment",
-    name: "Conditional Assignment",
-    description:
-      "if/switch statements that assign to the same variable in every branch can use if/switch expressions",
-    scope: .suggest,
-    minSwiftVersion: .v6,
-    nonTriggeringExamples: [
-      Example(
-        """
-        let x = if condition { 1 } else { 2 }
-        """,
-      ),
-      Example(
-        """
-        let x: Int
-        if condition {
-          x = 1
-          print("assigned")
-        } else {
-          x = 2
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        let x: Int
-        ↓if condition {
-          x = 1
-        } else {
-          x = 2
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension ConditionalAssignmentRule: SwiftSyntaxRule {

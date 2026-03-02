@@ -3,35 +3,6 @@ struct SuperfluousDisableCommandRule: SyntaxOnlyRule, Sendable {
 
   static let configuration = SuperfluousDisableCommandConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "superfluous_disable_command",
-    name: "Superfluous Disable Command",
-    description: """
-      'disable' commands are superfluous when the disabled rule would not have triggered a violation \
-      in the disabled region. Use " - " if you wish to document a command.
-      """,
-    nonTriggeringExamples: [
-      Example("let abc:Void // sm:disable:this colon"),
-      Example(
-        """
-        // sm:disable colon
-        let abc:Void
-        // sm:enable colon
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example("let abc: Void // sm:disable:this colon"),
-      Example(
-        """
-        // sm:disable colon
-        let abc: Void
-        // sm:enable colon
-        """,
-      ),
-    ],
-  )
-
   func validate(file _: SwiftSource) -> [RuleViolation] {
     // This rule is implemented in Linter.swift
     []

@@ -4,16 +4,6 @@ struct TestCaseAccessibilityRule {
   var options = TestCaseAccessibilityOptions()
 
   static let configuration = TestCaseAccessibilityConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "test_case_accessibility",
-    name: "Test Case Accessibility",
-    description: "Test cases should only contain private non-test members",
-    isOptIn: true,
-    nonTriggeringExamples: TestCaseAccessibilityRuleExamples.nonTriggeringExamples,
-    triggeringExamples: TestCaseAccessibilityRuleExamples.triggeringExamples,
-    corrections: TestCaseAccessibilityRuleExamples.corrections,
-  )
 }
 
 extension TestCaseAccessibilityRule: SwiftSyntaxCorrectableRule {

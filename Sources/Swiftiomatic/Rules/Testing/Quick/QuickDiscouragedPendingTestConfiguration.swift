@@ -3,4 +3,10 @@ struct QuickDiscouragedPendingTestConfiguration: RuleConfiguration {
     let name = "Quick Discouraged Pending Test"
     let summary = "This test won't run as long as it's marked pending"
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        QuickDiscouragedPendingTestRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        QuickDiscouragedPendingTestRuleExamples.triggeringExamples
+    }
 }

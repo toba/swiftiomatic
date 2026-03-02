@@ -4,22 +4,6 @@ struct GenericConsolidationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = GenericConsolidationConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "generic_consolidation",
-    name: "Generic Consolidation",
-    description:
-      "Suggests replacing 'any Protocol' with 'some Protocol' and detecting over-constrained generic parameters",
-    scope: .suggest,
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("func process(_ items: some Sequence) { }"),
-      Example("var delegate: any Delegate"),
-    ],
-    triggeringExamples: [
-      Example("func process(_ items: ↓any Collection) { for item in items { } }")
-    ],
-  )
 }
 
 extension GenericConsolidationRule: SwiftSyntaxRule {

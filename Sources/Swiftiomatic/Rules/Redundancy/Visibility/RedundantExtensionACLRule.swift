@@ -4,68 +4,6 @@ struct RedundantExtensionACLRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = RedundantExtensionACLConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_extension_acl",
-    name: "Redundant Extension ACL",
-    description:
-      "Access control modifiers on extension members are redundant when they match the extension's ACL",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example(
-        """
-        public extension URL {
-          func queryParameter(_ name: String) -> String { "" }
-        }
-        """,
-      ),
-      Example(
-        """
-        public extension URL {
-          internal func internalMethod() {}
-        }
-        """,
-      ),
-      Example(
-        """
-        extension URL {
-          public func publicMethod() {}
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        public extension URL {
-          ↓public func queryParameter(_ name: String) -> String { "" }
-        }
-        """,
-      ),
-      Example(
-        """
-        private extension URL {
-          ↓fileprivate func foo() {}
-        }
-        """,
-      ),
-    ],
-    corrections: [
-      Example(
-        """
-        public extension URL {
-          ↓public func queryParameter(_ name: String) -> String { "" }
-        }
-        """,
-      ): Example(
-        """
-        public extension URL {
-          func queryParameter(_ name: String) -> String { "" }
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension RedundantExtensionACLRule: SwiftSyntaxCorrectableRule {

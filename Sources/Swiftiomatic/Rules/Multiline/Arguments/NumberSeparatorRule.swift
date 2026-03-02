@@ -6,20 +6,6 @@ struct NumberSeparatorRule {
 
   static let configuration = NumberSeparatorConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "number_separator",
-    name: "Number Separator",
-    description: """
-      Underscores should be used as thousand separator in large numbers with a configurable number of digits. In \
-      other words, there should be an underscore after every 3 digits in the integral as well as the fractional \
-      part of a number.
-      """,
-    isOptIn: true,
-    nonTriggeringExamples: NumberSeparatorRuleExamples.nonTriggeringExamples,
-    triggeringExamples: NumberSeparatorRuleExamples.triggeringExamples,
-    corrections: NumberSeparatorRuleExamples.corrections,
-  )
-
   static let missingSeparatorsReason = """
     Underscores should be used as thousand separators
     """

@@ -4,27 +4,6 @@ struct DiscouragedObjectLiteralRule {
   var options = DiscouragedObjectLiteralOptions()
 
   static let configuration = DiscouragedObjectLiteralConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "discouraged_object_literal",
-    name: "Discouraged Object Literal",
-    description: "Prefer initializers over object literals",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("let image = UIImage(named: aVariable)"),
-      Example("let image = UIImage(named: \"interpolated \\(variable)\")"),
-      Example("let color = UIColor(red: value, green: value, blue: value, alpha: 1)"),
-      Example("let image = NSImage(named: aVariable)"),
-      Example("let image = NSImage(named: \"interpolated \\(variable)\")"),
-      Example("let color = NSColor(red: value, green: value, blue: value, alpha: 1)"),
-    ],
-    triggeringExamples: [
-      Example("let image = ↓#imageLiteral(resourceName: \"image.jpg\")"),
-      Example(
-        "let color = ↓#colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)",
-      ),
-    ],
-  )
 }
 
 extension DiscouragedObjectLiteralRule: SwiftSyntaxRule {

@@ -5,19 +5,6 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
 
   static let configuration = ExplicitSelfConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "explicit_self",
-    name: "Explicit Self",
-    description: "Instance variables and functions should be explicitly accessed with 'self.'",
-    isOptIn: true,
-    requiresSourceKit: true,
-    requiresCompilerArguments: true,
-    nonTriggeringExamples: ExplicitSelfRuleExamples.nonTriggeringExamples,
-    triggeringExamples: ExplicitSelfRuleExamples.triggeringExamples,
-    corrections: ExplicitSelfRuleExamples.corrections,
-    requiresFileOnDisk: true,
-  )
-
   func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {
     violationRanges(in: file, compilerArguments: compilerArguments).map {
       RuleViolation(

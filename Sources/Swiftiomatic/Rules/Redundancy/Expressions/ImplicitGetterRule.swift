@@ -4,14 +4,6 @@ struct ImplicitGetterRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ImplicitGetterConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "implicit_getter",
-    name: "Implicit Getter",
-    description: "Computed read-only properties and subscripts should avoid using the get keyword.",
-    nonTriggeringExamples: ImplicitGetterRuleExamples.nonTriggeringExamples,
-    triggeringExamples: ImplicitGetterRuleExamples.triggeringExamples,
-  )
 }
 
 extension ImplicitGetterRule: SwiftSyntaxRule {

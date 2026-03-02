@@ -5,4 +5,24 @@ struct CaseIterableUsageConfiguration: RuleConfiguration {
     let scope: Scope = .suggest
     let isOptIn = true
     let isCrossFile = true
+    var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                enum Direction: CaseIterable { case north, south }
+                let all = Direction.allCases
+                """,
+              )
+            ]
+    }
+    var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                ↓enum Status: CaseIterable { case active, inactive }
+                func check() { }
+                """,
+              )
+            ]
+    }
 }

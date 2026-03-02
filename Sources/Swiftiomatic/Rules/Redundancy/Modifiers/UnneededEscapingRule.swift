@@ -5,16 +5,6 @@ struct UnneededEscapingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = UnneededEscapingConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "unneeded_escaping",
-    name: "Unneeded Escaping",
-    description: "The `@escaping` attribute should only be used when the closure actually escapes.",
-    isOptIn: true,
-    nonTriggeringExamples: UnneededEscapingRuleExamples.nonTriggeringExamples,
-    triggeringExamples: UnneededEscapingRuleExamples.triggeringExamples,
-    corrections: UnneededEscapingRuleExamples.corrections,
-  )
 }
 
 extension UnneededEscapingRule: SwiftSyntaxCorrectableRule {

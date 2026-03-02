@@ -4,32 +4,6 @@ struct EnvironmentEntryRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = EnvironmentEntryConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "environment_entry",
-    name: "Environment Entry",
-    description: "SwiftUI EnvironmentKey conformances can be replaced with the @Entry macro",
-    scope: .suggest,
-    minSwiftVersion: .v6,
-    nonTriggeringExamples: [
-      Example(
-        """
-        extension EnvironmentValues {
-          @Entry var screenName: String = "default"
-        }
-        """,
-      )
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        ↓struct ScreenNameKey: EnvironmentKey {
-          static var defaultValue: String { "default" }
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension EnvironmentEntryRule: SwiftSyntaxRule {

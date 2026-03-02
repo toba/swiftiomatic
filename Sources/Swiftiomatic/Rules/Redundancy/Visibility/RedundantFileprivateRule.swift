@@ -4,38 +4,6 @@ struct RedundantFileprivateRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = RedundantFileprivateConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_fileprivate",
-    name: "Redundant Fileprivate",
-    description:
-      "`fileprivate` can be replaced with `private` when only accessed within the same declaration scope",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        class Foo {
-          private var bar: Int
-        }
-        """,
-      ),
-      Example(
-        """
-        fileprivate func helper() {}
-        class Foo {
-          func bar() { helper() }
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        ↓fileprivate class Foo {}
-        """,
-      )
-    ],
-  )
 }
 
 extension RedundantFileprivateRule: SwiftSyntaxRule {

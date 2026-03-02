@@ -5,24 +5,6 @@ struct NoGroupingExtensionRule {
 
   static let configuration = NoGroupingExtensionConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "no_grouping_extension",
-    name: "No Grouping Extension",
-    description: "Extensions shouldn't be used to group code within the same source file",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("protocol Food {}\nextension Food {}"),
-      Example("class Apples {}\nextension Oranges {}"),
-      Example("class Box<T> {}\nextension Box where T: Vegetable {}"),
-    ],
-    triggeringExamples: [
-      Example("enum Fruit {}\n↓extension Fruit {}"),
-      Example("↓extension Tea: Error {}\nstruct Tea {}"),
-      Example("class Ham { class Spam {}}\n↓extension Ham.Spam {}"),
-      Example("extension External { struct Gotcha {}}\n↓extension External.Gotcha {}"),
-    ],
-  )
-
   func validate(file: SwiftSource) -> [RuleViolation] {
     Visitor(configuration: options, file: file)
       .walk(tree: file.syntaxTree) { visitor in

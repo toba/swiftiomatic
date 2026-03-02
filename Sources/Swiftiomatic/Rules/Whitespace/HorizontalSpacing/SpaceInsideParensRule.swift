@@ -4,24 +4,6 @@ struct SpaceInsideParensRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = SpaceInsideParensConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "space_inside_parens",
-    name: "Space Inside Parentheses",
-    description: "There should be no spaces immediately inside parentheses",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("(a, b)"),
-      Example("foo(bar)"),
-    ],
-    triggeringExamples: [
-      Example("(↓ a, b)"),
-      Example("foo(↓ bar )"),
-    ],
-    corrections: [
-      Example("(↓ a, b )"): Example("(a, b)")
-    ],
-  )
 }
 
 extension SpaceInsideParensRule: SwiftSyntaxCorrectableRule {

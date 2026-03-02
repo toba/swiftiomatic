@@ -4,22 +4,6 @@ struct Swift62ModernizationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = Swift62ModernizationConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "swift62_modernization",
-    name: "Swift 6.2 Modernization",
-    description:
-      "Code that can benefit from Swift 6.2 features like @concurrent, Observations, weak let, and Span",
-    scope: .suggest,
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("func work() async { }")
-    ],
-    triggeringExamples: [
-      Example("↓Task.detached { await work() }"),
-      Example("↓withObservationTracking { }"),
-    ],
-  )
 }
 
 extension Swift62ModernizationRule: SwiftSyntaxRule {

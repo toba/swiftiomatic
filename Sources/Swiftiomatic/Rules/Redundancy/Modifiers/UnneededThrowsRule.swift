@@ -4,17 +4,6 @@ struct UnneededThrowsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = UnneededThrowsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "unneeded_throws_rethrows",
-    name: "Unneeded (Re)Throws Keyword",
-    description:
-      "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`.",
-    isOptIn: true,
-    nonTriggeringExamples: UnneededThrowsRuleExamples.nonTriggeringExamples,
-    triggeringExamples: UnneededThrowsRuleExamples.triggeringExamples,
-    corrections: UnneededThrowsRuleExamples.corrections,
-  )
 }
 
 extension UnneededThrowsRule: SwiftSyntaxCorrectableRule {

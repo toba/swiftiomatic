@@ -4,56 +4,6 @@ struct ReturnArrowWhitespaceRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ReturnArrowWhitespaceConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "return_arrow_whitespace",
-    name: "Returning Whitespace",
-    description: "Return arrow and return type should be separated by a single space or on a "
-      + "separate line",
-    nonTriggeringExamples: [
-      Example("func abc() -> Int {}"),
-      Example("func abc() -> [Int] {}"),
-      Example("func abc() -> (Int, Int) {}"),
-      Example("var abc = {(param: Int) -> Void in }"),
-      Example("func abc() ->\n    Int {}"),
-      Example("func abc()\n    -> Int {}"),
-      Example(
-        """
-        func reallyLongFunctionMethods<T>(withParam1: Int, param2: String, param3: Bool) where T: AGenericConstraint
-            -> Int {
-            return 1
-        }
-        """,
-      ),
-      Example("typealias SuccessBlock = ((Data) -> Void)"),
-    ],
-    triggeringExamples: [
-      Example("func abc()↓->Int {}"),
-      Example("func abc()↓->[Int] {}"),
-      Example("func abc()↓->(Int, Int) {}"),
-      Example("func abc()↓-> Int {}"),
-      Example("func abc()↓->   Int {}"),
-      Example("func abc()↓ ->Int {}"),
-      Example("func abc()↓  ->  Int {}"),
-      Example("var abc = {(param: Int)↓ ->Bool in }"),
-      Example("var abc = {(param: Int)↓->Bool in }"),
-      Example("typealias SuccessBlock = ((Data)↓->Void)"),
-      Example("func abc()\n  ↓->  Int {}"),
-      Example("func abc()\n ↓->  Int {}"),
-      Example("func abc()↓  ->\n  Int {}"),
-      Example("func abc()↓  ->\nInt {}"),
-    ],
-    corrections: [
-      Example("func abc()↓->Int {}"): Example("func abc() -> Int {}"),
-      Example("func abc()↓-> Int {}"): Example("func abc() -> Int {}"),
-      Example("func abc()↓ ->Int {}"): Example("func abc() -> Int {}"),
-      Example("func abc()↓  ->  Int {}"): Example("func abc() -> Int {}"),
-      Example("func abc()\n  ↓->  Int {}"): Example("func abc()\n  -> Int {}"),
-      Example("func abc()\n ↓->  Int {}"): Example("func abc()\n -> Int {}"),
-      Example("func abc()↓  ->\n  Int {}"): Example("func abc() ->\n  Int {}"),
-      Example("func abc()↓  ->\nInt {}"): Example("func abc() ->\nInt {}"),
-    ],
-  )
 }
 
 extension ReturnArrowWhitespaceRule: SwiftSyntaxCorrectableRule {

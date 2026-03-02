@@ -4,43 +4,6 @@ struct FunctionParameterCountRule {
   var options = FunctionParameterCountOptions()
 
   static let configuration = FunctionParameterCountConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "function_parameter_count",
-    name: "Function Parameter Count",
-    description: "Number of function parameters should be low.",
-    nonTriggeringExamples: [
-      Example("init(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
-      Example("init (a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
-      Example("`init`(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
-      Example("init?(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
-      Example("init?<T>(a: T, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
-      Example("init?<T: String>(a: T, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
-      Example("func f2(p1: Int, p2: Int) { }"),
-      Example("func f(a: Int, b: Int, c: Int, d: Int, x: Int = 42) {}"),
-      Example(
-        """
-        func f(a: [Int], b: Int, c: Int, d: Int, f: Int) -> [Int] {
-            let s = a.flatMap { $0 as? [String: Int] } ?? []}}
-        """,
-      ),
-      Example("override func f(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
-    ],
-    triggeringExamples: [
-      Example("↓func f(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
-      Example("↓func initialValue(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}"),
-      Example(
-        "private ↓func f(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int = 2, g: Int) {}",
-      ),
-      Example(
-        """
-        struct Foo {
-            init(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}
-            ↓func bar(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}}
-        """,
-      ),
-    ],
-  )
 }
 
 extension FunctionParameterCountRule: SwiftSyntaxRule {

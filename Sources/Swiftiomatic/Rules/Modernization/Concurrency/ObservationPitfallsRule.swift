@@ -4,25 +4,6 @@ struct ObservationPitfallsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ObservationPitfallsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "observation_pitfalls",
-    name: "Observation Pitfalls",
-    description: "Detects common pitfalls with the Observation framework",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("for await value in Observations({ [weak self] in self?.model }) { }")
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        for await value in ↓Observations({ self.model }) {
-            print(value)
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension ObservationPitfallsRule: SwiftSyntaxRule {

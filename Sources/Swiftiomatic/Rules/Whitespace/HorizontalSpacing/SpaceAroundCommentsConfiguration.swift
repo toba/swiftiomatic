@@ -4,4 +4,25 @@ struct SpaceAroundCommentsConfiguration: RuleConfiguration {
     let summary = "There should be a space before line comments and around block comments"
     let scope: Scope = .format
     let isCorrectable = true
+    var nonTriggeringExamples: [Example] {
+        [
+              Example("let a = 5 // comment"),
+              Example("foo() /* block */ bar()"),
+              Example(
+                """
+                // line comment
+                let a = 5
+                """),
+            ]
+    }
+    var triggeringExamples: [Example] {
+        [
+              Example("let a = 5↓// comment")
+            ]
+    }
+    var corrections: [Example: Example] {
+        [
+              Example("let a = 5↓// comment"): Example("let a = 5 // comment")
+            ]
+    }
 }

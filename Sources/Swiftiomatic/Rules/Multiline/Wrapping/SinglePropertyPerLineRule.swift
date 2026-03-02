@@ -4,27 +4,6 @@ struct SinglePropertyPerLineRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = SinglePropertyPerLineConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "single_property_per_line",
-    name: "Single Property Per Line",
-    description: "Each variable declaration should declare only one property",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example("let a: Int"),
-      Example("var b = false"),
-      Example(
-        """
-        let a: Int
-        let b: Int
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example("↓let a, b, c: Int"),
-      Example("↓var foo = 10, bar = false"),
-    ],
-  )
 }
 
 extension SinglePropertyPerLineRule: SwiftSyntaxRule {

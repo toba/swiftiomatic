@@ -5,29 +5,6 @@ struct SwiftTestingTestCaseNamesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = SwiftTestingTestCaseNamesConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "swift_testing_test_case_names",
-    name: "Swift Testing Test Case Names",
-    description: "In Swift Testing, `@Test` methods should not have a `test` prefix",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        @Test func myFeatureWorks() {}
-        """),
-      Example(
-        """
-        func testSomething() {}
-        """),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        @Test func ↓testMyFeatureWorks() {}
-        """),
-    ],
-  )
 }
 
 extension SwiftTestingTestCaseNamesRule: SwiftSyntaxRule {

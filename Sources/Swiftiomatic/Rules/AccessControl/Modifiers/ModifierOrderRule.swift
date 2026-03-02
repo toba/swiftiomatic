@@ -4,15 +4,6 @@ struct ModifierOrderRule {
     var options = ModifierOrderOptions()
 
     static let configuration = ModifierOrderConfiguration()
-
-    static let description = RuleDescription(
-        identifier: "modifier_order",
-        name: "Modifier Order",
-        description: "Modifier order should be consistent.",
-        isOptIn: true,
-        nonTriggeringExamples: ModifierOrderRuleExamples.nonTriggeringExamples,
-        triggeringExamples: ModifierOrderRuleExamples.triggeringExamples,
-    )
 }
 
 extension ModifierOrderRule: SwiftSyntaxCorrectableRule {

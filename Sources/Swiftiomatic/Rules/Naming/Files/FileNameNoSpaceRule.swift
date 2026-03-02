@@ -5,13 +5,6 @@ struct FileNameNoSpaceRule: SyntaxOnlyRule {
 
   static let configuration = FileNameNoSpaceConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "file_name_no_space",
-    name: "File Name no Space",
-    description: "File name should not contain any whitespace",
-      isOptIn: true,
-  )
-
   func validate(file: SwiftSource) -> [RuleViolation] {
     guard let filePath = file.path,
       case let fileName = (filePath as NSString).lastPathComponent,

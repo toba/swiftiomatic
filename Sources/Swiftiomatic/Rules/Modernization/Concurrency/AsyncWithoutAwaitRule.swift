@@ -4,16 +4,6 @@ struct AsyncWithoutAwaitRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = AsyncWithoutAwaitConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "async_without_await",
-    name: "Async Without Await",
-    description: "Declaration should not be async if it doesn't use await",
-    isOptIn: true,
-    nonTriggeringExamples: AsyncWithoutAwaitRuleExamples.nonTriggeringExamples,
-    triggeringExamples: AsyncWithoutAwaitRuleExamples.triggeringExamples,
-    corrections: AsyncWithoutAwaitRuleExamples.corrections,
-  )
 }
 
 extension AsyncWithoutAwaitRule: SwiftSyntaxCorrectableRule {

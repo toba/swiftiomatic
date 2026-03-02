@@ -4,4 +4,13 @@ struct AsyncWithoutAwaitConfiguration: RuleConfiguration {
     let summary = "Declaration should not be async if it doesn't use await"
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        AsyncWithoutAwaitRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        AsyncWithoutAwaitRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        AsyncWithoutAwaitRuleExamples.corrections
+    }
 }

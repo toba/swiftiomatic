@@ -4,16 +4,6 @@ struct ImplicitReturnRule {
   var options = ImplicitReturnOptions()
 
   static let configuration = ImplicitReturnConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "implicit_return",
-    name: "Implicit Return",
-    description: "Prefer implicit returns in closures, functions and getters",
-    isOptIn: true,
-    nonTriggeringExamples: ImplicitReturnRuleExamples.nonTriggeringExamples,
-    triggeringExamples: ImplicitReturnRuleExamples.triggeringExamples,
-    corrections: ImplicitReturnRuleExamples.corrections,
-  )
 }
 
 extension ImplicitReturnRule: SwiftSyntaxCorrectableRule {

@@ -4,21 +4,6 @@ struct AgentReviewRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = AgentReviewConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "agent_review",
-    name: "Agent Review",
-    description: "Lower-confidence checks that benefit from agent verification",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("let task = Task { await work() }"),
-      Example("enum AppError: LocalizedError { case failed }"),
-    ],
-    triggeringExamples: [
-      Example("↓Task { await work() }"),
-      Example("enum ↓AppError: Error { case failed }"),
-    ],
-  )
 }
 
 extension AgentReviewRule: SwiftSyntaxRule {

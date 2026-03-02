@@ -5,31 +5,6 @@ struct BlankLinesAroundMarkRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = BlankLinesAroundMarkConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "blank_lines_around_mark",
-    name: "Blank Lines Around MARK",
-    description: "MARK comments should be preceded and followed by a blank line",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example(
-        """
-        func foo() {}
-
-        // MARK: - Bar
-
-        func bar() {}
-        """)
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        func foo() {}
-        ↓// MARK: - Bar
-        func bar() {}
-        """)
-    ],
-  )
 }
 
 extension BlankLinesAroundMarkRule: SwiftSyntaxRule {

@@ -4,41 +4,6 @@ struct PreferForLoopRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = PreferForLoopConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "prefer_for_loop",
-    name: "Prefer For Loop",
-    description:
-      "`.forEach { }` calls can be replaced with `for ... in` loops for better readability",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        for item in items {
-          process(item)
-        }
-        """,
-      ),
-      Example("items.map { $0.name }"),
-      Example("items.filter { $0.isActive }.forEach { process($0) }"),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        items.↓forEach { item in
-          process(item)
-        }
-        """,
-      ),
-      Example(
-        """
-        items.↓forEach {
-          process($0)
-        }
-        """,
-      ),
-    ],
-  )
 }
 
 extension PreferForLoopRule: SwiftSyntaxRule {

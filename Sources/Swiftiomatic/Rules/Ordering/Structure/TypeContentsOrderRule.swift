@@ -4,15 +4,6 @@ struct TypeContentsOrderRule {
   var options = TypeContentsOrderOptions()
 
   static let configuration = TypeContentsOrderConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "type_contents_order",
-    name: "Type Contents Order",
-    description: "Specifies the order of subtypes, properties, methods & more within a type.",
-    isOptIn: true,
-    nonTriggeringExamples: TypeContentsOrderRuleExamples.nonTriggeringExamples,
-    triggeringExamples: TypeContentsOrderRuleExamples.triggeringExamples,
-  )
 }
 
 extension TypeContentsOrderRule: SwiftSyntaxRule {

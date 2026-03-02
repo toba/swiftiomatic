@@ -4,37 +4,6 @@ struct EmptyParametersRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = EmptyParametersConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "empty_parameters",
-    name: "Empty Parameters",
-    description: "Prefer `() -> ` over `Void -> `",
-    nonTriggeringExamples: [
-      Example("let abc: () -> Void = {}"),
-      Example("func foo(completion: () -> Void)"),
-      Example("func foo(completion: () throws -> Void)"),
-      Example("let foo: (ConfigurationTests) -> Void throws -> Void)"),
-      Example("let foo: (ConfigurationTests) ->   Void throws -> Void)"),
-      Example("let foo: (ConfigurationTests) ->Void throws -> Void)"),
-    ],
-    triggeringExamples: [
-      Example("let abc: ↓(Void) -> Void = {}"),
-      Example("func foo(completion: ↓(Void) -> Void)"),
-      Example("func foo(completion: ↓(Void) throws -> Void)"),
-      Example("let foo: ↓(Void) -> () throws -> Void)"),
-    ],
-    corrections: [
-      Example("let abc: ↓(Void) -> Void = {}"): Example("let abc: () -> Void = {}"),
-      Example("func foo(completion: ↓(Void) -> Void)"): Example(
-        "func foo(completion: () -> Void)",
-      ),
-      Example("func foo(completion: ↓(Void) throws -> Void)"):
-        Example("func foo(completion: () throws -> Void)"),
-      Example("let foo: ↓(Void) -> () throws -> Void)"): Example(
-        "let foo: () -> () throws -> Void)",
-      ),
-    ],
-  )
 }
 
 extension EmptyParametersRule: SwiftSyntaxCorrectableRule {

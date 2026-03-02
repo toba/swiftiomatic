@@ -5,4 +5,158 @@ struct LiteralExpressionEndIndentationConfiguration: RuleConfiguration {
     let isCorrectable = true
     let isOptIn = true
     let requiresSourceKit = true
+    var nonTriggeringExamples: [Example] {
+        [
+              Example(
+                """
+                [1, 2, 3]
+                """,
+              ),
+              Example(
+                """
+                [1,
+                 2
+                ]
+                """,
+              ),
+              Example(
+                """
+                [
+                   1,
+                   2
+                ]
+                """,
+              ),
+              Example(
+                """
+                [
+                   1,
+                   2]
+                """,
+              ),
+              Example(
+                """
+                   let x = [
+                       1,
+                       2
+                   ]
+                """,
+              ),
+              Example(
+                """
+                [key: 2, key2: 3]
+                """,
+              ),
+              Example(
+                """
+                [key: 1,
+                 key2: 2
+                ]
+                """,
+              ),
+              Example(
+                """
+                [
+                   key: 0,
+                   key2: 20
+                ]
+                """,
+              ),
+            ]
+    }
+    var triggeringExamples: [Example] {
+        [
+              Example(
+                """
+                let x = [
+                   1,
+                   2
+                   ↓]
+                """,
+              ),
+              Example(
+                """
+                   let x = [
+                       1,
+                       2
+                ↓]
+                """,
+              ),
+              Example(
+                """
+                let x = [
+                   key: value
+                   ↓]
+                """,
+              ),
+            ]
+    }
+    var corrections: [Example: Example] {
+        [
+              Example(
+                """
+                let x = [
+                   key: value
+                ↓   ]
+                """,
+              ): Example(
+                """
+                let x = [
+                   key: value
+                ]
+                """,
+              ),
+              Example(
+                """
+                   let x = [
+                       1,
+                       2
+                ↓]
+                """,
+              ): Example(
+                """
+                   let x = [
+                       1,
+                       2
+                   ]
+                """,
+              ),
+              Example(
+                """
+                let x = [
+                   1,
+                   2
+                ↓   ]
+                """,
+              ): Example(
+                """
+                let x = [
+                   1,
+                   2
+                ]
+                """,
+              ),
+              Example(
+                """
+                let x = [
+                   1,
+                   2
+                ↓   ] + [
+                   3,
+                   4
+                ↓   ]
+                """,
+              ): Example(
+                """
+                let x = [
+                   1,
+                   2
+                ] + [
+                   3,
+                   4
+                ]
+                """,
+              ),
+            ]
+    }
 }

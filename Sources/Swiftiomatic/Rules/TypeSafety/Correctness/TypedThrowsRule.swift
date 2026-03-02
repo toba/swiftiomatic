@@ -5,22 +5,6 @@ struct TypedThrowsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = TypedThrowsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "typed_throws",
-    name: "Typed Throws",
-    description: "Functions that throw a single error type should use typed throws",
-    scope: .suggest,
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("func parse() throws(ParseError) { throw ParseError.invalid }"),
-      Example("func work() throws { throw ErrorA.a; throw ErrorB.b }"),
-      Example("func safe() { }"),
-    ],
-    triggeringExamples: [
-      Example("↓func parse() throws { throw ParseError.invalid }")
-    ],
-  )
 }
 
 extension TypedThrowsRule: SwiftSyntaxRule {

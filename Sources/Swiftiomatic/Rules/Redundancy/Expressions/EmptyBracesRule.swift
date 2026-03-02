@@ -4,30 +4,6 @@ struct EmptyBracesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = EmptyBracesConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "empty_braces",
-    name: "Empty Braces",
-    description: "Empty braces should not contain whitespace",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("func foo() {}"),
-      Example("class Bar {}"),
-    ],
-    triggeringExamples: [
-      Example("func foo() ↓{ }"),
-      Example(
-        """
-        func foo() ↓{
-
-        }
-        """,
-      ),
-    ],
-    corrections: [
-      Example("func foo() ↓{ }"): Example("func foo() {}")
-    ],
-  )
 }
 
 extension EmptyBracesRule: SwiftSyntaxCorrectableRule {

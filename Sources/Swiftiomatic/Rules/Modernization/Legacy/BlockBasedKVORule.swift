@@ -5,41 +5,6 @@ struct BlockBasedKVORule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = BlockBasedKVOConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "block_based_kvo",
-    name: "Block Based KVO",
-    description: "Prefer the new block based KVO API with keypaths when using Swift 3.2 or later",
-    nonTriggeringExamples: [
-      Example(
-        #"""
-        let observer = foo.observe(\.value, options: [.new]) { (foo, change) in
-           print(change.newValue)
-        }
-        """#,
-      )
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        class Foo: NSObject {
-          override ↓func observeValue(forKeyPath keyPath: String?, of object: Any?,
-                                      change: [NSKeyValueChangeKey : Any]?,
-                                      context: UnsafeMutableRawPointer?) {}
-        }
-        """,
-      ),
-      Example(
-        """
-        class Foo: NSObject {
-          override ↓func observeValue(forKeyPath keyPath: String?, of object: Any?,
-                                      change: Dictionary<NSKeyValueChangeKey, Any>?,
-                                      context: UnsafeMutableRawPointer?) {}
-        }
-        """,
-      ),
-    ],
-  )
 }
 
 extension BlockBasedKVORule: SwiftSyntaxRule {

@@ -5,20 +5,6 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
 
   static let configuration = VerticalWhitespaceClosingBracesConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "vertical_whitespace_closing_braces",
-    name: "Vertical Whitespace before Closing Braces",
-    description: "Don't include vertical whitespace (empty line) before closing braces",
-    isOptIn: true,
-    nonTriggeringExamples: VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples
-      .values.sorted() + VerticalWhitespaceClosingBracesRuleExamples.nonTriggeringExamples,
-    triggeringExamples: Array(
-      VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples.keys.sorted(),
-    ),
-    corrections: VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples
-      .removingViolationMarkers(),
-  )
-
   private let pattern = "((?:\\n[ \\t]*)+)(\\n[ \\t]*[)}\\]])"
   private let trivialLinePattern = "((?:\\n[ \\t]*)+)(\\n[ \\t)}\\]]*$)"
 

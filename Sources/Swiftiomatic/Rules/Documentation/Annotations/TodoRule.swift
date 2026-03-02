@@ -5,26 +5,6 @@ struct TodoRule {
   var options = TodoOptions()
 
   static let configuration = TodoConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "todo",
-    name: "Todo",
-    description: "TODOs and FIXMEs should be resolved.",
-    nonTriggeringExamples: [
-      Example("// notaTODO:"),
-      Example("// notaFIXME:"),
-    ],
-    triggeringExamples: [
-      Example("// ↓TODO:"),
-      Example("// ↓FIXME:"),
-      Example("// ↓TODO(note)"),
-      Example("// ↓FIXME(note)"),
-      Example("/* ↓FIXME: */"),
-      Example("/* ↓TODO: */"),
-      Example("/** ↓FIXME: */"),
-      Example("/** ↓TODO: */"),
-    ].skipWrappingInCommentTests(),
-  )
 }
 
 extension TodoRule: SwiftSyntaxRule {

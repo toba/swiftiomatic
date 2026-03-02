@@ -4,15 +4,6 @@ struct ComputedAccessorsOrderRule {
   var options = ComputedAccessorsOrderOptions()
 
   static let configuration = ComputedAccessorsOrderConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "computed_accessors_order",
-    name: "Computed Accessors Order",
-    description:
-      "Getter and setters in computed properties and subscripts should be in a consistent order.",
-    nonTriggeringExamples: ComputedAccessorsOrderRuleExamples.nonTriggeringExamples,
-    triggeringExamples: ComputedAccessorsOrderRuleExamples.triggeringExamples,
-  )
 }
 
 extension ComputedAccessorsOrderRule: SwiftSyntaxRule {

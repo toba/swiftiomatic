@@ -4,24 +4,6 @@ struct SpaceInsideBracketsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = SpaceInsideBracketsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "space_inside_brackets",
-    name: "Space Inside Brackets",
-    description: "There should be no spaces immediately inside square brackets",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("let a = [1, 2, 3]"),
-      Example("let b = foo[0]"),
-    ],
-    triggeringExamples: [
-      Example("let a = [↓ 1, 2, 3 ]"),
-      Example("let b = foo[↓ 0 ]"),
-    ],
-    corrections: [
-      Example("let a = [↓ 1, 2, 3 ]"): Example("let a = [1, 2, 3]")
-    ],
-  )
 }
 
 extension SpaceInsideBracketsRule: SwiftSyntaxCorrectableRule {

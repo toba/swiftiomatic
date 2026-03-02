@@ -6,67 +6,6 @@ struct PeriodSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
 
   static let configuration = PeriodSpacingConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "period_spacing",
-    name: "Period Spacing",
-    description: "Periods should not be followed by more than one space",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("let pi = 3.2"),
-      Example("let pi = Double.pi"),
-      Example("let pi = Double. pi"),
-      Example("let pi = Double.  pi"),
-      Example("// A. Single."),
-      Example("///   - code: Identifier of the error. Integer."),
-      Example(
-        """
-        // value: Multiline.
-        //        Comment.
-        """,
-      ),
-      Example(
-        """
-        /**
-        Sentence ended in period.
-
-        - Sentence 2 new line characters after.
-        **/
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        "/* Only god knows why. ↓ This symbol does nothing. */",
-        shouldTestWrappingInComment: false,
-      ),
-      Example(
-        "// Only god knows why. ↓ This symbol does nothing.",
-        shouldTestWrappingInComment: false,
-      ),
-      Example("// Single. Double. ↓ End.", shouldTestWrappingInComment: false),
-      Example("// Single. Double. ↓ Triple. ↓  End.", shouldTestWrappingInComment: false),
-      Example("// Triple. ↓  Quad. ↓   End.", shouldTestWrappingInComment: false),
-      Example(
-        "///   - code: Identifier of the error. ↓ Integer.",
-        shouldTestWrappingInComment: false,
-      ),
-    ],
-    corrections: [
-      Example("/* Why. ↓ Symbol does nothing. */"): Example(
-        "/* Why. Symbol does nothing. */",
-      ),
-      Example("// Why. ↓ Symbol does nothing."): Example("// Why. Symbol does nothing."),
-      Example("// Single. Double. ↓ End."): Example("// Single. Double. End."),
-      Example("// Single. Double. ↓ Triple. ↓  End."): Example(
-        "// Single. Double. Triple. End.",
-      ),
-      Example("// Triple. ↓  Quad. ↓   End."): Example("// Triple. Quad. End."),
-      Example("///   - code: Identifier. ↓ Integer."): Example(
-        "///   - code: Identifier. Integer.",
-      ),
-    ],
-  )
-
   func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
     let str = file.stringView.string
     return file.syntaxClassifications

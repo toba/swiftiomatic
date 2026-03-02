@@ -5,35 +5,6 @@ struct FileHeaderRule {
   var options = FileHeaderOptions()
 
   static let configuration = FileHeaderConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "file_header",
-    name: "File Header",
-    description: "Header comments should be consistent with project patterns. "
-      + "The CURRENT_FILENAME placeholder can optionally be used in the "
-      + "required and forbidden patterns. It will be replaced by the real file name.",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("let foo = \"Copyright\""),
-      Example("let foo = 2 // Copyright"),
-      Example("let foo = 2\n // Copyright"),
-    ],
-    triggeringExamples: [
-      Example("// ↓Copyright"),
-      Example("//\n// ↓Copyright"),
-      Example(
-        """
-        //
-        //  FileHeaderRule.swift
-        //  Swiftiomatic
-        //
-        //  Created by Marcelo Fabri on 27/11/16.
-        //  ↓Copyright © 2016 Realm. All rights reserved.
-        //
-        """,
-      ),
-    ].skipWrappingInCommentTests(),
-  )
 }
 
 extension FileHeaderRule: SwiftSyntaxRule {

@@ -4,20 +4,6 @@ struct StrongifiedSelfRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = StrongifiedSelfConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "strongified_self",
-    name: "Strongified Self",
-    description: "Remove backticks around `self` in optional unwrap expressions",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example("guard let self = self else { return }"),
-      Example("guard let self else { return }"),
-    ],
-    triggeringExamples: [
-      Example("guard let ↓`self` = self else { return }"),
-    ],
-  )
 }
 
 extension StrongifiedSelfRule: SwiftSyntaxRule {

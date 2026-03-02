@@ -5,15 +5,6 @@ struct LegacyConstantRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = LegacyConstantConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "legacy_constant",
-    name: "Legacy Constant",
-    description: "Struct-scoped constants are preferred over legacy global constants",
-    nonTriggeringExamples: LegacyConstantRuleExamples.nonTriggeringExamples,
-    triggeringExamples: LegacyConstantRuleExamples.triggeringExamples,
-    corrections: LegacyConstantRuleExamples.corrections,
-  )
 }
 
 extension LegacyConstantRule: SwiftSyntaxCorrectableRule {

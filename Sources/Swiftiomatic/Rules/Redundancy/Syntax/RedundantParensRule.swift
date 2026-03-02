@@ -4,31 +4,6 @@ struct RedundantParensRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = RedundantParensConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_parens",
-    name: "Redundant Parentheses",
-    description:
-      "Redundant parentheses around expressions in control flow statements should be removed",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("if foo == true {}"),
-      Example("while !flag {}"),
-      Example("let x = (a, b)"),
-      Example("let x = (a + b) * c"),
-      Example("switch (a, b) { default: break }"),
-      Example("func foo(bar: Int) {}"),
-    ],
-    triggeringExamples: [
-      Example("if ↓(foo == true) {}"),
-      Example("while ↓(flag) {}"),
-      Example("guard ↓(condition) else { return }"),
-    ],
-    corrections: [
-      Example("if ↓(foo == true) {}"): Example("if foo == true {}"),
-      Example("while ↓(flag) {}"): Example("while flag {}"),
-    ],
-  )
 }
 
 extension RedundantParensRule: SwiftSyntaxCorrectableRule {

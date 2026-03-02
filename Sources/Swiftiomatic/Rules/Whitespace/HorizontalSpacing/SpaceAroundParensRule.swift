@@ -4,27 +4,6 @@ struct SpaceAroundParensRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = SpaceAroundParensConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "space_around_parens",
-    name: "Space Around Parentheses",
-    description:
-      "No space between function name and opening paren; space required after closing paren before identifiers",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("foo(bar)"),
-      Example("init(foo: Int)"),
-      Example("if (condition) {}"),
-      Example("switch (x) {}"),
-    ],
-    triggeringExamples: [
-      Example("foo↓ (bar)"),
-      Example("init↓ (foo: Int)"),
-    ],
-    corrections: [
-      Example("foo↓ (bar)"): Example("foo(bar)")
-    ],
-  )
 }
 
 extension SpaceAroundParensRule: SwiftSyntaxCorrectableRule {

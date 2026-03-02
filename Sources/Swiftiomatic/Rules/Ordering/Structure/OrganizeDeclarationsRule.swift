@@ -4,36 +4,6 @@ struct OrganizeDeclarationsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = OrganizeDeclarationsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "organize_declarations",
-    name: "Organize Declarations",
-    description:
-      "Declarations within type bodies should be organized by category (properties, lifecycle, methods)",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        struct Foo {
-          let bar: Int
-          init(bar: Int) { self.bar = bar }
-          func baz() {}
-        }
-        """,
-      )
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        struct ↓Foo {
-          func baz() {}
-          let bar: Int
-          init(bar: Int) { self.bar = bar }
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension OrganizeDeclarationsRule: SwiftSyntaxRule {

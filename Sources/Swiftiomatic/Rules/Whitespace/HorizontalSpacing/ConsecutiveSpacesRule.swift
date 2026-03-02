@@ -4,26 +4,6 @@ struct ConsecutiveSpacesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ConsecutiveSpacesConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "consecutive_spaces",
-    name: "Consecutive Spaces",
-    description: "Multiple consecutive spaces should be replaced with a single space",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("let foo = 5"),
-      Example("// comment with   multiple spaces"),
-      Example("/* block   comment */"),
-    ],
-    triggeringExamples: [
-      Example("let  ↓foo = 5"),
-      Example("let foo =  ↓5"),
-    ],
-    corrections: [
-      Example("let  ↓foo = 5"): Example("let foo = 5"),
-      Example("let foo =  ↓5"): Example("let foo = 5"),
-    ],
-  )
 }
 
 extension ConsecutiveSpacesRule: SwiftSyntaxCorrectableRule {

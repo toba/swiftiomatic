@@ -4,26 +4,6 @@ struct TrailingSemicolonRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = TrailingSemicolonConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "trailing_semicolon",
-    name: "Trailing Semicolon",
-    description: "Lines should not have trailing semicolons",
-    nonTriggeringExamples: [
-      Example("let a = 0"),
-      Example("let a = 0; let b = 0"),
-    ],
-    triggeringExamples: [
-      Example("let a = 0↓;\n"),
-      Example("let a = 0↓;\nlet b = 1"),
-      Example("let a = 0↓; // a comment\n"),
-    ],
-    corrections: [
-      Example("let a = 0↓;\n"): Example("let a = 0\n"),
-      Example("let a = 0↓;\nlet b = 1"): Example("let a = 0\nlet b = 1"),
-      Example("let foo = 12↓;  // comment\n"): Example("let foo = 12  // comment\n"),
-    ],
-  )
 }
 
 extension TrailingSemicolonRule: SwiftSyntaxCorrectableRule {

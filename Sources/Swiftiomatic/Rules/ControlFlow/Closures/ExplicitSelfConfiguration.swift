@@ -7,4 +7,13 @@ struct ExplicitSelfConfiguration: RuleConfiguration {
     let requiresSourceKit = true
     let requiresCompilerArguments = true
     let requiresFileOnDisk = true
+    var nonTriggeringExamples: [Example] {
+        ExplicitSelfRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        ExplicitSelfRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        ExplicitSelfRuleExamples.corrections
+    }
 }

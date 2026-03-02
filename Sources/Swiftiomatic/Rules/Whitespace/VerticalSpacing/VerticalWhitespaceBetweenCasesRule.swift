@@ -5,20 +5,6 @@ struct VerticalWhitespaceBetweenCasesRule {
   var options = VerticalWhitespaceBetweenCasesOptions()
 
   static let configuration = VerticalWhitespaceBetweenCasesConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "vertical_whitespace_between_cases",
-    name: "Vertical Whitespace Between Cases",
-    description: "Include a single empty line between switch cases",
-    isOptIn: true,
-    nonTriggeringExamples: VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
-      .values.sorted() + VerticalWhitespaceBetweenCasesRuleExamples.nonTriggeringExamples,
-    triggeringExamples: Array(
-      VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples.keys.sorted(),
-    ),
-    corrections: VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
-      .removingViolationMarkers(),
-  )
 }
 
 extension VerticalWhitespaceBetweenCasesRule: SwiftSyntaxCorrectableRule {

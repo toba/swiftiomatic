@@ -7,4 +7,13 @@ struct UnusedImportConfiguration: RuleConfiguration {
     let requiresSourceKit = true
     let requiresCompilerArguments = true
     let requiresFileOnDisk = true
+    var nonTriggeringExamples: [Example] {
+        UnusedImportRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        UnusedImportRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        UnusedImportRuleExamples.corrections
+    }
 }

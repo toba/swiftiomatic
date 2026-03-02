@@ -4,53 +4,6 @@ struct ClosureSpacingRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ClosureSpacingConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "closure_spacing",
-    name: "Closure Spacing",
-    description: "Closure expressions should have a single space inside each brace",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("[].map ({ $0.description })"),
-      Example("[].filter { $0.contains(location) }"),
-      Example("extension UITableViewCell: ReusableView { }"),
-      Example("extension UITableViewCell: ReusableView {}"),
-      Example(#"let r = /\{\}/"#, isExcludedFromDocumentation: true),
-      Example(
-        """
-        var tapped: (UITapGestureRecognizer) -> Void = { _ in /* no-op */ }
-        """, isExcludedFromDocumentation: true,
-      ),
-      Example(
-        """
-        let test1 = func1(arg: { /* do nothing */ })
-        let test2 = func1 { /* do nothing */ }
-        """, isExcludedFromDocumentation: true,
-      ),
-    ],
-    triggeringExamples: [
-      Example("[].filter↓{ $0.contains(location) }"),
-      Example("[].filter(↓{$0.contains(location)})"),
-      Example("[].map(↓{$0})"),
-      Example("(↓{each in return result.contains(where: ↓{e in return e}) }).count"),
-      Example("filter ↓{ sorted ↓{ $0 < $1}}"),
-      Example(
-        """
-        var tapped: (UITapGestureRecognizer) -> Void = ↓{ _ in /* no-op */  }
-        """, isExcludedFromDocumentation: true,
-      ),
-    ],
-    corrections: [
-      Example("[].filter(↓{$0.contains(location) })"):
-        Example("[].filter({ $0.contains(location) })"),
-      Example("[].map(↓{$0})"):
-        Example("[].map({ $0 })"),
-      Example("filter ↓{sorted ↓{ $0 < $1}}"):
-        Example("filter { sorted { $0 < $1 } }"),
-      Example("(↓{each in return result.contains(where: ↓{e in return 0})}).count"):
-        Example("({ each in return result.contains(where: { e in return 0 }) }).count"),
-    ],
-  )
 }
 
 extension ClosureSpacingRule: SwiftSyntaxCorrectableRule {

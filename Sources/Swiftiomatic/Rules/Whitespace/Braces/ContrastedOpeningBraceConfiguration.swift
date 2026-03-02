@@ -4,4 +4,13 @@ struct ContrastedOpeningBraceConfiguration: RuleConfiguration {
     let summary = ""
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        ContrastedOpeningBraceRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        ContrastedOpeningBraceRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        ContrastedOpeningBraceRuleExamples.corrections
+    }
 }

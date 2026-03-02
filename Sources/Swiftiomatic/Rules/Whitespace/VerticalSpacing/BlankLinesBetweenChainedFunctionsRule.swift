@@ -4,31 +4,6 @@ struct BlankLinesBetweenChainedFunctionsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = BlankLinesBetweenChainedFunctionsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "blank_lines_between_chained_functions",
-    name: "Blank Lines Between Chained Functions",
-    description:
-      "There should be no blank lines between chained function calls",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example(
-        """
-        [0, 1, 2]
-            .map { $0 * 2 }
-            .filter { $0 > 0 }
-        """)
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        [0, 1, 2]
-            .map { $0 * 2 }
-
-            ↓.filter { $0 > 0 }
-        """)
-    ],
-  )
 }
 
 extension BlankLinesBetweenChainedFunctionsRule: SwiftSyntaxRule {

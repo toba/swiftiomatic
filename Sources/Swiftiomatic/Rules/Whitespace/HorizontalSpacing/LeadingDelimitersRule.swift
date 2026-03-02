@@ -4,28 +4,6 @@ struct LeadingDelimitersRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = LeadingDelimitersConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "leading_delimiters",
-    name: "Leading Delimiters",
-    description:
-      "Delimiters should not appear at the start of a line; move them to the end of the previous line",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example(
-        """
-        guard let foo = maybeFoo,
-              let bar = maybeBar else { return }
-        """)
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        guard let foo = maybeFoo
-              ↓, let bar = maybeBar else { return }
-        """)
-    ],
-  )
 }
 
 extension LeadingDelimitersRule: SwiftSyntaxRule {

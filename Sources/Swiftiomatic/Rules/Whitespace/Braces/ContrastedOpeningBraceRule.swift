@@ -5,23 +5,6 @@ struct ContrastedOpeningBraceRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ContrastedOpeningBraceConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "contrasted_opening_brace",
-    name: "Contrasted Opening Brace",
-    description: """
-      The correct positioning of braces that introduce a block of code or member list is highly controversial. \
-      No matter which style is preferred, consistency is key. Apart from different tastes, \
-      the positioning of braces can also have a significant impact on the readability of the code, \
-      especially for visually impaired developers. This rule ensures that braces are on a separate line \
-      after the declaration to contrast the code block from the rest of the declaration. Comments between the \
-      declaration and the opening brace are respected. Check out the `opening_brace` rule for a different style.
-      """,
-    isOptIn: true,
-    nonTriggeringExamples: ContrastedOpeningBraceRuleExamples.nonTriggeringExamples,
-    triggeringExamples: ContrastedOpeningBraceRuleExamples.triggeringExamples,
-    corrections: ContrastedOpeningBraceRuleExamples.corrections,
-  )
 }
 
 extension ContrastedOpeningBraceRule: SwiftSyntaxCorrectableRule {

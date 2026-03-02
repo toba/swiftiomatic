@@ -21,27 +21,6 @@ struct IndentationWidthRule: Rule {
 
   static let configuration = IndentationWidthConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "indentation_width",
-    name: "Indentation Width",
-    description: "Indent code using either one tab or the configured amount of spaces, "
-      + "unindent to match previous indentations. Don't indent the first line.",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("firstLine\nsecondLine"),
-      Example("firstLine\n    secondLine"),
-      Example("firstLine\n\tsecondLine\n\t\tthirdLine\n\n\t\tfourthLine"),
-      Example("firstLine\n\tsecondLine\n\t\tthirdLine\n\t//test\n\t\tfourthLine"),
-      Example("firstLine\n    secondLine\n        thirdLine\nfourthLine"),
-    ],
-    triggeringExamples: [
-      Example("↓    firstLine", shouldTestMultiByteOffsets: false, shouldTestDisableCommand: false),
-      Example("firstLine\n        secondLine"),
-      Example("firstLine\n\tsecondLine\n\n↓\t\t\tfourthLine"),
-      Example("firstLine\n    secondLine\n        thirdLine\n↓ fourthLine"),
-    ].skipWrappingInCommentTests(),
-  )
-
   // MARK: - Initializers
 
   // MARK: - Methods: Validation

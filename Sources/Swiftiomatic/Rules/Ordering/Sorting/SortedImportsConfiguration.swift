@@ -4,4 +4,13 @@ struct SortedImportsConfiguration: RuleConfiguration {
     let summary = "Imports should be sorted"
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        SortedImportsRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        SortedImportsRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        SortedImportsRuleExamples.corrections
+    }
 }

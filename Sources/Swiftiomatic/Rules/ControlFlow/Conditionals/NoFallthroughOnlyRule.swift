@@ -4,15 +4,6 @@ struct NoFallthroughOnlyRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = NoFallthroughOnlyConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "no_fallthrough_only",
-    name: "No Fallthrough only",
-    description:
-      "Fallthroughs can only be used if the `case` contains at least one other statement",
-    nonTriggeringExamples: NoFallthroughOnlyRuleExamples.nonTriggeringExamples,
-    triggeringExamples: NoFallthroughOnlyRuleExamples.triggeringExamples,
-  )
 }
 
 extension NoFallthroughOnlyRule: SwiftSyntaxRule {

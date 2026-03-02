@@ -4,4 +4,13 @@ struct FunctionNameWhitespaceConfiguration: RuleConfiguration {
     let summary = "There should be consistent whitespace before and after function names and generic parameters."
     let isCorrectable = true
     let deprecatedAliases: Set<String> = ["operator_whitespace"]
+    var nonTriggeringExamples: [Example] {
+        FunctionNameWhitespaceRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        FunctionNameWhitespaceRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        FunctionNameWhitespaceRuleExamples.corrections
+    }
 }

@@ -4,55 +4,6 @@ struct EnumNamespacesRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = EnumNamespacesConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "enum_namespaces",
-    name: "Enum Namespaces",
-    description:
-      "Types hosting only static members should be enums to prevent instantiation",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        enum Constants {
-          static let foo = "foo"
-        }
-        """,
-      ),
-      Example(
-        """
-        struct Foo {
-          let bar: Int
-        }
-        """,
-      ),
-      Example(
-        """
-        struct Foo {
-          static let bar = 1
-          init() {}
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        ↓struct Constants {
-          static let foo = "foo"
-          static let bar = "bar"
-        }
-        """,
-      ),
-      Example(
-        """
-        final ↓class Constants {
-          static let foo = "foo"
-        }
-        """,
-      ),
-    ],
-  )
 }
 
 extension EnumNamespacesRule: SwiftSyntaxRule {

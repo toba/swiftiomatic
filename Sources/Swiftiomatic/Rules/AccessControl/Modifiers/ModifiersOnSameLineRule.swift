@@ -4,37 +4,6 @@ struct ModifiersOnSameLineRule {
     var options = SeverityConfiguration<Self>(.warning)
 
     static let configuration = ModifiersOnSameLineConfiguration()
-
-    static let description = RuleDescription(
-        identifier: "modifiers_on_same_line",
-        name: "Modifiers on Same Line",
-        description: "Modifiers should be on the same line as the declaration keyword",
-        scope: .format,
-        nonTriggeringExamples: [
-            Example("public var foo: Foo"),
-            Example("@MainActor public private(set) var foo: Foo"),
-            Example("nonisolated func bar() {}"),
-        ],
-        triggeringExamples: [
-            Example(
-                """
-                ↓public
-                private(set)
-                var foo: Foo
-                """,
-            ),
-            Example(
-                """
-                ↓nonisolated
-                func bar() {}
-                """,
-            ),
-        ],
-        corrections: [
-            Example("↓public\nvar foo: Foo"): Example("public var foo: Foo"),
-            Example("↓nonisolated\nfunc bar() {}"): Example("nonisolated func bar() {}"),
-        ],
-    )
 }
 
 extension ModifiersOnSameLineRule: SwiftSyntaxCorrectableRule {

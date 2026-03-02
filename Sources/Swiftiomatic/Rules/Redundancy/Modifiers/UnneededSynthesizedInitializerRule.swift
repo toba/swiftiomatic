@@ -19,16 +19,6 @@ struct UnneededSynthesizedInitializerRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = UnneededSynthesizedInitializerConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "unneeded_synthesized_initializer",
-    name: "Unneeded Synthesized Initializer",
-    description: "Default or memberwise initializers that will be automatically synthesized "
-      + "do not need to be manually defined.",
-    nonTriggeringExamples: UnneededSynthesizedInitializerRuleExamples.nonTriggering,
-    triggeringExamples: UnneededSynthesizedInitializerRuleExamples.triggering,
-    corrections: UnneededSynthesizedInitializerRuleExamples.corrections,
-  )
 }
 
 extension UnneededSynthesizedInitializerRule: SwiftSyntaxCorrectableRule {

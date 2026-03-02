@@ -4,44 +4,6 @@ struct XCTFailMessageRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = XCTFailMessageConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "xctfail_message",
-    name: "XCTFail Message",
-    description: "An XCTFail call should include a description of the assertion",
-    nonTriggeringExamples: [
-      Example(
-        """
-        func testFoo() {
-          XCTFail("bar")
-        }
-        """,
-      ),
-      Example(
-        """
-        func testFoo() {
-          XCTFail(bar)
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        func testFoo() {
-          ↓XCTFail()
-        }
-        """,
-      ),
-      Example(
-        """
-        func testFoo() {
-          ↓XCTFail("")
-        }
-        """,
-      ),
-    ],
-  )
 }
 
 extension XCTFailMessageRule: SwiftSyntaxRule {

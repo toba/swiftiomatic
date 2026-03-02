@@ -4,24 +4,6 @@ struct AnyEliminationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = AnyEliminationConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "any_elimination",
-    name: "Any Elimination",
-    description:
-      "Usage of Any/AnyObject erases type safety and should be replaced with specific types or generics",
-    scope: .suggest,
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("var name: String = \"\""),
-      Example("func process(_ item: Codable) {}"),
-    ],
-    triggeringExamples: [
-      Example("var value: ↓Any = 0"),
-      Example("func process(_ dict: ↓[String: Any]) {}"),
-      Example("let x = value ↓as! String"),
-    ],
-  )
 }
 
 extension AnyEliminationRule: SwiftSyntaxRule {

@@ -10,15 +10,6 @@ struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule 
 
   static let configuration = RedundantObjcAttributeConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "redundant_objc_attribute",
-    name: "Redundant @objc Attribute",
-    description: "Objective-C attribute (@objc) is redundant in declaration",
-    nonTriggeringExamples: RedundantObjcAttributeRuleExamples.nonTriggeringExamples,
-    triggeringExamples: RedundantObjcAttributeRuleExamples.triggeringExamples,
-    corrections: RedundantObjcAttributeRuleExamples.corrections,
-  )
-
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     final class Visitor: ViolationCollectingVisitor<OptionsType> {
       override func visitPost(_ node: AttributeListSyntax) {

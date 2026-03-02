@@ -4,37 +4,6 @@ struct DocCommentsBeforeModifiersRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = DocCommentsBeforeModifiersConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "doc_comments_before_modifiers",
-    name: "Doc Comments Before Modifiers",
-    description: "Doc comments should appear before any modifiers or attributes",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        /// Doc comment
-        @MainActor
-        func foo() {}
-        """,
-      ),
-      Example(
-        """
-        /// Doc comment
-        public func foo() {}
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        @MainActor
-        ↓/// Doc comment
-        func foo() {}
-        """,
-      )
-    ],
-  )
 }
 
 extension DocCommentsBeforeModifiersRule: SwiftSyntaxRule {

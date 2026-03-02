@@ -4,16 +4,6 @@ struct ClosureEndIndentationRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = ClosureEndIndentationConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "closure_end_indentation",
-    name: "Closure End Indentation",
-    description: "Closure end should have the same indentation as the line that started it.",
-    isOptIn: true,
-    nonTriggeringExamples: ClosureEndIndentationRuleExamples.nonTriggeringExamples,
-    triggeringExamples: ClosureEndIndentationRuleExamples.triggeringExamples,
-    corrections: ClosureEndIndentationRuleExamples.corrections,
-  )
 }
 
 extension ClosureEndIndentationRule: SwiftSyntaxCorrectableRule {

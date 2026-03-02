@@ -4,20 +4,6 @@ struct FlatMapOverMapReduceRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = FlatMapOverMapReduceConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "flatmap_over_map_reduce",
-    name: "Flat Map over Map Reduce",
-    description: "Prefer `flatMap` over `map` followed by `reduce([], +)`",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("let foo = bar.map { $0.count }.reduce(0, +)"),
-      Example("let foo = bar.flatMap { $0.array }"),
-    ],
-    triggeringExamples: [
-      Example("let foo = ↓bar.map { $0.array }.reduce([], +)")
-    ],
-  )
 }
 
 extension FlatMapOverMapReduceRule: SwiftSyntaxRule {

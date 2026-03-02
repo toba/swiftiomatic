@@ -4,16 +4,6 @@ struct ForceCastRule {
   var options = SeverityConfiguration<Self>(.error)
 
   static let configuration = ForceCastConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "force_cast",
-    name: "Force Cast",
-    description: "Force casts should be avoided",
-    nonTriggeringExamples: [
-      Example("NSNumber() as? Int")
-    ],
-    triggeringExamples: [Example("NSNumber() ↓as! Int")],
-  )
 }
 
 extension ForceCastRule: SwiftSyntaxRule {

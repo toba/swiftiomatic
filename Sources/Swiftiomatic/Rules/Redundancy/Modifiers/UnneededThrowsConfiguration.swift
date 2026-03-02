@@ -4,4 +4,13 @@ struct UnneededThrowsConfiguration: RuleConfiguration {
     let summary = "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`."
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        UnneededThrowsRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        UnneededThrowsRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        UnneededThrowsRuleExamples.corrections
+    }
 }

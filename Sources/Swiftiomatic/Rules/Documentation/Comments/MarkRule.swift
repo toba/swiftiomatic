@@ -5,15 +5,6 @@ struct MarkRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = MarkConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "mark",
-    name: "Mark",
-    description: "MARK comment should be in valid format. e.g. '// MARK: ...' or '// MARK: - ...'",
-    nonTriggeringExamples: MarkRuleExamples.nonTriggeringExamples,
-    triggeringExamples: MarkRuleExamples.triggeringExamples,
-    corrections: MarkRuleExamples.corrections,
-  )
 }
 
 extension MarkRule: SwiftSyntaxCorrectableRule {

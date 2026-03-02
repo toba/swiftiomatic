@@ -4,45 +4,6 @@ struct RedundantPublicRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = RedundantPublicConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_public",
-    name: "Redundant Public",
-    description: "`public` on members of internal types has no effect",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        public class Foo {
-          public func bar() {}
-        }
-        """,
-      ),
-      Example(
-        """
-        class Foo {
-          func bar() {}
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        class Foo {
-          ↓public func bar() {}
-        }
-        """,
-      ),
-      Example(
-        """
-        struct Foo {
-          ↓public let bar: String
-        }
-        """,
-      ),
-    ],
-  )
 }
 
 extension RedundantPublicRule: SwiftSyntaxRule {

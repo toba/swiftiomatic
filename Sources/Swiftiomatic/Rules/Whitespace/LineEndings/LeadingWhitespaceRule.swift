@@ -5,22 +5,6 @@ struct LeadingWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
 
   static let configuration = LeadingWhitespaceConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "leading_whitespace",
-    name: "Leading Whitespace",
-    description: "Files should not contain leading whitespace",
-    nonTriggeringExamples: [
-      Example("//")
-    ],
-    triggeringExamples: [
-      Example("\n//"),
-      Example(" //"),
-    ].skipMultiByteOffsetTests().skipDisableCommandTests(),
-    corrections: [
-      Example("\n //", shouldTestMultiByteOffsets: false): Example("//")
-    ],
-  )
-
   func validate(file: SwiftSource) -> [RuleViolation] {
     let countOfLeadingWhitespace = file.contents.countOfLeadingCharacters(
       in: .whitespacesAndNewlines,

@@ -4,22 +4,6 @@ struct LinebreaksRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = LinebreaksConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "linebreaks",
-    name: "Linebreaks",
-    description: "Use consistent linebreak characters (LF)",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example("let a = 0\nlet b = 1\n")
-    ],
-    triggeringExamples: [
-      Example("let a = 0\r\n↓let b = 1\r\n")
-    ],
-    corrections: [
-      Example("let a = 0\r\n↓let b = 1\r\n"): Example("let a = 0\nlet b = 1\n")
-    ],
-  )
 }
 
 extension LinebreaksRule: SwiftSyntaxCorrectableRule {

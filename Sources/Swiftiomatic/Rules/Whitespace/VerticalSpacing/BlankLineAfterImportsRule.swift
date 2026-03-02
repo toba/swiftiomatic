@@ -4,38 +4,6 @@ struct BlankLineAfterImportsRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = BlankLineAfterImportsConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "blank_line_after_imports",
-    name: "Blank Line After Imports",
-    description: "There should be a blank line after import statements",
-    scope: .format,
-    nonTriggeringExamples: [
-      Example(
-        """
-        import Foundation
-
-        class Foo {}
-        """),
-      Example(
-        """
-        import Foundation
-        import UIKit
-
-        class Foo {}
-        """),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        import Foundation
-        ↓class Foo {}
-        """)
-    ],
-    corrections: [
-      Example("import Foundation\n↓class Foo {}"): Example("import Foundation\n\nclass Foo {}")
-    ],
-  )
 }
 
 extension BlankLineAfterImportsRule: SwiftSyntaxCorrectableRule {

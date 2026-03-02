@@ -4,53 +4,6 @@ struct OneDeclarationPerFileRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = OneDeclarationPerFileConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "one_declaration_per_file",
-    name: "One Declaration per File",
-    description: "Only a single declaration is allowed in a file",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example(
-        """
-        actor Foo {}
-        """,
-      ),
-      Example(
-        """
-        class Foo {}
-        extension Foo {}
-        """,
-      ),
-      Example(
-        """
-        struct S {
-            struct N {}
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        class Foo {}
-        ↓class Bar {}
-        """,
-      ),
-      Example(
-        """
-        protocol Foo {}
-        ↓enum Bar {}
-        """,
-      ),
-      Example(
-        """
-        struct Foo {}
-        ↓struct Bar {}
-        """,
-      ),
-    ],
-  )
 }
 
 extension OneDeclarationPerFileRule: SwiftSyntaxRule {

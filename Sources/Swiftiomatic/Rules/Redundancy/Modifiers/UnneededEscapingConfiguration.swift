@@ -4,4 +4,13 @@ struct UnneededEscapingConfiguration: RuleConfiguration {
     let summary = "The `@escaping` attribute should only be used when the closure actually escapes."
     let isCorrectable = true
     let isOptIn = true
+    var nonTriggeringExamples: [Example] {
+        UnneededEscapingRuleExamples.nonTriggeringExamples
+    }
+    var triggeringExamples: [Example] {
+        UnneededEscapingRuleExamples.triggeringExamples
+    }
+    var corrections: [Example: Example] {
+        UnneededEscapingRuleExamples.corrections
+    }
 }

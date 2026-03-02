@@ -4,46 +4,6 @@ struct RedundantEquatableRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = RedundantEquatableConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "redundant_equatable",
-    name: "Redundant Equatable",
-    description:
-      "Structs conforming to Equatable can rely on synthesized `==` instead of implementing it manually",
-    scope: .suggest,
-    nonTriggeringExamples: [
-      Example(
-        """
-        struct Foo: Equatable {
-          let bar: Int
-        }
-        """,
-      ),
-      Example(
-        """
-        struct Foo: Equatable {
-          let bar: Int
-          static func == (lhs: Foo, rhs: Foo) -> Bool {
-            lhs.bar == rhs.bar && someOtherCondition
-          }
-        }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        struct Foo: Equatable {
-          let bar: Int
-          let baz: String
-          ↓static func == (lhs: Foo, rhs: Foo) -> Bool {
-            lhs.bar == rhs.bar && lhs.baz == rhs.baz
-          }
-        }
-        """,
-      )
-    ],
-  )
 }
 
 extension RedundantEquatableRule: SwiftSyntaxRule {

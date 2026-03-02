@@ -6,16 +6,6 @@ struct OperatorUsageWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
 
   static let configuration = OperatorUsageWhitespaceConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "operator_usage_whitespace",
-    name: "Operator Usage Whitespace",
-    description: "Operators should be surrounded by a single whitespace when they are being used",
-    isOptIn: true,
-    nonTriggeringExamples: OperatorUsageWhitespaceRuleExamples.nonTriggeringExamples,
-    triggeringExamples: OperatorUsageWhitespaceRuleExamples.triggeringExamples,
-    corrections: OperatorUsageWhitespaceRuleExamples.corrections,
-  )
-
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(file: file).map { range, _ in
       RuleViolation(

@@ -4,14 +4,6 @@ struct NSObjectPreferIsEqualRule {
   var options = SeverityConfiguration<Self>(.warning)
 
   static let configuration = NSObjectPreferIsEqualConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "nsobject_prefer_isequal",
-    name: "NSObject Prefer isEqual",
-    description: "NSObject subclasses should implement isEqual instead of ==",
-    nonTriggeringExamples: NSObjectPreferIsEqualRuleExamples.nonTriggeringExamples,
-    triggeringExamples: NSObjectPreferIsEqualRuleExamples.triggeringExamples,
-  )
 }
 
 extension NSObjectPreferIsEqualRule: SwiftSyntaxRule {

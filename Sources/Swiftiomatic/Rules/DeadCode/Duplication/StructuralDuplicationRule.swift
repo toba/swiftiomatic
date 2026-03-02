@@ -7,18 +7,6 @@ struct StructuralDuplicationRule: CollectingRule {
 
   static let configuration = StructuralDuplicationConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "structural_duplication",
-    name: "Structural Duplication",
-    description:
-      "Functions with identical AST structure are likely duplicated code that should be consolidated",
-    isOptIn: true,
-    nonTriggeringExamples: [
-      Example("func unique1() { print(1) }\nfunc unique2() { return 2 }")
-    ],
-    triggeringExamples: [],
-  )
-
   func collectInfo(for file: SwiftSource) -> [FunctionFingerprint] {
     guard let path = file.path else { return [] }
     let collector = FingerprintCollector(filePath: path, viewMode: .sourceAccurate)

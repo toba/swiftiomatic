@@ -3,4 +3,13 @@ struct UnneededSynthesizedInitializerConfiguration: RuleConfiguration {
     let name = "Unneeded Synthesized Initializer"
     let summary = "Default or memberwise initializers that will be automatically synthesized do not need to be manually defined."
     let isCorrectable = true
+    var nonTriggeringExamples: [Example] {
+        UnneededSynthesizedInitializerRuleExamples.nonTriggering
+    }
+    var triggeringExamples: [Example] {
+        UnneededSynthesizedInitializerRuleExamples.triggering
+    }
+    var corrections: [Example: Example] {
+        UnneededSynthesizedInitializerRuleExamples.corrections
+    }
 }

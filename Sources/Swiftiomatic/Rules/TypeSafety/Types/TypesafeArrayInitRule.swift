@@ -5,66 +5,6 @@ struct TypesafeArrayInitRule: AnalyzerRule {
 
   static let configuration = TypesafeArrayInitConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "typesafe_array_init",
-    name: "Type-safe Array Init",
-    description: ArrayInitRule.description.description,
-    isOptIn: true,
-    requiresSourceKit: true,
-    requiresCompilerArguments: true,
-    nonTriggeringExamples: [
-      Example(
-        """
-        enum MyError: Error {}
-        let myResult: Result<String, MyError> = .success("")
-        let result: Result<Any, MyError> = myResult.map { $0 }
-        """,
-      ),
-      Example(
-        """
-        struct IntArray {
-            let elements = [1, 2, 3]
-            func map<T>(_ transformer: (Int) throws -> T) rethrows -> [T] {
-                try elements.map(transformer)
-            }
-        }
-        let ints = IntArray()
-        let intsCopy = ints.map { $0 }
-        """,
-      ),
-    ],
-    triggeringExamples: [
-      Example(
-        """
-        func f<Seq: Sequence>(s: Seq) -> [Seq.Element] {
-            s.↓map({ $0 })
-        }
-        """,
-      ),
-      Example(
-        """
-        func f(array: [Int]) -> [Int] {
-            array.↓map { $0 }
-        }
-        """,
-      ),
-      Example(
-        """
-        let myInts = [1, 2, 3].↓map { return $0 }
-        """,
-      ),
-      Example(
-        """
-        struct Generator: Sequence, IteratorProtocol {
-            func next() -> Int? { nil }
-        }
-        let array = Generator().↓map { i in i }
-        """,
-      ),
-    ],
-    requiresFileOnDisk: true,
-  )
-
   private static let parentRule = ArrayInitRule()
   private static let mapTypePatterns = [
     regex(
