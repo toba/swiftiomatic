@@ -14,7 +14,7 @@ struct ImplicitReturnOptions: SeverityBasedRuleOptions {
   static let defaultIncludedKinds = Set(ReturnKind.allCases)
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "included")
   private(set) var includedKinds = Self.defaultIncludedKinds
 

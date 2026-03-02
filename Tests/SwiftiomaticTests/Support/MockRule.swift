@@ -3,7 +3,7 @@
 struct MockRule: Rule {
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   static let id = "MockRule"
   static let name = ""

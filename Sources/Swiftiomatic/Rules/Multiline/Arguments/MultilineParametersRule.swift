@@ -5,12 +5,6 @@ struct MultilineParametersRule {
     static let name = "Multiline Parameters"
     static let summary = "Functions and methods parameters should be either on the same line, or one per line"
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        MultilineParametersRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        MultilineParametersRuleExamples.triggeringExamples
-    }
   var options = MultilineParametersOptions()
 
 }

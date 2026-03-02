@@ -11,7 +11,7 @@ struct DiscouragedOptionalCollectionRule {
     static var triggeringExamples: [Example] {
         DiscouragedOptionalCollectionExamples.triggeringExamples
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

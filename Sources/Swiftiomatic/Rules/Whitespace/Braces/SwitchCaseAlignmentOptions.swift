@@ -1,6 +1,6 @@
 struct SwitchCaseAlignmentOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "indented_cases")
   private(set) var indentedCases = false
   @OptionElement(key: "ignore_one_liners")

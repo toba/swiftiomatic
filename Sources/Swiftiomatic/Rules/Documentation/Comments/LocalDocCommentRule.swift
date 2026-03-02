@@ -49,7 +49,7 @@ struct LocalDocCommentRule: SwiftSyntaxRule {
               )
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(

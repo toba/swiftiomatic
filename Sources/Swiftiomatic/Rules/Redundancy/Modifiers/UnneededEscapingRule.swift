@@ -7,16 +7,7 @@ struct UnneededEscapingRule {
     static let summary = "The `@escaping` attribute should only be used when the closure actually escapes."
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        UnneededEscapingRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        UnneededEscapingRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        UnneededEscapingRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

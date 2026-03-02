@@ -20,7 +20,7 @@ struct AnyEliminationRule {
               Example("let x = value ↓as! String"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

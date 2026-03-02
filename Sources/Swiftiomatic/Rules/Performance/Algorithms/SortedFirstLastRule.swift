@@ -45,7 +45,7 @@ struct SortedFirstLastRule {
               Example("↓myList.map { $0 + 1 }.sorted { $0.first < $1.first }.last"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -1,6 +1,6 @@
 struct ShorthandArgumentOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "allow_until_line_after_opening_brace")
   private(set) var allowUntilLineAfterOpeningBrace = 4
   @OptionElement(key: "always_disallow_more_than_one")

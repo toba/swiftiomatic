@@ -6,7 +6,7 @@ typealias PrivateUnitTestOptions = UnitTestOptions<PrivateUnitTestRule>
 
 struct UnitTestOptions<Parent: Rule>: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(
     key: "test_parent_classes",
     postprocessor: { $0.formUnion(["QuickSpec", "XCTestCase"]) },

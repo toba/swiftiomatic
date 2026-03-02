@@ -1,6 +1,6 @@
 struct TrailingClosureOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "only_single_muted_parameter")
   private(set) var onlySingleMutedParameter = false
   typealias Parent = TrailingClosureRule

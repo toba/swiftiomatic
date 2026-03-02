@@ -45,7 +45,7 @@ struct OverrideInExtensionRule: SwiftSyntaxRule {
               Example("extension Person {\n  override ↓func celebrateBirthday() {}\n}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     let allowedExtensions = ClassNameCollectingVisitor(

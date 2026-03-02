@@ -1,6 +1,6 @@
 struct UnusedDeclarationOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>.error
+  var severityConfiguration = SeverityOption<Parent>.error
   @OptionElement(key: "include_public_and_open")
   private(set) var includePublicAndOpen = false
   @OptionElement(

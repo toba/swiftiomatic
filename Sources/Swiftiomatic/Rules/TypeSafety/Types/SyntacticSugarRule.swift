@@ -6,16 +6,7 @@ struct SyntacticSugarRule: CorrectableRule, SyntaxOnlyRule {
     static let name = "Syntactic Sugar"
     static let summary = "Shorthand syntactic sugar should be used, i.e. [Int] instead of Array<Int>."
     static let isCorrectable = true
-    static var nonTriggeringExamples: [Example] {
-        SyntacticSugarRuleExamples.nonTriggering
-    }
-    static var triggeringExamples: [Example] {
-        SyntacticSugarRuleExamples.triggering
-    }
-    static var corrections: [Example: Example] {
-        SyntacticSugarRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     let visitor = SyntacticSugarRuleVisitor(viewMode: .sourceAccurate)

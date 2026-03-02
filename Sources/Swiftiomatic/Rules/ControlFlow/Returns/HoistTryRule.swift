@@ -25,7 +25,7 @@ struct HoistTryRule {
               Example("let result = foo(↓try bar())"): Example("let result = try foo(bar())")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

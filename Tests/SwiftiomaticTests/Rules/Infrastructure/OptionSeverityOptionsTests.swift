@@ -2,8 +2,8 @@ import Testing
 
 @testable import Swiftiomatic
 
-@Suite(.rulesRegistered) struct OptionSeverityConfigurationTests {
-  typealias TesteeType = OptionSeverityConfiguration<MockRule>
+@Suite(.rulesRegistered) struct OptionSeverityOptionTests {
+  typealias TesteeType = OptionSeverityOption<MockRule>
 
   @Test func severity() {
     #expect(TesteeType.off.severity == nil)

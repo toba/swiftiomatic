@@ -42,7 +42,7 @@ struct InvalidCommandRule: Rule, SyntaxOnlyRule {
               Example("// 🤵🏼‍♀️sm:disable unused_import", isExcludedFromDocumentation: true),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     badPrefixViolations(in: file) + invalidCommandViolations(in: file)

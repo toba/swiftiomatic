@@ -20,7 +20,7 @@ struct NoGroupingExtensionRule {
               Example("extension External { struct Gotcha {}}\n↓extension External.Gotcha {}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     Visitor(configuration: options, file: file)

@@ -23,7 +23,7 @@ struct SpaceInsideParensRule {
               Example("(↓ a, b )"): Example("(a, b)")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

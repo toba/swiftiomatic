@@ -29,7 +29,7 @@ struct ContainsOverFirstNotNilRule {
             }
         }
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

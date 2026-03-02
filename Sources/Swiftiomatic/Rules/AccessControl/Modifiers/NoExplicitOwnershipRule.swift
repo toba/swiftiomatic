@@ -23,7 +23,7 @@ struct NoExplicitOwnershipRule {
                     Example("func foo(_ bar: ↓consuming Bar) {}"): Example("func foo(_ bar: Bar) {}"),
                 ]
     }
-    var options = SeverityConfiguration<Self>(.warning)
+    var options = SeverityOption<Self>(.warning)
 
 }
 

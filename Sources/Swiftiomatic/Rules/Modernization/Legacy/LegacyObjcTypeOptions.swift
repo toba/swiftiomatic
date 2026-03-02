@@ -1,6 +1,6 @@
 struct LegacyObjcTypeOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>.warning
+  var severityConfiguration = SeverityOption<Parent>.warning
   @OptionElement(key: "allowed_types")
   private(set) var allowedTypes: Set<String> = []
   typealias Parent = LegacyObjcTypeRule

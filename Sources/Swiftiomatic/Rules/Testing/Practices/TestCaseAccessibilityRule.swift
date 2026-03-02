@@ -6,15 +6,6 @@ struct TestCaseAccessibilityRule {
     static let summary = "Test cases should only contain private non-test members"
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        TestCaseAccessibilityRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        TestCaseAccessibilityRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        TestCaseAccessibilityRuleExamples.corrections
-    }
   var options = TestCaseAccessibilityOptions()
 
 }

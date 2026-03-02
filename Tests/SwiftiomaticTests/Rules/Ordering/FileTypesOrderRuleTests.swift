@@ -7,7 +7,7 @@ import Testing
     // Test with reversed `order` entries
     let nonTriggeringExamples = [
       Example(
-        FileTypesOrderRuleExamples.defaultOrderParts.reversed()
+        FileTypesOrderRule.defaultOrderParts.reversed()
           .joined(separator: "\n\n"))
     ]
     let triggeringExamples = [

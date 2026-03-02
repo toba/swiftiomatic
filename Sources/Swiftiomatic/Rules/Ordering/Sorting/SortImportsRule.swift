@@ -38,7 +38,7 @@ struct SortImportsRule {
               Example("↓import Foo\nimport Bar"): Example("import Bar\nimport Foo")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

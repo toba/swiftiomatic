@@ -1,6 +1,6 @@
 struct FileNameNoSpaceOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>.warning
+  var severityConfiguration = SeverityOption<Parent>.warning
   @OptionElement(key: "excluded")
   private(set) var excluded = Set<String>()
   typealias Parent = FileNameNoSpaceRule

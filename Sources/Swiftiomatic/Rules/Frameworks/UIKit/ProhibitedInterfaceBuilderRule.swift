@@ -30,7 +30,7 @@ struct ProhibitedInterfaceBuilderRule {
               Self.wrapExample("@IBAction ↓func buttonTapped(_ sender: UIButton) {}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

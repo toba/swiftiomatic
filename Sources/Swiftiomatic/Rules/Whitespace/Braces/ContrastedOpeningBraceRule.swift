@@ -7,16 +7,7 @@ struct ContrastedOpeningBraceRule {
     static let summary = ""
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        ContrastedOpeningBraceRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        ContrastedOpeningBraceRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        ContrastedOpeningBraceRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

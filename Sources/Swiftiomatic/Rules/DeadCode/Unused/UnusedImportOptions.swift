@@ -28,7 +28,7 @@ struct TransitiveModuleOptions<Parent: Rule>: Equatable, AcceptableByOptionEleme
 
 struct UnusedImportOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>.warning
+  var severityConfiguration = SeverityOption<Parent>.warning
   @OptionElement(key: "require_explicit_imports")
   private(set) var requireExplicitImports = false
   @OptionElement(key: "allowed_transitive_imports")

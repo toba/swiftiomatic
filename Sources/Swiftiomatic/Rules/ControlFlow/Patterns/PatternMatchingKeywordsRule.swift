@@ -36,7 +36,7 @@ struct PatternMatchingKeywordsRule {
               Example("case (.yamlParsing(↓var x), .yamlParsing(↓var y))"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   private static func wrapInSwitch(_ example: Example) -> Example {
     example.with(

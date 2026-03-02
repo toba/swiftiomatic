@@ -20,7 +20,7 @@ struct ConcurrencyModernizationRule {
               Example("func fetch(↓completion: @escaping (Result<Data, Error>) -> Void) {}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -51,8 +51,8 @@ import Testing
 
   @Test func severityConfigurationFromString() {
     let config: [String: Any] = ["severity": "Warning"]
-    let comp = SeverityConfiguration<MockRule>(.warning)
-    var severityConfig = SeverityConfiguration<MockRule>(.error)
+    let comp = SeverityOption<MockRule>(.warning)
+    var severityConfig = SeverityOption<MockRule>(.error)
     do {
       try severityConfig.apply(configuration: config)
       #expect(severityConfig == comp)
@@ -63,8 +63,8 @@ import Testing
 
   @Test func severityConfigurationFromDictionary() {
     let config = ["severity": "warning"]
-    let comp = SeverityConfiguration<MockRule>(.warning)
-    var severityConfig = SeverityConfiguration<MockRule>(.error)
+    let comp = SeverityOption<MockRule>(.warning)
+    var severityConfig = SeverityOption<MockRule>(.error)
     do {
       try severityConfig.apply(configuration: config)
       #expect(severityConfig == comp)
@@ -75,7 +75,7 @@ import Testing
 
   @Test func severityConfigurationThrowsNothingApplied() {
     let config: [String: Any] = ["unrelated_key": 17]
-    var severityConfig = SeverityConfiguration<MockRule>(.error)
+    var severityConfig = SeverityOption<MockRule>(.error)
     checkError(SwiftiomaticError.nothingApplied(ruleID: MockRule.identifier)) {
       try severityConfig.apply(configuration: config)
     }
@@ -83,7 +83,7 @@ import Testing
 
   @Test func severityConfigurationThrowsInvalidConfiguration() {
     let config: [String: Any] = ["severity": "foo"]
-    var severityConfig = SeverityConfiguration<MockRule>(.warning)
+    var severityConfig = SeverityOption<MockRule>(.warning)
     checkError(SwiftiomaticError.invalidConfiguration(ruleID: MockRule.identifier)) {
       try severityConfig.apply(configuration: config)
     }
@@ -239,7 +239,7 @@ import Testing
     #expect(configuration1 != configuration5)
   }
 
-  @Test func trailingWhitespaceConfigurationApplyConfigurationUpdatesSeverityConfiguration() {
+  @Test func trailingWhitespaceConfigurationApplyConfigurationUpdatesSeverityOption() {
     var configuration = TrailingWhitespaceOptions(
       severityConfiguration: .warning,
       ignoresEmptyLines: false,

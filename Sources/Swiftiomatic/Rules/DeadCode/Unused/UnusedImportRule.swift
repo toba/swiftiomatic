@@ -11,15 +11,6 @@ struct UnusedImportRule: CorrectableRule, AnalyzerRule {
     static let requiresSourceKit = true
     static let requiresCompilerArguments = true
     static let requiresFileOnDisk = true
-    static var nonTriggeringExamples: [Example] {
-        UnusedImportRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        UnusedImportRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        UnusedImportRuleExamples.corrections
-    }
   var options = UnusedImportOptions()
 
   func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {

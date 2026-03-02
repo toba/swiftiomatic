@@ -25,7 +25,7 @@ struct LastWhereRule {
               Example("(↓myList.filter { $0 == 1 }).last"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -1,9 +1,9 @@
 import Foundation
 
 struct NameOptions<Parent: Rule>: RuleOptions, InlinableOption {
-  typealias SeverityConfig = SeverityConfiguration<Parent>
+  typealias SeverityConfig = SeverityOption<Parent>
   typealias SeverityLevels = SeverityLevelsConfiguration<Parent>
-  typealias StartWithLowercaseConfiguration = OptionSeverityConfiguration<Parent>
+  typealias StartWithLowercaseConfiguration = OptionSeverityOption<Parent>
 
   @OptionElement(key: "min_length")
   private(set) var minLength = SeverityLevels(warning: 0, error: 0)

@@ -22,7 +22,7 @@ struct DiscouragedAssertRule {
               Example(#"↓assert(   false    , "foobar")"#),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

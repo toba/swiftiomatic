@@ -52,7 +52,7 @@ struct ClosureSpacingRule {
                 Example("({ each in return result.contains(where: { e in return 0 }) }).count"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

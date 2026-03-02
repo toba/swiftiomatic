@@ -1,6 +1,6 @@
 /// A rule configuration that allows to disable (`off`) an option of a rule or specify its severity level in which
 /// case it's active.
-struct OptionSeverityConfiguration<Parent: Rule>: RuleOptions,
+struct OptionSeverityOption<Parent: Rule>: RuleOptions,
     AcceptableByOptionElement,
     Sendable
 {
@@ -25,7 +25,7 @@ struct OptionSeverityConfiguration<Parent: Rule>: RuleOptions,
 
     private var optionSeverity: OptionSeverity
 
-    /// The `OptionSeverityConfiguration` mapped to a usually used `Severity`. It's `nil` if the option
+    /// The `OptionSeverityOption` mapped to a usually used `Severity`. It's `nil` if the option
     /// is set to `off`.
     var severity: Severity? {
         Severity(rawValue: optionSeverity.rawValue)

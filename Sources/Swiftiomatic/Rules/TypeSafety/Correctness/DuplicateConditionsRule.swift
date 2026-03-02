@@ -191,7 +191,7 @@ struct DuplicateConditionsRule {
               ),
             ]
     }
-  var options = SeverityConfiguration<Self>(.error)
+  var options = SeverityOption<Self>(.error)
 
 }
 

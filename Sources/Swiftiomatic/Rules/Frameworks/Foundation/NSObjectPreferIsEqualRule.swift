@@ -4,13 +4,7 @@ struct NSObjectPreferIsEqualRule {
     static let id = "nsobject_prefer_isequal"
     static let name = "NSObject Prefer isEqual"
     static let summary = "NSObject subclasses should implement isEqual instead of =="
-    static var nonTriggeringExamples: [Example] {
-        NSObjectPreferIsEqualRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        NSObjectPreferIsEqualRuleExamples.triggeringExamples
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

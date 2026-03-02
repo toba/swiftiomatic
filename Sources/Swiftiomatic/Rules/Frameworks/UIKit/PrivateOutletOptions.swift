@@ -1,6 +1,6 @@
 struct PrivateOutletOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "allow_private_set")
   private(set) var allowPrivateSet = false
   typealias Parent = PrivateOutletRule

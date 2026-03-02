@@ -33,7 +33,7 @@ struct ToggleBoolRule {
               Example("func foo() { ↓abc = !abc }"): Example("func foo() { abc.toggle() }"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -1,6 +1,6 @@
 struct AttributesOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "attributes_with_arguments_always_on_line_above")
   private(set) var attributesWithArgumentsAlwaysOnNewLine = true
   @OptionElement(key: "always_on_same_line")

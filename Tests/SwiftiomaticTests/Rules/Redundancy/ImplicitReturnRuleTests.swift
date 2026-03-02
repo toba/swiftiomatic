@@ -5,80 +5,80 @@ import Testing
 @Suite(.rulesRegistered) struct ImplicitReturnRuleTests {
   @Test func onlyClosureKindIncluded() async {
     var nonTriggeringExamples =
-      ImplicitReturnRuleExamples.nonTriggeringExamples
-      + ImplicitReturnRuleExamples.triggeringExamples
+      ImplicitReturnRule.nonTriggeringExamples
+      + ImplicitReturnRule.triggeringExamples
     nonTriggeringExamples.removeAll(
-      where: ImplicitReturnRuleExamples.ClosureExamples.triggeringExamples.contains,
+      where: ImplicitReturnRule.ClosureExamples.triggeringExamples.contains,
     )
 
     await verifySubset(
       nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: ImplicitReturnRuleExamples.ClosureExamples.triggeringExamples,
-      corrections: ImplicitReturnRuleExamples.ClosureExamples.corrections,
+      triggeringExamples: ImplicitReturnRule.ClosureExamples.triggeringExamples,
+      corrections: ImplicitReturnRule.ClosureExamples.corrections,
       kind: .closure,
     )
   }
 
   @Test func onlyFunctionKindIncluded() async {
     var nonTriggeringExamples =
-      ImplicitReturnRuleExamples.nonTriggeringExamples
-      + ImplicitReturnRuleExamples.triggeringExamples
+      ImplicitReturnRule.nonTriggeringExamples
+      + ImplicitReturnRule.triggeringExamples
     nonTriggeringExamples.removeAll(
-      where: ImplicitReturnRuleExamples.FunctionExamples.triggeringExamples.contains,
+      where: ImplicitReturnRule.FunctionExamples.triggeringExamples.contains,
     )
 
     await verifySubset(
       nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: ImplicitReturnRuleExamples.FunctionExamples.triggeringExamples,
-      corrections: ImplicitReturnRuleExamples.FunctionExamples.corrections,
+      triggeringExamples: ImplicitReturnRule.FunctionExamples.triggeringExamples,
+      corrections: ImplicitReturnRule.FunctionExamples.corrections,
       kind: .function,
     )
   }
 
   @Test func onlyGetterKindIncluded() async {
     var nonTriggeringExamples =
-      ImplicitReturnRuleExamples.nonTriggeringExamples
-      + ImplicitReturnRuleExamples.triggeringExamples
+      ImplicitReturnRule.nonTriggeringExamples
+      + ImplicitReturnRule.triggeringExamples
     nonTriggeringExamples.removeAll(
-      where: ImplicitReturnRuleExamples.GetterExamples.triggeringExamples.contains,
+      where: ImplicitReturnRule.GetterExamples.triggeringExamples.contains,
     )
 
     await verifySubset(
       nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: ImplicitReturnRuleExamples.GetterExamples.triggeringExamples,
-      corrections: ImplicitReturnRuleExamples.GetterExamples.corrections,
+      triggeringExamples: ImplicitReturnRule.GetterExamples.triggeringExamples,
+      corrections: ImplicitReturnRule.GetterExamples.corrections,
       kind: .getter,
     )
   }
 
   @Test func onlyInitializerKindIncluded() async {
     var nonTriggeringExamples =
-      ImplicitReturnRuleExamples.nonTriggeringExamples
-      + ImplicitReturnRuleExamples.triggeringExamples
+      ImplicitReturnRule.nonTriggeringExamples
+      + ImplicitReturnRule.triggeringExamples
     nonTriggeringExamples.removeAll(
-      where: ImplicitReturnRuleExamples.InitializerExamples.triggeringExamples.contains,
+      where: ImplicitReturnRule.InitializerExamples.triggeringExamples.contains,
     )
 
     await verifySubset(
       nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: ImplicitReturnRuleExamples.InitializerExamples.triggeringExamples,
-      corrections: ImplicitReturnRuleExamples.InitializerExamples.corrections,
+      triggeringExamples: ImplicitReturnRule.InitializerExamples.triggeringExamples,
+      corrections: ImplicitReturnRule.InitializerExamples.corrections,
       kind: .initializer,
     )
   }
 
   @Test func onlySubscriptKindIncluded() async {
     var nonTriggeringExamples =
-      ImplicitReturnRuleExamples.nonTriggeringExamples
-      + ImplicitReturnRuleExamples.triggeringExamples
+      ImplicitReturnRule.nonTriggeringExamples
+      + ImplicitReturnRule.triggeringExamples
     nonTriggeringExamples.removeAll(
-      where: ImplicitReturnRuleExamples.SubscriptExamples.triggeringExamples.contains,
+      where: ImplicitReturnRule.SubscriptExamples.triggeringExamples.contains,
     )
 
     await verifySubset(
       nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: ImplicitReturnRuleExamples.SubscriptExamples.triggeringExamples,
-      corrections: ImplicitReturnRuleExamples.SubscriptExamples.corrections,
+      triggeringExamples: ImplicitReturnRule.SubscriptExamples.triggeringExamples,
+      corrections: ImplicitReturnRule.SubscriptExamples.corrections,
       kind: .subscript,
     )
   }

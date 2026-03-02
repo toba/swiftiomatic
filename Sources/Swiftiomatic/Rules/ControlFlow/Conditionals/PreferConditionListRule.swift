@@ -93,7 +93,7 @@ struct PreferConditionListRule {
       conditions, this rule makes sure to wrap such expressions in parentheses when transforming them to
       condition list elements. The scope of the parentheses is limited to the function call itself.
       """
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

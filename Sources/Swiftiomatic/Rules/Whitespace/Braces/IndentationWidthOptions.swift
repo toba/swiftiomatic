@@ -2,7 +2,7 @@ struct IndentationWidthOptions: SeverityBasedRuleOptions {
   private static let defaultIndentationWidth = 4
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>.warning
+  var severityConfiguration = SeverityOption<Parent>.warning
   @OptionElement(
     key: "indentation_width",
     postprocessor: {

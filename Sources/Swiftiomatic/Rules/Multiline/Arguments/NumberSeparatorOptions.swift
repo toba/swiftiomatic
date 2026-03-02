@@ -24,7 +24,7 @@ struct NumberSeparatorOptions: SeverityBasedRuleOptions {
   }
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "minimum_length")
   private(set) var minimumLength = 0
   @OptionElement(key: "minimum_fraction_length")

@@ -20,16 +20,7 @@ struct UnneededSynthesizedInitializerRule {
     static let name = "Unneeded Synthesized Initializer"
     static let summary = "Default or memberwise initializers that will be automatically synthesized do not need to be manually defined."
     static let isCorrectable = true
-    static var nonTriggeringExamples: [Example] {
-        UnneededSynthesizedInitializerRuleExamples.nonTriggering
-    }
-    static var triggeringExamples: [Example] {
-        UnneededSynthesizedInitializerRuleExamples.triggering
-    }
-    static var corrections: [Example: Example] {
-        UnneededSynthesizedInitializerRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

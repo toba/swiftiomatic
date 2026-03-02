@@ -1,6 +1,6 @@
 struct PrefixedTopLevelConstantOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "only_private")
   private(set) var onlyPrivateMembers = false
   typealias Parent = PrefixedTopLevelConstantRule

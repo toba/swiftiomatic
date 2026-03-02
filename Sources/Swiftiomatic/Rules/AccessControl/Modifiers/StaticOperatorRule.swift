@@ -91,7 +91,7 @@ struct StaticOperatorRule {
                     ),
                 ]
     }
-    var options = SeverityConfiguration<Self>(.warning)
+    var options = SeverityOption<Self>(.warning)
 
 }
 

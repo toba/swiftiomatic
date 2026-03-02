@@ -22,7 +22,7 @@ struct RedundantNilCoalescingRule {
                 Example("var myVar: Int? = nil; let foo = myVar")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

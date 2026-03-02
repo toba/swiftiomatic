@@ -17,7 +17,7 @@ struct PreferCountWhereRule {
               Example("let count = array.↓filter({ $0 > 0 }).count"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -1,6 +1,6 @@
 struct VerticalWhitespaceClosingBracesOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "only_enforce_before_trivial_lines")
   private(set) var onlyEnforceBeforeTrivialLines = false
   typealias Parent = VerticalWhitespaceClosingBracesRule

@@ -1,6 +1,6 @@
 struct RedundantDiscardableLetOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "ignore_swiftui_view_bodies")
   private(set) var ignoreSwiftUIViewBodies = false
   typealias Parent = RedundantDiscardableLetRule

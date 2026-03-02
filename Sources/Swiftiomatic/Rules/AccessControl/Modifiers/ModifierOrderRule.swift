@@ -6,12 +6,6 @@ struct ModifierOrderRule {
     static let summary = "Modifier order should be consistent."
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        ModifierOrderRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        ModifierOrderRuleExamples.triggeringExamples
-    }
     var options = ModifierOrderOptions()
 
 }

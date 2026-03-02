@@ -24,7 +24,7 @@ struct SpaceAroundGenericsRule {
               Example("let a: Array↓ <Int> = []"): Example("let a: Array<Int> = []")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

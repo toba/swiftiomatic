@@ -5,13 +5,7 @@ struct PrivateSubjectRule {
     static let name = "Private Combine Subject"
     static let summary = "Combine Subject should be private"
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        PrivateSubjectRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        PrivateSubjectRuleExamples.triggeringExamples
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

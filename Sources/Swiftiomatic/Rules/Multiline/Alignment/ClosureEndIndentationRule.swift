@@ -6,16 +6,7 @@ struct ClosureEndIndentationRule {
     static let summary = "Closure end should have the same indentation as the line that started it."
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        ClosureEndIndentationRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        ClosureEndIndentationRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        ClosureEndIndentationRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

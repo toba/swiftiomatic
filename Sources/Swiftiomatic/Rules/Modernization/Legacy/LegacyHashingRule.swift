@@ -85,7 +85,7 @@ struct LegacyHashingRule {
               ),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

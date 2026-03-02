@@ -6,16 +6,7 @@ struct PreferSelfInStaticReferencesRule {
     static let summary = "Use `Self` to refer to the surrounding type name"
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        PreferSelfInStaticReferencesRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        PreferSelfInStaticReferencesRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        PreferSelfInStaticReferencesRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

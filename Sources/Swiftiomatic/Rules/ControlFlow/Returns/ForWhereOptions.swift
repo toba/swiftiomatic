@@ -1,6 +1,6 @@
 struct ForWhereOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "allow_for_as_filter")
   private(set) var allowForAsFilter = false
   typealias Parent = ForWhereRule

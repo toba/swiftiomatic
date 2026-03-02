@@ -54,7 +54,7 @@ struct ReturnArrowWhitespaceRule {
               Example("func abc()↓  ->\nInt {}"): Example("func abc() ->\nInt {}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

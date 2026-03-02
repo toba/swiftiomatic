@@ -136,7 +136,7 @@ struct ValidIBInspectableRule {
               ),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   fileprivate static let supportedTypes: Set<String> = {
     // "You can add the IBInspectable attribute to any property in a class declaration,

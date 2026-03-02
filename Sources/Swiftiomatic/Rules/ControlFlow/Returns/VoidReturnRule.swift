@@ -53,7 +53,7 @@ struct VoidReturnRule {
               Example("func foo() async throws -> ↓()"): Example("func foo() async throws -> Void"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -36,7 +36,7 @@ struct ModifiersOnSameLineRule {
                     Example("↓nonisolated\nfunc bar() {}"): Example("nonisolated func bar() {}"),
                 ]
     }
-    var options = SeverityConfiguration<Self>(.warning)
+    var options = SeverityOption<Self>(.warning)
 
 }
 

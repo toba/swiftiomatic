@@ -26,7 +26,7 @@ struct SuperfluousDisableCommandRule: SyntaxOnlyRule, Sendable {
               ),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func validate(file _: SwiftSource) -> [RuleViolation] {
     // This rule is implemented in Linter.swift

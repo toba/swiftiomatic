@@ -161,7 +161,7 @@ struct LiteralExpressionEndIndentationRule: Rule {
               ),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     violations(in: file).map { violation in

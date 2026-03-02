@@ -77,7 +77,7 @@ struct LegacyNSGeometryFunctionsRule {
               Example("↓NSIntersectionRect(rect1, rect2)"): Example("rect1.intersection(rect2)"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   private static let legacyFunctions: [String: LegacyFunctionRewriteStrategy] = [
     "NSHeight": .property(name: "height"),

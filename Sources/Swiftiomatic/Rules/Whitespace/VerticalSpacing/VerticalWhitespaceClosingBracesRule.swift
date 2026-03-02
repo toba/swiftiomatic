@@ -6,19 +6,6 @@ struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
     static let summary = "Don't include vertical whitespace (empty line) before closing braces"
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples
-              .values.sorted() + VerticalWhitespaceClosingBracesRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        Array(
-              VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples.keys.sorted(),
-            )
-    }
-    static var corrections: [Example: Example] {
-        VerticalWhitespaceClosingBracesRuleExamples.violatingToValidExamples
-              .removingViolationMarkers()
-    }
   var options = VerticalWhitespaceClosingBracesOptions()
 
   private let pattern = "((?:\\n[ \\t]*)+)(\\n[ \\t]*[)}\\]])"

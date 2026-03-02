@@ -5,7 +5,7 @@
       {
         "hooks": [
           {
-            "command": "if [[ \"$CLAUDE_TOOL_ARG_FILE_PATH\" == *.swift ]]; then swift format -i \"$CLAUDE_TOOL_ARG_FILE_PATH\"; fi",
+            "command": "if [[ \"$CLAUDE_TOOL_ARG_FILE_PATH\" == *.swift ]]; then swiftformat \"$CLAUDE_TOOL_ARG_FILE_PATH\" && swiftlint lint --fix --quiet \"$CLAUDE_TOOL_ARG_FILE_PATH\"; fi",
             "type": "command"
           }
         ],

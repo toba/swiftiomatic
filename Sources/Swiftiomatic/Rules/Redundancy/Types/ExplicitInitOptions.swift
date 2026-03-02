@@ -1,6 +1,6 @@
 struct ExplicitInitOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "include_bare_init")
   private(set) var includeBareInit = false
   typealias Parent = ExplicitInitRule

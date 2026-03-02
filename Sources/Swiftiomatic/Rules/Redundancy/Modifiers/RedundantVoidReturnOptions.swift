@@ -1,6 +1,6 @@
 struct RedundantVoidReturnOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "include_closures")
   private(set) var includeClosures = true
   typealias Parent = RedundantVoidReturnRule

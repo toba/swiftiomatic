@@ -17,7 +17,7 @@ struct AgentReviewRule {
               Example("enum ↓AppError: Error { case failed }"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -5,12 +5,6 @@ struct AccessibilityTraitForButtonRule {
     static let name = "Accessibility Trait for Button"
     static let summary = "All views with tap gestures added should include the .isButton or the .isLink accessibility traits"
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        AccessibilityTraitForButtonRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        AccessibilityTraitForButtonRuleExamples.triggeringExamples
-    }
     static let rationale: String? = """
       The accessibility button and link traits are used to tell assistive technologies that an element is tappable. \
       When an element has one of these traits, VoiceOver will automatically read "button" or "link" after the \
@@ -23,7 +17,7 @@ struct AccessibilityTraitForButtonRule {
       the link trait instead. This rule attempts to catch uses of the SwiftUI `.onTapGesture` modifier where the \
       `.isButton` or `.isLink` trait is not explicitly applied.
       """
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

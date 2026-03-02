@@ -62,3 +62,10 @@ citations:
         high: ['**/*.swift']
         medium: [Package.swift]
         low: [.github/**, README.md, LICENSE]
+    - repo: swiftlang/swift-format
+      branch: main
+      notes: Formatting technology for Swift source code
+      paths:
+        high: [Sources/**/*.swift]
+        medium: [Package.swift]
+        low: [.github/**, README.md, LICENSE]

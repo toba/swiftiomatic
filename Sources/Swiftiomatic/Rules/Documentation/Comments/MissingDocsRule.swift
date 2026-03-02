@@ -5,12 +5,6 @@ struct MissingDocsRule {
     static let name = "Missing Docs"
     static let summary = "Declarations should be documented."
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        MissingDocsRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        MissingDocsRuleExamples.triggeringExamples
-    }
   var options = MissingDocsOptions()
 
 }

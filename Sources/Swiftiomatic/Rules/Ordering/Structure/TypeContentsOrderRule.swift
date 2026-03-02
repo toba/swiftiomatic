@@ -5,12 +5,6 @@ struct TypeContentsOrderRule {
     static let name = "Type Contents Order"
     static let summary = "Specifies the order of subtypes, properties, methods & more within a type."
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        TypeContentsOrderRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        TypeContentsOrderRuleExamples.triggeringExamples
-    }
   var options = TypeContentsOrderOptions()
 
 }

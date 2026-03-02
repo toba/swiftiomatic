@@ -1,6 +1,6 @@
 struct FunctionNameWhitespaceOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "generic_spacing")
   private(set) var genericSpacing = GenericSpacingType.noSpace
 

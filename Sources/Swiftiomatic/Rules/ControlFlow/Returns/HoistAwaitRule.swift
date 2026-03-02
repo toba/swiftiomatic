@@ -24,7 +24,7 @@ struct HoistAwaitRule {
               Example("let result = foo(↓await bar())"): Example("let result = await foo(bar())")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

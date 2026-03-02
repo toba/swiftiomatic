@@ -24,7 +24,7 @@ struct SpaceAroundBracketsRule {
               Example("foo↓ [0]"): Example("foo[0]")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

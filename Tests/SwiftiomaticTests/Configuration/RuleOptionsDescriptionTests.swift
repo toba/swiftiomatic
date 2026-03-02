@@ -36,9 +36,9 @@ import Testing
     @OptionElement(key: "set_of_doubles")
     var setOfDoubles: Set<Double> = [1, 2, 3, 4.7]
     @OptionElement(isInline: true)
-    var severityConfig = SeverityConfiguration<Parent>(.error)
+    var severityConfig = SeverityOption<Parent>(.error)
     @OptionElement(key: "SEVERITY")
-    var renamedSeverityConfig = SeverityConfiguration<Parent>(.warning)
+    var renamedSeverityConfig = SeverityOption<Parent>(.warning)
     @OptionElement(isInline: true)
     var inlinedSeverityLevels = SeverityLevelsConfiguration<Parent>(warning: 1, error: nil)
     @OptionElement(key: "levels")

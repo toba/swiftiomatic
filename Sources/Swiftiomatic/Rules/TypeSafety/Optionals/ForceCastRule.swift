@@ -12,7 +12,7 @@ struct ForceCastRule {
     static var triggeringExamples: [Example] {
         [Example("NSNumber() ↓as! Int")]
     }
-  var options = SeverityConfiguration<Self>(.error)
+  var options = SeverityOption<Self>(.error)
 
 }
 

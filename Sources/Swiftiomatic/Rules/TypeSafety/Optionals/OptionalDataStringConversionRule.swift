@@ -18,7 +18,7 @@ struct OptionalDataStringConversionRule {
               Example("String(decoding: data, as: UTF8.self)")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

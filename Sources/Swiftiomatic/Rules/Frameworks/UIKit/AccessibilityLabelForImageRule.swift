@@ -5,12 +5,6 @@ struct AccessibilityLabelForImageRule {
     static let name = "Accessibility Label for Image"
     static let summary = "Images that provide context should have an accessibility label or should be explicitly hidden from accessibility"
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        AccessibilityLabelForImageRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        AccessibilityLabelForImageRuleExamples.triggeringExamples
-    }
     static let rationale: String? = """
       In UIKit, a `UIImageView` was by default not an accessibility element, and would only be visible to VoiceOver \
       and other assistive technologies if the developer explicitly made them an accessibility element. In SwiftUI, \
@@ -22,7 +16,7 @@ struct AccessibilityLabelForImageRule {
       not accessibility elements. Known false positives for Images created in a separate function from where they \
       have accessibility properties applied.
       """
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

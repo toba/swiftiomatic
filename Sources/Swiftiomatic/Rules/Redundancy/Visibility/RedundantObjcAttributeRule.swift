@@ -10,16 +10,7 @@ struct RedundantObjcAttributeRule: SwiftSyntaxRule, SubstitutionCorrectableRule 
     static let name = "Redundant @objc Attribute"
     static let summary = "Objective-C attribute (@objc) is redundant in declaration"
     static let isCorrectable = true
-    static var nonTriggeringExamples: [Example] {
-        RedundantObjcAttributeRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        RedundantObjcAttributeRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        RedundantObjcAttributeRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     final class Visitor: ViolationCollectingVisitor<OptionsType> {

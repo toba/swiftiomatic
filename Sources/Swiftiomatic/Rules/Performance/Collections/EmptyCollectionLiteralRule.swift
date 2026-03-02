@@ -25,7 +25,7 @@ struct EmptyCollectionLiteralRule {
               Example("myDict↓ == [ : ]"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

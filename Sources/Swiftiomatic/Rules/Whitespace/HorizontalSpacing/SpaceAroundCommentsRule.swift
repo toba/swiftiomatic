@@ -27,7 +27,7 @@ struct SpaceAroundCommentsRule {
               Example("let a = 5↓// comment"): Example("let a = 5 // comment")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

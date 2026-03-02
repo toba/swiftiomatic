@@ -23,7 +23,7 @@ struct SpaceInsideBracketsRule {
               Example("let a = [↓ 1, 2, 3 ]"): Example("let a = [1, 2, 3]")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -6,7 +6,7 @@ struct FileHeaderOptions: SeverityBasedRuleOptions {
   private static let fileNamePlaceholder = "CURRENT_FILENAME"
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "required_string")
   private var requiredString: String?
   @OptionElement(key: "required_pattern")

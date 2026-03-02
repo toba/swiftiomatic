@@ -108,7 +108,7 @@ struct DeploymentTargetOptions: SeverityBasedRuleOptions {
     platform: .tvOSApplicationExtension, major: 9,
   )
 
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
 
   var parameterDescription: RuleOptionsDescription? {
     let targets = Dictionary(

@@ -28,7 +28,7 @@ struct DeadSymbolsRule: CollectingRule {
     }
   typealias FileInfo = SymbolContribution
 
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func collectInfo(for file: SwiftSource) -> SymbolContribution {
     let filePath = file.path ?? ""

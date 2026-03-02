@@ -24,7 +24,7 @@ struct PreferFinalClassesRule {
               Example("↓class Foo { func bar() {} }"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -7,13 +7,7 @@ struct ReturnValueFromVoidFunctionRule {
     static let summary = "Returning values from Void functions should be avoided"
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        ReturnValueFromVoidFunctionRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        ReturnValueFromVoidFunctionRuleExamples.triggeringExamples
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -4,13 +4,7 @@ struct NotificationCenterDetachmentRule {
     static let id = "notification_center_detachment"
     static let name = "Notification Center Detachment"
     static let summary = "An object should only remove itself as an observer in `deinit`"
-    static var nonTriggeringExamples: [Example] {
-        NotificationCenterDetachmentRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        NotificationCenterDetachmentRuleExamples.triggeringExamples
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

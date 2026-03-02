@@ -9,7 +9,7 @@ import Testing
       Example(
         [
           "class TestViewController: UIViewController {",
-          TypeContentsOrderRuleExamples.defaultOrderParts.reversed()
+          TypeContentsOrderRule.defaultOrderParts.reversed()
             .joined(separator: "\n\n"),
           "}",
         ].joined(separator: "\n"),

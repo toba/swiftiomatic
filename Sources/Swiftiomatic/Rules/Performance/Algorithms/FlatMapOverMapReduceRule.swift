@@ -16,7 +16,7 @@ struct FlatMapOverMapReduceRule {
               Example("let foo = ↓bar.map { $0.array }.reduce([], +)")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

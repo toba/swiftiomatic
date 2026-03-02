@@ -107,7 +107,7 @@ struct LegacyConstructorRule {
                 Example("UIOffset(horizontal: horizontal, vertical: vertical)"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   private static let constructorsToArguments = [
     "CGRectMake": ["x", "y", "width", "height"],

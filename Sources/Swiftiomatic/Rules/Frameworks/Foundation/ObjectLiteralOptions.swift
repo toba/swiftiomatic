@@ -4,7 +4,7 @@ typealias DiscouragedObjectLiteralOptions = ObjectLiteralOptions<
 
 struct ObjectLiteralOptions<Parent: Rule>: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "image_literal")
   private(set) var imageLiteral = true
   @OptionElement(key: "color_literal")

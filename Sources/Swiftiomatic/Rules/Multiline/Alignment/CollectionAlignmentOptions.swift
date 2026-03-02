@@ -1,6 +1,6 @@
 struct CollectionAlignmentOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "align_colons")
   private(set) var alignColons = false
   typealias Parent = CollectionAlignmentRule

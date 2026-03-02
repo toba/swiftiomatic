@@ -37,7 +37,7 @@ struct BlankLineAfterImportsRule {
               Example("import Foundation\n↓class Foo {}"): Example("import Foundation\n\nclass Foo {}")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

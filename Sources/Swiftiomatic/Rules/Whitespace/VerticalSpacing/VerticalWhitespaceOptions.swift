@@ -2,7 +2,7 @@ struct VerticalWhitespaceOptions: SeverityBasedRuleOptions {
   static let defaultDescriptionReason = "Limit vertical whitespace to a single empty line"
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "max_empty_lines")
   private(set) var maxEmptyLines = 1
 

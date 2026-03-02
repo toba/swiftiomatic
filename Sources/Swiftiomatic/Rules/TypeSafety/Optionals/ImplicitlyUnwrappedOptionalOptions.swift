@@ -8,7 +8,7 @@ struct ImplicitlyUnwrappedOptionalOptions: SeverityBasedRuleOptions {
   }
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>.warning
+  var severityConfiguration = SeverityOption<Parent>.warning
   @OptionElement(key: "mode")
   private(set) var mode = ImplicitlyUnwrappedOptionalModeConfiguration.allExceptIBOutlets
   typealias Parent = ImplicitlyUnwrappedOptionalRule

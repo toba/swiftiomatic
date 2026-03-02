@@ -112,7 +112,7 @@ struct CommaRule: CorrectableRule, SyntaxOnlyRule {
                 Example(#"Logger.logError("Hat is too large", info: [])"#),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(in: file).map {

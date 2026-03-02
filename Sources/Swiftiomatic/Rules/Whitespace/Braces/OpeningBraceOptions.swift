@@ -1,6 +1,6 @@
 struct OpeningBraceOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "ignore_multiline_type_headers")
   private(set) var ignoreMultilineTypeHeaders = false
   @OptionElement(key: "ignore_multiline_statement_conditions")

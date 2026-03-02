@@ -19,7 +19,7 @@ enum TypeContent: String, AcceptableByOptionElement {
 
 struct TypeContentsOrderOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "order")
   private(set) var order: [[TypeContent]] = [
     [.case],

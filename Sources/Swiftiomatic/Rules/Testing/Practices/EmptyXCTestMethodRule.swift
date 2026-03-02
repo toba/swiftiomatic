@@ -5,12 +5,6 @@ struct EmptyXCTestMethodRule {
     static let name = "Empty XCTest Method"
     static let summary = "Empty XCTest method should be avoided"
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        EmptyXCTestMethodRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        EmptyXCTestMethodRuleExamples.triggeringExamples
-    }
   var options = EmptyXCTestMethodOptions()
 
 }

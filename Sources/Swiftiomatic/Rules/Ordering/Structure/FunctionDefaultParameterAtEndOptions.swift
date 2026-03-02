@@ -2,7 +2,7 @@ struct FunctionDefaultParameterAtEndOptions: SeverityBasedRuleOptions {
   // sm:disable:previous type_name
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "ignore_first_isolation_inheritance_parameter")
   private(set) var ignoreFirstIsolationInheritanceParameter = true
   typealias Parent = FunctionDefaultParameterAtEndRule

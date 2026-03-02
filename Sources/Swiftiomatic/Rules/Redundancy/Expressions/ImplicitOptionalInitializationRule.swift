@@ -6,15 +6,6 @@ struct ImplicitOptionalInitializationRule {
     static let summary = "Optionals should be consistently initialized, either with `= nil` or without."
     static let isCorrectable = true
     static let deprecatedAliases: Set<String> = ["redundant_optional_initialization"]
-    static var nonTriggeringExamples: [Example] {
-        ImplicitOptionalInitializationRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        ImplicitOptionalInitializationRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        ImplicitOptionalInitializationRuleExamples.corrections
-    }
   var options = ImplicitOptionalInitializationOptions()
 
 }

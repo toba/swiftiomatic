@@ -34,7 +34,7 @@ struct YodaConditionRule {
               Example("if ↓200 <= i && i <= 299 || ↓600 <= i {}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

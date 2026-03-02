@@ -35,7 +35,7 @@ struct ExplicitTopLevelACLRule {
               Example("internal let a = 0\n↓func b() {}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

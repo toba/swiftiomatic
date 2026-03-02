@@ -24,7 +24,7 @@ struct RedundantBackticksRule {
               Example("let ↓`foo` = bar"): Example("let foo = bar")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

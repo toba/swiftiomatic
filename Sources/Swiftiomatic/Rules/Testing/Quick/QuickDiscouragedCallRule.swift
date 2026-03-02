@@ -5,13 +5,7 @@ struct QuickDiscouragedCallRule {
     static let name = "Quick Discouraged Call"
     static let summary = "Discouraged call inside 'describe' and/or 'context' block."
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        QuickDiscouragedCallRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        QuickDiscouragedCallRuleExamples.triggeringExamples
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

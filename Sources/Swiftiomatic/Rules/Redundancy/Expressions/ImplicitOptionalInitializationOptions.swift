@@ -5,7 +5,7 @@ struct ImplicitOptionalInitializationOptions: SeverityBasedRuleOptions {  // sm:
   }
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "style")
   private(set) var style: Style = .always
   typealias Parent = ImplicitOptionalInitializationRule

@@ -185,7 +185,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
     static var corrections: [Example: Example] {
         Self.violatingToValidExamples.removingViolationMarkers()
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   private let pattern = "([{(\\[][ \\t]*(?:[^\\n{]+ in[ \\t]*$)?)((?:\\n[ \\t]*)+)(\\n)"
 }

@@ -21,7 +21,7 @@ struct PreferNimbleRule {
               Example("↓XCTAssertGreaterThan(foo, 10)"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -7,15 +7,6 @@ struct NumberSeparatorRule {
     static let summary = ""
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        NumberSeparatorRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        NumberSeparatorRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        NumberSeparatorRuleExamples.corrections
-    }
   var options = NumberSeparatorOptions()
 
   static let missingSeparatorsReason = """

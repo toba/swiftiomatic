@@ -15,7 +15,7 @@ struct FileMacroRule {
               Example("func foo(file: StaticString = ↓#fileID) {}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

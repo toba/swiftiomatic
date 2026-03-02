@@ -4,12 +4,6 @@ struct DeploymentTargetRule {
     static let id = "deployment_target"
     static let name = "Deployment Target"
     static let summary = "Availability checks or attributes shouldn't be using older versions that are satisfied by the deployment target."
-    static var nonTriggeringExamples: [Example] {
-        DeploymentTargetRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        DeploymentTargetRuleExamples.triggeringExamples
-    }
   fileprivate typealias Version = DeploymentTargetOptions.Version
 
   var options = DeploymentTargetOptions()

@@ -20,7 +20,7 @@ struct DynamicInlineRule {
               Example("class C {\n@inline(__always)\ndynamic\n↓func f() {}\n}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.error)
+  var options = SeverityOption<Self>(.error)
 
 }
 

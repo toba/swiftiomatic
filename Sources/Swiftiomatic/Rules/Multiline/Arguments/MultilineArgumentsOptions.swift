@@ -6,7 +6,7 @@ struct MultilineArgumentsOptions: SeverityBasedRuleOptions {
   }
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "first_argument_location")
   private(set) var firstArgumentLocation = FirstArgumentLocation.anyLine
   @OptionElement(key: "only_enforce_after_first_closure_on_first_line")

@@ -34,7 +34,7 @@ import Testing
           }
           """,
         ),
-      ] + UnneededOverrideRuleExamples.nonTriggeringExamples
+      ] + UnneededOverrideRule.nonTriggeringExamples
 
     let triggeringExamples = [
       Example(

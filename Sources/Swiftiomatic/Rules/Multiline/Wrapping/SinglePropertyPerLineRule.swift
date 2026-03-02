@@ -23,7 +23,7 @@ struct SinglePropertyPerLineRule {
               Example("↓var foo = 10, bar = false"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

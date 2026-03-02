@@ -122,7 +122,7 @@ import Testing
 // MARK: - Mocks
 
 private struct RuleMock1: Rule {
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
   static let id = "RuleMock1"
@@ -138,7 +138,7 @@ private struct RuleMock1: Rule {
 }
 
 private struct RuleMock2: Rule {
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
   static let id = "RuleMock2"
@@ -154,7 +154,7 @@ private struct RuleMock2: Rule {
 }
 
 private struct CorrectableRuleMock: CorrectableRule {
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
   static let id = "CorrectableRuleMock"

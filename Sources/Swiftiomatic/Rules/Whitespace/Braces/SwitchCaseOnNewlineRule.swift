@@ -68,7 +68,7 @@ struct SwitchCaseOnNewlineRule {
               Self.wrapInSwitch("↓case .first,\n .second: return false"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

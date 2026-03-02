@@ -67,7 +67,7 @@ struct PeriodSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
               ),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
     let str = file.stringView.string

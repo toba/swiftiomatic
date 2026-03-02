@@ -9,12 +9,6 @@ struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
     static let requiresCompilerArguments = true
     static let requiresFileOnDisk = true
     static let isCrossFile = true
-    static var nonTriggeringExamples: [Example] {
-        UnusedDeclarationRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        UnusedDeclarationRuleExamples.triggeringExamples
-    }
   struct FileUSRs: Hashable {
     var referenced: Set<String>
     var declared: Set<DeclaredUSR>

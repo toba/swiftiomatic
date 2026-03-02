@@ -23,7 +23,7 @@ struct ProtocolPropertyAccessorsOrderRule {
                 Example("protocol Foo {\n var bar: String { get set }\n }")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

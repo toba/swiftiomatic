@@ -16,7 +16,7 @@ struct URLMacroRule {
               Example("let url = ↓URL(string: \"https://example.com\")!"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

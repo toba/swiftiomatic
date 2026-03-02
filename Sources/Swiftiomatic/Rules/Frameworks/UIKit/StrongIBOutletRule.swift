@@ -42,7 +42,7 @@ struct StrongIBOutletRule {
                 Self.wrapExample("@IBOutlet var textField: UITextField?"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

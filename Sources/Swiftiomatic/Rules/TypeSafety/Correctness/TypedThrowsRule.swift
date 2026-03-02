@@ -20,7 +20,7 @@ struct TypedThrowsRule {
               Example("↓func parse() throws { throw ParseError.invalid }")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

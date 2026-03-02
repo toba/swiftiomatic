@@ -90,7 +90,7 @@ struct AttributeNameSpacingRule {
               Example("@MyProperty↓ () let a = 1"): Example("@MyProperty() let a = 1"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.error)
+  var options = SeverityOption<Self>(.error)
 
 }
 

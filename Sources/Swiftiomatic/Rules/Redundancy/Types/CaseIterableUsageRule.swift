@@ -29,7 +29,7 @@ struct CaseIterableUsageRule: CollectingRule {
     }
   typealias FileInfo = CaseIterableContribution
 
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func collectInfo(for file: SwiftSource) -> CaseIterableContribution {
     let collector = CaseIterableCollector(

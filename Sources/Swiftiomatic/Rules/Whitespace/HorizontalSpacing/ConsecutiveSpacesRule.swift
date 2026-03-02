@@ -25,7 +25,7 @@ struct ConsecutiveSpacesRule {
               Example("let foo =  ↓5"): Example("let foo = 5"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

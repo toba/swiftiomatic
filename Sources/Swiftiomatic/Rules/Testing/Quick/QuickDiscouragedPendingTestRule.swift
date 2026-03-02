@@ -5,13 +5,7 @@ struct QuickDiscouragedPendingTestRule {
     static let name = "Quick Discouraged Pending Test"
     static let summary = "This test won't run as long as it's marked pending"
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        QuickDiscouragedPendingTestRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        QuickDiscouragedPendingTestRuleExamples.triggeringExamples
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

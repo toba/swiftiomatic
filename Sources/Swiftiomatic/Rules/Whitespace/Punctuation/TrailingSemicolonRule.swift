@@ -25,7 +25,7 @@ struct TrailingSemicolonRule {
               Example("let foo = 12↓;  // comment\n"): Example("let foo = 12  // comment\n"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

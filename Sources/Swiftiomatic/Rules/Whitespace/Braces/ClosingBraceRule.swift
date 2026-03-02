@@ -22,7 +22,7 @@ struct ClosingBraceRule {
               Example("[].map({ ↓} )"): Example("[].map({ })")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

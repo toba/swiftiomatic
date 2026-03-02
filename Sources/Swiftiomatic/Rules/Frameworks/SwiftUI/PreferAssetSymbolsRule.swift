@@ -43,7 +43,7 @@ struct PreferAssetSymbolsRule {
       arguments. Since Xcode 15, Xcode generates codes for images in the Asset Catalog. Usage of these codes \
       and system icons from SF Symbols avoid typos and allow for compile-time checking.
       """
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

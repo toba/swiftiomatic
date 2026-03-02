@@ -1,257 +1,243 @@
 import SwiftSyntax
 
-struct UnneededThrowsRule {
+struct UnneededThrowsRule: SwiftSyntaxCorrectableRule {
     static let id = "unneeded_throws_rethrows"
     static let name = "Unneeded (Re)Throws Keyword"
     static let summary = "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`."
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        UnneededThrowsRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        UnneededThrowsRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        UnneededThrowsRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+    var options = SeverityOption<Self>(.warning)
 
-}
-
-extension UnneededThrowsRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
-}
-
-extension UnneededThrowsRule {}
-
-extension UnneededThrowsRule {
-  fileprivate struct Scope {
-    var throwsClause: ThrowsClauseSyntax?
-  }
-
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    private var scopes = Stack<Scope>()
-
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      [
-        ProtocolDeclSyntax.self,
-        TypeAliasDeclSyntax.self,
-      ]
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
     }
 
-    override func visit(_: FunctionParameterClauseSyntax) -> SyntaxVisitorContinueKind {
-      .skipChildren
+    fileprivate struct Scope {
+        var throwsClause: ThrowsClauseSyntax?
     }
 
-    override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
-      scopes.openScope(with: node.signature.effectSpecifiers?.throwsClause)
-      return .visitChildren
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        private var scopes = Stack<Scope>()
 
-    override func visitPost(_: InitializerDeclSyntax) {
-      if let closedScope = scopes.closeScope() {
-        validate(
-          scope: closedScope,
-          construct: "initializer",
-        )
-      }
-    }
-
-    override func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
-      scopes.openScope(with: node.effectSpecifiers?.throwsClause)
-      return .visitChildren
-    }
-
-    override func visitPost(_: AccessorDeclSyntax) {
-      if let closedScope = scopes.closeScope() {
-        validate(
-          scope: closedScope,
-          construct: "accessor",
-        )
-      }
-    }
-
-    override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-      scopes.openScope(with: node.signature.effectSpecifiers?.throwsClause)
-      return .visitChildren
-    }
-
-    override func visitPost(_: FunctionDeclSyntax) {
-      if let closedScope = scopes.closeScope() {
-        validate(
-          scope: closedScope,
-          construct: "body of this function",
-        )
-      }
-    }
-
-    override func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
-      if let lintableFunctionType = node.lintableFunctionType {
-        scopes.openScope(with: lintableFunctionType.effectSpecifiers?.throwsClause)
-      }
-      return .visitChildren
-    }
-
-    override func visitPost(_ node: PatternBindingSyntax) {
-      if node.lintableFunctionType != nil {
-        if let closedScope = scopes.closeScope() {
-          validate(
-            scope: closedScope,
-            construct: "closure type",
-          )
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [
+                ProtocolDeclSyntax.self,
+                TypeAliasDeclSyntax.self,
+            ]
         }
-      }
-    }
 
-    override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-      if let throwsClause = node.signature?.effectSpecifiers?.throwsClause {
-        scopes.openScope(with: throwsClause)
-      }
-      return .visitChildren
-    }
+        override func visit(_: FunctionParameterClauseSyntax) -> SyntaxVisitorContinueKind {
+            .skipChildren
+        }
 
-    override func visitPost(_ node: ClosureExprSyntax) {
-      if node.signature?.effectSpecifiers?.throwsClause != nil,
-        let closedScope = scopes.closeScope()
-      {
-        validate(
-          scope: closedScope,
-          construct: "body of this closure",
-        )
-      }
-    }
+        override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+            scopes.openScope(with: node.signature.effectSpecifiers?.throwsClause)
+            return .visitChildren
+        }
 
-    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-      if node.containsClosureDeclaration {
-        scopes.openScope()
-      }
-      return .visitChildren
-    }
+        override func visitPost(_: InitializerDeclSyntax) {
+            if let closedScope = scopes.closeScope() {
+                validate(
+                    scope: closedScope,
+                    construct: "initializer",
+                )
+            }
+        }
 
-    override func visitPost(_ node: FunctionCallExprSyntax) {
-      if node.containsClosureDeclaration {
-        scopes.closeScope()
-      }
-    }
+        override func visit(_ node: AccessorDeclSyntax) -> SyntaxVisitorContinueKind {
+            scopes.openScope(with: node.effectSpecifiers?.throwsClause)
+            return .visitChildren
+        }
 
-    override func visit(_: DoStmtSyntax) -> SyntaxVisitorContinueKind {
-      scopes.openScope()
-      return .visitChildren
-    }
+        override func visitPost(_: AccessorDeclSyntax) {
+            if let closedScope = scopes.closeScope() {
+                validate(
+                    scope: closedScope,
+                    construct: "accessor",
+                )
+            }
+        }
 
-    override func visitPost(_ node: CodeBlockSyntax) {
-      if node.parent?.is(DoStmtSyntax.self) == true {
-        scopes.closeScope()
-      }
-    }
+        override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+            scopes.openScope(with: node.signature.effectSpecifiers?.throwsClause)
+            return .visitChildren
+        }
 
-    override func visitPost(_ node: DoStmtSyntax) {
-      if node.catchClauses.contains(where: \.catchItems.isEmpty) {
-        // All errors will be caught.
-        return
-      }
-      scopes.markCurrentScopeAsThrowing()
-    }
+        override func visitPost(_: FunctionDeclSyntax) {
+            if let closedScope = scopes.closeScope() {
+                validate(
+                    scope: closedScope,
+                    construct: "body of this function",
+                )
+            }
+        }
 
-    override func visitPost(_ node: ForStmtSyntax) {
-      if node.tryKeyword != nil {
-        scopes.markCurrentScopeAsThrowing()
-      }
-    }
+        override func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
+            if let lintableFunctionType = node.lintableFunctionType {
+                scopes.openScope(with: lintableFunctionType.effectSpecifiers?.throwsClause)
+            }
+            return .visitChildren
+        }
 
-    override func visitPost(_ node: TryExprSyntax) {
-      if node.questionOrExclamationMark == nil {
-        scopes.markCurrentScopeAsThrowing()
-      }
-    }
+        override func visitPost(_ node: PatternBindingSyntax) {
+            if node.lintableFunctionType != nil {
+                if let closedScope = scopes.closeScope() {
+                    validate(
+                        scope: closedScope,
+                        construct: "closure type",
+                    )
+                }
+            }
+        }
 
-    override func visitPost(_: ThrowStmtSyntax) {
-      scopes.markCurrentScopeAsThrowing()
-    }
+        override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+            if let throwsClause = node.signature?.effectSpecifiers?.throwsClause {
+                scopes.openScope(with: throwsClause)
+            }
+            return .visitChildren
+        }
 
-    private func validate(scope: Scope, construct: String) {
-      guard let throwsClause = scope.throwsClause else { return }
-      violations.append(
-        .init(
-          position: throwsClause.positionAfterSkippingLeadingTrivia,
-          reason: "Superfluous 'throws'; \(construct) does not throw any error",
-          correction: .init(
-            // Move start position back by 1 to include the space before the keyword.
-            start: throwsClause.positionAfterSkippingLeadingTrivia.advanced(by: -1),
-            end: throwsClause.endPositionBeforeTrailingTrivia,
-            replacement: "",
-          ),
-        ),
-      )
+        override func visitPost(_ node: ClosureExprSyntax) {
+            if node.signature?.effectSpecifiers?.throwsClause != nil,
+               let closedScope = scopes.closeScope()
+            {
+                validate(
+                    scope: closedScope,
+                    construct: "body of this closure",
+                )
+            }
+        }
+
+        override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+            if node.containsClosureDeclaration {
+                scopes.openScope()
+            }
+            return .visitChildren
+        }
+
+        override func visitPost(_ node: FunctionCallExprSyntax) {
+            if node.containsClosureDeclaration {
+                scopes.closeScope()
+            }
+        }
+
+        override func visit(_: DoStmtSyntax) -> SyntaxVisitorContinueKind {
+            scopes.openScope()
+            return .visitChildren
+        }
+
+        override func visitPost(_ node: CodeBlockSyntax) {
+            if node.parent?.is(DoStmtSyntax.self) == true {
+                scopes.closeScope()
+            }
+        }
+
+        override func visitPost(_ node: DoStmtSyntax) {
+            if node.catchClauses.contains(where: \.catchItems.isEmpty) {
+                // All errors will be caught.
+                return
+            }
+            scopes.markCurrentScopeAsThrowing()
+        }
+
+        override func visitPost(_ node: ForStmtSyntax) {
+            if node.tryKeyword != nil {
+                scopes.markCurrentScopeAsThrowing()
+            }
+        }
+
+        override func visitPost(_ node: TryExprSyntax) {
+            if node.questionOrExclamationMark == nil {
+                scopes.markCurrentScopeAsThrowing()
+            }
+        }
+
+        override func visitPost(_: ThrowStmtSyntax) {
+            scopes.markCurrentScopeAsThrowing()
+        }
+
+        private func validate(scope: Scope, construct: String) {
+            guard let throwsClause = scope.throwsClause else { return }
+            violations.append(
+                .init(
+                    position: throwsClause.positionAfterSkippingLeadingTrivia,
+                    reason: "Superfluous 'throws'; \(construct) does not throw any error",
+                    correction: .init(
+                        // Move start position back by 1 to include the space before the keyword.
+                        start: throwsClause.positionAfterSkippingLeadingTrivia.advanced(by: -1),
+                        end: throwsClause.endPositionBeforeTrailingTrivia,
+                        replacement: "",
+                    ),
+                ),
+            )
+        }
     }
-  }
 }
+
+// MARK: - Support
 
 extension Stack where Element == UnneededThrowsRule.Scope {
-  fileprivate mutating func markCurrentScopeAsThrowing() {
-    modifyLast { currentScope in
-      currentScope.throwsClause = nil
+    fileprivate mutating func markCurrentScopeAsThrowing() {
+        modifyLast { currentScope in
+            currentScope.throwsClause = nil
+        }
     }
-  }
 
-  fileprivate mutating func openScope(with throwsClause: ThrowsClauseSyntax? = nil) {
-    push(UnneededThrowsRule.Scope(throwsClause: throwsClause))
-  }
+    fileprivate mutating func openScope(with throwsClause: ThrowsClauseSyntax? = nil) {
+        push(UnneededThrowsRule.Scope(throwsClause: throwsClause))
+    }
 
-  @discardableResult
-  fileprivate mutating func closeScope() -> Element? {
-    pop()
-  }
+    @discardableResult
+    fileprivate mutating func closeScope() -> Element? {
+        pop()
+    }
 }
 
 extension FunctionCallExprSyntax {
-  fileprivate var containsClosureDeclaration: Bool {
-    children(viewMode: .sourceAccurate).contains { $0.is(ClosureExprSyntax.self) }
-  }
+    fileprivate var containsClosureDeclaration: Bool {
+        children(viewMode: .sourceAccurate).contains { $0.is(ClosureExprSyntax.self) }
+    }
 }
 
 extension PatternBindingSyntax {
-  private var hasNonReferenceInitializer: Bool {
-    ![.declReferenceExpr, .memberAccessExpr, .functionCallExpr, nil].contains(
-      initializer?.value.kind,
-    )
-  }
-
-  private var isLetBinding: Bool {
-    parent?.as(PatternBindingListSyntax.self)?
-      .parent?.as(VariableDeclSyntax.self)?
-      .bindingSpecifier.tokenKind == .keyword(.let)
-  }
-
-  fileprivate var lintableFunctionType: FunctionTypeSyntax? {
-    guard isLetBinding, hasNonReferenceInitializer else {
-      return nil
+    private var hasNonReferenceInitializer: Bool {
+        ![.declReferenceExpr, .memberAccessExpr, .functionCallExpr, nil].contains(
+            initializer?.value.kind,
+        )
     }
-    return typeAnnotation?.type.baseFunctionTypeSyntax
-  }
+
+    private var isLetBinding: Bool {
+        parent?.as(PatternBindingListSyntax.self)?
+            .parent?.as(VariableDeclSyntax.self)?
+            .bindingSpecifier.tokenKind == .keyword(.let)
+    }
+
+    fileprivate var lintableFunctionType: FunctionTypeSyntax? {
+        guard isLetBinding, hasNonReferenceInitializer else {
+            return nil
+        }
+        return typeAnnotation?.type.baseFunctionTypeSyntax
+    }
 }
 
 extension TypeSyntax {
-  fileprivate var baseFunctionTypeSyntax: FunctionTypeSyntax? {
-    switch Syntax(self).as(SyntaxEnum.self) {
-    case .functionType(let function):
-      function
-    case .optionalType(let optional):
-      optional.wrappedType.baseFunctionTypeSyntax
-    case .attributedType(let attributed):
-      attributed.baseType.baseFunctionTypeSyntax
-    case .tupleType(let tuple):
-      // It's hard to check for the necessity of throws keyword in multi-element tuples.
-      if tuple.elements.count == 1 {
-        tuple.elements.first?.type.baseFunctionTypeSyntax
-      } else {
-        nil
-      }
-    default:
-      nil
+    fileprivate var baseFunctionTypeSyntax: FunctionTypeSyntax? {
+        switch Syntax(self).as(SyntaxEnum.self) {
+            case let .functionType(function):
+                function
+            case let .optionalType(optional):
+                optional.wrappedType.baseFunctionTypeSyntax
+            case let .attributedType(attributed):
+                attributed.baseType.baseFunctionTypeSyntax
+            case let .tupleType(tuple):
+                // It's hard to check for the necessity of throws keyword in multi-element tuples.
+                if tuple.elements.count == 1 {
+                    tuple.elements.first?.type.baseFunctionTypeSyntax
+                } else {
+                    nil
+                }
+            default:
+                nil
+        }
     }
-  }
 }

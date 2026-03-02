@@ -171,7 +171,7 @@ struct CaptureVariableRule: AnalyzerRule, CollectingRule {
   typealias USR = String
   typealias FileInfo = Set<USR>
 
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func collectInfo(for file: SwiftSource, compilerArguments: [String]) -> Self.FileInfo {
     file.declaredVariables(compilerArguments: compilerArguments)

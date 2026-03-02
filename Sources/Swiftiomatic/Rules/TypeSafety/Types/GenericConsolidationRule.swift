@@ -17,7 +17,7 @@ struct GenericConsolidationRule {
               Example("func process(_ items: ↓any Collection) { for item in items { } }")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

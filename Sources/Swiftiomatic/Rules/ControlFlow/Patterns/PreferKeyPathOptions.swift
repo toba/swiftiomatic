@@ -1,6 +1,6 @@
 struct PreferKeyPathOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "restrict_to_standard_functions")
   private(set) var restrictToStandardFunctions = true
   @OptionElement(key: "ignore_identity_closures")

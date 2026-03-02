@@ -18,7 +18,7 @@ struct CompilerProtocolInitRule {
               Example("let set = ↓Set.init(arrayLiteral : 1, 2)"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

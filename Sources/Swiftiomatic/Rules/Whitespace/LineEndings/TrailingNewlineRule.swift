@@ -40,7 +40,7 @@ struct TrailingNewlineRule: CorrectableRule, SyntaxOnlyRule {
               Example("let c = 0\n\n\n\n"): Example("let c = 0\n"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     if file.contents.trailingNewlineCount() == 1 {

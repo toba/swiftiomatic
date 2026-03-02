@@ -1,6 +1,6 @@
 struct ProhibitedSuperOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "excluded")
   private(set) var excluded = [String]()
   @OptionElement(key: "included")

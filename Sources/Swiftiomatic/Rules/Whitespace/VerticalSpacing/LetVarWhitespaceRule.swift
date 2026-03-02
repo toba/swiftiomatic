@@ -205,7 +205,7 @@ struct LetVarWhitespaceRule {
               ),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   private static func wrapIntoClass(_ example: Example) -> Example {
     example.with(code: "class C {\n" + example.code + "\n}")

@@ -78,7 +78,7 @@ struct LegacyCGGeometryFunctionsRule {
                 Example("rect1.intersects(rect2)\nrect.width"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   private static let legacyFunctions: [String: LegacyFunctionRewriteStrategy] = [
     "CGRectGetWidth": .property(name: "width"),

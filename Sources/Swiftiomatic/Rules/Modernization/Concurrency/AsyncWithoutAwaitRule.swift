@@ -6,16 +6,7 @@ struct AsyncWithoutAwaitRule {
     static let summary = "Declaration should not be async if it doesn't use await"
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        AsyncWithoutAwaitRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        AsyncWithoutAwaitRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        AsyncWithoutAwaitRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

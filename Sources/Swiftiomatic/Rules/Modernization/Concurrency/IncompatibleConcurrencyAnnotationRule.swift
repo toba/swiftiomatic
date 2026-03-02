@@ -7,15 +7,6 @@ struct IncompatibleConcurrencyAnnotationRule {
     static let summary = "Declaration should be @preconcurrency to maintain compatibility with Swift 5"
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        IncompatibleConcurrencyAnnotationRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        IncompatibleConcurrencyAnnotationRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        IncompatibleConcurrencyAnnotationRuleExamples.corrections
-    }
     static let rationale: String? = """
       Declarations that use concurrency features such as `@Sendable` closures, `Sendable` generic type
       arguments or `@MainActor` (or other global actors) should be annotated with `@preconcurrency`

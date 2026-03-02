@@ -19,7 +19,7 @@ struct NumberFormattingRule {
               Example("let x = ↓100000"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

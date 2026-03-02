@@ -29,7 +29,7 @@ struct EmptyBracesRule {
               Example("func foo() ↓{ }"): Example("func foo() {}")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

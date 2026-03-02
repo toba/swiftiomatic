@@ -5,12 +5,6 @@ struct AttributesRule {
     static let name = "Attributes"
     static let summary = ""
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        AttributesRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        AttributesRuleExamples.triggeringExamples
-    }
     static let rationale: String? = """
       Erica Sadun says:
 

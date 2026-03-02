@@ -1,6 +1,6 @@
 struct ColonOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "flexible_right_spacing")
   private(set) var flexibleRightSpacing = false
   @OptionElement(key: "apply_to_dictionaries")

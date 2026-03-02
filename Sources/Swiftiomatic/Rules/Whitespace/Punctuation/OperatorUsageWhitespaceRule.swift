@@ -7,15 +7,6 @@ struct OperatorUsageWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
     static let summary = "Operators should be surrounded by a single whitespace when they are being used"
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        OperatorUsageWhitespaceRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        OperatorUsageWhitespaceRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        OperatorUsageWhitespaceRuleExamples.corrections
-    }
   var options = OperatorUsageWhitespaceOptions()
 
   func validate(file: SwiftSource) -> [RuleViolation] {

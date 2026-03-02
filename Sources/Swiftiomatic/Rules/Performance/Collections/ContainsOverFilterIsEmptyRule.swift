@@ -25,7 +25,7 @@ struct ContainsOverFilterIsEmptyRule {
               Example("let result = ↓myList.filter(where: someFunction).isEmpty"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

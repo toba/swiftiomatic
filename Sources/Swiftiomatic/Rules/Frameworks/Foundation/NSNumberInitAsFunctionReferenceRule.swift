@@ -20,7 +20,7 @@ struct NSNumberInitAsFunctionReferenceRule {
               Example("[0, 0.2].map(↓NSDecimalNumber.init)"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

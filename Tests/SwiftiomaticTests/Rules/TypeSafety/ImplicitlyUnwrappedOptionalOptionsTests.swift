@@ -7,7 +7,7 @@ import Testing
     throws
   {
     var configuration = ImplicitlyUnwrappedOptionalOptions(
-      severityConfiguration: SeverityConfiguration(.warning),
+      severityConfiguration: SeverityOption(.warning),
       mode: .allExceptIBOutlets,
     )
 
@@ -37,7 +37,7 @@ import Testing
 
     for badConfig in badConfigs {
       var configuration = ImplicitlyUnwrappedOptionalOptions(
-        severityConfiguration: SeverityConfiguration(.warning),
+        severityConfiguration: SeverityOption(.warning),
         mode: .allExceptIBOutlets,
       )
 

@@ -33,7 +33,7 @@ struct FirstWhereRule {
               Example(#"↓myListOfDict.filter { $0["someString"] }.first"#),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -31,7 +31,7 @@ struct BlankLinesBetweenImportsRule {
               Example("import A\n\n↓import B"): Example("import A\nimport B")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

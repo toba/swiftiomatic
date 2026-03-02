@@ -24,7 +24,7 @@ struct ReduceBooleanRule {
               Example("nums.reduce(into: true) { (r: inout Bool, s) in r = r && (s == 3) }"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

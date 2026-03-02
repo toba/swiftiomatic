@@ -21,7 +21,7 @@ struct LinebreaksRule {
               Example("let a = 0\r\n↓let b = 1\r\n"): Example("let a = 0\nlet b = 1\n")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

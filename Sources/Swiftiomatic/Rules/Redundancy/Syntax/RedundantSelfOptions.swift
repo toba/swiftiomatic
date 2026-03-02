@@ -1,6 +1,6 @@
 struct RedundantSelfOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "keep_in_initializers")
   private(set) var keepInInitializers = false
   @OptionElement(key: "only_in_closures")

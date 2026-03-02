@@ -1,6 +1,6 @@
 struct UnusedOptionalBindingOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "ignore_optional_try")
   private(set) var ignoreOptionalTry = false
   typealias Parent = UnusedOptionalBindingRule

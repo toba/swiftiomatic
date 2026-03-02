@@ -1,6 +1,6 @@
 struct OperatorUsageWhitespaceOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "lines_look_around")
   private(set) var linesLookAround = 2
   @OptionElement(key: "skip_aligned_constants")

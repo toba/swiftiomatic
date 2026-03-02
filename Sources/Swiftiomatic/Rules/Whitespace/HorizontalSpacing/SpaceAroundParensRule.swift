@@ -25,7 +25,7 @@ struct SpaceAroundParensRule {
               Example("foo↓ (bar)"): Example("foo(bar)")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

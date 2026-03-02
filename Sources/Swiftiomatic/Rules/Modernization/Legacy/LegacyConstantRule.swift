@@ -6,16 +6,7 @@ struct LegacyConstantRule {
     static let name = "Legacy Constant"
     static let summary = "Struct-scoped constants are preferred over legacy global constants"
     static let isCorrectable = true
-    static var nonTriggeringExamples: [Example] {
-        LegacyConstantRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        LegacyConstantRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        LegacyConstantRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 
@@ -32,7 +23,7 @@ extension LegacyConstantRule: SwiftSyntaxCorrectableRule {
 extension LegacyConstantRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: DeclReferenceExprSyntax) {
-      if LegacyConstantRuleExamples.patterns.keys.contains(node.baseName.text) {
+      if LegacyConstantRule.patterns.keys.contains(node.baseName.text) {
         violations.append(node.positionAfterSkippingLeadingTrivia)
       }
     }
@@ -46,7 +37,7 @@ extension LegacyConstantRule {
 
   fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: DeclReferenceExprSyntax) -> ExprSyntax {
-      guard let correction = LegacyConstantRuleExamples.patterns[node.baseName.text] else {
+      guard let correction = LegacyConstantRule.patterns[node.baseName.text] else {
         return super.visit(node)
       }
       numberOfCorrections += 1

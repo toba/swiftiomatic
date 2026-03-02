@@ -16,7 +16,7 @@ struct StructuralDuplicationRule: CollectingRule {
     }
   typealias FileInfo = [FunctionFingerprint]
 
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func collectInfo(for file: SwiftSource) -> [FunctionFingerprint] {
     guard let path = file.path else { return [] }

@@ -29,7 +29,7 @@ struct RedundantParensRule {
               Example("while ↓(flag) {}"): Example("while flag {}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

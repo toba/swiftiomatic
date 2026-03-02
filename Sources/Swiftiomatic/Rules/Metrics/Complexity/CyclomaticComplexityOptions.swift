@@ -1,24 +1,28 @@
 struct CyclomaticComplexityOptions: RuleOptions {
-  @OptionElement(isInline: true)
-  private(set) var length = SeverityLevelsConfiguration<Parent>(warning: 10, error: 20)
-  @OptionElement(key: "ignores_case_statements")
-  private(set) var ignoresCaseStatements = false
+    typealias Parent = CyclomaticComplexityRule
 
-  var params: [RuleParameter<Int>] {
-    length.params
-  }
+    @OptionElement(isInline: true)
+    private(set) var length = SeverityLevelsConfiguration<Parent>(warning: 10, error: 20)
 
-  typealias Parent = CyclomaticComplexityRule
-  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
-    do {
-      try length.apply(configuration, ruleID: Parent.identifier)
-    } catch let issue where issue == SwiftiomaticError.nothingApplied(ruleID: Parent.identifier) {
-      // Acceptable. Continue.
+    @OptionElement(key: "ignores_case_statements")
+    private(set) var ignoresCaseStatements = false
+
+    var params: [RuleParameter<Int>] {
+        length.params
     }
-    if let value = configuration[$ignoresCaseStatements.key] {
-      try ignoresCaseStatements.apply(value, ruleID: Parent.identifier)
+
+    mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
+        do {
+            try length.apply(configuration, ruleID: Parent.identifier)
+        } catch let issue
+            where issue == SwiftiomaticError.nothingApplied(ruleID: Parent.identifier)
+        {
+            // Acceptable. Continue.
+        }
+        if let value = configuration[$ignoresCaseStatements.key] {
+            try ignoresCaseStatements.apply(value, ruleID: Parent.identifier)
+        }
+        warnAboutUnknownKeys(in: configuration)
+        validate()
     }
-    warnAboutUnknownKeys(in: configuration)
-    validate()
-  }
 }

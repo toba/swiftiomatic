@@ -5,7 +5,7 @@ struct XCTSpecificMatcherOptions: SeverityBasedRuleOptions {
   }
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "matchers")
   private(set) var matchers = Matcher.allCases
   typealias Parent = XCTSpecificMatcherRule

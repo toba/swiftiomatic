@@ -10,12 +10,6 @@ struct FileTypesOrderRule: Rule {
     static let summary = "Specifies how the types within a file should be ordered."
     static let isOptIn = true
     static let requiresSourceKit = true
-    static var nonTriggeringExamples: [Example] {
-        FileTypesOrderRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        FileTypesOrderRuleExamples.triggeringExamples
-    }
   var options = FileTypesOrderOptions()
 
   func validate(file: SwiftSource) -> [RuleViolation] {

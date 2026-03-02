@@ -5,7 +5,7 @@ struct StatementPositionOptions: SeverityBasedRuleOptions {
   }
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>.warning
+  var severityConfiguration = SeverityOption<Parent>.warning
   @OptionElement(key: "statement_mode")
   private(set) var statementMode = StatementModeConfiguration.default
   typealias Parent = StatementPositionRule

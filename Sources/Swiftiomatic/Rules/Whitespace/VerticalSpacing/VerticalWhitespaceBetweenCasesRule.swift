@@ -7,19 +7,6 @@ struct VerticalWhitespaceBetweenCasesRule {
     static let summary = "Include a single empty line between switch cases"
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
-              .values.sorted() + VerticalWhitespaceBetweenCasesRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        Array(
-              VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples.keys.sorted(),
-            )
-    }
-    static var corrections: [Example: Example] {
-        VerticalWhitespaceBetweenCasesRuleExamples.violatingToValidExamples
-              .removingViolationMarkers()
-    }
   var options = VerticalWhitespaceBetweenCasesOptions()
 
 }

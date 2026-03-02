@@ -87,7 +87,7 @@ struct ArrayInitRule {
       may be picked up as false positives by the `array_init` rule. If your codebase contains constructs like this, \
       consider using the `typesafe_array_init` analyzer rule instead.
       """
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

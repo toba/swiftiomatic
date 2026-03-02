@@ -1,5 +1,5 @@
 struct ExpiringTodoOptions: RuleOptions {
-  typealias Severity = SeverityConfiguration<Parent>
+  typealias Severity = SeverityOption<Parent>
 
   struct DelimiterConfiguration: Equatable, AcceptableByOptionElement {
     static let `default`: DelimiterConfiguration = .init(opening: "[", closing: "]")

@@ -167,7 +167,7 @@ struct CommentSpacingRule: SyntaxOnlyRule, SubstitutionCorrectableRule {
               ),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func violationRanges(in file: SwiftSource) -> [Range<String.Index>] {
     // Find all comment tokens in the file and regex search them for violations

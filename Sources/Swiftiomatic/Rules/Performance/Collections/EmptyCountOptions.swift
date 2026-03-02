@@ -1,6 +1,6 @@
 struct EmptyCountOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.error)
+  var severityConfiguration = SeverityOption<Parent>(.error)
   @OptionElement(key: "only_after_dot")
   private(set) var onlyAfterDot = false
   typealias Parent = EmptyCountRule

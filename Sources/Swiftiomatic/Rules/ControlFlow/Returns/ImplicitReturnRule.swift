@@ -6,15 +6,6 @@ struct ImplicitReturnRule {
     static let summary = "Prefer implicit returns in closures, functions and getters"
     static let isCorrectable = true
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        ImplicitReturnRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        ImplicitReturnRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        ImplicitReturnRuleExamples.corrections
-    }
   var options = ImplicitReturnOptions()
 
 }

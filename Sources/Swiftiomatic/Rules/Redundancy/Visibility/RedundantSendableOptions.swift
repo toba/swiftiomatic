@@ -1,6 +1,6 @@
 struct RedundantSendableOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "global_actors")
   private(set) var globalActors = Set<String>()
   typealias Parent = RedundantSendableRule

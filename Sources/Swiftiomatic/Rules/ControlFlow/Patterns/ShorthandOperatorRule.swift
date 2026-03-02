@@ -37,7 +37,7 @@ struct ShorthandOperatorRule {
               Example("↓n = n - i / outputLength"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.error)
+  var options = SeverityOption<Self>(.error)
 
   fileprivate static let allOperators = ["-", "/", "+", "*"]
 }

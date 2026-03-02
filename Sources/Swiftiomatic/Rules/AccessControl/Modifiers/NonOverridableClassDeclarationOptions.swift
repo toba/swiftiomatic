@@ -5,7 +5,7 @@ struct NonOverridableClassDeclarationOptions: SeverityBasedRuleOptions {
     }
 
     @OptionElement(key: "severity")
-    var severityConfiguration = SeverityConfiguration<Parent>.warning
+    var severityConfiguration = SeverityOption<Parent>.warning
     @OptionElement(key: "final_class_modifier")
     private(set) var finalClassModifier = FinalClassModifier.finalClass
     typealias Parent = NonOverridableClassDeclarationRule

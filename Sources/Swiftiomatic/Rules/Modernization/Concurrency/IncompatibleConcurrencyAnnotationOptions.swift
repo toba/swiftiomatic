@@ -2,7 +2,7 @@ struct IncompatibleConcurrencyAnnotationOptions: SeverityBasedRuleOptions {
   // sm:disable:previous type_name
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "global_actors", postprocessor: { $0.insert("MainActor") })
   private(set) var globalActors = Set<String>()
   typealias Parent = IncompatibleConcurrencyAnnotationRule

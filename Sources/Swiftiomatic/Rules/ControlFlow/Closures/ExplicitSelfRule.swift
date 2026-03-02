@@ -9,16 +9,7 @@ struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
     static let requiresSourceKit = true
     static let requiresCompilerArguments = true
     static let requiresFileOnDisk = true
-    static var nonTriggeringExamples: [Example] {
-        ExplicitSelfRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        ExplicitSelfRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        ExplicitSelfRuleExamples.corrections
-    }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   func validate(file: SwiftSource, compilerArguments: [String]) -> [RuleViolation] {
     violationRanges(in: file, compilerArguments: compilerArguments).map {

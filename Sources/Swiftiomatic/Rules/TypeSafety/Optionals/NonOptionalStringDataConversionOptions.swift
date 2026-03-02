@@ -2,7 +2,7 @@ struct NonOptionalStringDataConversionOptions: SeverityBasedRuleOptions {
   // sm:disable:previous type_name
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "include_variables")
   private(set) var includeVariables = false
   typealias Parent = NonOptionalStringDataConversionRule

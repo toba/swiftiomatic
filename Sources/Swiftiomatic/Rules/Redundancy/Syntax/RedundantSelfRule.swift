@@ -8,15 +8,6 @@ struct RedundantSelfRule {
     static let isCorrectable = true
     static let isOptIn = true
     static let deprecatedAliases: Set<String> = ["redundant_self_in_closure"]
-    static var nonTriggeringExamples: [Example] {
-        RedundantSelfRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        RedundantSelfRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        RedundantSelfRuleExamples.corrections
-    }
   var options = RedundantSelfOptions()
 
 }

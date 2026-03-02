@@ -42,7 +42,7 @@ struct JoinedDefaultParameterRule {
                 Example("class C {\n#if true\nlet foo = bar.joined()\n#endif\n}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

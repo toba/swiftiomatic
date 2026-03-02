@@ -15,7 +15,7 @@ struct SwiftUILayoutRule {
               Example("NavigationStack { ↓NavigationStack { Text(\"Hello\") } }")
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

@@ -6,15 +6,6 @@ struct ColonRule: SubstitutionCorrectableRule, SyntaxOnlyRule {
     static let name = "Colon Spacing"
     static let summary = ""
     static let isCorrectable = true
-    static var nonTriggeringExamples: [Example] {
-        ColonRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        ColonRuleExamples.triggeringExamples
-    }
-    static var corrections: [Example: Example] {
-        ColonRuleExamples.corrections
-    }
   var options = ColonOptions()
 
   func validate(file: SwiftSource) -> [RuleViolation] {

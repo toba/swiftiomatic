@@ -1,6 +1,6 @@
 struct PrivateOverFilePrivateOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "validate_extensions")
   var validateExtensions = false
   typealias Parent = PrivateOverFilePrivateRule

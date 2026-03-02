@@ -8,7 +8,7 @@ struct SortedImportsOptions: SeverityBasedRuleOptions {
   }
 
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "grouping")
   private(set) var grouping = Grouping.names
   typealias Parent = SortedImportsRule

@@ -21,7 +21,7 @@ struct NoExtensionAccessModifierRule {
               Example("↓fileprivate extension String {}"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.error)
+  var options = SeverityOption<Self>(.error)
 
 }
 

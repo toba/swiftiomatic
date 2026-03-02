@@ -33,7 +33,7 @@ struct UnownedVariableCaptureRule {
               Example("foo { [bar, ↓unowned self] in _ }"),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
 }
 

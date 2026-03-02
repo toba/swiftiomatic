@@ -1,6 +1,6 @@
 struct MultilineCallArgumentsOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
-  var severityConfiguration = SeverityConfiguration<Parent>(.warning)
+  var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "allows_single_line")
   private(set) var allowsSingleLine = true
   @OptionElement(key: "max_number_of_single_line_parameters")

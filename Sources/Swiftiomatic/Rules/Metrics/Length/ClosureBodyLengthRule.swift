@@ -5,12 +5,6 @@ struct ClosureBodyLengthRule {
     static let name = "Closure Body Length"
     static let summary = "Closure bodies should not span too many lines"
     static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        ClosureBodyLengthRuleExamples.nonTriggeringExamples
-    }
-    static var triggeringExamples: [Example] {
-        ClosureBodyLengthRuleExamples.triggeringExamples
-    }
     static let rationale: String? = """
       "Closure bodies should not span too many lines" says it all.
 

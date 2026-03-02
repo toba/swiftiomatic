@@ -63,7 +63,7 @@ struct TypesafeArrayInitRule: AnalyzerRule {
               ),
             ]
     }
-  var options = SeverityConfiguration<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
   private static let parentRule = ArrayInitRule()
   private static let mapTypePatterns = [

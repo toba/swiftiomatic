@@ -697,7 +697,7 @@ extension AcceptableByOptionElement where Self: RuleOptions {
     }
 }
 
-extension SeverityConfiguration {
+extension SeverityOption {
     /// Severity configurations are special in that they shall not be nested when an option name is provided.
     /// Instead, their only option value must be used together with the option name.
     func asDescription(with key: String) -> RuleOptionsDescription {
