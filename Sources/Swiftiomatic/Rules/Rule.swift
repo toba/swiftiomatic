@@ -178,25 +178,6 @@ extension Rule {
         configuration
     }
 
-    /// Default ``RuleDescription`` synthesized from ``configuration`` for test compatibility
-    static var description: RuleDescription {
-        let config = configuration
-        return RuleDescription(
-            identifier: config.id,
-            name: config.name,
-            description: config.summary,
-            rationale: config.rationale,
-            scope: config.scope,
-            isOptIn: config.isOptIn,
-            requiresSourceKit: config.requiresSourceKit,
-            requiresCompilerArguments: config.requiresCompilerArguments,
-            nonTriggeringExamples: config.nonTriggeringExamples,
-            triggeringExamples: config.triggeringExamples,
-            corrections: config.corrections,
-            deprecatedAliases: config.deprecatedAliases,
-            requiresFileOnDisk: config.requiresFileOnDisk,
-        )
-    }
 
     /// The rule's unique identifier
     static var identifier: String {
@@ -273,7 +254,7 @@ extension Rule {
 
 /// A rule that is not enabled by default and must be explicitly enabled by users
 ///
-/// - Note: Deprecated. Use `RuleDescription.isOptIn` instead. This protocol remains
+/// - Note: Deprecated. Use `RuleConfiguration.isOptIn` instead. This protocol remains
 ///   for backward compatibility but is no longer checked at runtime.
 protocol OptInRule: Rule {}
 
@@ -375,7 +356,7 @@ extension [any Rule] {
 
 /// A rule that operates purely on SwiftSyntax and does not require SourceKit
 ///
-/// - Note: Deprecated. Use `RuleDescription.requiresSourceKit` instead. This protocol
+/// - Note: Deprecated. Use `RuleConfiguration.requiresSourceKit` instead. This protocol
 ///   remains for backward compatibility with ``SwiftSyntaxRule``.
 protocol SyntaxOnlyRule: Rule {}
 
@@ -418,7 +399,7 @@ protocol AsyncEnrichableRule: Rule {
 /// Analyzer rules perform checks that are more like static analysis than
 /// syntactic checks. They are always opt-in and require compiler arguments.
 /// Set `isOptIn: true` and `requiresCompilerArguments: true` in the rule's
-/// ``RuleDescription``.
+/// ``RuleConfiguration``.
 protocol AnalyzerRule: Rule {}
 
 extension AnalyzerRule {

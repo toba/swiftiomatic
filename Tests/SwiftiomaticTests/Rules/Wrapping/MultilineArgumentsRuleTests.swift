@@ -17,11 +17,10 @@ import Testing
       Example("foo(↓1,\n" + "    bar: baz) { }")
     ]
 
-    let description = MultilineArgumentsRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let examples = TestExamples(from: MultilineArgumentsRule.configuration)
+      .with(nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples)
 
-    await verifyRule(description, ruleConfiguration: ["first_argument_location": "next_line"])
+    await verifyRule(examples, ruleConfiguration: ["first_argument_location": "next_line"])
   }
 
   @Test func multilineArgumentsWithWithSameLine() async {
@@ -38,11 +37,10 @@ import Testing
       Example("foo(\n" + "    ↓2,\n" + "    bar: baz) { }"),
     ]
 
-    let description = MultilineArgumentsRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let examples = TestExamples(from: MultilineArgumentsRule.configuration)
+      .with(nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples)
 
-    await verifyRule(description, ruleConfiguration: ["first_argument_location": "same_line"])
+    await verifyRule(examples, ruleConfiguration: ["first_argument_location": "same_line"])
   }
 
   @Test func multilineArgumentsWithOnlyEnforceAfterFirstClosureOnFirstLine() async {
@@ -63,12 +61,11 @@ import Testing
       Example("foo(a: a, b: b,\n" + "    c: c, d: {\n" + "    }, d: {\n" + "})"),
     ]
 
-    let description = MultilineArgumentsRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let examples = TestExamples(from: MultilineArgumentsRule.configuration)
+      .with(nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples)
 
     await verifyRule(
-      description,
+      examples,
       ruleConfiguration: ["only_enforce_after_first_closure_on_first_line": true],
     )
   }

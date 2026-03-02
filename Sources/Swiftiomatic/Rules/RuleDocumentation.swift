@@ -1,3 +1,5 @@
+import Foundation
+
 /// User-facing documentation for a single Swiftiomatic rule
 struct RuleDocumentation {
     private let ruleType: any Rule.Type
@@ -37,24 +39,24 @@ struct RuleDocumentation {
 
     /// The contents of the file for this rule documentation
     var fileContents: String {
-        let description = ruleType.description
+        let config = ruleType.anyConfiguration
         var content = [
-            h1(description.name),
-            description.description,
+            h1(config.name),
+            config.summary,
             detailsSummary(ruleType.init()),
         ]
-        if let formattedRationale = description.formattedRationale {
+        if let rationale = config.rationale {
             content += [h2("Rationale")]
-            content.append(formattedRationale)
+            content.append(rationale.formattedRationale)
         }
-        let nonTriggeringExamples = description.nonTriggeringExamples.filter {
+        let nonTriggeringExamples = config.nonTriggeringExamples.filter {
             !$0.isExcludedFromDocumentation
         }
         if nonTriggeringExamples.isNotEmpty {
             content += [h2("Non Triggering Examples")]
             content += nonTriggeringExamples.map(formattedCode)
         }
-        let triggeringExamples = description.triggeringExamples
+        let triggeringExamples = config.triggeringExamples
             .filter { !$0.isExcludedFromDocumentation }
         if triggeringExamples.isNotEmpty {
             content += [h2("Triggering Examples")]
@@ -95,6 +97,35 @@ private func h1(_ text: String) -> String {
 
 private func h2(_ text: String) -> String {
     "## \(text)"
+}
+
+// MARK: - Rationale Formatting
+
+extension String {
+    var formattedRationale: String {
+        formattedRationale(forConsole: false)
+    }
+
+    var consoleRationale: String {
+        formattedRationale(forConsole: true)
+    }
+
+    private func formattedRationale(forConsole: Bool) -> String {
+        var insideMultilineString = false
+        return components(separatedBy: "\n").compactMap { line -> String? in
+            if line.contains("```") {
+                if insideMultilineString {
+                    insideMultilineString = false
+                    return forConsole ? nil : line
+                }
+                insideMultilineString = true
+                if line.hasSuffix("```") {
+                    return forConsole ? nil : (line + "swift")
+                }
+            }
+            return line.indent(by: (insideMultilineString && forConsole) ? 4 : 0)
+        }.joined(separator: "\n")
+    }
 }
 
 private func detailsSummary(_ rule: some Rule) -> String {

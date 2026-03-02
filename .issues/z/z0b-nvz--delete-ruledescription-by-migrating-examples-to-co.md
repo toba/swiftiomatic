@@ -1,11 +1,11 @@
 ---
 # z0b-nvz
 title: Delete RuleDescription by migrating examples to Configuration types
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-03-01T23:57:31Z
-updated_at: 2026-03-02T01:05:34Z
+updated_at: 2026-03-02T01:14:02Z
 ---
 
 RuleDescription is no longer part of the Rule protocol (removed in 55b-kur Task 7), but the struct itself still exists as a container for test examples. A default `description` implementation synthesizes from `configuration`, so rules that define their own `static let description = RuleDescription(...)` override it with examples.
@@ -33,7 +33,7 @@ RuleDescription is no longer part of the Rule protocol (removed in 55b-kur Task 
 - [x] Step 2: Migrate examples into Configuration types (327 rules)
 - [x] Step 3: Migrate test files (generated tests + .with() tests)
 - [x] Step 4: Remove RuleViolation(ruleDescription:) initializer (~40 call sites migrated)
-- [ ] Step 5: Delete RuleDescription and bridge code (IN PROGRESS)
+- [x] Step 5: Delete RuleDescription and bridge code
 
 
 ## Step 5 In-Progress State
@@ -73,3 +73,16 @@ Steps 1-4 are committed. Step 5 is partially done but NOT committed. Current unc
 - 84bbb21: migrate examples from RuleDescription into Configuration types (327 rules)
 - 19e0722: migrate generated tests and .with() tests to use configuration/TestExamples
 - 0ff2507: remove RuleViolation(ruleDescription:) initializer, migrate all call sites
+
+
+## Summary of Changes
+
+Deleted `RuleDescription` struct and all bridge code:
+- Removed `static var description: RuleDescription` synthesizer from Rule extension
+- Removed `RuleDescription` references from all mock rules in test files
+- Removed `FocusedRuleDescription` and old `verifyRule/verifyLint/verifyCorrections` overloads that accepted `RuleDescription`
+- Refactored `RuleDocumentation` to use `RuleConfiguration` directly instead of `RuleDescription`
+- Moved `String.formattedRationale`/`consoleRationale` extensions to RuleDocumentation.swift
+- Deleted `RuleDescription.swift`, `RuleDescription+Examples.swift`, and `migrate_examples.py`
+- Updated doc comments referencing `RuleDescription` to reference `RuleConfiguration`
+- All 4386 tests pass

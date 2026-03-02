@@ -22,9 +22,10 @@ import Testing
       Example("↓if true { return \"YES\" } else { return \"NO\" }"),
     ]
 
-    let description = ConditionalReturnsOnNewlineRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = TestExamples(from: ConditionalReturnsOnNewlineRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["if_only": true])
   }

@@ -4,19 +4,19 @@ import Testing
 
 @Suite(.rulesRegistered) struct GenericTypeNameRuleTests {
   @Test func genericTypeNameWithExcluded() async {
-    let baseDescription = GenericTypeNameRule.description
+    let baseExamples = TestExamples(from: GenericTypeNameRule.configuration)
     let nonTriggeringExamples =
-      baseDescription.nonTriggeringExamples + [
+      baseExamples.nonTriggeringExamples + [
         Example("func foo<apple> {}"),
         Example("func foo<some_apple> {}"),
         Example("func foo<test123> {}"),
       ]
     let triggeringExamples =
-      baseDescription.triggeringExamples + [
+      baseExamples.triggeringExamples + [
         Example("func foo<ap_ple> {}"),
         Example("func foo<appleJuice> {}"),
       ]
-    let description = baseDescription.with(
+    let description = baseExamples.with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -25,9 +25,9 @@ import Testing
   }
 
   @Test func genericTypeNameWithAllowedSymbols() async {
-    let baseDescription = GenericTypeNameRule.description
+    let baseExamples = TestExamples(from: GenericTypeNameRule.configuration)
     let nonTriggeringExamples =
-      baseDescription.nonTriggeringExamples + [
+      baseExamples.nonTriggeringExamples + [
         Example("func foo<T$>() {}"),
         Example("func foo<T$, U%>(param: U%) -> T$ {}"),
         Example("typealias StringDictionary<T$> = Dictionary<String, T$>"),
@@ -36,22 +36,22 @@ import Testing
         Example("enum Foo<T$%> {}"),
       ]
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = baseExamples.with(nonTriggeringExamples: nonTriggeringExamples)
     await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
   }
 
   @Test func genericTypeNameWithAllowedSymbolsAndViolation() async {
-    let baseDescription = GenericTypeNameRule.description
     let triggeringExamples = [
       Example("func foo<↓T_$>() {}")
     ]
 
-    let description = baseDescription.with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: GenericTypeNameRule.configuration)
+      .with(triggeringExamples: triggeringExamples)
     await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
   }
 
   @Test func genericTypeNameWithIgnoreStartWithLowercase() async {
-    let baseDescription = GenericTypeNameRule.description
+    let baseExamples = TestExamples(from: GenericTypeNameRule.configuration)
     let triggeringExamplesToRemove = [
       Example("func foo<↓type>() {}"),
       Example("class Foo<↓type> {}"),
@@ -59,14 +59,16 @@ import Testing
       Example("enum Foo<↓type> {}"),
     ]
     let nonTriggeringExamples =
-      baseDescription.nonTriggeringExamples
+      baseExamples.nonTriggeringExamples
       + triggeringExamplesToRemove
       .removingViolationMarkers()
-    let triggeringExamples = baseDescription.triggeringExamples
+    let triggeringExamples = baseExamples.triggeringExamples
       .filter { !triggeringExamplesToRemove.contains($0) }
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
     await verifyRule(description, ruleConfiguration: ["validates_start_with_lowercase": "off"])
   }
 }

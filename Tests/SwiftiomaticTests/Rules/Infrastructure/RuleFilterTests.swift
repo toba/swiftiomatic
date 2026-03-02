@@ -126,10 +126,6 @@ private struct RuleMock1: Rule {
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
   static let configuration = TestMockRuleConfiguration(id: "RuleMock1")
-  static let description = RuleDescription(
-    identifier: "RuleMock1", name: "",
-    description: "",
-  )
 
   init() { /* conformance for test */  }
   init(configuration _: Any) { self.init() }
@@ -144,10 +140,6 @@ private struct RuleMock2: Rule {
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
   static let configuration = TestMockRuleConfiguration(id: "RuleMock2")
-  static let description = RuleDescription(
-    identifier: "RuleMock2", name: "",
-    description: "",
-  )
 
   init() { /* conformance for test */  }
   init(configuration _: Any) { self.init() }
@@ -162,10 +154,6 @@ private struct CorrectableRuleMock: CorrectableRule {
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
   static let configuration = TestMockRuleConfiguration(id: "CorrectableRuleMock")
-  static let description = RuleDescription(
-    identifier: "CorrectableRuleMock", name: "",
-    description: "",
-  )
 
   init() { /* conformance for test */  }
   init(configuration _: Any) { self.init() }

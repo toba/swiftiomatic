@@ -64,10 +64,11 @@ import Testing
         Example("#ExampleMacro { $0.list.isEmpty }"),
     ]
 
-    let description = EmptyCountRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(corrections: corrections)
+    let description = TestExamples(from: EmptyCountRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+      corrections: corrections,
+    )
 
     await verifyRule(description, ruleConfiguration: ["only_after_dot": true])
   }

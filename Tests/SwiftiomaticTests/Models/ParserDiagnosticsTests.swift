@@ -19,7 +19,7 @@ import Testing
       ],
     )
 
-    let ruleDescription = LegacyConstantRule.description
+    let ruleDescription = TestExamples(from: LegacyConstantRule.configuration)
       .with(corrections: [Example(contents): Example(contents)])
 
     let config = try #require(
@@ -45,7 +45,7 @@ import Testing
       #expect(SwiftSource(contents: original).parserDiagnostics == [])
     }
 
-    let ruleDescription = ReturnArrowWhitespaceRule.description
+    let ruleDescription = TestExamples(from: ReturnArrowWhitespaceRule.configuration)
       .with(corrections: [Example(original): Example(corrected)])
 
     let config = try #require(

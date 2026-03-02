@@ -158,9 +158,10 @@ import Testing
       ),
     ]
 
-    let reversedOrderDescription = TypeContentsOrderRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let reversedOrderDescription = TestExamples(from: TypeContentsOrderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       reversedOrderDescription,
@@ -378,9 +379,10 @@ import Testing
       ),
     ]
 
-    let groupedOrderDescription = TypeContentsOrderRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let groupedOrderDescription = TestExamples(from: TypeContentsOrderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       groupedOrderDescription,

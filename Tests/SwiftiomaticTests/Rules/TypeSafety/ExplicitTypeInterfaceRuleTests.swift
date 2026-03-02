@@ -28,29 +28,33 @@ import Testing
         """,
       ),
     ]
-    let description = ExplicitTypeInterfaceRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = TestExamples(from: ExplicitTypeInterfaceRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description)
   }
 
   @Test func excludeLocalVars() async {
+    let baseExamples = TestExamples(from: ExplicitTypeInterfaceRule.configuration)
     let nonTriggeringExamples =
-      ExplicitTypeInterfaceRule.description.nonTriggeringExamples + [
+      baseExamples.nonTriggeringExamples + [
         Example("func foo() {\nlet intVal = 1\n}")
       ]
-    let triggeringExamples = ExplicitTypeInterfaceRule.description.triggeringExamples
-    let description = ExplicitTypeInterfaceRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let triggeringExamples = baseExamples.triggeringExamples
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["excluded": ["local"]])
   }
 
   @Test func excludeClassVars() async {
+    let baseExamples = TestExamples(from: ExplicitTypeInterfaceRule.configuration)
     let nonTriggeringExamples =
-      ExplicitTypeInterfaceRule.description.nonTriggeringExamples + [
+      baseExamples.nonTriggeringExamples + [
         Example("class Foo {\n  static var myStaticVar = 0\n}\n"),
         Example("class Foo {\n  static let myStaticLet = 0\n}\n"),
       ]
@@ -59,9 +63,10 @@ import Testing
       Example("class Foo {\n  let ↓myLet = 0\n\n}\n"),
       Example("class Foo {\n  class var ↓myClassVar = 0\n}\n"),
     ]
-    let description = ExplicitTypeInterfaceRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["excluded": ["static"]])
   }
@@ -90,9 +95,10 @@ import Testing
       Example("class Foo {\n  let ↓array = [\"foo\", \"bar\"]\n}\n"),
       Example("class Foo {\n  let ↓dict = [\"foo\": \"bar\"]\n}\n"),
     ]
-    let description = ExplicitTypeInterfaceRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = TestExamples(from: ExplicitTypeInterfaceRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["allow_redundancy": true])
   }
@@ -120,10 +126,12 @@ import Testing
         """,
       ),
     ]
-    let triggeringExamples = ExplicitTypeInterfaceRule.description.triggeringExamples
-    let description = ExplicitTypeInterfaceRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let baseExamples = TestExamples(from: ExplicitTypeInterfaceRule.configuration)
+    let triggeringExamples = baseExamples.triggeringExamples
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description)
   }
@@ -159,10 +167,12 @@ import Testing
         """,
       ),
     ]
-    let triggeringExamples = ExplicitTypeInterfaceRule.description.triggeringExamples
-    let description = ExplicitTypeInterfaceRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let baseExamples = TestExamples(from: ExplicitTypeInterfaceRule.configuration)
+    let triggeringExamples = baseExamples.triggeringExamples
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description)
   }
@@ -187,10 +197,12 @@ import Testing
       ),
     ]
 
-    let triggeringExamples = ExplicitTypeInterfaceRule.description.triggeringExamples
-    let description = ExplicitTypeInterfaceRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let baseExamples = TestExamples(from: ExplicitTypeInterfaceRule.configuration)
+    let triggeringExamples = baseExamples.triggeringExamples
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
     await verifyRule(description)
   }
 
@@ -259,9 +271,10 @@ import Testing
       ),
     ]
 
-    let description = ExplicitTypeInterfaceRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = TestExamples(from: ExplicitTypeInterfaceRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
     await verifyRule(description)
   }
 }

@@ -16,28 +16,30 @@ import Testing
       return
     }
 
-    let description = PreferKeyPathRule.description
-      .with(nonTriggeringExamples: [
-        Example("f.filter { a in b }"),
-        Example("f.g { $1 }", configuration: Self.extendedMode),
-        Example("f { $0 }", configuration: Self.extendedModeAndIgnoreIdentity),
-        Example("f.map { $0 }", configuration: Self.ignoreIdentity),
-      ])
-      .with(triggeringExamples: [
-        Example("f.compactMap ↓{ $0 }"),
-        Example("f.map ↓{ a in a }"),
-        Example("f.g { $0 }", configuration: Self.extendedMode),
-      ])
-      .with(corrections: [
-        Example("f.map ↓{ $0 }"):
-          Example("f.map(\\.self)"),
-        Example("f.g { $0 }", configuration: Self.extendedMode):
-          Example("f.g(\\.self)"),
-        Example("f { $0 }", configuration: Self.extendedModeAndIgnoreIdentity):
-          Example("f { $0 }"),
-        Example("f.map { $0 }", configuration: Self.ignoreIdentity):
-          Example("f.map { $0 }"),
-      ])
+    let description = TestExamples(from: PreferKeyPathRule.configuration)
+      .with(
+        nonTriggeringExamples: [
+          Example("f.filter { a in b }"),
+          Example("f.g { $1 }", configuration: Self.extendedMode),
+          Example("f { $0 }", configuration: Self.extendedModeAndIgnoreIdentity),
+          Example("f.map { $0 }", configuration: Self.ignoreIdentity),
+        ],
+        triggeringExamples: [
+          Example("f.compactMap ↓{ $0 }"),
+          Example("f.map ↓{ a in a }"),
+          Example("f.g { $0 }", configuration: Self.extendedMode),
+        ],
+        corrections: [
+          Example("f.map ↓{ $0 }"):
+            Example("f.map(\\.self)"),
+          Example("f.g { $0 }", configuration: Self.extendedMode):
+            Example("f.g(\\.self)"),
+          Example("f { $0 }", configuration: Self.extendedModeAndIgnoreIdentity):
+            Example("f { $0 }"),
+          Example("f.map { $0 }", configuration: Self.ignoreIdentity):
+            Example("f.map { $0 }"),
+        ],
+      )
 
     await verifyRule(description)
   }

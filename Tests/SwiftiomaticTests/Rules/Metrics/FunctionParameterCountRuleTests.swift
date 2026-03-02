@@ -13,7 +13,6 @@ private func funcWithParameters(
 
 @Suite(.rulesRegistered) struct FunctionParameterCountRuleTests {
   @Test func functionParameterCount() async {
-    let baseDescription = FunctionParameterCountRule.description
     let nonTriggeringExamples = [
       funcWithParameters(repeatElement("x: Int, ", count: 3).joined() + "x: Int")
     ]
@@ -22,14 +21,15 @@ private func funcWithParameters(
       funcWithParameters(repeatElement("x: Int, ", count: 5).joined() + "x: Int")
     ]
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: FunctionParameterCountRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description)
   }
 
   @Test func defaultFunctionParameterCount() async {
-    let baseDescription = FunctionParameterCountRule.description
     let nonTriggeringExamples = [
       funcWithParameters(repeatElement("x: Int, ", count: 3).joined() + "x: Int")
     ]
@@ -39,8 +39,10 @@ private func funcWithParameters(
       funcWithParameters(repeatElement("x: Int, ", count: 3).joined() + defaultParams)
     ]
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: FunctionParameterCountRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["ignores_default_parameters": false])
   }

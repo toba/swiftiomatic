@@ -1,6 +1,6 @@
 @testable import Swiftiomatic
 
-/// Test-only container for rule examples, replacing ``RuleDescription`` in the test harness.
+/// Test-only container for rule examples, built from a ``RuleConfiguration``.
 struct TestExamples {
   let identifier: String
   let nonTriggeringExamples: [Example]

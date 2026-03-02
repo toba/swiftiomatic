@@ -10,7 +10,6 @@ import Testing
   }
 
   @Test func implicitlyUnwrappedOptionalRuleWarnsOnOutletsInAllMode() async {
-    let baseDescription = ImplicitlyUnwrappedOptionalRule.description
     let triggeringExamples = [
       Example("@IBOutlet private var label: UILabel!"),
       Example("@IBOutlet var label: UILabel!"),
@@ -18,8 +17,10 @@ import Testing
     ]
 
     let nonTriggeringExamples = [Example("if !boolean {}")]
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: ImplicitlyUnwrappedOptionalRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["mode": "all"],
@@ -28,7 +29,6 @@ import Testing
   }
 
   @Test func implicitlyUnwrappedOptionalRuleWarnsOnOutletsInWeakMode() async {
-    let baseDescription = ImplicitlyUnwrappedOptionalRule.description
     let triggeringExamples = [
       Example("private weak var label: ↓UILabel!"),
       Example("weak var label: ↓UILabel!"),
@@ -43,8 +43,10 @@ import Testing
       Example("let int: Int!"),
     ]
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: ImplicitlyUnwrappedOptionalRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["mode": "weak_except_iboutlets"])
   }

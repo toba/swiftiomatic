@@ -82,9 +82,10 @@ import Testing
       ),
     ]
 
-    let reversedOrderDescription = FileTypesOrderRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let reversedOrderDescription = TestExamples(from: FileTypesOrderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       reversedOrderDescription,
@@ -157,9 +158,10 @@ import Testing
       ),
     ]
 
-    let groupedOrderDescription = FileTypesOrderRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let groupedOrderDescription = TestExamples(from: FileTypesOrderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       groupedOrderDescription,

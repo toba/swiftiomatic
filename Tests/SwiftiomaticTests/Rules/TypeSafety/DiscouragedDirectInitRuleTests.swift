@@ -3,10 +3,10 @@ import Testing
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct DiscouragedDirectInitRuleTests {
-  private let baseDescription = DiscouragedDirectInitRule.description
+  private let baseExamples = TestExamples(from: DiscouragedDirectInitRule.configuration)
 
   @Test func discouragedDirectInitWithConfiguredSeverity() async {
-    await verifyRule(baseDescription, ruleConfiguration: ["severity": "error"])
+    await verifyRule(baseExamples, ruleConfiguration: ["severity": "error"])
   }
 
   @Test func discouragedDirectInitWithNewIncludedTypes() async {
@@ -20,10 +20,10 @@ import Testing
       Example("let bar = Bar(arg: \"toto\")"),
     ]
 
-    let description =
-      baseDescription
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["types": ["Foo", "Bar"]])
   }
@@ -37,10 +37,10 @@ import Testing
       Example("let device = UIDevice()")
     ]
 
-    let description =
-      baseDescription
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["types": ["Bundle"]])
   }

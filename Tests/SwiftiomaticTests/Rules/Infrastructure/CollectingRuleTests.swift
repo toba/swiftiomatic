@@ -63,10 +63,6 @@ import Testing
     struct Spec: MockCollectingRule, AnalyzerRule {
       var options = SeverityConfiguration<Self>(.warning)
       static let configuration = AnalyzerMockConfiguration()
-      static let description = RuleDescription(
-        identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
-        isOptIn: true, requiresCompilerArguments: true, requiresFileOnDisk: true,
-      )
 
       func collectInfo(for _: SwiftSource, compilerArguments: [String]) -> [String] {
         compilerArguments
@@ -131,10 +127,6 @@ import Testing
     struct AnalyzerSpec: MockCollectingRule, AnalyzerRule, CorrectableRule {
       var options = SeverityConfiguration<Self>(.warning)
       static let configuration = AnalyzerMockConfiguration()
-      static let description = RuleDescription(
-        identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
-        isOptIn: true, requiresCompilerArguments: true, requiresFileOnDisk: true,
-      )
 
       func collectInfo(for file: SwiftSource) -> String {
         file.contents
@@ -199,11 +191,6 @@ extension MockCollectingRule {
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
   static var configuration: TestMockRuleConfiguration {
     TestMockRuleConfiguration(id: "mock_test_rule_for_swiftlint_tests")
-  }
-  static var description: RuleDescription {
-    RuleDescription(
-      identifier: "mock_test_rule_for_swiftlint_tests", name: "", description: "",
-    )
   }
 
   static var testConfig: Configuration? {

@@ -28,12 +28,6 @@ struct MockRule: Rule {
 
   static let configuration = MockRuleConfiguration()
 
-  static let description = RuleDescription(
-    identifier: "MockRule",
-    name: "",
-    description: "",
-  )
-
   init() { /* conformance for test */  }
   init(configuration _: Any) { self.init() }
 
@@ -51,13 +45,6 @@ struct RuleWithLevelsMock: Rule {
   var options = SeverityLevelsConfiguration<Self>(warning: 2, error: 3)
 
   static let configuration = RuleWithLevelsMockConfiguration()
-
-  static let description = RuleDescription(
-    identifier: "severity_level_mock",
-    name: "",
-    description: "",
-    deprecatedAliases: ["mock"],
-  )
 
   init() { /* conformance for test */  }
   init(configuration: Any) throws {

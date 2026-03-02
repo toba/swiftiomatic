@@ -4,9 +4,10 @@ import Testing
 
 @Suite(.rulesRegistered) struct OpeningBraceRuleTests {
   @Test func defaultNonTriggeringExamplesWithMultilineOptionsTrue() async {
-    let description = OpeningBraceRule.description
-      .with(triggeringExamples: [])
-      .with(corrections: [:])
+    let description = TestExamples(from: OpeningBraceRule.configuration).with(
+      triggeringExamples: [],
+      corrections: [:],
+    )
 
     await verifyRule(
       description,
@@ -62,10 +63,11 @@ import Testing
       ),
     ]
 
-    let description = OpeningBraceRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
-      .with(corrections: [:])
+    let description = TestExamples(from: OpeningBraceRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+      corrections: [:],
+    )
 
     await verifyRule(description, ruleConfiguration: ["ignore_multiline_type_headers": true])
   }
@@ -134,10 +136,11 @@ import Testing
       ),
     ]
 
-    let description = OpeningBraceRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
-      .with(corrections: [:])
+    let description = TestExamples(from: OpeningBraceRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+      corrections: [:],
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["ignore_multiline_statement_conditions": true])
@@ -231,10 +234,11 @@ import Testing
       ),
     ]
 
-    let description = OpeningBraceRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
-      .with(corrections: [:])
+    let description = TestExamples(from: OpeningBraceRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+      corrections: [:],
+    )
 
     await verifyRule(description, ruleConfiguration: ["ignore_multiline_function_signatures": true])
   }

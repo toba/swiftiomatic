@@ -6,7 +6,8 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
 
 @Suite(.rulesRegistered) struct NestingRuleTests {
   @Test func nestingWithAlwaysAllowOneTypeInFunctions() async {
-    var nonTriggeringExamples = NestingRule.description.nonTriggeringExamples
+    let baseExamples = TestExamples(from: NestingRule.configuration)
+    var nonTriggeringExamples = baseExamples.nonTriggeringExamples
     nonTriggeringExamples.append(
       contentsOf: detectingTypes.flatMap { type -> [Example] in
         [
@@ -222,10 +223,7 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
       },
     )
 
-    let description = RuleDescription(
-      identifier: NestingRule.identifier,
-      name: NestingRule.description.name,
-      description: NestingRule.description.description,
+    let description = baseExamples.with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -234,7 +232,8 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
   }
 
   @Test func nestingWithoutCheckNestingInClosuresAndStatements() async {
-    var nonTriggeringExamples = NestingRule.description.nonTriggeringExamples
+    let baseExamples = TestExamples(from: NestingRule.configuration)
+    var nonTriggeringExamples = baseExamples.nonTriggeringExamples
     nonTriggeringExamples.append(
       contentsOf: detectingTypes.flatMap { type -> [Example] in
         [
@@ -555,10 +554,7 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
       ),
     ])
 
-    let description = RuleDescription(
-      identifier: NestingRule.identifier,
-      name: NestingRule.description.name,
-      description: NestingRule.description.description,
+    let description = baseExamples.with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -570,7 +566,8 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
   }
 
   @Test func nestingWithoutTypealiasAndAssociatedtype() async {
-    var nonTriggeringExamples = NestingRule.description.nonTriggeringExamples
+    let baseExamples = TestExamples(from: NestingRule.configuration)
+    var nonTriggeringExamples = baseExamples.nonTriggeringExamples
     nonTriggeringExamples.append(
       contentsOf: detectingTypes.flatMap { type -> [Example] in
         [
@@ -617,7 +614,7 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
       },
     )
 
-    let examples = TestExamples(from: NestingRule.configuration)
+    let examples = baseExamples
       .with(nonTriggeringExamples: nonTriggeringExamples)
 
     await verifyRule(

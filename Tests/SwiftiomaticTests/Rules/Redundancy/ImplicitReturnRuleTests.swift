@@ -89,10 +89,11 @@ import Testing
     corrections: [Example: Example],
     kind: ImplicitReturnOptions.ReturnKind,
   ) async {
-    let description = ImplicitReturnRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples.removingViolationMarker())
-      .with(triggeringExamples: triggeringExamples)
-      .with(corrections: corrections)
+    let description = TestExamples(from: ImplicitReturnRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples.removingViolationMarker(),
+      triggeringExamples: triggeringExamples,
+      corrections: corrections,
+    )
 
     await verifyRule(description, ruleConfiguration: ["included": [kind.rawValue]])
   }

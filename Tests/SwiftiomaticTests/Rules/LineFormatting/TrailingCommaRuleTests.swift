@@ -60,17 +60,18 @@ import Testing
     return result
   }()
 
-  private let mandatoryCommaRuleDescription = TrailingCommaRule.description
-    .with(nonTriggeringExamples: TrailingCommaRuleTests.nonTriggeringExamples)
-    .with(triggeringExamples: TrailingCommaRuleTests.triggeringExamples)
-    .with(corrections: TrailingCommaRuleTests.corrections)
+  private let mandatoryCommaExamples = TestExamples(from: TrailingCommaRule.configuration)
+    .with(
+      nonTriggeringExamples: TrailingCommaRuleTests.nonTriggeringExamples,
+      triggeringExamples: TrailingCommaRuleTests.triggeringExamples,
+      corrections: TrailingCommaRuleTests.corrections,
+    )
 
   @Test func trailingCommaRuleWithMandatoryComma() async throws {
     // Verify TrailingCommaRule with test values for when mandatory_comma is true.
-    let ruleDescription = mandatoryCommaRuleDescription
     let ruleConfiguration = ["mandatory_comma": true]
 
-    await verifyRule(ruleDescription, ruleConfiguration: ruleConfiguration)
+    await verifyRule(mandatoryCommaExamples, ruleConfiguration: ruleConfiguration)
 
     // Ensure the rule produces the correct reason string.
     let failingCase = Example("let array = [\n\t1,\n\t2\n]\n")

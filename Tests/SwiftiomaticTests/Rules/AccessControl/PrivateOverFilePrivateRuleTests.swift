@@ -4,9 +4,9 @@ import Testing
 
 @Suite(.rulesRegistered) struct PrivateOverFilePrivateRuleTests {
   @Test func privateOverFilePrivateValidatingExtensions() async {
-    let baseDescription = PrivateOverFilePrivateRule.description
+    let baseExamples = TestExamples(from: PrivateOverFilePrivateRule.configuration)
     let triggeringExamples =
-      baseDescription.triggeringExamples + [
+      baseExamples.triggeringExamples + [
         Example("↓fileprivate extension String {}"),
         Example("↓fileprivate \n extension String {}"),
         Example("↓fileprivate extension \n String {}"),
@@ -21,19 +21,22 @@ import Testing
       ),
     ]
 
-    let description = baseDescription.with(nonTriggeringExamples: [])
-      .with(triggeringExamples: triggeringExamples).with(corrections: corrections)
+    let description = baseExamples.with(
+      nonTriggeringExamples: [],
+      triggeringExamples: triggeringExamples,
+      corrections: corrections,
+    )
     await verifyRule(description, ruleConfiguration: ["validate_extensions": true])
   }
 
   @Test func privateOverFilePrivateNotValidatingExtensions() async {
-    let baseDescription = PrivateOverFilePrivateRule.description
+    let baseExamples = TestExamples(from: PrivateOverFilePrivateRule.configuration)
     let nonTriggeringExamples =
-      baseDescription.nonTriggeringExamples + [
+      baseExamples.nonTriggeringExamples + [
         Example("fileprivate extension String {}")
       ]
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = baseExamples.with(nonTriggeringExamples: nonTriggeringExamples)
     await verifyRule(description, ruleConfiguration: ["validate_extensions": false])
   }
 }

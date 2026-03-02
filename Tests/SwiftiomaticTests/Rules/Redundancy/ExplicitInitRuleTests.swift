@@ -4,11 +4,12 @@ import Testing
 
 @Suite(.rulesRegistered) struct ExplicitInitRuleTests {
   @Test func includeBareInit() async {
+    let baseExamples = TestExamples(from: ExplicitInitRule.configuration)
     let nonTriggeringExamples =
       [
         Example("let foo = Foo()"),
         Example("let foo = init()"),
-      ] + ExplicitInitRule.description.nonTriggeringExamples
+      ] + baseExamples.nonTriggeringExamples
 
     let triggeringExamples = [
       Example("let foo: Foo = ↓.init()"),
@@ -16,9 +17,10 @@ import Testing
       Example("foo(↓.init())"),
     ]
 
-    let description = ExplicitInitRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["include_bare_init": true])
   }

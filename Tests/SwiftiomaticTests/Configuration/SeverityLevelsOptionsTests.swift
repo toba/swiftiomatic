@@ -4,11 +4,6 @@ import Testing
 
 private struct MockSeverityLevelsRule: Rule {
   static let configuration = TestMockRuleConfiguration(id: "test_severity_levels")
-  static let description = RuleDescription(
-    identifier: "test_severity_levels",
-    name: "Test Severity Levels",
-    description: "A test rule for SeverityLevelsConfiguration",
-  )
 
   var options = SeverityLevelsConfiguration<Self>(warning: 12, error: nil)
 

@@ -24,10 +24,11 @@ import Testing
       Example("let foo = ↓1_000.000_1"): Example("let foo = 1000.0001"),
     ]
 
-    let description = NumberSeparatorRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(corrections: corrections)
+    let description = TestExamples(from: NumberSeparatorRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+      corrections: corrections,
+    )
 
     await verifyRule(description, ruleConfiguration: ["minimum_length": 5])
   }
@@ -50,10 +51,11 @@ import Testing
       Example("let foo = ↓1_000.000_1"): Example("let foo = 1_000.0001"),
     ]
 
-    let description = NumberSeparatorRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(corrections: corrections)
+    let description = TestExamples(from: NumberSeparatorRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+      corrections: corrections,
+    )
 
     await verifyRule(description, ruleConfiguration: ["minimum_fraction_length": 5])
   }
@@ -84,10 +86,11 @@ import Testing
       Example("let foo = ↓3.343434"): Example("let foo = 3.343_434"),
     ]
 
-    let description = NumberSeparatorRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(corrections: corrections)
+    let description = TestExamples(from: NumberSeparatorRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+      corrections: corrections,
+    )
 
     await verifyRule(
       description,

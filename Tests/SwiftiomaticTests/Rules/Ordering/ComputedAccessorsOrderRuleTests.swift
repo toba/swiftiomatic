@@ -37,9 +37,10 @@ import Testing
       )
     ]
 
-    let description = ComputedAccessorsOrderRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = TestExamples(from: ComputedAccessorsOrderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["order": "set_get"])
   }

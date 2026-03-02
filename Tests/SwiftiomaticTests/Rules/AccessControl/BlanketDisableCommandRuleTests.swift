@@ -3,10 +3,11 @@ import Testing
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct BlanketDisableCommandRuleTests {
-  private var emptyDescription: RuleDescription {
-    BlanketDisableCommandRule.description
-      .with(triggeringExamples: [])
-      .with(nonTriggeringExamples: [])
+  private var emptyDescription: TestExamples {
+    TestExamples(from: BlanketDisableCommandRule.configuration).with(
+      nonTriggeringExamples: [],
+      triggeringExamples: [],
+    )
   }
 
   @Test func alwaysBlanketDisable() async {

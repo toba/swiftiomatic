@@ -14,9 +14,10 @@ import Testing
       Example("public let Foo = 20.0"),
     ]
 
-    let description = PrefixedTopLevelConstantRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = TestExamples(from: PrefixedTopLevelConstantRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["only_private": true])
   }

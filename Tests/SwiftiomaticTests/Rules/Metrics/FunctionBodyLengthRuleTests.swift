@@ -57,7 +57,7 @@ import Testing
 
   @Test func violationMessages() async throws {
     var allViolations: [RuleViolation] = []
-    for example in FunctionBodyLengthRule.description.triggeringExamples {
+    for example in FunctionBodyLengthRule.configuration.triggeringExamples {
       allViolations.append(contentsOf: try await ruleViolations(example, rule: FunctionBodyLengthRule.identifier, configuration: ["warning": 2]))
     }
     let types = allViolations.compactMap {

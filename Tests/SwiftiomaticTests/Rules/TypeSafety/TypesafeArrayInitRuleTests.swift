@@ -4,18 +4,18 @@ import Testing
 
 @Suite(.rulesRegistered, .disabled("requires sourcekitd")) struct TypesafeArrayInitRuleTests {
   @Test func violationRuleIdentifier() async {
-    let baseDescription = TypesafeArrayInitRule.description
-    guard let triggeringExample = baseDescription.triggeringExamples.first else {
+    let baseExamples = TestExamples(from: TypesafeArrayInitRule.configuration)
+    guard let triggeringExample = baseExamples.triggeringExamples.first else {
       Issue.record("No triggering examples found")
       return
     }
-    guard let config = makeConfig(nil, baseDescription.identifier) else {
+    guard let config = makeConfig(nil, baseExamples.identifier) else {
       Issue.record("Failed to create configuration")
       return
     }
     let allViolations = await violations(
       triggeringExample, config: config, requiresFileOnDisk: true)
     #expect(allViolations.count >= 1)
-    #expect(allViolations.first?.ruleIdentifier == baseDescription.identifier)
+    #expect(allViolations.first?.ruleIdentifier == baseExamples.identifier)
   }
 }

@@ -5,7 +5,7 @@ import Testing
 
 @Suite(.rulesRegistered) struct ExpiringTodoRuleTests {
   @Test func expiringTodo() async {
-    await verifyRule(ExpiringTodoRule.description, commentDoesNotViolate: false)
+    await verifyRule(ExpiringTodoRule.configuration, commentDoesNotViolate: false)
   }
 
   @Test func expiredTodo() async {

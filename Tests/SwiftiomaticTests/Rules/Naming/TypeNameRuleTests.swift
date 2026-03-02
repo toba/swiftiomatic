@@ -4,19 +4,19 @@ import Testing
 
 @Suite(.rulesRegistered) struct TypeNameRuleTests {
   @Test func typeNameWithExcluded() async {
-    let baseDescription = TypeNameRule.description
+    let baseExamples = TestExamples(from: TypeNameRule.configuration)
     let nonTriggeringExamples =
-      baseDescription.nonTriggeringExamples + [
+      baseExamples.nonTriggeringExamples + [
         Example("class apple {}"),
         Example("struct some_apple {}"),
         Example("protocol test123 {}"),
       ]
     let triggeringExamples =
-      baseDescription.triggeringExamples + [
+      baseExamples.triggeringExamples + [
         Example("enum ap_ple {}"),
         Example("typealias appleJuice = Void"),
       ]
-    let description = baseDescription.with(
+    let description = baseExamples.with(
       nonTriggeringExamples: nonTriggeringExamples,
       triggeringExamples: triggeringExamples,
     )
@@ -25,9 +25,9 @@ import Testing
   }
 
   @Test func typeNameWithAllowedSymbols() async {
-    let baseDescription = TypeNameRule.description
+    let baseExamples = TestExamples(from: TypeNameRule.configuration)
     let nonTriggeringExamples =
-      baseDescription.nonTriggeringExamples + [
+      baseExamples.nonTriggeringExamples + [
         Example("class MyType$ {}"),
         Example("struct MyType$ {}"),
         Example("enum MyType$ {}"),
@@ -35,22 +35,22 @@ import Testing
         Example("protocol Foo {\n associatedtype Bar$\n }"),
       ]
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
+    let description = baseExamples.with(nonTriggeringExamples: nonTriggeringExamples)
     await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$"]])
   }
 
   @Test func typeNameWithAllowedSymbolsAndViolation() async {
-    let baseDescription = TypeNameRule.description
     let triggeringExamples = [
       Example("class ↓My_Type$ {}")
     ]
 
-    let description = baseDescription.with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: TypeNameRule.configuration)
+      .with(triggeringExamples: triggeringExamples)
     await verifyRule(description, ruleConfiguration: ["allowed_symbols": ["$", "%"]])
   }
 
   @Test func typeNameWithIgnoreStartWithLowercase() async {
-    let baseDescription = TypeNameRule.description
+    let baseExamples = TestExamples(from: TypeNameRule.configuration)
     let triggeringExamplesToRemove = [
       Example("private typealias ↓foo = Void"),
       Example("class ↓myType {}"),
@@ -58,14 +58,16 @@ import Testing
       Example("enum ↓myType {}"),
     ]
     let nonTriggeringExamples =
-      baseDescription.nonTriggeringExamples
+      baseExamples.nonTriggeringExamples
       + triggeringExamplesToRemove
       .removingViolationMarkers()
-    let triggeringExamples = baseDescription.triggeringExamples
+    let triggeringExamples = baseExamples.triggeringExamples
       .filter { !triggeringExamplesToRemove.contains($0) }
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(description, ruleConfiguration: ["validates_start_with_lowercase": "off"])
   }

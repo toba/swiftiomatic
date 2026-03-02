@@ -74,10 +74,11 @@ import Testing
       )
     ]
 
-    let description = UnneededOverrideRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
-      .with(corrections: corrections)
+    let description = TestExamples(from: UnneededOverrideRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+      corrections: corrections,
+    )
 
     await verifyRule(description, ruleConfiguration: ["affect_initializers": true])
   }

@@ -55,7 +55,7 @@ public protocol RuleConfiguration: Sendable, Identifiable where ID == String {
     /// Identifiers of related rules
     var relatedRuleIDs: [String] { get }
 
-    // MARK: - Internal metadata (replaces RuleDescription fields)
+    // MARK: - Internal metadata
 
     /// Previous identifiers for this rule, used for backwards-compatible disable commands
     var deprecatedAliases: Set<String> { get }

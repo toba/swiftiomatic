@@ -37,14 +37,16 @@ import Testing
 
   @Test func objectLiteralWithImageLiteral() async {
     // Verify ObjectLiteral rule for when image_literal is true.
-    let baseDescription = ObjectLiteralRule.description
+    let baseExamples = TestExamples(from: ObjectLiteralRule.configuration)
     let nonTriggeringColorLiteralExamples =
       colorLiteralTriggeringExamples.removingViolationMarkers()
     let nonTriggeringExamples =
-      baseDescription.nonTriggeringExamples + nonTriggeringColorLiteralExamples
+      baseExamples.nonTriggeringExamples + nonTriggeringColorLiteralExamples
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: imageLiteralTriggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: imageLiteralTriggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["image_literal": true, "color_literal": false])
@@ -52,14 +54,16 @@ import Testing
 
   @Test func objectLiteralWithColorLiteral() async {
     // Verify ObjectLiteral rule for when color_literal is true.
-    let baseDescription = ObjectLiteralRule.description
+    let baseExamples = TestExamples(from: ObjectLiteralRule.configuration)
     let nonTriggeringImageLiteralExamples =
       imageLiteralTriggeringExamples.removingViolationMarkers()
     let nonTriggeringExamples =
-      baseDescription.nonTriggeringExamples + nonTriggeringImageLiteralExamples
+      baseExamples.nonTriggeringExamples + nonTriggeringImageLiteralExamples
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: colorLiteralTriggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: colorLiteralTriggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["image_literal": false, "color_literal": true])
@@ -67,7 +71,7 @@ import Testing
 
   @Test func objectLiteralWithImageAndColorLiteral() async {
     // Verify ObjectLiteral rule for when image_literal & color_literal are true.
-    let description = ObjectLiteralRule.description
+    let description = TestExamples(from: ObjectLiteralRule.configuration)
       .with(triggeringExamples: allTriggeringExamples)
     await verifyRule(
       description, ruleConfiguration: ["image_literal": true, "color_literal": true])

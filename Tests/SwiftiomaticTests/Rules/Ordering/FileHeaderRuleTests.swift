@@ -13,7 +13,7 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
   }
 
   @Test func fileHeaderWithDefaultConfiguration() async {
-    await verifyRule(FileHeaderRule.description, skipCommentTests: true)
+    await verifyRule(FileHeaderRule.configuration, skipCommentTests: true)
   }
 
   @Test func fileHeaderWithRequiredString() async {
@@ -28,9 +28,10 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
       Example("let foo = 2\n// **Header"),
       Example("let foo = 2 // **Header"),
     ]
-    let description = FileHeaderRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: FileHeaderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["required_string": "**Header"],
@@ -50,9 +51,10 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
       Example("↓// Copyright © foo Realm"),
       Example("↓// Copyright © 2016 MyCompany"),
     ]
-    let description = FileHeaderRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: FileHeaderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["required_pattern": "\\d{4} Realm"],
@@ -68,9 +70,10 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
     let triggeringExamples = [
       Example("/* Check this url: https://github.com/apple/swift */")
     ]
-    let description = FileHeaderRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: FileHeaderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     let config = ["required_string": "/* Check this url: https://github.com/realm/SwiftLint */"]
     await verifyRule(
@@ -92,9 +95,10 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
       Example("// ↓**All rights reserved."),
       Example("//\n// ↓**All rights reserved."),
     ]
-    let description = FileHeaderRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: FileHeaderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["forbidden_string": "**All rights reserved."],
@@ -114,9 +118,10 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
       Example("//↓ FileHeaderRuleTests.swift"),
       Example("//\n//↓ FileHeaderRuleTests.swift"),
     ]
-    let description = FileHeaderRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: FileHeaderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["forbidden_pattern": "\\s\\w+\\.swift"],
@@ -133,9 +138,10 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
       Example("// FileHeaderRule↓Tests.swift"),
       Example("//\n// FileHeaderRule↓Tests.swift"),
     ]
-    let description = FileHeaderRule.description
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: FileHeaderRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["forbidden_pattern": "[tT]ests"],
@@ -236,28 +242,30 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
   }
 
   @Test func simplePattern() async {
-    let description = FileHeaderRule.description
-      .with(nonTriggeringExamples: [
-        Example(
-          """
-          // Test
+    let description = TestExamples(from: FileHeaderRule.configuration)
+      .with(
+        nonTriggeringExamples: [
+          Example(
+            """
+            // Test
 
-          enum Test {}
-          """,
-        ),
-        Example(
-          """
-          // Test
-          """,
-        ),
-        Example(
-          """
-          // Test
+            enum Test {}
+            """,
+          ),
+          Example(
+            """
+            // Test
+            """,
+          ),
+          Example(
+            """
+            // Test
 
-          """,
-        ),
-      ])
-      .with(triggeringExamples: [])
+            """,
+          ),
+        ],
+        triggeringExamples: [],
+      )
 
     await verifyRule(
       description,
@@ -273,23 +281,25 @@ private let fixturesDirectory = "\(TestResources.path())/FileHeaderRuleFixtures"
   }
 
   @Test func pattern() async {
-    let description = FileHeaderRule.description
-      .with(nonTriggeringExamples: [
-        Example(
-          """
-          //
-          //  Test.swift
-          //  Dummy App
-          //
-          //  Created by Alice Bob on 3.9.2025.
-          //  Copyright © 2025 Dummy Corporation. All rights reserved.
-          //
+    let description = TestExamples(from: FileHeaderRule.configuration)
+      .with(
+        nonTriggeringExamples: [
+          Example(
+            """
+            //
+            //  Test.swift
+            //  Dummy App
+            //
+            //  Created by Alice Bob on 3.9.2025.
+            //  Copyright © 2025 Dummy Corporation. All rights reserved.
+            //
 
-          enum Test {}
-          """,
-        )
-      ])
-      .with(triggeringExamples: [])
+            enum Test {}
+            """,
+          )
+        ],
+        triggeringExamples: [],
+      )
 
     await verifyRule(
       description,

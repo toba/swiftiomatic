@@ -29,9 +29,10 @@ import Testing
       Example("@nonobjc ↓func foo()"),
     ]
 
-    let alwaysOnSameLineDescription = AttributesRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let alwaysOnSameLineDescription = TestExamples(from: AttributesRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       alwaysOnSameLineDescription,
@@ -52,9 +53,10 @@ import Testing
       Example("@nonobjc ↓func foo()"),
     ]
 
-    let alwaysOnNewLineDescription = AttributesRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let alwaysOnNewLineDescription = TestExamples(from: AttributesRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       alwaysOnNewLineDescription,
@@ -105,9 +107,10 @@ import Testing
       ),
     ]
 
-    let alwaysOnNewLineDescription = AttributesRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let alwaysOnNewLineDescription = TestExamples(from: AttributesRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       alwaysOnNewLineDescription,
@@ -132,9 +135,10 @@ import Testing
       )
     ]
 
-    let argumentsAlwaysOnLineDescription = AttributesRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let argumentsAlwaysOnLineDescription = TestExamples(from: AttributesRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       argumentsAlwaysOnLineDescription,
@@ -150,9 +154,10 @@ import Testing
       Example("@Environment(\\.presentationMode) private ↓var presentationMode")
     ]
 
-    let argumentsAlwaysOnLineDescription = AttributesRule.description
-      .with(triggeringExamples: triggeringExamples)
-      .with(nonTriggeringExamples: nonTriggeringExamples)
+    let argumentsAlwaysOnLineDescription = TestExamples(from: AttributesRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       argumentsAlwaysOnLineDescription,

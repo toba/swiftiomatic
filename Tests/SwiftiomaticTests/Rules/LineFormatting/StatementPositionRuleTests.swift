@@ -5,6 +5,13 @@ import Testing
 @Suite(.rulesRegistered) struct StatementPositionRuleTests {
   @Test(.disabled("requires sourcekitd")) func statementPositionUncuddled() async {
     let configuration = ["statement_mode": "uncuddled_else"]
-    await verifyRule(StatementPositionRule.uncuddledDescription, ruleConfiguration: configuration)
+    let uncuddled = StatementPositionConfiguration.UncuddledExamples()
+    let examples = TestExamples(from: StatementPositionRule.configuration)
+      .with(
+        nonTriggeringExamples: uncuddled.nonTriggeringExamples,
+        triggeringExamples: uncuddled.triggeringExamples,
+        corrections: uncuddled.corrections,
+      )
+    await verifyRule(examples, ruleConfiguration: configuration)
   }
 }

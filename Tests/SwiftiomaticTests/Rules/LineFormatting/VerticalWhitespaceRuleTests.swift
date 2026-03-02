@@ -7,13 +7,15 @@ import Testing
 
   @Test func attributesWithMaxEmptyLines() async {
     // Test with custom `max_empty_lines`
-    let maxEmptyLinesDescription = VerticalWhitespaceRule.description
-      .with(nonTriggeringExamples: [Example("let aaaa = 0\n\n\n")])
-      .with(triggeringExamples: [
-        Example("struct AAAA {}\n\n\n\n"),
-        Example("class BBBB {\n  \n  \n  \n}"),
-      ])
-      .with(corrections: [:])
+    let maxEmptyLinesDescription = TestExamples(from: VerticalWhitespaceRule.configuration)
+      .with(
+        nonTriggeringExamples: [Example("let aaaa = 0\n\n\n")],
+        triggeringExamples: [
+          Example("struct AAAA {}\n\n\n\n"),
+          Example("class BBBB {\n  \n  \n  \n}"),
+        ],
+        corrections: [:],
+      )
 
     await verifyRule(
       maxEmptyLinesDescription,
@@ -22,18 +24,20 @@ import Testing
   }
 
   @Test func autoCorrectionWithMaxEmptyLines() async {
-    let maxEmptyLinesDescription = VerticalWhitespaceRule.description
-      .with(nonTriggeringExamples: [])
-      .with(triggeringExamples: [])
-      .with(corrections: [
-        Example("let b = 0\n\n↓\n↓\n↓\n\nclass AAA {}\n"): Example(
-          "let b = 0\n\n\nclass AAA {}\n",
-        ),
-        Example("let b = 0\n\n\nclass AAA {}\n"): Example("let b = 0\n\n\nclass AAA {}\n"),
-        Example("class BB {\n  \n  \n↓  \n  let b = 0\n}\n"): Example(
-          "class BB {\n  \n  \n  let b = 0\n}\n",
-        ),
-      ])
+    let maxEmptyLinesDescription = TestExamples(from: VerticalWhitespaceRule.configuration)
+      .with(
+        nonTriggeringExamples: [],
+        triggeringExamples: [],
+        corrections: [
+          Example("let b = 0\n\n↓\n↓\n↓\n\nclass AAA {}\n"): Example(
+            "let b = 0\n\n\nclass AAA {}\n",
+          ),
+          Example("let b = 0\n\n\nclass AAA {}\n"): Example("let b = 0\n\n\nclass AAA {}\n"),
+          Example("class BB {\n  \n  \n↓  \n  let b = 0\n}\n"): Example(
+            "class BB {\n  \n  \n  let b = 0\n}\n",
+          ),
+        ],
+      )
 
     await verifyRule(
       maxEmptyLinesDescription,

@@ -167,16 +167,16 @@ import Testing
 
   @Test func lineLength() async {
     await verifyRule(
-      LineLengthRule.description,
+      LineLengthRule.configuration,
       commentDoesNotViolate: false,
       stringDoesNotViolate: false,
     )
   }
 
   @Test func lineLengthWithIgnoreFunctionDeclarationsEnabled() async {
-    let baseDescription = LineLengthRule.description
-    let description = baseDescription.with(
-      nonTriggeringExamples: baseDescription.nonTriggeringExamples + longFunctionDeclarations,
+    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let description = baseExamples.with(
+      nonTriggeringExamples: baseExamples.nonTriggeringExamples + longFunctionDeclarations,
       triggeringExamples: longFunctionCalls,
     )
 
@@ -189,12 +189,13 @@ import Testing
   }
 
   @Test func lineLengthWithIgnoreCommentsEnabled() async {
-    let baseDescription = LineLengthRule.description
     let triggeringExamples = longFunctionDeclarations + [declarationWithTrailingLongComment]
     let nonTriggeringExamples = [longComment, longBlockComment, longRealBlockComment]
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = TestExamples(from: LineLengthRule.configuration).with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["ignores_comments": true],
@@ -210,12 +211,14 @@ import Testing
       Example("\(url)/" + String(repeating: "a", count: 120)),
     ]
 
-    let baseDescription = LineLengthRule.description
-    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
-    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
+    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let nonTriggeringExamples = baseExamples.nonTriggeringExamples + nonTriggeringLines
+    let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["ignores_urls": true],
@@ -227,12 +230,14 @@ import Testing
     let triggeringLines = [plainString]
     let nonTriggeringLines = [interpolatedString]
 
-    let baseDescription = LineLengthRule.description
-    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
-    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
+    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let nonTriggeringExamples = baseExamples.nonTriggeringExamples + nonTriggeringLines
+    let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["ignores_interpolated_strings": true],
@@ -253,12 +258,14 @@ import Testing
       multilineStringWithFunction,
     ]
 
-    let baseDescription = LineLengthRule.description
-    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
-    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
+    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let nonTriggeringExamples = baseExamples.nonTriggeringExamples + nonTriggeringLines
+    let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["ignores_multiline_strings": true],
@@ -269,12 +276,14 @@ import Testing
   @Test func lineLengthWithIgnoreInterpolatedStringsFalse() async {
     let triggeringLines = [plainString, interpolatedString]
 
-    let baseDescription = LineLengthRule.description
-    let nonTriggeringExamples = baseDescription.nonTriggeringExamples
-    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
+    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let nonTriggeringExamples = baseExamples.nonTriggeringExamples
+    let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description, ruleConfiguration: ["ignores_interpolated_strings": false],
@@ -285,14 +294,14 @@ import Testing
   @Test func lineLengthWithExcludedLinesPatterns() async {
     let nonTriggeringLines = [plainString, interpolatedString]
 
-    let baseDescription = LineLengthRule.description
-    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
-    let triggeringExamples = baseDescription.triggeringExamples
+    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let nonTriggeringExamples = baseExamples.nonTriggeringExamples + nonTriggeringLines
+    let triggeringExamples = baseExamples.triggeringExamples
 
-    let description =
-      baseDescription
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description,
@@ -305,14 +314,14 @@ import Testing
   @Test func lineLengthWithEmptyExcludedLinesPatterns() async {
     let triggeringLines = [plainString, interpolatedString]
 
-    let baseDescription = LineLengthRule.description
-    let nonTriggeringExamples = baseDescription.nonTriggeringExamples
-    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
+    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let nonTriggeringExamples = baseExamples.nonTriggeringExamples
+    let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
-    let description =
-      baseDescription
-      .with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description,
@@ -333,12 +342,14 @@ import Testing
       regexLiteralMultiline,
     ]
 
-    let baseDescription = LineLengthRule.description
-    let nonTriggeringExamples = baseDescription.nonTriggeringExamples + nonTriggeringLines
-    let triggeringExamples = baseDescription.triggeringExamples + triggeringLines
+    let baseExamples = TestExamples(from: LineLengthRule.configuration)
+    let nonTriggeringExamples = baseExamples.nonTriggeringExamples + nonTriggeringLines
+    let triggeringExamples = baseExamples.triggeringExamples + triggeringLines
 
-    let description = baseDescription.with(nonTriggeringExamples: nonTriggeringExamples)
-      .with(triggeringExamples: triggeringExamples)
+    let description = baseExamples.with(
+      nonTriggeringExamples: nonTriggeringExamples,
+      triggeringExamples: triggeringExamples,
+    )
 
     await verifyRule(
       description,
