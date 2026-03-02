@@ -421,6 +421,86 @@ private let _ensureRegistered: Void = {
 }()
 
 func verifyRule(
+  _ config: some RuleConfiguration,
+  ruleConfiguration: Any? = nil,
+  commentDoesNotViolate: Bool = true,
+  stringDoesNotViolate: Bool = true,
+  skipCommentTests: Bool = false,
+  skipStringTests: Bool = false,
+  skipDisableCommandTests: Bool = false,
+  shouldTestMultiByteOffsets: Bool = true,
+  testShebang: Bool = true,
+  sourceLocation: Testing.SourceLocation = #_sourceLocation,
+) async {
+  await verifyRule(
+    TestExamples(from: config),
+    ruleConfiguration: ruleConfiguration,
+    commentDoesNotViolate: commentDoesNotViolate,
+    stringDoesNotViolate: stringDoesNotViolate,
+    skipCommentTests: skipCommentTests,
+    skipStringTests: skipStringTests,
+    skipDisableCommandTests: skipDisableCommandTests,
+    shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
+    testShebang: testShebang,
+    sourceLocation: sourceLocation,
+  )
+}
+
+func verifyRule(
+  _ examples: TestExamples,
+  ruleConfiguration: Any? = nil,
+  commentDoesNotViolate: Bool = true,
+  stringDoesNotViolate: Bool = true,
+  skipCommentTests: Bool = false,
+  skipStringTests: Bool = false,
+  skipDisableCommandTests: Bool = false,
+  shouldTestMultiByteOffsets: Bool = true,
+  testShebang: Bool = true,
+  sourceLocation: Testing.SourceLocation = #_sourceLocation,
+) async {
+  _ = _ensureRegistered
+
+  guard examples.minSwiftVersion <= .current else { return }
+
+  guard
+    let config = makeConfig(
+      ruleConfiguration,
+      examples.identifier,
+      skipDisableCommandTests: skipDisableCommandTests,
+    )
+  else {
+    Testing.Issue.record("Failed to create configuration", sourceLocation: sourceLocation)
+    return
+  }
+
+  let disableCommands: [String]
+  if skipDisableCommandTests {
+    disableCommands = []
+  } else {
+    disableCommands = examples.allIdentifiers.map { "// sm:disable \($0)\n" }
+  }
+
+  await verifyLint(
+    examples,
+    config: config,
+    commentDoesNotViolate: commentDoesNotViolate,
+    stringDoesNotViolate: stringDoesNotViolate,
+    skipCommentTests: skipCommentTests,
+    skipStringTests: skipStringTests,
+    disableCommands: disableCommands,
+    shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
+    testShebang: testShebang,
+    sourceLocation: sourceLocation,
+  )
+  await verifyCorrections(
+    examples,
+    config: config,
+    disableCommands: disableCommands,
+    shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
+  )
+}
+
+func verifyRule(
   _ ruleDescription: RuleDescription,
   ruleConfiguration: Any? = nil,
   commentDoesNotViolate: Bool = true,
@@ -475,6 +555,128 @@ func verifyRule(
 }
 
 // MARK: - verifyLint
+
+func verifyLint(
+  _ examples: TestExamples,
+  config: Configuration,
+  commentDoesNotViolate: Bool = true,
+  stringDoesNotViolate: Bool = true,
+  skipCommentTests: Bool = false,
+  skipStringTests: Bool = false,
+  disableCommands: [String] = [],
+  shouldTestMultiByteOffsets: Bool = true,
+  testShebang: Bool = true,
+  sourceLocation: Testing.SourceLocation = #_sourceLocation,
+) async {
+  func verify(triggers: [Example], nonTriggers: [Example]) async {
+    await verifyExamples(
+      triggers: triggers, nonTriggers: nonTriggers, configuration: config,
+      requiresFileOnDisk: examples.requiresFileOnDisk,
+    )
+  }
+  func makeViolations(_ example: Example) async -> [RuleViolation] {
+    await violations(
+      example, config: config, requiresFileOnDisk: examples.requiresFileOnDisk)
+  }
+
+  let focused = examples.focused()
+  let (triggers, nonTriggers) = (
+    focused.triggeringExamples,
+    focused.nonTriggeringExamples,
+  )
+  await verify(triggers: triggers, nonTriggers: nonTriggers)
+
+  // Skip expensive variant tests in fast mode
+  guard !fastTests else { return }
+
+  if shouldTestMultiByteOffsets {
+    await verify(
+      triggers: triggers.filter(\.shouldTestMultiByteOffsets).map(addEmoji),
+      nonTriggers: nonTriggers.filter(\.shouldTestMultiByteOffsets).map(addEmoji),
+    )
+  }
+
+  if testShebang {
+    await verify(
+      triggers: triggers.filter(\.shouldTestMultiByteOffsets).map(addShebang),
+      nonTriggers: nonTriggers.filter(\.shouldTestMultiByteOffsets).map(addShebang),
+    )
+  }
+
+  // Comment doesn't violate
+  if !skipCommentTests {
+    let triggersToCheck = triggers.filter(\.shouldTestWrappingInComment)
+    var commentViolationCount = 0
+    for trigger in triggersToCheck {
+      commentViolationCount += await makeViolations(
+        trigger.with(code: "/*\n  " + trigger.code + "\n */")
+      ).count
+    }
+    #expect(
+      commentViolationCount == (commentDoesNotViolate ? 0 : triggersToCheck.count),
+      "Violation(s) still triggered when code was nested inside a comment",
+      sourceLocation: sourceLocation,
+    )
+  }
+
+  // String doesn't violate
+  if !skipStringTests {
+    let triggersToCheck = triggers.filter(\.shouldTestWrappingInString)
+    var stringViolationCount = 0
+    for trigger in triggersToCheck {
+      stringViolationCount += await makeViolations(
+        trigger.with(code: trigger.code.toStringLiteral())
+      ).count
+    }
+    #expect(
+      stringViolationCount == (stringDoesNotViolate ? 0 : triggersToCheck.count),
+      "Violation(s) still triggered when code was nested inside a string literal",
+      sourceLocation: sourceLocation,
+    )
+  }
+
+  // Disabled rule doesn't violate and disable command isn't superfluous
+  for command in disableCommands {
+    let disabledTriggers =
+      triggers
+      .filter(\.shouldTestDisableCommand)
+      .map { $0.with(code: command + $0.code) }
+
+    for trigger in disabledTriggers {
+      let violationsPartitionedByType = await makeViolations(trigger)
+        .partitioned { $0.ruleIdentifier == SuperfluousDisableCommandRule.identifier }
+
+      #expect(
+        violationsPartitionedByType.first.isEmpty,
+        "Violation(s) still triggered although rule was disabled",
+      )
+      #expect(
+        violationsPartitionedByType.second.isEmpty,
+        "Disable command was superfluous since no violations(s) triggered",
+      )
+    }
+  }
+
+  // Severity can be changed
+  let ruleType = RuleRegistry.shared.rule(forID: examples.identifier)
+  if ruleType?.init().options is (any SeverityBasedRuleOptions),
+    let example = triggers.first(where: { $0.configuration == nil })
+  {
+    let withWarning = Example(example.code, configuration: ["severity": "warning"])
+    let warningViolations = await violations(withWarning, config: config)
+    #expect(
+      warningViolations.allSatisfy { $0.severity == .warning },
+      "Violation severity cannot be changed to warning",
+    )
+
+    let withError = Example(example.code, configuration: ["severity": "error"])
+    let errorViolations = await violations(withError, config: config)
+    #expect(
+      errorViolations.allSatisfy { $0.severity == .error },
+      "Violation severity cannot be changed to error",
+    )
+  }
+}
 
 func verifyLint(
   _ ruleDescription: RuleDescription,
@@ -599,6 +801,49 @@ func verifyLint(
 }
 
 // MARK: - verifyCorrections
+
+func verifyCorrections(
+  _ examples: TestExamples,
+  config: Configuration,
+  disableCommands: [String],
+  shouldTestMultiByteOffsets: Bool,
+  parserDiagnosticsDisabledForTests: Bool = true,
+) async {
+  let focused = examples.focused()
+
+  await $parserDiagnosticsDisabledForTests.withValue(parserDiagnosticsDisabledForTests) {
+    // corrections
+    for correction in focused.corrections {
+      await testCorrection(
+        correction,
+        configuration: config,
+        shouldTestMultiByteOffsets: !fastTests && shouldTestMultiByteOffsets,
+      )
+    }
+    // make sure strings that don't trigger aren't corrected
+    for nonTriggeringExample in focused.nonTriggeringExamples {
+      await testCorrection(
+        (nonTriggeringExample, nonTriggeringExample),
+        configuration: config,
+        shouldTestMultiByteOffsets: !fastTests && shouldTestMultiByteOffsets,
+      )
+    }
+
+    // Skip disable command correction tests in fast mode
+    guard !fastTests else { return }
+
+    // "disable" commands do not correct
+    for (before, _) in focused.corrections {
+      for command in disableCommands {
+        let beforeDisabled = command + before.code
+        let expectedCleaned =
+          before
+          .with(code: cleanedContentsAndMarkerOffsets(from: beforeDisabled).0)
+        await assertCorrection(expectedCleaned, expected: expectedCleaned, config: config)
+      }
+    }
+  }
+}
 
 func verifyCorrections(
   _ ruleDescription: RuleDescription,
