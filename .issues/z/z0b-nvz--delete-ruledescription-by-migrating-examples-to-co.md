@@ -6,6 +6,10 @@ type: task
 priority: normal
 created_at: 2026-03-01T23:57:31Z
 updated_at: 2026-03-02T01:14:02Z
+sync:
+    github:
+        issue_number: "132"
+        synced_at: "2026-03-02T01:15:45Z"
 ---
 
 RuleDescription is no longer part of the Rule protocol (removed in 55b-kur Task 7), but the struct itself still exists as a container for test examples. A default `description` implementation synthesizes from `configuration`, so rules that define their own `static let description = RuleDescription(...)` override it with examples.
