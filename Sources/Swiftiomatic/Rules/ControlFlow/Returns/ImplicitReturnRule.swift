@@ -9,7 +9,7 @@ struct ImplicitReturnRule {
     var options = ImplicitReturnOptions()
 }
 
-extension ImplicitReturnRule: SwiftSyntaxCorrectableRule {
+extension ImplicitReturnRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

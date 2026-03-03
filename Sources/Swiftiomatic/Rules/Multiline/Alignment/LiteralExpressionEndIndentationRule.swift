@@ -193,7 +193,7 @@ struct LiteralExpressionEndIndentationRule: Rule {
     fileprivate static let notWhitespace: CachedRegex = "[^\\s]"
 }
 
-extension LiteralExpressionEndIndentationRule: CorrectableRule {
+extension LiteralExpressionEndIndentationRule {
     func correct(file: SwiftSource) -> Int {
         let allViolations = violations(in: file).reversed().filter { violation in
             guard let nsRange = file.stringView.byteRangeToNSRange(violation.range) else {

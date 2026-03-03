@@ -27,7 +27,7 @@ struct LinebreaksRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension LinebreaksRule: SwiftSyntaxCorrectableRule {
+extension LinebreaksRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

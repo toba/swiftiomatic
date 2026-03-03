@@ -80,7 +80,7 @@ struct RedundantPropertyRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension RedundantPropertyRule: SwiftSyntaxCorrectableRule {
+extension RedundantPropertyRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

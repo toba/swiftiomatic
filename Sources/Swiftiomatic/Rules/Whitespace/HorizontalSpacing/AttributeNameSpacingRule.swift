@@ -96,7 +96,7 @@ struct AttributeNameSpacingRule {
     var options = SeverityOption<Self>(.error)
 }
 
-extension AttributeNameSpacingRule: SwiftSyntaxCorrectableRule {
+extension AttributeNameSpacingRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

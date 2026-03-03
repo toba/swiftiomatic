@@ -1,7 +1,7 @@
 import Foundation
 import SwiftIDEUtils
 
-struct PeriodSpacingRule: SyntaxOnlyRule, CorrectableRule {
+struct PeriodSpacingRule: Rule {
     static let id = "period_spacing"
     static let name = "Period Spacing"
     static let summary = "Periods should not be followed by more than one space"

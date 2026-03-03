@@ -60,7 +60,7 @@ import Testing
   }
 
   @Test func collectsAnalyzerFiles() async throws {
-    struct Spec: MockCollectingRule, AnalyzerRule {
+    struct Spec: MockCollectingRule {
       var options = SeverityOption<Self>(.warning)
       static let isOptIn = true
       static let requiresCompilerArguments = true
@@ -95,7 +95,7 @@ import Testing
   }
 
   @Test func corrects() async throws {
-    struct Spec: MockCollectingRule, CorrectableRule {
+    struct Spec: MockCollectingRule {
       var options = SeverityOption<Self>(.warning)
 
       func collectInfo(for file: SwiftSource) -> String {
@@ -126,7 +126,7 @@ import Testing
       }
     }
 
-    struct AnalyzerSpec: MockCollectingRule, AnalyzerRule, CorrectableRule {
+    struct AnalyzerSpec: MockCollectingRule {
       var options = SeverityOption<Self>(.warning)
       static let isOptIn = true
       static let requiresCompilerArguments = true

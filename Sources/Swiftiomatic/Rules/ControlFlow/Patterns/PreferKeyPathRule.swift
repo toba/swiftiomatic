@@ -111,7 +111,7 @@ struct PreferKeyPathRule {
     var options = PreferKeyPathOptions()
 }
 
-extension PreferKeyPathRule: SwiftSyntaxCorrectableRule {
+extension PreferKeyPathRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

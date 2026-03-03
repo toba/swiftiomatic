@@ -218,7 +218,7 @@ struct OptionalEnumCaseMatchingRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension OptionalEnumCaseMatchingRule: SwiftSyntaxCorrectableRule {
+extension OptionalEnumCaseMatchingRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -89,7 +89,7 @@ struct ControlStatementRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ControlStatementRule: SwiftSyntaxCorrectableRule {
+extension ControlStatementRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

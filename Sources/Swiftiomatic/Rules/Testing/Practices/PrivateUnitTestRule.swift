@@ -162,7 +162,7 @@ struct PrivateUnitTestRule {
     var options = PrivateUnitTestOptions()
 }
 
-extension PrivateUnitTestRule: SwiftSyntaxCorrectableRule {
+extension PrivateUnitTestRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

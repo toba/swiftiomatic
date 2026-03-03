@@ -24,7 +24,7 @@ struct UnneededSynthesizedInitializerRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension UnneededSynthesizedInitializerRule: SwiftSyntaxCorrectableRule {
+extension UnneededSynthesizedInitializerRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

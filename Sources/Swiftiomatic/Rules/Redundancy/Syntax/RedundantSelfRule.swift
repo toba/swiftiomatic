@@ -11,7 +11,7 @@ struct RedundantSelfRule {
     var options = RedundantSelfOptions()
 }
 
-extension RedundantSelfRule: SwiftSyntaxCorrectableRule {
+extension RedundantSelfRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

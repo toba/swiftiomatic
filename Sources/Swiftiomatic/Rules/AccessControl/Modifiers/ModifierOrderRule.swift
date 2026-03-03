@@ -17,7 +17,7 @@ extension ViolationMessage {
     }
 }
 
-extension ModifierOrderRule: SwiftSyntaxCorrectableRule {
+extension ModifierOrderRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

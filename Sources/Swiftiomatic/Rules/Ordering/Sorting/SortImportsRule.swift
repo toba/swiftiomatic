@@ -44,7 +44,7 @@ struct SortImportsRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension SortImportsRule: SwiftSyntaxCorrectableRule {
+extension SortImportsRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

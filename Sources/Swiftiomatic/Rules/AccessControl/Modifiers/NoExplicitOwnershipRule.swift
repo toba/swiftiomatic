@@ -29,7 +29,7 @@ struct NoExplicitOwnershipRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension NoExplicitOwnershipRule: SwiftSyntaxCorrectableRule {
+extension NoExplicitOwnershipRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

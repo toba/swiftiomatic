@@ -17,7 +17,7 @@ struct NumberSeparatorRule {
     """
 }
 
-extension NumberSeparatorRule: SwiftSyntaxCorrectableRule {
+extension NumberSeparatorRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

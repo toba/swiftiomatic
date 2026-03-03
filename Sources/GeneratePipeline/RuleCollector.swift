@@ -59,14 +59,16 @@ private final class RuleFileVisitor: SyntaxVisitor {
         let name = node.name.text
         // Look for static let id = "..."
         if let id = extractStaticStringProperty(from: node.memberBlock, named: "id") {
+            let conformances = node.inheritanceClause?.inheritedTypes
+                .map(\.type.trimmedDescription) ?? []
             ruleStructs[name] = RuleStructInfo(
                 typeName: name,
                 ruleID: id,
                 hasPreprocessOverride: false,
-                isCollecting: false,
-                isAnalyzer: false,
-                isSourceKitAST: false,
-                conformsToSwiftSyntaxRule: false,
+                isCollecting: conformances.contains(where: { $0.contains("CollectingRule") }),
+                isAnalyzer: extractStaticBoolProperty(from: node.memberBlock, named: "requiresCompilerArguments") ?? false,
+                isSourceKitAST: conformances.contains("SourceKitASTRule"),
+                conformsToSwiftSyntaxRule: conformances.contains("SwiftSyntaxRule"),
             )
         }
         return .visitChildren
@@ -81,13 +83,8 @@ private final class RuleFileVisitor: SyntaxVisitor {
             let conformances = inheritanceClause.inheritedTypes.map(\.type.trimmedDescription)
             if var info = ruleStructs[extendedType] {
                 for conformance in conformances {
-                    if conformance == "SwiftSyntaxRule" || conformance ==
-                        "SwiftSyntaxCorrectableRule"
-                    {
+                    if conformance == "SwiftSyntaxRule" {
                         info.conformsToSwiftSyntaxRule = true
-                    }
-                    if conformance == "AnalyzerRule" {
-                        info.isAnalyzer = true
                     }
                     if conformance == "SourceKitASTRule" {
                         info.isSourceKitAST = true
@@ -256,6 +253,25 @@ private final class RuleFileVisitor: SyntaxVisitor {
                let segment = stringLiteral.segments.first?.as(StringSegmentSyntax.self)
             {
                 return segment.content.text
+            }
+        }
+        return nil
+    }
+
+    private func extractStaticBoolProperty(
+        from memberBlock: MemberBlockSyntax,
+        named propertyName: String,
+    ) -> Bool? {
+        for member in memberBlock.members {
+            if let varDecl = member.decl.as(VariableDeclSyntax.self),
+               varDecl.modifiers.contains(where: { $0.name.text == "static" }),
+               let binding = varDecl.bindings.first,
+               let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+               pattern.identifier.text == propertyName,
+               let initializer = binding.initializer,
+               let boolLiteral = initializer.value.as(BooleanLiteralExprSyntax.self)
+            {
+                return boolLiteral.literal.text == "true"
             }
         }
         return nil

@@ -46,7 +46,7 @@ struct PreferZeroOverExplicitInitRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension PreferZeroOverExplicitInitRule: SwiftSyntaxCorrectableRule {
+extension PreferZeroOverExplicitInitRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

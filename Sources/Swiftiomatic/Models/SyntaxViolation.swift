@@ -19,7 +19,7 @@ struct SyntaxViolation: Comparable, Hashable {
     let reason: ViolationMessage?
     /// The violation's severity.
     let severity: Severity?
-    /// An optional correction of the violation to be used in rewriting (see ``SwiftSyntaxCorrectableRule``). Can be
+    /// An optional correction of the violation to be used in rewriting (see ``SwiftSyntaxRule``). Can be
     /// left unset when creating a violation, especially if the rule is not correctable or provides a custom rewriter.
     let correction: Correction?
     /// The confidence level of this violation.

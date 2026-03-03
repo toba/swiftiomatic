@@ -180,8 +180,8 @@ struct Analyze: AsyncParsableCommand {
 
         // 2. Lint correctable rules run their correct() methods
         let storage = RuleStorage()
-        let correctableRules = analyzer.lintRules.compactMap { $0 as? any CorrectableRule }
-        let collectingRules = analyzer.lintRules.filter { $0 is any CollectingRuleMarker }
+        let correctableRules = analyzer.lintRules.filter { type(of: $0).isCorrectable }
+        let collectingRules = analyzer.lintRules.filter { type(of: $0).isCrossFile }
         let lintFiles = files.compactMap { SwiftSource(path: $0) }
 
         // Collect phase for collecting rules

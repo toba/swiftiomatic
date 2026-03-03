@@ -107,7 +107,7 @@ struct LegacyCGGeometryFunctionsRule {
     ]
 }
 
-extension LegacyCGGeometryFunctionsRule: SwiftSyntaxCorrectableRule {
+extension LegacyCGGeometryFunctionsRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

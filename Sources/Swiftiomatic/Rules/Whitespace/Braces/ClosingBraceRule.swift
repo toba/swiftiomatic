@@ -29,7 +29,7 @@ struct ClosingBraceRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ClosingBraceRule: SwiftSyntaxCorrectableRule {
+extension ClosingBraceRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

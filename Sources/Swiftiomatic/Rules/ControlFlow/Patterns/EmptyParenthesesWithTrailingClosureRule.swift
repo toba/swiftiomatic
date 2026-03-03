@@ -53,7 +53,7 @@ struct EmptyParenthesesWithTrailingClosureRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension EmptyParenthesesWithTrailingClosureRule: SwiftSyntaxCorrectableRule {
+extension EmptyParenthesesWithTrailingClosureRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

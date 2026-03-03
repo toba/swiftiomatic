@@ -9,7 +9,7 @@ struct OpeningBraceRule {
     var options = OpeningBraceOptions()
 }
 
-extension OpeningBraceRule: SwiftSyntaxCorrectableRule {
+extension OpeningBraceRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

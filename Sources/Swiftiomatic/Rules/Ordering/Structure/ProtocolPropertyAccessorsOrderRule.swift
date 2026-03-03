@@ -30,7 +30,7 @@ struct ProtocolPropertyAccessorsOrderRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ProtocolPropertyAccessorsOrderRule: SwiftSyntaxCorrectableRule {
+extension ProtocolPropertyAccessorsOrderRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -36,9 +36,7 @@ private struct DontLintEmptyFiles: ShouldLintEmptyFilesProtocol {
   static var shouldLintEmptyFiles: Bool { false }
 }
 
-private struct RuleMock<ShouldLintEmptyFiles: ShouldLintEmptyFilesProtocol>: CorrectableRule,
-  SyntaxOnlyRule
-{
+private struct RuleMock<ShouldLintEmptyFiles: ShouldLintEmptyFilesProtocol>: Rule {
   var options = SeverityOption<Self>(.warning)
 
   static var id: String { "rule_mock<\(ShouldLintEmptyFiles.self)>" }

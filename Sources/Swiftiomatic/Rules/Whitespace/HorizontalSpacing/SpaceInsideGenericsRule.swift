@@ -29,7 +29,7 @@ struct SpaceInsideGenericsRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension SpaceInsideGenericsRule: SwiftSyntaxCorrectableRule {
+extension SpaceInsideGenericsRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

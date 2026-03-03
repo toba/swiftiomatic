@@ -127,7 +127,7 @@ struct EmptyCountRule {
     var options = EmptyCountOptions()
 }
 
-extension EmptyCountRule: SwiftSyntaxCorrectableRule {
+extension EmptyCountRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

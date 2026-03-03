@@ -152,6 +152,33 @@ public protocol Rule: Sendable {
     ///   - ruleID: Rule identifier deviating from the default rule's name.
     /// - Returns: A boolean value indicating whether the rule is enabled in the given region.
     func isEnabled(in region: Region, for ruleID: String) -> Bool
+
+    /// Attempt to correct violations in the specified file
+    ///
+    /// - Parameters:
+    ///   - file: The file for which to correct violations.
+    ///   - compilerArguments: The compiler arguments needed to compile this file.
+    /// - Returns: Number of corrections that were applied.
+    func correct(file: SwiftSource, compilerArguments: [String]) -> Int
+
+    /// Attempt to correct violations in the specified file
+    ///
+    /// - Parameters:
+    ///   - file: The file for which to correct violations.
+    /// - Returns: Number of corrections that were applied.
+    func correct(file: SwiftSource) -> Int
+
+    /// Correct violations after collecting file info for all files
+    ///
+    /// Called by the linter; always implemented in extensions.
+    ///
+    /// - Parameters:
+    ///   - file: The file for which to execute the rule.
+    ///   - storage: The storage object containing all collected info.
+    ///   - compilerArguments: The compiler arguments needed to compile this file.
+    /// - Returns: All corrections that were applied.
+    func correct(file: SwiftSource, using storage: RuleStorage, compilerArguments: [String])
+        -> Int
 }
 
 // MARK: - Metadata defaults
@@ -159,13 +186,13 @@ public protocol Rule: Sendable {
 extension Rule {
     static var rationale: String? { nil }
     static var scope: Scope { .lint }
-    static var isCorrectable: Bool { false }
+    public static var isCorrectable: Bool { false }
     static var isOptIn: Bool { false }
     static var isDeprecated: Bool { false }
     static var deprecationMessage: String? { nil }
     static var requiresSourceKit: Bool { false }
     static var requiresCompilerArguments: Bool { false }
-    static var isCrossFile: Bool { false }
+    public static var isCrossFile: Bool { false }
     static var canEnrichAsync: Bool { false }
     static var configurationOptions: [ConfigOptionDescriptor] { [] }
     static var relatedRuleIDs: [String] { [] }
@@ -222,6 +249,10 @@ extension Rule {
         validate(file: file, compilerArguments: compilerArguments)
     }
 
+    func validate(file _: SwiftSource) -> [RuleViolation] {
+        []
+    }
+
     func validate(file: SwiftSource, compilerArguments _: [String]) -> [RuleViolation] {
         validate(file: file)
     }
@@ -235,6 +266,18 @@ extension Rule {
 
     func collectInfo(for _: SwiftSource, into _: RuleStorage, compilerArguments _: [String]) {
         // no-op: only CollectingRules mutate their storage
+    }
+
+    func correct(file: SwiftSource, compilerArguments _: [String]) -> Int {
+        correct(file: file)
+    }
+
+    func correct(file _: SwiftSource) -> Int {
+        0
+    }
+
+    func correct(file: SwiftSource, using _: RuleStorage, compilerArguments: [String]) -> Int {
+        correct(file: file, compilerArguments: compilerArguments)
     }
 
     /// A string fingerprint of this rule's configuration used for cache invalidation
@@ -305,52 +348,6 @@ extension Rule {
     static var ruleCorrections: [Example: Example] { corrections }
 }
 
-/// A rule that is not enabled by default and must be explicitly enabled by users
-///
-/// - Note: Deprecated. Use `Rule.isOptIn` instead. This protocol remains
-///   for backward compatibility but is no longer checked at runtime.
-protocol OptInRule: Rule {}
-
-/// A rule that can correct violations
-public protocol CorrectableRule: Rule {
-    /// Attempt to correct violations in the specified file
-    ///
-    /// - Parameters:
-    ///   - file: The file for which to correct violations.
-    ///   - compilerArguments: The compiler arguments needed to compile this file.
-    /// - Returns: Number of corrections that were applied.
-    func correct(file: SwiftSource, compilerArguments: [String]) -> Int
-
-    /// Attempt to correct violations in the specified file
-    ///
-    /// - Parameters:
-    ///   - file: The file for which to correct violations.
-    /// - Returns: Number of corrections that were applied.
-    func correct(file: SwiftSource) -> Int
-
-    /// Correct violations after collecting file info for all files
-    ///
-    /// Called by the linter; always implemented in extensions.
-    ///
-    /// - Parameters:
-    ///   - file: The file for which to execute the rule.
-    ///   - storage: The storage object containing all collected info.
-    ///   - compilerArguments: The compiler arguments needed to compile this file.
-    /// - Returns: All corrections that were applied.
-    func correct(file: SwiftSource, using storage: RuleStorage, compilerArguments: [String])
-        -> Int
-}
-
-extension CorrectableRule {
-    func correct(file: SwiftSource, compilerArguments _: [String]) -> Int {
-        correct(file: file)
-    }
-
-    func correct(file: SwiftSource, using _: RuleStorage, compilerArguments: [String]) -> Int {
-        correct(file: file, compilerArguments: compilerArguments)
-    }
-}
-
 /// :nodoc:
 extension [any Rule] {
     static func == (lhs: Array, rhs: Array) -> Bool {
@@ -364,12 +361,6 @@ extension [any Rule] {
         }
     }
 }
-
-/// A rule that operates purely on SwiftSyntax and does not require SourceKit
-///
-/// - Note: Deprecated. Use `Rule.requiresSourceKit` instead. This protocol
-///   remains for backward compatibility with ``SwiftSyntaxRule``.
-protocol SyntaxOnlyRule: Rule {}
 
 extension Rule {
     /// Whether this rule requires SourceKit to operate
@@ -405,23 +396,7 @@ protocol AsyncEnrichableRule: Rule {
     ) async -> [RuleViolation]
 }
 
-/// A rule that operates on the post-typechecked AST using compiler arguments
-///
-/// Analyzer rules perform checks that are more like static analysis than
-/// syntactic checks. They are always opt-in and require compiler arguments.
-/// Set `isOptIn = true` and `requiresCompilerArguments = true` as static
-/// properties on the rule.
-protocol AnalyzerRule: Rule {}
-
-extension AnalyzerRule {
-    func validate(file _: SwiftSource) -> [RuleViolation] {
-        Console.fatalError("Must call `validate(file:compilerArguments:)` for AnalyzerRule")
-    }
+extension AsyncEnrichableRule {
+    static var canEnrichAsync: Bool { true }
 }
 
-/// :nodoc:
-extension AnalyzerRule where Self: CorrectableRule {
-    func correct(file _: SwiftSource) -> Int {
-        Console.fatalError("Must call `correct(file:compilerArguments:)` for AnalyzerRule")
-    }
-}

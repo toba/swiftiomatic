@@ -85,7 +85,7 @@ struct RedundantViewBuilderRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension RedundantViewBuilderRule: SwiftSyntaxCorrectableRule {
+extension RedundantViewBuilderRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

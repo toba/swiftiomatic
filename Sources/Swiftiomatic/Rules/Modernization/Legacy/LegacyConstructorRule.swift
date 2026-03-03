@@ -141,7 +141,7 @@ struct LegacyConstructorRule {
     ]
 }
 
-extension LegacyConstructorRule: SwiftSyntaxCorrectableRule {
+extension LegacyConstructorRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -1,6 +1,6 @@
 import Foundation
 
-struct ExplicitSelfRule: CorrectableRule, AnalyzerRule {
+struct ExplicitSelfRule: Rule {
     static let id = "explicit_self"
     static let name = "Explicit Self"
     static let summary = "Instance variables and functions should be explicitly accessed with 'self.'"

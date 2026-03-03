@@ -48,7 +48,7 @@ struct BlankLineAfterImportsRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension BlankLineAfterImportsRule: SwiftSyntaxCorrectableRule {
+extension BlankLineAfterImportsRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -52,7 +52,7 @@ struct NoSpaceInMethodCallRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension NoSpaceInMethodCallRule: SwiftSyntaxCorrectableRule {
+extension NoSpaceInMethodCallRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -176,7 +176,7 @@ struct UnusedParameterRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension UnusedParameterRule: SwiftSyntaxCorrectableRule {
+extension UnusedParameterRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

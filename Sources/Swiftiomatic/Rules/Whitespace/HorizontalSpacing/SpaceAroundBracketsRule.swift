@@ -31,7 +31,7 @@ struct SpaceAroundBracketsRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension SpaceAroundBracketsRule: SwiftSyntaxCorrectableRule {
+extension SpaceAroundBracketsRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

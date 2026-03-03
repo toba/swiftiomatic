@@ -118,7 +118,7 @@ struct ShorthandOptionalBindingRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ShorthandOptionalBindingRule: SwiftSyntaxCorrectableRule {
+extension ShorthandOptionalBindingRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

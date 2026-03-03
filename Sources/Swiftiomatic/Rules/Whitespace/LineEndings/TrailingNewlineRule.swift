@@ -17,7 +17,7 @@ extension String {
     }
 }
 
-struct TrailingNewlineRule: CorrectableRule, SyntaxOnlyRule {
+struct TrailingNewlineRule: Rule {
     static let id = "trailing_newline"
     static let name = "Trailing Newline"
     static let summary = "Files should have a single trailing newline"

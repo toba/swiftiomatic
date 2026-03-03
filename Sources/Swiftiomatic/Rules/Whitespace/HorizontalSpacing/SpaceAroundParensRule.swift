@@ -32,7 +32,7 @@ struct SpaceAroundParensRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension SpaceAroundParensRule: SwiftSyntaxCorrectableRule {
+extension SpaceAroundParensRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

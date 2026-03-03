@@ -93,7 +93,7 @@ struct LowerACLThanParentRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension LowerACLThanParentRule: SwiftSyntaxCorrectableRule {
+extension LowerACLThanParentRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

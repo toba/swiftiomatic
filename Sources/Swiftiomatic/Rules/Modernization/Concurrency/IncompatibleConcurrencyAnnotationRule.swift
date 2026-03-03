@@ -19,7 +19,7 @@ struct IncompatibleConcurrencyAnnotationRule {
     var options = IncompatibleConcurrencyAnnotationOptions()
 }
 
-extension IncompatibleConcurrencyAnnotationRule: SwiftSyntaxCorrectableRule {
+extension IncompatibleConcurrencyAnnotationRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

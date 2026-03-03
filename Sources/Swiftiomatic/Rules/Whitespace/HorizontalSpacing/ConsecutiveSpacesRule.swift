@@ -31,7 +31,7 @@ struct ConsecutiveSpacesRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ConsecutiveSpacesRule: SwiftSyntaxCorrectableRule {
+extension ConsecutiveSpacesRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

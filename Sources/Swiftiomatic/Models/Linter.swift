@@ -303,7 +303,7 @@ struct Linter: @unchecked Sendable {
             return type(of: rule).runsWithCompilerArguments || rule is SuperfluousDisableCommandRule
         }
         self.rules = rules
-        isCollecting = rules.contains(where: { $0 is any CollectingRuleMarker })
+        isCollecting = rules.contains(where: { type(of: $0).isCrossFile })
     }
 
     /// Returns a linter capable of checking for violations after running each rule's collection step.
@@ -400,7 +400,7 @@ struct CollectedLinter: @unchecked Sendable {
             let ruleID = type(of: rule).identifier
             if let syntaxRule = rule as? any SwiftSyntaxRule,
                pipelineEligibleRuleIDs.contains(ruleID),
-               !(rule is any CollectingRuleMarker)
+               !type(of: rule).isCrossFile
             {
                 pipelineRules.append((syntaxRule, pipelineRules.count))
             } else {
@@ -605,7 +605,7 @@ struct CollectedLinter: @unchecked Sendable {
         }
 
         var corrections = [String: Int]()
-        for rule in rules.compactMap({ $0 as? any CorrectableRule }) {
+        for rule in rules where type(of: rule).isCorrectable {
             // Set rule context before checking shouldRun to allow file property access
             let ruleCorrections = CurrentRule.$identifier.withValue(type(of: rule).identifier) {
                 () -> Int? in

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct SyntacticSugarRule: CorrectableRule, SyntaxOnlyRule {
+struct SyntacticSugarRule: Rule {
     static let id = "syntactic_sugar"
     static let name = "Syntactic Sugar"
     static let summary = "Shorthand syntactic sugar should be used, i.e. [Int] instead of Array<Int>."

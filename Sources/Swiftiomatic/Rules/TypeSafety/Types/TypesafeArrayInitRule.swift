@@ -1,6 +1,6 @@
 import Foundation
 
-struct TypesafeArrayInitRule: AnalyzerRule {
+struct TypesafeArrayInitRule: Rule {
     static let id = "typesafe_array_init"
     static let name = "Type-safe Array Init"
     static let summary =

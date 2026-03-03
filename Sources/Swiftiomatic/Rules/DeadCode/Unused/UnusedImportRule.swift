@@ -2,7 +2,7 @@ import Foundation
 
 private let moduleToLog = ProcessInfo.processInfo.environment["SWIFTIOMATIC_LOG_MODULE_USAGE"]
 
-struct UnusedImportRule: CorrectableRule, AnalyzerRule {
+struct UnusedImportRule: Rule {
     static let id = "unused_import"
     static let name = "Unused Import"
     static let summary = "All imported modules should be required to make the file compile"

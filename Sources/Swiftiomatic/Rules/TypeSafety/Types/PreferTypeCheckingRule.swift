@@ -72,7 +72,7 @@ struct PreferTypeCheckingRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension PreferTypeCheckingRule: SwiftSyntaxCorrectableRule {
+extension PreferTypeCheckingRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

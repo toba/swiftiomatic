@@ -126,7 +126,7 @@ struct NonOverridableClassDeclarationRule {
     var options = NonOverridableClassDeclarationOptions()
 }
 
-extension NonOverridableClassDeclarationRule: SwiftSyntaxCorrectableRule {
+extension NonOverridableClassDeclarationRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

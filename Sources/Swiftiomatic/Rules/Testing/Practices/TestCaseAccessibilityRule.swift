@@ -10,7 +10,7 @@ struct TestCaseAccessibilityRule {
     var options = TestCaseAccessibilityOptions()
 }
 
-extension TestCaseAccessibilityRule: SwiftSyntaxCorrectableRule {
+extension TestCaseAccessibilityRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

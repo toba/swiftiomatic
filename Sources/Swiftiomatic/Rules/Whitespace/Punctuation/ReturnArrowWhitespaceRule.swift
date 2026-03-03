@@ -61,7 +61,7 @@ struct ReturnArrowWhitespaceRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ReturnArrowWhitespaceRule: SwiftSyntaxCorrectableRule {
+extension ReturnArrowWhitespaceRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

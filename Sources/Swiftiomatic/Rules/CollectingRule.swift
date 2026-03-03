@@ -1,12 +1,9 @@
-/// Marker protocol used to check whether a rule is collectable
-public protocol CollectingRuleMarker: Rule {}
-
 /// A rule that requires knowledge of all other files being linted
 ///
 /// Conforming rules implement a two-pass workflow: pass 1 calls ``collectInfo(for:)``
 /// on every file, then pass 2 calls ``validate(file:collectedInfo:)`` with the
 /// aggregated results.
-protocol CollectingRule: CollectingRuleMarker {
+protocol CollectingRule: Rule {
     /// The kind of information to collect for each file being linted for this rule
     associatedtype FileInfo
 
@@ -48,6 +45,8 @@ protocol CollectingRule: CollectingRuleMarker {
 }
 
 extension CollectingRule {
+    public static var isCrossFile: Bool { true }
+
     func collectInfo(
         for file: SwiftSource,
         into storage: RuleStorage,
@@ -68,8 +67,20 @@ extension CollectingRule {
         return validate(file: file, collectedInfo: info, compilerArguments: compilerArguments)
     }
 
+    func collectInfo(for _: SwiftSource) -> FileInfo {
+        Console.fatalError(
+            "Must call `collectInfo(for:compilerArguments:)` for CollectingRule requiring compiler arguments",
+        )
+    }
+
     func collectInfo(for file: SwiftSource, compilerArguments _: [String]) -> FileInfo {
         collectInfo(for: file)
+    }
+
+    func validate(file _: SwiftSource, collectedInfo _: [SwiftSource: FileInfo]) -> [RuleViolation] {
+        Console.fatalError(
+            "Must call `validate(file:collectedInfo:compilerArguments:)` for CollectingRule requiring compiler arguments",
+        )
     }
 
     func validate(
@@ -87,28 +98,6 @@ extension CollectingRule {
     func validate(file _: SwiftSource, compilerArguments _: [String]) -> [RuleViolation] {
         Console.fatalError(
             "Must call `validate(file:collectedInfo:compilerArguments:)` for CollectingRule",
-        )
-    }
-}
-
-extension CollectingRule where Self: AnalyzerRule {
-    func collectInfo(for _: SwiftSource) -> FileInfo {
-        Console.fatalError(
-            "Must call `collect(infoFor:compilerArguments:)` for AnalyzerRule & CollectingRule",
-        )
-    }
-
-    func validate(file _: SwiftSource) -> [RuleViolation] {
-        Console.fatalError(
-            "Must call `validate(file:collectedInfo:compilerArguments:)` for AnalyzerRule & CollectingRule",
-        )
-    }
-
-    func validate(file _: SwiftSource, collectedInfo _: [SwiftSource: FileInfo])
-        -> [RuleViolation]
-    {
-        Console.fatalError(
-            "Must call `validate(file:collectedInfo:compilerArguments:)` for AnalyzerRule & CollectingRule",
         )
     }
 }

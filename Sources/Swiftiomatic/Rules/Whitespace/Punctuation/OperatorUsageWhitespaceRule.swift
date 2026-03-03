@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct OperatorUsageWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
+struct OperatorUsageWhitespaceRule: Rule {
     static let id = "operator_usage_whitespace"
     static let name = "Operator Usage Whitespace"
     static let summary =

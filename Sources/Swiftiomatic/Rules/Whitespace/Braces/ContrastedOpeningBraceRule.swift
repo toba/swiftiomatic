@@ -10,7 +10,7 @@ struct ContrastedOpeningBraceRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ContrastedOpeningBraceRule: SwiftSyntaxCorrectableRule {
+extension ContrastedOpeningBraceRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

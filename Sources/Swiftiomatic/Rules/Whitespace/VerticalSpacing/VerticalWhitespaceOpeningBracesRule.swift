@@ -213,7 +213,7 @@ extension VerticalWhitespaceOpeningBracesRule {
     }
 }
 
-extension VerticalWhitespaceOpeningBracesRule: CorrectableRule {
+extension VerticalWhitespaceOpeningBracesRule {
     func correct(file: SwiftSource) -> Int {
         let violatingRanges = file.ruleEnabled(
             violatingRanges: file.violatingRanges(for: pattern), for: self,

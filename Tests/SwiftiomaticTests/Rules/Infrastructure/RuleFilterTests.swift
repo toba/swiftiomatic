@@ -153,13 +153,14 @@ private struct RuleMock2: Rule {
   }
 }
 
-private struct CorrectableRuleMock: CorrectableRule {
+private struct CorrectableRuleMock: Rule {
   var options = SeverityOption<Self>(.warning)
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
 
   static let id = "CorrectableRuleMock"
   static let name = ""
   static let summary = ""
+  static let isCorrectable = true
 
   init() { /* conformance for test */  }
   init(configuration _: Any) { self.init() }

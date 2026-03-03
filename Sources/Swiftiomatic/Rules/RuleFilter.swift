@@ -47,7 +47,7 @@ final class RuleFilter {
             if excludingOptions.contains(.disabled), !isRuleEnabled {
                 return nil
             }
-            if excludingOptions.contains(.uncorrectable), !(ruleType is any CorrectableRule.Type) {
+            if excludingOptions.contains(.uncorrectable), !ruleType.isCorrectable {
                 return nil
             }
 

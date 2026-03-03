@@ -38,7 +38,7 @@ struct TrailingWhitespaceRule {
     var options = TrailingWhitespaceOptions()
 }
 
-extension TrailingWhitespaceRule: SwiftSyntaxCorrectableRule {
+extension TrailingWhitespaceRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

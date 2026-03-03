@@ -50,7 +50,7 @@ struct StrongIBOutletRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension StrongIBOutletRule: SwiftSyntaxCorrectableRule {
+extension StrongIBOutletRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

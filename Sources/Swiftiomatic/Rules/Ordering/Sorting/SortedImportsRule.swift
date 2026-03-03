@@ -10,7 +10,7 @@ struct SortedImportsRule {
     var options = SortedImportsOptions()
 }
 
-extension SortedImportsRule: SwiftSyntaxCorrectableRule {
+extension SortedImportsRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

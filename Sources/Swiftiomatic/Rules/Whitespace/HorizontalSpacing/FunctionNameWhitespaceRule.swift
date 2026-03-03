@@ -10,7 +10,7 @@ struct FunctionNameWhitespaceRule {
     var options = FunctionNameWhitespaceOptions()
 }
 
-extension FunctionNameWhitespaceRule: SwiftSyntaxCorrectableRule {
+extension FunctionNameWhitespaceRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

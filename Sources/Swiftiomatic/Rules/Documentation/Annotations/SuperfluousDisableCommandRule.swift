@@ -1,4 +1,4 @@
-struct SuperfluousDisableCommandRule: SyntaxOnlyRule, Sendable {
+struct SuperfluousDisableCommandRule: Rule, Sendable {
     static let id = "superfluous_disable_command"
     static let name = "Superfluous Disable Command"
     static let summary = ""

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct FileNameRule: SyntaxOnlyRule {
+struct FileNameRule: Rule {
     static let id = "file_name"
     static let name = "File Name"
     static let summary = "File name should match a type or extension declared in the file (if any)"

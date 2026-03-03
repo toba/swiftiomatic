@@ -13,7 +13,7 @@ struct RedundantObjcAttributeRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension RedundantObjcAttributeRule: SwiftSyntaxCorrectableRule {
+extension RedundantObjcAttributeRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

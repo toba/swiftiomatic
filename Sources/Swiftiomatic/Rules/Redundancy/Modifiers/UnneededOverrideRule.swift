@@ -9,7 +9,7 @@ struct UnneededOverrideRule {
     var options = UnneededOverrideOptions()
 }
 
-extension UnneededOverrideRule: SwiftSyntaxCorrectableRule {
+extension UnneededOverrideRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -125,7 +125,7 @@ struct UntypedErrorInCatchRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension UntypedErrorInCatchRule: SwiftSyntaxCorrectableRule {
+extension UntypedErrorInCatchRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

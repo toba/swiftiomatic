@@ -73,7 +73,7 @@ struct RedundantExtensionACLRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension RedundantExtensionACLRule: SwiftSyntaxCorrectableRule {
+extension RedundantExtensionACLRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

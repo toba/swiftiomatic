@@ -1,6 +1,6 @@
 import Foundation
 
-struct FileNameNoSpaceRule: SyntaxOnlyRule {
+struct FileNameNoSpaceRule: Rule {
     static let id = "file_name_no_space"
     static let name = "File Name no Space"
     static let summary = "File name should not contain any whitespace"

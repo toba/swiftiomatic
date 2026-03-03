@@ -42,7 +42,7 @@ struct FinalTestCaseRule {
     var options = FinalTestCaseOptions()
 }
 
-extension FinalTestCaseRule: SwiftSyntaxCorrectableRule {
+extension FinalTestCaseRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

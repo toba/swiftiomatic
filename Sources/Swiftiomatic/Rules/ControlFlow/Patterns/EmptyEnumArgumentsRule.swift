@@ -145,7 +145,7 @@ struct EmptyEnumArgumentsRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension EmptyEnumArgumentsRule: SwiftSyntaxCorrectableRule {
+extension EmptyEnumArgumentsRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

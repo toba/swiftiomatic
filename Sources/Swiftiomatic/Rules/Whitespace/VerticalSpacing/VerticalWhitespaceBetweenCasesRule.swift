@@ -10,7 +10,7 @@ struct VerticalWhitespaceBetweenCasesRule {
     var options = VerticalWhitespaceBetweenCasesOptions()
 }
 
-extension VerticalWhitespaceBetweenCasesRule: SwiftSyntaxCorrectableRule {
+extension VerticalWhitespaceBetweenCasesRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

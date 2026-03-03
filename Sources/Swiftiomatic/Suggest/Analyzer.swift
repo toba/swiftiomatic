@@ -66,8 +66,8 @@ public struct Analyzer: Sendable {
         let storage = RuleStorage()
 
         // Separate collecting rules (need two-pass) from single-pass rules
-        let collectingRules = lintRules.filter { $0 is any CollectingRuleMarker }
-        let singlePassRules = lintRules.filter { !($0 is any CollectingRuleMarker) }
+        let collectingRules = lintRules.filter { type(of: $0).isCrossFile }
+        let singlePassRules = lintRules.filter { !type(of: $0).isCrossFile }
 
         // Pass 1: collect cross-file info for CollectingRules
         for file in lintFiles {

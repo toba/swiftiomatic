@@ -95,7 +95,7 @@ struct PrivateOverFilePrivateRule {
     var options = PrivateOverFilePrivateOptions()
 }
 
-extension PrivateOverFilePrivateRule: SwiftSyntaxCorrectableRule {
+extension PrivateOverFilePrivateRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -1,6 +1,6 @@
 import Foundation
 
-struct VerticalWhitespaceClosingBracesRule: CorrectableRule {
+struct VerticalWhitespaceClosingBracesRule: Rule {
     static let id = "vertical_whitespace_closing_braces"
     static let name = "Vertical Whitespace before Closing Braces"
     static let summary = "Don't include vertical whitespace (empty line) before closing braces"

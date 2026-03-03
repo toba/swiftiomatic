@@ -1,7 +1,7 @@
 import Foundation
 import SwiftIDEUtils
 
-struct CommentSpacingRule: SyntaxOnlyRule, CorrectableRule {
+struct CommentSpacingRule: Rule {
     static let id = "comment_spacing"
     static let name = "Comment Spacing"
     static let summary = "Prefer at least one space after slashes for comments"

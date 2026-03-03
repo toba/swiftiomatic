@@ -1,6 +1,6 @@
 import Foundation
 
-struct StatementPositionRule: CorrectableRule {
+struct StatementPositionRule: Rule {
     static let id = "statement_position"
     static let name = "Statement Position"
     static let summary =

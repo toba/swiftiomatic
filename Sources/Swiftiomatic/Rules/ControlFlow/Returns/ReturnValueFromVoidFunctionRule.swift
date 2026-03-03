@@ -10,7 +10,7 @@ struct ReturnValueFromVoidFunctionRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ReturnValueFromVoidFunctionRule: SwiftSyntaxCorrectableRule {
+extension ReturnValueFromVoidFunctionRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

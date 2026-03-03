@@ -9,7 +9,7 @@ struct PreferSelfInStaticReferencesRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension PreferSelfInStaticReferencesRule: SwiftSyntaxCorrectableRule {
+extension PreferSelfInStaticReferencesRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

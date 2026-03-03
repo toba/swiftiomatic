@@ -36,7 +36,7 @@ struct RedundantParensRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension RedundantParensRule: SwiftSyntaxCorrectableRule {
+extension RedundantParensRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

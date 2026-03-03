@@ -32,7 +32,7 @@ struct HoistTryRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension HoistTryRule: SwiftSyntaxCorrectableRule {
+extension HoistTryRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

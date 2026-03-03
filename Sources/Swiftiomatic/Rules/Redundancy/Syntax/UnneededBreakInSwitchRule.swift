@@ -109,7 +109,7 @@ struct UnneededBreakInSwitchRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension UnneededBreakInSwitchRule: SwiftSyntaxCorrectableRule {
+extension UnneededBreakInSwitchRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -187,7 +187,7 @@ struct RedundantDiscardableLetRule {
     var options = RedundantDiscardableLetOptions()
 }
 
-extension RedundantDiscardableLetRule: SwiftSyntaxCorrectableRule {
+extension RedundantDiscardableLetRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

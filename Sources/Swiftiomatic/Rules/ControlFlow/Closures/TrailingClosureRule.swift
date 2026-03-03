@@ -182,7 +182,7 @@ struct TrailingClosureRule {
     var options = TrailingClosureOptions()
 }
 
-extension TrailingClosureRule: SwiftSyntaxCorrectableRule {
+extension TrailingClosureRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

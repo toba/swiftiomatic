@@ -35,7 +35,7 @@ struct EmptyBracesRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension EmptyBracesRule: SwiftSyntaxCorrectableRule {
+extension EmptyBracesRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -1,6 +1,6 @@
 import Foundation
 
-struct UnusedDeclarationRule: AnalyzerRule, CollectingRule {
+struct UnusedDeclarationRule: CollectingRule {
     static let id = "unused_declaration"
     static let name = "Unused Declaration"
     static let summary = "Declarations should be referenced at least once within all files linted"

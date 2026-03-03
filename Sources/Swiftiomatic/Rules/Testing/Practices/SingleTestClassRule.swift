@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct SingleTestClassRule: SyntaxOnlyRule {
+struct SingleTestClassRule: Rule {
     static let id = "single_test_class"
     static let name = "Single Test Class"
     static let summary = "Test files should contain a single QuickSpec or XCTestCase class."

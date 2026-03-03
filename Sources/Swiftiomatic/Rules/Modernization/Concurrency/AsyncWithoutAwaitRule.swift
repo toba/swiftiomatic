@@ -9,7 +9,7 @@ struct AsyncWithoutAwaitRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension AsyncWithoutAwaitRule: SwiftSyntaxCorrectableRule {
+extension AsyncWithoutAwaitRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

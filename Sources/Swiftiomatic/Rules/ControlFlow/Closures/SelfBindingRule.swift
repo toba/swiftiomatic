@@ -69,7 +69,7 @@ struct SelfBindingRule {
     var options = SelfBindingOptions()
 }
 
-extension SelfBindingRule: SwiftSyntaxCorrectableRule {
+extension SelfBindingRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

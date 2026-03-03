@@ -1,6 +1,6 @@
 import SwiftSyntax
 
-struct UnneededThrowsRule: SwiftSyntaxCorrectableRule {
+struct UnneededThrowsRule: SwiftSyntaxRule {
     static let id = "unneeded_throws_rethrows"
     static let name = "Unneeded (Re)Throws Keyword"
     static let summary =

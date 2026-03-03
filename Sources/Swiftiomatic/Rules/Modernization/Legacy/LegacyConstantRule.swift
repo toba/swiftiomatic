@@ -9,7 +9,7 @@ struct LegacyConstantRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension LegacyConstantRule: SwiftSyntaxCorrectableRule {
+extension LegacyConstantRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

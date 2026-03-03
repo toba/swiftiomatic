@@ -112,7 +112,7 @@ struct RedundantStringEnumValueRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension RedundantStringEnumValueRule: SwiftSyntaxCorrectableRule {
+extension RedundantStringEnumValueRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

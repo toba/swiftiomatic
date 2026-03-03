@@ -9,7 +9,7 @@ struct ClosureEndIndentationRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ClosureEndIndentationRule: SwiftSyntaxCorrectableRule {
+extension ClosureEndIndentationRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

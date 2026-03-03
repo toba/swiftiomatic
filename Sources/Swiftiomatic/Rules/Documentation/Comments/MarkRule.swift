@@ -10,7 +10,7 @@ struct MarkRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension MarkRule: SwiftSyntaxCorrectableRule {
+extension MarkRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

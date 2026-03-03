@@ -31,7 +31,7 @@ struct RedundantBackticksRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension RedundantBackticksRule: SwiftSyntaxCorrectableRule {
+extension RedundantBackticksRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

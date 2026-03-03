@@ -47,7 +47,7 @@ private let replacements: [String: String] = [
     "precondition": "preconditionFailure",
 ]
 
-extension AssertionFailuresRule: SwiftSyntaxCorrectableRule {
+extension AssertionFailuresRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

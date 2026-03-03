@@ -1,4 +1,4 @@
-struct CaptureVariableRule: AnalyzerRule, CollectingRule {
+struct CaptureVariableRule: CollectingRule {
     static let id = "capture_variable"
     static let name = "Capture Variable"
     static let summary =

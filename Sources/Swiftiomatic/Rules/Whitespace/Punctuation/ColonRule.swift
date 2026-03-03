@@ -9,7 +9,7 @@ struct ColonRule {
     var options = ColonOptions()
 }
 
-extension ColonRule: SwiftSyntaxCorrectableRule {
+extension ColonRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -1,6 +1,6 @@
 import Foundation
 
-struct BlanketDisableCommandRule: Rule, SyntaxOnlyRule {
+struct BlanketDisableCommandRule: Rule {
     static let id = "blanket_disable_command"
     static let name = "Blanket Disable Command"
     static let summary = ""

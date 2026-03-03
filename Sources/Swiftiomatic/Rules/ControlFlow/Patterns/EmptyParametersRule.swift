@@ -42,7 +42,7 @@ struct EmptyParametersRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension EmptyParametersRule: SwiftSyntaxCorrectableRule {
+extension EmptyParametersRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -1,6 +1,6 @@
 import Foundation
 
-struct LeadingWhitespaceRule: CorrectableRule, SyntaxOnlyRule {
+struct LeadingWhitespaceRule: Rule {
     static let id = "leading_whitespace"
     static let name = "Leading Whitespace"
     static let summary = "Files should not contain leading whitespace"

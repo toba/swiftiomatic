@@ -2,7 +2,7 @@ import SwiftSyntax
 
 // MARK: - Rule
 
-struct DuplicateImportsRule: SwiftSyntaxCorrectableRule {
+struct DuplicateImportsRule: SwiftSyntaxRule {
     static let id = "duplicate_imports"
     static let name = "Duplicate Imports"
     static let summary = "Imports should be unique"

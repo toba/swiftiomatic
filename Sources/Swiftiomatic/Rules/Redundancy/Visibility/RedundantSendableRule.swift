@@ -58,7 +58,7 @@ struct RedundantSendableRule {
     var options = RedundantSendableOptions()
 }
 
-extension RedundantSendableRule: SwiftSyntaxCorrectableRule {
+extension RedundantSendableRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

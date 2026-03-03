@@ -127,10 +127,10 @@ struct FormatCommand: ParsableCommand {
             disabled: Set(cfg.disabledLintRules),
             ruleConfigs: cfg.lintRuleConfigs,
         )
-        let correctableRules = allRules.compactMap { $0 as? any CorrectableRule }
+        let correctableRules = allRules.filter { type(of: $0).isCorrectable }
         guard !correctableRules.isEmpty else { return 0 }
 
-        let collectingRules = allRules.filter { $0 is any CollectingRuleMarker }
+        let collectingRules = allRules.filter { type(of: $0).isCrossFile }
         let lintFiles = files.compactMap { SwiftSource(path: $0) }
 
         let storage = RuleStorage()

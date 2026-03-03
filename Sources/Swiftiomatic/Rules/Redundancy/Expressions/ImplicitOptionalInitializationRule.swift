@@ -10,7 +10,7 @@ struct ImplicitOptionalInitializationRule {
     var options = ImplicitOptionalInitializationOptions()
 }
 
-extension ImplicitOptionalInitializationRule: SwiftSyntaxCorrectableRule {
+extension ImplicitOptionalInitializationRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

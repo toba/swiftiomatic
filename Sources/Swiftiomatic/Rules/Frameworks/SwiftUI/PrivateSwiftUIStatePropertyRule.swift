@@ -19,7 +19,7 @@ struct PrivateSwiftUIStatePropertyRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension PrivateSwiftUIStatePropertyRule: SwiftSyntaxCorrectableRule {
+extension PrivateSwiftUIStatePropertyRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

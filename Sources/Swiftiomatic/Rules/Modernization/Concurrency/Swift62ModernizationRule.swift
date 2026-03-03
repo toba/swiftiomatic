@@ -52,7 +52,7 @@ struct Swift62ModernizationRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension Swift62ModernizationRule: SwiftSyntaxCorrectableRule {
+extension Swift62ModernizationRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }
@@ -280,9 +280,8 @@ extension Swift62ModernizationRule {
                let lhs = infixExpr.leftOperand.as(DeclReferenceExprSyntax.self),
                lhs.baseName.text == name
             {
-                if infixExpr.operator.is(AssignmentExprSyntax.self) {
-                    return true
-                }
+                if infixExpr.operator.is(AssignmentExprSyntax.self) { return true }
+                
                 if let binOp = infixExpr.operator.as(BinaryOperatorExprSyntax.self) {
                     let text = binOp.operator.text
                     if text == "+=" || text == "-=" || text == "*=" || text == "/="
@@ -353,5 +352,4 @@ extension Swift62ModernizationRule {
             )
         }
     }
-
 }

@@ -31,7 +31,7 @@ struct TrailingSemicolonRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension TrailingSemicolonRule: SwiftSyntaxCorrectableRule {
+extension TrailingSemicolonRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

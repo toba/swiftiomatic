@@ -251,7 +251,7 @@ struct RedundantTypeAnnotationRule {
     var options = RedundantTypeAnnotationOptions()
 }
 
-extension RedundantTypeAnnotationRule: SwiftSyntaxCorrectableRule {
+extension RedundantTypeAnnotationRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

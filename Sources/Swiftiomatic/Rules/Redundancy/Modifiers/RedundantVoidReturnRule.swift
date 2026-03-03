@@ -91,7 +91,7 @@ struct RedundantVoidReturnRule {
     var options = RedundantVoidReturnOptions()
 }
 
-extension RedundantVoidReturnRule: SwiftSyntaxCorrectableRule {
+extension RedundantVoidReturnRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

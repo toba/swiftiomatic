@@ -249,7 +249,7 @@ struct ExplicitInitRule {
     var options = ExplicitInitOptions()
 }
 
-extension ExplicitInitRule: SwiftSyntaxCorrectableRule {
+extension ExplicitInitRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

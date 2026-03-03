@@ -78,7 +78,7 @@ struct CommaInheritanceRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension CommaInheritanceRule: SwiftSyntaxCorrectableRule {
+extension CommaInheritanceRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

@@ -11,7 +11,7 @@ struct UnneededEscapingRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension UnneededEscapingRule: SwiftSyntaxCorrectableRule {
+extension UnneededEscapingRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

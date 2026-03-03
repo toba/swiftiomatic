@@ -94,7 +94,7 @@ struct UnneededParenthesesInClosureArgumentRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension UnneededParenthesesInClosureArgumentRule: SwiftSyntaxCorrectableRule {
+extension UnneededParenthesesInClosureArgumentRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

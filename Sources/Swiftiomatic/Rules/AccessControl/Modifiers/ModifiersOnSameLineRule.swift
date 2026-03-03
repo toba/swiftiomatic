@@ -42,7 +42,7 @@ struct ModifiersOnSameLineRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ModifiersOnSameLineRule: SwiftSyntaxCorrectableRule {
+extension ModifiersOnSameLineRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

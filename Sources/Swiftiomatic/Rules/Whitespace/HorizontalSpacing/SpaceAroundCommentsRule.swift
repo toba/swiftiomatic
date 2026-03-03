@@ -34,7 +34,7 @@ struct SpaceAroundCommentsRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension SpaceAroundCommentsRule: SwiftSyntaxCorrectableRule {
+extension SpaceAroundCommentsRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

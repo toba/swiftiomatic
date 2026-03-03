@@ -84,7 +84,7 @@ struct NimbleOperatorRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension NimbleOperatorRule: SwiftSyntaxCorrectableRule {
+extension NimbleOperatorRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

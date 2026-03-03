@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-struct CommaRule: CorrectableRule, SyntaxOnlyRule {
+struct CommaRule: Rule {
     static let id = "comma"
     static let name = "Comma Spacing"
     static let summary = "There should be no space before and one after any comma"

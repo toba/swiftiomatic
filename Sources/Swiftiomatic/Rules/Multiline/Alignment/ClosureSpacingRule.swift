@@ -58,7 +58,7 @@ struct ClosureSpacingRule {
     var options = SeverityOption<Self>(.warning)
 }
 
-extension ClosureSpacingRule: SwiftSyntaxCorrectableRule {
+extension ClosureSpacingRule: SwiftSyntaxRule {
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }
