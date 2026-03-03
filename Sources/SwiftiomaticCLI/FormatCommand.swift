@@ -44,6 +44,7 @@ struct FormatCommand: ParsableCommand {
         var hasChanges = false
         var errorCount = 0
 
+        // 1. swift-format pretty-printer
         for file in files {
             do {
                 let source = try String(contentsOfFile: file, encoding: .utf8)
@@ -62,6 +63,12 @@ struct FormatCommand: ParsableCommand {
                 errorCount += 1
                 printError("Error formatting \(file): \(error)")
             }
+        }
+
+        // 2. Correctable lint rules
+        let lintCorrections = applyCorrectableLintRules(cfg: cfg, files: files, checkOnly: check)
+        if lintCorrections > 0 {
+            hasChanges = true
         }
 
         if errorCount > 0 {
@@ -106,6 +113,56 @@ struct FormatCommand: ParsableCommand {
         if !sorted.isEmpty {
             throw ExitCode(1)
         }
+    }
+
+    // MARK: - Correctable Lint Rules
+
+    /// Load correctable lint rules and apply (or check) corrections on the given files.
+    /// Returns the total number of corrections applied (or detected in check mode).
+    private func applyCorrectableLintRules(cfg: Configuration, files: [String], checkOnly: Bool) -> Int {
+        let allRules = RuleResolver.loadRules(
+            enabled: cfg.enabledLintRules.isEmpty ? nil : Set(cfg.enabledLintRules),
+            disabled: Set(cfg.disabledLintRules),
+            ruleConfigs: cfg.lintRuleConfigs,
+        )
+        let correctableRules = allRules.compactMap { $0 as? any CorrectableRule }
+        guard !correctableRules.isEmpty else { return 0 }
+
+        let collectingRules = allRules.filter { $0 is any CollectingRuleMarker }
+        let lintFiles = files.compactMap { SwiftSource(path: $0) }
+
+        let storage = RuleStorage()
+
+        // Collect phase for collecting rules
+        for file in lintFiles {
+            for rule in collectingRules {
+                rule.collectInfo(for: file, into: storage, compilerArguments: [])
+            }
+        }
+
+        // Correct phase
+        var totalCorrections = 0
+        for (path, file) in zip(files, lintFiles) {
+            let original = checkOnly ? (try? String(contentsOfFile: path, encoding: .utf8)) : nil
+            var fileCorrections = 0
+
+            for rule in correctableRules {
+                fileCorrections += rule.correct(file: file, using: storage, compilerArguments: [])
+            }
+
+            if fileCorrections > 0 {
+                totalCorrections += fileCorrections
+                if checkOnly {
+                    // Restore original contents — check mode should not modify files
+                    try? original?.write(toFile: path, atomically: true, encoding: .utf8)
+                    print("\(path): needs lint corrections")
+                } else {
+                    print("\(path): lint corrections applied")
+                }
+            }
+        }
+
+        return totalCorrections
     }
 
     // MARK: - Helpers

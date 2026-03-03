@@ -6,6 +6,7 @@ struct UntypedErrorInCatchRule {
     static let summary = "Catch statements should not declare error variables without type casting"
     static let isCorrectable = true
     static let isOptIn = true
+    static let deprecatedAliases: Set<String> = ["redundant_let_error"]
     static var nonTriggeringExamples: [Example] {
         [
               Example(

@@ -6,6 +6,7 @@ struct TestCaseAccessibilityRule {
     static let summary = "Test cases should only contain private non-test members"
     static let isCorrectable = true
     static let isOptIn = true
+    static let deprecatedAliases: Set<String> = ["test_suite_access_control"]
   var options = TestCaseAccessibilityOptions()
 
 }
