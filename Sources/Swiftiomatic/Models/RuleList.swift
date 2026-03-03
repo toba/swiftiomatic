@@ -48,7 +48,7 @@ struct RuleList: Sendable {
 
     // MARK: - Internal
 
-    public func allRulesWrapped(configurationDict: [String: Any] = [:])
+    func allRulesWrapped(configurationDict: [String: Any] = [:])
         throws(RuleListError) -> [ConfiguredRule]
     {
         var configured = [String: ConfiguredRule]()
@@ -56,8 +56,10 @@ struct RuleList: Sendable {
         // Add rules where configuration exists
         for (key, configuration) in configurationDict {
             guard let identifier = identifier(for: key),
-                  let ruleType = self.rules[identifier] else { continue }
-            guard configured[identifier] == nil else { throw .duplicatedConfigurations(rule: ruleType) }
+                  let ruleType = rules[identifier]
+            else { continue }
+            guard configured[identifier] == nil
+            else { throw .duplicatedConfigurations(rule: ruleType) }
             do {
                 let configuredRule = try ruleType.init(configuration: configuration)
                 let isConfigured =
@@ -73,22 +75,26 @@ struct RuleList: Sendable {
             } catch {
                 SwiftiomaticError.invalidConfiguration(ruleID: identifier).print()
             }
-            configured[identifier] = ConfiguredRule(rule: ruleType.init(), initializedWithNonEmptyConfiguration: false)
+            configured[identifier] = ConfiguredRule(
+                rule: ruleType.init(), initializedWithNonEmptyConfiguration: false,
+            )
         }
 
         // Add remaining rules without configuring them
-        for (identifier, ruleType) in self.rules where configured[identifier] == nil {
-            configured[identifier] = ConfiguredRule(rule: ruleType.init(), initializedWithNonEmptyConfiguration: false)
+        for (identifier, ruleType) in rules where configured[identifier] == nil {
+            configured[identifier] = ConfiguredRule(
+                rule: ruleType.init(), initializedWithNonEmptyConfiguration: false,
+            )
         }
 
         return Array(configured.values)
     }
 
-    public func identifier(for alias: String) -> String? {
+    func identifier(for alias: String) -> String? {
         aliases[alias]
     }
 
-    public func allValidIdentifiers() -> [String] {
+    func allValidIdentifiers() -> [String] {
         rules.flatMap { _, rule -> [String] in
             rule.allIdentifiers
         }

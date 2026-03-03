@@ -12,7 +12,8 @@ public enum Confidence: String, Codable, CaseIterable, Comparable, Sendable {
 extension CaseIterable where Self: Equatable & Comparable {
     public static func < (lhs: Self, rhs: Self) -> Bool {
         guard let lhsIndex = allCases.firstIndex(of: lhs),
-              let rhsIndex = allCases.firstIndex(of: rhs) else {
+              let rhsIndex = allCases.firstIndex(of: rhs)
+        else {
             return false
         }
         return lhsIndex < rhsIndex

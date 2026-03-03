@@ -3,7 +3,8 @@ import SwiftSyntax
 struct NestingRule {
     static let id = "nesting"
     static let name = "Nesting"
-    static let summary = "Types should be nested at most 1 level deep, and functions should be nested at most 2 levels deep."
+    static let summary =
+        "Types should be nested at most 1 level deep, and functions should be nested at most 2 levels deep."
     var options = NestingOptions()
 }
 

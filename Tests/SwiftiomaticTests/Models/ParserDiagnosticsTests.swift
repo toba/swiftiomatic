@@ -5,7 +5,7 @@ import Testing
 @Suite(.rulesRegistered) struct ParserDiagnosticsTests {
   @Test func fileWithParserErrorDiagnostics() {
     $parserDiagnosticsDisabledForTests.withValue(false) {
-      #expect(SwiftSource(contents: "importz Foundation").parserDiagnostics != nil)
+      #expect(!SwiftSource(contents: "importz Foundation").parserDiagnostics.isEmpty)
     }
   }
 

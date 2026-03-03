@@ -114,8 +114,8 @@ class LegacyFunctionRewriter<Configuration: RuleOptions>: ViolationCollectingRew
     }
 }
 
-private extension FunctionCallExprSyntax {
-    func isLegacyFunctionExpression(
+extension FunctionCallExprSyntax {
+    fileprivate func isLegacyFunctionExpression(
         legacyFunctions: [String: LegacyFunctionRewriteStrategy],
     ) -> Bool {
         guard let calledExpression = calledExpression.as(DeclReferenceExprSyntax.self),
@@ -128,8 +128,8 @@ private extension FunctionCallExprSyntax {
     }
 }
 
-private extension LabeledExprSyntax {
-    var trimmingTrailingComma: LabeledExprSyntax {
+extension LabeledExprSyntax {
+    fileprivate var trimmingTrailingComma: LabeledExprSyntax {
         trimmed.with(\.trailingComma, nil).trimmed
     }
 }

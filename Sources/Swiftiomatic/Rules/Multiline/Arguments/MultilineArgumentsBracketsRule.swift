@@ -7,19 +7,19 @@ struct MultilineArgumentsBracketsRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 foo(param1: "Param1", param2: "Param2", param3: "Param3")
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(
                     param1: "Param1", param2: "Param2", param3: "Param3"
                 )
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func foo(
                     param1: "Param1",
@@ -27,15 +27,15 @@ struct MultilineArgumentsBracketsRule {
                     param3: "Param3"
                 )
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo { param1, param2 in
                     print("hello world")
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(
                     bar(
@@ -44,22 +44,22 @@ struct MultilineArgumentsBracketsRule {
                     )
                 )
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 AlertViewModel.AlertAction(title: "some title", style: .default) {
                     AlertManager.shared.presentNextDebugAlert()
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 views.append(ViewModel(title: "MacBook", subtitle: "M1", action: { [weak self] in
                     print("action tapped")
                 }))
                 """, isExcludedFromDocumentation: true,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 public final class Logger {
                     public static let shared = Logger(outputs: [
@@ -68,36 +68,36 @@ struct MultilineArgumentsBracketsRule {
                     ])
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 let errors = try self.download([
                     (description: description, priority: priority),
                 ])
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 return SignalProducer({ observer, _ in
                     observer.sendCompleted()
                 }).onMainQueue()
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 SomeType(a: [
                     1, 2, 3
                 ], b: [1, 2])
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 SomeType(
                   a: 1
                 ) { print("completion") }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 SomeType(
                   a: 1
@@ -105,15 +105,15 @@ struct MultilineArgumentsBracketsRule {
                   print("completion")
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 SomeType(
                   a: .init() { print("completion") }
                 )
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 SomeType(
                   a: .init() {
@@ -121,41 +121,42 @@ struct MultilineArgumentsBracketsRule {
                   }
                 )
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 SomeType(
                   a: 1
                 ) {} onError: {}
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 foo(↓param1: "Param1", param2: "Param2",
                          param3: "Param3"
                 )
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(
                     param1: "Param1",
                     param2: "Param2",
                     param3: "Param3"↓)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(↓param1: "Param1",
                     param2: "Param2",
                     param3: "Param3"↓)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(↓bar(
                     x: 5,
@@ -163,8 +164,8 @@ struct MultilineArgumentsBracketsRule {
                 )
                 )
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(
                     bar(
@@ -172,84 +173,82 @@ struct MultilineArgumentsBracketsRule {
                         y: 7
                 )↓)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 SomeOtherType(↓a: [
                         1, 2, 3
                     ],
                     b: "two"↓)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 SomeOtherType(
                   a: 1↓) {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 SomeOtherType(
                   a: 1↓) {
                   print("completion")
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 views.append(ViewModel(
                     title: "MacBook", subtitle: "M1", action: { [weak self] in
                     print("action tapped")
                 }↓))
                 """, isExcludedFromDocumentation: true,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension MultilineArgumentsBracketsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension MultilineArgumentsBracketsRule {}
-
 extension MultilineArgumentsBracketsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: FunctionCallExprSyntax) {
-      guard let firstArgument = node.arguments.first,
-        let leftParen = node.leftParen,
-        let rightParen = node.rightParen
-      else {
-        return
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: FunctionCallExprSyntax) {
+            guard let firstArgument = node.arguments.first,
+                  let leftParen = node.leftParen,
+                  let rightParen = node.rightParen
+            else {
+                return
+            }
 
-      let hasMultilineFirstArgument = hasLeadingNewline(firstArgument)
-      let hasMultilineArgument = node.arguments
-        .contains { argument in
-          hasLeadingNewline(argument)
+            let hasMultilineFirstArgument = hasLeadingNewline(firstArgument)
+            let hasMultilineArgument = node.arguments
+                .contains { argument in
+                    hasLeadingNewline(argument)
+                }
+
+            let hasMultilineRightParen = hasLeadingNewline(rightParen)
+
+            if !hasMultilineFirstArgument, hasMultilineArgument {
+                violations.append(leftParen.endPosition)
+            }
+
+            if !hasMultilineArgument, hasMultilineRightParen {
+                violations.append(leftParen.endPosition)
+            }
+
+            if !hasMultilineRightParen, hasMultilineArgument {
+                violations.append(rightParen.position)
+            }
         }
 
-      let hasMultilineRightParen = hasLeadingNewline(rightParen)
-
-      if !hasMultilineFirstArgument, hasMultilineArgument {
-        violations.append(leftParen.endPosition)
-      }
-
-      if !hasMultilineArgument, hasMultilineRightParen {
-        violations.append(leftParen.endPosition)
-      }
-
-      if !hasMultilineRightParen, hasMultilineArgument {
-        violations.append(rightParen.position)
-      }
+        private func hasLeadingNewline(_ syntax: some SyntaxProtocol) -> Bool {
+            syntax.leadingTrivia.contains(where: \.isNewline)
+        }
     }
-
-    private func hasLeadingNewline(_ syntax: some SyntaxProtocol) -> Bool {
-      syntax.leadingTrivia.contains(where: \.isNewline)
-    }
-  }
 }

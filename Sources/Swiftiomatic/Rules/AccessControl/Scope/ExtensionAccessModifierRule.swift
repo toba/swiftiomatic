@@ -7,102 +7,102 @@ struct ExtensionAccessModifierRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 extension Foo: SomeProtocol {
                   public var bar: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                   private var bar: Int { return 1 }
                   public var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                   private var bar: Int { return 1 }
                   public func baz() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                   var bar: Int { return 1 }
                   var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                   var bar: Int { return 1 }
                   internal var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 internal extension Foo {
                   var bar: Int { return 1 }
                   var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 public extension Foo {
                   var bar: Int { return 1 }
                   var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 public extension Foo {
                   var bar: Int { return 1 }
                   internal var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                   private var bar: Int { return 1 }
                   private var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                   open var bar: Int { return 1 }
                   open var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                     func setup() {}
                     public func update() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 private extension Foo {
                   private var bar: Int { return 1 }
                   var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                   internal private(set) var bar: Int {
@@ -111,8 +111,8 @@ struct ExtensionAccessModifierRule {
                   }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                   private(set) internal var bar: Int {
@@ -121,43 +121,44 @@ struct ExtensionAccessModifierRule {
                   }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 public extension Foo {
                   private(set) var value: Int { 1 }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 ↓extension Foo {
                    public var bar: Int { return 1 }
                    public var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 ↓extension Foo {
                    public var bar: Int { return 1 }
                    public func baz() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 public extension Foo {
                   ↓public func bar() {}
                   ↓public func baz() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 ↓extension Foo {
                    public var bar: Int {
@@ -168,8 +169,8 @@ struct ExtensionAccessModifierRule {
                    public var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 ↓extension Array where Element: Equatable {
                     public var unique: [Element] {
@@ -181,8 +182,8 @@ struct ExtensionAccessModifierRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 ↓extension Foo {
                    #if DEBUG
@@ -195,117 +196,115 @@ struct ExtensionAccessModifierRule {
                    public var baz: Int { return 1 }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 public extension Foo {
                   ↓private func bar() {}
                   ↓private func baz() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 ↓extension Foo {
                   private(set) public var value: Int { 1 }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension ExtensionAccessModifierRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension ExtensionAccessModifierRule {}
-
 extension ExtensionAccessModifierRule {
-  private enum ACL: Hashable {
-    case implicit
-    case explicit(TokenKind)
+    private enum ACL: Hashable {
+        case implicit
+        case explicit(TokenKind)
 
-    static func from(tokenKind: TokenKind?) -> Self {
-      switch tokenKind {
-      case nil:
-        return .implicit
-      case let value?:
-        return .explicit(value)
-      }
-    }
-
-    static func isAllowed(_ acl: Self) -> Bool {
-      [
-        .explicit(.keyword(.internal)),
-        .explicit(.keyword(.private)),
-        .explicit(.keyword(.open)),
-        .implicit,
-      ].contains(acl)
-    }
-  }
-
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      .all
-    }
-
-    override func visitPost(_ node: ExtensionDeclSyntax) {
-      guard node.inheritanceClause == nil else {
-        return
-      }
-
-      var areAllACLsEqual = true
-      var aclTokens = [(position: AbsolutePosition, acl: ACL)]()
-
-      for decl in node.memberBlock.expandingIfConfigs() {
-        let modifiers = decl.asProtocol((any WithModifiersSyntax).self)?.modifiers
-        let aclToken = modifiers?.accessLevelModifier()?.name
-        let acl = ACL.from(tokenKind: aclToken?.tokenKind)
-        if areAllACLsEqual, acl != aclTokens.last?.acl, aclTokens.isNotEmpty {
-          areAllACLsEqual = false
+        static func from(tokenKind: TokenKind?) -> Self {
+            switch tokenKind {
+                case nil:
+                    return .implicit
+                case let value?:
+                    return .explicit(value)
+            }
         }
-        aclTokens.append((decl.positionAfterSkippingLeadingTrivia, acl))
-      }
 
-      guard areAllACLsEqual, let lastACL = aclTokens.last else {
-        return
-      }
-
-      let isAllowedACL = ACL.isAllowed(lastACL.acl)
-      let extensionACL =
-        ACL
-        .from(tokenKind: node.modifiers.accessLevelModifier?.name.tokenKind)
-
-      if extensionACL != .implicit {
-        if !isAllowedACL || lastACL.acl != extensionACL, lastACL.acl != .implicit {
-          violations.append(contentsOf: aclTokens.map(\.position))
+        static func isAllowed(_ acl: Self) -> Bool {
+            [
+                .explicit(.keyword(.internal)),
+                .explicit(.keyword(.private)),
+                .explicit(.keyword(.open)),
+                .implicit,
+            ].contains(acl)
         }
-      } else if !isAllowedACL {
-        violations.append(node.extensionKeyword.positionAfterSkippingLeadingTrivia)
-      }
     }
-  }
+
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
+
+        override func visitPost(_ node: ExtensionDeclSyntax) {
+            guard node.inheritanceClause == nil else {
+                return
+            }
+
+            var areAllACLsEqual = true
+            var aclTokens = [(position: AbsolutePosition, acl: ACL)]()
+
+            for decl in node.memberBlock.expandingIfConfigs() {
+                let modifiers = decl.asProtocol((any WithModifiersSyntax).self)?.modifiers
+                let aclToken = modifiers?.accessLevelModifier()?.name
+                let acl = ACL.from(tokenKind: aclToken?.tokenKind)
+                if areAllACLsEqual, acl != aclTokens.last?.acl, aclTokens.isNotEmpty {
+                    areAllACLsEqual = false
+                }
+                aclTokens.append((decl.positionAfterSkippingLeadingTrivia, acl))
+            }
+
+            guard areAllACLsEqual, let lastACL = aclTokens.last else {
+                return
+            }
+
+            let isAllowedACL = ACL.isAllowed(lastACL.acl)
+            let extensionACL =
+                ACL
+                    .from(tokenKind: node.modifiers.accessLevelModifier?.name.tokenKind)
+
+            if extensionACL != .implicit {
+                if !isAllowedACL || lastACL.acl != extensionACL, lastACL.acl != .implicit {
+                    violations.append(contentsOf: aclTokens.map(\.position))
+                }
+            } else if !isAllowedACL {
+                violations.append(node.extensionKeyword.positionAfterSkippingLeadingTrivia)
+            }
+        }
+    }
 }
 
 extension MemberBlockSyntax {
-  fileprivate func expandingIfConfigs() -> [DeclSyntax] {
-    members.flatMap { member in
-      if let ifConfig = member.decl.as(IfConfigDeclSyntax.self) {
-        return ifConfig.clauses.flatMap { clause in
-          switch clause.elements {
-          case .decls(let decls):
-            return decls.map(\.decl)
-          default:
-            return []
-          }
+    fileprivate func expandingIfConfigs() -> [DeclSyntax] {
+        members.flatMap { member in
+            if let ifConfig = member.decl.as(IfConfigDeclSyntax.self) {
+                return ifConfig.clauses.flatMap { clause in
+                    switch clause.elements {
+                        case let .decls(decls):
+                            return decls.map(\.decl)
+                        default:
+                            return []
+                    }
+                }
+            }
+            return [member.decl]
         }
-      }
-      return [member.decl]
     }
-  }
 }

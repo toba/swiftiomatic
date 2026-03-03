@@ -6,42 +6,43 @@ struct ForceTryRule {
     static let summary = "Force tries should be avoided"
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 func a() throws {}
                 do {
                   try a()
                 } catch {}
                 """,
-              )
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 func a() throws {}
                 ↓try! a()
                 """,
-              )
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.error)
 
+    var options = SeverityOption<Self>(.error)
 }
 
 extension ForceTryRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension ForceTryRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: TryExprSyntax) {
-      if node.questionOrExclamationMark?.tokenKind == .exclamationMark {
-        violations.append(node.positionAfterSkippingLeadingTrivia)
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: TryExprSyntax) {
+            if node.questionOrExclamationMark?.tokenKind == .exclamationMark {
+                violations.append(node.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 }

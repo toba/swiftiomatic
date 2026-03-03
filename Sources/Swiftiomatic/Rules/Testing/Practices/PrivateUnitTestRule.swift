@@ -8,7 +8,7 @@ struct PrivateUnitTestRule {
     static let isCorrectable = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class FooTest: XCTestCase {
                     func test1() {}
@@ -16,8 +16,8 @@ struct PrivateUnitTestRule {
                     public func test3() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 internal class FooTest: XCTestCase {
                     func test1() {}
@@ -25,8 +25,8 @@ struct PrivateUnitTestRule {
                     public func test3() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 public class FooTest: XCTestCase {
                     func test1() {}
@@ -34,8 +34,8 @@ struct PrivateUnitTestRule {
                     public func test3() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 @objc private class FooTest: XCTestCase {
                     @objc private func test1() {}
@@ -43,9 +43,9 @@ struct PrivateUnitTestRule {
                     public func test3() {}
                 }
                 """,
-              ),
-              // Non-test classes
-              Example(
+            ),
+            // Non-test classes
+            Example(
                 """
                 private class Foo: NSObject {
                     func test1() {}
@@ -53,8 +53,8 @@ struct PrivateUnitTestRule {
                     public func test3() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 private class Foo {
                     func test1() {}
@@ -62,9 +62,9 @@ struct PrivateUnitTestRule {
                     public func test3() {}
                 }
                 """,
-              ),
-              // Non-test methods
-              Example(
+            ),
+            // Non-test methods
+            Example(
                 """
                 public class FooTest: XCTestCase {
                     private func test1(param: Int) {}
@@ -73,12 +73,13 @@ struct PrivateUnitTestRule {
                     private static func test3() {}
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 private ↓class FooTest: XCTestCase {
                     func test1() {}
@@ -87,8 +88,8 @@ struct PrivateUnitTestRule {
                     private func test4() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class FooTest: XCTestCase {
                     func test1() {}
@@ -97,8 +98,8 @@ struct PrivateUnitTestRule {
                     private ↓func test4() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 internal class FooTest: XCTestCase {
                     func test1() {}
@@ -107,8 +108,8 @@ struct PrivateUnitTestRule {
                     private ↓func test4() {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 public class FooTest: XCTestCase {
                     func test1() {}
@@ -117,23 +118,24 @@ struct PrivateUnitTestRule {
                     private ↓func test4() {}
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var corrections: [Example: Example] {
         [
-              Example(
+            Example(
                 """
 
                 ↓private class Test: XCTestCase {}
                 """,
-              ): Example(
+            ): Example(
                 """
 
                 class Test: XCTestCase {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Test: XCTestCase {
 
@@ -143,7 +145,7 @@ struct PrivateUnitTestRule {
                     internal func test4() {}
                 }
                 """,
-              ): Example(
+            ): Example(
                 """
                 class Test: XCTestCase {
 
@@ -153,115 +155,116 @@ struct PrivateUnitTestRule {
                     internal func test4() {}
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = PrivateUnitTestOptions()
 
+    var options = PrivateUnitTestOptions()
 }
 
 extension PrivateUnitTestRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: options, file: file)
-  }
+    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
+        Rewriter(configuration: options, file: file)
+    }
 }
 
 extension PrivateUnitTestRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      .all
-    }
-
-    override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
-      !node.isPrivate && node.isXCTestCase(configuration.testParentClasses)
-        ? .visitChildren : .skipChildren
-    }
-
-    override func visitPost(_ node: ClassDeclSyntax) {
-      if node.isPrivate, node.isXCTestCase(configuration.testParentClasses) {
-        violations.append(node.classKeyword.positionAfterSkippingLeadingTrivia)
-      }
-    }
-
-    override func visitPost(_ node: FunctionDeclSyntax) {
-      if node.isTestMethod, node.isPrivate {
-        violations.append(node.funcKeyword.positionAfterSkippingLeadingTrivia)
-      }
-    }
-  }
-
-  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
-    override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
-      guard node.isPrivate, node.isXCTestCase(configuration.testParentClasses) else {
-        return super.visit(node)
-      }
-      numberOfCorrections += 1
-      let (modifiers, declKeyword) = withoutPrivate(
-        modifiers: node.modifiers, declKeyword: node.classKeyword,
-      )
-      return super.visit(node.with(\.modifiers, modifiers).with(\.classKeyword, declKeyword))
-    }
-
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-      guard node.isTestMethod, node.isPrivate else {
-        return super.visit(node)
-      }
-      numberOfCorrections += 1
-      let (modifiers, declKeyword) = withoutPrivate(
-        modifiers: node.modifiers, declKeyword: node.funcKeyword,
-      )
-      return super.visit(node.with(\.modifiers, modifiers).with(\.funcKeyword, declKeyword))
-    }
-
-    private func withoutPrivate(
-      modifiers: DeclModifierListSyntax,
-      declKeyword: TokenSyntax,
-    ) -> (DeclModifierListSyntax, TokenSyntax) {
-      var filteredModifiers = [DeclModifierSyntax]()
-      var leadingTrivia = Trivia()
-      for modifier in modifiers {
-        let accumulatedLeadingTrivia = leadingTrivia + (modifier.leadingTrivia)
-        if modifier.name.tokenKind == .keyword(.private) {
-          leadingTrivia = accumulatedLeadingTrivia
-        } else {
-          filteredModifiers.append(
-            modifier.with(
-              \.leadingTrivia,
-              accumulatedLeadingTrivia,
-            ))
-          leadingTrivia = Trivia()
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
         }
-      }
-      let declKeyword = declKeyword.with(
-        \.leadingTrivia, leadingTrivia + (declKeyword.leadingTrivia),
-      )
-      return (DeclModifierListSyntax(filteredModifiers), declKeyword)
+
+        override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+            !node.isPrivate && node.isXCTestCase(configuration.testParentClasses)
+                ? .visitChildren : .skipChildren
+        }
+
+        override func visitPost(_ node: ClassDeclSyntax) {
+            if node.isPrivate, node.isXCTestCase(configuration.testParentClasses) {
+                violations.append(node.classKeyword.positionAfterSkippingLeadingTrivia)
+            }
+        }
+
+        override func visitPost(_ node: FunctionDeclSyntax) {
+            if node.isTestMethod, node.isPrivate {
+                violations.append(node.funcKeyword.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
+
+    fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
+        override func visit(_ node: ClassDeclSyntax) -> DeclSyntax {
+            guard node.isPrivate, node.isXCTestCase(configuration.testParentClasses) else {
+                return super.visit(node)
+            }
+            numberOfCorrections += 1
+            let (modifiers, declKeyword) = withoutPrivate(
+                modifiers: node.modifiers, declKeyword: node.classKeyword,
+            )
+            return super.visit(node.with(\.modifiers, modifiers).with(\.classKeyword, declKeyword))
+        }
+
+        override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+            guard node.isTestMethod, node.isPrivate else {
+                return super.visit(node)
+            }
+            numberOfCorrections += 1
+            let (modifiers, declKeyword) = withoutPrivate(
+                modifiers: node.modifiers, declKeyword: node.funcKeyword,
+            )
+            return super.visit(node.with(\.modifiers, modifiers).with(\.funcKeyword, declKeyword))
+        }
+
+        private func withoutPrivate(
+            modifiers: DeclModifierListSyntax,
+            declKeyword: TokenSyntax,
+        ) -> (DeclModifierListSyntax, TokenSyntax) {
+            var filteredModifiers = [DeclModifierSyntax]()
+            var leadingTrivia = Trivia()
+            for modifier in modifiers {
+                let accumulatedLeadingTrivia = leadingTrivia + (modifier.leadingTrivia)
+                if modifier.name.tokenKind == .keyword(.private) {
+                    leadingTrivia = accumulatedLeadingTrivia
+                } else {
+                    filteredModifiers.append(
+                        modifier.with(
+                            \.leadingTrivia,
+                            accumulatedLeadingTrivia,
+                        ),
+                    )
+                    leadingTrivia = Trivia()
+                }
+            }
+            let declKeyword = declKeyword.with(
+                \.leadingTrivia, leadingTrivia + (declKeyword.leadingTrivia),
+            )
+            return (DeclModifierListSyntax(filteredModifiers), declKeyword)
+        }
+    }
 }
 
 extension ClassDeclSyntax {
-  fileprivate var isPrivate: Bool {
-    resultInPrivateProperty(modifiers: modifiers, attributes: attributes)
-  }
+    fileprivate var isPrivate: Bool {
+        resultInPrivateProperty(modifiers: modifiers, attributes: attributes)
+    }
 }
 
 extension FunctionDeclSyntax {
-  fileprivate var isPrivate: Bool {
-    resultInPrivateProperty(modifiers: modifiers, attributes: attributes)
-  }
+    fileprivate var isPrivate: Bool {
+        resultInPrivateProperty(modifiers: modifiers, attributes: attributes)
+    }
 
-  fileprivate var isTestMethod: Bool {
-    isDiscoverableTestMethod
-  }
+    fileprivate var isTestMethod: Bool {
+        isDiscoverableTestMethod
+    }
 }
 
 private func resultInPrivateProperty(
-  modifiers: DeclModifierListSyntax, attributes: AttributeListSyntax,
+    modifiers: DeclModifierListSyntax, attributes: AttributeListSyntax,
 ) -> Bool {
-  modifiers.contains(keyword: .private) && !attributes.contains(attributeNamed: "objc")
+    modifiers.contains(keyword: .private) && !attributes.contains(attributeNamed: "objc")
 }

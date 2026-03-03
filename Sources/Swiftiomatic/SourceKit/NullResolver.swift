@@ -3,21 +3,21 @@
 /// Returns `nil` or empty for all queries so that rules fall back to
 /// syntax-only analysis without requiring a SourceKit connection.
 struct NullResolver: TypeResolver {
-    public var isAvailable: Bool {
+    var isAvailable: Bool {
         false
     }
 
     init() {}
 
-    public func resolveType(inFile _: String, offset _: Int) -> ResolvedType? {
+    func resolveType(inFile _: String, offset _: Int) -> ResolvedType? {
         nil
     }
 
-    public func indexFile(_: String) -> FileIndex? {
+    func indexFile(_: String) -> FileIndex? {
         nil
     }
 
-    public func expressionTypes(inFile _: String) -> [ExpressionTypeInfo] {
+    func expressionTypes(inFile _: String) -> [ExpressionTypeInfo] {
         []
     }
 }

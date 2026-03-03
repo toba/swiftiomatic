@@ -76,7 +76,7 @@ final class SourceKitObject {
     }
 
     fileprivate init(_ sourcekitdObject: sourcekitd_object_t, children: [SourceKitObject?] = []) {
-        self.sourceKitdObject = sourcekitdObject
+        sourceKitdObject = sourcekitdObject
         self.children = children
     }
 

@@ -172,9 +172,10 @@ class DeclaredIdentifiersTrackingVisitor<Configuration: RuleOptions>:
         }
     }
 
-    private func collectIdentifiers(from closureParameters: ClosureSignatureSyntax
-        .ParameterClause)
-    {
+    private func collectIdentifiers(
+        from closureParameters: ClosureSignatureSyntax
+            .ParameterClause,
+    ) {
         switch closureParameters {
             case let .parameterClause(parameters):
                 for param in parameters.parameters {
@@ -203,7 +204,8 @@ class DeclaredIdentifiersTrackingVisitor<Configuration: RuleOptions>:
                 labeledExpr.expression.as(PatternExprSyntax.self)
             }
             .map { patternExpr -> any PatternSyntaxProtocol in
-                patternExpr.pattern.as(ValueBindingPatternSyntax.self)?.pattern ?? patternExpr
+                patternExpr.pattern.as(ValueBindingPatternSyntax.self)?.pattern
+                    ?? patternExpr
                     .pattern
             }
             .forEach {
@@ -236,18 +238,18 @@ class DeclaredIdentifiersTrackingVisitor<Configuration: RuleOptions>:
     }
 }
 
-private extension DeclaredIdentifiersTrackingVisitor.Scope {
-    mutating func addToCurrentScope(_ decl: IdentifierDeclaration) {
+extension DeclaredIdentifiersTrackingVisitor.Scope {
+    fileprivate mutating func addToCurrentScope(_ decl: IdentifierDeclaration) {
         modifyLast { $0.append(decl.name == "_" ? .wildcard : decl) }
     }
 
-    mutating func openChildScope() {
+    fileprivate mutating func openChildScope() {
         push([])
     }
 }
 
-private extension MemberBlockSyntax {
-    var belongsToTypeDefinableInFunction: Bool {
+extension MemberBlockSyntax {
+    fileprivate var belongsToTypeDefinableInFunction: Bool {
         if let parent {
             return [.actorDecl, .classDecl, .enumDecl, .structDecl].contains(parent.kind)
         }

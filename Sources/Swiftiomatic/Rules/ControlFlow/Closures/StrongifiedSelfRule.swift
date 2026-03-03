@@ -7,35 +7,36 @@ struct StrongifiedSelfRule {
     static let scope: Scope = .suggest
     static var nonTriggeringExamples: [Example] {
         [
-              Example("guard let self = self else { return }"),
-              Example("guard let self else { return }"),
-            ]
+            Example("guard let self = self else { return }"),
+            Example("guard let self else { return }"),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("guard let ↓`self` = self else { return }"),
-            ]
+            Example("guard let ↓`self` = self else { return }"),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension StrongifiedSelfRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension StrongifiedSelfRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: OptionalBindingConditionSyntax) {
-      // Check for `let \`self\` = self` pattern
-      if let pattern = node.pattern.as(IdentifierPatternSyntax.self),
-        pattern.identifier.text == "self",
-        pattern.identifier.tokenKind == .identifier("`self`")
-      {
-        violations.append(pattern.identifier.positionAfterSkippingLeadingTrivia)
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: OptionalBindingConditionSyntax) {
+            // Check for `let \`self\` = self` pattern
+            if let pattern = node.pattern.as(IdentifierPatternSyntax.self),
+               pattern.identifier.text == "self",
+               pattern.identifier.tokenKind == .identifier("`self`")
+            {
+                violations.append(pattern.identifier.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 }

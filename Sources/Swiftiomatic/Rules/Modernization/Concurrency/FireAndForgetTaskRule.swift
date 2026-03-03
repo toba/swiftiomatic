@@ -3,7 +3,8 @@ import SwiftSyntax
 struct FireAndForgetTaskRule {
     static let id = "fire_and_forget_task"
     static let name = "Fire and Forget Task"
-    static let summary = "Enhanced fire-and-forget Task detection with scope-aware severity and .onAppear+Task analysis"
+    static let summary =
+        "Enhanced fire-and-forget Task detection with scope-aware severity and .onAppear+Task analysis"
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [

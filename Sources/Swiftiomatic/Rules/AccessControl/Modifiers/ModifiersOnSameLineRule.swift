@@ -8,36 +8,38 @@ struct ModifiersOnSameLineRule {
     static let isCorrectable = true
     static var nonTriggeringExamples: [Example] {
         [
-                    Example("public var foo: Foo"),
-                    Example("@MainActor public private(set) var foo: Foo"),
-                    Example("nonisolated func bar() {}"),
-                ]
+            Example("public var foo: Foo"),
+            Example("@MainActor public private(set) var foo: Foo"),
+            Example("nonisolated func bar() {}"),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-                    Example(
-                        """
-                        ↓public
-                        private(set)
-                        var foo: Foo
-                        """,
-                    ),
-                    Example(
-                        """
-                        ↓nonisolated
-                        func bar() {}
-                        """,
-                    ),
-                ]
+            Example(
+                """
+                ↓public
+                private(set)
+                var foo: Foo
+                """,
+            ),
+            Example(
+                """
+                ↓nonisolated
+                func bar() {}
+                """,
+            ),
+        ]
     }
+
     static var corrections: [Example: Example] {
         [
-                    Example("↓public\nvar foo: Foo"): Example("public var foo: Foo"),
-                    Example("↓nonisolated\nfunc bar() {}"): Example("nonisolated func bar() {}"),
-                ]
+            Example("↓public\nvar foo: Foo"): Example("public var foo: Foo"),
+            Example("↓nonisolated\nfunc bar() {}"): Example("nonisolated func bar() {}"),
+        ]
     }
-    var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension ModifiersOnSameLineRule: SwiftSyntaxCorrectableRule {

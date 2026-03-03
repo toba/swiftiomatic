@@ -8,31 +8,31 @@ struct UnusedParameterRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 func f(a: Int) {
                     _ = a
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(case: Int) {
                     _ = `case`
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(a _: Int) {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(_: Int) {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(a: Int, b c: String) {
                     func g() {
@@ -41,8 +41,8 @@ struct UnusedParameterRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(a: Int, c: Int) -> Int {
                     struct S {
@@ -52,42 +52,43 @@ struct UnusedParameterRule {
                     return a + c
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(a: Int?) {
                     if let a {}
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(a: Int) {
                     let a = a
                     return a
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(`operator`: Int) -> Int { `operator` }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 func f(↓a: Int) {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(↓a: Int, b ↓c: String) {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(↓a: Int, b ↓c: String) {
                     func g(a: Int, ↓b: Double) {
@@ -95,8 +96,8 @@ struct UnusedParameterRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 struct S {
                     let a: Int
@@ -107,8 +108,8 @@ struct UnusedParameterRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 struct S {
                     subscript(a: Int, ↓b: Int) {
@@ -117,8 +118,8 @@ struct UnusedParameterRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(↓a: Int, ↓b: Int, c: Int) -> Int {
                     struct S {
@@ -128,135 +129,135 @@ struct UnusedParameterRule {
                     return S().f(a: c)
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(↓a: Int, c: String) {
                     let a = 1
                     return a + c
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var corrections: [Example: Example] {
         [
-              Example(
+            Example(
                 """
                 func f(a: Int) {}
                 """,
-              ): Example(
+            ): Example(
                 """
                 func f(a _: Int) {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(a b: Int) {}
                 """,
-              ): Example(
+            ): Example(
                 """
                 func f(a _: Int) {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f(_ a: Int) {}
                 """,
-              ): Example(
+            ): Example(
                 """
                 func f(_: Int) {}
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension UnusedParameterRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
-
-extension UnusedParameterRule {}
 
 // MARK: Visitor
 
 extension UnusedParameterRule {
-  fileprivate final class Visitor: DeclaredIdentifiersTrackingVisitor<OptionsType> {
-    private var referencedDeclarations = Set<IdentifierDeclaration>()
+    fileprivate final class Visitor: DeclaredIdentifiersTrackingVisitor<OptionsType> {
+        private var referencedDeclarations = Set<IdentifierDeclaration>()
 
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      [ProtocolDeclSyntax.self]
-    }
-
-    // MARK: Violation checking
-
-    override func visitPost(_ node: CodeBlockItemListSyntax) {
-      let declarations = scope.peek() ?? []
-      for declaration in declarations.reversed()
-      where !referencedDeclarations.contains(declaration) {
-        guard case .parameter(let name) = declaration,
-          let previousToken = name.previousToken(viewMode: .sourceAccurate)
-        else {
-          continue
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
         }
-        let startPosReplacement =
-          if previousToken.tokenKind == .wildcard {
-            (previousToken.positionAfterSkippingLeadingTrivia, "_")
-          } else if case .identifier = previousToken.tokenKind {
-            (name.positionAfterSkippingLeadingTrivia, "_")
-          } else {
-            (name.positionAfterSkippingLeadingTrivia, name.text + " _")
-          }
-        violations.append(
-          .init(
-            position: name.positionAfterSkippingLeadingTrivia,
-            reason:
-              "Parameter '\(name.text)' is unused; consider removing or replacing it with '_'",
-            severity: configuration.severity,
-            correction: .init(
-              start: startPosReplacement.0,
-              end: name.endPositionBeforeTrailingTrivia,
-              replacement: startPosReplacement.1,
-            ),
-          ),
-        )
-      }
-      super.visitPost(node)
-    }
 
-    // MARK: Reference collection
+        // MARK: Violation checking
 
-    override func visitPost(_ node: DeclReferenceExprSyntax) {
-      if node.keyPathInParent != \MemberAccessExprSyntax.declName {
-        addReference(node.baseName.text)
-      }
-    }
-
-    override func visitPost(_ node: OptionalBindingConditionSyntax) {
-      if node.initializer == nil,
-        let id = node.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
-      {
-        addReference(id)
-      }
-    }
-
-    // MARK: Private methods
-
-    private func addReference(_ id: String) {
-      for declarations in scope.reversed() {
-        if declarations.onlyElement == .lookupBoundary {
-          return
+        override func visitPost(_ node: CodeBlockItemListSyntax) {
+            let declarations = scope.peek() ?? []
+            for declaration in declarations.reversed()
+                where !referencedDeclarations.contains(declaration)
+            {
+                guard case let .parameter(name) = declaration,
+                      let previousToken = name.previousToken(viewMode: .sourceAccurate)
+                else {
+                    continue
+                }
+                let startPosReplacement =
+                    if previousToken.tokenKind == .wildcard {
+                        (previousToken.positionAfterSkippingLeadingTrivia, "_")
+                    } else if case .identifier = previousToken.tokenKind {
+                        (name.positionAfterSkippingLeadingTrivia, "_")
+                    } else {
+                        (name.positionAfterSkippingLeadingTrivia, name.text + " _")
+                    }
+                violations.append(
+                    .init(
+                        position: name.positionAfterSkippingLeadingTrivia,
+                        reason:
+                        "Parameter '\(name.text)' is unused; consider removing or replacing it with '_'",
+                        severity: configuration.severity,
+                        correction: .init(
+                            start: startPosReplacement.0,
+                            end: name.endPositionBeforeTrailingTrivia,
+                            replacement: startPosReplacement.1,
+                        ),
+                    ),
+                )
+            }
+            super.visitPost(node)
         }
-        for declaration in declarations.reversed() where declaration.declares(id: id) {
-          if referencedDeclarations.insert(declaration).inserted {
-            return
-          }
+
+        // MARK: Reference collection
+
+        override func visitPost(_ node: DeclReferenceExprSyntax) {
+            if node.keyPathInParent != \MemberAccessExprSyntax.declName {
+                addReference(node.baseName.text)
+            }
         }
-      }
+
+        override func visitPost(_ node: OptionalBindingConditionSyntax) {
+            if node.initializer == nil,
+               let id = node.pattern.as(IdentifierPatternSyntax.self)?.identifier.text
+            {
+                addReference(id)
+            }
+        }
+
+        // MARK: Private methods
+
+        private func addReference(_ id: String) {
+            for declarations in scope.reversed() {
+                if declarations.onlyElement == .lookupBoundary {
+                    return
+                }
+                for declaration in declarations.reversed() where declaration.declares(id: id) {
+                    if referencedDeclarations.insert(declaration).inserted {
+                        return
+                    }
+                }
+            }
+        }
     }
-  }
 }

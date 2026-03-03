@@ -7,53 +7,53 @@ struct PrefixedTopLevelConstantRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example("private let kFoo = 20.0"),
-              Example("public let kFoo = false"),
-              Example("internal let kFoo = \"Foo\""),
-              Example("let kFoo = true"),
-              Example("let Foo = true", configuration: ["only_private": true]),
-              Example(
+            Example("private let kFoo = 20.0"),
+            Example("public let kFoo = false"),
+            Example("internal let kFoo = \"Foo\""),
+            Example("let kFoo = true"),
+            Example("let Foo = true", configuration: ["only_private": true]),
+            Example(
                 """
                 struct Foo {
                     let bar = 20.0
                 }
                 """,
-              ),
-              Example("private var foo = 20.0"),
-              Example("public var foo = false"),
-              Example("internal var foo = \"Foo\""),
-              Example("var foo = true"),
-              Example("var foo = true, bar = true"),
-              Example("var foo = true, let kFoo = true"),
-              Example(
+            ),
+            Example("private var foo = 20.0"),
+            Example("public var foo = false"),
+            Example("internal var foo = \"Foo\""),
+            Example("var foo = true"),
+            Example("var foo = true, bar = true"),
+            Example("var foo = true, let kFoo = true"),
+            Example(
                 """
                 let
                     kFoo = true
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var foo: Int {
                     return a + b
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 let kFoo = {
                     return a + b
                 }()
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var foo: String {
                     let bar = ""
                     return bar
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if condition() {
                     let result = somethingElse()
@@ -61,8 +61,8 @@ struct PrefixedTopLevelConstantRule {
                     exit()
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 #"""
                 [1, 2, 3, 1000, 4000].forEach { number in
                     let isSmall = number < 10
@@ -71,77 +71,76 @@ struct PrefixedTopLevelConstantRule {
                     }
                 }
                 """#,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("private let ↓Foo = 20.0"),
-              Example("public let ↓Foo = false"),
-              Example("internal let ↓Foo = \"Foo\""),
-              Example("let ↓Foo = true"),
-              Example("let ↓foo = 2, ↓bar = true"),
-              Example(
+            Example("private let ↓Foo = 20.0"),
+            Example("public let ↓Foo = false"),
+            Example("internal let ↓Foo = \"Foo\""),
+            Example("let ↓Foo = true"),
+            Example("let ↓foo = 2, ↓bar = true"),
+            Example(
                 """
                 let
                     ↓foo = true
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 let ↓foo = {
                     return a + b
                 }()
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = PrefixedTopLevelConstantOptions()
 
+    var options = PrefixedTopLevelConstantOptions()
 }
 
 extension PrefixedTopLevelConstantRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension PrefixedTopLevelConstantRule {}
-
 extension PrefixedTopLevelConstantRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    private let topLevelPrefix = "k"
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        private let topLevelPrefix = "k"
 
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      .all
-    }
-
-    override func visitPost(_ node: VariableDeclSyntax) {
-      guard node.bindingSpecifier.tokenKind == .keyword(.let) else {
-        return
-      }
-
-      if configuration.onlyPrivateMembers, !node.modifiers.containsPrivateOrFileprivate() {
-        return
-      }
-
-      for binding in node.bindings {
-        guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
-          !pattern.identifier.text.hasPrefix(topLevelPrefix)
-        else {
-          continue
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
         }
 
-        violations.append(binding.pattern.positionAfterSkippingLeadingTrivia)
-      }
-    }
+        override func visitPost(_ node: VariableDeclSyntax) {
+            guard node.bindingSpecifier.tokenKind == .keyword(.let) else {
+                return
+            }
 
-    override func visit(_: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
-      .skipChildren
-    }
+            if configuration.onlyPrivateMembers, !node.modifiers.containsPrivateOrFileprivate() {
+                return
+            }
 
-    override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-      .skipChildren
+            for binding in node.bindings {
+                guard let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
+                      !pattern.identifier.text.hasPrefix(topLevelPrefix)
+                else {
+                    continue
+                }
+
+                violations.append(binding.pattern.positionAfterSkippingLeadingTrivia)
+            }
+        }
+
+        override func visit(_: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
+            .skipChildren
+        }
+
+        override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+            .skipChildren
+        }
     }
-  }
 }

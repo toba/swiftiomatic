@@ -22,23 +22,23 @@ let sourcekitd_set_interrupted_connection_handler:
     @convention(c) (@escaping sourcekitd_interrupted_connection_handler_t) -> Void = library.load(
         symbol: "sourcekitd_set_interrupted_connection_handler",
     )
-let sourcekitd_uid_get_from_cstr:
-    @convention(c) (UnsafePointer<CChar>) -> (sourcekitd_uid_t?) = library.load(
+let sourcekitd_uid_get_from_cstr: @convention(c) (UnsafePointer<CChar>) -> (sourcekitd_uid_t?) =
+    library.load(
         symbol: "sourcekitd_uid_get_from_cstr",
     )
-let sourcekitd_uid_get_from_buf:
-    @convention(c) (UnsafePointer<CChar>, Int) -> (sourcekitd_uid_t?) = library.load(
+let sourcekitd_uid_get_from_buf: @convention(c) (UnsafePointer<CChar>, Int) -> (sourcekitd_uid_t?) =
+    library.load(
         symbol: "sourcekitd_uid_get_from_buf",
     )
 let sourcekitd_uid_get_length: @convention(c) (sourcekitd_uid_t) -> (Int) = library.load(
     symbol: "sourcekitd_uid_get_length",
 )
-let sourcekitd_uid_get_string_ptr:
-    @convention(c) (sourcekitd_uid_t) -> (UnsafePointer<CChar>?) = library.load(
+let sourcekitd_uid_get_string_ptr: @convention(c) (sourcekitd_uid_t) -> (UnsafePointer<CChar>?) =
+    library.load(
         symbol: "sourcekitd_uid_get_string_ptr",
     )
-let sourcekitd_request_retain:
-    @convention(c) (sourcekitd_object_t) -> (sourcekitd_object_t?) = library.load(
+let sourcekitd_request_retain: @convention(c) (sourcekitd_object_t) -> (sourcekitd_object_t?) =
+    library.load(
         symbol: "sourcekitd_request_retain",
     )
 let sourcekitd_request_release: @convention(c) (sourcekitd_object_t) -> Void =
@@ -80,8 +80,8 @@ let sourcekitd_request_array_set_stringbuf:
     @convention(c) (sourcekitd_object_t, Int, UnsafePointer<CChar>, Int) -> Void = library.load(
         symbol: "sourcekitd_request_array_set_stringbuf",
     )
-let sourcekitd_request_array_set_int64:
-    @convention(c) (sourcekitd_object_t, Int, Int64) -> Void = library.load(
+let sourcekitd_request_array_set_int64: @convention(c) (sourcekitd_object_t, Int, Int64) -> Void =
+    library.load(
         symbol: "sourcekitd_request_array_set_int64",
     )
 let sourcekitd_request_array_set_uid:
@@ -94,8 +94,8 @@ let sourcekitd_request_string_create:
     @convention(c) (UnsafePointer<CChar>) -> (sourcekitd_object_t?) = library.load(
         symbol: "sourcekitd_request_string_create",
     )
-let sourcekitd_request_uid_create:
-    @convention(c) (sourcekitd_uid_t) -> (sourcekitd_object_t?) = library.load(
+let sourcekitd_request_uid_create: @convention(c) (sourcekitd_uid_t) -> (sourcekitd_object_t?) =
+    library.load(
         symbol: "sourcekitd_request_uid_create",
     )
 let sourcekitd_request_create_from_yaml:
@@ -129,15 +129,17 @@ let sourcekitd_variant_get_type:
         symbol: "sourcekitd_variant_get_type",
     )
 let sourcekitd_variant_dictionary_get_value:
-    @convention(c) (sourcekitd_variant_t, sourcekitd_uid_t) -> (sourcekitd_variant_t) = library
-    .load(
-        symbol: "sourcekitd_variant_dictionary_get_value",
-    )
+    @convention(c) (sourcekitd_variant_t, sourcekitd_uid_t) -> (sourcekitd_variant_t) =
+    library
+        .load(
+            symbol: "sourcekitd_variant_dictionary_get_value",
+        )
 let sourcekitd_variant_dictionary_get_string:
-    @convention(c) (sourcekitd_variant_t, sourcekitd_uid_t) -> (UnsafePointer<CChar>?) = library
-    .load(
-        symbol: "sourcekitd_variant_dictionary_get_string",
-    )
+    @convention(c) (sourcekitd_variant_t, sourcekitd_uid_t) -> (UnsafePointer<CChar>?) =
+    library
+        .load(
+            symbol: "sourcekitd_variant_dictionary_get_string",
+        )
 let sourcekitd_variant_dictionary_get_int64:
     @convention(c) (sourcekitd_variant_t, sourcekitd_uid_t) -> (Int64) = library.load(
         symbol: "sourcekitd_variant_dictionary_get_int64",
@@ -164,12 +166,12 @@ let sourcekitd_variant_array_get_string:
     @convention(c) (sourcekitd_variant_t, Int) -> (UnsafePointer<CChar>?) = library.load(
         symbol: "sourcekitd_variant_array_get_string",
     )
-let sourcekitd_variant_array_get_int64:
-    @convention(c) (sourcekitd_variant_t, Int) -> (Int64) = library.load(
+let sourcekitd_variant_array_get_int64: @convention(c) (sourcekitd_variant_t, Int) -> (Int64) =
+    library.load(
         symbol: "sourcekitd_variant_array_get_int64",
     )
-let sourcekitd_variant_array_get_bool:
-    @convention(c) (sourcekitd_variant_t, Int) -> (Bool) = library.load(
+let sourcekitd_variant_array_get_bool: @convention(c) (sourcekitd_variant_t, Int) -> (Bool) =
+    library.load(
         symbol: "sourcekitd_variant_array_get_bool",
     )
 let sourcekitd_variant_array_get_uid:
@@ -192,12 +194,12 @@ let sourcekitd_variant_string_get_ptr:
     )
 let sourcekitd_variant_data_get_size: @convention(c) (sourcekitd_variant_t) -> (Int) =
     library.load(symbol: "sourcekitd_variant_data_get_size")
-let sourcekitd_variant_data_get_ptr:
-    @convention(c) (sourcekitd_variant_t) -> (UnsafeRawPointer?) = library.load(
+let sourcekitd_variant_data_get_ptr: @convention(c) (sourcekitd_variant_t) -> (UnsafeRawPointer?) =
+    library.load(
         symbol: "sourcekitd_variant_data_get_ptr",
     )
-let sourcekitd_variant_uid_get_value:
-    @convention(c) (sourcekitd_variant_t) -> (sourcekitd_uid_t?) = library.load(
+let sourcekitd_variant_uid_get_value: @convention(c) (sourcekitd_variant_t) -> (sourcekitd_uid_t?) =
+    library.load(
         symbol: "sourcekitd_variant_uid_get_value",
     )
 let sourcekitd_response_description_dump: @convention(c) (sourcekitd_response_t) -> Void =
@@ -224,8 +226,8 @@ let sourcekitd_variant_json_description_copy:
     @convention(c) (sourcekitd_variant_t) -> (UnsafeMutablePointer<CChar>?) = library.load(
         symbol: "sourcekitd_variant_json_description_copy",
     )
-let sourcekitd_send_request_sync:
-    @convention(c) (sourcekitd_object_t) -> (sourcekitd_response_t?) = library.load(
+let sourcekitd_send_request_sync: @convention(c) (sourcekitd_object_t) -> (sourcekitd_response_t?) =
+    library.load(
         symbol: "sourcekitd_send_request_sync",
     )
 let sourcekitd_send_request:
@@ -235,8 +237,8 @@ let sourcekitd_send_request:
     ) -> Void = library.load(symbol: "sourcekitd_send_request")
 let sourcekitd_cancel_request: @convention(c) (sourcekitd_request_handle_t?) -> Void =
     library.load(symbol: "sourcekitd_cancel_request")
-let sourcekitd_set_notification_handler:
-    @convention(c) (sourcekitd_response_receiver_t?) -> Void = library.load(
+let sourcekitd_set_notification_handler: @convention(c) (sourcekitd_response_receiver_t?) -> Void =
+    library.load(
         symbol: "sourcekitd_set_notification_handler",
     )
 let sourcekitd_set_uid_handler: @convention(c) (sourcekitd_uid_handler_t?) -> Void =

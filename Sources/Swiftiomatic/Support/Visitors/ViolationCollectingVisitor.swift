@@ -18,18 +18,18 @@ class ViolationCollectingVisitor<Configuration: RuleOptions>: SyntaxVisitor {
     /// The source file whose syntax tree is being traversed
     let file: SwiftSource
 
-    /// A lazily-created location converter for the current file
-    lazy var locationConverter = file.locationConverter
+    /// A location converter for the current file
+    let locationConverter: SourceLocationConverter
 
     /// Creates a visitor for the given rule configuration and source file
     ///
     /// - Parameters:
     ///   - configuration: Configuration of a rule.
     ///   - file: The source file whose syntax tree will be traversed.
-    @inlinable
     init(configuration: Configuration, file: SwiftSource) {
         self.configuration = configuration
         self.file = file
+        self.locationConverter = file.locationConverter
         super.init(viewMode: .sourceAccurate)
     }
 

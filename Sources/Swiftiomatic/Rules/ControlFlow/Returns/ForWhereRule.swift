@@ -6,88 +6,88 @@ struct ForWhereRule {
     static let summary = "`where` clauses are preferred over a single `if` inside a `for`"
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 for user in users where user.id == 1 { }
                 """,
-              ),
-              // if let
-              Example(
+            ),
+            // if let
+            Example(
                 """
                 for user in users {
                   if let id = user.id { }
                 }
                 """,
-              ),
-              // if var
-              Example(
+            ),
+            // if var
+            Example(
                 """
                 for user in users {
                   if var id = user.id { }
                 }
                 """,
-              ),
-              // if with else
-              Example(
+            ),
+            // if with else
+            Example(
                 """
                 for user in users {
                   if user.id == 1 { } else { }
                 }
                 """,
-              ),
-              // if with else if
-              Example(
+            ),
+            // if with else if
+            Example(
                 """
                 for user in users {
                   if user.id == 1 {
                   } else if user.id == 2 { }
                 }
                 """,
-              ),
-              // if is not the only expression inside for
-              Example(
+            ),
+            // if is not the only expression inside for
+            Example(
                 """
                 for user in users {
                   if user.id == 1 { }
                   print(user)
                 }
                 """,
-              ),
-              // if a variable is used
-              Example(
+            ),
+            // if a variable is used
+            Example(
                 """
                 for user in users {
                   let id = user.id
                   if id == 1 { }
                 }
                 """,
-              ),
-              // if something is after if
-              Example(
+            ),
+            // if something is after if
+            Example(
                 """
                 for user in users {
                   if user.id == 1 { }
                   return true
                 }
                 """,
-              ),
-              // condition with multiple clauses
-              Example(
+            ),
+            // condition with multiple clauses
+            Example(
                 """
                 for user in users {
                   if user.id == 1 && user.age > 18 { }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 for user in users {
                   if user.id == 1, user.age > 18 { }
                 }
                 """,
-              ),
-              // if case
-              Example(
+            ),
+            // if case
+            Example(
                 """
                 for (index, value) in array.enumerated() {
                   if case .valueB(_) = value {
@@ -95,15 +95,15 @@ struct ForWhereRule {
                   }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 for user in users {
                   if user.id == 1 { return true }
                 }
                 """, configuration: ["allow_for_as_filter": true],
-              ),
-              Example(
+            ),
+            Example(
                 """
                 for user in users {
                   if user.id == 1 {
@@ -112,19 +112,20 @@ struct ForWhereRule {
                   }
                 }
                 """, configuration: ["allow_for_as_filter": true],
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 for user in users {
                   ↓if user.id == 1 { return true }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 for subview in subviews {
                     ↓if !(subview is UIStackView) {
@@ -133,8 +134,8 @@ struct ForWhereRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 for subview in subviews {
                     ↓if !(subview is UIStackView) {
@@ -143,77 +144,77 @@ struct ForWhereRule {
                     }
                 }
                 """, configuration: ["allow_for_as_filter": true],
-              ),
-            ]
+            ),
+        ]
     }
-  var options = ForWhereOptions()
 
+    var options = ForWhereOptions()
 }
 
 extension ForWhereRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension ForWhereRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: ForStmtSyntax) {
-      guard node.whereClause == nil,
-        let onlyExprStmt = node.body.statements.onlyElement?.item
-          .as(ExpressionStmtSyntax.self),
-        let ifExpr = onlyExprStmt.expression.as(IfExprSyntax.self),
-        ifExpr.elseBody == nil,
-        !ifExpr.containsOptionalBinding,
-        !ifExpr.containsPatternCondition,
-        let condition = ifExpr.conditions.onlyElement,
-        !condition.containsMultipleConditions
-      else {
-        return
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: ForStmtSyntax) {
+            guard node.whereClause == nil,
+                  let onlyExprStmt = node.body.statements.onlyElement?.item
+                  .as(ExpressionStmtSyntax.self),
+                  let ifExpr = onlyExprStmt.expression.as(IfExprSyntax.self),
+                  ifExpr.elseBody == nil,
+                  !ifExpr.containsOptionalBinding,
+                  !ifExpr.containsPatternCondition,
+                  let condition = ifExpr.conditions.onlyElement,
+                  !condition.containsMultipleConditions
+            else {
+                return
+            }
 
-      if configuration.allowForAsFilter, ifExpr.containsReturnStatement {
-        return
-      }
+            if configuration.allowForAsFilter, ifExpr.containsReturnStatement {
+                return
+            }
 
-      violations.append(ifExpr.positionAfterSkippingLeadingTrivia)
+            violations.append(ifExpr.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }
 
 extension IfExprSyntax {
-  fileprivate var containsOptionalBinding: Bool {
-    conditions.contains { element in
-      element.condition.is(OptionalBindingConditionSyntax.self)
+    fileprivate var containsOptionalBinding: Bool {
+        conditions.contains { element in
+            element.condition.is(OptionalBindingConditionSyntax.self)
+        }
     }
-  }
 
-  fileprivate var containsPatternCondition: Bool {
-    conditions.contains { element in
-      element.condition.is(MatchingPatternConditionSyntax.self)
+    fileprivate var containsPatternCondition: Bool {
+        conditions.contains { element in
+            element.condition.is(MatchingPatternConditionSyntax.self)
+        }
     }
-  }
 
-  fileprivate var containsReturnStatement: Bool {
-    body.statements.contains { element in
-      element.item.is(ReturnStmtSyntax.self)
+    fileprivate var containsReturnStatement: Bool {
+        body.statements.contains { element in
+            element.item.is(ReturnStmtSyntax.self)
+        }
     }
-  }
 }
 
 extension ConditionElementSyntax {
-  fileprivate var containsMultipleConditions: Bool {
-    guard let condition = condition.as(SequenceExprSyntax.self) else {
-      return false
-    }
+    fileprivate var containsMultipleConditions: Bool {
+        guard let condition = condition.as(SequenceExprSyntax.self) else {
+            return false
+        }
 
-    return condition.elements.contains { expr in
-      guard let binaryExpr = expr.as(BinaryOperatorExprSyntax.self) else {
-        return false
-      }
+        return condition.elements.contains { expr in
+            guard let binaryExpr = expr.as(BinaryOperatorExprSyntax.self) else {
+                return false
+            }
 
-      let operators: Set = ["&&", "||"]
-      return operators.contains(binaryExpr.operator.text)
+            let operators: Set = ["&&", "||"]
+            return operators.contains(binaryExpr.operator.text)
+        }
     }
-  }
 }

@@ -121,8 +121,10 @@ extension Configuration {
     ) {
         // Deprecation warning for "enabled_rules"
         if dict[Key.enabledRules.rawValue] != nil {
-            SwiftiomaticError.renamedIdentifier(old: Key.enabledRules.rawValue, new: Key.optInRules.rawValue)
-                .print()
+            SwiftiomaticError.renamedIdentifier(
+                old: Key.enabledRules.rawValue, new: Key.optInRules.rawValue,
+            )
+            .print()
         }
 
         // Deprecation warning for rules
@@ -168,7 +170,8 @@ extension Configuration {
                     return
                 case let .onlyConfiguration(onlyRules):
                     if onlyRules.isDisjoint(with: ruleType.allIdentifiers) {
-                        SwiftiomaticError.ruleNotPresentInOnlyRules(ruleID: ruleType.identifier).print()
+                        SwiftiomaticError.ruleNotPresentInOnlyRules(ruleID: ruleType.identifier)
+                            .print()
                     }
                 case let .defaultConfiguration(disabled: disabledRules, optIn: optInRules):
                     let issue = validateConfiguredRuleIsEnabled(
@@ -206,6 +209,7 @@ extension Configuration {
 
     private static func warnAboutMisplacedAnalyzerRules(optInRules: [String], ruleList: RuleList) {
         let analyzerRules = ruleList.rules
+            // sm:disable:next prefer_key_path — key path on existential metatype crashes Swift 6 SILGen
             .filter { $0.value.runsWithCompilerArguments }
             .map(\.key)
         Set(analyzerRules).intersection(optInRules)

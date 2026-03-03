@@ -448,7 +448,12 @@ struct OptionElement<T: AcceptableByOptionElement & Equatable & Sendable>: Equat
     var wrappedValue: T {
         didSet {
             if case let .suggestAlternative(id, name) = deprecationNotice {
-                SwiftiomaticError.deprecatedConfigurationOption(ruleID: id, key: key, alternative: name).print()
+                SwiftiomaticError.deprecatedConfigurationOption(
+                    ruleID: id,
+                    key: key,
+                    alternative: name,
+                )
+                .print()
             }
             if wrappedValue != oldValue {
                 postprocessor(&wrappedValue)

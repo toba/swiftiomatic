@@ -91,7 +91,8 @@ extension SourceKitValue {
                         { index, value, context in
                             if let value = SourceKitValue(sourcekitVariant: value), let context {
                                 let localArray = context.assumingMemoryBound(
-                                    to: [SourceKitValue].self)
+                                    to: [SourceKitValue].self,
+                                )
                                 localArray.pointee.insert(value, at: Int(index))
                             }
                             return true
@@ -109,8 +110,9 @@ extension SourceKitValue {
                                let value = SourceKitValue(sourcekitVariant: value),
                                let context
                             {
-                                let localDict = context
-                                    .assumingMemoryBound(to: [String: SourceKitValue].self)
+                                let localDict =
+                                    context
+                                        .assumingMemoryBound(to: [String: SourceKitValue].self)
                                 localDict.pointee[key] = value
                             }
                             return true
@@ -120,7 +122,8 @@ extension SourceKitValue {
                 self = .dictionary(dict)
             case SOURCEKITD_VARIANT_TYPE_STRING:
                 self = .string(
-                    String(cString: sourcekitd_variant_string_get_ptr(sourcekitObject)!))
+                    String(cString: sourcekitd_variant_string_get_ptr(sourcekitObject)!),
+                )
             case SOURCEKITD_VARIANT_TYPE_INT64:
                 self = .int64(sourcekitd_variant_int64_get_value(sourcekitObject))
             case SOURCEKITD_VARIANT_TYPE_BOOL:
@@ -135,7 +138,8 @@ extension SourceKitValue {
             case SOURCEKITD_VARIANT_TYPE_DATA:
                 guard let ptr = sourcekitd_variant_data_get_ptr(sourcekitObject) else { return nil }
                 self = .data(
-                    Data(bytes: ptr, count: sourcekitd_variant_data_get_size(sourcekitObject)))
+                    Data(bytes: ptr, count: sourcekitd_variant_data_get_size(sourcekitObject)),
+                )
             default:
                 fatalError("Unknown SourceKit variant type")
         }
@@ -305,22 +309,24 @@ enum Request {
             throw .failed("SourceKit is disabled for testing (apple/swift#55112)")
         }
         _ensureSourceKitNotificationHandler
-        let result: Result<[String: SourceKitValue], Request.Error> = sourceKitRequestGate.withLock { _ in
-            let response = sourcekitObject.sendSync()
-            defer { sourcekitd_response_dispose(response!) }
-            if sourcekitd_response_is_error(response!) {
-                let error = Request.Error(response: response!)
-                if case .connectionInterrupted = error {
-                    waitForSourceKitRestore()
+        let result: Result<[String: SourceKitValue], Request.Error> = sourceKitRequestGate
+            .withLock {
+                _ in
+                let response = sourcekitObject.sendSync()
+                defer { sourcekitd_response_dispose(response!) }
+                if sourcekitd_response_is_error(response!) {
+                    return .failure(Request.Error(response: response!))
                 }
-                return .failure(error)
+                guard let value =
+                    SourceKitValue(sourcekitVariant: sourcekitd_response_get_value(response!)),
+                    let dict = value.dictionaryValue
+                else {
+                    return .failure(.failed("Response was not a dictionary"))
+                }
+                return .success(dict)
             }
-            guard let value = SourceKitValue(sourcekitVariant: sourcekitd_response_get_value(response!)),
-                  let dict = value.dictionaryValue
-            else {
-                return .failure(.failed("Response was not a dictionary"))
-            }
-            return .success(dict)
+        if case let .failure(error) = result, case .connectionInterrupted = error {
+            waitForSourceKitRestore()
         }
         return try result.get()
     }
@@ -355,8 +361,9 @@ enum Request {
             let description =
                 String(validatingCString: sourcekitd_response_error_get_description(response)!)
             switch sourcekitd_response_error_get_kind(response) {
-                case SOURCEKITD_ERROR_CONNECTION_INTERRUPTED: self =
-                .connectionInterrupted(description)
+                case SOURCEKITD_ERROR_CONNECTION_INTERRUPTED:
+                    self =
+                        .connectionInterrupted(description)
                 case SOURCEKITD_ERROR_REQUEST_INVALID: self = .invalid(description)
                 case SOURCEKITD_ERROR_REQUEST_FAILED: self = .failed(description)
                 case SOURCEKITD_ERROR_REQUEST_CANCELLED: self = .cancelled(description)

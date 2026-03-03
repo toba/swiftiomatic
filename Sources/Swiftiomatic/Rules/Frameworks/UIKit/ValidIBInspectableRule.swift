@@ -6,56 +6,56 @@ struct ValidIBInspectableRule {
     static let summary = ""
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class Foo {
                   @IBInspectable private var x: Int
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   @IBInspectable private var x: String?
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   @IBInspectable private var x: String!
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   @IBInspectable private var count: Int = 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   private var notInspectable = 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   private let notInspectable: Int
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   private let notInspectable: UInt8
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                     @IBInspectable var color: UIColor {
@@ -69,8 +69,8 @@ struct ValidIBInspectableRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                     @IBInspectable var borderColor: UIColor? = nil {
@@ -80,169 +80,171 @@ struct ValidIBInspectableRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class Foo {
                   @IBInspectable private ↓let count: Int
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var insets: UIEdgeInsets
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var count = 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var count: Int?
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var count: Int!
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var count: Optional<Int>
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   @IBInspectable private ↓var x: Optional<String>
                 }
                 """,
-              ),
-            ]
-    }
-  var options = SeverityOption<Self>(.warning)
-
-  fileprivate static let supportedTypes: Set<String> = {
-    // "You can add the IBInspectable attribute to any property in a class declaration,
-    // class extension, or category of type: boolean, integer or floating point number, string,
-    // localized string, rectangle, point, size, color, range, and nil."
-    //
-    // from http://help.apple.com/xcode/mac/8.0/#/devf60c1c514
-
-    let referenceTypes = [
-      "String",
-      "NSString",
-      "UIColor",
-      "NSColor",
-      "UIImage",
-      "NSImage",
-    ]
-
-    let types = [
-      "CGFloat",
-      "Float",
-      "Double",
-      "Bool",
-      "CGPoint",
-      "NSPoint",
-      "CGSize",
-      "NSSize",
-      "CGRect",
-      "NSRect",
-    ]
-
-    let intTypes: [String] = ["", "8", "16", "32", "64"].flatMap { size in
-      ["U", ""].map { (sign: String) -> String in
-        "\(sign)Int\(size)"
-      }
+            ),
+        ]
     }
 
-    let expandToIncludeOptionals: (String) -> [String] = { [$0, $0 + "!", $0 + "?"] }
+    var options = SeverityOption<Self>(.warning)
 
-    // It seems that only reference types can be used as ImplicitlyUnwrappedOptional or Optional
-    return Set(referenceTypes.flatMap(expandToIncludeOptionals) + types + intTypes)
-  }()
+    fileprivate static let supportedTypes: Set<String> = {
+        // "You can add the IBInspectable attribute to any property in a class declaration,
+        // class extension, or category of type: boolean, integer or floating point number, string,
+        // localized string, rectangle, point, size, color, range, and nil."
+        //
+        // from http://help.apple.com/xcode/mac/8.0/#/devf60c1c514
+
+        let referenceTypes = [
+            "String",
+            "NSString",
+            "UIColor",
+            "NSColor",
+            "UIImage",
+            "NSImage",
+        ]
+
+        let types = [
+            "CGFloat",
+            "Float",
+            "Double",
+            "Bool",
+            "CGPoint",
+            "NSPoint",
+            "CGSize",
+            "NSSize",
+            "CGRect",
+            "NSRect",
+        ]
+
+        let intTypes: [String] = ["", "8", "16", "32", "64"].flatMap { size in
+            ["U", ""].map { (sign: String) -> String in
+                "\(sign)Int\(size)"
+            }
+        }
+
+        let expandToIncludeOptionals: (String) -> [String] = { [$0, $0 + "!", $0 + "?"] }
+
+        // It seems that only reference types can be used as ImplicitlyUnwrappedOptional or Optional
+        return Set(referenceTypes.flatMap(expandToIncludeOptionals) + types + intTypes)
+    }()
 }
 
 extension ValidIBInspectableRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension ValidIBInspectableRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      [FunctionDeclSyntax.self]
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [FunctionDeclSyntax.self]
+        }
 
-    override func visitPost(_ node: VariableDeclSyntax) {
-      if node.isInstanceVariable, node.isIBInspectable, node.hasViolation {
-        violations.append(node.bindingSpecifier.positionAfterSkippingLeadingTrivia)
-      }
+        override func visitPost(_ node: VariableDeclSyntax) {
+            if node.isInstanceVariable, node.isIBInspectable, node.hasViolation {
+                violations.append(node.bindingSpecifier.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 }
 
 extension VariableDeclSyntax {
-  fileprivate var isIBInspectable: Bool {
-    attributes.contains(attributeNamed: "IBInspectable")
-  }
-
-  fileprivate var hasViolation: Bool {
-    isReadOnlyProperty || !isSupportedType
-  }
-
-  fileprivate var isReadOnlyProperty: Bool {
-    if bindingSpecifier.tokenKind == .keyword(.let) {
-      return true
+    fileprivate var isIBInspectable: Bool {
+        attributes.contains(attributeNamed: "IBInspectable")
     }
 
-    let computedProperty = bindings.contains { binding in
-      binding.accessorBlock != nil
+    fileprivate var hasViolation: Bool {
+        isReadOnlyProperty || !isSupportedType
     }
 
-    if !computedProperty {
-      return false
+    private var isReadOnlyProperty: Bool {
+        if bindingSpecifier.tokenKind == .keyword(.let) {
+            return true
+        }
+
+        let computedProperty = bindings.contains { binding in
+            binding.accessorBlock != nil
+        }
+
+        if !computedProperty {
+            return false
+        }
+
+        return bindings.allSatisfy { binding in
+            guard let accessorBlock = binding.accessorBlock else {
+                return true
+            }
+
+            // if it has a `get`, it needs to have a `set`, otherwise it's readonly
+            if accessorBlock.getAccessor != nil {
+                return accessorBlock.setAccessor == nil
+            }
+
+            return false
+        }
     }
 
-    return bindings.allSatisfy { binding in
-      guard let accessorBlock = binding.accessorBlock else {
-        return true
-      }
+    private var isSupportedType: Bool {
+        bindings.allSatisfy { binding in
+            guard let type = binding.typeAnnotation else {
+                return false
+            }
 
-      // if it has a `get`, it needs to have a `set`, otherwise it's readonly
-      if accessorBlock.getAccessor != nil {
-        return accessorBlock.setAccessor == nil
-      }
-
-      return false
+            return ValidIBInspectableRule.supportedTypes.contains(type.type.trimmedDescription)
+        }
     }
-  }
-
-  fileprivate var isSupportedType: Bool {
-    bindings.allSatisfy { binding in
-      guard let type = binding.typeAnnotation else {
-        return false
-      }
-
-      return ValidIBInspectableRule.supportedTypes.contains(type.type.trimmedDescription)
-    }
-  }
 }

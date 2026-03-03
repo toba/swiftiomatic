@@ -43,8 +43,9 @@ final class CommentLinesVisitor: SyntaxVisitor {
 
         // Mark lines with actual code tokens (not comments).
         if token.tokenKind != .endOfFile {
-            let tokenLine = locationConverter
-                .location(for: token.positionAfterSkippingLeadingTrivia).line
+            let tokenLine =
+                locationConverter
+                    .location(for: token.positionAfterSkippingLeadingTrivia).line
             linesWithCode.insert(tokenLine)
         }
 

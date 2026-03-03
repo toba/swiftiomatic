@@ -7,7 +7,7 @@ struct OverriddenSuperCallRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class VC: UIViewController {
                     override func viewWillAppear(_ animated: Bool) {
@@ -15,8 +15,8 @@ struct OverriddenSuperCallRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class VC: UIViewController {
                     override func viewWillAppear(_ animated: Bool) {
@@ -26,24 +26,24 @@ struct OverriddenSuperCallRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class VC: UIViewController {
                     override func loadView() {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Some {
                     func viewWillAppear(_ animated: Bool) {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class VC: UIViewController {
                     override func viewDidLoad() {
@@ -53,12 +53,13 @@ struct OverriddenSuperCallRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class VC: UIViewController {
                     override func viewWillAppear(_ animated: Bool) {↓
@@ -67,8 +68,8 @@ struct OverriddenSuperCallRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class VC: UIViewController {
                     override func viewWillAppear(_ animated: Bool) {↓
@@ -78,56 +79,55 @@ struct OverriddenSuperCallRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class VC: UIViewController {
                     override func didReceiveMemoryWarning() {↓
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = OverriddenSuperCallOptions()
 
+    var options = OverriddenSuperCallOptions()
 }
 
 extension OverriddenSuperCallRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension OverriddenSuperCallRule {}
-
 extension OverriddenSuperCallRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      [ProtocolDeclSyntax.self]
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
-    override func visitPost(_ node: FunctionDeclSyntax) {
-      guard let ctx = node.superCallContext(matchingMethodNames: configuration.resolvedMethodNames)
-      else {
-        return
-      }
+        override func visitPost(_ node: FunctionDeclSyntax) {
+            guard let ctx = node
+                .superCallContext(matchingMethodNames: configuration.resolvedMethodNames)
+            else {
+                return
+            }
 
-      if ctx.callCount == 0 {
-        violations.append(
-          SyntaxViolation(
-            position: ctx.body.leftBrace.endPositionBeforeTrailingTrivia,
-            reason: "Method '\(ctx.name)' should call to super function",
-          ),
-        )
-      } else if ctx.callCount > 1 {
-        violations.append(
-          SyntaxViolation(
-            position: ctx.body.leftBrace.endPositionBeforeTrailingTrivia,
-            reason: "Method '\(ctx.name)' should call to super only once",
-          ),
-        )
-      }
+            if ctx.callCount == 0 {
+                violations.append(
+                    SyntaxViolation(
+                        position: ctx.body.leftBrace.endPositionBeforeTrailingTrivia,
+                        reason: "Method '\(ctx.name)' should call to super function",
+                    ),
+                )
+            } else if ctx.callCount > 1 {
+                violations.append(
+                    SyntaxViolation(
+                        position: ctx.body.leftBrace.endPositionBeforeTrailingTrivia,
+                        reason: "Method '\(ctx.name)' should call to super only once",
+                    ),
+                )
+            }
+        }
     }
-  }
 }

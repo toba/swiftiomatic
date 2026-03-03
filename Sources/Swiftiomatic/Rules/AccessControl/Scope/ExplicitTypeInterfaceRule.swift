@@ -7,163 +7,162 @@ struct ExplicitTypeInterfaceRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class Foo {
                   var myVar: Int? = 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   let myVar: Int? = 0, s: String = ""
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   static var myVar: Int? = 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   class var myVar: Int? = 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f() {
                     if case .failure(let error) = errorCompletion {}
                 }
                 """, isExcludedFromDocumentation: true,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class Foo {
                   var ↓myVar = 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   let ↓mylet = 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   static var ↓myStaticVar = 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   class var ↓myClassVar = 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   let ↓myVar = Int(0), ↓s = ""
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   let ↓myVar = Set<Int>(0)
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = ExplicitTypeInterfaceOptions()
 
+    var options = ExplicitTypeInterfaceOptions()
 }
 
 extension ExplicitTypeInterfaceRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension ExplicitTypeInterfaceRule {}
-
 extension ExplicitTypeInterfaceRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      [ProtocolDeclSyntax.self]
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
-    override func visitPost(_ node: VariableDeclSyntax) {
-      if node.modifiers.contains(keyword: .class) {
-        if configuration.allowedKinds.contains(.class) {
-          checkViolation(node)
+        override func visitPost(_ node: VariableDeclSyntax) {
+            if node.modifiers.contains(keyword: .class) {
+                if configuration.allowedKinds.contains(.class) {
+                    checkViolation(node)
+                }
+            } else if node.modifiers.contains(keyword: .static) {
+                if configuration.allowedKinds.contains(.static) {
+                    checkViolation(node)
+                }
+            } else if node.parent?.is(MemberBlockItemSyntax.self) == true {
+                if configuration.allowedKinds.contains(.instance) {
+                    checkViolation(node)
+                }
+            } else if node.parent?.is(CodeBlockItemSyntax.self) == true {
+                if configuration.allowedKinds.contains(.local) {
+                    checkViolation(node)
+                }
+            }
         }
-      } else if node.modifiers.contains(keyword: .static) {
-        if configuration.allowedKinds.contains(.static) {
-          checkViolation(node)
-        }
-      } else if node.parent?.is(MemberBlockItemSyntax.self) == true {
-        if configuration.allowedKinds.contains(.instance) {
-          checkViolation(node)
-        }
-      } else if node.parent?.is(CodeBlockItemSyntax.self) == true {
-        if configuration.allowedKinds.contains(.local) {
-          checkViolation(node)
-        }
-      }
-    }
 
-    private func checkViolation(_ node: VariableDeclSyntax) {
-      for binding in node.bindings {
-        if configuration.allowRedundancy, let initializer = binding.initializer,
-          initializer.isTypeConstructor || initializer.isTypeReference
-        {
-          continue
+        private func checkViolation(_ node: VariableDeclSyntax) {
+            for binding in node.bindings {
+                if configuration.allowRedundancy, let initializer = binding.initializer,
+                   initializer.isTypeConstructor || initializer.isTypeReference
+                {
+                    continue
+                }
+                if binding.typeAnnotation == nil {
+                    violations.append(binding.positionAfterSkippingLeadingTrivia)
+                }
+            }
         }
-        if binding.typeAnnotation == nil {
-          violations.append(binding.positionAfterSkippingLeadingTrivia)
-        }
-      }
     }
-  }
 }
 
 extension InitializerClauseSyntax {
-  fileprivate var isTypeConstructor: Bool {
-    if value.as(FunctionCallExprSyntax.self)?.callsPotentialType == true {
-      return true
+    fileprivate var isTypeConstructor: Bool {
+        if value.as(FunctionCallExprSyntax.self)?.callsPotentialType == true {
+            return true
+        }
+        if let tryExpr = value.as(TryExprSyntax.self),
+           tryExpr.expression.as(FunctionCallExprSyntax.self)?.callsPotentialType == true
+        {
+            return true
+        }
+        return false
     }
-    if let tryExpr = value.as(TryExprSyntax.self),
-      tryExpr.expression.as(FunctionCallExprSyntax.self)?.callsPotentialType == true
-    {
-      return true
-    }
-    return false
-  }
 
-  fileprivate var isTypeReference: Bool {
-    value.as(MemberAccessExprSyntax.self)?.declName.baseName.tokenKind == .keyword(.self)
-  }
+    fileprivate var isTypeReference: Bool {
+        value.as(MemberAccessExprSyntax.self)?.declName.baseName.tokenKind == .keyword(.self)
+    }
 }
 
 extension FunctionCallExprSyntax {
-  fileprivate var callsPotentialType: Bool {
-    let name = calledExpression.debugDescription
-    return name.first?.isUppercase == true || (name.first == "[" && name.last == "]")
-  }
+    fileprivate var callsPotentialType: Bool {
+        let name = calledExpression.debugDescription
+        return name.first?.isUppercase == true || (name.first == "[" && name.last == "]")
+    }
 }

@@ -47,7 +47,8 @@ extension Configuration {
                 at: cacheURL, withIntermediateDirectories: true, attributes: nil,
             )
         } catch {
-            SwiftiomaticError.genericWarning("Cannot create cache: " + error.localizedDescription).print()
+            SwiftiomaticError.genericWarning("Cannot create cache: " + error.localizedDescription)
+                .print()
         }
     }
 }

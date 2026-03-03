@@ -13,7 +13,7 @@ private let jsonEncoder: JSONEncoder = {
 ///
 /// - Parameters:
 ///   - value: The value to encode.
-func toJSON<T: Encodable>(_ value: T) -> String {
+func toJSON(_ value: some Encodable) -> String {
     do {
         let data = try jsonEncoder.encode(value)
         return String(data: data, encoding: .utf8) ?? ""

@@ -7,13 +7,13 @@ struct UnownedVariableCaptureRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example("foo { [weak self] in _ }"),
-              Example("foo { [weak self] param in _ }"),
-              Example("foo { [weak bar] in _ }"),
-              Example("foo { [weak bar] param in _ }"),
-              Example("foo { bar in _ }"),
-              Example("foo { $0 }"),
-              Example(
+            Example("foo { [weak self] in _ }"),
+            Example("foo { [weak self] param in _ }"),
+            Example("foo { [weak bar] in _ }"),
+            Example("foo { [weak bar] param in _ }"),
+            Example("foo { bar in _ }"),
+            Example("foo { $0 }"),
+            Example(
                 """
                 final class First {}
                 final class Second {
@@ -23,36 +23,35 @@ struct UnownedVariableCaptureRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("foo { [↓unowned self] in _ }"),
-              Example("foo { [↓unowned bar] in _ }"),
-              Example("foo { [bar, ↓unowned self] in _ }"),
-            ]
+            Example("foo { [↓unowned self] in _ }"),
+            Example("foo { [↓unowned bar] in _ }"),
+            Example("foo { [bar, ↓unowned self] in _ }"),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension UnownedVariableCaptureRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension UnownedVariableCaptureRule {}
-
 extension UnownedVariableCaptureRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: TokenSyntax) {
-      if case .keyword(.unowned) = node.tokenKind,
-        node.parent?.is(ClosureCaptureSpecifierSyntax.self) == true
-      {
-        violations.append(node.positionAfterSkippingLeadingTrivia)
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: TokenSyntax) {
+            if case .keyword(.unowned) = node.tokenKind,
+               node.parent?.is(ClosureCaptureSpecifierSyntax.self) == true
+            {
+                violations.append(node.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 }

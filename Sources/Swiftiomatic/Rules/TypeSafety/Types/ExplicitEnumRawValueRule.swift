@@ -7,87 +7,88 @@ struct ExplicitEnumRawValueRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 enum Numbers {
                   case int(Int)
                   case short(Int16)
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Numbers: Int {
                   case one = 1
                   case two = 2
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Numbers: Double {
                   case one = 1.1
                   case two = 2.2
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Numbers: String {
                   case one = "one"
                   case two = "two"
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 protocol Algebra {}
                 enum Numbers: Algebra {
                   case one
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 enum Numbers: Int {
                   case one = 10, ↓two, three = 30
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Numbers: NSInteger {
                   case ↓one
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Numbers: String {
                   case ↓one
                   case ↓two
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Numbers: String {
                    case ↓one, two = "two"
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Numbers: Decimal {
                   case ↓one, ↓two
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Outer {
                     enum Numbers: Decimal {
@@ -95,41 +96,39 @@ struct ExplicitEnumRawValueRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension ExplicitEnumRawValueRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension ExplicitEnumRawValueRule {}
-
 extension ExplicitEnumRawValueRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      [ProtocolDeclSyntax.self]
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
-    override func visitPost(_ node: EnumCaseElementSyntax) {
-      if node.rawValue == nil, node.enclosingEnum()?.supportsRawValues == true {
-        violations.append(node.name.positionAfterSkippingLeadingTrivia)
-      }
+        override func visitPost(_ node: EnumCaseElementSyntax) {
+            if node.rawValue == nil, node.enclosingEnum()?.supportsRawValues == true {
+                violations.append(node.name.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 }
 
 extension SyntaxProtocol {
-  fileprivate func enclosingEnum() -> EnumDeclSyntax? {
-    if let node = `as`(EnumDeclSyntax.self) {
-      return node
-    }
+    fileprivate func enclosingEnum() -> EnumDeclSyntax? {
+        if let node = `as`(EnumDeclSyntax.self) {
+            return node
+        }
 
-    return parent?.enclosingEnum()
-  }
+        return parent?.enclosingEnum()
+    }
 }

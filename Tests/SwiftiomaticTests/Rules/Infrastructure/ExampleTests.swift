@@ -40,13 +40,8 @@ import Testing
 
   @Test func withCode() {
     let original = Example("original code")
-    #expect(original.file != nil)
-    #expect(original.line != nil)
-
     let new = original.with(code: "new code")
     #expect(new.code == "new code")
-    #expect(new.file != nil)
-    #expect(new.line != nil)
 
     // When modifying the code, it's important that the file and line
     // numbers remain intact

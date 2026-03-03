@@ -5,45 +5,42 @@ struct DiscouragedOptionalBooleanRule {
     static let name = "Discouraged Optional Boolean"
     static let summary = "Prefer non-optional booleans over optional booleans"
     static let isOptIn = true
-  var options = SeverityOption<Self>(.warning)
-
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension DiscouragedOptionalBooleanRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension DiscouragedOptionalBooleanRule {}
-
 extension DiscouragedOptionalBooleanRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: OptionalTypeSyntax) {
-      if node.wrappedType.as(IdentifierTypeSyntax.self)?.typeName == "Bool" {
-        violations.append(node.positionAfterSkippingLeadingTrivia)
-      }
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: OptionalTypeSyntax) {
+            if node.wrappedType.as(IdentifierTypeSyntax.self)?.typeName == "Bool" {
+                violations.append(node.positionAfterSkippingLeadingTrivia)
+            }
+        }
 
-    override func visitPost(_ node: OptionalChainingExprSyntax) {
-      if node.expression.as(DeclReferenceExprSyntax.self)?.baseName.text == "Bool" {
-        violations.append(node.positionAfterSkippingLeadingTrivia)
-      }
-    }
+        override func visitPost(_ node: OptionalChainingExprSyntax) {
+            if node.expression.as(DeclReferenceExprSyntax.self)?.baseName.text == "Bool" {
+                violations.append(node.positionAfterSkippingLeadingTrivia)
+            }
+        }
 
-    override func visitPost(_ node: FunctionCallExprSyntax) {
-      guard
-        let calledExpression = node.calledExpression.as(MemberAccessExprSyntax.self),
-        let singleArgument = node.arguments.onlyElement,
-        singleArgument.expression.is(BooleanLiteralExprSyntax.self),
-        let base = calledExpression.base?.as(DeclReferenceExprSyntax.self),
-        base.baseName.text == "Optional",
-        calledExpression.declName.baseName.text == "some"
-      else {
-        return
-      }
+        override func visitPost(_ node: FunctionCallExprSyntax) {
+            guard
+                let calledExpression = node.calledExpression.as(MemberAccessExprSyntax.self),
+                let singleArgument = node.arguments.onlyElement,
+                singleArgument.expression.is(BooleanLiteralExprSyntax.self),
+                let base = calledExpression.base?.as(DeclReferenceExprSyntax.self),
+                base.baseName.text == "Optional",
+                calledExpression.declName.baseName.text == "some"
+            else {
+                return
+            }
 
-      violations.append(node.positionAfterSkippingLeadingTrivia)
+            violations.append(node.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }

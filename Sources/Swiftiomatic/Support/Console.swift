@@ -39,7 +39,9 @@ public enum Console {
     ///   - runner: The code to run. Messages printed during the execution are collected.
     /// - Returns: The collected messages produced while running the code in the runner.
     @MainActor
-    public static func captureConsole(runner: @Sendable () throws -> Void) async rethrows -> String {
+    public static func captureConsole(runner: @Sendable () throws -> Void) async rethrows
+        -> String
+    {
         let (stream, continuation) = AsyncStream.makeStream(of: String.self)
         try $captureContinuation.withValue(continuation, operation: runner)
         continuation.finish()
@@ -52,7 +54,9 @@ public enum Console {
     ///   - string: The error message to print to stderr.
     ///   - file: The source file path (defaults to the caller's file).
     ///   - line: The source line number (defaults to the caller's line).
-    static func fatalError(_ string: String, file: StaticString = #file, line: UInt = #line) -> Never {
+    static func fatalError(_ string: String, file: StaticString = #file,
+                           line: UInt = #line) -> Never
+    {
         outputLock.withLock { _ in
             fflush(stdout)
             let file = URL(filePath: "\(file)").lastPathComponent

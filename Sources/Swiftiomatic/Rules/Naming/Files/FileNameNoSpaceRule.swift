@@ -5,23 +5,23 @@ struct FileNameNoSpaceRule: SyntaxOnlyRule {
     static let name = "File Name no Space"
     static let summary = "File name should not contain any whitespace"
     static let isOptIn = true
-  var options = FileNameNoSpaceOptions()
+    var options = FileNameNoSpaceOptions()
 
-  func validate(file: SwiftSource) -> [RuleViolation] {
-    guard let filePath = file.path,
-      case let fileName = (filePath as NSString).lastPathComponent,
-      !options.excluded.contains(fileName),
-      fileName.rangeOfCharacter(from: .whitespaces) != nil
-    else {
-      return []
+    func validate(file: SwiftSource) -> [RuleViolation] {
+        guard let filePath = file.path,
+              case let fileName = (filePath as NSString).lastPathComponent,
+              !options.excluded.contains(fileName),
+              fileName.rangeOfCharacter(from: .whitespaces) != nil
+        else {
+            return []
+        }
+
+        return [
+            RuleViolation(
+                ruleType: Self.self,
+                severity: options.severity,
+                location: Location(file: filePath, line: 1),
+            ),
+        ]
     }
-
-    return [
-      RuleViolation(
-        ruleType: Self.self,
-        severity: options.severity,
-        location: Location(file: filePath, line: 1),
-      )
-    ]
-  }
 }

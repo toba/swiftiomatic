@@ -7,7 +7,7 @@ struct MultilineCallArgumentsRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 foo(
                 param1: "param1",
@@ -16,30 +16,30 @@ struct MultilineCallArgumentsRule {
                 )
                 """,
                 configuration: ["max_number_of_single_line_parameters": 2],
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(param1: 1,
                     param2: false,
                     param3: [])
                 """,
                 configuration: ["max_number_of_single_line_parameters": 1],
-              ),
-              Example(
+            ),
+            Example(
                 "foo(param1: 1, param2: false)",
                 configuration: ["max_number_of_single_line_parameters": 2],
-              ),
-              Example(
+            ),
+            Example(
                 "Enum.foo(param1: 1, param2: false)",
                 configuration: ["max_number_of_single_line_parameters": 2],
-              ),
-              Example("foo(param1: 1)", configuration: ["allows_single_line": false]),
-              Example("Enum.foo(param1: 1)", configuration: ["allows_single_line": false]),
-              Example(
+            ),
+            Example("foo(param1: 1)", configuration: ["allows_single_line": false]),
+            Example("Enum.foo(param1: 1)", configuration: ["allows_single_line": false]),
+            Example(
                 "Enum.foo(param1: 1, param2: 2, param3: 3)",
                 configuration: ["allows_single_line": true],
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(
                     param1: 1,
@@ -48,69 +48,68 @@ struct MultilineCallArgumentsRule {
                 )
                 """,
                 configuration: ["allows_single_line": false],
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 "↓foo(param1: 1, param2: false, param3: [])",
                 configuration: ["max_number_of_single_line_parameters": 2],
-              ),
-              Example(
+            ),
+            Example(
                 "↓Enum.foo(param1: 1, param2: false, param3: [])",
                 configuration: ["max_number_of_single_line_parameters": 2],
-              ),
-              Example(
+            ),
+            Example(
                 """
                 ↓foo(param1: 1, param2: false,
                         param3: [])
                 """,
                 configuration: ["max_number_of_single_line_parameters": 3],
-              ),
-              Example(
+            ),
+            Example(
                 """
                 ↓Enum.foo(param1: 1, param2: false,
                         param3: [])
                 """,
                 configuration: ["max_number_of_single_line_parameters": 3],
-              ),
-              Example("↓foo(param1: 1, param2: false)", configuration: ["allows_single_line": false]),
-              Example(
+            ),
+            Example("↓foo(param1: 1, param2: false)", configuration: ["allows_single_line": false]),
+            Example(
                 "↓Enum.foo(param1: 1, param2: false)",
                 configuration: ["allows_single_line": false],
-              ),
-            ]
+            ),
+        ]
     }
-  var options = MultilineCallArgumentsOptions()
 
+    var options = MultilineCallArgumentsOptions()
 }
 
 extension MultilineCallArgumentsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension MultilineCallArgumentsRule {}
-
 extension MultilineCallArgumentsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: FunctionCallExprSyntax) {
-      if containsViolation(
-        parameterPositions: node.arguments.map(\.positionAfterSkippingLeadingTrivia),
-      ) {
-        violations.append(node.calledExpression.positionAfterSkippingLeadingTrivia)
-      }
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: FunctionCallExprSyntax) {
+            if containsViolation(
+                parameterPositions: node.arguments.map(\.positionAfterSkippingLeadingTrivia),
+            ) {
+                violations.append(node.calledExpression.positionAfterSkippingLeadingTrivia)
+            }
+        }
 
-    private func containsViolation(parameterPositions: [AbsolutePosition]) -> Bool {
-      containsMultilineViolation(
-        positions: parameterPositions,
-        locationConverter: locationConverter,
-        allowsSingleLine: configuration.allowsSingleLine,
-        maxSingleLine: configuration.maxNumberOfSingleLineParameters,
-      )
+        private func containsViolation(parameterPositions: [AbsolutePosition]) -> Bool {
+            containsMultilineViolation(
+                positions: parameterPositions,
+                locationConverter: locationConverter,
+                allowsSingleLine: configuration.allowsSingleLine,
+                maxSingleLine: configuration.maxNumberOfSingleLineParameters,
+            )
+        }
     }
-  }
 }

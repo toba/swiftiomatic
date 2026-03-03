@@ -1,502 +1,502 @@
 extension AsyncWithoutAwaitRule {
-  static let nonTriggeringExamples = [
-    Example(
-      """
-      actor A {
-          init() async {
-              foo()
-          }
-          func foo() {}
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() {
-          func test() async {
-              await test()
-          }
-      },
-      """,
-    ),
-    Example(
-      """
-      func test() {
-          func test() async {
-              await test().value
-          }
-      },
-      """,
-    ),
-    Example(
-      """
-      func test() async {
-          await scheduler.task { foo { bar() } }
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() async {
-          perform(await try foo().value)
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() async {
-          perform(try await foo())
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() async {
-          await perform()
-          func baz() {
-              qux()
-          }
-      }
-      """,
-    ),
-    Example(
-      """
-      let x: () async -> Void = {
-          await test()
-      }
-      """,
-    ),
-    Example(
-      """
-      let x: () async -> Void = {
-          await { await test() }()
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() async {
-          await foo()
-      }
-      let x = { bar() }
-      """,
-    ),
-    Example(
-      """
-      let x: (() async -> Void)? = {
-          await { await test() }()
-      }
-      """,
-    ),
-    Example(
-      """
-      let x: () -> Void = { test() }
-      """,
-    ),
-    Example(
-      """
-      var test: Int {
-          get async throws {
-              try await foo()
-          }
-      }
-      var foo: Int {
-          get throws {
-              try bar()
-          }
-      }
-      """,
-    ),
-    Example(
-      """
-      init() async {
-          await foo()
-      }
-      """,
-    ),
-    Example(
-      """
-      init() async {
-          func test() async {
-              await foo()
-          }
-          await { await foo() }()
-      }
-      """,
-    ),
-    Example(
-      """
-      subscript(row: Int) -> Double {
-          get async {
-              await foo()
-          }
-      }
-      """,
-    ),
-    Example(
-      """
-      func foo() async -> Int
-      func bar() async -> Int
-      """,
-    ),
-    Example(
-      """
-      var foo: Int { get async }
-      var bar: Int { get async }
-      """,
-    ),
-    Example(
-      """
-      init(foo: bar) async
-      init(baz: qux) async
-      let baz = { qux() }
-      """,
-    ),
-    Example(
-      """
-      typealias Foo = () async -> Void
-      typealias Bar = () async -> Void
-      let baz = { qux() }
-      """,
-    ),
-    Example(
-      """
-      func test() async {
-          for await foo in bar {}
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() async {
-          while let foo = await bar() {}
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() async {
-          async let foo = bar()
-          let baz = await foo
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() async {
-          async let foo = bar()
-          await foo
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() async {
-          async let foo = bar()
-      }
-      """,
-    ),
-    Example("func foo(bar: () async -> Void) { { } }"),
-    Example("func foo(bar: () async -> Void = { await baz() }) { {} }"),
-    Example("func foo() -> (() async -> Void)? { {} }"),
-    Example(
-      """
-      func foo(
-          bar: () async -> Void,
-          baz: () -> Void = {}
-      ) { { } }
-      """,
-    ),
-    Example("func foo(bar: () async -> Void = {}) {}"),
-    Example("var foo: (() async -> Void)? = nil"),
-    Example("var foo: ((Int) async throws -> Int)? { f }"),
-    Example("let foo: ((Int) async throws -> Int)? = { await f($0) }"),
-    Example("let foo: () async throws -> ()"),
-    Example(
-      """
-      func f() async throws -> Int {
-          try await g {
-              let b: Int
-              b = 2
-          }
-      }
-      """, isExcludedFromDocumentation: true,
-    ),
-    Example(
-      """
-      @concurrent
-      func concurrentFunction() async {
-          performWork()
-      }
-      """,
-    ),
-    Example(
-      """
-      struct S: Sendable {
-          @concurrent
-          func alwaysSwitch() async {
-              // This is valid - @concurrent functions require async even without await
-          }
-      }
-      """,
-    ),
-    Example(
-      """
-      struct ConcurrentInitExample {
-          @concurrent
-          init() async {
-              setup()
-          }
-          func setup() {}
-      }
-      """,
-    ),
-    Example(
-      """
-      struct ConcurrentClosureExample {
-          let c: () async -> Int = { @concurrent in 1 }
-      }
-      """,
-    ),
-    Example(
-      """
-      class Parent {
-          func test() async { await foo() }
-      }
-      class Child: Parent {
-          override func test() async { print("Child") }
-      }
-      """,
-    ),
-    Example(
-      """
-      class Parent {
-          var prop: Int {
-              get async { await fetchValue() }
-          }
-      }
-      class Child: Parent {
-          override var prop: Int {
-              get async { return 2 }
-          }
-      }
-      """,
-    ),
-    Example(
-      """
-      class Base {
-          init() async { await setup() }
-      }
-      class Derived: Base {
-          override init() async { print("Derived") }
-      }
-      """,
-    ),
-  ]
-
-  static let triggeringExamples = [
-    Example(
-      """
-      func test() ↓async {
-          perform()
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() {
-          func baz() ↓async {
-              qux()
-          }
-          perform()
-          func baz() {
-              qux()
-          }
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() ↓async {
-          func baz() async {
-              await qux()
-          }
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() ↓async {
-        func foo() ↓async {}
-        let bar = { await foo() }
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() ↓async {
-          let bar = {
-              func foo() ↓async {}
-          }
-      }
-      """,
-    ),
-    Example(
-      """
-      var test: Int {
-          get ↓async throws {
-              foo()
-          }
-      }
-      """,
-    ),
-    Example(
-      """
-      var test: Int {
-          get ↓async throws {
-              func foo() ↓async {}
-              let bar = { await foo() }
-          }
-      }
-      """,
-    ),
-    Example("init() ↓async {}"),
-    Example(
-      """
-      init() ↓async {
-          func foo() ↓async {}
-      }
-      """,
-    ),
-    Example(
-      """
-      subscript(row: Int) -> Double {
-          get ↓async {
-              1.0
-          }
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() ↓async {
-          for foo in bar {}
-      }
-      """,
-    ),
-    Example(
-      """
-      func test() ↓async {
-          while let foo = bar() {}
-      }
-      """,
-    ),
-    Example("let x: () ↓async -> Void = { }"),
-    Example("let x: () ↓async -> Void = { test() }"),
-    Example("let x: (() ↓async -> Void)? = nil"),
-  ]
-
-  static let corrections = [
-    Example("func test() ↓async {}"): Example("func test() {}"),
-    Example("func test() ↓async throws {}"): Example("func test() throws {}"),
-    Example(
-      """
-      func test() {
-          func baz() ↓async {
-              qux()
-          }
-          perform()
-          func baz() {
-              qux()
-          }
-      }
-      """,
-    ):
-      Example(
-        """
-        func test() {
-            func baz() {
-                qux()
-            }
-            perform()
-            func baz() {
-                qux()
-            }
-        }
-        """,
-      ),
-    Example(
-      """
-      func test() ↓async{
-          func baz() async {
-              await qux()
-          }
-      }
-      """,
-    ):
-      Example(
-        """
-        func test() {
-            func baz() async {
-                await qux()
-            }
-        }
-        """,
-      ),
-    Example(
-      """
-      func test() ↓async {
-        func foo() ↓async {}
-        let bar = { await foo() }
-      }
-      """,
-    ):
-      Example(
-        """
-        func test() {
-          func foo() {}
-          let bar = { await foo() }
-        }
-        """,
-      ),
-    Example(
-      """
-      var test: Int {
-          get ↓async throws {
-              func foo() ↓async {}
-              let bar = { await foo() }
-          }
-      }
-      """,
-    ):
-      Example(
-        """
-        var test: Int {
-            get throws {
+    static let nonTriggeringExamples = [
+        Example(
+            """
+            actor A {
+                init() async {
+                    foo()
+                }
                 func foo() {}
-                let bar = { await foo() }
             }
-        }
-        """,
-      ),
-    Example("init() ↓async {}"): Example("init() {}"),
-    Example(
-      """
-      subscript(row: Int) -> Double {
-          get ↓async {
-              foo()
-          }
-      }
-      """,
-    ):
-      Example(
-        """
-        subscript(row: Int) -> Double {
-            get {
-                foo()
+            """,
+        ),
+        Example(
+            """
+            func test() {
+                func test() async {
+                    await test()
+                }
+            },
+            """,
+        ),
+        Example(
+            """
+            func test() {
+                func test() async {
+                    await test().value
+                }
+            },
+            """,
+        ),
+        Example(
+            """
+            func test() async {
+                await scheduler.task { foo { bar() } }
             }
-        }
-        """,
-      ),
-  ]
+            """,
+        ),
+        Example(
+            """
+            func test() async {
+                perform(await try foo().value)
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() async {
+                perform(try await foo())
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() async {
+                await perform()
+                func baz() {
+                    qux()
+                }
+            }
+            """,
+        ),
+        Example(
+            """
+            let x: () async -> Void = {
+                await test()
+            }
+            """,
+        ),
+        Example(
+            """
+            let x: () async -> Void = {
+                await { await test() }()
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() async {
+                await foo()
+            }
+            let x = { bar() }
+            """,
+        ),
+        Example(
+            """
+            let x: (() async -> Void)? = {
+                await { await test() }()
+            }
+            """,
+        ),
+        Example(
+            """
+            let x: () -> Void = { test() }
+            """,
+        ),
+        Example(
+            """
+            var test: Int {
+                get async throws {
+                    try await foo()
+                }
+            }
+            var foo: Int {
+                get throws {
+                    try bar()
+                }
+            }
+            """,
+        ),
+        Example(
+            """
+            init() async {
+                await foo()
+            }
+            """,
+        ),
+        Example(
+            """
+            init() async {
+                func test() async {
+                    await foo()
+                }
+                await { await foo() }()
+            }
+            """,
+        ),
+        Example(
+            """
+            subscript(row: Int) -> Double {
+                get async {
+                    await foo()
+                }
+            }
+            """,
+        ),
+        Example(
+            """
+            func foo() async -> Int
+            func bar() async -> Int
+            """,
+        ),
+        Example(
+            """
+            var foo: Int { get async }
+            var bar: Int { get async }
+            """,
+        ),
+        Example(
+            """
+            init(foo: bar) async
+            init(baz: qux) async
+            let baz = { qux() }
+            """,
+        ),
+        Example(
+            """
+            typealias Foo = () async -> Void
+            typealias Bar = () async -> Void
+            let baz = { qux() }
+            """,
+        ),
+        Example(
+            """
+            func test() async {
+                for await foo in bar {}
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() async {
+                while let foo = await bar() {}
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() async {
+                async let foo = bar()
+                let baz = await foo
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() async {
+                async let foo = bar()
+                await foo
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() async {
+                async let foo = bar()
+            }
+            """,
+        ),
+        Example("func foo(bar: () async -> Void) { { } }"),
+        Example("func foo(bar: () async -> Void = { await baz() }) { {} }"),
+        Example("func foo() -> (() async -> Void)? { {} }"),
+        Example(
+            """
+            func foo(
+                bar: () async -> Void,
+                baz: () -> Void = {}
+            ) { { } }
+            """,
+        ),
+        Example("func foo(bar: () async -> Void = {}) {}"),
+        Example("var foo: (() async -> Void)? = nil"),
+        Example("var foo: ((Int) async throws -> Int)? { f }"),
+        Example("let foo: ((Int) async throws -> Int)? = { await f($0) }"),
+        Example("let foo: () async throws -> ()"),
+        Example(
+            """
+            func f() async throws -> Int {
+                try await g {
+                    let b: Int
+                    b = 2
+                }
+            }
+            """, isExcludedFromDocumentation: true,
+        ),
+        Example(
+            """
+            @concurrent
+            func concurrentFunction() async {
+                performWork()
+            }
+            """,
+        ),
+        Example(
+            """
+            struct S: Sendable {
+                @concurrent
+                func alwaysSwitch() async {
+                    // This is valid - @concurrent functions require async even without await
+                }
+            }
+            """,
+        ),
+        Example(
+            """
+            struct ConcurrentInitExample {
+                @concurrent
+                init() async {
+                    setup()
+                }
+                func setup() {}
+            }
+            """,
+        ),
+        Example(
+            """
+            struct ConcurrentClosureExample {
+                let c: () async -> Int = { @concurrent in 1 }
+            }
+            """,
+        ),
+        Example(
+            """
+            class Parent {
+                func test() async { await foo() }
+            }
+            class Child: Parent {
+                override func test() async { print("Child") }
+            }
+            """,
+        ),
+        Example(
+            """
+            class Parent {
+                var prop: Int {
+                    get async { await fetchValue() }
+                }
+            }
+            class Child: Parent {
+                override var prop: Int {
+                    get async { return 2 }
+                }
+            }
+            """,
+        ),
+        Example(
+            """
+            class Base {
+                init() async { await setup() }
+            }
+            class Derived: Base {
+                override init() async { print("Derived") }
+            }
+            """,
+        ),
+    ]
+
+    static let triggeringExamples = [
+        Example(
+            """
+            func test() ↓async {
+                perform()
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() {
+                func baz() ↓async {
+                    qux()
+                }
+                perform()
+                func baz() {
+                    qux()
+                }
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() ↓async {
+                func baz() async {
+                    await qux()
+                }
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() ↓async {
+              func foo() ↓async {}
+              let bar = { await foo() }
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() ↓async {
+                let bar = {
+                    func foo() ↓async {}
+                }
+            }
+            """,
+        ),
+        Example(
+            """
+            var test: Int {
+                get ↓async throws {
+                    foo()
+                }
+            }
+            """,
+        ),
+        Example(
+            """
+            var test: Int {
+                get ↓async throws {
+                    func foo() ↓async {}
+                    let bar = { await foo() }
+                }
+            }
+            """,
+        ),
+        Example("init() ↓async {}"),
+        Example(
+            """
+            init() ↓async {
+                func foo() ↓async {}
+            }
+            """,
+        ),
+        Example(
+            """
+            subscript(row: Int) -> Double {
+                get ↓async {
+                    1.0
+                }
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() ↓async {
+                for foo in bar {}
+            }
+            """,
+        ),
+        Example(
+            """
+            func test() ↓async {
+                while let foo = bar() {}
+            }
+            """,
+        ),
+        Example("let x: () ↓async -> Void = { }"),
+        Example("let x: () ↓async -> Void = { test() }"),
+        Example("let x: (() ↓async -> Void)? = nil"),
+    ]
+
+    static let corrections = [
+        Example("func test() ↓async {}"): Example("func test() {}"),
+        Example("func test() ↓async throws {}"): Example("func test() throws {}"),
+        Example(
+            """
+            func test() {
+                func baz() ↓async {
+                    qux()
+                }
+                perform()
+                func baz() {
+                    qux()
+                }
+            }
+            """,
+        ):
+            Example(
+                """
+                func test() {
+                    func baz() {
+                        qux()
+                    }
+                    perform()
+                    func baz() {
+                        qux()
+                    }
+                }
+                """,
+            ),
+        Example(
+            """
+            func test() ↓async{
+                func baz() async {
+                    await qux()
+                }
+            }
+            """,
+        ):
+            Example(
+                """
+                func test() {
+                    func baz() async {
+                        await qux()
+                    }
+                }
+                """,
+            ),
+        Example(
+            """
+            func test() ↓async {
+              func foo() ↓async {}
+              let bar = { await foo() }
+            }
+            """,
+        ):
+            Example(
+                """
+                func test() {
+                  func foo() {}
+                  let bar = { await foo() }
+                }
+                """,
+            ),
+        Example(
+            """
+            var test: Int {
+                get ↓async throws {
+                    func foo() ↓async {}
+                    let bar = { await foo() }
+                }
+            }
+            """,
+        ):
+            Example(
+                """
+                var test: Int {
+                    get throws {
+                        func foo() {}
+                        let bar = { await foo() }
+                    }
+                }
+                """,
+            ),
+        Example("init() ↓async {}"): Example("init() {}"),
+        Example(
+            """
+            subscript(row: Int) -> Double {
+                get ↓async {
+                    foo()
+                }
+            }
+            """,
+        ):
+            Example(
+                """
+                subscript(row: Int) -> Double {
+                    get {
+                        foo()
+                    }
+                }
+                """,
+            ),
+    ]
 }

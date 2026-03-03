@@ -8,23 +8,25 @@ struct NoExplicitOwnershipRule {
     static let isCorrectable = true
     static var nonTriggeringExamples: [Example] {
         [
-                    Example("func foo(_ bar: Bar) {}"),
-                    Example("let borrowing = true"),
-                ]
+            Example("func foo(_ bar: Bar) {}"),
+            Example("let borrowing = true"),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-                    Example("func foo(_ bar: ↓consuming Bar) {}"),
-                    Example("↓borrowing func foo() {}"),
-                ]
+            Example("func foo(_ bar: ↓consuming Bar) {}"),
+            Example("↓borrowing func foo() {}"),
+        ]
     }
+
     static var corrections: [Example: Example] {
         [
-                    Example("func foo(_ bar: ↓consuming Bar) {}"): Example("func foo(_ bar: Bar) {}"),
-                ]
+            Example("func foo(_ bar: ↓consuming Bar) {}"): Example("func foo(_ bar: Bar) {}"),
+        ]
     }
-    var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension NoExplicitOwnershipRule: SwiftSyntaxCorrectableRule {

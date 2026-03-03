@@ -178,8 +178,8 @@ public enum SwiftiomaticError: LocalizedError, Equatable {
     }
 }
 
-private extension Set<String> {
-    var formatted: String {
+extension Set<String> {
+    fileprivate var formatted: String {
         sorted()
             .map { "'\($0)'" }
             .joined(separator: ", ")

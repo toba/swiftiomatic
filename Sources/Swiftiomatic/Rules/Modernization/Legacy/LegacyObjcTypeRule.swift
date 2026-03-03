@@ -1,31 +1,31 @@
 import SwiftSyntax
 
 private let legacyObjcTypes = [
-  "NSAffineTransform",
-  "NSArray",
-  "NSCalendar",
-  "NSCharacterSet",
-  "NSData",
-  "NSDateComponents",
-  "NSDateInterval",
-  "NSDate",
-  "NSDecimalNumber",
-  "NSDictionary",
-  "NSIndexPath",
-  "NSIndexSet",
-  "NSLocale",
-  "NSMeasurement",
-  "NSNotification",
-  "NSNumber",
-  "NSPersonNameComponents",
-  "NSSet",
-  "NSString",
-  "NSTimeZone",
-  "NSURL",
-  "NSURLComponents",
-  "NSURLQueryItem",
-  "NSURLRequest",
-  "NSUUID",
+    "NSAffineTransform",
+    "NSArray",
+    "NSCalendar",
+    "NSCharacterSet",
+    "NSData",
+    "NSDateComponents",
+    "NSDateInterval",
+    "NSDate",
+    "NSDecimalNumber",
+    "NSDictionary",
+    "NSIndexPath",
+    "NSIndexSet",
+    "NSLocale",
+    "NSMeasurement",
+    "NSNotification",
+    "NSNumber",
+    "NSPersonNameComponents",
+    "NSSet",
+    "NSString",
+    "NSTimeZone",
+    "NSURL",
+    "NSURLComponents",
+    "NSURLQueryItem",
+    "NSURLRequest",
+    "NSUUID",
 ]
 
 struct LegacyObjcTypeRule {
@@ -35,29 +35,30 @@ struct LegacyObjcTypeRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example("var array = Array<Int>()"),
-              Example("var calendar: Calendar? = nil"),
-              Example("var formatter: NSDataDetector"),
-              Example("var className: String = NSStringFromClass(MyClass.self)"),
-              Example("_ = URLRequest.CachePolicy.reloadIgnoringLocalCacheData"),
-              Example(#"_ = Notification.Name("com.apple.Music.playerInfo")"#),
-              Example(
+            Example("var array = Array<Int>()"),
+            Example("var calendar: Calendar? = nil"),
+            Example("var formatter: NSDataDetector"),
+            Example("var className: String = NSStringFromClass(MyClass.self)"),
+            Example("_ = URLRequest.CachePolicy.reloadIgnoringLocalCacheData"),
+            Example(#"_ = Notification.Name("com.apple.Music.playerInfo")"#),
+            Example(
                 #"""
                 class SLURLRequest: NSURLRequest {
                     let data = NSData()
                     let number: NSNumber
                 }
                 """#, configuration: ["allowed_types": ["NSData", "NSNumber", "NSURLRequest"]],
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("var array = ↓NSArray()"),
-              Example("var calendar: ↓NSCalendar? = nil"),
-              Example("_ = ↓NSURLRequest.CachePolicy.reloadIgnoringLocalCacheData"),
-              Example(#"_ = ↓NSNotification.Name("com.apple.Music.playerInfo")"#),
-              Example(
+            Example("var array = ↓NSArray()"),
+            Example("var calendar: ↓NSCalendar? = nil"),
+            Example("_ = ↓NSURLRequest.CachePolicy.reloadIgnoringLocalCacheData"),
+            Example(#"_ = ↓NSNotification.Name("com.apple.Music.playerInfo")"#),
+            Example(
                 #"""
                 let keyValuePair: (Int) -> (↓NSString, ↓NSString) = {
                   let n = "\($0)" as ↓NSString; return (n, n)
@@ -65,8 +66,8 @@ struct LegacyObjcTypeRule {
                 dictionary = [↓NSString: ↓NSString](uniqueKeysWithValues:
                   (1...10_000).lazy.map(keyValuePair))
                 """#,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foundation.Notification.Name {
                     static var reachabilityChanged: Foundation.↓NSNotification.Name {
@@ -74,45 +75,43 @@ struct LegacyObjcTypeRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = LegacyObjcTypeOptions()
 
+    var options = LegacyObjcTypeOptions()
 }
 
 extension LegacyObjcTypeRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension LegacyObjcTypeRule {}
-
 extension LegacyObjcTypeRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: IdentifierTypeSyntax) {
-      if let name = node.typeName, isViolatingType(name) {
-        violations.append(node.positionAfterSkippingLeadingTrivia)
-      }
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: IdentifierTypeSyntax) {
+            if let name = node.typeName, isViolatingType(name) {
+                violations.append(node.positionAfterSkippingLeadingTrivia)
+            }
+        }
 
-    override func visitPost(_ node: DeclReferenceExprSyntax) {
-      if isViolatingType(node.baseName.text) {
-        violations.append(node.baseName.positionAfterSkippingLeadingTrivia)
-      }
-    }
+        override func visitPost(_ node: DeclReferenceExprSyntax) {
+            if isViolatingType(node.baseName.text) {
+                violations.append(node.baseName.positionAfterSkippingLeadingTrivia)
+            }
+        }
 
-    override func visitPost(_ node: MemberTypeSyntax) {
-      if node.baseType.as(IdentifierTypeSyntax.self)?.typeName == "Foundation",
-        isViolatingType(node.name.text)
-      {
-        violations.append(node.name.positionAfterSkippingLeadingTrivia)
-      }
-    }
+        override func visitPost(_ node: MemberTypeSyntax) {
+            if node.baseType.as(IdentifierTypeSyntax.self)?.typeName == "Foundation",
+               isViolatingType(node.name.text)
+            {
+                violations.append(node.name.positionAfterSkippingLeadingTrivia)
+            }
+        }
 
-    private func isViolatingType(_ name: String) -> Bool {
-      legacyObjcTypes.contains(name) && !configuration.allowedTypes.contains(name)
+        private func isViolatingType(_ name: String) -> Bool {
+            legacyObjcTypes.contains(name) && !configuration.allowedTypes.contains(name)
+        }
     }
-  }
 }

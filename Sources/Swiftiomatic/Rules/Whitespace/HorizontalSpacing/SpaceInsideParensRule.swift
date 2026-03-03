@@ -8,71 +8,73 @@ struct SpaceInsideParensRule {
     static let isCorrectable = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example("(a, b)"),
-              Example("foo(bar)"),
-            ]
+            Example("(a, b)"),
+            Example("foo(bar)"),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("(↓ a, b)"),
-              Example("foo(↓ bar )"),
-            ]
+            Example("(↓ a, b)"),
+            Example("foo(↓ bar )"),
+        ]
     }
+
     static var corrections: [Example: Example] {
         [
-              Example("(↓ a, b )"): Example("(a, b)")
-            ]
+            Example("(↓ a, b )"): Example("(a, b)"),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension SpaceInsideParensRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: options, file: file)
-  }
+    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
+        Rewriter(configuration: options, file: file)
+    }
 }
 
 extension SpaceInsideParensRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
-      switch token.tokenKind {
-      case .leftParen:
-        if token.trailingTrivia.isHorizontalWhitespaceOnly {
-          violations.append(token.endPositionBeforeTrailingTrivia)
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
+            switch token.tokenKind {
+                case .leftParen:
+                    if token.trailingTrivia.isHorizontalWhitespaceOnly {
+                        violations.append(token.endPositionBeforeTrailingTrivia)
+                    }
+                case .rightParen:
+                    if token.leadingTrivia.isHorizontalWhitespaceOnly {
+                        violations.append(token.positionAfterSkippingLeadingTrivia)
+                    }
+                default:
+                    break
+            }
+            return .visitChildren
         }
-      case .rightParen:
-        if token.leadingTrivia.isHorizontalWhitespaceOnly {
-          violations.append(token.positionAfterSkippingLeadingTrivia)
-        }
-      default:
-        break
-      }
-      return .visitChildren
     }
-  }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
-    override func visit(_ token: TokenSyntax) -> TokenSyntax {
-      switch token.tokenKind {
-      case .leftParen:
-        if token.trailingTrivia.isHorizontalWhitespaceOnly {
-          numberOfCorrections += 1
-          return super.visit(token.with(\.trailingTrivia, Trivia()))
+    fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
+        override func visit(_ token: TokenSyntax) -> TokenSyntax {
+            switch token.tokenKind {
+                case .leftParen:
+                    if token.trailingTrivia.isHorizontalWhitespaceOnly {
+                        numberOfCorrections += 1
+                        return super.visit(token.with(\.trailingTrivia, Trivia()))
+                    }
+                case .rightParen:
+                    if token.leadingTrivia.isHorizontalWhitespaceOnly {
+                        numberOfCorrections += 1
+                        return super.visit(token.with(\.leadingTrivia, Trivia()))
+                    }
+                default:
+                    break
+            }
+            return super.visit(token)
         }
-      case .rightParen:
-        if token.leadingTrivia.isHorizontalWhitespaceOnly {
-          numberOfCorrections += 1
-          return super.visit(token.with(\.leadingTrivia, Trivia()))
-        }
-      default:
-        break
-      }
-      return super.visit(token)
     }
-  }
 }

@@ -7,74 +7,73 @@ struct FirstWhereRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example("kinds.filter(excludingKinds.contains).isEmpty && kinds.first == .identifier"),
-              Example("myList.first(where: { $0 % 2 == 0 })"),
-              Example("match(pattern: pattern).filter { $0.first == .identifier }"),
-              Example("(myList.filter { $0 == 1 }.suffix(2)).first"),
-              Example(#"collection.filter("stringCol = '3'").first"#),
-              Example(
+            Example("kinds.filter(excludingKinds.contains).isEmpty && kinds.first == .identifier"),
+            Example("myList.first(where: { $0 % 2 == 0 })"),
+            Example("match(pattern: pattern).filter { $0.first == .identifier }"),
+            Example("(myList.filter { $0 == 1 }.suffix(2)).first"),
+            Example(#"collection.filter("stringCol = '3'").first"#),
+            Example(
                 #"realm?.objects(User.self).filter(NSPredicate(format: "email ==[c] %@", email)).first"#,
-              ),
-              Example(
+            ),
+            Example(
                 #"if let pause = timeTracker.pauses.filter("beginDate < %@", beginDate).first { print(pause) }"#,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("↓myList.filter { $0 % 2 == 0 }.first"),
-              Example("↓myList.filter({ $0 % 2 == 0 }).first"),
-              Example("↓myList.map { $0 + 1 }.filter({ $0 % 2 == 0 }).first"),
-              Example("↓myList.map { $0 + 1 }.filter({ $0 % 2 == 0 }).first?.something()"),
-              Example("↓myList.filter(someFunction).first"),
-              Example("↓myList.filter({ $0 % 2 == 0 })\n.first"),
-              Example("(↓myList.filter { $0 == 1 }).first"),
-              Example(#"↓myListOfDict.filter { dict in dict["1"] }.first"#),
-              Example(#"↓myListOfDict.filter { $0["someString"] }.first"#),
-            ]
+            Example("↓myList.filter { $0 % 2 == 0 }.first"),
+            Example("↓myList.filter({ $0 % 2 == 0 }).first"),
+            Example("↓myList.map { $0 + 1 }.filter({ $0 % 2 == 0 }).first"),
+            Example("↓myList.map { $0 + 1 }.filter({ $0 % 2 == 0 }).first?.something()"),
+            Example("↓myList.filter(someFunction).first"),
+            Example("↓myList.filter({ $0 % 2 == 0 })\n.first"),
+            Example("(↓myList.filter { $0 == 1 }).first"),
+            Example(#"↓myListOfDict.filter { dict in dict["1"] }.first"#),
+            Example(#"↓myListOfDict.filter { $0["someString"] }.first"#),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension FirstWhereRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension FirstWhereRule {}
-
 extension FirstWhereRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: MemberAccessExprSyntax) {
-      guard
-        node.declName.baseName.text == "first",
-        let functionCall = node.base?.asFunctionCall,
-        let calledExpression = functionCall.calledExpression
-          .as(MemberAccessExprSyntax.self),
-        calledExpression.declName.baseName.text == "filter",
-        !functionCall.arguments.contains(where: \.expression.shouldSkip)
-      else {
-        return
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: MemberAccessExprSyntax) {
+            guard
+                node.declName.baseName.text == "first",
+                let functionCall = node.base?.asFunctionCall,
+                let calledExpression = functionCall.calledExpression
+                .as(MemberAccessExprSyntax.self),
+                calledExpression.declName.baseName.text == "filter",
+                !functionCall.arguments.contains(where: \.expression.shouldSkip)
+            else {
+                return
+            }
 
-      violations.append(functionCall.positionAfterSkippingLeadingTrivia)
+            violations.append(functionCall.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }
 
 extension ExprSyntax {
-  fileprivate var shouldSkip: Bool {
-    if `is`(StringLiteralExprSyntax.self) {
-      return true
+    fileprivate var shouldSkip: Bool {
+        if `is`(StringLiteralExprSyntax.self) {
+            return true
+        }
+        if let functionCall = `as`(FunctionCallExprSyntax.self),
+           let calledExpression = functionCall.calledExpression.as(DeclReferenceExprSyntax.self),
+           calledExpression.baseName.text == "NSPredicate"
+        {
+            return true
+        }
+        return false
     }
-    if let functionCall = `as`(FunctionCallExprSyntax.self),
-      let calledExpression = functionCall.calledExpression.as(DeclReferenceExprSyntax.self),
-      calledExpression.baseName.text == "NSPredicate"
-    {
-      return true
-    }
-    return false
-  }
 }

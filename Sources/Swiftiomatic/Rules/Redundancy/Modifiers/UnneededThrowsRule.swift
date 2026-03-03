@@ -3,7 +3,8 @@ import SwiftSyntax
 struct UnneededThrowsRule: SwiftSyntaxCorrectableRule {
     static let id = "unneeded_throws_rethrows"
     static let name = "Unneeded (Re)Throws Keyword"
-    static let summary = "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`."
+    static let summary =
+        "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`."
     static let isCorrectable = true
     static let isOptIn = true
     var options = SeverityOption<Self>(.warning)

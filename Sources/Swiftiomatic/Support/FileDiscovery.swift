@@ -51,11 +51,13 @@ public enum FileDiscovery {
         into results: inout [String],
     ) {
         let directoryURL = URL(filePath: directory, directoryHint: .isDirectory)
-        guard let enumerator = fm.enumerator(
-            at: directoryURL,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: [],
-        ) else { return }
+        guard
+            let enumerator = fm.enumerator(
+                at: directoryURL,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [],
+            )
+        else { return }
 
         for case let fileURL as URL in enumerator {
             let lastComponent = fileURL.lastPathComponent

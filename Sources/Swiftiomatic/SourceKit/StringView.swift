@@ -150,16 +150,20 @@ struct StringView {
     func byteRangeToStringRange(_ byteRange: ByteRange) -> Range<String.Index>? {
         guard !string.isEmpty else { return nil }
         let utf8 = string.utf8
-        guard let start = utf8.index(
-            utf8.startIndex, offsetBy: byteRange.location.value, limitedBy: utf8.endIndex
-        ) else { return nil }
+        guard
+            let start = utf8.index(
+                utf8.startIndex, offsetBy: byteRange.location.value, limitedBy: utf8.endIndex,
+            )
+        else { return nil }
         if byteRange.length == 0 {
-            return start..<start
+            return start ..< start
         }
-        guard let end = utf8.index(
-            start, offsetBy: byteRange.length.value, limitedBy: utf8.endIndex
-        ) else { return nil }
-        return start..<end
+        guard
+            let end = utf8.index(
+                start, offsetBy: byteRange.length.value, limitedBy: utf8.endIndex,
+            )
+        else { return nil }
+        return start ..< end
     }
 
     /// Convert a `Range<String.Index>` to a ``ByteRange``
@@ -340,8 +344,10 @@ struct StringView {
     /// - Parameters:
     ///   - offset: The UTF-16 character offset.
     ///   - tabWidth: The number of columns per tab stop (default 1).
-    func lineAndCharacter(forCharacterOffset offset: Int,
-                          expandingTabsToWidth tabWidth: Int = 1) -> (
+    func lineAndCharacter(
+        forCharacterOffset offset: Int,
+        expandingTabsToWidth tabWidth: Int = 1,
+    ) -> (
         line: Int, character: Int,
     )? {
         assert(tabWidth > 0)

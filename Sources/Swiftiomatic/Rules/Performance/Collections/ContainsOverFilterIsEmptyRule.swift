@@ -17,40 +17,39 @@ struct ContainsOverFilterIsEmptyRule {
             Example("let result = myList.contains(10)"),
         ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("let result = ↓myList.filter(where: { $0 % 2 == 0 }).isEmpty"),
-              Example("let result = !↓myList.filter(where: { $0 % 2 == 0 }).isEmpty"),
-              Example("let result = ↓myList.filter { $0 % 2 == 0 }.isEmpty"),
-              Example("let result = ↓myList.filter(where: someFunction).isEmpty"),
-            ]
+            Example("let result = ↓myList.filter(where: { $0 % 2 == 0 }).isEmpty"),
+            Example("let result = !↓myList.filter(where: { $0 % 2 == 0 }).isEmpty"),
+            Example("let result = ↓myList.filter { $0 % 2 == 0 }.isEmpty"),
+            Example("let result = ↓myList.filter(where: someFunction).isEmpty"),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension ContainsOverFilterIsEmptyRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension ContainsOverFilterIsEmptyRule {}
-
 extension ContainsOverFilterIsEmptyRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: MemberAccessExprSyntax) {
-      guard
-        node.declName.baseName.text == "isEmpty",
-        let firstBase = node.base?.asFunctionCall,
-        let firstBaseCalledExpression = firstBase.calledExpression
-          .as(MemberAccessExprSyntax.self),
-        firstBaseCalledExpression.declName.baseName.text == "filter"
-      else {
-        return
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: MemberAccessExprSyntax) {
+            guard
+                node.declName.baseName.text == "isEmpty",
+                let firstBase = node.base?.asFunctionCall,
+                let firstBaseCalledExpression = firstBase.calledExpression
+                .as(MemberAccessExprSyntax.self),
+                firstBaseCalledExpression.declName.baseName.text == "filter"
+            else {
+                return
+            }
 
-      violations.append(node.positionAfterSkippingLeadingTrivia)
+            violations.append(node.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }

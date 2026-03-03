@@ -60,7 +60,7 @@ struct FormatEngineTests {
         let input = "func foo(longParameter: String, anotherLongParameter: Int) -> Bool { return true }\n"
         let output = try engine.format(input)
         let lines = output.components(separatedBy: "\n")
-        let longLines = lines.filter { $0.count > 40 }
+        _ = lines.filter { $0.count > 40 }
         // swift-format may not always wrap exactly, but it should try
         #expect(lines.count > 1, "Long line should be split")
     }

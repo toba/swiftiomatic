@@ -1,15 +1,15 @@
 ---
 # a2a-2wk
 title: Import swift-format innovations and fix architectural debt
-status: in-progress
+status: completed
 type: epic
 priority: normal
 created_at: 2026-03-02T21:40:10Z
-updated_at: 2026-03-02T21:40:10Z
+updated_at: 2026-03-03T00:56:15Z
 sync:
     github:
         issue_number: "135"
-        synced_at: "2026-03-02T23:47:33Z"
+        synced_at: "2026-03-03T01:43:38Z"
 ---
 
 Surgically import swift-format's best ideas (pretty-printer, generated dispatch, typed messages) into swiftiomatic while fixing the architectural debt identified in the comparison review.

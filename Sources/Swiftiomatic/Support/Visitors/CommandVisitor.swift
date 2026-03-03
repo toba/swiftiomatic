@@ -33,7 +33,8 @@ final class CommandVisitor: SyntaxVisitor {
         for piece in trivia {
             switch piece {
                 case let .lineComment(comment):
-                    guard let lower = comment.range(of: "sm:")?.lowerBound
+                    guard
+                        let lower = comment.range(of: "sm:")?.lowerBound
                         .samePosition(in: comment.utf8)
                     else {
                         break

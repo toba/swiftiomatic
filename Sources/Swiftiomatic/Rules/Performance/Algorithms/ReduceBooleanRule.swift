@@ -3,7 +3,8 @@ import SwiftSyntax
 struct ReduceBooleanRule {
     static let id = "reduce_boolean"
     static let name = "Reduce Boolean"
-    static let summary = "Prefer using `.allSatisfy()` or `.contains()` over `reduce(true)` or `reduce(false)`."
+    static let summary =
+        "Prefer using `.allSatisfy()` or `.contains()` over `reduce(true)` or `reduce(false)`."
     static var nonTriggeringExamples: [Example] {
         [
             Example("nums.reduce(0) { $0.0 + $0.1 }"),

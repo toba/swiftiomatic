@@ -48,13 +48,13 @@ enum SwiftDocKey: String {
     // MARK: Typed Accessors
 
     private static func string(
-        _ key: SwiftDocKey, from dictionary: [String: SourceKitValue]
+        _ key: SwiftDocKey, from dictionary: [String: SourceKitValue],
     ) -> String? {
         dictionary[key.rawValue]?.stringValue
     }
 
     private static func byteCount(
-        _ key: SwiftDocKey, from dictionary: [String: SourceKitValue]
+        _ key: SwiftDocKey, from dictionary: [String: SourceKitValue],
     ) -> ByteCount? {
         dictionary[key.rawValue]?.int64Value.map(ByteCount.init)
     }

@@ -69,8 +69,8 @@ private let emptyLinesCache = Cache { EmptyLinesVisitor.emptyLines(in: $0) }
 /// Each cache wraps a factory closure that produces a value on first access.
 /// Subsequent accesses for the same file return the cached value without
 /// re-invoking the factory. All mutations are serialized through a ``Mutex``.
-private final class Cache<T>: Sendable {
-    private struct CacheStorage: @unchecked Sendable {
+private final class Cache<T: Sendable>: Sendable {
+    private struct CacheStorage: Sendable {
         var values = [FileCacheKey: T]()
     }
 

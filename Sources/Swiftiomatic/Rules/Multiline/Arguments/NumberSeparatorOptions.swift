@@ -1,49 +1,49 @@
 struct NumberSeparatorOptions: SeverityBasedRuleOptions {
-  struct ExcludeRange: AcceptableByOptionElement, Equatable {
-    private let min: Double
-    private let max: Double
+    struct ExcludeRange: AcceptableByOptionElement, Equatable {
+        private let min: Double
+        private let max: Double
 
-    func asOption() -> OptionType {
-      .symbol("\(min) ..< \(max)")
+        func asOption() -> OptionType {
+            .symbol("\(min) ..< \(max)")
+        }
+
+        init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
+            guard let values = value as? [String: Any],
+                  let min = values["min"] as? Double,
+                  let max = values["max"] as? Double
+            else {
+                throw .invalidConfiguration(ruleID: ruleID)
+            }
+            self.min = min
+            self.max = max
+        }
+
+        func contains(_ value: Double) -> Bool {
+            min <= value && value < max
+        }
     }
 
-    init(fromAny value: Any, context ruleID: String) throws(SwiftiomaticError) {
-      guard let values = value as? [String: Any],
-        let min = values["min"] as? Double,
-        let max = values["max"] as? Double
-      else {
-        throw .invalidConfiguration(ruleID: ruleID)
-      }
-      self.min = min
-      self.max = max
+    @OptionElement(key: "severity")
+    var severityConfiguration = SeverityOption<Parent>(.warning)
+    @OptionElement(key: "minimum_length")
+    private(set) var minimumLength = 0
+    @OptionElement(key: "minimum_fraction_length")
+    private(set) var minimumFractionLength: Int?
+    @OptionElement(key: "exclude_ranges")
+    private(set) var excludeRanges = [ExcludeRange]()
+    typealias Parent = NumberSeparatorRule
+    mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
+        try applySeverityIfPresent(configuration)
+        if let value = configuration[$minimumLength.key] {
+            try minimumLength.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$minimumFractionLength.key] {
+            try minimumFractionLength.apply(value, ruleID: Parent.identifier)
+        }
+        if let value = configuration[$excludeRanges.key] {
+            try excludeRanges.apply(value, ruleID: Parent.identifier)
+        }
+        warnAboutUnknownKeys(in: configuration)
+        validate()
     }
-
-    func contains(_ value: Double) -> Bool {
-      min <= value && value < max
-    }
-  }
-
-  @OptionElement(key: "severity")
-  var severityConfiguration = SeverityOption<Parent>(.warning)
-  @OptionElement(key: "minimum_length")
-  private(set) var minimumLength = 0
-  @OptionElement(key: "minimum_fraction_length")
-  private(set) var minimumFractionLength: Int?
-  @OptionElement(key: "exclude_ranges")
-  private(set) var excludeRanges = [ExcludeRange]()
-  typealias Parent = NumberSeparatorRule
-  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
-    try applySeverityIfPresent(configuration)
-    if let value = configuration[$minimumLength.key] {
-      try minimumLength.apply(value, ruleID: Parent.identifier)
-    }
-    if let value = configuration[$minimumFractionLength.key] {
-      try minimumFractionLength.apply(value, ruleID: Parent.identifier)
-    }
-    if let value = configuration[$excludeRanges.key] {
-      try excludeRanges.apply(value, ruleID: Parent.identifier)
-    }
-    warnAboutUnknownKeys(in: configuration)
-    validate()
-  }
 }

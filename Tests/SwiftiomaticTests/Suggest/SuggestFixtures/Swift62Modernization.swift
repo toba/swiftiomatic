@@ -51,3 +51,35 @@ func partialContext(context: RequestContext) {
 }
 
 func doSomethingElse() {}
+
+// Should flag: weak var never reassigned
+class WeakVarHolder {
+  weak var delegate: AnyObject?
+  func doWork() { print(delegate as Any) }
+}
+
+// Should NOT flag: weak var that is reassigned
+class WeakVarReassigned {
+  weak var delegate: AnyObject?
+  func reset() { delegate = nil }
+}
+
+// Should NOT flag: weak var with property observer
+class WeakVarWithObserver {
+  weak var delegate: AnyObject? {
+    didSet { print("changed") }
+  }
+}
+
+// Should flag: weak var in local scope, never reassigned
+func localWeakVar() {
+  weak var ref: AnyObject? = nil
+  print(ref as Any)
+}
+
+// Should NOT flag: weak var in local scope, reassigned
+func localWeakVarReassigned() {
+  weak var ref: AnyObject? = nil
+  ref = nil
+  print(ref as Any)
+}

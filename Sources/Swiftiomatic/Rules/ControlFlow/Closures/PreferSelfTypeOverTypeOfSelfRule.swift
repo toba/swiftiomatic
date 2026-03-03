@@ -4,12 +4,13 @@ import SwiftSyntaxBuilder
 struct PreferSelfTypeOverTypeOfSelfRule {
     static let id = "prefer_self_type_over_type_of_self"
     static let name = "Prefer Self Type Over Type of Self"
-    static let summary = "Prefer `Self` over `type(of: self)` when accessing properties or calling methods"
+    static let summary =
+        "Prefer `Self` over `type(of: self)` when accessing properties or calling methods"
     static let isCorrectable = true
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class Foo {
                     func bar() {
@@ -17,8 +18,8 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                     func bar() {
@@ -26,8 +27,8 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class A {
                     func foo(param: B) {
@@ -35,8 +36,8 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class A {
                     func foo() {
@@ -44,12 +45,13 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class Foo {
                     func bar() {
@@ -57,8 +59,8 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                     func bar() {
@@ -66,8 +68,8 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                     func bar() {
@@ -75,12 +77,13 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var corrections: [Example: Example] {
         [
-              Example(
+            Example(
                 """
                 class Foo {
                     func bar() {
@@ -88,7 +91,7 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ): Example(
+            ): Example(
                 """
                 class Foo {
                     func bar() {
@@ -96,8 +99,8 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                     func bar() {
@@ -105,7 +108,7 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ): Example(
+            ): Example(
                 """
                 class Foo {
                     func bar() {
@@ -113,8 +116,8 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                     func bar() {
@@ -122,7 +125,7 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ): Example(
+            ): Example(
                 """
                 class Foo {
                     func bar() {
@@ -130,67 +133,65 @@ struct PreferSelfTypeOverTypeOfSelfRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension PreferSelfTypeOverTypeOfSelfRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: options, file: file)
-  }
+    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
+        Rewriter(configuration: options, file: file)
+    }
 }
 
-extension PreferSelfTypeOverTypeOfSelfRule {}
-
 extension PreferSelfTypeOverTypeOfSelfRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: MemberAccessExprSyntax) {
-      if let function = node.base?.as(FunctionCallExprSyntax.self), function.hasViolation {
-        violations.append(function.positionAfterSkippingLeadingTrivia)
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: MemberAccessExprSyntax) {
+            if let function = node.base?.as(FunctionCallExprSyntax.self), function.hasViolation {
+                violations.append(function.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
-    override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
-      guard let function = node.base?.as(FunctionCallExprSyntax.self),
-        function.hasViolation
-      else {
-        return super.visit(node)
-      }
-      numberOfCorrections += 1
-      let base = DeclReferenceExprSyntax(baseName: "Self")
-      let baseWithTrivia =
-        base
-        .with(\.leadingTrivia, function.leadingTrivia)
-        .with(\.trailingTrivia, function.trailingTrivia)
-      return super.visit(node.with(\.base, ExprSyntax(baseWithTrivia)))
+    fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
+        override func visit(_ node: MemberAccessExprSyntax) -> ExprSyntax {
+            guard let function = node.base?.as(FunctionCallExprSyntax.self),
+                  function.hasViolation
+            else {
+                return super.visit(node)
+            }
+            numberOfCorrections += 1
+            let base = DeclReferenceExprSyntax(baseName: "Self")
+            let baseWithTrivia =
+                base
+                    .with(\.leadingTrivia, function.leadingTrivia)
+                    .with(\.trailingTrivia, function.trailingTrivia)
+            return super.visit(node.with(\.base, ExprSyntax(baseWithTrivia)))
+        }
     }
-  }
 }
 
 extension FunctionCallExprSyntax {
-  fileprivate var hasViolation: Bool {
-    isTypeOfSelfCall && arguments.map(\.label?.text) == ["of"]
-      && arguments.first?.expression.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind
-        == .keyword(.self)
-  }
+    fileprivate var hasViolation: Bool {
+        isTypeOfSelfCall && arguments.map(\.label?.text) == ["of"]
+            && arguments.first?.expression.as(DeclReferenceExprSyntax.self)?.baseName.tokenKind
+            == .keyword(.self)
+    }
 
-  fileprivate var isTypeOfSelfCall: Bool {
-    if let identifierExpr = calledExpression.as(DeclReferenceExprSyntax.self) {
-      return identifierExpr.baseName.text == "type"
+    private var isTypeOfSelfCall: Bool {
+        if let identifierExpr = calledExpression.as(DeclReferenceExprSyntax.self) {
+            return identifierExpr.baseName.text == "type"
+        }
+        if let memberAccessExpr = calledExpression.as(MemberAccessExprSyntax.self) {
+            return memberAccessExpr.declName.baseName.text == "type"
+                && memberAccessExpr.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "Swift"
+        }
+        return false
     }
-    if let memberAccessExpr = calledExpression.as(MemberAccessExprSyntax.self) {
-      return memberAccessExpr.declName.baseName.text == "type"
-        && memberAccessExpr.base?.as(DeclReferenceExprSyntax.self)?.baseName.text == "Swift"
-    }
-    return false
-  }
 }

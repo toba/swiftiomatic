@@ -74,7 +74,7 @@ extension Configuration {
         ) {
             self.allRulesWrapped = allRulesWrapped
             self.aliasResolver = aliasResolver
-            self.validRuleIdentifiers = Set(allRulesWrapped.map { type(of: $0.rule).identifier })
+            validRuleIdentifiers = Set(allRulesWrapped.map { type(of: $0.rule).identifier })
             self.mode = mode.applied(aliasResolver: aliasResolver)
         }
 

@@ -28,12 +28,12 @@ struct MockResolver: TypeResolver {
 
 @Suite("TypeResolver Integration")
 struct TypeResolverTests {
-  @Test func nullResolverReturnsNil() async {
+  @Test func nullResolverReturnsNil() {
     let resolver = NullResolver()
     #expect(!resolver.isAvailable)
-    #expect(await resolver.resolveType(inFile: "test.swift", offset: 0) == nil)
-    #expect(await resolver.indexFile("test.swift") == nil)
-    #expect(await resolver.expressionTypes(inFile: "test.swift").isEmpty)
+    #expect(resolver.resolveType(inFile: "test.swift", offset: 0) == nil)
+    #expect(resolver.indexFile("test.swift") == nil)
+    #expect(resolver.expressionTypes(inFile: "test.swift").isEmpty)
   }
 
   @Test func analyzerWorksWithNilResolver() async {

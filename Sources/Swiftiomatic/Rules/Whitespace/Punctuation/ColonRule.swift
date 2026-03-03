@@ -72,7 +72,10 @@ extension ColonRule: SwiftSyntaxCorrectableRule {
 
             if positionsToSkip.contains(token.position) { return }
             if !configuration.applyToDictionaries,
-               dictionaryPositions.contains(token.position) { return }
+               dictionaryPositions.contains(token.position)
+            {
+                return
+            }
 
             guard let previous = token.previousToken(viewMode: .sourceAccurate),
                   let next = token.nextToken(viewMode: .sourceAccurate)

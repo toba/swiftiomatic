@@ -186,10 +186,12 @@ extension Rule {
         RuleExamples(
             nonTriggering: nonTriggeringExamples.map { CodeExample(code: $0.code) },
             triggering: triggeringExamples.map { CodeExample(code: $0.code) },
-            corrections: corrections.map { CorrectionExample(
-                before: $0.key.code,
-                after: $0.value.code,
-            ) },
+            corrections: corrections.map {
+                CorrectionExample(
+                    before: $0.key.code,
+                    after: $0.value.code,
+                )
+            },
         )
     }
 }

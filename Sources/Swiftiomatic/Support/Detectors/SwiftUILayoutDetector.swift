@@ -108,7 +108,8 @@ enum SwiftUILayoutDetector {
 
         let stackName = containerStack[stackIndex]
         return LayoutIssue(
-            reason: "Multiple unbounded containers (\(unboundedCount)) inside \(stackName) — they compete for space",
+            reason:
+            "Multiple unbounded containers (\(unboundedCount)) inside \(stackName) — they compete for space",
             suggestion: "Give explicit frames to each container or restructure the layout",
             isHighSeverity: false,
         )

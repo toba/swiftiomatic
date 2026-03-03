@@ -7,19 +7,20 @@ struct FallthroughRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 switch foo {
                 case .bar, .bar2, .bar3:
                   something()
                 }
                 """,
-              )
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 switch foo {
                 case .bar:
@@ -28,25 +29,23 @@ struct FallthroughRule {
                   something()
                 }
                 """,
-              )
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension FallthroughRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension FallthroughRule {}
-
 extension FallthroughRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: FallThroughStmtSyntax) {
-      violations.append(node.positionAfterSkippingLeadingTrivia)
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: FallThroughStmtSyntax) {
+            violations.append(node.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }

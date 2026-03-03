@@ -5,7 +5,7 @@ import Synchronization
 
 struct CachedRegex: Hashable, Comparable, ExpressibleByStringLiteral, @unchecked Sendable {
     let regex: Regex<AnyRegexOutput>
-    public let pattern: String
+    let pattern: String
     private let optionsRaw: UInt
 
     var numberOfCaptureGroups: Int {

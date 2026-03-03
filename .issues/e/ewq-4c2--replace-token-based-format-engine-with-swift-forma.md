@@ -1,16 +1,16 @@
 ---
 # ewq-4c2
 title: Replace token-based format engine with swift-format pretty-printer
-status: review
+status: completed
 type: feature
 priority: high
 created_at: 2026-03-02T21:40:56Z
-updated_at: 2026-03-02T23:46:42Z
+updated_at: 2026-03-03T00:55:26Z
 parent: a2a-2wk
 sync:
     github:
         issue_number: "140"
-        synced_at: "2026-03-02T23:47:35Z"
+        synced_at: "2026-03-03T01:43:43Z"
 ---
 
 Import swift-format's Oppen-style pretty-printer as a replacement for the iterative token-based FormatEngine.

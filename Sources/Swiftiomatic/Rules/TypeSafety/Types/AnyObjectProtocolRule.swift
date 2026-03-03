@@ -7,36 +7,37 @@ struct AnyObjectProtocolRule {
     static let scope: Scope = .suggest
     static var nonTriggeringExamples: [Example] {
         [
-              Example("protocol Foo: AnyObject {}"),
-              Example("protocol Foo: Sendable {}"),
-            ]
+            Example("protocol Foo: AnyObject {}"),
+            Example("protocol Foo: Sendable {}"),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("protocol Foo: ↓class {}"),
-            ]
+            Example("protocol Foo: ↓class {}"),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension AnyObjectProtocolRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension AnyObjectProtocolRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: ProtocolDeclSyntax) {
-      guard let inheritanceClause = node.inheritanceClause else { return }
-      for type in inheritanceClause.inheritedTypes {
-        if let simpleType = type.type.as(IdentifierTypeSyntax.self),
-          simpleType.name.tokenKind == .keyword(.class)
-        {
-          violations.append(simpleType.name.positionAfterSkippingLeadingTrivia)
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: ProtocolDeclSyntax) {
+            guard let inheritanceClause = node.inheritanceClause else { return }
+            for type in inheritanceClause.inheritedTypes {
+                if let simpleType = type.type.as(IdentifierTypeSyntax.self),
+                   simpleType.name.tokenKind == .keyword(.class)
+                {
+                    violations.append(simpleType.name.positionAfterSkippingLeadingTrivia)
+                }
+            }
         }
-      }
     }
-  }
 }

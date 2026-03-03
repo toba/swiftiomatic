@@ -93,7 +93,8 @@ struct SwiftPMCompilationDB: Codable {
                 }
 
                 let args =
-                    ["-module-name", module] + sources + arguments
+                    ["-module-name", module] + sources
+                        + arguments
                         .filteringCompilerArguments + ["-I"]
                         + importPaths
 

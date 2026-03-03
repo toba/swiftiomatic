@@ -3,45 +3,46 @@ import SwiftSyntax
 struct LetVarWhitespaceRule {
     static let id = "let_var_whitespace"
     static let name = "Variable Declaration Whitespace"
-    static let summary = "Variable declarations should be separated from other statements by a blank line"
+    static let summary =
+        "Variable declarations should be separated from other statements by a blank line"
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 let a = 0
                 var x = 1
 
                 var y = 2
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 let a = 5
 
                 var x = 1
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var a = 0
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 let a = 1 +
                     2
                 let b = 5
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var x: Int {
                     return 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var x: Int {
                     let a = 0
@@ -49,8 +50,8 @@ struct LetVarWhitespaceRule {
                     return a
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 #if os(macOS)
                 let a = 0
@@ -58,62 +59,62 @@ struct LetVarWhitespaceRule {
                 func f() {}
                 #endif
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 #warning("TODO: remove it")
                 let a = 0
                 #warning("TODO: remove it")
                 let b = 0
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 #error("TODO: remove it")
                 let a = 0
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 @available(swift 4)
                 let a = 0
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 @objc
                 var s: String = ""
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 @objc
                 func a() {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var x = 0
                 lazy
                 var y = 0
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 @available(OSX, introduced: 10.6)
                 @available(*, deprecated)
                 var x = 0
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 // sm:disable superfluous_disable_command
                 // sm:disable force_cast
 
                 let x = bar as! Bar
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 @available(swift 4)
                 @UserDefault("param", defaultValue: true)
@@ -122,17 +123,17 @@ struct LetVarWhitespaceRule {
                 @Attribute
                 func f() {}
                 """,
-              ),
-              // Don't trigger on local variable declarations.
-              Example(
+            ),
+            // Don't trigger on local variable declarations.
+            Example(
                 """
                 var x: Int {
                     let a = 0
                     return a
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 static var test: String { /* Comment block */
                     let s = "!"
@@ -141,8 +142,8 @@ struct LetVarWhitespaceRule {
 
                 func f() {}
                 """, isExcludedFromDocumentation: true,
-              ),
-              Example(
+            ),
+            Example(
                 #"""
                 @Flag(name: "name", help: "help")
                 var fix = false
@@ -154,38 +155,39 @@ struct LetVarWhitespaceRule {
                 @Flag(help: "help")
                 var useAlternativeExcluding = false
                 """#, isExcludedFromDocumentation: true,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 let a
                 ↓func x() {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var x = 0
                 ↓@objc func f() {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var x = 0
                 ↓@objc
                 func f() {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 @objc func f() {
                 }
                 ↓var x = 0
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f() {}
                 ↓@Wapper
@@ -194,104 +196,103 @@ struct LetVarWhitespaceRule {
                 var isEnabled = true
                 ↓func g() {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 #if os(macOS)
                 let a = 0
                 ↓func f() {}
                 #endif
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
-  private static func wrapIntoClass(_ example: Example) -> Example {
-    example.with(code: "class C {\n" + example.code + "\n}")
-  }
+    var options = SeverityOption<Self>(.warning)
+
+    private static func wrapIntoClass(_ example: Example) -> Example {
+        example.with(code: "class C {\n" + example.code + "\n}")
+    }
 }
 
 extension LetVarWhitespaceRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension LetVarWhitespaceRule {}
-
 extension LetVarWhitespaceRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: MemberBlockItemListSyntax) {
-      collectViolations(from: node, using: \.decl)
-    }
-
-    override func visitPost(_ node: CodeBlockItemListSyntax) {
-      if node.isInValidContext {
-        collectViolations(from: node, using: \.unwrap)
-      }
-    }
-
-    private func collectViolations<List: SyntaxCollection>(
-      from members: List,
-      using unwrap: (List.Element) -> any SyntaxProtocol,
-    ) {
-      for member in members {
-        guard case let item = unwrap(member),
-          !item.is(MacroExpansionDeclSyntax.self),
-          !item.is(MacroExpansionExprSyntax.self),
-          let index = members.index(of: member),
-          case let nextIndex = members.index(after: index),
-          nextIndex != members.endIndex,
-          case let nextItem = unwrap(members[members.index(after: index)]),
-          !nextItem.is(MacroExpansionDeclSyntax.self),
-          !nextItem.is(MacroExpansionExprSyntax.self)
-        else {
-          continue
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: MemberBlockItemListSyntax) {
+            collectViolations(from: node, using: \.decl)
         }
-        if item.kind != nextItem.kind,
-          item.kind == .variableDecl || nextItem.kind == .variableDecl,
-          !(item.trailingTrivia + nextItem.leadingTrivia).containsAtLeastTwoNewlines
-        {
-          violations.append(nextItem.positionAfterSkippingLeadingTrivia)
+
+        override func visitPost(_ node: CodeBlockItemListSyntax) {
+            if node.isInValidContext {
+                collectViolations(from: node, using: \.unwrap)
+            }
         }
-      }
+
+        private func collectViolations<List: SyntaxCollection>(
+            from members: List,
+            using unwrap: (List.Element) -> any SyntaxProtocol,
+        ) {
+            for member in members {
+                guard case let item = unwrap(member),
+                      !item.is(MacroExpansionDeclSyntax.self),
+                      !item.is(MacroExpansionExprSyntax.self),
+                      let index = members.index(of: member),
+                      case let nextIndex = members.index(after: index),
+                      nextIndex != members.endIndex,
+                      case let nextItem = unwrap(members[members.index(after: index)]),
+                      !nextItem.is(MacroExpansionDeclSyntax.self),
+                      !nextItem.is(MacroExpansionExprSyntax.self)
+                else {
+                    continue
+                }
+                if item.kind != nextItem.kind,
+                   item.kind == .variableDecl || nextItem.kind == .variableDecl,
+                   !(item.trailingTrivia + nextItem.leadingTrivia).containsAtLeastTwoNewlines
+                {
+                    violations.append(nextItem.positionAfterSkippingLeadingTrivia)
+                }
+            }
+        }
     }
-  }
 }
 
 extension CodeBlockItemListSyntax {
-  fileprivate var isInValidContext: Bool {
-    var next = parent
-    while let ancestor = next {
-      if [.closureExpr, .codeBlock, .accessorBlock].contains(ancestor.kind) {
+    fileprivate var isInValidContext: Bool {
+        var next = parent
+        while let ancestor = next {
+            if [.closureExpr, .codeBlock, .accessorBlock].contains(ancestor.kind) {
+                return false
+            }
+            if [.memberBlock, .sourceFile].contains(ancestor.kind) {
+                return true
+            }
+            next = ancestor.parent
+        }
         return false
-      }
-      if [.memberBlock, .sourceFile].contains(ancestor.kind) {
-        return true
-      }
-      next = ancestor.parent
     }
-    return false
-  }
 }
 
 extension Trivia {
-  fileprivate var containsAtLeastTwoNewlines: Bool {
-    reduce(into: 0) { result, piece in
-      if case .newlines(let number) = piece {
-        result += number
-      }
-    } > 1
-  }
+    fileprivate var containsAtLeastTwoNewlines: Bool {
+        reduce(into: 0) { result, piece in
+            if case let .newlines(number) = piece {
+                result += number
+            }
+        } > 1
+    }
 }
 
 extension CodeBlockItemSyntax {
-  fileprivate var unwrap: any SyntaxProtocol {
-    switch item {
-    case .decl(let decl): decl
-    case .stmt(let stmt): stmt
-    case .expr(let expr): expr
+    fileprivate var unwrap: any SyntaxProtocol {
+        switch item {
+            case let .decl(decl): decl
+            case let .stmt(stmt): stmt
+            case let .expr(expr): expr
+        }
     }
-  }
 }

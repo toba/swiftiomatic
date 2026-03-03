@@ -34,16 +34,19 @@ final class EmptyLinesVisitor: SyntaxVisitor {
     }
 
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
-        applyTriviaResult(TriviaLineCollector.collectLines(
-            from: token.leadingTrivia,
-            endingAt: token.positionAfterSkippingLeadingTrivia,
-            using: locationConverter,
-        ))
+        applyTriviaResult(
+            TriviaLineCollector.collectLines(
+                from: token.leadingTrivia,
+                endingAt: token.positionAfterSkippingLeadingTrivia,
+                using: locationConverter,
+            ),
+        )
 
         // Mark lines with actual code tokens (not comments).
         if token.tokenKind != .endOfFile {
-            let tokenLine = locationConverter
-                .location(for: token.positionAfterSkippingLeadingTrivia).line
+            let tokenLine =
+                locationConverter
+                    .location(for: token.positionAfterSkippingLeadingTrivia).line
             linesWithContent.insert(tokenLine)
             lastLine = max(lastLine, tokenLine)
         } else {
@@ -56,11 +59,13 @@ final class EmptyLinesVisitor: SyntaxVisitor {
             }
         }
 
-        applyTriviaResult(TriviaLineCollector.collectLines(
-            from: token.trailingTrivia,
-            endingAt: token.endPosition,
-            using: locationConverter,
-        ))
+        applyTriviaResult(
+            TriviaLineCollector.collectLines(
+                from: token.trailingTrivia,
+                endingAt: token.endPosition,
+                using: locationConverter,
+            ),
+        )
 
         return .visitChildren
     }

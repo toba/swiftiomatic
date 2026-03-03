@@ -119,7 +119,9 @@ struct FormatCommand: ParsableCommand {
 
     /// Load correctable lint rules and apply (or check) corrections on the given files.
     /// Returns the total number of corrections applied (or detected in check mode).
-    private func applyCorrectableLintRules(cfg: Configuration, files: [String], checkOnly: Bool) -> Int {
+    private func applyCorrectableLintRules(cfg: Configuration, files: [String],
+                                           checkOnly: Bool) -> Int
+    {
         let allRules = RuleResolver.loadRules(
             enabled: cfg.enabledLintRules.isEmpty ? nil : Set(cfg.enabledLintRules),
             disabled: Set(cfg.disabledLintRules),

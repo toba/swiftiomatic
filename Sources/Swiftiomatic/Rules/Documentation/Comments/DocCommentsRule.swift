@@ -4,123 +4,127 @@ import SwiftSyntax
 struct DocCommentsRule {
     static let id = "doc_comments"
     static let name = "Doc Comments"
-    static let summary = "API declarations should use doc comments (`///`) instead of regular comments (`//`)"
+    static let summary =
+        "API declarations should use doc comments (`///`) instead of regular comments (`//`)"
     static let scope: Scope = .suggest
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 /// A placeholder type
                 class Foo {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   // TODO: implement
                   func bar() {}
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 ↓// A placeholder type
                 class Foo {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo {
                   ↓// Does something
                   func bar() {}
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension DocCommentsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension DocCommentsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: FunctionDeclSyntax) {
-      checkForRegularComment(on: node)
-    }
-
-    override func visitPost(_ node: ClassDeclSyntax) {
-      checkForRegularComment(on: node)
-    }
-
-    override func visitPost(_ node: StructDeclSyntax) {
-      checkForRegularComment(on: node)
-    }
-
-    override func visitPost(_ node: EnumDeclSyntax) {
-      checkForRegularComment(on: node)
-    }
-
-    override func visitPost(_ node: ProtocolDeclSyntax) {
-      checkForRegularComment(on: node)
-    }
-
-    override func visitPost(_ node: VariableDeclSyntax) {
-      checkForRegularComment(on: node)
-    }
-
-    override func visitPost(_ node: TypeAliasDeclSyntax) {
-      checkForRegularComment(on: node)
-    }
-
-    private func checkForRegularComment(on node: some SyntaxProtocol) {
-      let trivia = node.leadingTrivia
-
-      // Look for line comments that aren't doc comments
-      var hasRegularComment = false
-      var commentPosition: AbsolutePosition?
-
-      for (index, piece) in trivia.enumerated() {
-        switch piece {
-        case .lineComment(let text):
-          // Skip directives (MARK, TODO, FIXME, etc.)
-          let trimmed = text.dropFirst(2).trimmingCharacters(in: .whitespaces)
-          if trimmed.hasPrefix("MARK:") || trimmed.hasPrefix("TODO:")
-            || trimmed.hasPrefix("FIXME:") || trimmed.hasPrefix("sm:")
-            || trimmed.hasPrefix("swiftlint:")
-          {
-            return
-          }
-          // Check it's not already a doc comment (///)
-          if !text.hasPrefix("///") {
-            hasRegularComment = true
-            if commentPosition == nil {
-              // Calculate position based on trivia pieces before this one
-              var offset = node.position
-              for i in 0..<index {
-                offset = offset.advanced(
-                  by: trivia[trivia.index(trivia.startIndex, offsetBy: i)].sourceLength.utf8Length)
-              }
-              commentPosition = offset
-            }
-          }
-        default:
-          break
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: FunctionDeclSyntax) {
+            checkForRegularComment(on: node)
         }
-      }
 
-      if hasRegularComment, let position = commentPosition {
-        violations.append(position)
-      }
+        override func visitPost(_ node: ClassDeclSyntax) {
+            checkForRegularComment(on: node)
+        }
+
+        override func visitPost(_ node: StructDeclSyntax) {
+            checkForRegularComment(on: node)
+        }
+
+        override func visitPost(_ node: EnumDeclSyntax) {
+            checkForRegularComment(on: node)
+        }
+
+        override func visitPost(_ node: ProtocolDeclSyntax) {
+            checkForRegularComment(on: node)
+        }
+
+        override func visitPost(_ node: VariableDeclSyntax) {
+            checkForRegularComment(on: node)
+        }
+
+        override func visitPost(_ node: TypeAliasDeclSyntax) {
+            checkForRegularComment(on: node)
+        }
+
+        private func checkForRegularComment(on node: some SyntaxProtocol) {
+            let trivia = node.leadingTrivia
+
+            // Look for line comments that aren't doc comments
+            var hasRegularComment = false
+            var commentPosition: AbsolutePosition?
+
+            for (index, piece) in trivia.enumerated() {
+                switch piece {
+                    case let .lineComment(text):
+                        // Skip directives (MARK, TODO, FIXME, etc.)
+                        let trimmed = text.dropFirst(2).trimmingCharacters(in: .whitespaces)
+                        if trimmed.hasPrefix("MARK:") || trimmed.hasPrefix("TODO:")
+                            || trimmed.hasPrefix("FIXME:") || trimmed.hasPrefix("sm:")
+                            || trimmed.hasPrefix("swiftlint:")
+                        {
+                            return
+                        }
+                        // Check it's not already a doc comment (///)
+                        if !text.hasPrefix("///") {
+                            hasRegularComment = true
+                            if commentPosition == nil {
+                                // Calculate position based on trivia pieces before this one
+                                var offset = node.position
+                                for i in 0 ..< index {
+                                    offset = offset.advanced(
+                                        by: trivia[trivia.index(trivia.startIndex, offsetBy: i)]
+                                            .sourceLength.utf8Length,
+                                    )
+                                }
+                                commentPosition = offset
+                            }
+                        }
+                    default:
+                        break
+                }
+            }
+
+            if hasRegularComment, let position = commentPosition {
+                violations.append(position)
+            }
+        }
     }
-  }
 }

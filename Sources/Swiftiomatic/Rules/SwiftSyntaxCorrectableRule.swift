@@ -3,112 +3,113 @@ import SwiftSyntax
 
 /// A ``CorrectableRule`` that performs its corrections using a SwiftSyntax `SyntaxRewriter`
 protocol SwiftSyntaxCorrectableRule: SwiftSyntaxRule, CorrectableRule {
-  /// Produce a ``ViolationCollectingRewriter`` for the given file
-  ///
-  /// - Parameters:
-  ///   - file: The file for which to produce the rewriter.
-  /// - Returns: A ``ViolationCollectingRewriter`` for the given file, or `nil` to fall back
-  ///   to the visitor's collected `violationCorrections`.
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>?
+    /// Produce a ``ViolationCollectingRewriter`` for the given file
+    ///
+    /// - Parameters:
+    ///   - file: The file for which to produce the rewriter.
+    /// - Returns: A ``ViolationCollectingRewriter`` for the given file, or `nil` to fall back
+    ///   to the visitor's collected `violationCorrections`.
+    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>?
 }
 
 extension SwiftSyntaxCorrectableRule {
-  func makeRewriter(file _: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    nil
-  }
-
-  func correct(file: SwiftSource) -> Int {
-    guard let syntaxTree = preprocess(file: file) else {
-      return 0
-    }
-    if let rewriter = makeRewriter(file: file) {
-      let newTree = rewriter.visit(syntaxTree)
-      file.write(newTree.description)
-      return rewriter.numberOfCorrections
+    func makeRewriter(file _: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
+        nil
     }
 
-    // There is no rewriter. Falling back to the correction ranges collected by the visitor (if any).
-    let violations = makeVisitor(file: file)
-      .walk(tree: syntaxTree, handler: \.violations)
-    guard violations.isNotEmpty else {
-      return 0
-    }
+    func correct(file: SwiftSource) -> Int {
+        guard let syntaxTree = preprocess(file: file) else {
+            return 0
+        }
+        if let rewriter = makeRewriter(file: file) {
+            let newTree = rewriter.visit(syntaxTree)
+            file.write(newTree.description)
+            return rewriter.numberOfCorrections
+        }
 
-    let locationConverter = file.locationConverter
-    let disabledRegions = file.regions()
-      .filter { $0.areRulesDisabled(ruleIDs: Self.allIdentifiers) }
-      .compactMap { $0.toSourceRange(locationConverter: locationConverter) }
+        // There is no rewriter. Falling back to the correction ranges collected by the visitor (if any).
+        let violations = makeVisitor(file: file)
+            .walk(tree: syntaxTree, handler: \.violations)
+        guard violations.isNotEmpty else {
+            return 0
+        }
 
-    typealias CorrectionRange = (range: Range<String.Index>, correction: String)
-    let correctionRanges =
-      violations
-      .filter {
-        !$0.position.isContainedIn(
-          regions: disabledRegions,
-          locationConverter: locationConverter,
-        )
-      }
-      .compactMap(\.correction)
-      .compactMap { correction in
-        file.stringView.stringRange(start: correction.start, end: correction.end)
-          .map { range in
-            CorrectionRange(range: range, correction: correction.replacement)
-          }
-      }
-      .sorted { (lhs: CorrectionRange, rhs: CorrectionRange) -> Bool in
-        lhs.range.lowerBound > rhs.range.lowerBound
-      }
-    guard correctionRanges.isNotEmpty else {
-      return 0
-    }
+        let locationConverter = file.locationConverter
+        let disabledRegions = file.regions()
+            .filter { $0.areRulesDisabled(ruleIDs: Self.allIdentifiers) }
+            .compactMap { $0.toSourceRange(locationConverter: locationConverter) }
 
-    var contents = file.contents
-    for range in correctionRanges {
-      contents.replaceSubrange(range.range, with: range.correction)
+        typealias CorrectionRange = (range: Range<String.Index>, correction: String)
+        let correctionRanges =
+            violations
+                .filter {
+                    !$0.position.isContainedIn(
+                        regions: disabledRegions,
+                        locationConverter: locationConverter,
+                    )
+                }
+                .compactMap(\.correction)
+                .compactMap { correction in
+                    file.stringView.stringRange(start: correction.start, end: correction.end)
+                        .map { range in
+                            CorrectionRange(range: range, correction: correction.replacement)
+                        }
+                }
+                .sorted { (lhs: CorrectionRange, rhs: CorrectionRange) -> Bool in
+                    lhs.range.lowerBound > rhs.range.lowerBound
+                }
+        guard correctionRanges.isNotEmpty else {
+            return 0
+        }
+
+        var contents = file.contents
+        for range in correctionRanges {
+            contents.replaceSubrange(range.range, with: range.correction)
+        }
+        file.write(contents)
+        return correctionRanges.count
     }
-    file.write(contents)
-    return correctionRanges.count
-  }
 }
 
 /// A SwiftSyntax `SyntaxRewriter` that produces absolute positions where corrections were applied
 class ViolationCollectingRewriter<Configuration: RuleOptions>: SyntaxRewriter {
-  /// The rule's configuration
-  let configuration: Configuration
-  /// The file from which the traversed syntax tree stems
-  let file: SwiftSource
+    /// The rule's configuration
+    let configuration: Configuration
+    /// The file from which the traversed syntax tree stems
+    let file: SwiftSource
 
-  /// A converter of positions in the traversed source file
-  lazy var locationConverter = file.locationConverter
-  /// The regions in the traversed file that are disabled by a command
-  lazy var disabledRegions = file.regions()
-    .filter { $0.areRulesDisabled(ruleIDs: Configuration.Parent.allIdentifiers) }
-    .compactMap { $0.toSourceRange(locationConverter: locationConverter) }
+    /// A converter of positions in the traversed source file
+    let locationConverter: SourceLocationConverter
+    /// The regions in the traversed file that are disabled by a command
+    let disabledRegions: [SourceRange]
 
-  /// The number of corrections made by the rewriter
-  var numberOfCorrections = 0
+    /// The number of corrections made by the rewriter
+    var numberOfCorrections = 0
 
-  /// Create a ``ViolationCollectingRewriter``
-  ///
-  /// - Parameters:
-  ///   - configuration: Configuration of a rule.
-  ///   - file: File from which the syntax tree stems.
-  @inlinable
-  init(configuration: Configuration, file: SwiftSource) {
-    self.configuration = configuration
-    self.file = file
-  }
+    /// Create a ``ViolationCollectingRewriter``
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration of a rule.
+    ///   - file: File from which the syntax tree stems.
+    init(configuration: Configuration, file: SwiftSource) {
+        self.configuration = configuration
+        self.file = file
+        self.locationConverter = file.locationConverter
+        self.disabledRegions = file.regions()
+            .filter { $0.areRulesDisabled(ruleIDs: Configuration.Parent.allIdentifiers) }
+            .compactMap { $0.toSourceRange(locationConverter: file.locationConverter) }
+    }
 
-  /// Determine whether the rule is disabled at the start position of the given syntax node
-  ///
-  /// - Parameters:
-  ///   - node: The syntax node to check.
-  /// - Returns: `true` if the rule is disabled for the node.
-  func isDisabled(atStartPositionOf node: some SyntaxProtocol) -> Bool {
-    node.isContainedIn(regions: disabledRegions, locationConverter: locationConverter)
-  }
+    /// Determine whether the rule is disabled at the start position of the given syntax node
+    ///
+    /// - Parameters:
+    ///   - node: The syntax node to check.
+    /// - Returns: `true` if the rule is disabled for the node.
+    func isDisabled(atStartPositionOf node: some SyntaxProtocol) -> Bool {
+        node.isContainedIn(regions: disabledRegions, locationConverter: locationConverter)
+    }
 
-  override func visitAny(_ node: Syntax) -> Syntax? {
-    isDisabled(atStartPositionOf: node) ? node : nil
-  }
+    override func visitAny(_ node: Syntax) -> Syntax? {
+        isDisabled(atStartPositionOf: node) ? node : nil
+    }
 }

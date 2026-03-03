@@ -35,7 +35,7 @@ extension String {
     ///   - characterSet: The set of characters to trim from the end.
     func trimmingTrailingCharacters(in characterSet: CharacterSet) -> String {
         guard !isEmpty else { return "" }
-        var unicodeScalars = self.unicodeScalars
+        var unicodeScalars = unicodeScalars
         while let scalar = unicodeScalars.last {
             if !characterSet.contains(scalar) {
                 return String(unicodeScalars)
@@ -54,8 +54,10 @@ extension String {
     ///
     /// - Parameters:
     ///   - rootDirectory: The directory to resolve relative paths against.
-    func absolutePathRepresentation(rootDirectory: String = FileManager.default
-        .currentDirectoryPath)
+    func absolutePathRepresentation(
+        rootDirectory: String = FileManager.default
+            .currentDirectoryPath,
+    )
         -> String
     {
         if hasPrefix("/") { return self }

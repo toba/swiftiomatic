@@ -7,15 +7,15 @@ struct ProhibitedSuperRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class VC: UIViewController {
                     override func loadView() {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class NSView {
                     func updateLayer() {
@@ -23,8 +23,8 @@ struct ProhibitedSuperRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 public class FileProviderExtension: NSFileProviderExtension {
                     override func providePlaceholder(at url: URL, completionHandler: @escaping (Error?) -> Void) {
@@ -35,12 +35,13 @@ struct ProhibitedSuperRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class VC: UIViewController {
                     override func loadView() {↓
@@ -48,8 +49,8 @@ struct ProhibitedSuperRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class VC: NSFileProviderExtension {
                     override func providePlaceholder(at url: URL, completionHandler: @escaping (Error?) -> Void) {↓
@@ -58,8 +59,8 @@ struct ProhibitedSuperRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class VC: NSView {
                     override func updateLayer() {↓
@@ -69,8 +70,8 @@ struct ProhibitedSuperRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class VC: NSView {
                     override func updateLayer() {↓
@@ -80,40 +81,39 @@ struct ProhibitedSuperRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = ProhibitedSuperOptions()
 
+    var options = ProhibitedSuperOptions()
 }
 
 extension ProhibitedSuperRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension ProhibitedSuperRule {}
-
 extension ProhibitedSuperRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      [ProtocolDeclSyntax.self]
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
+        }
 
-    override func visitPost(_ node: FunctionDeclSyntax) {
-      guard let ctx = node.superCallContext(matchingMethodNames: configuration.resolvedMethodNames),
-        ctx.callCount > 0
-      else {
-        return
-      }
+        override func visitPost(_ node: FunctionDeclSyntax) {
+            guard let ctx = node
+                .superCallContext(matchingMethodNames: configuration.resolvedMethodNames),
+                ctx.callCount > 0
+            else {
+                return
+            }
 
-      violations.append(
-        SyntaxViolation(
-          position: ctx.body.leftBrace.endPositionBeforeTrailingTrivia,
-          reason: "Method '\(ctx.name)' should not call to super function",
-        ),
-      )
+            violations.append(
+                SyntaxViolation(
+                    position: ctx.body.leftBrace.endPositionBeforeTrailingTrivia,
+                    reason: "Method '\(ctx.name)' should not call to super function",
+                ),
+            )
+        }
     }
-  }
 }

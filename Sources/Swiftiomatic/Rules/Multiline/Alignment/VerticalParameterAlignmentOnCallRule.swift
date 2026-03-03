@@ -3,36 +3,37 @@ import SwiftSyntax
 struct VerticalParameterAlignmentOnCallRule {
     static let id = "vertical_parameter_alignment_on_call"
     static let name = "Vertical Parameter Alignment on Call"
-    static let summary = "Function parameters should be aligned vertically if they're in multiple lines in a method call"
+    static let summary =
+        "Function parameters should be aligned vertically if they're in multiple lines in a method call"
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 foo(param1: 1, param2: bar
                     param3: false, param4: true)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(param1: 1, param2: bar)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(param1: 1, param2: bar
                     param3: false,
                     param4: true)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(
                    param1: 1
                 ) { _ in }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 UIView.animate(withDuration: 0.4, animations: {
                     blurredImageView.alpha = 1
@@ -40,8 +41,8 @@ struct VerticalParameterAlignmentOnCallRule {
                     self.hideLoading()
                 })
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 UIView.animate(withDuration: 0.4, animations: {
                     blurredImageView.alpha = 1
@@ -50,8 +51,8 @@ struct VerticalParameterAlignmentOnCallRule {
                     self.hideLoading()
                 })
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 UIView.animate(withDuration: 0.4, animations: {
                     blurredImageView.alpha = 1
@@ -59,14 +60,14 @@ struct VerticalParameterAlignmentOnCallRule {
                     self.hideLoading()
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(param1: 1, param2: { _ in },
                     param3: false, param4: true)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo({ _ in
                        bar()
@@ -76,22 +77,22 @@ struct VerticalParameterAlignmentOnCallRule {
                    }
                 )
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(param1: 1, param2: [
                    0,
                    1
                 ], param3: 0)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 myFunc(foo: 0,
                        bar: baz == 0)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 UIViewPropertyAnimator.runningPropertyAnimator(
                     withDuration: 2.0,
@@ -103,132 +104,131 @@ struct VerticalParameterAlignmentOnCallRule {
                     // completion
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 foo(param1: 1, param2: bar,
                                 ↓param3: false, param4: true)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(param1: 1, param2: bar,
                  ↓param3: false, param4: true)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(param1: 1, param2: bar,
                        ↓param3: false,
                        ↓param4: true)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(param1: 1,
                        ↓param2: { _ in })
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(param1: 1,
                     param2: { _ in
                 }, param3: 2,
                  ↓param4: 0)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 foo(param1: 1, param2: { _ in },
                        ↓param3: false, param4: true)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 myFunc(foo: 0,
                         ↓bar: baz == 0)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 myFunc(foo: 0, bar:
                         baz == 0, ↓baz: true)
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension VerticalParameterAlignmentOnCallRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension VerticalParameterAlignmentOnCallRule {}
-
 extension VerticalParameterAlignmentOnCallRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: FunctionCallExprSyntax) {
-      let arguments = node.arguments
-      guard arguments.count > 1, let firstArg = arguments.first else {
-        return
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: FunctionCallExprSyntax) {
+            let arguments = node.arguments
+            guard arguments.count > 1, let firstArg = arguments.first else {
+                return
+            }
 
-      var firstArgumentLocation = locationConverter.location(
-        for: firstArg.positionAfterSkippingLeadingTrivia,
-      )
+            var firstArgumentLocation = locationConverter.location(
+                for: firstArg.positionAfterSkippingLeadingTrivia,
+            )
 
-      var visitedLines = Set<Int>()
-      var previousArgumentWasMultiline = false
+            var visitedLines = Set<Int>()
+            var previousArgumentWasMultiline = false
 
-      let violatingPositions: [AbsolutePosition] =
-        arguments
-        .compactMap { argument -> AbsolutePosition? in
-          defer {
-            previousArgumentWasMultiline = isMultiline(argument: argument)
-          }
+            let violatingPositions: [AbsolutePosition] =
+                arguments
+                    .compactMap { argument -> AbsolutePosition? in
+                        defer {
+                            previousArgumentWasMultiline = isMultiline(argument: argument)
+                        }
 
-          let position = argument.positionAfterSkippingLeadingTrivia
-          let location = locationConverter.location(for: position)
-          guard location.line > firstArgumentLocation.line else {
-            return nil
-          }
+                        let position = argument.positionAfterSkippingLeadingTrivia
+                        let location = locationConverter.location(for: position)
+                        guard location.line > firstArgumentLocation.line else {
+                            return nil
+                        }
 
-          let (firstVisit, _) = visitedLines.insert(location.line)
-          guard location.column != firstArgumentLocation.column, firstVisit else {
-            return nil
-          }
+                        let (firstVisit, _) = visitedLines.insert(location.line)
+                        guard location.column != firstArgumentLocation.column, firstVisit else {
+                            return nil
+                        }
 
-          // if this is the first element on a new line after a closure with multiple lines,
-          // we reset the reference position
-          if previousArgumentWasMultiline, firstVisit {
-            firstArgumentLocation = location
-            return nil
-          }
+                        // if this is the first element on a new line after a closure with multiple lines,
+                        // we reset the reference position
+                        if previousArgumentWasMultiline, firstVisit {
+                            firstArgumentLocation = location
+                            return nil
+                        }
 
-          return position
+                        return position
+                    }
+
+            violations.append(contentsOf: violatingPositions)
         }
 
-      violations.append(contentsOf: violatingPositions)
-    }
+        private func isMultiline(argument: LabeledExprListSyntax.Element) -> Bool {
+            let expression = argument.expression
+            let startPosition = locationConverter.location(
+                for: expression.positionAfterSkippingLeadingTrivia,
+            )
+            let endPosition =
+                locationConverter
+                    .location(for: expression.endPositionBeforeTrailingTrivia)
 
-    private func isMultiline(argument: LabeledExprListSyntax.Element) -> Bool {
-      let expression = argument.expression
-      let startPosition = locationConverter.location(
-        for: expression.positionAfterSkippingLeadingTrivia,
-      )
-      let endPosition =
-        locationConverter
-        .location(for: expression.endPositionBeforeTrailingTrivia)
-
-      return endPosition.line > startPosition.line
+            return endPosition.line > startPosition.line
+        }
     }
-  }
 }

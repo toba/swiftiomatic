@@ -6,56 +6,57 @@ struct EmptyExtensionsRule {
     static let summary = "Empty extensions that don't add protocol conformance should be removed"
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 extension String: Equatable {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 extension Foo {
                   func bar() {}
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 ↓extension String {}
                 """,
-              )
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension EmptyExtensionsRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension EmptyExtensionsRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: ExtensionDeclSyntax) {
-      // Skip if it has protocol conformances
-      if let inheritanceClause = node.inheritanceClause,
-        !inheritanceClause.inheritedTypes.isEmpty
-      {
-        return
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: ExtensionDeclSyntax) {
+            // Skip if it has protocol conformances
+            if let inheritanceClause = node.inheritanceClause,
+               !inheritanceClause.inheritedTypes.isEmpty
+            {
+                return
+            }
 
-      // Skip if it has any members
-      guard node.memberBlock.members.isEmpty else { return }
+            // Skip if it has any members
+            guard node.memberBlock.members.isEmpty else { return }
 
-      // Skip if it has attributes (could be a macro)
-      guard !node.attributes.contains(where: { _ in true }) else { return }
+            // Skip if it has attributes (could be a macro)
+            guard !node.attributes.contains(where: { _ in true }) else { return }
 
-      violations.append(node.extensionKeyword.positionAfterSkippingLeadingTrivia)
+            violations.append(node.extensionKeyword.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }

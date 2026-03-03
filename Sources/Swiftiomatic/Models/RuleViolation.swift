@@ -86,8 +86,9 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
         ruleName = R.name
         self.severity = severity
         self.location = location
-        self.reason = reason.map { ViolationMessage(stringLiteral: $0) }
-            ?? ViolationMessage(stringLiteral: R.summary)
+        self.reason =
+            reason.map { ViolationMessage(stringLiteral: $0) }
+                ?? ViolationMessage(stringLiteral: R.summary)
         self.confidence = confidence
         self.suggestion = suggestion
         #if DEBUG
@@ -109,8 +110,9 @@ public struct RuleViolation: CustomStringConvertible, Codable, Hashable, Sendabl
         ruleName = ruleType.name
         self.severity = severity
         self.location = location
-        self.reason = reason.map { ViolationMessage(stringLiteral: $0) }
-            ?? ViolationMessage(stringLiteral: ruleType.summary)
+        self.reason =
+            reason.map { ViolationMessage(stringLiteral: $0) }
+                ?? ViolationMessage(stringLiteral: ruleType.summary)
         self.confidence = confidence
         self.suggestion = suggestion
     }

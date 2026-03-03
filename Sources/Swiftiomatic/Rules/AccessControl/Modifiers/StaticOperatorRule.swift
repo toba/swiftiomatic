@@ -7,92 +7,93 @@ struct StaticOperatorRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-                    Example(
-                        """
-                        class A: Equatable {
-                          static func == (lhs: A, rhs: A) -> Bool {
-                            return false
-                          }
-                        """,
-                    ),
-                    Example(
-                        """
-                        class A<T>: Equatable {
-                            static func == <T>(lhs: A<T>, rhs: A<T>) -> Bool {
-                                return false
-                            }
-                        """,
-                    ),
-                    Example(
-                        """
-                        public extension Array where Element == Rule {
-                          static func == (lhs: Array, rhs: Array) -> Bool {
-                            if lhs.count != rhs.count { return false }
-                            return !zip(lhs, rhs).contains { !$0.0.isEqualTo($0.1) }
-                          }
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        private extension Optional where Wrapped: Comparable {
-                          static func < (lhs: Optional, rhs: Optional) -> Bool {
-                            switch (lhs, rhs) {
-                            case let (lhs?, rhs?):
-                              return lhs < rhs
-                            case (nil, _?):
-                              return true
-                            default:
-                              return false
-                            }
-                          }
-                        }
-                        """,
-                    ),
-                ]
+            Example(
+                """
+                class A: Equatable {
+                  static func == (lhs: A, rhs: A) -> Bool {
+                    return false
+                  }
+                """,
+            ),
+            Example(
+                """
+                class A<T>: Equatable {
+                    static func == <T>(lhs: A<T>, rhs: A<T>) -> Bool {
+                        return false
+                    }
+                """,
+            ),
+            Example(
+                """
+                public extension Array where Element == Rule {
+                  static func == (lhs: Array, rhs: Array) -> Bool {
+                    if lhs.count != rhs.count { return false }
+                    return !zip(lhs, rhs).contains { !$0.0.isEqualTo($0.1) }
+                  }
+                }
+                """,
+            ),
+            Example(
+                """
+                private extension Optional where Wrapped: Comparable {
+                  static func < (lhs: Optional, rhs: Optional) -> Bool {
+                    switch (lhs, rhs) {
+                    case let (lhs?, rhs?):
+                      return lhs < rhs
+                    case (nil, _?):
+                      return true
+                    default:
+                      return false
+                    }
+                  }
+                }
+                """,
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-                    Example(
-                        """
-                        ↓func == (lhs: A, rhs: A) -> Bool {
-                          return false
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        ↓func == <T>(lhs: A<T>, rhs: A<T>) -> Bool {
-                          return false
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        ↓func == (lhs: [Rule], rhs: [Rule]) -> Bool {
-                          if lhs.count != rhs.count { return false }
-                          return !zip(lhs, rhs).contains { !$0.0.isEqualTo($0.1) }
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        private ↓func < <T: Comparable>(lhs: T?, rhs: T?) -> Bool {
-                          switch (lhs, rhs) {
-                          case let (lhs?, rhs?):
-                            return lhs < rhs
-                          case (nil, _?):
-                            return true
-                          default:
-                            return false
-                          }
-                        }
-                        """,
-                    ),
-                ]
+            Example(
+                """
+                ↓func == (lhs: A, rhs: A) -> Bool {
+                  return false
+                }
+                """,
+            ),
+            Example(
+                """
+                ↓func == <T>(lhs: A<T>, rhs: A<T>) -> Bool {
+                  return false
+                }
+                """,
+            ),
+            Example(
+                """
+                ↓func == (lhs: [Rule], rhs: [Rule]) -> Bool {
+                  if lhs.count != rhs.count { return false }
+                  return !zip(lhs, rhs).contains { !$0.0.isEqualTo($0.1) }
+                }
+                """,
+            ),
+            Example(
+                """
+                private ↓func < <T: Comparable>(lhs: T?, rhs: T?) -> Bool {
+                  switch (lhs, rhs) {
+                  case let (lhs?, rhs?):
+                    return lhs < rhs
+                  case (nil, _?):
+                    return true
+                  default:
+                    return false
+                  }
+                }
+                """,
+            ),
+        ]
     }
-    var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension StaticOperatorRule: SwiftSyntaxRule {
@@ -100,8 +101,6 @@ extension StaticOperatorRule: SwiftSyntaxRule {
         Visitor(configuration: options, file: file)
     }
 }
-
-extension StaticOperatorRule {}
 
 extension StaticOperatorRule {
     fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {

@@ -66,7 +66,6 @@ extension String {
             .reduce(URL(fileURLWithPath: self)) { url, _ in url.deletingLastPathComponent() }
             .path
     }
-
 }
 
 // MARK: - Darwin

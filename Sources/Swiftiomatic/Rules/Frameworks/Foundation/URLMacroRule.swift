@@ -7,45 +7,46 @@ struct URLMacroRule {
     static let scope: Scope = .suggest
     static var nonTriggeringExamples: [Example] {
         [
-              Example("let url = URL(string: variable)"),
-              Example("let url = URL(string: \"https://example.com\")"),
-            ]
+            Example("let url = URL(string: variable)"),
+            Example("let url = URL(string: \"https://example.com\")"),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("let url = ↓URL(string: \"https://example.com\")!"),
-            ]
+            Example("let url = ↓URL(string: \"https://example.com\")!"),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension URLMacroRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension URLMacroRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: ForceUnwrapExprSyntax) {
-      // Check if the unwrapped expression is URL(string: "...")
-      guard let call = node.expression.as(FunctionCallExprSyntax.self),
-        let callee = call.calledExpression.as(DeclReferenceExprSyntax.self),
-        callee.baseName.text == "URL"
-      else { return }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: ForceUnwrapExprSyntax) {
+            // Check if the unwrapped expression is URL(string: "...")
+            guard let call = node.expression.as(FunctionCallExprSyntax.self),
+                  let callee = call.calledExpression.as(DeclReferenceExprSyntax.self),
+                  callee.baseName.text == "URL"
+            else { return }
 
-      // Check for single argument labeled "string"
-      let args = call.arguments
-      guard args.count == 1,
-        let firstArg = args.first,
-        firstArg.label?.text == "string"
-      else { return }
+            // Check for single argument labeled "string"
+            let args = call.arguments
+            guard args.count == 1,
+                  let firstArg = args.first,
+                  firstArg.label?.text == "string"
+            else { return }
 
-      // Check if the argument is a string literal (no interpolation)
-      guard firstArg.expression.is(StringLiteralExprSyntax.self) else { return }
+            // Check if the argument is a string literal (no interpolation)
+            guard firstArg.expression.is(StringLiteralExprSyntax.self) else { return }
 
-      violations.append(callee.baseName.positionAfterSkippingLeadingTrivia)
+            violations.append(callee.baseName.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }

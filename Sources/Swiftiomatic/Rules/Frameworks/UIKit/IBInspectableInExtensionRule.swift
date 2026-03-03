@@ -7,48 +7,47 @@ struct IBInspectableInExtensionRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class Foo {
                   @IBInspectable private var x: Int
                 }
                 """,
-              )
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 extension Foo {
                   ↓@IBInspectable private var x: Int
                 }
                 """,
-              )
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension IBInspectableInExtensionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension IBInspectableInExtensionRule {}
-
 extension IBInspectableInExtensionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      .allExcept(ExtensionDeclSyntax.self, VariableDeclSyntax.self)
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .allExcept(ExtensionDeclSyntax.self, VariableDeclSyntax.self)
+        }
 
-    override func visitPost(_ node: AttributeSyntax) {
-      if node.attributeNameText == "IBInspectable" {
-        violations.append(node.positionAfterSkippingLeadingTrivia)
-      }
+        override func visitPost(_ node: AttributeSyntax) {
+            if node.attributeNameText == "IBInspectable" {
+                violations.append(node.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 }

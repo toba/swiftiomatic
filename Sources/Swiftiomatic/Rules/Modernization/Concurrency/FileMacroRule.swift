@@ -7,38 +7,39 @@ struct FileMacroRule {
     static let scope: Scope = .suggest
     static var nonTriggeringExamples: [Example] {
         [
-              Example("func foo(file: StaticString = #file) {}"),
-            ]
+            Example("func foo(file: StaticString = #file) {}"),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("func foo(file: StaticString = ↓#fileID) {}"),
-            ]
+            Example("func foo(file: StaticString = ↓#fileID) {}"),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension FileMacroRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension FileMacroRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
-      if token.tokenKind == .poundAvailable || token.text == "#fileID" {
-        // Check for #fileID keyword
-        if case .keyword = token.tokenKind, token.text == "#fileID" {
-          violations.append(token.positionAfterSkippingLeadingTrivia)
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
+            if token.tokenKind == .poundAvailable || token.text == "#fileID" {
+                // Check for #fileID keyword
+                if case .keyword = token.tokenKind, token.text == "#fileID" {
+                    violations.append(token.positionAfterSkippingLeadingTrivia)
+                }
+            }
+            // Also check raw token text for #fileID
+            if token.text == "#fileID" {
+                violations.append(token.positionAfterSkippingLeadingTrivia)
+            }
+            return .visitChildren
         }
-      }
-      // Also check raw token text for #fileID
-      if token.text == "#fileID" {
-        violations.append(token.positionAfterSkippingLeadingTrivia)
-      }
-      return .visitChildren
     }
-  }
 }

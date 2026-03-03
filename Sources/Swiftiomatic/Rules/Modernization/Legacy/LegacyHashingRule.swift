@@ -6,7 +6,7 @@ struct LegacyHashingRule {
     static let summary = "Prefer using the `hash(into:)` function instead of overriding `hashValue`"
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 struct Foo: Hashable {
                   let bar: Int = 10
@@ -16,8 +16,8 @@ struct LegacyHashingRule {
                   }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo: Hashable {
                   let bar: Int = 10
@@ -27,14 +27,14 @@ struct LegacyHashingRule {
                   }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var hashValue: Int { return 1 }
                 class Foo: Hashable { \n }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo: Hashable {
                   let bar: String = "Foo"
@@ -44,8 +44,8 @@ struct LegacyHashingRule {
                   }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo: Hashable {
                   let bar: String = "Foo"
@@ -56,12 +56,13 @@ struct LegacyHashingRule {
                   }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 struct Foo: Hashable {
                     let bar: Int = 10
@@ -71,8 +72,8 @@ struct LegacyHashingRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Foo: Hashable {
                     let bar: Int = 10
@@ -82,35 +83,35 @@ struct LegacyHashingRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension LegacyHashingRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension LegacyHashingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: VariableDeclSyntax) {
-      guard
-        node.parent?.is(MemberBlockItemSyntax.self) == true,
-        node.bindingSpecifier.tokenKind == .keyword(.var),
-        let binding = node.bindings.onlyElement,
-        let identifier = binding.pattern.as(IdentifierPatternSyntax.self),
-        identifier.identifier.text == "hashValue",
-        let returnType = binding.typeAnnotation?.type.as(IdentifierTypeSyntax.self),
-        returnType.name.text == "Int"
-      else {
-        return
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: VariableDeclSyntax) {
+            guard
+                node.parent?.is(MemberBlockItemSyntax.self) == true,
+                node.bindingSpecifier.tokenKind == .keyword(.var),
+                let binding = node.bindings.onlyElement,
+                let identifier = binding.pattern.as(IdentifierPatternSyntax.self),
+                identifier.identifier.text == "hashValue",
+                let returnType = binding.typeAnnotation?.type.as(IdentifierTypeSyntax.self),
+                returnType.name.text == "Int"
+            else {
+                return
+            }
 
-      violations.append(node.bindingSpecifier.positionAfterSkippingLeadingTrivia)
+            violations.append(node.bindingSpecifier.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }

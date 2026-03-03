@@ -6,144 +6,143 @@ struct UnneededOverrideRule {
     static let name = "Unneeded Overridden Functions"
     static let summary = "Remove overridden functions that don't do anything except call their super"
     static let isCorrectable = true
-  var options = UnneededOverrideOptions()
-
+    var options = UnneededOverrideOptions()
 }
 
 extension UnneededOverrideRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: options, file: file)
-  }
+    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
+        Rewriter(configuration: options, file: file)
+    }
 }
 
 extension UnneededOverrideRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: FunctionDeclSyntax) {
-      if node.isUnneededOverride(excludedMethods: configuration.excludedMethods) {
-        violations.append(node.positionAfterSkippingLeadingTrivia)
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: FunctionDeclSyntax) {
+            if node.isUnneededOverride(excludedMethods: configuration.excludedMethods) {
+                violations.append(node.positionAfterSkippingLeadingTrivia)
+            }
+        }
+
+        override func visitPost(_ node: InitializerDeclSyntax) {
+            if configuration.affectInits, node.isUnneededOverride {
+                violations.append(node.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
 
-    override func visitPost(_ node: InitializerDeclSyntax) {
-      if configuration.affectInits, node.isUnneededOverride {
-        violations.append(node.positionAfterSkippingLeadingTrivia)
-      }
+    fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
+        override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
+            guard node.isUnneededOverride(excludedMethods: configuration.excludedMethods) else {
+                return super.visit(node)
+            }
+
+            return visitUnneededOverride(node)
+        }
+
+        override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
+            guard configuration.affectInits, node.isUnneededOverride else {
+                return super.visit(node)
+            }
+
+            return visitUnneededOverride(node)
+        }
+
+        private func visitUnneededOverride(_ node: some DeclSyntaxProtocol) -> DeclSyntax {
+            numberOfCorrections += 1
+            let expr: DeclSyntax = ""
+            return
+                expr
+                    .with(\.leadingTrivia, node.leadingTrivia)
+                    .with(\.trailingTrivia, node.trailingTrivia)
+        }
     }
-  }
-
-  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
-    override func visit(_ node: FunctionDeclSyntax) -> DeclSyntax {
-      guard node.isUnneededOverride(excludedMethods: configuration.excludedMethods) else {
-        return super.visit(node)
-      }
-
-      return visitUnneededOverride(node)
-    }
-
-    override func visit(_ node: InitializerDeclSyntax) -> DeclSyntax {
-      guard configuration.affectInits, node.isUnneededOverride else {
-        return super.visit(node)
-      }
-
-      return visitUnneededOverride(node)
-    }
-
-    private func visitUnneededOverride(_ node: some DeclSyntaxProtocol) -> DeclSyntax {
-      numberOfCorrections += 1
-      let expr: DeclSyntax = ""
-      return
-        expr
-        .with(\.leadingTrivia, node.leadingTrivia)
-        .with(\.trailingTrivia, node.trailingTrivia)
-    }
-  }
 }
 
 extension FunctionDeclSyntax {
-  fileprivate func isUnneededOverride(excludedMethods: Set<String>) -> Bool {
-    !excludedMethods.contains(name.text) && mayBeUnneededOverride(name: name.text)
-  }
+    fileprivate func isUnneededOverride(excludedMethods: Set<String>) -> Bool {
+        !excludedMethods.contains(name.text) && mayBeUnneededOverride(name: name.text)
+    }
 }
 
 extension InitializerDeclSyntax {
-  fileprivate var isUnneededOverride: Bool {
-    guard
-      optionalMark == nil,  // init? can be overridden with init! and vice versa.
-      !modifiers.contains(keyword: .private)  // An initializer can be hidden by overriding it.
-    else {
-      return false
-    }
+    fileprivate var isUnneededOverride: Bool {
+        guard
+            optionalMark == nil, // init? can be overridden with init! and vice versa.
+            !modifiers.contains(keyword: .private) // An initializer can be hidden by overriding it.
+        else {
+            return false
+        }
 
-    return mayBeUnneededOverride(name: "init")
-  }
+        return mayBeUnneededOverride(name: "init")
+    }
 }
 
 private protocol OverridableDecl: WithAttributesSyntax, WithModifiersSyntax {
-  var signature: FunctionSignatureSyntax { get }
-  var body: CodeBlockSyntax? { get }
+    var signature: FunctionSignatureSyntax { get }
+    var body: CodeBlockSyntax? { get }
 }
 
 extension OverridableDecl {
-  /// Perform checks common to all overridable types of declarations.
-  /// Returns `true` if the `override` appears to be unneeded.
-  fileprivate func mayBeUnneededOverride(name: String) -> Bool {
-    guard modifiers.contains(keyword: .override), let statement = body?.statements.onlyElement
-    else {
-      return false
-    }
+    /// Perform checks common to all overridable types of declarations.
+    /// Returns `true` if the `override` appears to be unneeded.
+    fileprivate func mayBeUnneededOverride(name: String) -> Bool {
+        guard modifiers.contains(keyword: .override), let statement = body?.statements.onlyElement
+        else {
+            return false
+        }
 
-    // Assume attributes change behavior.
-    guard attributes.isEmpty else {
-      return false
-    }
+        // Assume attributes change behavior.
+        guard attributes.isEmpty else {
+            return false
+        }
 
-    guard let call = extractFunctionCallSyntax(statement.item),
-      let member = call.calledExpression.as(MemberAccessExprSyntax.self),
-      member.base?.is(SuperExprSyntax.self) == true,
-      member.declName.baseName.text == name
-    else {
-      return false
-    }
+        guard let call = extractFunctionCallSyntax(statement.item),
+              let member = call.calledExpression.as(MemberAccessExprSyntax.self),
+              member.base?.is(SuperExprSyntax.self) == true,
+              member.declName.baseName.text == name
+        else {
+            return false
+        }
 
-    guard call.trailingClosure == nil, call.additionalTrailingClosures.isEmpty else {
-      // Assume trailing closures change behavior.
-      return false
-    }
+        guard call.trailingClosure == nil, call.additionalTrailingClosures.isEmpty else {
+            // Assume trailing closures change behavior.
+            return false
+        }
 
-    let declParameters = signature.parameterClause.parameters
-    if declParameters.contains(where: { $0.defaultValue != nil }) {
-      // Any default parameter might be a change to the super.
-      return false
-    }
+        let declParameters = signature.parameterClause.parameters
+        if declParameters.contains(where: { $0.defaultValue != nil }) {
+            // Any default parameter might be a change to the super.
+            return false
+        }
 
-    // Assume any change in arguments passed means behavior was changed.
-    let expectedArguments = declParameters.map {
-      (
-        $0.firstName.text == "_" ? "" : $0.firstName.text,
-        $0.secondName?.text ?? $0.firstName.text,
-      )
-    }
-    let actualArguments = call.arguments.map {
-      (
-        $0.label?.text ?? "",
-        $0.expression.as(DeclReferenceExprSyntax.self)?.baseName.text ?? "",
-      )
-    }
+        // Assume any change in arguments passed means behavior was changed.
+        let expectedArguments = declParameters.map {
+            (
+                $0.firstName.text == "_" ? "" : $0.firstName.text,
+                $0.secondName?.text ?? $0.firstName.text,
+            )
+        }
+        let actualArguments = call.arguments.map {
+            (
+                $0.label?.text ?? "",
+                $0.expression.as(DeclReferenceExprSyntax.self)?.baseName.text ?? "",
+            )
+        }
 
-    guard expectedArguments.count == actualArguments.count else {
-      return false
-    }
+        guard expectedArguments.count == actualArguments.count else {
+            return false
+        }
 
-    for (lhs, rhs) in zip(expectedArguments, actualArguments) where lhs != rhs {
-      return false
-    }
+        for (lhs, rhs) in zip(expectedArguments, actualArguments) where lhs != rhs {
+            return false
+        }
 
-    return true
-  }
+        return true
+    }
 }
 
 extension FunctionDeclSyntax: OverridableDecl {}
@@ -154,36 +153,36 @@ extension InitializerDeclSyntax: OverridableDecl {}
 ///
 /// If this returns a non-super calling function, it will get filtered out later.
 private func extractFunctionCallSyntax(_ node: some SyntaxProtocol) -> FunctionCallExprSyntax? {
-  var syntax = simplify(node)
-  while let nestedSyntax = syntax {
-    if nestedSyntax.as(FunctionCallExprSyntax.self) != nil {
-      break
+    var syntax = simplify(node)
+    while let nestedSyntax = syntax {
+        if nestedSyntax.as(FunctionCallExprSyntax.self) != nil {
+            break
+        }
+
+        syntax = simplify(nestedSyntax)
     }
 
-    syntax = simplify(nestedSyntax)
-  }
-
-  return syntax?.as(FunctionCallExprSyntax.self)
+    return syntax?.as(FunctionCallExprSyntax.self)
 }
 
 private func simplify(_ node: some SyntaxProtocol) -> (any ExprSyntaxProtocol)? {
-  if let expr = node.as(AwaitExprSyntax.self) {
-    return expr.expression
-  }
-  if let expr = node.as(TryExprSyntax.self) {
-    // Assume using try! / try? changes behavior.
-    if expr.questionOrExclamationMark != nil {
-      return nil
+    if let expr = node.as(AwaitExprSyntax.self) {
+        return expr.expression
+    }
+    if let expr = node.as(TryExprSyntax.self) {
+        // Assume using try! / try? changes behavior.
+        if expr.questionOrExclamationMark != nil {
+            return nil
+        }
+
+        return expr.expression
+    }
+    if let expr = node.as(FunctionCallExprSyntax.self) {
+        return expr
+    }
+    if let stmt = node.as(ReturnStmtSyntax.self) {
+        return stmt.expression
     }
 
-    return expr.expression
-  }
-  if let expr = node.as(FunctionCallExprSyntax.self) {
-    return expr
-  }
-  if let stmt = node.as(ReturnStmtSyntax.self) {
-    return stmt.expression
-  }
-
-  return nil
+    return nil
 }

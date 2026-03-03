@@ -3,142 +3,145 @@ import Foundation
 struct LiteralExpressionEndIndentationRule: Rule {
     static let id = "literal_expression_end_indentation"
     static let name = "Literal Expression End Indentation"
-    static let summary = "Array and dictionary literal end should have the same indentation as the line that started it"
+    static let summary =
+        "Array and dictionary literal end should have the same indentation as the line that started it"
     static let isCorrectable = true
     static let isOptIn = true
     static let requiresSourceKit = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 [1, 2, 3]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 [1,
                  2
                 ]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 [
                    1,
                    2
                 ]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 [
                    1,
                    2]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                    let x = [
                        1,
                        2
                    ]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 [key: 2, key2: 3]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 [key: 1,
                  key2: 2
                 ]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 [
                    key: 0,
                    key2: 20
                 ]
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 let x = [
                    1,
                    2
                    ↓]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                    let x = [
                        1,
                        2
                 ↓]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 let x = [
                    key: value
                    ↓]
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var corrections: [Example: Example] {
         [
-              Example(
+            Example(
                 """
                 let x = [
                    key: value
                 ↓   ]
                 """,
-              ): Example(
+            ): Example(
                 """
                 let x = [
                    key: value
                 ]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                    let x = [
                        1,
                        2
                 ↓]
                 """,
-              ): Example(
+            ): Example(
                 """
                    let x = [
                        1,
                        2
                    ]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 let x = [
                    1,
                    2
                 ↓   ]
                 """,
-              ): Example(
+            ): Example(
                 """
                 let x = [
                    1,
                    2
                 ]
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 let x = [
                    1,
@@ -148,7 +151,7 @@ struct LiteralExpressionEndIndentationRule: Rule {
                    4
                 ↓   ]
                 """,
-              ): Example(
+            ): Example(
                 """
                 let x = [
                    1,
@@ -158,159 +161,160 @@ struct LiteralExpressionEndIndentationRule: Rule {
                    4
                 ]
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
-  func validate(file: SwiftSource) -> [RuleViolation] {
-    violations(in: file).map { violation in
-      ruleViolation(for: violation, in: file)
+    var options = SeverityOption<Self>(.warning)
+
+    func validate(file: SwiftSource) -> [RuleViolation] {
+        violations(in: file).map { violation in
+            ruleViolation(for: violation, in: file)
+        }
     }
-  }
 
-  private func ruleViolation(
-    for violation: Violation,
-    in file: SwiftSource
-  ) -> RuleViolation {
-    let reason =
-      "\(Self.summary); "
-      + "expected indentation of \(violation.indentationRanges.expected.length), "
-      + "got \(violation.indentationRanges.actual.length)"
+    private func ruleViolation(
+        for violation: Violation,
+        in file: SwiftSource,
+    ) -> RuleViolation {
+        let reason =
+            "\(Self.summary); "
+                + "expected indentation of \(violation.indentationRanges.expected.length), "
+                + "got \(violation.indentationRanges.actual.length)"
 
-    return RuleViolation(
-      ruleType: Self.self,
-      severity: options.severity,
-      location: Location(file: file, byteOffset: violation.endOffset),
-      reason: reason,
-    )
-  }
+        return RuleViolation(
+            ruleType: Self.self,
+            severity: options.severity,
+            location: Location(file: file, byteOffset: violation.endOffset),
+            reason: reason,
+        )
+    }
 
-  fileprivate static let notWhitespace: CachedRegex = "[^\\s]"
+    fileprivate static let notWhitespace: CachedRegex = "[^\\s]"
 }
 
 extension LiteralExpressionEndIndentationRule: CorrectableRule {
-  func correct(file: SwiftSource) -> Int {
-    let allViolations = violations(in: file).reversed().filter { violation in
-      guard let nsRange = file.stringView.byteRangeToNSRange(violation.range) else {
-        return false
-      }
-      return file.ruleEnabled(violatingRanges: [nsRange], for: self).isNotEmpty
-    }
-    guard allViolations.isNotEmpty else {
-      return 0
-    }
-    var correctedContents = file.contents
-    let actualLookup = actualViolationLookup(for: allViolations)
-    var numberOfCorrections = 0
-    for violation in allViolations {
-      let expected = actualLookup(violation).indentationRanges.expected
-      let actual = violation.indentationRanges.actual
-      if correct(contents: &correctedContents, expected: expected, actual: actual) {
-        numberOfCorrections += 1
-      }
-    }
-    file.write(correctedContents)
+    func correct(file: SwiftSource) -> Int {
+        let allViolations = violations(in: file).reversed().filter { violation in
+            guard let nsRange = file.stringView.byteRangeToNSRange(violation.range) else {
+                return false
+            }
+            return file.ruleEnabled(violatingRanges: [nsRange], for: self).isNotEmpty
+        }
+        guard allViolations.isNotEmpty else {
+            return 0
+        }
+        var correctedContents = file.contents
+        let actualLookup = actualViolationLookup(for: allViolations)
+        var numberOfCorrections = 0
+        for violation in allViolations {
+            let expected = actualLookup(violation).indentationRanges.expected
+            let actual = violation.indentationRanges.actual
+            if correct(contents: &correctedContents, expected: expected, actual: actual) {
+                numberOfCorrections += 1
+            }
+        }
+        file.write(correctedContents)
 
-    // Re-correct to catch cascading indentation from the first round.
-    numberOfCorrections += correct(file: file)
-    return numberOfCorrections
-  }
-
-  private func correct(contents: inout String, expected: NSRange, actual: NSRange) -> Bool {
-    guard let actualIndices = contents.nsRangeToIndexRange(actual) else {
-      return false
+        // Re-correct to catch cascading indentation from the first round.
+        numberOfCorrections += correct(file: file)
+        return numberOfCorrections
     }
 
-    let correction = contents.substring(from: expected.location, length: expected.length)
-    contents = contents.replacingCharacters(in: actualIndices, with: correction)
+    private func correct(contents: inout String, expected: NSRange, actual: NSRange) -> Bool {
+        guard let actualIndices = contents.nsRangeToIndexRange(actual) else {
+            return false
+        }
 
-    return true
-  }
+        let correction = contents.substring(from: expected.location, length: expected.length)
+        contents = contents.replacingCharacters(in: actualIndices, with: correction)
 
-  private func actualViolationLookup(for violations: [Violation]) -> (Violation) -> Violation {
-    let lookup = violations.reduce(
-      into: [NSRange: Violation](),
-    ) { result, violation in
-      result[violation.indentationRanges.actual] = violation
+        return true
     }
 
-    func actualViolation(for violation: Violation) -> Violation {
-      guard let actual = lookup[violation.indentationRanges.expected]
-      else { return violation }
-      return actualViolation(for: actual)
-    }
+    private func actualViolationLookup(for violations: [Violation]) -> (Violation) -> Violation {
+        let lookup = violations.reduce(
+            into: [NSRange: Violation](),
+        ) { result, violation in
+            result[violation.indentationRanges.actual] = violation
+        }
 
-    return actualViolation
-  }
+        func actualViolation(for violation: Violation) -> Violation {
+            guard let actual = lookup[violation.indentationRanges.expected]
+            else { return violation }
+            return actualViolation(for: actual)
+        }
+
+        return actualViolation
+    }
 }
 
 extension LiteralExpressionEndIndentationRule {
-  fileprivate struct Violation {
-    var indentationRanges: (expected: NSRange, actual: NSRange)
-    var endOffset: ByteCount
-    var range: ByteRange
-  }
-
-  fileprivate func violations(in file: SwiftSource) -> [Violation] {
-    file.structureDictionary.traverseDepthFirst { subDict in
-      guard let kind = subDict.expressionKind else { return nil }
-      guard let violation = violation(in: file, of: kind, dictionary: subDict)
-      else { return nil }
-      return [violation]
-    }
-  }
-
-  private func violation(
-    in file: SwiftSource,
-    of kind: ExpressionKind,
-    dictionary: SourceKitDictionary,
-  ) -> Violation? {
-    guard kind == .dictionary || kind == .array else {
-      return nil
+    fileprivate struct Violation {
+        var indentationRanges: (expected: NSRange, actual: NSRange)
+        var endOffset: ByteCount
+        var range: ByteRange
     }
 
-    let elements = dictionary.elements
-      .filter { $0.kind == "source.lang.swift.structure.elem.expr" }
-
-    let contents = file.stringView
-    guard elements.isNotEmpty,
-      let offset = dictionary.offset,
-      let length = dictionary.length,
-      let (startLine, _) = contents.lineAndCharacter(forByteOffset: offset),
-      let firstParamOffset = elements[0].offset,
-      let (firstParamLine, _) = contents.lineAndCharacter(forByteOffset: firstParamOffset),
-      startLine != firstParamLine,
-      let lastParamOffset = elements.last?.offset,
-      let (lastParamLine, _) = contents.lineAndCharacter(forByteOffset: lastParamOffset),
-      case let endOffset = offset + length - 1,
-      let (endLine, endPosition) = contents.lineAndCharacter(forByteOffset: endOffset),
-      lastParamLine != endLine
-    else {
-      return nil
+    private func violations(in file: SwiftSource) -> [Violation] {
+        file.structureDictionary.traverseDepthFirst { subDict in
+            guard let kind = subDict.expressionKind else { return nil }
+            guard let violation = violation(in: file, of: kind, dictionary: subDict)
+            else { return nil }
+            return [violation]
+        }
     }
 
-    let range = file.lines[startLine - 1].range
-    let regex = Self.notWhitespace
-    let actual = endPosition - 1
-    guard let match = regex.firstMatch(in: file.contents, range: range),
-      case let matchNSRange = NSRange(match.range, in: file.contents),
-      case let expected = matchNSRange.location - range.location,
-      expected != actual
-    else {
-      return nil
+    private func violation(
+        in file: SwiftSource,
+        of kind: ExpressionKind,
+        dictionary: SourceKitDictionary,
+    ) -> Violation? {
+        guard kind == .dictionary || kind == .array else {
+            return nil
+        }
+
+        let elements = dictionary.elements
+            .filter { $0.kind == "source.lang.swift.structure.elem.expr" }
+
+        let contents = file.stringView
+        guard elements.isNotEmpty,
+              let offset = dictionary.offset,
+              let length = dictionary.length,
+              let (startLine, _) = contents.lineAndCharacter(forByteOffset: offset),
+              let firstParamOffset = elements[0].offset,
+              let (firstParamLine, _) = contents.lineAndCharacter(forByteOffset: firstParamOffset),
+              startLine != firstParamLine,
+              let lastParamOffset = elements.last?.offset,
+              let (lastParamLine, _) = contents.lineAndCharacter(forByteOffset: lastParamOffset),
+              case let endOffset = offset + length - 1,
+              let (endLine, endPosition) = contents.lineAndCharacter(forByteOffset: endOffset),
+              lastParamLine != endLine
+        else {
+            return nil
+        }
+
+        let range = file.lines[startLine - 1].range
+        let regex = Self.notWhitespace
+        let actual = endPosition - 1
+        guard let match = regex.firstMatch(in: file.contents, range: range),
+              case let matchNSRange = NSRange(match.range, in: file.contents),
+              case let expected = matchNSRange.location - range.location,
+              expected != actual
+        else {
+            return nil
+        }
+
+        var expectedRange = range
+        expectedRange.length = expected
+
+        var actualRange = file.lines[endLine - 1].range
+        actualRange.length = actual
+
+        return Violation(
+            indentationRanges: (expected: expectedRange, actual: actualRange),
+            endOffset: endOffset,
+            range: ByteRange(location: offset, length: length),
+        )
     }
-
-    var expectedRange = range
-    expectedRange.length = expected
-
-    var actualRange = file.lines[endLine - 1].range
-    actualRange.length = actual
-
-    return Violation(
-      indentationRanges: (expected: expectedRange, actual: actualRange),
-      endOffset: endOffset,
-      range: ByteRange(location: offset, length: length),
-    )
-  }
 }

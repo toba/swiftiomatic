@@ -7,80 +7,79 @@ struct AnonymousArgumentInMultilineClosureRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example("closure { $0 }"),
-              Example("closure { print($0) }"),
-              Example(
+            Example("closure { $0 }"),
+            Example("closure { print($0) }"),
+            Example(
                 """
                 closure { arg in
                     print(arg)
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 closure { arg in
                     nestedClosure { $0 + arg }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 closure {
                     print(↓$0)
                 }
                 """,
-              )
-            ]
+            ),
+        ]
     }
+
     static let rationale: String? = """
-      In multiline closures, for clarity, prefer using named arguments
+    In multiline closures, for clarity, prefer using named arguments
 
-      ```
-      closure { arg in
-          print(arg)
-      }
-      ```
+    ```
+    closure { arg in
+        print(arg)
+    }
+    ```
 
-      to anonymous arguments
+    to anonymous arguments
 
-      ```
-      closure {
-          print(↓$0)
-      }
-      ```
-      """
-  var options = SeverityOption<Self>(.warning)
-
+    ```
+    closure {
+        print(↓$0)
+    }
+    ```
+    """
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension AnonymousArgumentInMultilineClosureRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension AnonymousArgumentInMultilineClosureRule {}
-
 extension AnonymousArgumentInMultilineClosureRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-      let startLocation = locationConverter.location(
-        for: node.leftBrace.positionAfterSkippingLeadingTrivia,
-      )
-      let endLocation = locationConverter.location(
-        for: node.rightBrace.endPositionBeforeTrailingTrivia,
-      )
-      return startLocation.line == endLocation.line ? .skipChildren : .visitChildren
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+            let startLocation = locationConverter.location(
+                for: node.leftBrace.positionAfterSkippingLeadingTrivia,
+            )
+            let endLocation = locationConverter.location(
+                for: node.rightBrace.endPositionBeforeTrailingTrivia,
+            )
+            return startLocation.line == endLocation.line ? .skipChildren : .visitChildren
+        }
 
-    override func visitPost(_ node: DeclReferenceExprSyntax) {
-      if case .dollarIdentifier = node.baseName.tokenKind {
-        violations.append(node.positionAfterSkippingLeadingTrivia)
-      }
+        override func visitPost(_ node: DeclReferenceExprSyntax) {
+            if case .dollarIdentifier = node.baseName.tokenKind {
+                violations.append(node.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 }

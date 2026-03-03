@@ -31,12 +31,12 @@ enum YamlParser {
     }
 }
 
-private extension Constructor {
-    static func customConstructor(env: [String: String]) -> Constructor {
+extension Constructor {
+    fileprivate static func customConstructor(env: [String: String]) -> Constructor {
         Constructor(customScalarMap(env: env))
     }
 
-    static func customScalarMap(env: [String: String]) -> ScalarMap {
+    fileprivate static func customScalarMap(env: [String: String]) -> ScalarMap {
         var map = defaultScalarMap
         map[.str] = { $0.string.expandingEnvVars(env: env) }
         map[.bool] = {
@@ -52,8 +52,8 @@ private extension Constructor {
     }
 }
 
-private extension String {
-    func expandingEnvVars(env: [String: String]) -> String {
+extension String {
+    fileprivate func expandingEnvVars(env: [String: String]) -> String {
         guard contains("${") else {
             // No environment variables used.
             return self

@@ -9,7 +9,7 @@ struct ShorthandOptionalBindingRule {
     static let deprecatedAliases: Set<String> = ["if_let_shadowing"]
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 if let i {}
                 if let i = a {}
@@ -19,19 +19,20 @@ struct ShorthandOptionalBindingRule {
                 guard let `self` = self else {}
                 while var i { i = nil }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if let i,
                    var i = a,
                    j > 0 {}
                 """, isExcludedFromDocumentation: true,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 if ↓let i = i {}
                 if ↓let self = self {}
@@ -39,15 +40,15 @@ struct ShorthandOptionalBindingRule {
                 if i > 0, ↓let j = j {}
                 if ↓let i = i, ↓var j = j {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if ↓let i = i,
                    ↓var j = j,
                    j > 0 {}
                 """, isExcludedFromDocumentation: true,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 guard ↓let i = i else {}
                 guard ↓let self = self else {}
@@ -55,113 +56,112 @@ struct ShorthandOptionalBindingRule {
                 guard i > 0, ↓let j = j else {}
                 guard ↓let i = i, ↓var j = j else {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 while ↓var i = i { i = nil }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var corrections: [Example: Example] {
         [
-              Example(
+            Example(
                 """
                 if ↓let i = i {}
                 """,
-              ): Example(
+            ): Example(
                 """
                 if let i {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if ↓let self = self {}
                 """,
-              ): Example(
+            ): Example(
                 """
                 if let self {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if ↓var `self` = `self` {}
                 """,
-              ): Example(
+            ): Example(
                 """
                 if var `self` {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 guard ↓let i = i, ↓var j = j  , ↓let k  =k else {}
                 """,
-              ): Example(
+            ): Example(
                 """
                 guard let i, var j  , let k else {}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 while j > 0, ↓var i = i   { i = nil }
                 """,
-              ): Example(
+            ): Example(
                 """
                 while j > 0, var i   { i = nil }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension ShorthandOptionalBindingRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: options, file: file)
-  }
+    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
+        Rewriter(configuration: options, file: file)
+    }
 }
 
-extension ShorthandOptionalBindingRule {}
-
 extension ShorthandOptionalBindingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: OptionalBindingConditionSyntax) {
-      if node.isShadowingOptionalBinding {
-        violations.append(node.bindingSpecifier.positionAfterSkippingLeadingTrivia)
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: OptionalBindingConditionSyntax) {
+            if node.isShadowingOptionalBinding {
+                violations.append(node.bindingSpecifier.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
-    override func visit(_ node: OptionalBindingConditionSyntax)
-      -> OptionalBindingConditionSyntax
-    {
-      guard node.isShadowingOptionalBinding else {
-        return super.visit(node)
-      }
-      numberOfCorrections += 1
-      let newNode =
-        node
-        .with(\.initializer, nil)
-        .with(\.pattern, node.pattern.with(\.trailingTrivia, node.trailingTrivia))
-      return super.visit(newNode)
+    fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
+        override func visit(_ node: OptionalBindingConditionSyntax)
+            -> OptionalBindingConditionSyntax
+        {
+            guard node.isShadowingOptionalBinding else {
+                return super.visit(node)
+            }
+            numberOfCorrections += 1
+            let newNode =
+                node
+                    .with(\.initializer, nil)
+                    .with(\.pattern, node.pattern.with(\.trailingTrivia, node.trailingTrivia))
+            return super.visit(newNode)
+        }
     }
-  }
 }
 
 extension OptionalBindingConditionSyntax {
-  fileprivate var isShadowingOptionalBinding: Bool {
-    if let id = pattern.as(IdentifierPatternSyntax.self),
-      let value = initializer?.value.as(DeclReferenceExprSyntax.self),
-      id.identifier.text == value.baseName.text
-    {
-      return true
+    fileprivate var isShadowingOptionalBinding: Bool {
+        if let id = pattern.as(IdentifierPatternSyntax.self),
+           let value = initializer?.value.as(DeclReferenceExprSyntax.self),
+           id.identifier.text == value.baseName.text
+        {
+            return true
+        }
+        return false
     }
-    return false
-  }
 }

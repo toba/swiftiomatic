@@ -53,7 +53,7 @@ extension Trivia {
     var newlineCount: Int {
         reduce(into: 0) { count, piece in
             switch piece {
-                case .newlines(let n), .carriageReturns(let n), .carriageReturnLineFeeds(let n):
+                case let .newlines(n), let .carriageReturns(n), let .carriageReturnLineFeeds(n):
                     count += n
                 default: break
             }

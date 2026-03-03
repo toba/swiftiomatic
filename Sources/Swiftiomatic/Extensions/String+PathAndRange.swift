@@ -194,7 +194,7 @@ extension String {
         var byteCount = 0
         for (charIndex, index) in indices.enumerated() {
             let nextIndex = self.index(after: index)
-            byteCount += utf8[index..<nextIndex].count
+            byteCount += utf8[index ..< nextIndex].count
             if byteCount == utf8Offset {
                 return charIndex + 1
             }

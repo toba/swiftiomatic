@@ -118,9 +118,10 @@ public final class SourceKitResolver: TypeResolver, @unchecked Sendable {
 
     // MARK: - Helpers
 
-    private func collectSymbols(from entities: [SourceKitValue],
-                                into symbols: inout [IndexSymbol])
-    {
+    private func collectSymbols(
+        from entities: [SourceKitValue],
+        into symbols: inout [IndexSymbol],
+    ) {
         for entity in entities {
             guard let dict = entity.dictionaryValue,
                   let name = dict["key.name"]?.stringValue,

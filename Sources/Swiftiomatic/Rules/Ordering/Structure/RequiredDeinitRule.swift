@@ -13,17 +13,17 @@ struct RequiredDeinitRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 class Apple {
                     deinit { }
                 }
                 """,
-              ),
-              Example("enum Banana { }"),
-              Example("protocol Cherry { }"),
-              Example("struct Damson { }"),
-              Example(
+            ),
+            Example("enum Banana { }"),
+            Example("protocol Cherry { }"),
+            Example("struct Damson { }"),
+            Example(
                 """
                 class Outer {
                     deinit { print("Deinit Outer") }
@@ -32,28 +32,29 @@ struct RequiredDeinitRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("↓class Apple { }"),
-              Example("↓class Banana: NSObject, Equatable { }"),
-              Example(
+            Example("↓class Apple { }"),
+            Example("↓class Banana: NSObject, Equatable { }"),
+            Example(
                 """
                 ↓class Cherry {
                     // deinit { }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 ↓class Damson {
                     func deinitialize() { }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 class Outer {
                     func hello() -> String { return "outer" }
@@ -63,8 +64,8 @@ struct RequiredDeinitRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 ↓class Outer {
                     func hello() -> String { return "outer" }
@@ -74,40 +75,38 @@ struct RequiredDeinitRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension RequiredDeinitRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension RequiredDeinitRule {}
-
 extension RequiredDeinitRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: ClassDeclSyntax) {
-      let visitor = DeinitVisitor(configuration: configuration, file: file)
-      if !visitor.walk(tree: node.memberBlock, handler: \.hasDeinit) {
-        violations.append(node.classKeyword.positionAfterSkippingLeadingTrivia)
-      }
-    }
-  }
-
-  fileprivate final class DeinitVisitor: ViolationCollectingVisitor<OptionsType> {
-    private(set) var hasDeinit = false
-
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      .all
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: ClassDeclSyntax) {
+            let visitor = DeinitVisitor(configuration: configuration, file: file)
+            if !visitor.walk(tree: node.memberBlock, handler: \.hasDeinit) {
+                violations.append(node.classKeyword.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
 
-    override func visitPost(_: DeinitializerDeclSyntax) {
-      hasDeinit = true
+    fileprivate final class DeinitVisitor: ViolationCollectingVisitor<OptionsType> {
+        private(set) var hasDeinit = false
+
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
+
+        override func visitPost(_: DeinitializerDeclSyntax) {
+            hasDeinit = true
+        }
     }
-  }
 }

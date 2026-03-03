@@ -6,126 +6,127 @@ struct ClassDelegateProtocolRule {
     static let summary = "Delegate protocols should be class-only so they can be weakly referenced"
     static var nonTriggeringExamples: [Example] {
         [
-              Example("protocol FooDelegate: class {}"),
-              Example("protocol FooDelegate: class, BarDelegate {}"),
-              Example("protocol Foo {}"),
-              Example("class FooDelegate {}"),
-              Example("@objc protocol FooDelegate {}"),
-              Example("@objc(MyFooDelegate)\n protocol FooDelegate {}"),
-              Example("protocol FooDelegate: BarDelegate {}"),
-              Example("protocol FooDelegate: AnyObject {}"),
-              Example("protocol FooDelegate: AnyObject & Foo {}"),
-              Example("protocol FooDelegate: Foo, AnyObject & Foo {}"),
-              Example("protocol FooDelegate: Foo & AnyObject & Bar {}"),
-              Example("protocol FooDelegate: NSObjectProtocol {}"),
-              Example("protocol FooDelegate where Self: BarDelegate {}"),
-              Example("protocol FooDelegate where Self: BarDelegate & Bar {}"),
-              Example("protocol FooDelegate where Self: Foo & BarDelegate & Bar {}"),
-              Example("protocol FooDelegate where Self: AnyObject {}"),
-              Example("protocol FooDelegate where Self: NSObjectProtocol {}"),
-              Example("protocol FooDelegate: Actor {}"),
-            ]
+            Example("protocol FooDelegate: class {}"),
+            Example("protocol FooDelegate: class, BarDelegate {}"),
+            Example("protocol Foo {}"),
+            Example("class FooDelegate {}"),
+            Example("@objc protocol FooDelegate {}"),
+            Example("@objc(MyFooDelegate)\n protocol FooDelegate {}"),
+            Example("protocol FooDelegate: BarDelegate {}"),
+            Example("protocol FooDelegate: AnyObject {}"),
+            Example("protocol FooDelegate: AnyObject & Foo {}"),
+            Example("protocol FooDelegate: Foo, AnyObject & Foo {}"),
+            Example("protocol FooDelegate: Foo & AnyObject & Bar {}"),
+            Example("protocol FooDelegate: NSObjectProtocol {}"),
+            Example("protocol FooDelegate where Self: BarDelegate {}"),
+            Example("protocol FooDelegate where Self: BarDelegate & Bar {}"),
+            Example("protocol FooDelegate where Self: Foo & BarDelegate & Bar {}"),
+            Example("protocol FooDelegate where Self: AnyObject {}"),
+            Example("protocol FooDelegate where Self: NSObjectProtocol {}"),
+            Example("protocol FooDelegate: Actor {}"),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("↓protocol FooDelegate {}"),
-              Example("↓protocol FooDelegate: Bar {}"),
-              Example("↓protocol FooDelegate: Foo & Bar {}"),
-              Example("↓protocol FooDelegate where Self: StringProtocol {}"),
-              Example("↓protocol FooDelegate where Self: A & B {}"),
-            ]
+            Example("↓protocol FooDelegate {}"),
+            Example("↓protocol FooDelegate: Bar {}"),
+            Example("↓protocol FooDelegate: Foo & Bar {}"),
+            Example("↓protocol FooDelegate where Self: StringProtocol {}"),
+            Example("↓protocol FooDelegate where Self: A & B {}"),
+        ]
     }
+
     static let rationale: String? = """
-      Delegate protocols are usually `weak` to avoid retain cycles, or bad references to deallocated delegates.
+    Delegate protocols are usually `weak` to avoid retain cycles, or bad references to deallocated delegates.
 
-      The `weak` operator is only supported for classes, and so this rule enforces that protocols ending in \
-      "Delegate" are class based.
+    The `weak` operator is only supported for classes, and so this rule enforces that protocols ending in \
+    "Delegate" are class based.
 
-      For example
+    For example
 
-      ```
-      protocol FooDelegate: class {}
-      ```
+    ```
+    protocol FooDelegate: class {}
+    ```
 
-      versus
+    versus
 
-      ```
-      ↓protocol FooDelegate {}
-      ```
-      """
-  var options = SeverityOption<Self>(.warning)
-
+    ```
+    ↓protocol FooDelegate {}
+    ```
+    """
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension ClassDelegateProtocolRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension ClassDelegateProtocolRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      .allExcept(ProtocolDeclSyntax.self)
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .allExcept(ProtocolDeclSyntax.self)
+        }
 
-    override func visitPost(_ node: ProtocolDeclSyntax) {
-      if node.name.text.hasSuffix("Delegate"),
-        !node.hasObjCAttribute(),
-        !node.isClassRestricted(),
-        !node.inheritsFromObjectOrDelegate()
-      {
-        violations.append(node.protocolKeyword.positionAfterSkippingLeadingTrivia)
-      }
+        override func visitPost(_ node: ProtocolDeclSyntax) {
+            if node.name.text.hasSuffix("Delegate"),
+               !node.hasObjCAttribute(),
+               !node.isClassRestricted(),
+               !node.inheritsFromObjectOrDelegate()
+            {
+                violations.append(node.protocolKeyword.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 }
 
 extension ProtocolDeclSyntax {
-  fileprivate func hasObjCAttribute() -> Bool {
-    attributes.contains(attributeNamed: "objc")
-  }
-
-  fileprivate func isClassRestricted() -> Bool {
-    inheritanceClause?.inheritedTypes.contains { $0.type.is(ClassRestrictionTypeSyntax.self) }
-      == true
-  }
-
-  fileprivate func inheritsFromObjectOrDelegate() -> Bool {
-    if inheritanceClause?.inheritedTypes
-      .contains(where: { $0.type.isObjectOrDelegate() }) == true
-    {
-      return true
+    fileprivate func hasObjCAttribute() -> Bool {
+        attributes.contains(attributeNamed: "objc")
     }
 
-    guard let requirementList = genericWhereClause?.requirements else {
-      return false
+    fileprivate func isClassRestricted() -> Bool {
+        inheritanceClause?.inheritedTypes.contains { $0.type.is(ClassRestrictionTypeSyntax.self) }
+            == true
     }
 
-    return requirementList.contains { requirement in
-      guard
-        let conformanceRequirement = requirement.requirement
-          .as(ConformanceRequirementSyntax.self),
-        let simpleLeftType = conformanceRequirement.leftType.as(IdentifierTypeSyntax.self),
-        simpleLeftType.typeName == "Self"
-      else {
-        return false
-      }
+    fileprivate func inheritsFromObjectOrDelegate() -> Bool {
+        if inheritanceClause?.inheritedTypes
+            .contains(where: { $0.type.isObjectOrDelegate() }) == true
+        {
+            return true
+        }
 
-      return conformanceRequirement.rightType.isObjectOrDelegate()
+        guard let requirementList = genericWhereClause?.requirements else {
+            return false
+        }
+
+        return requirementList.contains { requirement in
+            guard
+                let conformanceRequirement = requirement.requirement
+                .as(ConformanceRequirementSyntax.self),
+                let simpleLeftType = conformanceRequirement.leftType.as(IdentifierTypeSyntax.self),
+                simpleLeftType.typeName == "Self"
+            else {
+                return false
+            }
+
+            return conformanceRequirement.rightType.isObjectOrDelegate()
+        }
     }
-  }
 }
 
 extension TypeSyntax {
-  fileprivate func isObjectOrDelegate() -> Bool {
-    if let typeName = `as`(IdentifierTypeSyntax.self)?.typeName {
-      let objectTypes = ["AnyObject", "NSObjectProtocol", "Actor"]
-      return objectTypes.contains(typeName) || typeName.hasSuffix("Delegate")
+    fileprivate func isObjectOrDelegate() -> Bool {
+        if let typeName = `as`(IdentifierTypeSyntax.self)?.typeName {
+            let objectTypes = ["AnyObject", "NSObjectProtocol", "Actor"]
+            return objectTypes.contains(typeName) || typeName.hasSuffix("Delegate")
+        }
+        if let combined = `as`(CompositionTypeSyntax.self) {
+            return combined.elements.contains { $0.type.isObjectOrDelegate() }
+        }
+        return false
     }
-    if let combined = `as`(CompositionTypeSyntax.self) {
-      return combined.elements.contains { $0.type.isObjectOrDelegate() }
-    }
-    return false
-  }
 }

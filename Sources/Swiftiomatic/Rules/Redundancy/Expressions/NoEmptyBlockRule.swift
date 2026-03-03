@@ -7,7 +7,7 @@ struct NoEmptyBlockRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 func f() {
                     /* do something */
@@ -17,9 +17,9 @@ struct NoEmptyBlockRule {
                     willSet { /* do something */ }
                 }
                 """,
-              ),
+            ),
 
-              Example(
+            Example(
                 """
                 class Apple {
                     init() { /* do something */ }
@@ -27,9 +27,9 @@ struct NoEmptyBlockRule {
                     deinit { /* do something */ }
                 }
                 """,
-              ),
+            ),
 
-              Example(
+            Example(
                 """
                 for _ in 0..<10 { /* do something */ }
 
@@ -56,9 +56,9 @@ struct NoEmptyBlockRule {
 
                 while i < 10 { /* do something */ }
                 """,
-              ),
+            ),
 
-              Example(
+            Example(
                 """
                 func f() {}
 
@@ -66,9 +66,9 @@ struct NoEmptyBlockRule {
                     willSet {}
                 }
                 """, configuration: ["disabled_block_types": ["function_bodies"]],
-              ),
+            ),
 
-              Example(
+            Example(
                 """
                 class Apple {
                     init() {}
@@ -76,9 +76,9 @@ struct NoEmptyBlockRule {
                     deinit {}
                 }
                 """, configuration: ["disabled_block_types": ["initializer_bodies"]],
-              ),
+            ),
 
-              Example(
+            Example(
                 """
                 for _ in 0..<10 {}
 
@@ -99,8 +99,8 @@ struct NoEmptyBlockRule {
 
                 while i < 10 {}
                 """, configuration: ["disabled_block_types": ["statement_blocks"]],
-              ),
-              Example(
+            ),
+            Example(
                 """
                 f { _ in /* comment */ }
                 f { _ in // comment
@@ -109,18 +109,19 @@ struct NoEmptyBlockRule {
                     // comment
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 f {}
                 {}()
                 """, configuration: ["disabled_block_types": ["closure_blocks"]],
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 func f() ↓{}
 
@@ -128,9 +129,9 @@ struct NoEmptyBlockRule {
                     willSet ↓{}
                 }
                 """,
-              ),
+            ),
 
-              Example(
+            Example(
                 """
                 class Apple {
                     init() ↓{}
@@ -138,9 +139,9 @@ struct NoEmptyBlockRule {
                     deinit ↓{}
                 }
                 """,
-              ),
+            ),
 
-              Example(
+            Example(
                 """
                 for _ in 0..<10 ↓{}
 
@@ -161,77 +162,75 @@ struct NoEmptyBlockRule {
 
                 while i < 10 ↓{}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 f ↓{}
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 Button ↓{} label: ↓{}
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = NoEmptyBlockOptions()
 
+    var options = NoEmptyBlockOptions()
 }
 
 extension NoEmptyBlockRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension NoEmptyBlockRule {}
-
 extension NoEmptyBlockRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: CodeBlockSyntax) {
-      if let codeBlockType = node.codeBlockType,
-        configuration.enabledBlockTypes.contains(codeBlockType)
-      {
-        validate(node: node)
-      }
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: CodeBlockSyntax) {
+            if let codeBlockType = node.codeBlockType,
+               configuration.enabledBlockTypes.contains(codeBlockType)
+            {
+                validate(node: node)
+            }
+        }
 
-    override func visitPost(_ node: ClosureExprSyntax) {
-      if configuration.enabledBlockTypes.contains(.closureBlocks),
-        node.signature?.inKeyword.trailingTrivia.containsComments != true
-      {
-        validate(node: node)
-      }
-    }
+        override func visitPost(_ node: ClosureExprSyntax) {
+            if configuration.enabledBlockTypes.contains(.closureBlocks),
+               node.signature?.inKeyword.trailingTrivia.containsComments != true
+            {
+                validate(node: node)
+            }
+        }
 
-    func validate(node: some BracedSyntax & WithStatementsSyntax) {
-      guard node.statements.isEmpty,
-        !node.leftBrace.trailingTrivia.containsComments,
-        !node.rightBrace.leadingTrivia.containsComments
-      else {
-        return
-      }
-      violations.append(node.leftBrace.positionAfterSkippingLeadingTrivia)
+        func validate(node: some BracedSyntax & WithStatementsSyntax) {
+            guard node.statements.isEmpty,
+                  !node.leftBrace.trailingTrivia.containsComments,
+                  !node.rightBrace.leadingTrivia.containsComments
+            else {
+                return
+            }
+            violations.append(node.leftBrace.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }
 
 extension CodeBlockSyntax {
-  fileprivate var codeBlockType: NoEmptyBlockOptions.CodeBlockType? {
-    switch parent?.kind {
-    case .functionDecl, .accessorDecl:
-      .functionBodies
-    case .initializerDecl, .deinitializerDecl:
-      .initializerBodies
-    case .forStmt, .doStmt, .whileStmt, .repeatStmt, .ifExpr, .catchClause, .deferStmt:
-      .statementBlocks
-    case .closureExpr:
-      .closureBlocks
-    case .guardStmt:
-      // No need to handle this case since Empty Block of `guard` is compile error.
-      nil
-    default:
-      nil
+    fileprivate var codeBlockType: NoEmptyBlockOptions.CodeBlockType? {
+        switch parent?.kind {
+            case .functionDecl, .accessorDecl:
+                .functionBodies
+            case .initializerDecl, .deinitializerDecl:
+                .initializerBodies
+            case .forStmt, .doStmt, .whileStmt, .repeatStmt, .ifExpr, .catchClause, .deferStmt:
+                .statementBlocks
+            case .closureExpr:
+                .closureBlocks
+            case .guardStmt:
+                // No need to handle this case since Empty Block of `guard` is compile error.
+                nil
+            default:
+                nil
+        }
     }
-  }
 }

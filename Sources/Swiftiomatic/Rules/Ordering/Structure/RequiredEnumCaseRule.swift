@@ -69,7 +69,7 @@ import SwiftSyntax
 /// ````
 struct RequiredEnumCaseRule {
     private static let exampleConfiguration = [
-        "NetworkResponsable": ["success": "warning", "error": "warning", "notConnected": "warning"]
+        "NetworkResponsable": ["success": "warning", "error": "warning", "notConnected": "warning"],
     ]
     static let id = "required_enum_case"
     static let name = "Required Enum Case"
@@ -77,128 +77,127 @@ struct RequiredEnumCaseRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 enum MyNetworkResponse: String, NetworkResponsable {
                     case success, error, notConnected
                 }
-                """, configuration: Self.exampleConfiguration,
-              ),
-              Example(
+                """, configuration: exampleConfiguration,
+            ),
+            Example(
                 """
                 enum MyNetworkResponse: String, NetworkResponsable {
                     case success, error, notConnected(error: Error)
                 }
-                """, configuration: Self.exampleConfiguration,
-              ),
-              Example(
+                """, configuration: exampleConfiguration,
+            ),
+            Example(
                 """
                 enum MyNetworkResponse: String, NetworkResponsable {
                     case success
                     case error
                     case notConnected
                 }
-                """, configuration: Self.exampleConfiguration,
-              ),
-              Example(
+                """, configuration: exampleConfiguration,
+            ),
+            Example(
                 """
                 enum MyNetworkResponse: String, NetworkResponsable {
                     case success
                     case error
                     case notConnected(error: Error)
                 }
-                """, configuration: Self.exampleConfiguration,
-              ),
-            ]
+                """, configuration: exampleConfiguration,
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 ↓enum MyNetworkResponse: String, NetworkResponsable {
                     case success, error
                 }
-                """, configuration: Self.exampleConfiguration,
-              ),
-              Example(
+                """, configuration: exampleConfiguration,
+            ),
+            Example(
                 """
                 ↓enum MyNetworkResponse: String, NetworkResponsable {
                     case success, error
                 }
-                """, configuration: Self.exampleConfiguration,
-              ),
-              Example(
+                """, configuration: exampleConfiguration,
+            ),
+            Example(
                 """
                 ↓enum MyNetworkResponse: String, NetworkResponsable {
                     case success
                     case error
                 }
-                """, configuration: Self.exampleConfiguration,
-              ),
-              Example(
+                """, configuration: exampleConfiguration,
+            ),
+            Example(
                 """
                 ↓enum MyNetworkResponse: String, NetworkResponsable {
                     case success
                     case error
                 }
-                """, configuration: Self.exampleConfiguration,
-              ),
-            ]
+                """, configuration: exampleConfiguration,
+            ),
+        ]
     }
-  var options = RequiredEnumCaseOptions()
 
+    var options = RequiredEnumCaseOptions()
 }
 
 extension RequiredEnumCaseRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension RequiredEnumCaseRule {}
-
 extension RequiredEnumCaseRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: EnumDeclSyntax) {
-      guard configuration.protocols.isNotEmpty else {
-        return
-      }
-
-      let enumCases = node.enumCasesNames
-      let violations = configuration.protocols
-        .flatMap { type, requiredCases -> [SyntaxViolation] in
-          guard node.inheritanceClause.containsInheritedType(inheritedTypes: [type])
-          else {
-            return []
-          }
-
-          return requiredCases.compactMap { requiredCase in
-            guard !enumCases.contains(requiredCase.name) else {
-              return nil
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: EnumDeclSyntax) {
+            guard configuration.protocols.isNotEmpty else {
+                return
             }
 
-            return SyntaxViolation(
-              position: node.positionAfterSkippingLeadingTrivia,
-              reason: "Enums conforming to \"\(type)\" must have a \"\(requiredCase.name)\" case",
-              severity: requiredCase.severity,
-            )
-          }
-        }
+            let enumCases = node.enumCasesNames
+            let violations = configuration.protocols
+                .flatMap { type, requiredCases -> [SyntaxViolation] in
+                    guard node.inheritanceClause.containsInheritedType(inheritedTypes: [type])
+                    else {
+                        return []
+                    }
 
-      self.violations.append(contentsOf: violations)
+                    return requiredCases.compactMap { requiredCase in
+                        guard !enumCases.contains(requiredCase.name) else {
+                            return nil
+                        }
+
+                        return SyntaxViolation(
+                            position: node.positionAfterSkippingLeadingTrivia,
+                            reason: "Enums conforming to \"\(type)\" must have a \"\(requiredCase.name)\" case",
+                            severity: requiredCase.severity,
+                        )
+                    }
+                }
+
+            self.violations.append(contentsOf: violations)
+        }
     }
-  }
 }
 
 extension EnumDeclSyntax {
-  fileprivate var enumCasesNames: [String] {
-    memberBlock.members
-      .flatMap { member -> [String] in
-        guard let enumCaseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
-          return []
-        }
+    fileprivate var enumCasesNames: [String] {
+        memberBlock.members
+            .flatMap { member -> [String] in
+                guard let enumCaseDecl = member.decl.as(EnumCaseDeclSyntax.self) else {
+                    return []
+                }
 
-        return enumCaseDecl.elements.map(\.name.text)
-      }
-  }
+                return enumCaseDecl.elements.map(\.name.text)
+            }
+    }
 }

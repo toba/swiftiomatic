@@ -13,7 +13,7 @@ struct Command: Equatable {
 
         /// - returns: The inverse action that can cancel out the current action, restoring the engine's
         ///            state prior to the current action.
-        public func inverse() -> Self {
+        func inverse() -> Self {
             switch self {
                 case .enable: return .disable
                 case .disable: return .enable
@@ -150,7 +150,7 @@ struct Command: Equatable {
     /// If the command doesn't have a modifier, it is returned as-is.
     ///
     /// - returns: The expanded commands.
-    public func expand() -> [Self] {
+    func expand() -> [Self] {
         guard let modifier else {
             return [self]
         }

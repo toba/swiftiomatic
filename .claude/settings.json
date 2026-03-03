@@ -1,17 +1,28 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "hooks": {
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "if [[ \"$CLAUDE_TOOL_ARG_FILE_PATH\" == *.swift ]]; then swiftformat \"$CLAUDE_TOOL_ARG_FILE_PATH\" && swiftlint lint --fix --quiet \"$CLAUDE_TOOL_ARG_FILE_PATH\"; fi",
-            "type": "command"
-          }
-        ],
-        "matcher": "Edit|Write"
-      }
-    ],
-    "PreToolUse": []
-  }
+	"$schema": "https://json.schemastore.org/claude-code-settings.json",
+	"hooks": {
+		"UserPromptSubmit": [
+			{
+				"matcher": "swift build",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "echo 'Use xc-swift build or diagnostics'"
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"hooks": [
+					{
+						"command": "if [[ \"$CLAUDE_TOOL_ARG_FILE_PATH\" == *.swift ]]; then swiftformat \"$CLAUDE_TOOL_ARG_FILE_PATH\" && swiftlint lint --fix --quiet \"$CLAUDE_TOOL_ARG_FILE_PATH\"; fi",
+						"type": "command"
+					}
+				],
+				"matcher": "Edit|Write"
+			}
+		],
+		"PreToolUse": []
+	}
 }

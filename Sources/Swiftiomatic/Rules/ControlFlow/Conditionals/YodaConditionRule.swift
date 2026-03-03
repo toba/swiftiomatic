@@ -3,127 +3,127 @@ import SwiftSyntax
 struct YodaConditionRule {
     static let id = "yoda_condition"
     static let name = "Yoda Condition"
-    static let summary = "The constant literal should be placed on the right-hand side of the comparison operator"
+    static let summary =
+        "The constant literal should be placed on the right-hand side of the comparison operator"
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example("if foo == 42 {}"),
-              Example("if foo <= 42.42 {}"),
-              Example("guard foo >= 42 else { return }"),
-              Example("guard foo != \"str str\" else { return }"),
-              Example("while foo < 10 { }"),
-              Example("while foo > 1 { }"),
-              Example("while foo + 1 == 2 {}"),
-              Example("if optionalValue?.property ?? 0 == 2 {}"),
-              Example("if foo == nil {}"),
-              Example("if flags & 1 == 1 {}"),
-              Example("if true {}", isExcludedFromDocumentation: true),
-              Example("if true == false || b, 2 != 3 {}", isExcludedFromDocumentation: true),
-            ]
+            Example("if foo == 42 {}"),
+            Example("if foo <= 42.42 {}"),
+            Example("guard foo >= 42 else { return }"),
+            Example("guard foo != \"str str\" else { return }"),
+            Example("while foo < 10 { }"),
+            Example("while foo > 1 { }"),
+            Example("while foo + 1 == 2 {}"),
+            Example("if optionalValue?.property ?? 0 == 2 {}"),
+            Example("if foo == nil {}"),
+            Example("if flags & 1 == 1 {}"),
+            Example("if true {}", isExcludedFromDocumentation: true),
+            Example("if true == false || b, 2 != 3 {}", isExcludedFromDocumentation: true),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("if ↓42 == foo {}"),
-              Example("if ↓42.42 >= foo {}"),
-              Example("guard ↓42 <= foo else { return }"),
-              Example("guard ↓\"str str\" != foo else { return }"),
-              Example("while ↓10 > foo { }"),
-              Example("while ↓1 < foo { }"),
-              Example("if ↓nil == foo {}"),
-              Example("while ↓1 > i + 5 {}"),
-              Example("if ↓200 <= i && i <= 299 || ↓600 <= i {}"),
-            ]
+            Example("if ↓42 == foo {}"),
+            Example("if ↓42.42 >= foo {}"),
+            Example("guard ↓42 <= foo else { return }"),
+            Example("guard ↓\"str str\" != foo else { return }"),
+            Example("while ↓10 > foo { }"),
+            Example("while ↓1 < foo { }"),
+            Example("if ↓nil == foo {}"),
+            Example("while ↓1 > i + 5 {}"),
+            Example("if ↓200 <= i && i <= 299 || ↓600 <= i {}"),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension YodaConditionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension YodaConditionRule {}
-
 extension YodaConditionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: IfExprSyntax) {
-      visit(conditions: node.conditions)
-    }
-
-    override func visitPost(_ node: GuardStmtSyntax) {
-      visit(conditions: node.conditions)
-    }
-
-    override func visitPost(_ node: RepeatStmtSyntax) {
-      visit(condition: node.condition)
-    }
-
-    override func visitPost(_ node: WhileStmtSyntax) {
-      visit(conditions: node.conditions)
-    }
-
-    private func visit(conditions: ConditionElementListSyntax) {
-      for condition in conditions.compactMap({ $0.condition.as(ExprSyntax.self) }) {
-        visit(condition: condition)
-      }
-    }
-
-    private func visit(condition: ExprSyntax) {
-      guard let elements = condition.as(SequenceExprSyntax.self)?.elements else {
-        return
-      }
-      let children = elements.children(viewMode: .sourceAccurate)
-      let comparisonOperators =
-        children
-        .compactMap { $0.as(BinaryOperatorExprSyntax.self) }
-        .filter { ["==", "!=", ">", "<", ">=", "<="].contains($0.operator.text) }
-      for comparisonOperator in comparisonOperators {
-        guard let operatorIndex = children.index(of: comparisonOperator) else {
-          continue
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: IfExprSyntax) {
+            visit(conditions: node.conditions)
         }
-        let rhsIdx = children.index(after: operatorIndex)
-        if children[rhsIdx].isLiteral {
-          guard children.endIndex != children.index(after: rhsIdx) else {
-            // This is already the end of the expression.
-            continue
-          }
-          let afterRhsIndex = children.index(after: rhsIdx)
-          if children[afterRhsIndex].isLogicalBinaryOperator {
-            // Next token is an operator with weaker binding. Thus, the literal is unique on the
-            // right-hand side of the comparison operator.
-            continue
-          }
+
+        override func visitPost(_ node: GuardStmtSyntax) {
+            visit(conditions: node.conditions)
         }
-        let lhsIdx = children.index(before: operatorIndex)
-        let lhs = children[lhsIdx]
-        if lhs.isLiteral,
-          children.startIndex == lhsIdx
-            || children[children.index(before: lhsIdx)].isLogicalBinaryOperator
-        {
-          // Literal is at the very beginning of the expression or the previous token is an operator with
-          // weaker binding. Thus, the literal is unique on the left-hand side of the comparison operator.
-          violations.append(lhs.positionAfterSkippingLeadingTrivia)
+
+        override func visitPost(_ node: RepeatStmtSyntax) {
+            visit(condition: node.condition)
         }
-      }
+
+        override func visitPost(_ node: WhileStmtSyntax) {
+            visit(conditions: node.conditions)
+        }
+
+        private func visit(conditions: ConditionElementListSyntax) {
+            for condition in conditions.compactMap({ $0.condition.as(ExprSyntax.self) }) {
+                visit(condition: condition)
+            }
+        }
+
+        private func visit(condition: ExprSyntax) {
+            guard let elements = condition.as(SequenceExprSyntax.self)?.elements else {
+                return
+            }
+            let children = elements.children(viewMode: .sourceAccurate)
+            let comparisonOperators =
+                children
+                    .compactMap { $0.as(BinaryOperatorExprSyntax.self) }
+                    .filter { ["==", "!=", ">", "<", ">=", "<="].contains($0.operator.text) }
+            for comparisonOperator in comparisonOperators {
+                guard let operatorIndex = children.index(of: comparisonOperator) else {
+                    continue
+                }
+                let rhsIdx = children.index(after: operatorIndex)
+                if children[rhsIdx].isLiteral {
+                    guard children.endIndex != children.index(after: rhsIdx) else {
+                        // This is already the end of the expression.
+                        continue
+                    }
+                    let afterRhsIndex = children.index(after: rhsIdx)
+                    if children[afterRhsIndex].isLogicalBinaryOperator {
+                        // Next token is an operator with weaker binding. Thus, the literal is unique on the
+                        // right-hand side of the comparison operator.
+                        continue
+                    }
+                }
+                let lhsIdx = children.index(before: operatorIndex)
+                let lhs = children[lhsIdx]
+                if lhs.isLiteral,
+                   children.startIndex == lhsIdx
+                   || children[children.index(before: lhsIdx)].isLogicalBinaryOperator
+                {
+                    // Literal is at the very beginning of the expression or the previous token is an operator with
+                    // weaker binding. Thus, the literal is unique on the left-hand side of the comparison operator.
+                    violations.append(lhs.positionAfterSkippingLeadingTrivia)
+                }
+            }
+        }
     }
-  }
 }
 
 extension Syntax {
-  fileprivate var isLiteral: Bool {
-    `is`(IntegerLiteralExprSyntax.self)
-      || `is`(FloatLiteralExprSyntax.self)
-      || `is`(BooleanLiteralExprSyntax.self)
-      || `is`(StringLiteralExprSyntax.self)
-      || `is`(NilLiteralExprSyntax.self)
-  }
-
-  fileprivate var isLogicalBinaryOperator: Bool {
-    guard let binaryOperator = `as`(BinaryOperatorExprSyntax.self) else {
-      return false
+    fileprivate var isLiteral: Bool {
+        `is`(IntegerLiteralExprSyntax.self)
+            || `is`(FloatLiteralExprSyntax.self)
+            || `is`(BooleanLiteralExprSyntax.self)
+            || `is`(StringLiteralExprSyntax.self)
+            || `is`(NilLiteralExprSyntax.self)
     }
-    return ["&&", "||"].contains(binaryOperator.operator.text)
-  }
+
+    fileprivate var isLogicalBinaryOperator: Bool {
+        guard let binaryOperator = `as`(BinaryOperatorExprSyntax.self) else {
+            return false
+        }
+        return ["&&", "||"].contains(binaryOperator.operator.text)
+    }
 }

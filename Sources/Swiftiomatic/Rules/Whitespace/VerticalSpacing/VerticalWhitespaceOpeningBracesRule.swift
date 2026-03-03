@@ -1,9 +1,9 @@
 import Foundation
 
 extension SwiftSource {
-  fileprivate func violatingRanges(for pattern: String) -> [Range<String.Index>] {
-    match(pattern: pattern, excludingSyntaxKinds: SourceKitSyntaxKind.commentAndStringKinds)
-  }
+    fileprivate func violatingRanges(for pattern: String) -> [Range<String.Index>] {
+        match(pattern: pattern, excludingSyntaxKinds: SourceKitSyntaxKind.commentAndStringKinds)
+    }
 }
 
 struct VerticalWhitespaceOpeningBracesRule: Rule {
@@ -20,7 +20,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
 
                 }
             */
-            """
+            """,
         ),
     ]
 
@@ -31,13 +31,13 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
             ↓
               print("x is 5")
             }
-            """
+            """,
         ): Example(
             """
             if x == 5 {
               print("x is 5")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -46,13 +46,13 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
 
               print("x is 5")
             }
-            """
+            """,
         ): Example(
             """
             if x == 5 {
               print("x is 5")
             }
-            """
+            """,
         ),
         Example(
             """
@@ -60,13 +60,13 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
             ↓
               let x = 5
             }
-            """
+            """,
         ): Example(
             """
             struct MyStruct {
               let x = 5
             }
-            """
+            """,
         ),
         Example(
             """
@@ -77,7 +77,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
                 }
               }
             }
-            """
+            """,
         ): Example(
             """
             class X {
@@ -86,7 +86,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
                 }
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -96,7 +96,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
             2,
             3
             ]
-            """
+            """,
         ): Example(
             """
             [
@@ -104,7 +104,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
             2,
             3
             ]
-            """
+            """,
         ),
         Example(
             """
@@ -113,14 +113,14 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
               x: 5,
               y:6
             )
-            """
+            """,
         ): Example(
             """
             foo(
               x: 5,
               y:6
             )
-            """
+            """,
         ),
         Example(
             """
@@ -130,7 +130,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
                 print(x)
               }
             }
-            """
+            """,
         ): Example(
             """
             func foo() {
@@ -138,7 +138,7 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
                 print(x)
               }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -146,13 +146,13 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
             ↓
                 guard let img = image else { return }
             }
-            """
+            """,
         ): Example(
             """
             KingfisherManager.shared.retrieveImage(with: url, options: nil, progressBlock: nil) { image, _, _, _ in
                 guard let img = image else { return }
             }
-            """
+            """,
         ),
         Example(
             """
@@ -161,14 +161,14 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
               self.dismiss(animated: false, completion: {
               })
             }
-            """
+            """,
         ): Example(
             """
             foo({ }) { _ in
               self.dismiss(animated: false, completion: {
               })
             }
-            """
+            """,
         ),
     ]
     static let id = "vertical_whitespace_opening_braces"
@@ -177,57 +177,61 @@ struct VerticalWhitespaceOpeningBracesRule: Rule {
     static let isCorrectable = true
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
-        (Self.violatingToValidExamples.values + Self._baseNonTriggeringExamples)
+        violatingToValidExamples.values + _baseNonTriggeringExamples
     }
-    static var triggeringExamples: [Example] {
-        Array(Self.violatingToValidExamples.keys).sorted()
-    }
-    static var corrections: [Example: Example] {
-        Self.violatingToValidExamples.removingViolationMarkers()
-    }
-  var options = SeverityOption<Self>(.warning)
 
-  private let pattern = "([{(\\[][ \\t]*(?:[^\\n{]+ in[ \\t]*$)?)((?:\\n[ \\t]*)+)(\\n)"
+    static var triggeringExamples: [Example] {
+        Array(violatingToValidExamples.keys).sorted()
+    }
+
+    static var corrections: [Example: Example] {
+        violatingToValidExamples.removingViolationMarkers()
+    }
+
+    var options = SeverityOption<Self>(.warning)
+
+    private let pattern = "([{(\\[][ \\t]*(?:[^\\n{]+ in[ \\t]*$)?)((?:\\n[ \\t]*)+)(\\n)"
 }
 
 extension VerticalWhitespaceOpeningBracesRule {
-  func validate(file: SwiftSource) -> [RuleViolation] {
-    let patternRegex = regex(pattern)
+    func validate(file: SwiftSource) -> [RuleViolation] {
+        let patternRegex = regex(pattern)
 
-    return file.violatingRanges(for: pattern).map { violationRange in
-      let matchResult = patternRegex.firstMatch(
-        in: file.contents, range: violationRange,
-      )!
-      let group2Sub = matchResult.output[2].substring!
-      let violationIndex = file.contents.index(after: group2Sub.startIndex)
+        return file.violatingRanges(for: pattern).map { violationRange in
+            let matchResult = patternRegex.firstMatch(
+                in: file.contents, range: violationRange,
+            )!
+            let group2Sub = matchResult.output[2].substring!
+            let violationIndex = file.contents.index(after: group2Sub.startIndex)
 
-      return RuleViolation(
-        ruleType: Self.self,
-        severity: options.severity,
-        location: Location(file: file, stringIndex: violationIndex),
-      )
+            return RuleViolation(
+                ruleType: Self.self,
+                severity: options.severity,
+                location: Location(file: file, stringIndex: violationIndex),
+            )
+        }
     }
-  }
 }
 
 extension VerticalWhitespaceOpeningBracesRule: CorrectableRule {
-  func correct(file: SwiftSource) -> Int {
-    let violatingRanges = file.ruleEnabled(
-      violatingRanges: file.violatingRanges(for: pattern), for: self,
-    )
-    guard violatingRanges.isNotEmpty else {
-      return 0
+    func correct(file: SwiftSource) -> Int {
+        let violatingRanges = file.ruleEnabled(
+            violatingRanges: file.violatingRanges(for: pattern), for: self,
+        )
+        guard violatingRanges.isNotEmpty else {
+            return 0
+        }
+        let patternRegex = regex(pattern)
+        var fileContents = file.contents
+        for violationRange in violatingRanges.reversed() {
+            fileContents = patternRegex
+                .replacing(in: fileContents, range: violationRange) { match in
+                    let g1 = match.output[1].substring.map(String.init) ?? ""
+                    let g3 = match.output[3].substring.map(String.init) ?? ""
+                    return g1 + g3
+                }
+        }
+        file.write(fileContents)
+        return violatingRanges.count
     }
-    let patternRegex = regex(pattern)
-    var fileContents = file.contents
-    for violationRange in violatingRanges.reversed() {
-      fileContents = patternRegex.replacing(in: fileContents, range: violationRange) { match in
-        let g1 = match.output[1].substring.map(String.init) ?? ""
-        let g3 = match.output[3].substring.map(String.init) ?? ""
-        return g1 + g3
-      }
-    }
-    file.write(fileContents)
-    return violatingRanges.count
-  }
 }

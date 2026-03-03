@@ -489,11 +489,13 @@ struct CollectedLinter: @unchecked Sendable {
         }
 
         guard visitors.isNotEmpty else {
-            return rules.map { _ in LintResult(
-                violations: [],
-                ruleTime: nil,
-                deprecatedToValidIDPairs: [],
-            ) }
+            return rules.map { _ in
+                LintResult(
+                    violations: [],
+                    ruleTime: nil,
+                    deprecatedToValidIDPairs: [],
+                )
+            }
         }
 
         // Single tree walk
@@ -509,16 +511,18 @@ struct CollectedLinter: @unchecked Sendable {
         var visitorIdx = 0
         var results: [LintResult] = []
 
-        for (ruleIdx, entry) in ruleForIndex.enumerated() {
+        for entry in ruleForIndex {
             let rule = entry.rule
             let ruleID = type(of: rule).identifier
 
             guard entry.shouldRun else {
-                results.append(LintResult(
-                    violations: [],
-                    ruleTime: nil,
-                    deprecatedToValidIDPairs: [],
-                ))
+                results.append(
+                    LintResult(
+                        violations: [],
+                        ruleTime: nil,
+                        deprecatedToValidIDPairs: [],
+                    ),
+                )
                 continue
             }
 
@@ -526,9 +530,10 @@ struct CollectedLinter: @unchecked Sendable {
             visitorIdx += 1
 
             // Convert SyntaxViolation -> RuleViolation using the rule's makeViolation
-            let ruleViolations = syntaxViolations
-                .sorted()
-                .map { rule.makeViolation(file: file, violation: $0) }
+            let ruleViolations =
+                syntaxViolations
+                    .sorted()
+                    .map { rule.makeViolation(file: file, violation: $0) }
 
             // Compute per-rule time as fraction of total pipeline time
             let ruleTime: (String, Double)?

@@ -401,7 +401,8 @@ extension Configuration {
         if formatMaximumBlankLines != defaults.formatMaximumBlankLines {
             format["maximum_blank_lines"] = formatMaximumBlankLines
         }
-        if formatLineBreakBeforeControlFlowKeywords != defaults
+        if formatLineBreakBeforeControlFlowKeywords
+            != defaults
             .formatLineBreakBeforeControlFlowKeywords
         {
             format["line_break_before_control_flow_keywords"] =
@@ -422,7 +423,8 @@ extension Configuration {
 
         let yamlString: String
         if yaml.isEmpty {
-            yamlString = "# Swiftiomatic configuration\n# See https://github.com/toba/swiftiomatic for documentation\n"
+            yamlString =
+                "# Swiftiomatic configuration\n# See https://github.com/toba/swiftiomatic for documentation\n"
         } else {
             yamlString = try Yams.dump(object: yaml, allowUnicode: true, sortKeys: true)
         }

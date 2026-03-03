@@ -7,7 +7,7 @@ struct PreferSwiftTestingRule {
     static let scope: Scope = .suggest
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 import Testing
 
@@ -17,12 +17,13 @@ struct PreferSwiftTestingRule {
                   }
                 }
                 """,
-              )
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 import XCTest
 
@@ -32,30 +33,30 @@ struct PreferSwiftTestingRule {
                   }
                 }
                 """,
-              )
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension PreferSwiftTestingRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension PreferSwiftTestingRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: ClassDeclSyntax) {
-      // Check if class inherits from XCTestCase
-      guard let inheritanceClause = node.inheritanceClause,
-        inheritanceClause.inheritedTypes.contains(where: {
-          $0.type.trimmedDescription == "XCTestCase"
-        })
-      else { return }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: ClassDeclSyntax) {
+            // Check if class inherits from XCTestCase
+            guard let inheritanceClause = node.inheritanceClause,
+                  inheritanceClause.inheritedTypes.contains(where: {
+                      $0.type.trimmedDescription == "XCTestCase"
+                  })
+            else { return }
 
-      violations.append(node.classKeyword.positionAfterSkippingLeadingTrivia)
+            violations.append(node.classKeyword.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }

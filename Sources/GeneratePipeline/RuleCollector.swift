@@ -192,7 +192,7 @@ private final class RuleFileVisitor: SyntaxVisitor {
         // Build final rule infos by matching visitors to rule structs
         for (_, visitorInfo) in visitorClasses {
             guard let enclosingType = visitorInfo.enclosingRuleType,
-                  var ruleInfo = ruleStructs[enclosingType]
+                  let ruleInfo = ruleStructs[enclosingType]
             else {
                 continue
             }
@@ -209,17 +209,8 @@ private final class RuleFileVisitor: SyntaxVisitor {
             // Merge visit/visitPost node types from the base class handling in
             // ViolationCollectingVisitor (the 10 skippable declaration types are
             // handled there, not in individual rules)
-            var visitNodeTypes = visitorInfo.visitNodeTypes
-            var visitPostNodeTypes = visitorInfo.visitPostNodeTypes
-
-            // Remove the declaration types that ViolationCollectingVisitor already
-            // handles (for skippableDeclarations) - those are visit(), not visitPost()
-            let skippableDeclTypes: Set<String> = [
-                "ActorDeclSyntax", "ClassDeclSyntax", "EnumDeclSyntax",
-                "ExtensionDeclSyntax", "FunctionDeclSyntax", "InitializerDeclSyntax",
-                "ProtocolDeclSyntax", "StructDeclSyntax", "SubscriptDeclSyntax",
-                "VariableDeclSyntax",
-            ]
+            let visitNodeTypes = visitorInfo.visitNodeTypes
+            let visitPostNodeTypes = visitorInfo.visitPostNodeTypes
 
             // The pipeline handles skippableDeclarations separately, so we need to
             // keep all visit() overrides that rules have added beyond the base class.

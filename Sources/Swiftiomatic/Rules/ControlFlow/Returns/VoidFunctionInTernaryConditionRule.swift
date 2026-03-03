@@ -6,7 +6,7 @@ struct VoidFunctionInTernaryConditionRule {
     static let summary = "Using ternary to call Void functions should be avoided"
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 if success {
                     askQuestion()
@@ -14,42 +14,42 @@ struct VoidFunctionInTernaryConditionRule {
                     exit()
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var price: Double {
                     return hasDiscount ? calculatePriceWithDiscount() : calculateRegularPrice()
                 }
                 """,
-              ),
-              Example("foo(x == 2 ? a() : b())"),
-              Example(
+            ),
+            Example("foo(x == 2 ? a() : b())"),
+            Example(
                 """
                 chevronView.image = collapsed ? .icon(.mediumChevronDown) : .icon(.mediumChevronUp)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 array.map { elem in
                     elem.isEmpty() ? .emptyValue() : .number(elem)
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func compute(data: [Int]) -> Int {
                     data.isEmpty ? 0 : expensiveComputation(data)
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var value: Int {
                     mode == .fast ? fastComputation() : expensiveComputation()
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var value: Int {
                     get {
@@ -57,22 +57,22 @@ struct VoidFunctionInTernaryConditionRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 subscript(index: Int) -> Int {
                     get {
                         index == 0 ? defaultValue() : compute(index)
                     }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 subscript(index: Int) -> Int {
                     index == 0 ? defaultValue() : compute(index)
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var a = b ? c() : d()
                 a += b ? c() : d()
@@ -81,21 +81,22 @@ struct VoidFunctionInTernaryConditionRule {
                 a &<<= b ? c() : d()
                 a &-= b ? c() : d()
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("success ↓? askQuestion() : exit()"),
-              Example(
+            Example("success ↓? askQuestion() : exit()"),
+            Example(
                 """
                 perform { elem in
                     elem.isEmpty() ↓? .emptyValue() : .number(elem)
                     return 1
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 DispatchQueue.main.async {
                     self.sectionViewModels[section].collapsed.toggle()
@@ -105,23 +106,23 @@ struct VoidFunctionInTernaryConditionRule {
                     self.tableView.scrollToRow(at: IndexPath(row: NSNotFound, section: section), at: .top, animated: true)
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 subscript(index: Int) -> Int {
                     index == 0 ↓? something() : somethingElse(index)
                     return index
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var value: Int {
                     mode == .fast ↓? something() : somethingElse()
                     return 0
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 var value: Int {
                     get {
@@ -130,8 +131,8 @@ struct VoidFunctionInTernaryConditionRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 subscript(index: Int) -> Int {
                     get {
@@ -139,165 +140,165 @@ struct VoidFunctionInTernaryConditionRule {
                         return index
                     }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension VoidFunctionInTernaryConditionRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
 extension VoidFunctionInTernaryConditionRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: TernaryExprSyntax) {
-      guard node.thenExpression.is(FunctionCallExprSyntax.self),
-        node.elseExpression.is(FunctionCallExprSyntax.self),
-        let parent = node.parent?.as(ExprListSyntax.self),
-        !parent.containsAssignment,
-        let grandparent = parent.parent,
-        grandparent.is(SequenceExprSyntax.self),
-        let blockItem = grandparent.parent?.as(CodeBlockItemSyntax.self),
-        !blockItem.isImplicitReturn
-      else {
-        return
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: TernaryExprSyntax) {
+            guard node.thenExpression.is(FunctionCallExprSyntax.self),
+                  node.elseExpression.is(FunctionCallExprSyntax.self),
+                  let parent = node.parent?.as(ExprListSyntax.self),
+                  !parent.containsAssignment,
+                  let grandparent = parent.parent,
+                  grandparent.is(SequenceExprSyntax.self),
+                  let blockItem = grandparent.parent?.as(CodeBlockItemSyntax.self),
+                  !blockItem.isImplicitReturn
+            else {
+                return
+            }
 
-      violations.append(node.questionMark.positionAfterSkippingLeadingTrivia)
+            violations.append(node.questionMark.positionAfterSkippingLeadingTrivia)
+        }
+
+        override func visitPost(_ node: UnresolvedTernaryExprSyntax) {
+            guard node.thenExpression.is(FunctionCallExprSyntax.self),
+                  let parent = node.parent?.as(ExprListSyntax.self),
+                  parent.last?.is(FunctionCallExprSyntax.self) == true,
+                  !parent.containsAssignment,
+                  let grandparent = parent.parent,
+                  grandparent.is(SequenceExprSyntax.self),
+                  let blockItem = grandparent.parent?.as(CodeBlockItemSyntax.self),
+                  !blockItem.isImplicitReturn
+            else {
+                return
+            }
+
+            violations.append(node.questionMark.positionAfterSkippingLeadingTrivia)
+        }
     }
-
-    override func visitPost(_ node: UnresolvedTernaryExprSyntax) {
-      guard node.thenExpression.is(FunctionCallExprSyntax.self),
-        let parent = node.parent?.as(ExprListSyntax.self),
-        parent.last?.is(FunctionCallExprSyntax.self) == true,
-        !parent.containsAssignment,
-        let grandparent = parent.parent,
-        grandparent.is(SequenceExprSyntax.self),
-        let blockItem = grandparent.parent?.as(CodeBlockItemSyntax.self),
-        !blockItem.isImplicitReturn
-      else {
-        return
-      }
-
-      violations.append(node.questionMark.positionAfterSkippingLeadingTrivia)
-    }
-  }
 }
 
 extension ExprListSyntax {
-  fileprivate var containsAssignment: Bool {
-    children(viewMode: .sourceAccurate).contains {
-      if let binOp = $0.as(BinaryOperatorExprSyntax.self) {
-        // https://developer.apple.com/documentation/swift/operator-declarations
-        return [
-          "*=",
-          "/=",
-          "%=",
-          "+=",
-          "-=",
-          "<<=",
-          ">>=",
-          "&=",
-          "|=",
-          "^=",
-          "&*=",
-          "&+=",
-          "&-=",
-          "&<<=",
-          "&>>=",
-          ".&=",
-          ".|=",
-          ".^=",
-        ].contains(binOp.operator.text)
-      }
-      return $0.is(AssignmentExprSyntax.self)
+    fileprivate var containsAssignment: Bool {
+        children(viewMode: .sourceAccurate).contains {
+            if let binOp = $0.as(BinaryOperatorExprSyntax.self) {
+                // https://developer.apple.com/documentation/swift/operator-declarations
+                return [
+                    "*=",
+                    "/=",
+                    "%=",
+                    "+=",
+                    "-=",
+                    "<<=",
+                    ">>=",
+                    "&=",
+                    "|=",
+                    "^=",
+                    "&*=",
+                    "&+=",
+                    "&-=",
+                    "&<<=",
+                    "&>>=",
+                    ".&=",
+                    ".|=",
+                    ".^=",
+                ].contains(binOp.operator.text)
+            }
+            return $0.is(AssignmentExprSyntax.self)
+        }
     }
-  }
 }
 
 extension CodeBlockItemSyntax {
-  fileprivate var isImplicitReturn: Bool {
-    isClosureImplicitReturn || isFunctionImplicitReturn || isVariableImplicitReturn
-      || isSubscriptImplicitReturn || isAccessorImplicitReturn
-  }
-
-  fileprivate var isClosureImplicitReturn: Bool {
-    guard let parent = parent?.as(CodeBlockItemListSyntax.self),
-      let grandparent = parent.parent
-    else {
-      return false
+    fileprivate var isImplicitReturn: Bool {
+        isClosureImplicitReturn || isFunctionImplicitReturn || isVariableImplicitReturn
+            || isSubscriptImplicitReturn || isAccessorImplicitReturn
     }
 
-    return parent.children(viewMode: .sourceAccurate).count == 1
-      && grandparent.is(ClosureExprSyntax.self)
-  }
+    private var isClosureImplicitReturn: Bool {
+        guard let parent = parent?.as(CodeBlockItemListSyntax.self),
+              let grandparent = parent.parent
+        else {
+            return false
+        }
 
-  fileprivate var isFunctionImplicitReturn: Bool {
-    guard let parent = parent?.as(CodeBlockItemListSyntax.self),
-      let functionDecl = parent.parent?.parent?.as(FunctionDeclSyntax.self)
-    else {
-      return false
+        return parent.children(viewMode: .sourceAccurate).count == 1
+            && grandparent.is(ClosureExprSyntax.self)
     }
 
-    return parent.children(viewMode: .sourceAccurate).count == 1
-      && functionDecl.signature.allowsImplicitReturns
-  }
+    private var isFunctionImplicitReturn: Bool {
+        guard let parent = parent?.as(CodeBlockItemListSyntax.self),
+              let functionDecl = parent.parent?.parent?.as(FunctionDeclSyntax.self)
+        else {
+            return false
+        }
 
-  fileprivate var isVariableImplicitReturn: Bool {
-    guard let parent = parent?.as(CodeBlockItemListSyntax.self) else {
-      return false
+        return parent.children(viewMode: .sourceAccurate).count == 1
+            && functionDecl.signature.allowsImplicitReturns
     }
 
-    let isVariableDecl = parent.parent?.parent?.as(PatternBindingSyntax.self) != nil
-    return parent.children(viewMode: .sourceAccurate).count == 1 && isVariableDecl
-  }
+    private var isVariableImplicitReturn: Bool {
+        guard let parent = parent?.as(CodeBlockItemListSyntax.self) else {
+            return false
+        }
 
-  fileprivate var isSubscriptImplicitReturn: Bool {
-    guard let parent = parent?.as(CodeBlockItemListSyntax.self),
-      let subscriptDecl = parent.parent?.parent?.as(SubscriptDeclSyntax.self)
-    else {
-      return false
+        let isVariableDecl = parent.parent?.parent?.as(PatternBindingSyntax.self) != nil
+        return parent.children(viewMode: .sourceAccurate).count == 1 && isVariableDecl
     }
 
-    return parent.children(viewMode: .sourceAccurate).count == 1
-      && subscriptDecl.allowsImplicitReturns
-  }
+    private var isSubscriptImplicitReturn: Bool {
+        guard let parent = parent?.as(CodeBlockItemListSyntax.self),
+              let subscriptDecl = parent.parent?.parent?.as(SubscriptDeclSyntax.self)
+        else {
+            return false
+        }
 
-  fileprivate var isAccessorImplicitReturn: Bool {
-    guard let parent = parent?.as(CodeBlockItemListSyntax.self),
-      parent.parent?.parent?.as(AccessorDeclSyntax.self) != nil
-    else {
-      return false
+        return parent.children(viewMode: .sourceAccurate).count == 1
+            && subscriptDecl.allowsImplicitReturns
     }
 
-    return parent.children(viewMode: .sourceAccurate).count == 1
-  }
+    private var isAccessorImplicitReturn: Bool {
+        guard let parent = parent?.as(CodeBlockItemListSyntax.self),
+              parent.parent?.parent?.as(AccessorDeclSyntax.self) != nil
+        else {
+            return false
+        }
+
+        return parent.children(viewMode: .sourceAccurate).count == 1
+    }
 }
 
 extension FunctionSignatureSyntax {
-  fileprivate var allowsImplicitReturns: Bool {
-    returnClause?.allowsImplicitReturns ?? false
-  }
+    fileprivate var allowsImplicitReturns: Bool {
+        returnClause?.allowsImplicitReturns ?? false
+    }
 }
 
 extension SubscriptDeclSyntax {
-  fileprivate var allowsImplicitReturns: Bool {
-    returnClause.allowsImplicitReturns
-  }
+    fileprivate var allowsImplicitReturns: Bool {
+        returnClause.allowsImplicitReturns
+    }
 }
 
 extension ReturnClauseSyntax {
-  fileprivate var allowsImplicitReturns: Bool {
-    if let simpleType = type.as(IdentifierTypeSyntax.self) {
-      return simpleType.name.text != "Void" && simpleType.name.text != "Never"
+    fileprivate var allowsImplicitReturns: Bool {
+        if let simpleType = type.as(IdentifierTypeSyntax.self) {
+            return simpleType.name.text != "Void" && simpleType.name.text != "Never"
+        }
+        if let tupleType = type.as(TupleTypeSyntax.self) {
+            return !tupleType.elements.isEmpty
+        }
+        return true
     }
-    if let tupleType = type.as(TupleTypeSyntax.self) {
-      return !tupleType.elements.isEmpty
-    }
-    return true
-  }
 }

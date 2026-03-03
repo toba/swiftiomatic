@@ -34,12 +34,14 @@ enum TriviaLineCollector {
             switch piece {
                 case .lineComment, .blockComment, .docLineComment, .docBlockComment:
                     let startLine = locationConverter.location(for: currentPosition).line
-                    let endLine = locationConverter
-                        .location(for: currentPosition + piece.sourceLength).line
+                    let endLine =
+                        locationConverter
+                            .location(for: currentPosition + piece.sourceLength).line
                     result.commentLines.formUnion(startLine ... endLine)
                 case .newlines:
-                    let endLine = locationConverter
-                        .location(for: currentPosition + piece.sourceLength).line
+                    let endLine =
+                        locationConverter
+                            .location(for: currentPosition + piece.sourceLength).line
                     result.maxNewlineLine = max(result.maxNewlineLine ?? 0, endLine)
                 default:
                     break

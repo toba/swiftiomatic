@@ -34,14 +34,19 @@ extension Configuration {
         ) throws {
             func warnAboutDuplicates(in identifiers: [String]) {
                 if Set(identifiers).count != identifiers.count {
-                    let duplicateRules = identifiers.reduce(into: [String: Int]()) { $0[
-                        $1,
-                        default: 0,
-                    ] += 1 }
-                        .filter { $0.1 > 1 }
+                    let duplicateRules = identifiers.reduce(into: [String: Int]()) {
+                        $0[
+                            $1,
+                            default: 0,
+                        ] += 1
+                    }
+                    .filter { $0.1 > 1 }
                     for duplicateRule in duplicateRules {
-                        SwiftiomaticError.listedMultipleTime(ruleID: duplicateRule.0, times: duplicateRule.1)
-                            .print()
+                        SwiftiomaticError.listedMultipleTime(
+                            ruleID: duplicateRule.0,
+                            times: duplicateRule.1,
+                        )
+                        .print()
                     }
                 }
             }

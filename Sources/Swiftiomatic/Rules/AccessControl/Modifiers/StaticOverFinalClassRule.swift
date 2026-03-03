@@ -6,93 +6,94 @@ struct StaticOverFinalClassRule {
     static let summary = ""
     static var nonTriggeringExamples: [Example] {
         [
-                    Example(
-                        """
-                        class C {
-                            static func f() {}
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        class C {
-                            static var i: Int { 0 }
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        class C {
-                            static subscript(_: Int) -> Int { 0 }
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        class C {
-                            class func f() {}
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        final class C {}
-                        """,
-                    ),
-                    Example(
-                        """
-                        final class C {
-                            class D {
-                              class func f() {}
-                            }
-                        }
-                        """,
-                    ),
-                ]
+            Example(
+                """
+                class C {
+                    static func f() {}
+                }
+                """,
+            ),
+            Example(
+                """
+                class C {
+                    static var i: Int { 0 }
+                }
+                """,
+            ),
+            Example(
+                """
+                class C {
+                    static subscript(_: Int) -> Int { 0 }
+                }
+                """,
+            ),
+            Example(
+                """
+                class C {
+                    class func f() {}
+                }
+                """,
+            ),
+            Example(
+                """
+                final class C {}
+                """,
+            ),
+            Example(
+                """
+                final class C {
+                    class D {
+                      class func f() {}
+                    }
+                }
+                """,
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-                    Example(
-                        """
-                        class C {
-                            ↓final class func f() {}
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        class C {
-                            ↓final class var i: Int { 0 }
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        class C {
-                            ↓final class subscript(_: Int) -> Int { 0 }
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        final class C {
-                            ↓class func f() {}
-                        }
-                        """,
-                    ),
-                    Example(
-                        """
-                        class C {
-                            final class D {
-                                ↓class func f() {}
-                            }
-                        }
-                        """,
-                    ),
-                ]
+            Example(
+                """
+                class C {
+                    ↓final class func f() {}
+                }
+                """,
+            ),
+            Example(
+                """
+                class C {
+                    ↓final class var i: Int { 0 }
+                }
+                """,
+            ),
+            Example(
+                """
+                class C {
+                    ↓final class subscript(_: Int) -> Int { 0 }
+                }
+                """,
+            ),
+            Example(
+                """
+                final class C {
+                    ↓class func f() {}
+                }
+                """,
+            ),
+            Example(
+                """
+                class C {
+                    final class D {
+                        ↓class func f() {}
+                    }
+                }
+                """,
+            ),
+        ]
     }
-    var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension StaticOverFinalClassRule: SwiftSyntaxRule {

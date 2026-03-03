@@ -33,6 +33,18 @@ struct Swift62ModernizationTests {
     #expect(nonisolatedFindings.contains { $0.reason.contains("hashValue") })
   }
 
+  @Test func detectsWeakVarNotReassigned() throws {
+    let violations = try suggestViolations(Swift62ModernizationRule(), fixture: "Swift62Modernization")
+
+    let weakVarFindings = violations.filter { $0.reason.contains("weak var") && $0.reason.contains("weak let") }
+    // Should flag WeakVarHolder.delegate and localWeakVar's ref
+    #expect(weakVarFindings.count == 2)
+    // Should NOT flag reassigned or observer cases
+    #expect(!weakVarFindings.contains { $0.reason.contains("WeakVarReassigned") })
+    // All findings should have suggestions
+    #expect(weakVarFindings.allSatisfy { $0.suggestion != nil })
+  }
+
   @Test func detectsContextParameterThreading() throws {
     let violations = try suggestViolations(Swift62ModernizationRule(), fixture: "Swift62Modernization")
 

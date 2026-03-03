@@ -1,15 +1,16 @@
-import SwiftBasicFormat
 import SwiftSyntax
+import SwiftBasicFormat
 
 struct SuperfluousElseRule {
     static let id = "superfluous_else"
     static let name = "Superfluous Else"
-    static let summary = "Else branches should be avoided when the previous if-block exits the current scope"
+    static let summary =
+        "Else branches should be avoided when the previous if-block exits the current scope"
     static let isCorrectable = true
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 if i > 0 {
                     // comment
@@ -19,8 +20,8 @@ struct SuperfluousElseRule {
                     return 3
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if i > 0 {
                     let a = 1
@@ -34,8 +35,8 @@ struct SuperfluousElseRule {
                     return 3
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if i > 0 {
                     if a > 1 {
@@ -45,8 +46,8 @@ struct SuperfluousElseRule {
                     return 3
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if i > 0 {
                     if a > 1 {
@@ -60,8 +61,8 @@ struct SuperfluousElseRule {
                     return 3
                 }
                 """, isExcludedFromDocumentation: true,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 for i in list {
                     if i > 12 {
@@ -76,8 +77,8 @@ struct SuperfluousElseRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if #available(iOS 13, *) {
                     return
@@ -85,12 +86,13 @@ struct SuperfluousElseRule {
                     deprecatedFunction()
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 if i > 0 {
                     return 1
@@ -99,8 +101,8 @@ struct SuperfluousElseRule {
                     return 2
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if i > 0 {
                     return 1
@@ -110,8 +112,8 @@ struct SuperfluousElseRule {
                     return 3
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 if i > 0 {
                     if i < 12 {
@@ -131,8 +133,8 @@ struct SuperfluousElseRule {
                     return 3
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 for i in list {
                     if i > 13 {
@@ -146,12 +148,13 @@ struct SuperfluousElseRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var corrections: [Example: Example] {
         [
-              Example(
+            Example(
                 """
                 func f() -> Int {
                     if i > 0 {
@@ -164,7 +167,7 @@ struct SuperfluousElseRule {
                     }
                 }
                 """,
-              ): Example(
+            ): Example(
                 """
                 func f() -> Int {
                     if i > 0 {
@@ -176,8 +179,8 @@ struct SuperfluousElseRule {
                     // yet another comment
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f() -> Int {
                     if i > 0 {
@@ -190,7 +193,7 @@ struct SuperfluousElseRule {
                     }
                 }
                 """,
-              ): Example(
+            ): Example(
                 """
                 func f() -> Int {
                     if i > 0 {
@@ -203,8 +206,8 @@ struct SuperfluousElseRule {
                     return 3
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 func f() -> Int {
 
@@ -217,7 +220,7 @@ struct SuperfluousElseRule {
                     }
                 }
                 """,
-              ): Example(
+            ): Example(
                 """
                 func f() -> Int {
 
@@ -231,8 +234,8 @@ struct SuperfluousElseRule {
                     }
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 {
                     if i > 0 {
@@ -242,7 +245,7 @@ struct SuperfluousElseRule {
                     }
                 }()
                 """,
-              ): Example(
+            ): Example(
                 """
                 {
                     if i > 0 {
@@ -251,8 +254,8 @@ struct SuperfluousElseRule {
                     return 2
                 }()
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 for i in list {
                     if i > 13 {
@@ -270,7 +273,7 @@ struct SuperfluousElseRule {
                     }
                 }
                 """,
-              ): Example(
+            ): Example(
                 """
                 for i in list {
                     if i > 13 {
@@ -289,169 +292,168 @@ struct SuperfluousElseRule {
                     }
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension SuperfluousElseRule: SwiftSyntaxCorrectableRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: options, file: file)
-  }
+    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
+        Rewriter(configuration: options, file: file)
+    }
 }
 
-extension SuperfluousElseRule {}
-
 extension SuperfluousElseRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      [ProtocolDeclSyntax.self]
-    }
-
-    override func visitPost(_ node: IfExprSyntax) {
-      if let elseKeyword = node.superfluousElse {
-        violations.append(elseKeyword.positionAfterSkippingLeadingTrivia)
-      }
-    }
-  }
-
-  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
-    override init(configuration: OptionsType, file: SwiftSource) {
-      super.init(configuration: configuration, file: file)
-      numberOfCorrections +=
-        Visitor(configuration: configuration, file: file)
-        .walk(file: file) { $0.violations.map(\.position) }
-        .count(where: {
-          !$0.isContainedIn(
-            regions: disabledRegions,
-            locationConverter: locationConverter,
-          )
-        })
-    }
-
-    override func visitAny(_ node: Syntax) -> Syntax? {
-      numberOfCorrections == 0 ? node : nil  // Avoid skipping all `if` expressions in a code block.
-    }
-
-    override func visit(_ list: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
-      var newStatements = CodeBlockItemListSyntax()
-      var ifExprRewritten = false
-      for item in list {
-        guard
-          let ifExpr = item.item.as(ExpressionStmtSyntax.self)?.expression
-            .as(IfExprSyntax.self),
-          let elseKeyword = ifExpr.superfluousElse,
-          !elseKeyword.isContainedIn(
-            regions: disabledRegions,
-            locationConverter: locationConverter,
-          )
-        else {
-          newStatements.append(item)
-          continue
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            [ProtocolDeclSyntax.self]
         }
-        ifExprRewritten = true
-        let (newIfStm, removedItems) = modify(ifExpr: ifExpr)
-        newStatements.append(
-          CodeBlockItemSyntax(
-            item: CodeBlockItemSyntax.Item(ExpressionStmtSyntax(expression: newIfStm)),
-          ),
-        )
-        newStatements.append(contentsOf: removedItems)
-      }
-      return ifExprRewritten ? visit(newStatements) : super.visit(newStatements)
+
+        override func visitPost(_ node: IfExprSyntax) {
+            if let elseKeyword = node.superfluousElse {
+                violations.append(elseKeyword.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
 
-    private func modify(ifExpr: IfExprSyntax) -> (
-      newIfExpr: IfExprSyntax, removedItems: [CodeBlockItemSyntax],
-    ) {
-      let ifExprWithoutElse = removeElse(from: ifExpr)
-      if case .codeBlock(let block) = ifExpr.elseBody {
-        let indenter = CodeIndentingRewriter(style: .unindentSpaces(4))
-        let unindentedBlock = indenter.rewrite(block).cast(CodeBlockSyntax.self)
-        let items = unindentedBlock.statements.with(
-          \.trailingTrivia,
-          unindentedBlock.rightBrace.leadingTrivia.withTrailingEmptyLineRemoved,
-        )
-        return (ifExprWithoutElse, Array(items))
-      }
-      if case .ifExpr(let nestedIfExpr) = ifExpr.elseBody {
-        let unindentedIfExpr = nestedIfExpr.with(
-          \.leadingTrivia,
-          Trivia(
-            pieces: [.newlines(1)]
-              + (ifExpr.leadingTrivia.indentation(isOnNewline: true) ?? Trivia()),
-          ),
-        )
-        let item = CodeBlockItemSyntax(
-          item:
-            CodeBlockItemSyntax
-            .Item(ExpressionStmtSyntax(expression: unindentedIfExpr)),
-        )
-        return (ifExprWithoutElse, [item])
-      }
-      return (ifExpr, [])
-    }
+    fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
+        override init(configuration: OptionsType, file: SwiftSource) {
+            super.init(configuration: configuration, file: file)
+            numberOfCorrections +=
+                Visitor(configuration: configuration, file: file)
+                .walk(file: file) { $0.violations.map(\.position) }
+                .count(where: {
+                    !$0.isContainedIn(
+                        regions: disabledRegions,
+                        locationConverter: locationConverter,
+                    )
+                })
+        }
 
-    private func removeElse(from ifExpr: IfExprSyntax) -> IfExprSyntax {
-      ifExpr
-        .with(
-          \.body,
-          ifExpr.body.with(
-            \.rightBrace,
-            ifExpr.body.rightBrace.with(\.trailingTrivia, Trivia()),
-          ),
-        )
-        .with(\.elseKeyword, nil)
-        .with(\.elseBody, nil)
+        override func visitAny(_ node: Syntax) -> Syntax? {
+            numberOfCorrections == 0 ? node :
+                nil // Avoid skipping all `if` expressions in a code block.
+        }
+
+        override func visit(_ list: CodeBlockItemListSyntax) -> CodeBlockItemListSyntax {
+            var newStatements = CodeBlockItemListSyntax()
+            var ifExprRewritten = false
+            for item in list {
+                guard
+                    let ifExpr = item.item.as(ExpressionStmtSyntax.self)?.expression
+                    .as(IfExprSyntax.self),
+                    let elseKeyword = ifExpr.superfluousElse,
+                    !elseKeyword.isContainedIn(
+                        regions: disabledRegions,
+                        locationConverter: locationConverter,
+                    )
+                else {
+                    newStatements.append(item)
+                    continue
+                }
+                ifExprRewritten = true
+                let (newIfStm, removedItems) = modify(ifExpr: ifExpr)
+                newStatements.append(
+                    CodeBlockItemSyntax(
+                        item: CodeBlockItemSyntax.Item(ExpressionStmtSyntax(expression: newIfStm)),
+                    ),
+                )
+                newStatements.append(contentsOf: removedItems)
+            }
+            return ifExprRewritten ? visit(newStatements) : super.visit(newStatements)
+        }
+
+        private func modify(ifExpr: IfExprSyntax) -> (
+            newIfExpr: IfExprSyntax, removedItems: [CodeBlockItemSyntax],
+        ) {
+            let ifExprWithoutElse = removeElse(from: ifExpr)
+            if case let .codeBlock(block) = ifExpr.elseBody {
+                let indenter = CodeIndentingRewriter(style: .unindentSpaces(4))
+                let unindentedBlock = indenter.rewrite(block).cast(CodeBlockSyntax.self)
+                let items = unindentedBlock.statements.with(
+                    \.trailingTrivia,
+                    unindentedBlock.rightBrace.leadingTrivia.withTrailingEmptyLineRemoved,
+                )
+                return (ifExprWithoutElse, Array(items))
+            }
+            if case let .ifExpr(nestedIfExpr) = ifExpr.elseBody {
+                let unindentedIfExpr = nestedIfExpr.with(
+                    \.leadingTrivia,
+                    Trivia(
+                        pieces: [.newlines(1)]
+                            + (ifExpr.leadingTrivia.indentation(isOnNewline: true) ?? Trivia()),
+                    ),
+                )
+                let item = CodeBlockItemSyntax(
+                    item:
+                    CodeBlockItemSyntax
+                        .Item(ExpressionStmtSyntax(expression: unindentedIfExpr)),
+                )
+                return (ifExprWithoutElse, [item])
+            }
+            return (ifExpr, [])
+        }
+
+        private func removeElse(from ifExpr: IfExprSyntax) -> IfExprSyntax {
+            ifExpr
+                .with(
+                    \.body,
+                    ifExpr.body.with(
+                        \.rightBrace,
+                        ifExpr.body.rightBrace.with(\.trailingTrivia, Trivia()),
+                    ),
+                )
+                .with(\.elseKeyword, nil)
+                .with(\.elseBody, nil)
+        }
     }
-  }
 }
 
 extension IfExprSyntax {
-  fileprivate var superfluousElse: TokenSyntax? {
-    guard elseKeyword != nil,
-      conditions.onlyElement?.condition.is(AvailabilityConditionSyntax.self) != true,
-      lastStatementExitsScope(in: body)
-    else {
-      return nil
+    fileprivate var superfluousElse: TokenSyntax? {
+        guard elseKeyword != nil,
+              conditions.onlyElement?.condition.is(AvailabilityConditionSyntax.self) != true,
+              lastStatementExitsScope(in: body)
+        else {
+            return nil
+        }
+        if let parent = parent?.as(IfExprSyntax.self) {
+            return parent.superfluousElse != nil ? elseKeyword : nil
+        }
+        return elseKeyword
     }
-    if let parent = parent?.as(IfExprSyntax.self) {
-      return parent.superfluousElse != nil ? elseKeyword : nil
-    }
-    return elseKeyword
-  }
 
-  private var returnsInAllBranches: Bool {
-    guard lastStatementExitsScope(in: body) else {
-      return false
+    private var returnsInAllBranches: Bool {
+        guard lastStatementExitsScope(in: body) else {
+            return false
+        }
+        if case let .ifExpr(nestedIfExpr) = elseBody {
+            return nestedIfExpr.returnsInAllBranches
+        }
+        if case let .codeBlock(block) = elseBody {
+            return lastStatementExitsScope(in: block)
+        }
+        return false
     }
-    if case .ifExpr(let nestedIfExpr) = elseBody {
-      return nestedIfExpr.returnsInAllBranches
-    }
-    if case .codeBlock(let block) = elseBody {
-      return lastStatementExitsScope(in: block)
-    }
-    return false
-  }
 
-  private func lastStatementExitsScope(in block: CodeBlockSyntax) -> Bool {
-    guard let lastItem = block.statements.last?.item else {
-      return false
+    private func lastStatementExitsScope(in block: CodeBlockSyntax) -> Bool {
+        guard let lastItem = block.statements.last?.item else {
+            return false
+        }
+        if [.returnStmt, .throwStmt, .continueStmt, .breakStmt].contains(lastItem.kind) {
+            return true
+        }
+        if let exprStmt = lastItem.as(ExpressionStmtSyntax.self),
+           let lastIfExpr = exprStmt.expression.as(IfExprSyntax.self)
+        {
+            return lastIfExpr.returnsInAllBranches
+        }
+        return false
     }
-    if [.returnStmt, .throwStmt, .continueStmt, .breakStmt].contains(lastItem.kind) {
-      return true
-    }
-    if let exprStmt = lastItem.as(ExpressionStmtSyntax.self),
-      let lastIfExpr = exprStmt.expression.as(IfExprSyntax.self)
-    {
-      return lastIfExpr.returnsInAllBranches
-    }
-    return false
-  }
 }

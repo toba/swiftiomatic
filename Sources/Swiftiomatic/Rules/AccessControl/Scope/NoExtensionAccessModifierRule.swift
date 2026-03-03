@@ -7,43 +7,42 @@ struct NoExtensionAccessModifierRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example("extension String {}"),
-              Example("\n\n extension String {}"),
-              Example("nonisolated extension String {}"),
-            ]
+            Example("extension String {}"),
+            Example("\n\n extension String {}"),
+            Example("nonisolated extension String {}"),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("↓private extension String {}"),
-              Example("↓public \n extension String {}"),
-              Example("↓open extension String {}"),
-              Example("↓internal extension String {}"),
-              Example("↓fileprivate extension String {}"),
-            ]
+            Example("↓private extension String {}"),
+            Example("↓public \n extension String {}"),
+            Example("↓open extension String {}"),
+            Example("↓internal extension String {}"),
+            Example("↓fileprivate extension String {}"),
+        ]
     }
-  var options = SeverityOption<Self>(.error)
 
+    var options = SeverityOption<Self>(.error)
 }
 
 extension NoExtensionAccessModifierRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension NoExtensionAccessModifierRule {}
-
 extension NoExtensionAccessModifierRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      .all
-    }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+            .all
+        }
 
-    override func visitPost(_ node: ExtensionDeclSyntax) {
-      let modifiers = node.modifiers
-      if let accessLevelModifier = modifiers.accessLevelModifier {
-        violations.append(accessLevelModifier.positionAfterSkippingLeadingTrivia)
-      }
+        override func visitPost(_ node: ExtensionDeclSyntax) {
+            let modifiers = node.modifiers
+            if let accessLevelModifier = modifiers.accessLevelModifier {
+                violations.append(accessLevelModifier.positionAfterSkippingLeadingTrivia)
+            }
+        }
     }
-  }
 }

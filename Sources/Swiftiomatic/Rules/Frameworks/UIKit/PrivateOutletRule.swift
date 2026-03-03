@@ -7,42 +7,43 @@ struct PrivateOutletRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example("class Foo { @IBOutlet private var label: UILabel? }"),
-              Example("class Foo { @IBOutlet private var label: UILabel! }"),
-              Example("class Foo { var notAnOutlet: UILabel }"),
-              Example("class Foo { @IBOutlet weak private var label: UILabel? }"),
-              Example("class Foo { @IBOutlet private weak var label: UILabel? }"),
-              Example("class Foo { @IBOutlet fileprivate weak var label: UILabel? }"),
-              // allow_private_set
-              Example(
+            Example("class Foo { @IBOutlet private var label: UILabel? }"),
+            Example("class Foo { @IBOutlet private var label: UILabel! }"),
+            Example("class Foo { var notAnOutlet: UILabel }"),
+            Example("class Foo { @IBOutlet weak private var label: UILabel? }"),
+            Example("class Foo { @IBOutlet private weak var label: UILabel? }"),
+            Example("class Foo { @IBOutlet fileprivate weak var label: UILabel? }"),
+            // allow_private_set
+            Example(
                 "class Foo { @IBOutlet private(set) var label: UILabel? }",
                 configuration: ["allow_private_set": true],
-              ),
-              Example(
+            ),
+            Example(
                 "class Foo { @IBOutlet private(set) var label: UILabel! }",
                 configuration: ["allow_private_set": true],
-              ),
-              Example(
+            ),
+            Example(
                 "class Foo { @IBOutlet weak private(set) var label: UILabel? }",
                 configuration: ["allow_private_set": true],
-              ),
-              Example(
+            ),
+            Example(
                 "class Foo { @IBOutlet private(set) weak var label: UILabel? }",
                 configuration: ["allow_private_set": true],
-              ),
-              Example(
+            ),
+            Example(
                 "class Foo { @IBOutlet fileprivate(set) weak var label: UILabel? }",
                 configuration: ["allow_private_set": true],
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example("class Foo { @IBOutlet ↓var label: UILabel? }"),
-              Example("class Foo { @IBOutlet ↓var label: UILabel! }"),
-              Example("class Foo { @IBOutlet private(set) ↓var label: UILabel? }"),
-              Example("class Foo { @IBOutlet fileprivate(set) ↓var label: UILabel? }"),
-              Example(
+            Example("class Foo { @IBOutlet ↓var label: UILabel? }"),
+            Example("class Foo { @IBOutlet ↓var label: UILabel! }"),
+            Example("class Foo { @IBOutlet private(set) ↓var label: UILabel? }"),
+            Example("class Foo { @IBOutlet fileprivate(set) ↓var label: UILabel? }"),
+            Example(
                 """
                 import Gridicons
 
@@ -74,39 +75,37 @@ struct PrivateOutletRule {
                     }
                 }
                 """, configuration: ["allow_private_set": false], isExcludedFromDocumentation: true,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = PrivateOutletOptions()
 
+    var options = PrivateOutletOptions()
 }
 
 extension PrivateOutletRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension PrivateOutletRule {}
-
 extension PrivateOutletRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override func visitPost(_ node: MemberBlockItemSyntax) {
-      guard
-        let decl = node.decl.as(VariableDeclSyntax.self),
-        decl.attributes.contains(attributeNamed: "IBOutlet"),
-        !decl.modifiers.containsPrivateOrFileprivate()
-      else {
-        return
-      }
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        override func visitPost(_ node: MemberBlockItemSyntax) {
+            guard
+                let decl = node.decl.as(VariableDeclSyntax.self),
+                decl.attributes.contains(attributeNamed: "IBOutlet"),
+                !decl.modifiers.containsPrivateOrFileprivate()
+            else {
+                return
+            }
 
-      if configuration.allowPrivateSet,
-        decl.modifiers.containsPrivateOrFileprivate(setOnly: true)
-      {
-        return
-      }
+            if configuration.allowPrivateSet,
+               decl.modifiers.containsPrivateOrFileprivate(setOnly: true)
+            {
+                return
+            }
 
-      violations.append(decl.bindingSpecifier.positionAfterSkippingLeadingTrivia)
+            violations.append(decl.bindingSpecifier.positionAfterSkippingLeadingTrivia)
+        }
     }
-  }
 }

@@ -81,7 +81,7 @@ import Testing
     let output = DiagnosticFormatter.formatXcode([diagnostic])
 
     // Verify the output starts with file path, then line:column, then severity
-    let parts = output.split(separator: ":", maxSplits: 4)
+    _ = output.split(separator: ":", maxSplits: 4)
     // parts: ["", "/absolute/path/File.swift", "99", "12", " warning: [test-rule] Test message"]
     // Note: leading "/" causes the first split element to be empty when splitting on ":"
     // Actually let's just verify the whole format with a regex

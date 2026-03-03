@@ -1,5 +1,6 @@
 import Foundation
-@preconcurrency import SwiftFormat
+import SwiftFormat
+import Synchronization
 
 /// A record of a formatting issue found by the swift-format linter
 public struct FormatFinding: Sendable, Equatable {
@@ -97,22 +98,26 @@ public struct FormatEngine: Sendable {
     }
 
     private func lint(_ source: String, filePath: String?) throws -> [FormatFinding] {
-        nonisolated(unsafe) var findings: [FormatFinding] = []
+        let findings = Mutex<[FormatFinding]>([])
         let linter = SwiftLinter(configuration: makeSwiftFormatConfiguration()) { finding in
             let line = finding.location?.line ?? 1
             let column = finding.location?.column ?? 1
-            findings.append(FormatFinding(
-                category: "\(finding.category)",
-                message: "\(finding.message)",
-                filePath: filePath,
-                line: line,
-                column: column,
-            ))
+            findings.withLock {
+                $0.append(
+                    FormatFinding(
+                        category: "\(finding.category)",
+                        message: "\(finding.message)",
+                        filePath: filePath,
+                        line: line,
+                        column: column,
+                    ),
+                )
+            }
         }
 
         let url = URL(filePath: filePath ?? "/tmp/stdin.swift")
         try linter.lint(source: source, assumingFileURL: url)
-        return findings
+        return findings.withLock { $0 }
     }
 
     /// Maps ``FormatEngineConfiguration`` to swift-format's ``SwiftFormat/Configuration``
@@ -125,8 +130,9 @@ public struct FormatEngine: Sendable {
         }
         config.lineLength = engineConfiguration.lineLength
         config.maximumBlankLines = engineConfiguration.maximumBlankLines
-        config.lineBreakBeforeControlFlowKeywords = engineConfiguration
-            .lineBreakBeforeControlFlowKeywords
+        config.lineBreakBeforeControlFlowKeywords =
+            engineConfiguration
+                .lineBreakBeforeControlFlowKeywords
         config.lineBreakBeforeEachArgument = engineConfiguration.lineBreakBeforeEachArgument
         config.multiElementCollectionTrailingCommas = engineConfiguration.trailingCommas
         return config

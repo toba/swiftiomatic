@@ -7,54 +7,54 @@ struct RawValueForCamelCasedCodableEnumRule {
     static let isOptIn = true
     static var nonTriggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 enum Numbers: Codable {
                   case int(Int)
                   case short(Int16)
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Numbers: Int, Codable {
                   case one = 1
                   case two = 2
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Numbers: Double, Codable {
                   case one = 1.1
                   case two = 2.2
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Numbers: String, Codable {
                   case one = "one"
                   case two = "two"
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Status: String, Codable {
                     case OK, ACCEPTABLE
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Status: String, Codable {
                     case ok
                     case maybeAcceptable = "maybe_acceptable"
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Status: String {
                     case ok
@@ -62,8 +62,8 @@ struct RawValueForCamelCasedCodableEnumRule {
                     case maybeAcceptable = "maybe_acceptable"
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Status: Int, Codable {
                     case ok
@@ -71,12 +71,13 @@ struct RawValueForCamelCasedCodableEnumRule {
                     case maybeAcceptable = -1
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
+
     static var triggeringExamples: [Example] {
         [
-              Example(
+            Example(
                 """
                 enum Status: String, Codable {
                     case ok
@@ -84,8 +85,8 @@ struct RawValueForCamelCasedCodableEnumRule {
                     case maybeAcceptable = "maybe_acceptable"
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Status: String, Decodable {
                    case ok
@@ -93,8 +94,8 @@ struct RawValueForCamelCasedCodableEnumRule {
                    case maybeAcceptable = "maybe_acceptable"
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Status: String, Encodable {
                    case ok
@@ -102,8 +103,8 @@ struct RawValueForCamelCasedCodableEnumRule {
                    case maybeAcceptable = "maybe_acceptable"
                 }
                 """,
-              ),
-              Example(
+            ),
+            Example(
                 """
                 enum Status: String, Codable {
                     case ok
@@ -111,52 +112,50 @@ struct RawValueForCamelCasedCodableEnumRule {
                     case maybeAcceptable = "maybe_acceptable"
                 }
                 """,
-              ),
-            ]
+            ),
+        ]
     }
-  var options = SeverityOption<Self>(.warning)
 
+    var options = SeverityOption<Self>(.warning)
 }
 
 extension RawValueForCamelCasedCodableEnumRule: SwiftSyntaxRule {
-  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-    Visitor(configuration: options, file: file)
-  }
+    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+        Visitor(configuration: options, file: file)
+    }
 }
 
-extension RawValueForCamelCasedCodableEnumRule {}
-
 extension RawValueForCamelCasedCodableEnumRule {
-  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    private let codableTypes = Set(["Codable", "Decodable", "Encodable"])
+    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+        private let codableTypes = Set(["Codable", "Decodable", "Encodable"])
 
-    override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-      guard let inheritedTypes = node.inheritanceClause?.inheritedTypes.typeNames,
-        !inheritedTypes.isDisjoint(with: codableTypes),
-        inheritedTypes.contains("String")
-      else {
-        return .skipChildren
-      }
+        override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+            guard let inheritedTypes = node.inheritanceClause?.inheritedTypes.typeNames,
+                  !inheritedTypes.isDisjoint(with: codableTypes),
+                  inheritedTypes.contains("String")
+            else {
+                return .skipChildren
+            }
 
-      return .visitChildren
+            return .visitChildren
+        }
+
+        override func visitPost(_ node: EnumCaseElementSyntax) {
+            guard node.rawValue == nil,
+                  case let name = node.name.text,
+                  !name.isUppercase,
+                  !name.isLowercase
+            else {
+                return
+            }
+
+            violations.append(node.positionAfterSkippingLeadingTrivia)
+        }
     }
-
-    override func visitPost(_ node: EnumCaseElementSyntax) {
-      guard node.rawValue == nil,
-        case let name = node.name.text,
-        !name.isUppercase,
-        !name.isLowercase
-      else {
-        return
-      }
-
-      violations.append(node.positionAfterSkippingLeadingTrivia)
-    }
-  }
 }
 
 extension InheritedTypeListSyntax {
-  fileprivate var typeNames: Set<String> {
-    Set(compactMap { $0.type.as(IdentifierTypeSyntax.self) }.map(\.name.text))
-  }
+    fileprivate var typeNames: Set<String> {
+        Set(compactMap { $0.type.as(IdentifierTypeSyntax.self) }.map(\.name.text))
+    }
 }
