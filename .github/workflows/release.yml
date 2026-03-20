@@ -58,7 +58,7 @@ jobs:
 
           SHA=$(gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "*.sha256" -O - | awk '{print $1}')
 
-          git clone "https://x-access-token:${GH_TOKEN}@github.com/toba/homebrew-swiftiomatic.git" tap
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/toba/homebrew-tap.git" tap
           cd tap
 
           cat > Formula/swiftiomatic.rb << FORMULA
