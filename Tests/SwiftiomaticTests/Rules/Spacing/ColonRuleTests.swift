@@ -70,7 +70,9 @@ import Testing
       Example("let abc = [1: [3↓ : 2], 3:  4]\n"): Example("let abc = [1: [3: 2], 3:  4]\n"),
     ]
     let description = TestExamples(from: ColonRule.self)
-      .with(nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples, corrections: corrections)
+      .with(
+        nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples,
+        corrections: corrections)
 
     await verifyRule(description, ruleConfiguration: ["flexible_right_spacing": true])
   }
@@ -145,7 +147,9 @@ import Testing
     ]
 
     let description = TestExamples(from: ColonRule.self)
-      .with(nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples, corrections: corrections)
+      .with(
+        nonTriggeringExamples: nonTriggeringExamples, triggeringExamples: triggeringExamples,
+        corrections: corrections)
 
     await verifyRule(description, ruleConfiguration: ["apply_to_dictionaries": false])
   }

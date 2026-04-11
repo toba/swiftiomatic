@@ -2,9 +2,9 @@ import Foundation
 
 /// Shared pretty-printing JSON encoder with sorted keys
 private let jsonEncoder: JSONEncoder = {
-    let encoder = JSONEncoder()
-    encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-    return encoder
+  let encoder = JSONEncoder()
+  encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+  return encoder
 }()
 
 /// Encode an `Encodable` value to a pretty-printed JSON string
@@ -14,10 +14,10 @@ private let jsonEncoder: JSONEncoder = {
 /// - Parameters:
 ///   - value: The value to encode.
 func toJSON(_ value: some Encodable) -> String {
-    do {
-        let data = try jsonEncoder.encode(value)
-        return String(data: data, encoding: .utf8) ?? ""
-    } catch {
-        return ""
-    }
+  do {
+    let data = try jsonEncoder.encode(value)
+    return String(data: data, encoding: .utf8) ?? ""
+  } catch {
+    return ""
+  }
 }

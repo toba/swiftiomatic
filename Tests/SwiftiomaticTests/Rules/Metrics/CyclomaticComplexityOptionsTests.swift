@@ -82,7 +82,9 @@ import Testing
           error: 150,
         ),
       )
-      checkError(SwiftiomaticError.invalidConfiguration(ruleID: CyclomaticComplexityRule.identifier)) {
+      checkError(
+        SwiftiomaticError.invalidConfiguration(ruleID: CyclomaticComplexityRule.identifier)
+      ) {
         try configuration.apply(configuration: badConfig)
       }
     }

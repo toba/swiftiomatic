@@ -12,19 +12,19 @@
 ///         ]
 ///     )
 struct FindingSpec {
-    /// The emoji marker identifying the expected violation location.
-    let marker: String
+  /// The emoji marker identifying the expected violation location.
+  let marker: String
 
-    /// The expected violation message text.
-    let message: String
+  /// The expected violation message text.
+  let message: String
 
-    /// Creates a finding spec.
-    ///
-    /// - Parameters:
-    ///   - marker: Emoji marker (e.g. `"1️⃣"`). Defaults to `"1️⃣"`.
-    ///   - message: Expected message text. Pass `""` to skip message validation.
-    init(_ marker: String = "1️⃣", message: String = "") {
-        self.marker = marker
-        self.message = message
-    }
+  /// Creates a finding spec.
+  ///
+  /// - Parameters:
+  ///   - marker: Emoji marker (e.g. `"1️⃣"`). Defaults to `"1️⃣"`.
+  ///   - message: Expected message text. Pass `""` to skip message validation.
+  init(_ marker: String = "1️⃣", message: String = "") {
+    self.marker = marker
+    self.message = message
+  }
 }

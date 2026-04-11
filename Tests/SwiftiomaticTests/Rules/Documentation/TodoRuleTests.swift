@@ -28,7 +28,8 @@ import Testing
           fatalError() // FIXME: Implement fixme
       """,
     )
-    let allViolations = try await ruleViolations(example, rule: TodoRule.identifier, configuration: ["only": ["FIXME"]])
+    let allViolations = try await ruleViolations(
+      example, rule: TodoRule.identifier, configuration: ["only": ["FIXME"]])
     #expect(allViolations.count == 1)
     #expect(allViolations.first?.reason == "FIXMEs should be resolved (Implement fixme)")
   }
@@ -40,7 +41,8 @@ import Testing
           fatalError() // FIXME: Implement fixme
       """,
     )
-    let allViolations = try await ruleViolations(example, rule: TodoRule.identifier, configuration: ["only": ["TODO"]])
+    let allViolations = try await ruleViolations(
+      example, rule: TodoRule.identifier, configuration: ["only": ["TODO"]])
     #expect(allViolations.count == 1)
     #expect(allViolations.first?.reason == "TODOs should be resolved (Implement todo)")
   }

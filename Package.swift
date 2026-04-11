@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "swiftiomatic",
-    platforms: [.macOS(.v15)],
+    platforms: [.macOS(.v26)],
     products: [
         .library(name: "SwiftiomaticLib", targets: ["Swiftiomatic"]),
         .executable(name: "swiftiomatic", targets: ["SwiftiomaticCLI"]),

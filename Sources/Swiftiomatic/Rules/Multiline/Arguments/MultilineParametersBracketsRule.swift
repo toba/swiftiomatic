@@ -1,234 +1,234 @@
 import Foundation
 
 struct MultilineParametersBracketsRule: Rule {
-    static let id = "multiline_parameters_brackets"
-    static let name = "Multiline Parameters Brackets"
-    static let summary = "Multiline parameters should have their surrounding brackets in a new line"
-    static let isOptIn = true
-    static let requiresSourceKit = true
-    static var nonTriggeringExamples: [Example] {
-        [
-            Example(
-                """
-                func foo(param1: String, param2: String, param3: String)
-                """,
-            ),
-            Example(
-                """
-                func foo(
-                    param1: String, param2: String, param3: String
-                )
-                """,
-            ),
-            Example(
-                """
-                func foo(
-                    param1: String,
-                    param2: String,
-                    param3: String
-                )
-                """,
-            ),
-            Example(
-                """
-                class SomeType {
-                    func foo(param1: String, param2: String, param3: String)
-                }
-                """,
-            ),
-            Example(
-                """
-                class SomeType {
-                    func foo(
-                        param1: String, param2: String, param3: String
-                    )
-                }
-                """,
-            ),
-            Example(
-                """
-                class SomeType {
-                    func foo(
-                        param1: String,
-                        param2: String,
-                        param3: String
-                    )
-                }
-                """,
-            ),
-            Example(
-                """
-                func foo<T>(param1: T, param2: String, param3: String) -> T { /* some code */ }
-                """,
-            ),
-            Example(
-                """
-                    func foo(a: [Int] = [
-                        1
-                    ])
-                """,
-            ),
-        ]
-    }
+  static let id = "multiline_parameters_brackets"
+  static let name = "Multiline Parameters Brackets"
+  static let summary = "Multiline parameters should have their surrounding brackets in a new line"
+  static let isOptIn = true
+  static let requiresSourceKit = true
+  static var nonTriggeringExamples: [Example] {
+    [
+      Example(
+        """
+        func foo(param1: String, param2: String, param3: String)
+        """,
+      ),
+      Example(
+        """
+        func foo(
+            param1: String, param2: String, param3: String
+        )
+        """,
+      ),
+      Example(
+        """
+        func foo(
+            param1: String,
+            param2: String,
+            param3: String
+        )
+        """,
+      ),
+      Example(
+        """
+        class SomeType {
+            func foo(param1: String, param2: String, param3: String)
+        }
+        """,
+      ),
+      Example(
+        """
+        class SomeType {
+            func foo(
+                param1: String, param2: String, param3: String
+            )
+        }
+        """,
+      ),
+      Example(
+        """
+        class SomeType {
+            func foo(
+                param1: String,
+                param2: String,
+                param3: String
+            )
+        }
+        """,
+      ),
+      Example(
+        """
+        func foo<T>(param1: T, param2: String, param3: String) -> T { /* some code */ }
+        """,
+      ),
+      Example(
+        """
+            func foo(a: [Int] = [
+                1
+            ])
+        """,
+      ),
+    ]
+  }
 
-    static var triggeringExamples: [Example] {
-        [
-            Example(
-                """
-                func foo(↓param1: String, param2: String,
-                         param3: String
-                )
-                """,
-            ),
-            Example(
-                """
-                func foo(
-                    param1: String,
-                    param2: String,
-                    param3: String↓)
-                """,
-            ),
-            Example(
-                """
-                class SomeType {
-                    func foo(↓param1: String, param2: String,
-                             param3: String
-                    )
-                }
-                """,
-            ),
-            Example(
-                """
-                class SomeType {
-                    func foo(
-                        param1: String,
-                        param2: String,
-                        param3: String↓)
-                }
-                """,
-            ),
-            Example(
-                """
-                func foo<T>(↓param1: T, param2: String,
-                         param3: String
-                ) -> T
-                """,
-            ),
-        ]
-    }
+  static var triggeringExamples: [Example] {
+    [
+      Example(
+        """
+        func foo(↓param1: String, param2: String,
+                 param3: String
+        )
+        """,
+      ),
+      Example(
+        """
+        func foo(
+            param1: String,
+            param2: String,
+            param3: String↓)
+        """,
+      ),
+      Example(
+        """
+        class SomeType {
+            func foo(↓param1: String, param2: String,
+                     param3: String
+            )
+        }
+        """,
+      ),
+      Example(
+        """
+        class SomeType {
+            func foo(
+                param1: String,
+                param2: String,
+                param3: String↓)
+        }
+        """,
+      ),
+      Example(
+        """
+        func foo<T>(↓param1: T, param2: String,
+                 param3: String
+        ) -> T
+        """,
+      ),
+    ]
+  }
 
-    var options = SeverityOption<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 
-    func validate(file: SwiftSource) -> [RuleViolation] {
-        violations(in: file.structureDictionary, file: file)
-    }
+  func validate(file: SwiftSource) -> [RuleViolation] {
+    violations(in: file.structureDictionary, file: file)
+  }
 
-    private func violations(in substructure: SourceKitDictionary, file: SwiftSource)
-        -> [RuleViolation]
+  private func violations(in substructure: SourceKitDictionary, file: SwiftSource)
+    -> [RuleViolation]
+  {
+    var violations = [RuleViolation]()
+
+    // find violations at current level
+    if let kind = substructure.declarationKind,
+      SwiftDeclarationKind.functionKinds.contains(kind)
     {
-        var violations = [RuleViolation]()
+      guard
+        let nameOffset = substructure.nameOffset,
+        let nameLength = substructure.nameLength,
+        case let nameByteRange = ByteRange(location: nameOffset, length: nameLength),
+        let functionName = file.stringView.substringWithByteRange(nameByteRange)
+      else {
+        return []
+      }
 
-        // find violations at current level
-        if let kind = substructure.declarationKind,
-           SwiftDeclarationKind.functionKinds.contains(kind)
-        {
-            guard
-                let nameOffset = substructure.nameOffset,
-                let nameLength = substructure.nameLength,
-                case let nameByteRange = ByteRange(location: nameOffset, length: nameLength),
-                let functionName = file.stringView.substringWithByteRange(nameByteRange)
-            else {
-                return []
-            }
+      let parameters = substructure.substructure
+        .filter { $0.declarationKind == .varParameter }
+      let parameterBodies = parameters.compactMap { $0.content(in: file) }
+      let parametersNewlineCount = parameterBodies.map { body in
+        body.countOccurrences(of: "\n")
+      }.reduce(0, +)
+      let declarationNewlineCount = functionName.countOccurrences(of: "\n")
+      let isMultiline = declarationNewlineCount > parametersNewlineCount
 
-            let parameters = substructure.substructure
-                .filter { $0.declarationKind == .varParameter }
-            let parameterBodies = parameters.compactMap { $0.content(in: file) }
-            let parametersNewlineCount = parameterBodies.map { body in
-                body.countOccurrences(of: "\n")
-            }.reduce(0, +)
-            let declarationNewlineCount = functionName.countOccurrences(of: "\n")
-            let isMultiline = declarationNewlineCount > parametersNewlineCount
-
-            if isMultiline, parameters.isNotEmpty {
-                if let openingBracketViolation = openingBracketViolation(
-                    parameters: parameters,
-                    file: file,
-                ) {
-                    violations.append(openingBracketViolation)
-                }
-
-                if let closingBracketViolation = closingBracketViolation(
-                    parameters: parameters,
-                    file: file,
-                ) {
-                    violations.append(closingBracketViolation)
-                }
-            }
+      if isMultiline, parameters.isNotEmpty {
+        if let openingBracketViolation = openingBracketViolation(
+          parameters: parameters,
+          file: file,
+        ) {
+          violations.append(openingBracketViolation)
         }
 
-        // find violations at deeper levels
-        for substructure in substructure.substructure {
-            violations += self.violations(in: substructure, file: file)
+        if let closingBracketViolation = closingBracketViolation(
+          parameters: parameters,
+          file: file,
+        ) {
+          violations.append(closingBracketViolation)
         }
-
-        return violations
+      }
     }
 
-    private func openingBracketViolation(
-        parameters: [SourceKitDictionary],
-        file: SwiftSource,
-    ) -> RuleViolation? {
-        guard
-            let firstParamByteRange = parameters.first?.byteRange,
-            let firstParamRange = file.stringView.byteRangeToNSRange(firstParamByteRange)
-        else {
-            return nil
-        }
-
-        let prefix = file.stringView.nsString.substring(to: firstParamRange.lowerBound)
-        let invalidRegex = regex("\\([ \\t]*\\z")
-
-        guard
-            let invalidMatch = invalidRegex.firstMatch(in: prefix, range: prefix.fullNSRange)
-        else {
-            return nil
-        }
-
-        let matchNSRange = NSRange(invalidMatch.range, in: prefix)
-        return RuleViolation(
-            ruleType: Self.self,
-            severity: options.severity,
-            location: Location(file: file, characterOffset: matchNSRange.location + 1),
-        )
+    // find violations at deeper levels
+    for substructure in substructure.substructure {
+      violations += self.violations(in: substructure, file: file)
     }
 
-    private func closingBracketViolation(
-        parameters: [SourceKitDictionary],
-        file: SwiftSource,
-    ) -> RuleViolation? {
-        guard
-            let lastParamByteRange = parameters.last?.byteRange,
-            let lastParamRange = file.stringView.byteRangeToNSRange(lastParamByteRange)
-        else {
-            return nil
-        }
+    return violations
+  }
 
-        let suffix = file.stringView.nsString.substring(from: lastParamRange.upperBound)
-        let invalidRegex = regex("\\A[ \\t]*\\)")
-
-        guard
-            let invalidMatch = invalidRegex.firstMatch(in: suffix, range: suffix.fullNSRange)
-        else {
-            return nil
-        }
-
-        let matchNSRange = NSRange(invalidMatch.range, in: suffix)
-        let characterOffset = lastParamRange.upperBound + matchNSRange.upperBound - 1
-        return RuleViolation(
-            ruleType: Self.self,
-            severity: options.severity,
-            location: Location(file: file, characterOffset: characterOffset),
-        )
+  private func openingBracketViolation(
+    parameters: [SourceKitDictionary],
+    file: SwiftSource,
+  ) -> RuleViolation? {
+    guard
+      let firstParamByteRange = parameters.first?.byteRange,
+      let firstParamRange = file.stringView.byteRangeToNSRange(firstParamByteRange)
+    else {
+      return nil
     }
+
+    let prefix = file.stringView.nsString.substring(to: firstParamRange.lowerBound)
+    let invalidRegex = regex("\\([ \\t]*\\z")
+
+    guard
+      let invalidMatch = invalidRegex.firstMatch(in: prefix, range: prefix.fullNSRange)
+    else {
+      return nil
+    }
+
+    let matchNSRange = NSRange(invalidMatch.range, in: prefix)
+    return RuleViolation(
+      ruleType: Self.self,
+      severity: options.severity,
+      location: Location(file: file, characterOffset: matchNSRange.location + 1),
+    )
+  }
+
+  private func closingBracketViolation(
+    parameters: [SourceKitDictionary],
+    file: SwiftSource,
+  ) -> RuleViolation? {
+    guard
+      let lastParamByteRange = parameters.last?.byteRange,
+      let lastParamRange = file.stringView.byteRangeToNSRange(lastParamByteRange)
+    else {
+      return nil
+    }
+
+    let suffix = file.stringView.nsString.substring(from: lastParamRange.upperBound)
+    let invalidRegex = regex("\\A[ \\t]*\\)")
+
+    guard
+      let invalidMatch = invalidRegex.firstMatch(in: suffix, range: suffix.fullNSRange)
+    else {
+      return nil
+    }
+
+    let matchNSRange = NSRange(invalidMatch.range, in: suffix)
+    let characterOffset = lastParamRange.upperBound + matchNSRange.upperBound - 1
+    return RuleViolation(
+      ruleType: Self.self,
+      severity: options.severity,
+      location: Location(file: file, characterOffset: characterOffset),
+    )
+  }
 }

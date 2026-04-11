@@ -1,155 +1,155 @@
 import SwiftSyntax
 
 struct FunctionDefaultParameterAtEndRule {
-    static let id = "function_default_parameter_at_end"
-    static let name = "Function Default Parameter at End"
-    static let summary =
-        "Prefer to locate parameters with defaults toward the end of the parameter list"
-    static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        [
-            Example("func foo(baz: String, bar: Int = 0) {}"),
-            Example("func foo(x: String, y: Int = 0, z: CGFloat = 0) {}"),
-            Example("func foo(bar: String, baz: Int = 0, z: () -> Void) {}"),
-            Example("func foo(bar: String, z: () -> Void, baz: Int = 0) {}"),
-            Example("func foo(bar: Int = 0) {}"),
-            Example("func foo() {}"),
-            Example(
-                """
-                class A: B {
-                  override func foo(bar: Int = 0, baz: String) {}
-                """,
-            ),
-            Example("func foo(bar: Int = 0, completion: @escaping CompletionHandler) {}"),
-            Example(
-                """
-                func foo(a: Int, b: CGFloat = 0) {
-                  let block = { (error: Error?) in }
-                }
-                """,
-            ),
-            Example(
-                """
-                func foo(a: String, b: String? = nil,
-                         c: String? = nil, d: @escaping AlertActionHandler = { _ in }) {}
-                """,
-            ),
-            Example(
-                "override init?(for date: Date = Date(), coordinate: CLLocationCoordinate2D) {}",
-            ),
-            Example(
-                """
-                func handleNotification(_ userInfo: NSDictionary,
-                                        userInteraction: Bool = false,
-                                        completionHandler: ((UIBackgroundFetchResult) -> Void)?) {}
-                """,
-            ),
-            Example(
-                """
-                func write(withoutNotifying tokens: [NotificationToken] =  {}, _ block: (() throws -> Int)) {}
-                """,
-            ),
-            Example(
-                """
-                func expect<T>(file: String = #file, _ expression: @autoclosure () -> (() throws -> T)) -> Expectation<T> {}
-                """, isExcludedFromDocumentation: true,
-            ),
-            Example("func foo(bar: Int, baz: Int = 0, z: () -> Void) {}"),
-            Example("func foo(bar: Int, baz: Int = 0, z: () -> Void, x: Int = 0) {}"),
-            Example("func foo(isolation: isolated (any Actor)? = #isolation, bar: String) {}"),
-        ]
-    }
+  static let id = "function_default_parameter_at_end"
+  static let name = "Function Default Parameter at End"
+  static let summary =
+    "Prefer to locate parameters with defaults toward the end of the parameter list"
+  static let isOptIn = true
+  static var nonTriggeringExamples: [Example] {
+    [
+      Example("func foo(baz: String, bar: Int = 0) {}"),
+      Example("func foo(x: String, y: Int = 0, z: CGFloat = 0) {}"),
+      Example("func foo(bar: String, baz: Int = 0, z: () -> Void) {}"),
+      Example("func foo(bar: String, z: () -> Void, baz: Int = 0) {}"),
+      Example("func foo(bar: Int = 0) {}"),
+      Example("func foo() {}"),
+      Example(
+        """
+        class A: B {
+          override func foo(bar: Int = 0, baz: String) {}
+        """,
+      ),
+      Example("func foo(bar: Int = 0, completion: @escaping CompletionHandler) {}"),
+      Example(
+        """
+        func foo(a: Int, b: CGFloat = 0) {
+          let block = { (error: Error?) in }
+        }
+        """,
+      ),
+      Example(
+        """
+        func foo(a: String, b: String? = nil,
+                 c: String? = nil, d: @escaping AlertActionHandler = { _ in }) {}
+        """,
+      ),
+      Example(
+        "override init?(for date: Date = Date(), coordinate: CLLocationCoordinate2D) {}",
+      ),
+      Example(
+        """
+        func handleNotification(_ userInfo: NSDictionary,
+                                userInteraction: Bool = false,
+                                completionHandler: ((UIBackgroundFetchResult) -> Void)?) {}
+        """,
+      ),
+      Example(
+        """
+        func write(withoutNotifying tokens: [NotificationToken] =  {}, _ block: (() throws -> Int)) {}
+        """,
+      ),
+      Example(
+        """
+        func expect<T>(file: String = #file, _ expression: @autoclosure () -> (() throws -> T)) -> Expectation<T> {}
+        """, isExcludedFromDocumentation: true,
+      ),
+      Example("func foo(bar: Int, baz: Int = 0, z: () -> Void) {}"),
+      Example("func foo(bar: Int, baz: Int = 0, z: () -> Void, x: Int = 0) {}"),
+      Example("func foo(isolation: isolated (any Actor)? = #isolation, bar: String) {}"),
+    ]
+  }
 
-    static var triggeringExamples: [Example] {
-        [
-            Example("func foo(↓bar: Int = 0, baz: String) {}"),
-            Example("private func foo(↓bar: Int = 0, baz: String) {}"),
-            Example(
-                "public init?(↓for date: Date = Date(), coordinate: CLLocationCoordinate2D) {}",
-            ),
-            Example("func foo(bar: Int, ↓baz: Int = 0, z: () -> Void, x: Int) {}"),
-            Example(
-                "func foo(isolation: isolated (any Actor)? = #isolation, bar: String) {}",
-                configuration: ["ignore_first_isolation_inheritance_parameter": false],
-            ),
-        ]
-    }
+  static var triggeringExamples: [Example] {
+    [
+      Example("func foo(↓bar: Int = 0, baz: String) {}"),
+      Example("private func foo(↓bar: Int = 0, baz: String) {}"),
+      Example(
+        "public init?(↓for date: Date = Date(), coordinate: CLLocationCoordinate2D) {}",
+      ),
+      Example("func foo(bar: Int, ↓baz: Int = 0, z: () -> Void, x: Int) {}"),
+      Example(
+        "func foo(isolation: isolated (any Actor)? = #isolation, bar: String) {}",
+        configuration: ["ignore_first_isolation_inheritance_parameter": false],
+      ),
+    ]
+  }
 
-    var options = FunctionDefaultParameterAtEndOptions()
+  var options = FunctionDefaultParameterAtEndOptions()
 }
 
 extension FunctionDefaultParameterAtEndRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-        Visitor(configuration: options, file: file)
-    }
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+    Visitor(configuration: options, file: file)
+  }
 }
 
 extension FunctionDefaultParameterAtEndRule {
-    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-        override func visitPost(_ node: FunctionDeclSyntax) {
-            if !node.modifiers.contains(keyword: .override) {
-                collectViolations(for: node.signature)
-            }
-        }
-
-        override func visitPost(_ node: InitializerDeclSyntax) {
-            if !node.modifiers.contains(keyword: .override) {
-                collectViolations(for: node.signature)
-            }
-        }
-
-        private func collectViolations(for signature: FunctionSignatureSyntax) {
-            let numberOfParameters = signature.parameterClause.parameters.count
-            if numberOfParameters < 2 {
-                return
-            }
-            var previousWithDefault = true
-            for (index, param) in signature.parameterClause.parameters.reversed().enumerated() {
-                if param.isClosure {
-                    continue
-                }
-                let hasDefault = param.defaultValue != nil
-                if !previousWithDefault, hasDefault {
-                    if index + 1 == numberOfParameters,
-                       param.isInheritedIsolation,
-                       configuration.ignoreFirstIsolationInheritanceParameter
-                    {
-                        break // It's the last element anyway.
-                    }
-                    violations.append(param.positionAfterSkippingLeadingTrivia)
-                }
-                previousWithDefault = hasDefault
-            }
-        }
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+    override func visitPost(_ node: FunctionDeclSyntax) {
+      if !node.modifiers.contains(keyword: .override) {
+        collectViolations(for: node.signature)
+      }
     }
+
+    override func visitPost(_ node: InitializerDeclSyntax) {
+      if !node.modifiers.contains(keyword: .override) {
+        collectViolations(for: node.signature)
+      }
+    }
+
+    private func collectViolations(for signature: FunctionSignatureSyntax) {
+      let numberOfParameters = signature.parameterClause.parameters.count
+      if numberOfParameters < 2 {
+        return
+      }
+      var previousWithDefault = true
+      for (index, param) in signature.parameterClause.parameters.reversed().enumerated() {
+        if param.isClosure {
+          continue
+        }
+        let hasDefault = param.defaultValue != nil
+        if !previousWithDefault, hasDefault {
+          if index + 1 == numberOfParameters,
+            param.isInheritedIsolation,
+            configuration.ignoreFirstIsolationInheritanceParameter
+          {
+            break  // It's the last element anyway.
+          }
+          violations.append(param.positionAfterSkippingLeadingTrivia)
+        }
+        previousWithDefault = hasDefault
+      }
+    }
+  }
 }
 
 extension FunctionParameterSyntax {
-    fileprivate var isClosure: Bool {
-        isEscaping || type.isFunctionType
-    }
+  fileprivate var isClosure: Bool {
+    isEscaping || type.isFunctionType
+  }
 
-    private var isEscaping: Bool {
-        type.as(AttributedTypeSyntax.self)?.attributes.contains(attributeNamed: "escaping") == true
-    }
+  private var isEscaping: Bool {
+    type.as(AttributedTypeSyntax.self)?.attributes.contains(attributeNamed: "escaping") == true
+  }
 
-    fileprivate var isInheritedIsolation: Bool {
-        defaultValue?.value.as(MacroExpansionExprSyntax.self)?.macroName.text == "isolation"
-    }
+  fileprivate var isInheritedIsolation: Bool {
+    defaultValue?.value.as(MacroExpansionExprSyntax.self)?.macroName.text == "isolation"
+  }
 }
 
 extension TypeSyntax {
-    fileprivate var isFunctionType: Bool {
-        if `is`(FunctionTypeSyntax.self) {
-            true
-        } else if let optionalType = `as`(OptionalTypeSyntax.self) {
-            optionalType.wrappedType.isFunctionType
-        } else if let tupleType = `as`(TupleTypeSyntax.self) {
-            tupleType.elements.onlyElement?.type.isFunctionType == true
-        } else if let attributedType = `as`(AttributedTypeSyntax.self) {
-            attributedType.baseType.isFunctionType
-        } else {
-            false
-        }
+  fileprivate var isFunctionType: Bool {
+    if `is`(FunctionTypeSyntax.self) {
+      true
+    } else if let optionalType = `as`(OptionalTypeSyntax.self) {
+      optionalType.wrappedType.isFunctionType
+    } else if let tupleType = `as`(TupleTypeSyntax.self) {
+      tupleType.elements.onlyElement?.type.isFunctionType == true
+    } else if let attributedType = `as`(AttributedTypeSyntax.self) {
+      attributedType.baseType.isFunctionType
+    } else {
+      false
     }
+  }
 }

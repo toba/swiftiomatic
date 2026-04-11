@@ -9,31 +9,31 @@
 ///         }
 ///     }
 struct ViolationMessage: Hashable, Sendable, CustomStringConvertible,
-    ExpressibleByStringLiteral, ExpressibleByStringInterpolation, Codable
+  ExpressibleByStringLiteral, ExpressibleByStringInterpolation, Codable
 {
-    let text: String
+  let text: String
 
-    var description: String { text }
+  var description: String { text }
 
-    /// Whether the message contains the given substring.
-    func contains(_ other: some StringProtocol) -> Bool {
-        text.contains(other)
-    }
+  /// Whether the message contains the given substring.
+  func contains(_ other: some StringProtocol) -> Bool {
+    text.contains(other)
+  }
 
-    init(stringLiteral value: String) {
-        text = value
-    }
+  init(stringLiteral value: String) {
+    text = value
+  }
 
-    init(stringInterpolation: DefaultStringInterpolation) {
-        text = String(stringInterpolation: stringInterpolation)
-    }
+  init(stringInterpolation: DefaultStringInterpolation) {
+    text = String(stringInterpolation: stringInterpolation)
+  }
 
-    init(from decoder: any Decoder) throws {
-        text = try decoder.singleValueContainer().decode(String.self)
-    }
+  init(from decoder: any Decoder) throws {
+    text = try decoder.singleValueContainer().decode(String.self)
+  }
 
-    func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(text)
-    }
+  func encode(to encoder: any Encoder) throws {
+    var container = encoder.singleValueContainer()
+    try container.encode(text)
+  }
 }

@@ -1,332 +1,332 @@
 struct CaptureVariableRule: CollectingRule {
-    static let id = "capture_variable"
-    static let name = "Capture Variable"
-    static let summary =
-        "Non-constant variables should not be listed in a closure's capture list to avoid confusion about closures capturing variables at creation time"
-    static let isOptIn = true
-    static let requiresSourceKit = true
-    static let requiresCompilerArguments = true
-    static let requiresFileOnDisk = true
-    static let isCrossFile = true
-    static var nonTriggeringExamples: [Example] {
-        [
-            Example(
-                """
-                class C {
-                    let i: Int
-                    init(_ i: Int) { self.i = i }
+  static let id = "capture_variable"
+  static let name = "Capture Variable"
+  static let summary =
+    "Non-constant variables should not be listed in a closure's capture list to avoid confusion about closures capturing variables at creation time"
+  static let isOptIn = true
+  static let requiresSourceKit = true
+  static let requiresCompilerArguments = true
+  static let requiresFileOnDisk = true
+  static let isCrossFile = true
+  static var nonTriggeringExamples: [Example] {
+    [
+      Example(
+        """
+        class C {
+            let i: Int
+            init(_ i: Int) { self.i = i }
+        }
+
+        let j: Int = 0
+        let c = C(1)
+
+        let closure: () -> Void = { [j, c] in
+            print(c.i, j)
+        }
+
+        closure()
+        """,
+      ),
+      Example(
+        """
+        let iGlobal: Int = 0
+
+        class C {
+            class var iClass: Int { 0 }
+            static let iStatic: Int = 0
+            let iInstance: Int = 0
+
+            func callTest() {
+                var iLocal: Int = 0
+                test { [unowned self, iGlobal, iInstance, iLocal, iClass=C.iClass, iStatic=C.iStatic] j in
+                    print(iGlobal, iClass, iStatic, iInstance, iLocal, j)
                 }
-
-                let j: Int = 0
-                let c = C(1)
-
-                let closure: () -> Void = { [j, c] in
-                    print(c.i, j)
-                }
-
-                closure()
-                """,
-            ),
-            Example(
-                """
-                let iGlobal: Int = 0
-
-                class C {
-                    class var iClass: Int { 0 }
-                    static let iStatic: Int = 0
-                    let iInstance: Int = 0
-
-                    func callTest() {
-                        var iLocal: Int = 0
-                        test { [unowned self, iGlobal, iInstance, iLocal, iClass=C.iClass, iStatic=C.iStatic] j in
-                            print(iGlobal, iClass, iStatic, iInstance, iLocal, j)
-                        }
-                    }
-
-                    func test(_ completionHandler: @escaping (Int) -> Void) {
-                    }
-                }
-                """,
-            ),
-            Example(
-                """
-                var j: Int!
-                j = 0
-
-                let closure: () -> Void = { [j] in
-                    print(j)
-                }
-
-                closure()
-                j = 1
-                closure()
-                """,
-            ),
-            Example(
-                """
-                lazy var j: Int = { 0 }()
-
-                let closure: () -> Void = { [j] in
-                    print(j)
-                }
-
-                closure()
-                j = 1
-                closure()
-                """,
-            ),
-        ]
-    }
-
-    static var triggeringExamples: [Example] {
-        [
-            Example(
-                """
-                var j: Int = 0
-
-                let closure: () -> Void = { [j] in
-                    print(j)
-                }
-
-                closure()
-                j = 1
-                closure()
-                """,
-            ),
-            Example(
-                """
-                class C {
-                    let i: Int
-                    init(_ i: Int) { self.i = i }
-                }
-
-                var c = C(0)
-                let closure: () -> Void = { [c] in
-                    print(c.i)
-                }
-
-                closure()
-                c = C(1)
-                closure()
-                """,
-            ),
-            Example(
-                """
-                var iGlobal: Int = 0
-
-                class C {
-                    func callTest() {
-                        test { [iGlobal] j in
-                            print(iGlobal, j)
-                        }
-                    }
-
-                    func test(_ completionHandler: @escaping (Int) -> Void) {
-                    }
-                }
-                """,
-            ),
-            Example(
-                """
-                class C {
-                    static var iStatic: Int = 0
-
-                    static func callTest() {
-                        test { [↓iStatic] j in
-                            print(iStatic, j)
-                        }
-                    }
-
-                    static func test(_ completionHandler: @escaping (Int) -> Void) {
-                        completionHandler(2)
-                        C.iStatic = 1
-                        completionHandler(3)
-                    }
-                }
-
-                C.callTest()
-                """,
-            ),
-            Example(
-                """
-                class C {
-                    var iInstance: Int = 0
-
-                    func callTest() {
-                        test { [iInstance] j in
-                            print(iInstance, j)
-                        }
-                    }
-
-                    func test(_ completionHandler: @escaping (Int) -> Void) {
-                    }
-                }
-                """,
-            ),
-        ]
-    }
-
-    struct Variable: Hashable {
-        let usr: String
-        let offset: ByteCount
-    }
-
-    typealias USR = String
-    typealias FileInfo = Set<USR>
-
-    var options = SeverityOption<Self>(.warning)
-
-    func collectInfo(for file: SwiftSource, compilerArguments: [String]) -> Self.FileInfo {
-        file.declaredVariables(compilerArguments: compilerArguments)
-    }
-
-    func validate(
-        file: SwiftSource,
-        collectedInfo: [SwiftSource: Self.FileInfo],
-        compilerArguments: [String],
-    ) -> [RuleViolation] {
-        file.captureListVariables(compilerArguments: compilerArguments)
-            .filter { capturedVariable in
-                collectedInfo.values.contains { $0.contains(capturedVariable.usr) }
             }
-            .map {
-                RuleViolation(
-                    ruleType: Self.self,
-                    severity: options.severity,
-                    location: Location(file: file, byteOffset: $0.offset),
-                )
+
+            func test(_ completionHandler: @escaping (Int) -> Void) {
             }
-    }
+        }
+        """,
+      ),
+      Example(
+        """
+        var j: Int!
+        j = 0
+
+        let closure: () -> Void = { [j] in
+            print(j)
+        }
+
+        closure()
+        j = 1
+        closure()
+        """,
+      ),
+      Example(
+        """
+        lazy var j: Int = { 0 }()
+
+        let closure: () -> Void = { [j] in
+            print(j)
+        }
+
+        closure()
+        j = 1
+        closure()
+        """,
+      ),
+    ]
+  }
+
+  static var triggeringExamples: [Example] {
+    [
+      Example(
+        """
+        var j: Int = 0
+
+        let closure: () -> Void = { [j] in
+            print(j)
+        }
+
+        closure()
+        j = 1
+        closure()
+        """,
+      ),
+      Example(
+        """
+        class C {
+            let i: Int
+            init(_ i: Int) { self.i = i }
+        }
+
+        var c = C(0)
+        let closure: () -> Void = { [c] in
+            print(c.i)
+        }
+
+        closure()
+        c = C(1)
+        closure()
+        """,
+      ),
+      Example(
+        """
+        var iGlobal: Int = 0
+
+        class C {
+            func callTest() {
+                test { [iGlobal] j in
+                    print(iGlobal, j)
+                }
+            }
+
+            func test(_ completionHandler: @escaping (Int) -> Void) {
+            }
+        }
+        """,
+      ),
+      Example(
+        """
+        class C {
+            static var iStatic: Int = 0
+
+            static func callTest() {
+                test { [↓iStatic] j in
+                    print(iStatic, j)
+                }
+            }
+
+            static func test(_ completionHandler: @escaping (Int) -> Void) {
+                completionHandler(2)
+                C.iStatic = 1
+                completionHandler(3)
+            }
+        }
+
+        C.callTest()
+        """,
+      ),
+      Example(
+        """
+        class C {
+            var iInstance: Int = 0
+
+            func callTest() {
+                test { [iInstance] j in
+                    print(iInstance, j)
+                }
+            }
+
+            func test(_ completionHandler: @escaping (Int) -> Void) {
+            }
+        }
+        """,
+      ),
+    ]
+  }
+
+  struct Variable: Hashable {
+    let usr: String
+    let offset: ByteCount
+  }
+
+  typealias USR = String
+  typealias FileInfo = Set<USR>
+
+  var options = SeverityOption<Self>(.warning)
+
+  func collectInfo(for file: SwiftSource, compilerArguments: [String]) -> Self.FileInfo {
+    file.declaredVariables(compilerArguments: compilerArguments)
+  }
+
+  func validate(
+    file: SwiftSource,
+    collectedInfo: [SwiftSource: Self.FileInfo],
+    compilerArguments: [String],
+  ) -> [RuleViolation] {
+    file.captureListVariables(compilerArguments: compilerArguments)
+      .filter { capturedVariable in
+        collectedInfo.values.contains { $0.contains(capturedVariable.usr) }
+      }
+      .map {
+        RuleViolation(
+          ruleType: Self.self,
+          severity: options.severity,
+          location: Location(file: file, byteOffset: $0.offset),
+        )
+      }
+  }
 }
 
 extension SwiftSource {
-    fileprivate static var checkedDeclarationKinds: [SwiftDeclarationKind] {
-        [.varClass, .varGlobal, .varInstance, .varStatic]
-    }
+  fileprivate static var checkedDeclarationKinds: [SwiftDeclarationKind] {
+    [.varClass, .varGlobal, .varInstance, .varStatic]
+  }
 
-    private func captureListVariableOffsets() -> Set<ByteCount> {
-        Self.captureListVariableOffsets(parentEntity: structureDictionary)
-    }
+  private func captureListVariableOffsets() -> Set<ByteCount> {
+    Self.captureListVariableOffsets(parentEntity: structureDictionary)
+  }
 
-    fileprivate static func captureListVariableOffsets(parentEntity: SourceKitDictionary) -> Set<
-        ByteCount,
-    > {
-        parentEntity.substructure
-            .reversed()
-            .reduce(into: (foundOffsets: Set<ByteCount>(), afterClosure: nil as ByteCount?)) {
-                acc, entity in
-                guard let offset = entity.offset else { return }
+  fileprivate static func captureListVariableOffsets(parentEntity: SourceKitDictionary) -> Set<
+    ByteCount,
+  > {
+    parentEntity.substructure
+      .reversed()
+      .reduce(into: (foundOffsets: Set<ByteCount>(), afterClosure: nil as ByteCount?)) {
+        acc, entity in
+        guard let offset = entity.offset else { return }
 
-                if entity.expressionKind == .closure {
-                    acc.afterClosure = offset
-                } else if let closureOffset = acc.afterClosure,
-                          closureOffset < offset,
-                          let length = entity.length,
-                          let nameLength = entity.nameLength,
-                          entity.declarationKind == .varLocal
-                {
-                    acc.foundOffsets.insert(offset + length - nameLength)
-                } else {
-                    acc.afterClosure = nil
-                }
-
-                acc.foundOffsets.formUnion(captureListVariableOffsets(parentEntity: entity))
-            }
-            .foundOffsets
-    }
-
-    fileprivate func captureListVariables(compilerArguments: [String]) -> Set<
-        CaptureVariableRule.Variable,
-    > {
-        let offsets = captureListVariableOffsets()
-        guard !offsets.isEmpty,
-              let indexEntities = index(compilerArguments: compilerArguments)
-        else {
-            return Set()
+        if entity.expressionKind == .closure {
+          acc.afterClosure = offset
+        } else if let closureOffset = acc.afterClosure,
+          closureOffset < offset,
+          let length = entity.length,
+          let nameLength = entity.nameLength,
+          entity.declarationKind == .varLocal
+        {
+          acc.foundOffsets.insert(offset + length - nameLength)
+        } else {
+          acc.afterClosure = nil
         }
 
-        return Set(
-            indexEntities.traverseEntitiesDepthFirst { _, entity in
-                guard
-                    let kind = entity.kind,
-                    kind.hasPrefix("source.lang.swift.ref.var."),
-                    let usr = entity.usr,
-                    let line = entity.line,
-                    let column = entity.column,
-                    let offset = stringView.byteOffset(forLine: line, bytePosition: column)
-                else { return nil }
-                return offsets.contains(offset)
-                    ? CaptureVariableRule.Variable(usr: usr, offset: offset) : nil
-            },
-        )
+        acc.foundOffsets.formUnion(captureListVariableOffsets(parentEntity: entity))
+      }
+      .foundOffsets
+  }
+
+  fileprivate func captureListVariables(compilerArguments: [String]) -> Set<
+    CaptureVariableRule.Variable,
+  > {
+    let offsets = captureListVariableOffsets()
+    guard !offsets.isEmpty,
+      let indexEntities = index(compilerArguments: compilerArguments)
+    else {
+      return Set()
     }
 
-    private func declaredVariableOffsets() -> Set<ByteCount> {
-        Self.declaredVariableOffsets(parentStructure: structureDictionary)
-    }
-
-    fileprivate static func declaredVariableOffsets(parentStructure: SourceKitDictionary) -> Set<
-        ByteCount,
-    > {
-        Set(
-            parentStructure.traverseDepthFirst {
-                let hasSetter = $0.setterAccessibility != nil
-                let isAutoUnwrap = $0.typeName?.hasSuffix("!") ?? false
-                guard
-                    hasSetter,
-                    !isAutoUnwrap,
-                    let declarationKind = $0.declarationKind,
-                    checkedDeclarationKinds.contains(declarationKind),
-                    !$0.enclosedSwiftAttributes.contains(.lazy),
-                    let nameOffset = $0.nameOffset
-                else { return [] }
-                return [nameOffset]
-            },
-        )
-    }
-
-    fileprivate func declaredVariables(compilerArguments: [String])
-        -> Set<CaptureVariableRule.USR>
-    {
-        let offsets = declaredVariableOffsets()
-        guard !offsets.isEmpty,
-              let indexEntities = index(compilerArguments: compilerArguments)
-        else {
-            return Set()
-        }
-
-        return Set(
-            indexEntities.traverseEntitiesDepthFirst { _, entity in
-                guard
-                    let declarationKind = entity.declarationKind,
-                    Self.checkedDeclarationKinds.contains(declarationKind),
-                    let line = entity.line,
-                    let column = entity.column,
-                    let offset = stringView.byteOffset(forLine: line, bytePosition: column),
-                    offsets.contains(offset)
-                else { return nil }
-                return entity.usr
-            },
-        )
-    }
-
-    private func index(compilerArguments: [String]) -> SourceKitDictionary? {
+    return Set(
+      indexEntities.traverseEntitiesDepthFirst { _, entity in
         guard
-            let path,
-            let response = try? Request.index(file: path, arguments: compilerArguments)
-            .sendIfNotDisabled()
-        else {
-            SwiftiomaticError.indexingError(path: path, ruleID: CaptureVariableRule.identifier)
-                .print()
-            return nil
-        }
+          let kind = entity.kind,
+          kind.hasPrefix("source.lang.swift.ref.var."),
+          let usr = entity.usr,
+          let line = entity.line,
+          let column = entity.column,
+          let offset = stringView.byteOffset(forLine: line, bytePosition: column)
+        else { return nil }
+        return offsets.contains(offset)
+          ? CaptureVariableRule.Variable(usr: usr, offset: offset) : nil
+      },
+    )
+  }
 
-        return SourceKitDictionary(response)
+  private func declaredVariableOffsets() -> Set<ByteCount> {
+    Self.declaredVariableOffsets(parentStructure: structureDictionary)
+  }
+
+  fileprivate static func declaredVariableOffsets(parentStructure: SourceKitDictionary) -> Set<
+    ByteCount,
+  > {
+    Set(
+      parentStructure.traverseDepthFirst {
+        let hasSetter = $0.setterAccessibility != nil
+        let isAutoUnwrap = $0.typeName?.hasSuffix("!") ?? false
+        guard
+          hasSetter,
+          !isAutoUnwrap,
+          let declarationKind = $0.declarationKind,
+          checkedDeclarationKinds.contains(declarationKind),
+          !$0.enclosedSwiftAttributes.contains(.lazy),
+          let nameOffset = $0.nameOffset
+        else { return [] }
+        return [nameOffset]
+      },
+    )
+  }
+
+  fileprivate func declaredVariables(compilerArguments: [String])
+    -> Set<CaptureVariableRule.USR>
+  {
+    let offsets = declaredVariableOffsets()
+    guard !offsets.isEmpty,
+      let indexEntities = index(compilerArguments: compilerArguments)
+    else {
+      return Set()
     }
+
+    return Set(
+      indexEntities.traverseEntitiesDepthFirst { _, entity in
+        guard
+          let declarationKind = entity.declarationKind,
+          Self.checkedDeclarationKinds.contains(declarationKind),
+          let line = entity.line,
+          let column = entity.column,
+          let offset = stringView.byteOffset(forLine: line, bytePosition: column),
+          offsets.contains(offset)
+        else { return nil }
+        return entity.usr
+      },
+    )
+  }
+
+  private func index(compilerArguments: [String]) -> SourceKitDictionary? {
+    guard
+      let path,
+      let response = try? Request.index(file: path, arguments: compilerArguments)
+        .sendIfNotDisabled()
+    else {
+      SwiftiomaticError.indexingError(path: path, ruleID: CaptureVariableRule.identifier)
+        .print()
+      return nil
+    }
+
+    return SourceKitDictionary(response)
+  }
 }
 
 extension SourceKitDictionary {
-    fileprivate var usr: String? {
-        value["key.usr"]?.stringValue
-    }
+  fileprivate var usr: String? {
+    value["key.usr"]?.stringValue
+  }
 }

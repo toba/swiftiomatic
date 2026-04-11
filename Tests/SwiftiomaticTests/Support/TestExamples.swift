@@ -40,7 +40,8 @@ struct TestExamples {
     let nonTriggering = nonTriggeringExamples.filter(\.isFocused)
     let triggering = triggeringExamples.filter(\.isFocused)
     let focusedCorrections = corrections.filter { key, value in key.isFocused || value.isFocused }
-    let anyFocused = nonTriggering.isNotEmpty || triggering.isNotEmpty || focusedCorrections.isNotEmpty
+    let anyFocused =
+      nonTriggering.isNotEmpty || triggering.isNotEmpty || focusedCorrections.isNotEmpty
 
     if anyFocused {
       return TestExamples(

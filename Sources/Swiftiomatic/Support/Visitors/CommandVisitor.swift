@@ -8,53 +8,53 @@ import SwiftSyntax
 /// Scans both leading and trailing trivia on every token for line comments
 /// containing the `sm:` prefix (e.g. `// sm:disable:next rule_id`).
 final class CommandVisitor: SyntaxVisitor {
-    /// The collected ``Command`` values found during traversal
-    private(set) var commands: [Command] = []
+  /// The collected ``Command`` values found during traversal
+  private(set) var commands: [Command] = []
 
-    /// The location converter for mapping byte positions to line/column numbers
-    let locationConverter: SourceLocationConverter
+  /// The location converter for mapping byte positions to line/column numbers
+  let locationConverter: SourceLocationConverter
 
-    /// Creates a visitor with the given location converter
-    ///
-    /// - Parameters:
-    ///   - locationConverter: Converter for mapping absolute positions to source locations.
-    init(locationConverter: SourceLocationConverter) {
-        self.locationConverter = locationConverter
-        super.init(viewMode: .sourceAccurate)
-    }
+  /// Creates a visitor with the given location converter
+  ///
+  /// - Parameters:
+  ///   - locationConverter: Converter for mapping absolute positions to source locations.
+  init(locationConverter: SourceLocationConverter) {
+    self.locationConverter = locationConverter
+    super.init(viewMode: .sourceAccurate)
+  }
 
-    override func visitPost(_ node: TokenSyntax) {
-        collectCommands(in: node.leadingTrivia, offset: node.position)
-        collectCommands(in: node.trailingTrivia, offset: node.endPositionBeforeTrailingTrivia)
-    }
+  override func visitPost(_ node: TokenSyntax) {
+    collectCommands(in: node.leadingTrivia, offset: node.position)
+    collectCommands(in: node.trailingTrivia, offset: node.endPositionBeforeTrailingTrivia)
+  }
 
-    private func collectCommands(in trivia: Trivia, offset: AbsolutePosition) {
-        var position = offset
-        for piece in trivia {
-            switch piece {
-                case let .lineComment(comment):
-                    guard
-                        let lower = comment.range(of: "sm:")?.lowerBound
-                        .samePosition(in: comment.utf8)
-                    else {
-                        break
-                    }
-                    let offset = comment.utf8.distance(from: comment.utf8.startIndex, to: lower)
-                    let location = locationConverter.location(for: position.advanced(by: offset))
-                    let line = locationConverter.sourceLines[location.line - 1]
-                    guard let character = line.characterPosition(of: location.column) else {
-                        break
-                    }
-                    let command = Command(
-                        commandString: String(comment[lower...]),
-                        line: location.line,
-                        range: character ..< (character + piece.sourceLength.utf8Length - offset),
-                    )
-                    commands.append(command)
-                default:
-                    break
-            }
-            position += piece.sourceLength
+  private func collectCommands(in trivia: Trivia, offset: AbsolutePosition) {
+    var position = offset
+    for piece in trivia {
+      switch piece {
+      case .lineComment(let comment):
+        guard
+          let lower = comment.range(of: "sm:")?.lowerBound
+            .samePosition(in: comment.utf8)
+        else {
+          break
         }
+        let offset = comment.utf8.distance(from: comment.utf8.startIndex, to: lower)
+        let location = locationConverter.location(for: position.advanced(by: offset))
+        let line = locationConverter.sourceLines[location.line - 1]
+        guard let character = line.characterPosition(of: location.column) else {
+          break
+        }
+        let command = Command(
+          commandString: String(comment[lower...]),
+          line: location.line,
+          range: character..<(character + piece.sourceLength.utf8Length - offset),
+        )
+        commands.append(command)
+      default:
+        break
+      }
+      position += piece.sourceLength
     }
+  }
 }

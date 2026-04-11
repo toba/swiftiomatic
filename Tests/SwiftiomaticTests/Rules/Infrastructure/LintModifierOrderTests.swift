@@ -59,7 +59,8 @@ import Testing
           Example("public struct Foo {" + "  private mutating func bar() {} }"),
         ],
         triggeringExamples: [
-          Example("public protocol Foo: class {} \n" + "public internal(set) weak var bar: Foo? \n"),
+          Example(
+            "public protocol Foo: class {} \n" + "public internal(set) weak var bar: Foo? \n"),
           Example(
             "final public class Foo {" + "  static fileprivate func bar() {} \n"
               + "  class open func barFoo() {} }",
@@ -89,63 +90,63 @@ import Testing
     let descriptionOverride = TestExamples(from: ModifierOrderRule.self)
       .with(
         nonTriggeringExamples: [
-        Example(
-          #"""
-          class Foo {
-              @objc
-              internal var bar: String {
-                 return "foo"
-              }
-          }
-          class Bar: Foo {
-             @objc
-             override internal var bar: String {
-                 return "bar"
-             }
-          }
-          """#,
-        ),
-        Example(
-          """
-          @objcMembers
-          public final class Bar {}
-          """,
-        ),
-        Example(
-          """
-          class Foo {
-              @IBOutlet internal weak var bar: UIView!
-          }
-          """,
-        ),
-        Example(
-          """
-          class Foo {
-              @IBAction internal func bar() {}
-          }
-          """,
-        ),
-        Example(
-          """
-          class Bar: Foo {
-              @IBAction override internal func bar() {}
-          }
-          """,
-        ),
-        Example(
-          #"""
-          public class Foo {
-             @NSCopying public final var foo:NSString = "s"
-          }
-          """#,
-        ),
-        Example(
-          #"""
-          public class Foo {
-             @NSCopying public final var foo: NSString
-          }
-          """#,
-        ),
+          Example(
+            #"""
+            class Foo {
+                @objc
+                internal var bar: String {
+                   return "foo"
+                }
+            }
+            class Bar: Foo {
+               @objc
+               override internal var bar: String {
+                   return "bar"
+               }
+            }
+            """#,
+          ),
+          Example(
+            """
+            @objcMembers
+            public final class Bar {}
+            """,
+          ),
+          Example(
+            """
+            class Foo {
+                @IBOutlet internal weak var bar: UIView!
+            }
+            """,
+          ),
+          Example(
+            """
+            class Foo {
+                @IBAction internal func bar() {}
+            }
+            """,
+          ),
+          Example(
+            """
+            class Bar: Foo {
+                @IBAction override internal func bar() {}
+            }
+            """,
+          ),
+          Example(
+            #"""
+            public class Foo {
+               @NSCopying public final var foo:NSString = "s"
+            }
+            """#,
+          ),
+          Example(
+            #"""
+            public class Foo {
+               @NSCopying public final var foo: NSString
+            }
+            """#,
+          ),
         ],
         triggeringExamples: [
           Example(
@@ -388,78 +389,78 @@ import Testing
         nonTriggeringExamples: [],
         triggeringExamples: [],
         corrections: [
-        Example(
-          """
-          class Foo {
-              weak class final var bar: UIView?
-          }
-          """,
-        ):
           Example(
             """
             class Foo {
-                weak final class var bar: UIView?
+                weak class final var bar: UIView?
             }
             """,
-          ),
-        Example(
-          """
-          class Foo {
-              static weak final var bar: UIView?
-          }
-          """,
-        ):
+          ):
+            Example(
+              """
+              class Foo {
+                  weak final class var bar: UIView?
+              }
+              """,
+            ),
           Example(
             """
             class Foo {
-                final static weak var bar: UIView?
+                static weak final var bar: UIView?
             }
             """,
-          ),
-        Example(
-          """
-          class Foo {
-              class final weak var bar: UIView?
-          }
-          """,
-        ):
+          ):
+            Example(
+              """
+              class Foo {
+                  final static weak var bar: UIView?
+              }
+              """,
+            ),
           Example(
             """
             class Foo {
-                final class weak var bar: UIView?
+                class final weak var bar: UIView?
             }
             """,
-          ),
-        Example(
-          """
-          class Foo {
-              @objc
-              private private(set) class final var bar: UIView?
-          }
-          """,
-        ):
+          ):
+            Example(
+              """
+              class Foo {
+                  final class weak var bar: UIView?
+              }
+              """,
+            ),
           Example(
             """
             class Foo {
                 @objc
-                final private private(set) class var bar: UIView?
+                private private(set) class final var bar: UIView?
             }
             """,
-          ),
-        Example(
-          """
-          class Foo {
-              var bar: UIView?
-          }
-          """,
-        ):
+          ):
+            Example(
+              """
+              class Foo {
+                  @objc
+                  final private private(set) class var bar: UIView?
+              }
+              """,
+            ),
           Example(
             """
             class Foo {
                 var bar: UIView?
             }
             """,
-          ),
+          ):
+            Example(
+              """
+              class Foo {
+                  var bar: UIView?
+              }
+              """,
+            ),
         ],
       )
 
@@ -482,26 +483,26 @@ import Testing
         nonTriggeringExamples: [],
         triggeringExamples: [],
         corrections: [
-        Example(
-          """
-          private final class Foo {}
-          """,
-        ):
           Example(
             """
-            final private class Foo {}
+            private final class Foo {}
             """,
-          ),
-        Example(
-          """
-          public protocol Foo: class {}\n
-          """,
-        ):
+          ):
+            Example(
+              """
+              final private class Foo {}
+              """,
+            ),
           Example(
             """
             public protocol Foo: class {}\n
             """,
-          ),
+          ):
+            Example(
+              """
+              public protocol Foo: class {}\n
+              """,
+            ),
         ],
       )
 

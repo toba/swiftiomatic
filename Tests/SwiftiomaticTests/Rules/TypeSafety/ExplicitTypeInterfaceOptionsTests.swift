@@ -36,14 +36,16 @@ import Testing
 
   @Test func invalidTypeOfCustomConfiguration() {
     var config = ExplicitTypeInterfaceOptions()
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: ExplicitTypeInterfaceRule.identifier)) {
+    checkError(SwiftiomaticError.invalidConfiguration(ruleID: ExplicitTypeInterfaceRule.identifier))
+    {
       try config.apply(configuration: ["severity": "invalidKey"])
     }
   }
 
   @Test func invalidTypeOfValueInCustomConfiguration() {
     var config = ExplicitTypeInterfaceOptions()
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: ExplicitTypeInterfaceRule.identifier)) {
+    checkError(SwiftiomaticError.invalidConfiguration(ruleID: ExplicitTypeInterfaceRule.identifier))
+    {
       try config.apply(configuration: ["severity": "foo"])
     }
   }

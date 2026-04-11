@@ -1,82 +1,82 @@
 import SwiftSyntax
 
 struct ExplicitTypeInterfaceRule {
-    static let id = "explicit_type_interface"
-    static let name = "Explicit Type Interface"
-    static let summary = "Properties should have a type interface"
-    static let isOptIn = true
+  static let id = "explicit_type_interface"
+  static let name = "Explicit Type Interface"
+  static let summary = "Properties should have a type interface"
+  static let isOptIn = true
 
-    var options = ExplicitTypeInterfaceOptions()
+  var options = ExplicitTypeInterfaceOptions()
 }
 
 extension ExplicitTypeInterfaceRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-        Visitor(configuration: options, file: file)
-    }
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+    Visitor(configuration: options, file: file)
+  }
 }
 
 extension ExplicitTypeInterfaceRule {
-    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-        override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-            [ProtocolDeclSyntax.self]
-        }
-
-        override func visitPost(_ node: VariableDeclSyntax) {
-            if node.modifiers.contains(keyword: .class) {
-                if configuration.allowedKinds.contains(.class) {
-                    checkViolation(node)
-                }
-            } else if node.modifiers.contains(keyword: .static) {
-                if configuration.allowedKinds.contains(.static) {
-                    checkViolation(node)
-                }
-            } else if node.parent?.is(MemberBlockItemSyntax.self) == true {
-                if configuration.allowedKinds.contains(.instance) {
-                    checkViolation(node)
-                }
-            } else if node.parent?.is(CodeBlockItemSyntax.self) == true {
-                if configuration.allowedKinds.contains(.local) {
-                    checkViolation(node)
-                }
-            }
-        }
-
-        private func checkViolation(_ node: VariableDeclSyntax) {
-            for binding in node.bindings {
-                if configuration.allowRedundancy, let initializer = binding.initializer,
-                   initializer.isTypeConstructor || initializer.isTypeReference
-                {
-                    continue
-                }
-                if binding.typeAnnotation == nil {
-                    violations.append(binding.positionAfterSkippingLeadingTrivia)
-                }
-            }
-        }
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
+      [ProtocolDeclSyntax.self]
     }
+
+    override func visitPost(_ node: VariableDeclSyntax) {
+      if node.modifiers.contains(keyword: .class) {
+        if configuration.allowedKinds.contains(.class) {
+          checkViolation(node)
+        }
+      } else if node.modifiers.contains(keyword: .static) {
+        if configuration.allowedKinds.contains(.static) {
+          checkViolation(node)
+        }
+      } else if node.parent?.is(MemberBlockItemSyntax.self) == true {
+        if configuration.allowedKinds.contains(.instance) {
+          checkViolation(node)
+        }
+      } else if node.parent?.is(CodeBlockItemSyntax.self) == true {
+        if configuration.allowedKinds.contains(.local) {
+          checkViolation(node)
+        }
+      }
+    }
+
+    private func checkViolation(_ node: VariableDeclSyntax) {
+      for binding in node.bindings {
+        if configuration.allowRedundancy, let initializer = binding.initializer,
+          initializer.isTypeConstructor || initializer.isTypeReference
+        {
+          continue
+        }
+        if binding.typeAnnotation == nil {
+          violations.append(binding.positionAfterSkippingLeadingTrivia)
+        }
+      }
+    }
+  }
 }
 
 extension InitializerClauseSyntax {
-    fileprivate var isTypeConstructor: Bool {
-        if value.as(FunctionCallExprSyntax.self)?.callsPotentialType == true {
-            return true
-        }
-        if let tryExpr = value.as(TryExprSyntax.self),
-           tryExpr.expression.as(FunctionCallExprSyntax.self)?.callsPotentialType == true
-        {
-            return true
-        }
-        return false
+  fileprivate var isTypeConstructor: Bool {
+    if value.as(FunctionCallExprSyntax.self)?.callsPotentialType == true {
+      return true
     }
+    if let tryExpr = value.as(TryExprSyntax.self),
+      tryExpr.expression.as(FunctionCallExprSyntax.self)?.callsPotentialType == true
+    {
+      return true
+    }
+    return false
+  }
 
-    fileprivate var isTypeReference: Bool {
-        value.as(MemberAccessExprSyntax.self)?.declName.baseName.tokenKind == .keyword(.self)
-    }
+  fileprivate var isTypeReference: Bool {
+    value.as(MemberAccessExprSyntax.self)?.declName.baseName.tokenKind == .keyword(.self)
+  }
 }
 
 extension FunctionCallExprSyntax {
-    fileprivate var callsPotentialType: Bool {
-        let name = calledExpression.debugDescription
-        return name.first?.isUppercase == true || (name.first == "[" && name.last == "]")
-    }
+  fileprivate var callsPotentialType: Bool {
+    let name = calledExpression.debugDescription
+    return name.first?.isUppercase == true || (name.first == "[" && name.last == "]")
+  }
 }

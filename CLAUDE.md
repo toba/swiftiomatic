@@ -7,7 +7,7 @@ AST-accurate Swift linting, formatting, and code analysis — used from Xcode, t
 - When working on errors, always create a failing test first then fix the issue and confirm the test passes
 - Always create a jig issue before beginning work
 - Update the jig issue continuously as you work
-- Always use the xc-mcp services to run tests and update projects
+- Use the xc-mcp services to build and test, but **only at the end of a work session or when the user asks**. Builds take a long time; don't build or test after every small change. Batch your work and verify once.
 - Never git stash to avoid an error — FIX the error
 
 ## How It's Used
@@ -128,9 +128,9 @@ Rules span these areas regardless of scope:
 ## Swift & Build Settings
 
 - swift-tools-version: 6.2
-- `.swiftLanguageMode(.v6)`
-- `.enableExperimentalFeature("StrictConcurrency")`
-- macOS 15+
+- Swift 6.3, `.swiftLanguageMode(.v6)`
+- macOS 26+
+- Build destination: **My Mac** (macOS only — no iOS target)
 
 ## Output
 

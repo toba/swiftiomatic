@@ -189,7 +189,11 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct HeaderFileNameRuleGeneratedTests {
-  @Test(.disabled("requiresFileOnDisk with UUID temp paths — examples need file_name config that verifyRule cannot provide")) func withDefaultConfiguration() async {
+  @Test(
+    .disabled(
+      "requiresFileOnDisk with UUID temp paths — examples need file_name config that verifyRule cannot provide"
+    )) func withDefaultConfiguration() async
+  {
     await verifyRule(HeaderFileNameRule.self)
   }
 }
@@ -523,4 +527,3 @@ import Testing
     await verifyRule(ValidateTestCasesRule.self)
   }
 }
-

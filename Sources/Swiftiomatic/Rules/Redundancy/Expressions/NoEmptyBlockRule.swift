@@ -1,236 +1,236 @@
 import SwiftSyntax
 
 struct NoEmptyBlockRule {
-    static let id = "no_empty_block"
-    static let name = "No Empty Block"
-    static let summary = "Code blocks should contain at least one statement or comment"
-    static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        [
-            Example(
-                """
-                func f() {
-                    /* do something */
-                }
+  static let id = "no_empty_block"
+  static let name = "No Empty Block"
+  static let summary = "Code blocks should contain at least one statement or comment"
+  static let isOptIn = true
+  static var nonTriggeringExamples: [Example] {
+    [
+      Example(
+        """
+        func f() {
+            /* do something */
+        }
 
-                var flag = true {
-                    willSet { /* do something */ }
-                }
-                """,
-            ),
+        var flag = true {
+            willSet { /* do something */ }
+        }
+        """,
+      ),
 
-            Example(
-                """
-                class Apple {
-                    init() { /* do something */ }
+      Example(
+        """
+        class Apple {
+            init() { /* do something */ }
 
-                    deinit { /* do something */ }
-                }
-                """,
-            ),
+            deinit { /* do something */ }
+        }
+        """,
+      ),
 
-            Example(
-                """
-                for _ in 0..<10 { /* do something */ }
+      Example(
+        """
+        for _ in 0..<10 { /* do something */ }
 
-                do {
-                    /* do something */
-                } catch {
-                    /* do something */
-                }
+        do {
+            /* do something */
+        } catch {
+            /* do something */
+        }
 
-                func f() {
-                    defer {
-                        /* do something */
-                    }
-                    print("other code")
-                }
+        func f() {
+            defer {
+                /* do something */
+            }
+            print("other code")
+        }
 
-                if flag {
-                    /* do something */
-                } else {
-                    /* do something */
-                }
+        if flag {
+            /* do something */
+        } else {
+            /* do something */
+        }
 
-                repeat { /* do something */ } while (flag)
+        repeat { /* do something */ } while (flag)
 
-                while i < 10 { /* do something */ }
-                """,
-            ),
+        while i < 10 { /* do something */ }
+        """,
+      ),
 
-            Example(
-                """
-                func f() {}
+      Example(
+        """
+        func f() {}
 
-                var flag = true {
-                    willSet {}
-                }
-                """, configuration: ["disabled_block_types": ["function_bodies"]],
-            ),
+        var flag = true {
+            willSet {}
+        }
+        """, configuration: ["disabled_block_types": ["function_bodies"]],
+      ),
 
-            Example(
-                """
-                class Apple {
-                    init() {}
+      Example(
+        """
+        class Apple {
+            init() {}
 
-                    deinit {}
-                }
-                """, configuration: ["disabled_block_types": ["initializer_bodies"]],
-            ),
+            deinit {}
+        }
+        """, configuration: ["disabled_block_types": ["initializer_bodies"]],
+      ),
 
-            Example(
-                """
-                for _ in 0..<10 {}
+      Example(
+        """
+        for _ in 0..<10 {}
 
-                do {
-                } catch {
-                }
+        do {
+        } catch {
+        }
 
-                func f() {
-                    defer {}
-                    print("other code")
-                }
+        func f() {
+            defer {}
+            print("other code")
+        }
 
-                if flag {
-                } else {
-                }
+        if flag {
+        } else {
+        }
 
-                repeat {} while (flag)
+        repeat {} while (flag)
 
-                while i < 10 {}
-                """, configuration: ["disabled_block_types": ["statement_blocks"]],
-            ),
-            Example(
-                """
-                f { _ in /* comment */ }
-                f { _ in // comment
-                }
-                f { _ in
-                    // comment
-                }
-                """,
-            ),
-            Example(
-                """
-                f {}
-                {}()
-                """, configuration: ["disabled_block_types": ["closure_blocks"]],
-            ),
-        ]
-    }
+        while i < 10 {}
+        """, configuration: ["disabled_block_types": ["statement_blocks"]],
+      ),
+      Example(
+        """
+        f { _ in /* comment */ }
+        f { _ in // comment
+        }
+        f { _ in
+            // comment
+        }
+        """,
+      ),
+      Example(
+        """
+        f {}
+        {}()
+        """, configuration: ["disabled_block_types": ["closure_blocks"]],
+      ),
+    ]
+  }
 
-    static var triggeringExamples: [Example] {
-        [
-            Example(
-                """
-                func f() ↓{}
+  static var triggeringExamples: [Example] {
+    [
+      Example(
+        """
+        func f() ↓{}
 
-                var flag = true {
-                    willSet ↓{}
-                }
-                """,
-            ),
+        var flag = true {
+            willSet ↓{}
+        }
+        """,
+      ),
 
-            Example(
-                """
-                class Apple {
-                    init() ↓{}
+      Example(
+        """
+        class Apple {
+            init() ↓{}
 
-                    deinit ↓{}
-                }
-                """,
-            ),
+            deinit ↓{}
+        }
+        """,
+      ),
 
-            Example(
-                """
-                for _ in 0..<10 ↓{}
+      Example(
+        """
+        for _ in 0..<10 ↓{}
 
-                do ↓{
-                } catch ↓{
-                }
+        do ↓{
+        } catch ↓{
+        }
 
-                func f() {
-                    defer ↓{}
-                    print("other code")
-                }
+        func f() {
+            defer ↓{}
+            print("other code")
+        }
 
-                if flag ↓{
-                } else ↓{
-                }
+        if flag ↓{
+        } else ↓{
+        }
 
-                repeat ↓{} while (flag)
+        repeat ↓{} while (flag)
 
-                while i < 10 ↓{}
-                """,
-            ),
-            Example(
-                """
-                f ↓{}
-                """,
-            ),
-            Example(
-                """
-                Button ↓{} label: ↓{}
-                """,
-            ),
-        ]
-    }
+        while i < 10 ↓{}
+        """,
+      ),
+      Example(
+        """
+        f ↓{}
+        """,
+      ),
+      Example(
+        """
+        Button ↓{} label: ↓{}
+        """,
+      ),
+    ]
+  }
 
-    var options = NoEmptyBlockOptions()
+  var options = NoEmptyBlockOptions()
 }
 
 extension NoEmptyBlockRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-        Visitor(configuration: options, file: file)
-    }
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+    Visitor(configuration: options, file: file)
+  }
 }
 
 extension NoEmptyBlockRule {
-    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-        override func visitPost(_ node: CodeBlockSyntax) {
-            if let codeBlockType = node.codeBlockType,
-               configuration.enabledBlockTypes.contains(codeBlockType)
-            {
-                validate(node: node)
-            }
-        }
-
-        override func visitPost(_ node: ClosureExprSyntax) {
-            if configuration.enabledBlockTypes.contains(.closureBlocks),
-               node.signature?.inKeyword.trailingTrivia.containsComments != true
-            {
-                validate(node: node)
-            }
-        }
-
-        func validate(node: some BracedSyntax & WithStatementsSyntax) {
-            guard node.statements.isEmpty,
-                  !node.leftBrace.trailingTrivia.containsComments,
-                  !node.rightBrace.leadingTrivia.containsComments
-            else {
-                return
-            }
-            violations.append(node.leftBrace.positionAfterSkippingLeadingTrivia)
-        }
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+    override func visitPost(_ node: CodeBlockSyntax) {
+      if let codeBlockType = node.codeBlockType,
+        configuration.enabledBlockTypes.contains(codeBlockType)
+      {
+        validate(node: node)
+      }
     }
+
+    override func visitPost(_ node: ClosureExprSyntax) {
+      if configuration.enabledBlockTypes.contains(.closureBlocks),
+        node.signature?.inKeyword.trailingTrivia.containsComments != true
+      {
+        validate(node: node)
+      }
+    }
+
+    func validate(node: some BracedSyntax & WithStatementsSyntax) {
+      guard node.statements.isEmpty,
+        !node.leftBrace.trailingTrivia.containsComments,
+        !node.rightBrace.leadingTrivia.containsComments
+      else {
+        return
+      }
+      violations.append(node.leftBrace.positionAfterSkippingLeadingTrivia)
+    }
+  }
 }
 
 extension CodeBlockSyntax {
-    fileprivate var codeBlockType: NoEmptyBlockOptions.CodeBlockType? {
-        switch parent?.kind {
-            case .functionDecl, .accessorDecl:
-                .functionBodies
-            case .initializerDecl, .deinitializerDecl:
-                .initializerBodies
-            case .forStmt, .doStmt, .whileStmt, .repeatStmt, .ifExpr, .catchClause, .deferStmt:
-                .statementBlocks
-            case .closureExpr:
-                .closureBlocks
-            case .guardStmt:
-                // No need to handle this case since Empty Block of `guard` is compile error.
-                nil
-            default:
-                nil
-        }
+  fileprivate var codeBlockType: NoEmptyBlockOptions.CodeBlockType? {
+    switch parent?.kind {
+    case .functionDecl, .accessorDecl:
+      .functionBodies
+    case .initializerDecl, .deinitializerDecl:
+      .initializerBodies
+    case .forStmt, .doStmt, .whileStmt, .repeatStmt, .ifExpr, .catchClause, .deferStmt:
+      .statementBlocks
+    case .closureExpr:
+      .closureBlocks
+    case .guardStmt:
+      // No need to handle this case since Empty Block of `guard` is compile error.
+      nil
+    default:
+      nil
     }
+  }
 }

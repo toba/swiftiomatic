@@ -1,149 +1,148 @@
 import SwiftSyntax
 
 struct UnneededParenthesesInClosureArgumentRule {
-    static let id = "unneeded_parentheses_in_closure_argument"
-    static let name = "Unneeded Parentheses in Closure Argument"
-    static let summary = "Parentheses are not needed when declaring closure arguments"
-    static let isCorrectable = true
-    static let isOptIn = true
-    static var nonTriggeringExamples: [Example] {
-        [
-            Example("let foo = { (bar: Int) in }"),
-            Example("let foo = { bar, _  in }"),
-            Example("let foo = { bar in }"),
-            Example("let foo = { bar -> Bool in return true }"),
-            Example(
-                """
-                DispatchQueue.main.async { () -> Void in
-                    doSomething()
-                }
-                """,
-            ),
-            Example(
-                """
-                registerFilter(name) { any, args throws -> Any? in
-                    doSomething(any, args)
-                }
-                """, isExcludedFromDocumentation: true,
-            ),
-        ]
-    }
+  static let id = "unneeded_parentheses_in_closure_argument"
+  static let name = "Unneeded Parentheses in Closure Argument"
+  static let summary = "Parentheses are not needed when declaring closure arguments"
+  static let isCorrectable = true
+  static let isOptIn = true
+  static var nonTriggeringExamples: [Example] {
+    [
+      Example("let foo = { (bar: Int) in }"),
+      Example("let foo = { bar, _  in }"),
+      Example("let foo = { bar in }"),
+      Example("let foo = { bar -> Bool in return true }"),
+      Example(
+        """
+        DispatchQueue.main.async { () -> Void in
+            doSomething()
+        }
+        """,
+      ),
+      Example(
+        """
+        registerFilter(name) { any, args throws -> Any? in
+            doSomething(any, args)
+        }
+        """, isExcludedFromDocumentation: true,
+      ),
+    ]
+  }
 
-    static var triggeringExamples: [Example] {
-        [
-            Example("call(arg: { ↓(bar) in })"),
-            Example("call(arg: { ↓(bar, _) in })"),
-            Example("let foo = { ↓(bar) -> Bool in return true }"),
-            Example("foo.map { ($0, $0) }.forEach { ↓(x, y) in }"),
-            Example("foo.bar { [weak self] ↓(x, y) in }"),
-            Example(
-                """
+  static var triggeringExamples: [Example] {
+    [
+      Example("call(arg: { ↓(bar) in })"),
+      Example("call(arg: { ↓(bar, _) in })"),
+      Example("let foo = { ↓(bar) -> Bool in return true }"),
+      Example("foo.map { ($0, $0) }.forEach { ↓(x, y) in }"),
+      Example("foo.bar { [weak self] ↓(x, y) in }"),
+      Example(
+        """
+        [].first { ↓(temp) in
+            [].first { ↓(temp) in
                 [].first { ↓(temp) in
-                    [].first { ↓(temp) in
-                        [].first { ↓(temp) in
-                            _ = temp
-                            return false
-                        }
-                        return false
-                    }
+                    _ = temp
                     return false
                 }
-                """,
-            ),
-            Example(
-                """
-                [].first { temp in
-                    [].first { ↓(temp) in
-                        [].first { ↓(temp) in
-                            _ = temp
-                            return false
-                        }
-                        return false
-                    }
+                return false
+            }
+            return false
+        }
+        """,
+      ),
+      Example(
+        """
+        [].first { temp in
+            [].first { ↓(temp) in
+                [].first { ↓(temp) in
+                    _ = temp
                     return false
                 }
-                """,
-            ),
-            Example(
-                """
-                registerFilter(name) { ↓(any, args) throws -> Any? in
-                    doSomething(any, args)
-                }
-                """, isExcludedFromDocumentation: true,
-            ),
-        ]
-    }
+                return false
+            }
+            return false
+        }
+        """,
+      ),
+      Example(
+        """
+        registerFilter(name) { ↓(any, args) throws -> Any? in
+            doSomething(any, args)
+        }
+        """, isExcludedFromDocumentation: true,
+      ),
+    ]
+  }
 
-    static var corrections: [Example: Example] {
-        [
-            Example("call(arg: { ↓(bar) in })"): Example("call(arg: { bar in })"),
-            Example("call(arg: { ↓(bar, _) in })"): Example("call(arg: { bar, _ in })"),
-            Example("call(arg: { ↓(bar, _)in })"): Example("call(arg: { bar, _ in })"),
-            Example("let foo = { ↓(bar) -> Bool in return true }"):
-                Example("let foo = { bar -> Bool in return true }"),
-            Example("method { ↓(foo, bar) in }"): Example("method { foo, bar in }"),
-            Example("foo.map { ($0, $0) }.forEach { ↓(x, y) in }"): Example(
-                "foo.map { ($0, $0) }.forEach { x, y in }",
-            ),
-            Example("foo.bar { [weak self] ↓(x, y) in }"): Example(
-                "foo.bar { [weak self] x, y in }",
-            ),
-        ]
-    }
+  static var corrections: [Example: Example] {
+    [
+      Example("call(arg: { ↓(bar) in })"): Example("call(arg: { bar in })"),
+      Example("call(arg: { ↓(bar, _) in })"): Example("call(arg: { bar, _ in })"),
+      Example("call(arg: { ↓(bar, _)in })"): Example("call(arg: { bar, _ in })"),
+      Example("let foo = { ↓(bar) -> Bool in return true }"):
+        Example("let foo = { bar -> Bool in return true }"),
+      Example("method { ↓(foo, bar) in }"): Example("method { foo, bar in }"),
+      Example("foo.map { ($0, $0) }.forEach { ↓(x, y) in }"): Example(
+        "foo.map { ($0, $0) }.forEach { x, y in }",
+      ),
+      Example("foo.bar { [weak self] ↓(x, y) in }"): Example(
+        "foo.bar { [weak self] x, y in }",
+      ),
+    ]
+  }
 
-    var options = SeverityOption<Self>(.warning)
+  var options = SeverityOption<Self>(.warning)
 }
 
 extension UnneededParenthesesInClosureArgumentRule: SwiftSyntaxRule {
-    func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
-        Visitor(configuration: options, file: file)
-    }
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+    Visitor(configuration: options, file: file)
+  }
 
-    func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-        Rewriter(configuration: options, file: file)
-    }
+  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
+    Rewriter(configuration: options, file: file)
+  }
 }
 
 extension UnneededParenthesesInClosureArgumentRule {
-    fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-        override func visitPost(_ node: ClosureSignatureSyntax) {
-            guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),
-                  clause.parameters.isNotEmpty,
-                  clause.parameters.allSatisfy({ $0.type == nil })
-            else {
-                return
-            }
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+    override func visitPost(_ node: ClosureSignatureSyntax) {
+      guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),
+        clause.parameters.isNotEmpty,
+        clause.parameters.allSatisfy({ $0.type == nil })
+      else {
+        return
+      }
 
-            violations.append(clause.positionAfterSkippingLeadingTrivia)
-        }
+      violations.append(clause.positionAfterSkippingLeadingTrivia)
     }
+  }
 
-    fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
-        override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
-            guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),
-                  clause.parameters.isNotEmpty,
-                  clause.parameters.allSatisfy({ $0.type == nil })
-            else {
-                return super.visit(node)
-            }
+  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
+    override func visit(_ node: ClosureSignatureSyntax) -> ClosureSignatureSyntax {
+      guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),
+        clause.parameters.isNotEmpty,
+        clause.parameters.allSatisfy({ $0.type == nil })
+      else {
+        return super.visit(node)
+      }
 
-            let items = clause.parameters.enumerated().compactMap {
-                idx, param -> ClosureShorthandParameterSyntax? in
-                let name = param.firstName
-                let isLast = idx == clause.parameters.count - 1
-                return ClosureShorthandParameterSyntax(
-                    name: name,
-                    trailingComma: isLast ? nil :
-                        .commaToken(trailingTrivia: Trivia(pieces: [.spaces(1)])),
-                )
-            }
+      let items = clause.parameters.enumerated().compactMap {
+        idx, param -> ClosureShorthandParameterSyntax? in
+        let name = param.firstName
+        let isLast = idx == clause.parameters.count - 1
+        return ClosureShorthandParameterSyntax(
+          name: name,
+          trailingComma: isLast ? nil : .commaToken(trailingTrivia: Trivia(pieces: [.spaces(1)])),
+        )
+      }
 
-            numberOfCorrections += 1
-            let paramList = ClosureShorthandParameterListSyntax(items).with(
-                \.trailingTrivia,
-                .spaces(1),
-            )
-            return super.visit(node.with(\.parameterClause, .init(paramList)))
-        }
+      numberOfCorrections += 1
+      let paramList = ClosureShorthandParameterListSyntax(items).with(
+        \.trailingTrivia,
+        .spaces(1),
+      )
+      return super.visit(node.with(\.parameterClause, .init(paramList)))
     }
+  }
 }

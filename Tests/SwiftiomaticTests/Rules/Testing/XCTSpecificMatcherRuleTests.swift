@@ -212,12 +212,21 @@ import Testing
   }
 
   @Test func equalInCommentNotConsidered() async throws {
-    #expect(try await ruleViolations(Example("XCTAssert(foo, \"a == b\")"), rule: XCTSpecificMatcherRule.identifier).isEmpty)
+    #expect(
+      try await ruleViolations(
+        Example("XCTAssert(foo, \"a == b\")"), rule: XCTSpecificMatcherRule.identifier
+      ).isEmpty)
   }
 
   @Test func equalInFunctionCall() async throws {
-    #expect(try await ruleViolations(Example("XCTAssert(foo(bar == baz))"), rule: XCTSpecificMatcherRule.identifier).isEmpty)
-    #expect(try await ruleViolations(Example("XCTAssertTrue(foo(bar == baz), \"toto\")"), rule: XCTSpecificMatcherRule.identifier).isEmpty)
+    #expect(
+      try await ruleViolations(
+        Example("XCTAssert(foo(bar == baz))"), rule: XCTSpecificMatcherRule.identifier
+      ).isEmpty)
+    #expect(
+      try await ruleViolations(
+        Example("XCTAssertTrue(foo(bar == baz), \"toto\")"), rule: XCTSpecificMatcherRule.identifier
+      ).isEmpty)
   }
 
   // MARK: - Identity Operator Tests

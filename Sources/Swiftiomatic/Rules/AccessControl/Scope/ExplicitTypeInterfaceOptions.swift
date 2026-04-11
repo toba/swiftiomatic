@@ -1,34 +1,34 @@
 struct ExplicitTypeInterfaceOptions: SeverityBasedRuleOptions {
-    enum VariableKind: String, AcceptableByOptionElement, CaseIterable {
-        case instance
-        case local
-        case `static`
-        case `class`
+  enum VariableKind: String, AcceptableByOptionElement, CaseIterable {
+    case instance
+    case local
+    case `static`
+    case `class`
 
-        static let all = Set(allCases)
+    static let all = Set(allCases)
+  }
+
+  @OptionElement(key: "severity")
+  var severityConfiguration = SeverityOption<Parent>(.warning)
+  @OptionElement(key: "excluded")
+  private(set) var excluded = [VariableKind]()
+  @OptionElement(key: "allow_redundancy")
+  private(set) var allowRedundancy = false
+
+  var allowedKinds: Set<VariableKind> {
+    VariableKind.all.subtracting(excluded)
+  }
+
+  typealias Parent = ExplicitTypeInterfaceRule
+  mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
+    try applySeverityIfPresent(configuration)
+    if let value = configuration[$excluded.key] {
+      try excluded.apply(value, ruleID: Parent.identifier)
     }
-
-    @OptionElement(key: "severity")
-    var severityConfiguration = SeverityOption<Parent>(.warning)
-    @OptionElement(key: "excluded")
-    private(set) var excluded = [VariableKind]()
-    @OptionElement(key: "allow_redundancy")
-    private(set) var allowRedundancy = false
-
-    var allowedKinds: Set<VariableKind> {
-        VariableKind.all.subtracting(excluded)
+    if let value = configuration[$allowRedundancy.key] {
+      try allowRedundancy.apply(value, ruleID: Parent.identifier)
     }
-
-    typealias Parent = ExplicitTypeInterfaceRule
-    mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
-        try applySeverityIfPresent(configuration)
-        if let value = configuration[$excluded.key] {
-            try excluded.apply(value, ruleID: Parent.identifier)
-        }
-        if let value = configuration[$allowRedundancy.key] {
-            try allowRedundancy.apply(value, ruleID: Parent.identifier)
-        }
-        warnAboutUnknownKeys(in: configuration)
-        validate()
-    }
+    warnAboutUnknownKeys(in: configuration)
+    validate()
+  }
 }

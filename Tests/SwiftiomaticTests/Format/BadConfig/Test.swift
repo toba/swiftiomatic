@@ -1,3 +1,2 @@
 // Badly formatted code
-func foo(bar: Int)
-{}
+func foo(bar: Int) {}

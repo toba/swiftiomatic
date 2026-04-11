@@ -70,7 +70,10 @@
       "mcp__xc-build__test_macos",
       "mcp__xc-build__list_test_plan_targets",
       "WebFetch(domain:www.swift.org)",
-      "WebFetch(domain:wwdcnotes.com)"
+      "WebFetch(domain:wwdcnotes.com)",
+      "mcp__xc-build__open_in_xcode",
+      "mcp__xc-build__get_mac_app_path",
+      "mcp__xc-build__launch_mac_app"
     ]
   },
   "enableAllProjectMcpServers": true,

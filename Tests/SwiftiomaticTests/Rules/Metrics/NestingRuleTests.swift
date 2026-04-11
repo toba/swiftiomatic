@@ -614,7 +614,8 @@ private let detectingTypes = ["actor", "class", "struct", "enum"]
       },
     )
 
-    let examples = baseExamples
+    let examples =
+      baseExamples
       .with(nonTriggeringExamples: nonTriggeringExamples)
 
     await verifyRule(

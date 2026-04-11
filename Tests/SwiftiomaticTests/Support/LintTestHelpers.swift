@@ -1,5 +1,6 @@
-import Testing
 import Foundation
+import Testing
+
 @testable import Swiftiomatic
 
 /// When true, skip expensive variant tests (emoji, shebang, comment, string, disable, severity).
@@ -11,58 +12,58 @@ private let fastTests: Bool = ProcessInfo.processInfo.environment["SWIFTIOMATIC_
 private let violationMarker = "↓"
 
 extension SwiftSource {
-    static func testFile(
-        withContents contents: String,
-        persistToDisk: Bool = false,
-    ) -> SwiftSource {
-        if persistToDisk {
-            let url = URL(filePath: NSTemporaryDirectory(), directoryHint: .isDirectory)
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension("swift")
-            try? Data(contents.utf8).write(to: url)
-            return SwiftSource(path: url.path, isTestFile: true)!
-        }
-        return SwiftSource(contents: contents, isTestFile: true)
+  static func testFile(
+    withContents contents: String,
+    persistToDisk: Bool = false,
+  ) -> SwiftSource {
+    if persistToDisk {
+      let url = URL(filePath: NSTemporaryDirectory(), directoryHint: .isDirectory)
+        .appendingPathComponent(UUID().uuidString)
+        .appendingPathExtension("swift")
+      try? Data(contents.utf8).write(to: url)
+      return SwiftSource(path: url.path, isTestFile: true)!
     }
+    return SwiftSource(contents: contents, isTestFile: true)
+  }
 
-    func makeCompilerArguments() -> [String] {
-        let sdk = macOSSDKPath()
-        let frameworks = URL(filePath: sdk, directoryHint: .isDirectory)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .appendingPathComponent("Library")
-            .appendingPathComponent("Frameworks")
-            .path
+  func makeCompilerArguments() -> [String] {
+    let sdk = macOSSDKPath()
+    let frameworks = URL(filePath: sdk, directoryHint: .isDirectory)
+      .deletingLastPathComponent()
+      .deletingLastPathComponent()
+      .appendingPathComponent("Library")
+      .appendingPathComponent("Frameworks")
+      .path
 
-        return [
-            "-F", frameworks,
-            "-sdk", sdk,
-            "-Xfrontend", "-enable-objc-interop",
-            "-j4",
-            path!,
-        ]
-    }
+    return [
+      "-F", frameworks,
+      "-sdk", sdk,
+      "-Xfrontend", "-enable-objc-interop",
+      "-j4",
+      path!,
+    ]
+  }
 }
 
 // MARK: - String Helpers
 
 extension String {
-    func stringByAppendingPathComponent(_ pathComponent: String) -> String {
-        URL(filePath: self).appendingPathComponent(pathComponent).filepath
-    }
+  func stringByAppendingPathComponent(_ pathComponent: String) -> String {
+    URL(filePath: self).appendingPathComponent(pathComponent).filepath
+  }
 }
 
 private func macOSSDKPath() -> String {
-    let task = Process()
-    task.executableURL = URL(filePath: "/usr/bin/xcrun")
-    task.arguments = ["--show-sdk-path", "--sdk", "macosx"]
-    let pipe = Pipe()
-    task.standardOutput = pipe
-    try? task.run()
-    task.waitUntilExit()
-    let data = pipe.fileHandleForReading.readDataToEndOfFile()
-    return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        ?? "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
+  let task = Process()
+  task.executableURL = URL(filePath: "/usr/bin/xcrun")
+  task.arguments = ["--show-sdk-path", "--sdk", "macosx"]
+  let pipe = Pipe()
+  task.standardOutput = pipe
+  try? task.run()
+  task.waitUntilExit()
+  let data = pipe.fileHandleForReading.readDataToEndOfFile()
+  return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+    ?? "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
 }
 
 let allRuleIdentifiers = Set(RuleRegistry.shared.list.rules.keys)
@@ -70,18 +71,18 @@ let allRuleIdentifiers = Set(RuleRegistry.shared.list.rules.keys)
 // MARK: - Configuration Helpers
 
 extension Configuration {
-    func applyingConfiguration(from example: Example) -> Configuration {
-        guard let exampleConfiguration = example.configuration,
-              case let .onlyConfiguration(onlyRules) = rulesMode,
-              let firstRule = (onlyRules.first { $0 != "superfluous_disable_command" }),
-              case let configDict: [_: any Sendable] = [
-                  "only_rules": onlyRules,
-                  firstRule: exampleConfiguration,
-              ],
-              let config = try? Configuration(dict: configDict)
-        else { return self }
-        return config
-    }
+  func applyingConfiguration(from example: Example) -> Configuration {
+    guard let exampleConfiguration = example.configuration,
+      case .onlyConfiguration(let onlyRules) = rulesMode,
+      let firstRule = (onlyRules.first { $0 != "superfluous_disable_command" }),
+      case let configDict:[_: any Sendable] = [
+        "only_rules": onlyRules,
+        firstRule: exampleConfiguration,
+      ],
+      let config = try? Configuration(dict: configDict)
+    else { return self }
+    return config
+  }
 }
 
 // Global caches are now internally thread-safe via Mutex (Synchronization framework).
@@ -91,195 +92,197 @@ extension Configuration {
 // MARK: - Violation Helpers
 
 func violations(
-    _ example: Example,
-    config inputConfig: Configuration = Configuration.default,
-    requiresFileOnDisk: Bool = false,
+  _ example: Example,
+  config inputConfig: Configuration = Configuration.default,
+  requiresFileOnDisk: Bool = false,
 ) async -> [RuleViolation] {
-    let config = inputConfig.applyingConfiguration(from: example)
-    let stringStrippingMarkers = example.removingViolationMarkers()
-    guard requiresFileOnDisk else {
-        let file = SwiftSource.testFile(withContents: stringStrippingMarkers.code)
-        let storage = RuleStorage()
-        let linter = await Linter(file: file, configuration: config).collect(into: storage)
-        return linter.ruleViolations(using: storage)
-    }
-
-    let file = SwiftSource.testFile(
-        withContents: stringStrippingMarkers.code,
-        persistToDisk: true,
-    )
+  let config = inputConfig.applyingConfiguration(from: example)
+  let stringStrippingMarkers = example.removingViolationMarkers()
+  guard requiresFileOnDisk else {
+    let file = SwiftSource.testFile(withContents: stringStrippingMarkers.code)
     let storage = RuleStorage()
-    let collector = Linter(
-        file: file,
-        configuration: config,
-        compilerArguments: file.makeCompilerArguments(),
-    )
-    let linter = await collector.collect(into: storage)
-    return linter.ruleViolations(using: storage).withoutFiles()
+    let linter = await Linter(file: file, configuration: config).collect(into: storage)
+    return linter.ruleViolations(using: storage)
+  }
+
+  let file = SwiftSource.testFile(
+    withContents: stringStrippingMarkers.code,
+    persistToDisk: true,
+  )
+  let storage = RuleStorage()
+  let collector = Linter(
+    file: file,
+    configuration: config,
+    compilerArguments: file.makeCompilerArguments(),
+  )
+  let linter = await collector.collect(into: storage)
+  return linter.ruleViolations(using: storage).withoutFiles()
 }
 
 extension Collection<String> {
-    func violations(config: Configuration = Configuration.default, requiresFileOnDisk: Bool = false)
-        async -> [RuleViolation]
-    {
-        await map { SwiftSource.testFile(withContents: $0, persistToDisk: requiresFileOnDisk) }
-            .violations(config: config, requiresFileOnDisk: requiresFileOnDisk)
-    }
+  func violations(config: Configuration = Configuration.default, requiresFileOnDisk: Bool = false)
+    async -> [RuleViolation]
+  {
+    await map { SwiftSource.testFile(withContents: $0, persistToDisk: requiresFileOnDisk) }
+      .violations(config: config, requiresFileOnDisk: requiresFileOnDisk)
+  }
 
-    func corrections(
-        config: Configuration = Configuration.default,
-        requiresFileOnDisk: Bool = false,
-    ) async -> [String: Int] {
-        await map { SwiftSource.testFile(withContents: $0, persistToDisk: requiresFileOnDisk) }
-            .corrections(config: config, requiresFileOnDisk: requiresFileOnDisk)
-    }
+  func corrections(
+    config: Configuration = Configuration.default,
+    requiresFileOnDisk: Bool = false,
+  ) async -> [String: Int] {
+    await map { SwiftSource.testFile(withContents: $0, persistToDisk: requiresFileOnDisk) }
+      .corrections(config: config, requiresFileOnDisk: requiresFileOnDisk)
+  }
 }
 
 extension Collection where Element: SwiftSource {
-    func violations(config: Configuration = Configuration.default, requiresFileOnDisk: Bool = false)
-        async -> [RuleViolation]
-    {
-        let storage = RuleStorage()
-        // Two-pass: collect all files first so collecting rules see the full set
-        var collected = [CollectedLinter]()
-        for file in self {
-            let linter = Linter(
-                file: file, configuration: config,
-                compilerArguments: requiresFileOnDisk ? file.makeCompilerArguments() : [],
-            )
-            await collected.append(linter.collect(into: storage))
-        }
-        var violations = [RuleViolation]()
-        for linter in collected {
-            violations.append(contentsOf: linter.ruleViolations(using: storage))
-        }
-        return requiresFileOnDisk ? violations.withoutFiles() : violations
+  func violations(config: Configuration = Configuration.default, requiresFileOnDisk: Bool = false)
+    async -> [RuleViolation]
+  {
+    let storage = RuleStorage()
+    // Two-pass: collect all files first so collecting rules see the full set
+    var collected = [CollectedLinter]()
+    for file in self {
+      let linter = Linter(
+        file: file, configuration: config,
+        compilerArguments: requiresFileOnDisk ? file.makeCompilerArguments() : [],
+      )
+      await collected.append(linter.collect(into: storage))
     }
+    var violations = [RuleViolation]()
+    for linter in collected {
+      violations.append(contentsOf: linter.ruleViolations(using: storage))
+    }
+    return requiresFileOnDisk ? violations.withoutFiles() : violations
+  }
 
-    func corrections(
-        config: Configuration = Configuration.default,
-        requiresFileOnDisk: Bool = false,
-    ) async -> [String: Int] {
-        let storage = RuleStorage()
-        var collected = [CollectedLinter]()
-        for file in self {
-            let linter = Linter(
-                file: file,
-                configuration: config,
-                compilerArguments: requiresFileOnDisk ? file.makeCompilerArguments() : [],
-            )
-            await collected.append(linter.collect(into: storage))
-        }
-        var corrections = [String: Int]()
-        for linter in collected {
-            for (ruleName, numberOfCorrections) in linter.correct(using: storage) {
-                corrections[ruleName] = numberOfCorrections
-            }
-        }
-        return corrections
+  func corrections(
+    config: Configuration = Configuration.default,
+    requiresFileOnDisk: Bool = false,
+  ) async -> [String: Int] {
+    let storage = RuleStorage()
+    var collected = [CollectedLinter]()
+    for file in self {
+      let linter = Linter(
+        file: file,
+        configuration: config,
+        compilerArguments: requiresFileOnDisk ? file.makeCompilerArguments() : [],
+      )
+      await collected.append(linter.collect(into: storage))
     }
+    var corrections = [String: Int]()
+    for linter in collected {
+      for (ruleName, numberOfCorrections) in linter.correct(using: storage) {
+        corrections[ruleName] = numberOfCorrections
+      }
+    }
+    return corrections
+  }
 }
 
 extension Collection<RuleViolation> {
-    fileprivate func withoutFiles() -> [RuleViolation] {
-        map { violation in
-            let locationWithoutFile = Location(
-                file: nil, line: violation.location.line,
-                column: violation.location.column,
-            )
-            return violation.with(location: locationWithoutFile)
-        }
+  fileprivate func withoutFiles() -> [RuleViolation] {
+    map { violation in
+      let locationWithoutFile = Location(
+        file: nil, line: violation.location.line,
+        column: violation.location.column,
+      )
+      return violation.with(location: locationWithoutFile)
     }
+  }
 }
 
 extension Collection<Example> {
-    func removingViolationMarkers() -> [Element] {
-        map { $0.removingViolationMarkers() }
-    }
+  func removingViolationMarkers() -> [Element] {
+    map { $0.removingViolationMarkers() }
+  }
 }
 
 // MARK: - Single-Rule Violations
 
 /// Build a config for a single rule and return violations.
 func ruleViolations(
-    _ example: Example,
-    rule identifier: String,
-    configuration: Any? = nil,
+  _ example: Example,
+  rule identifier: String,
+  configuration: Any? = nil,
 ) async throws -> [RuleViolation] {
-    let config = try #require(makeConfig(configuration, identifier))
-    return await violations(example, config: config)
+  let config = try #require(makeConfig(configuration, identifier))
+  return await violations(example, config: config)
 }
 
 // MARK: - Config Builder
 
 func makeConfig(
-    _ ruleConfiguration: Any?,
-    _ identifier: String,
-    skipDisableCommandTests: Bool = false,
+  _ ruleConfiguration: Any?,
+  _ identifier: String,
+  skipDisableCommandTests: Bool = false,
 ) -> Configuration? {
-    let superfluousDisableCommandRuleIdentifier = SuperfluousDisableCommandRule.identifier
-    let identifiers: Set<String> =
-        skipDisableCommandTests
-            ? [identifier]
-            : [identifier, superfluousDisableCommandRuleIdentifier]
+  let superfluousDisableCommandRuleIdentifier = SuperfluousDisableCommandRule.identifier
+  let identifiers: Set<String> =
+    skipDisableCommandTests
+    ? [identifier]
+    : [identifier, superfluousDisableCommandRuleIdentifier]
 
-    if let ruleConfiguration, let ruleType = RuleRegistry.shared.rule(forID: identifier) {
-        return (try? ruleType.init(configuration: ruleConfiguration)).flatMap { configuredRule in
-            let rules =
-                skipDisableCommandTests
-                    ? [configuredRule]
-                    : [
-                        configuredRule,
-                        SuperfluousDisableCommandRule(),
-                    ]
-            return Configuration(
-                rulesMode: .onlyConfiguration(identifiers),
-                allRulesWrapped: rules.map { ConfiguredRule(
-                    rule: $0,
-                    initializedWithNonEmptyConfiguration: false,
-                ) },
-            )
-        }
+  if let ruleConfiguration, let ruleType = RuleRegistry.shared.rule(forID: identifier) {
+    return (try? ruleType.init(configuration: ruleConfiguration)).flatMap { configuredRule in
+      let rules =
+        skipDisableCommandTests
+        ? [configuredRule]
+        : [
+          configuredRule,
+          SuperfluousDisableCommandRule(),
+        ]
+      return Configuration(
+        rulesMode: .onlyConfiguration(identifiers),
+        allRulesWrapped: rules.map {
+          ConfiguredRule(
+            rule: $0,
+            initializedWithNonEmptyConfiguration: false,
+          )
+        },
+      )
     }
-    return Configuration(rulesMode: .onlyConfiguration(identifiers))
+  }
+  return Configuration(rulesMode: .onlyConfiguration(identifiers))
 }
 
 // MARK: - Rendering
 
 private func cleanedContentsAndMarkerOffsets(from contents: String) -> (String, [Int]) {
-    var contents = contents.bridge()
-    var markerOffsets = [Int]()
-    var markerRange = contents.range(of: violationMarker)
-    while markerRange.location != NSNotFound {
-        markerOffsets.append(markerRange.location)
-        contents = contents.replacingCharacters(in: markerRange, with: "").bridge()
-        markerRange = contents.range(of: violationMarker)
-    }
-    return (contents.bridge(), markerOffsets.sorted())
+  var contents = contents.bridge()
+  var markerOffsets = [Int]()
+  var markerRange = contents.range(of: violationMarker)
+  while markerRange.location != NSNotFound {
+    markerOffsets.append(markerRange.location)
+    contents = contents.replacingCharacters(in: markerRange, with: "").bridge()
+    markerRange = contents.range(of: violationMarker)
+  }
+  return (contents.bridge(), markerOffsets.sorted())
 }
 
 private func render(violations: [RuleViolation], in contents: String) -> String {
-    var contents = StringView(contents).lines.map(\.content)
-    for violation in violations.sorted(by: { $0.location > $1.location }) {
-        guard let line = violation.location.line,
-              let character = violation.location.column
-        else { continue }
+  var contents = StringView(contents).lines.map(\.content)
+  for violation in violations.sorted(by: { $0.location > $1.location }) {
+    guard let line = violation.location.line,
+      let character = violation.location.column
+    else { continue }
 
-        let message =
-            String(repeating: " ", count: character - 1) + "^ "
-                + [
-                    "\(violation.severity.rawValue): ",
-                    "\(violation.ruleName) Violation: ",
-                    violation.reason.text,
-                    " (\(violation.ruleIdentifier))",
-                ].joined()
-        if line >= contents.count {
-            contents.append(message)
-        } else {
-            contents.insert(message, at: line)
-        }
+    let message =
+      String(repeating: " ", count: character - 1) + "^ "
+      + [
+        "\(violation.severity.rawValue): ",
+        "\(violation.ruleName) Violation: ",
+        violation.reason.text,
+        " (\(violation.ruleIdentifier))",
+      ].joined()
+    if line >= contents.count {
+      contents.append(message)
+    } else {
+      contents.insert(message, at: line)
     }
-    return """
+  }
+  return """
     ```
     \(contents.joined(separator: "\n"))
     ```
@@ -287,14 +290,14 @@ private func render(violations: [RuleViolation], in contents: String) -> String 
 }
 
 private func render(locations: [Location], in contents: String) -> String {
-    var contents = StringView(contents).lines.map(\.content)
-    for location in locations.sorted(by: >) {
-        guard let line = location.line, let character = location.column else { continue }
-        let content = NSMutableString(string: contents[line - 1])
-        content.insert("↓", at: character - 1)
-        contents[line - 1] = content.bridge()
-    }
-    return """
+  var contents = StringView(contents).lines.map(\.content)
+  for location in locations.sorted(by: >) {
+    guard let line = location.line, let character = location.column else { continue }
+    let content = NSMutableString(string: contents[line - 1])
+    content.insert("↓", at: character - 1)
+    contents[line - 1] = content.bridge()
+  }
+  return """
     ```
     \(contents.joined(separator: "\n"))
     ```
@@ -304,435 +307,435 @@ private func render(locations: [Location], in contents: String) -> String {
 // MARK: - Correction Assertion
 
 private func assertCorrection(
-    _ before: Example, expected: Example, config: Configuration,
-    sourceLocation: Testing.SourceLocation = #_sourceLocation,
+  _ before: Example, expected: Example, config: Configuration,
+  sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
-    let (cleanedBefore, _) = cleanedContentsAndMarkerOffsets(from: before.code)
-    let file = SwiftSource.testFile(withContents: cleanedBefore, persistToDisk: true)
-    let includeCompilerArguments = config.rules
-        .contains(where: { type(of: $0).runsWithCompilerArguments })
-    let compilerArguments = includeCompilerArguments ? file.makeCompilerArguments() : []
-    let storage = RuleStorage()
-    let collector = Linter(file: file, configuration: config, compilerArguments: compilerArguments)
-    let linter = await collector.collect(into: storage)
-    let corrections = linter.correct(using: storage)
+  let (cleanedBefore, _) = cleanedContentsAndMarkerOffsets(from: before.code)
+  let file = SwiftSource.testFile(withContents: cleanedBefore, persistToDisk: true)
+  let includeCompilerArguments = config.rules
+    .contains(where: { type(of: $0).runsWithCompilerArguments })
+  let compilerArguments = includeCompilerArguments ? file.makeCompilerArguments() : []
+  let storage = RuleStorage()
+  let collector = Linter(file: file, configuration: config, compilerArguments: compilerArguments)
+  let linter = await collector.collect(into: storage)
+  let corrections = linter.correct(using: storage)
+  #expect(
+    corrections.count >= (before.code != expected.code ? 1 : 0),
+    "Expected corrections",
+    sourceLocation: sourceLocation,
+  )
+  #expect(
+    file.contents == expected.code,
+    "File contents don't match expected",
+    sourceLocation: sourceLocation,
+  )
+  guard let path = file.path else {
+    Testing.Issue.record("File has no path", sourceLocation: sourceLocation)
+    return
+  }
+  do {
+    let corrected = try String(contentsOf: URL(filePath: path), encoding: .utf8)
     #expect(
-        corrections.count >= (before.code != expected.code ? 1 : 0),
-        "Expected corrections",
-        sourceLocation: sourceLocation,
+      corrected == expected.code,
+      "Corrected file doesn't match expected",
+      sourceLocation: sourceLocation,
     )
-    #expect(
-        file.contents == expected.code,
-        "File contents don't match expected",
-        sourceLocation: sourceLocation,
+  } catch {
+    Testing.Issue.record(
+      "couldn't read file at path '\(path)': \(error)",
+      sourceLocation: sourceLocation,
     )
-    guard let path = file.path else {
-        Testing.Issue.record("File has no path", sourceLocation: sourceLocation)
-        return
-    }
-    do {
-        let corrected = try String(contentsOf: URL(filePath: path), encoding: .utf8)
-        #expect(
-            corrected == expected.code,
-            "Corrected file doesn't match expected",
-            sourceLocation: sourceLocation,
-        )
-    } catch {
-        Testing.Issue.record(
-            "couldn't read file at path '\(path)': \(error)",
-            sourceLocation: sourceLocation,
-        )
-    }
+  }
 }
 
 extension String {
-    fileprivate func toStringLiteral() -> String {
-        "\"" + replacingOccurrences(of: "\n", with: "\\n") + "\""
-    }
+  fileprivate func toStringLiteral() -> String {
+    "\"" + replacingOccurrences(of: "\n", with: "\\n") + "\""
+  }
 }
 
 // MARK: - Test Correction
 
 private func testCorrection(
-    _ correction: (Example, Example),
-    configuration: Configuration,
-    shouldTestMultiByteOffsets: Bool,
+  _ correction: (Example, Example),
+  configuration: Configuration,
+  shouldTestMultiByteOffsets: Bool,
 ) async {
-    var config = configuration
-    if let correctionConfiguration = correction.0.configuration,
-       case let .onlyConfiguration(onlyRules) = configuration.rulesMode,
-       let ruleToConfigure = (onlyRules.first { $0 != SuperfluousDisableCommandRule.identifier }),
-       case let configDict: [_: any Sendable] = [
-           "only_rules": onlyRules,
-           ruleToConfigure: correctionConfiguration,
-       ],
-       let newConfig = try? Configuration(dict: configDict)
-    {
-        config = newConfig
-    }
+  var config = configuration
+  if let correctionConfiguration = correction.0.configuration,
+    case .onlyConfiguration(let onlyRules) = configuration.rulesMode,
+    let ruleToConfigure = (onlyRules.first { $0 != SuperfluousDisableCommandRule.identifier }),
+    case let configDict:[_: any Sendable] = [
+      "only_rules": onlyRules,
+      ruleToConfigure: correctionConfiguration,
+    ],
+    let newConfig = try? Configuration(dict: configDict)
+  {
+    config = newConfig
+  }
 
-    await assertCorrection(correction.0, expected: correction.1, config: config)
-    if shouldTestMultiByteOffsets, correction.0.shouldTestMultiByteOffsets {
-        await assertCorrection(
-            addEmoji(correction.0),
-            expected: addEmoji(correction.1),
-            config: config,
-        )
-    }
+  await assertCorrection(correction.0, expected: correction.1, config: config)
+  if shouldTestMultiByteOffsets, correction.0.shouldTestMultiByteOffsets {
+    await assertCorrection(
+      addEmoji(correction.0),
+      expected: addEmoji(correction.1),
+      config: config,
+    )
+  }
 }
 
 private func addEmoji(_ example: Example) -> Example {
-    example.with(code: "/* 👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦 */\n\(example.code)")
+  example.with(code: "/* 👨‍👩‍👧‍👦👨‍👩‍👧‍👦👨‍👩‍👧‍👦 */\n\(example.code)")
 }
 
 private func addShebang(_ example: Example) -> Example {
-    example.with(code: "#!/usr/bin/env swift\n\(example.code)")
+  example.with(code: "#!/usr/bin/env swift\n\(example.code)")
 }
 
 // MARK: - verifyRule (standalone function)
 
 /// Ensures rules are registered before any lint test runs.
 private let _ensureRegistered: Void = {
-    RuleRegistry.registerAllRulesOnce()
+  RuleRegistry.registerAllRulesOnce()
 }()
 
 func verifyRule(
-    _ ruleType: (some Rule).Type,
-    ruleConfiguration: Any? = nil,
-    commentDoesNotViolate: Bool = true,
-    stringDoesNotViolate: Bool = true,
-    skipCommentTests: Bool = false,
-    skipStringTests: Bool = false,
-    skipDisableCommandTests: Bool = false,
-    shouldTestMultiByteOffsets: Bool = true,
-    testShebang: Bool = true,
-    sourceLocation: Testing.SourceLocation = #_sourceLocation,
+  _ ruleType: (some Rule).Type,
+  ruleConfiguration: Any? = nil,
+  commentDoesNotViolate: Bool = true,
+  stringDoesNotViolate: Bool = true,
+  skipCommentTests: Bool = false,
+  skipStringTests: Bool = false,
+  skipDisableCommandTests: Bool = false,
+  shouldTestMultiByteOffsets: Bool = true,
+  testShebang: Bool = true,
+  sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
-    await verifyRule(
-        TestExamples(from: ruleType),
-        ruleConfiguration: ruleConfiguration,
-        commentDoesNotViolate: commentDoesNotViolate,
-        stringDoesNotViolate: stringDoesNotViolate,
-        skipCommentTests: skipCommentTests,
-        skipStringTests: skipStringTests,
-        skipDisableCommandTests: skipDisableCommandTests,
-        shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
-        testShebang: testShebang,
-        sourceLocation: sourceLocation,
-    )
+  await verifyRule(
+    TestExamples(from: ruleType),
+    ruleConfiguration: ruleConfiguration,
+    commentDoesNotViolate: commentDoesNotViolate,
+    stringDoesNotViolate: stringDoesNotViolate,
+    skipCommentTests: skipCommentTests,
+    skipStringTests: skipStringTests,
+    skipDisableCommandTests: skipDisableCommandTests,
+    shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
+    testShebang: testShebang,
+    sourceLocation: sourceLocation,
+  )
 }
 
 func verifyRule(
-    _ examples: TestExamples,
-    ruleConfiguration: Any? = nil,
-    commentDoesNotViolate: Bool = true,
-    stringDoesNotViolate: Bool = true,
-    skipCommentTests: Bool = false,
-    skipStringTests: Bool = false,
-    skipDisableCommandTests: Bool = false,
-    shouldTestMultiByteOffsets: Bool = true,
-    testShebang: Bool = true,
-    sourceLocation: Testing.SourceLocation = #_sourceLocation,
+  _ examples: TestExamples,
+  ruleConfiguration: Any? = nil,
+  commentDoesNotViolate: Bool = true,
+  stringDoesNotViolate: Bool = true,
+  skipCommentTests: Bool = false,
+  skipStringTests: Bool = false,
+  skipDisableCommandTests: Bool = false,
+  shouldTestMultiByteOffsets: Bool = true,
+  testShebang: Bool = true,
+  sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
-    _ = _ensureRegistered
+  _ = _ensureRegistered
 
-    guard examples.minSwiftVersion <= .current else { return }
+  guard examples.minSwiftVersion <= .current else { return }
 
-    guard
-        let config = makeConfig(
-            ruleConfiguration,
-            examples.identifier,
-            skipDisableCommandTests: skipDisableCommandTests,
-        )
-    else {
-        Testing.Issue.record("Failed to create configuration", sourceLocation: sourceLocation)
-        return
-    }
-
-    let disableCommands: [String]
-    if skipDisableCommandTests {
-        disableCommands = []
-    } else {
-        disableCommands = examples.allIdentifiers.map { "// sm:disable \($0)\n" }
-    }
-
-    await verifyLint(
-        examples,
-        config: config,
-        commentDoesNotViolate: commentDoesNotViolate,
-        stringDoesNotViolate: stringDoesNotViolate,
-        skipCommentTests: skipCommentTests,
-        skipStringTests: skipStringTests,
-        disableCommands: disableCommands,
-        shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
-        testShebang: testShebang,
-        sourceLocation: sourceLocation,
+  guard
+    let config = makeConfig(
+      ruleConfiguration,
+      examples.identifier,
+      skipDisableCommandTests: skipDisableCommandTests,
     )
-    await verifyCorrections(
-        examples,
-        config: config,
-        disableCommands: disableCommands,
-        shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
-    )
+  else {
+    Testing.Issue.record("Failed to create configuration", sourceLocation: sourceLocation)
+    return
+  }
+
+  let disableCommands: [String]
+  if skipDisableCommandTests {
+    disableCommands = []
+  } else {
+    disableCommands = examples.allIdentifiers.map { "// sm:disable \($0)\n" }
+  }
+
+  await verifyLint(
+    examples,
+    config: config,
+    commentDoesNotViolate: commentDoesNotViolate,
+    stringDoesNotViolate: stringDoesNotViolate,
+    skipCommentTests: skipCommentTests,
+    skipStringTests: skipStringTests,
+    disableCommands: disableCommands,
+    shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
+    testShebang: testShebang,
+    sourceLocation: sourceLocation,
+  )
+  await verifyCorrections(
+    examples,
+    config: config,
+    disableCommands: disableCommands,
+    shouldTestMultiByteOffsets: shouldTestMultiByteOffsets,
+  )
 }
 
 // MARK: - verifyLint
 
 func verifyLint(
-    _ examples: TestExamples,
-    config: Configuration,
-    commentDoesNotViolate: Bool = true,
-    stringDoesNotViolate: Bool = true,
-    skipCommentTests: Bool = false,
-    skipStringTests: Bool = false,
-    disableCommands: [String] = [],
-    shouldTestMultiByteOffsets: Bool = true,
-    testShebang: Bool = true,
-    sourceLocation: Testing.SourceLocation = #_sourceLocation,
+  _ examples: TestExamples,
+  config: Configuration,
+  commentDoesNotViolate: Bool = true,
+  stringDoesNotViolate: Bool = true,
+  skipCommentTests: Bool = false,
+  skipStringTests: Bool = false,
+  disableCommands: [String] = [],
+  shouldTestMultiByteOffsets: Bool = true,
+  testShebang: Bool = true,
+  sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
-    func verify(triggers: [Example], nonTriggers: [Example]) async {
-        await verifyExamples(
-            triggers: triggers, nonTriggers: nonTriggers, configuration: config,
-            requiresFileOnDisk: examples.requiresFileOnDisk,
-        )
-    }
-    func makeViolations(_ example: Example) async -> [RuleViolation] {
-        await violations(
-            example, config: config, requiresFileOnDisk: examples.requiresFileOnDisk,
-        )
-    }
-
-    let focused = examples.focused()
-    let (triggers, nonTriggers) = (
-        focused.triggeringExamples,
-        focused.nonTriggeringExamples,
+  func verify(triggers: [Example], nonTriggers: [Example]) async {
+    await verifyExamples(
+      triggers: triggers, nonTriggers: nonTriggers, configuration: config,
+      requiresFileOnDisk: examples.requiresFileOnDisk,
     )
-    await verify(triggers: triggers, nonTriggers: nonTriggers)
+  }
+  func makeViolations(_ example: Example) async -> [RuleViolation] {
+    await violations(
+      example, config: config, requiresFileOnDisk: examples.requiresFileOnDisk,
+    )
+  }
 
-    // Skip expensive variant tests in fast mode
-    guard !fastTests else { return }
+  let focused = examples.focused()
+  let (triggers, nonTriggers) = (
+    focused.triggeringExamples,
+    focused.nonTriggeringExamples,
+  )
+  await verify(triggers: triggers, nonTriggers: nonTriggers)
 
-    if shouldTestMultiByteOffsets {
-        await verify(
-            triggers: triggers.filter(\.shouldTestMultiByteOffsets).map(addEmoji),
-            nonTriggers: nonTriggers.filter(\.shouldTestMultiByteOffsets).map(addEmoji),
-        )
+  // Skip expensive variant tests in fast mode
+  guard !fastTests else { return }
+
+  if shouldTestMultiByteOffsets {
+    await verify(
+      triggers: triggers.filter(\.shouldTestMultiByteOffsets).map(addEmoji),
+      nonTriggers: nonTriggers.filter(\.shouldTestMultiByteOffsets).map(addEmoji),
+    )
+  }
+
+  if testShebang {
+    await verify(
+      triggers: triggers.filter(\.shouldTestMultiByteOffsets).map(addShebang),
+      nonTriggers: nonTriggers.filter(\.shouldTestMultiByteOffsets).map(addShebang),
+    )
+  }
+
+  // Comment doesn't violate
+  if !skipCommentTests {
+    let triggersToCheck = triggers.filter(\.shouldTestWrappingInComment)
+    var commentViolationCount = 0
+    for trigger in triggersToCheck {
+      commentViolationCount += await makeViolations(
+        trigger.with(code: "/*\n  " + trigger.code + "\n */"),
+      ).count
     }
+    #expect(
+      commentViolationCount == (commentDoesNotViolate ? 0 : triggersToCheck.count),
+      "Violation(s) still triggered when code was nested inside a comment",
+      sourceLocation: sourceLocation,
+    )
+  }
 
-    if testShebang {
-        await verify(
-            triggers: triggers.filter(\.shouldTestMultiByteOffsets).map(addShebang),
-            nonTriggers: nonTriggers.filter(\.shouldTestMultiByteOffsets).map(addShebang),
-        )
+  // String doesn't violate
+  if !skipStringTests {
+    let triggersToCheck = triggers.filter(\.shouldTestWrappingInString)
+    var stringViolationCount = 0
+    for trigger in triggersToCheck {
+      stringViolationCount += await makeViolations(
+        trigger.with(code: trigger.code.toStringLiteral()),
+      ).count
     }
+    #expect(
+      stringViolationCount == (stringDoesNotViolate ? 0 : triggersToCheck.count),
+      "Violation(s) still triggered when code was nested inside a string literal",
+      sourceLocation: sourceLocation,
+    )
+  }
 
-    // Comment doesn't violate
-    if !skipCommentTests {
-        let triggersToCheck = triggers.filter(\.shouldTestWrappingInComment)
-        var commentViolationCount = 0
-        for trigger in triggersToCheck {
-            commentViolationCount += await makeViolations(
-                trigger.with(code: "/*\n  " + trigger.code + "\n */"),
-            ).count
-        }
-        #expect(
-            commentViolationCount == (commentDoesNotViolate ? 0 : triggersToCheck.count),
-            "Violation(s) still triggered when code was nested inside a comment",
-            sourceLocation: sourceLocation,
-        )
+  // Disabled rule doesn't violate and disable command isn't superfluous
+  for command in disableCommands {
+    let disabledTriggers =
+      triggers
+      .filter(\.shouldTestDisableCommand)
+      .map { $0.with(code: command + $0.code) }
+
+    for trigger in disabledTriggers {
+      let violationsPartitionedByType = await makeViolations(trigger)
+        .partitioned { $0.ruleIdentifier == SuperfluousDisableCommandRule.identifier }
+
+      #expect(
+        violationsPartitionedByType.first.isEmpty,
+        "Violation(s) still triggered although rule was disabled",
+      )
+      #expect(
+        violationsPartitionedByType.second.isEmpty,
+        "Disable command was superfluous since no violations(s) triggered",
+      )
     }
+  }
 
-    // String doesn't violate
-    if !skipStringTests {
-        let triggersToCheck = triggers.filter(\.shouldTestWrappingInString)
-        var stringViolationCount = 0
-        for trigger in triggersToCheck {
-            stringViolationCount += await makeViolations(
-                trigger.with(code: trigger.code.toStringLiteral()),
-            ).count
-        }
-        #expect(
-            stringViolationCount == (stringDoesNotViolate ? 0 : triggersToCheck.count),
-            "Violation(s) still triggered when code was nested inside a string literal",
-            sourceLocation: sourceLocation,
-        )
-    }
+  // Severity can be changed
+  let ruleType = RuleRegistry.shared.rule(forID: examples.identifier)
+  if ruleType?.init().options is (any SeverityBasedRuleOptions),
+    let example = triggers.first(where: { $0.configuration == nil })
+  {
+    let withWarning = Example(example.code, configuration: ["severity": "warning"])
+    let warningViolations = await violations(withWarning, config: config)
+    #expect(
+      warningViolations.allSatisfy { $0.severity == .warning },
+      "Violation severity cannot be changed to warning",
+    )
 
-    // Disabled rule doesn't violate and disable command isn't superfluous
-    for command in disableCommands {
-        let disabledTriggers =
-            triggers
-                .filter(\.shouldTestDisableCommand)
-                .map { $0.with(code: command + $0.code) }
-
-        for trigger in disabledTriggers {
-            let violationsPartitionedByType = await makeViolations(trigger)
-                .partitioned { $0.ruleIdentifier == SuperfluousDisableCommandRule.identifier }
-
-            #expect(
-                violationsPartitionedByType.first.isEmpty,
-                "Violation(s) still triggered although rule was disabled",
-            )
-            #expect(
-                violationsPartitionedByType.second.isEmpty,
-                "Disable command was superfluous since no violations(s) triggered",
-            )
-        }
-    }
-
-    // Severity can be changed
-    let ruleType = RuleRegistry.shared.rule(forID: examples.identifier)
-    if ruleType?.init().options is (any SeverityBasedRuleOptions),
-       let example = triggers.first(where: { $0.configuration == nil })
-    {
-        let withWarning = Example(example.code, configuration: ["severity": "warning"])
-        let warningViolations = await violations(withWarning, config: config)
-        #expect(
-            warningViolations.allSatisfy { $0.severity == .warning },
-            "Violation severity cannot be changed to warning",
-        )
-
-        let withError = Example(example.code, configuration: ["severity": "error"])
-        let errorViolations = await violations(withError, config: config)
-        #expect(
-            errorViolations.allSatisfy { $0.severity == .error },
-            "Violation severity cannot be changed to error",
-        )
-    }
+    let withError = Example(example.code, configuration: ["severity": "error"])
+    let errorViolations = await violations(withError, config: config)
+    #expect(
+      errorViolations.allSatisfy { $0.severity == .error },
+      "Violation severity cannot be changed to error",
+    )
+  }
 }
 
 // MARK: - verifyCorrections
 
 func verifyCorrections(
-    _ examples: TestExamples,
-    config: Configuration,
-    disableCommands: [String],
-    shouldTestMultiByteOffsets: Bool,
-    parserDiagnosticsDisabledForTests: Bool = true,
+  _ examples: TestExamples,
+  config: Configuration,
+  disableCommands: [String],
+  shouldTestMultiByteOffsets: Bool,
+  parserDiagnosticsDisabledForTests: Bool = true,
 ) async {
-    let focused = examples.focused()
+  let focused = examples.focused()
 
-    await $parserDiagnosticsDisabledForTests.withValue(parserDiagnosticsDisabledForTests) {
-        // corrections
-        for correction in focused.corrections {
-            await testCorrection(
-                correction,
-                configuration: config,
-                shouldTestMultiByteOffsets: !fastTests && shouldTestMultiByteOffsets,
-            )
-        }
-        // make sure strings that don't trigger aren't corrected
-        for nonTriggeringExample in focused.nonTriggeringExamples {
-            await testCorrection(
-                (nonTriggeringExample, nonTriggeringExample),
-                configuration: config,
-                shouldTestMultiByteOffsets: !fastTests && shouldTestMultiByteOffsets,
-            )
-        }
-
-        // Skip disable command correction tests in fast mode
-        guard !fastTests else { return }
-
-        // "disable" commands do not correct
-        for (before, _) in focused.corrections {
-            for command in disableCommands {
-                let beforeDisabled = command + before.code
-                let expectedCleaned =
-                    before
-                        .with(code: cleanedContentsAndMarkerOffsets(from: beforeDisabled).0)
-                await assertCorrection(expectedCleaned, expected: expectedCleaned, config: config)
-            }
-        }
+  await $parserDiagnosticsDisabledForTests.withValue(parserDiagnosticsDisabledForTests) {
+    // corrections
+    for correction in focused.corrections {
+      await testCorrection(
+        correction,
+        configuration: config,
+        shouldTestMultiByteOffsets: !fastTests && shouldTestMultiByteOffsets,
+      )
     }
+    // make sure strings that don't trigger aren't corrected
+    for nonTriggeringExample in focused.nonTriggeringExamples {
+      await testCorrection(
+        (nonTriggeringExample, nonTriggeringExample),
+        configuration: config,
+        shouldTestMultiByteOffsets: !fastTests && shouldTestMultiByteOffsets,
+      )
+    }
+
+    // Skip disable command correction tests in fast mode
+    guard !fastTests else { return }
+
+    // "disable" commands do not correct
+    for (before, _) in focused.corrections {
+      for command in disableCommands {
+        let beforeDisabled = command + before.code
+        let expectedCleaned =
+          before
+          .with(code: cleanedContentsAndMarkerOffsets(from: beforeDisabled).0)
+        await assertCorrection(expectedCleaned, expected: expectedCleaned, config: config)
+      }
+    }
+  }
 }
 
 // MARK: - verifyExamples
 
 private func verifyExamples(
-    triggers: [Example],
-    nonTriggers: [Example],
-    configuration config: Configuration,
-    requiresFileOnDisk: Bool,
+  triggers: [Example],
+  nonTriggers: [Example],
+  configuration config: Configuration,
+  requiresFileOnDisk: Bool,
 ) async {
-    // Non-triggering examples don't violate
-    for nonTrigger in nonTriggers {
-        let unexpectedViolations = await violations(
-            nonTrigger, config: config,
-            requiresFileOnDisk: requiresFileOnDisk,
+  // Non-triggering examples don't violate
+  for nonTrigger in nonTriggers {
+    let unexpectedViolations = await violations(
+      nonTrigger, config: config,
+      requiresFileOnDisk: requiresFileOnDisk,
+    )
+    if unexpectedViolations.isEmpty { continue }
+    let nonTriggerWithViolations = render(violations: unexpectedViolations, in: nonTrigger.code)
+    Testing.Issue.record("nonTriggeringExample violated: \n\(nonTriggerWithViolations)")
+  }
+
+  // Triggering examples violate
+  for trigger in triggers {
+    let triggerViolations = await violations(
+      trigger, config: config,
+      requiresFileOnDisk: requiresFileOnDisk,
+    )
+
+    let (cleanTrigger, markerOffsets) = cleanedContentsAndMarkerOffsets(from: trigger.code)
+    if markerOffsets.isEmpty {
+      if triggerViolations.isEmpty {
+        Testing.Issue
+          .record("triggeringExample did not violate: \n```\n\(trigger.code)\n```")
+      }
+      continue
+    }
+    let file = SwiftSource.testFile(withContents: cleanTrigger)
+    let expectedLocations = markerOffsets.map { Location(file: file, characterOffset: $0) }
+
+    let violationsAtUnexpectedLocation =
+      triggerViolations
+      .filter { !expectedLocations.contains($0.location) }
+
+    if !violationsAtUnexpectedLocation.isEmpty {
+      Testing.Issue
+        .record(
+          "triggeringExample violated at unexpected location: \n\(render(violations: violationsAtUnexpectedLocation, in: cleanTrigger))",
         )
-        if unexpectedViolations.isEmpty { continue }
-        let nonTriggerWithViolations = render(violations: unexpectedViolations, in: nonTrigger.code)
-        Testing.Issue.record("nonTriggeringExample violated: \n\(nonTriggerWithViolations)")
     }
 
-    // Triggering examples violate
-    for trigger in triggers {
-        let triggerViolations = await violations(
-            trigger, config: config,
-            requiresFileOnDisk: requiresFileOnDisk,
+    let violatedLocations = triggerViolations.map(\.location)
+    let locationsWithoutViolation =
+      expectedLocations
+      .filter { !violatedLocations.contains($0) }
+    if !locationsWithoutViolation.isEmpty {
+      Testing.Issue
+        .record(
+          "triggeringExample did not violate at expected location: \n\(render(locations: locationsWithoutViolation, in: cleanTrigger))",
         )
-
-        let (cleanTrigger, markerOffsets) = cleanedContentsAndMarkerOffsets(from: trigger.code)
-        if markerOffsets.isEmpty {
-            if triggerViolations.isEmpty {
-                Testing.Issue
-                    .record("triggeringExample did not violate: \n```\n\(trigger.code)\n```")
-            }
-            continue
-        }
-        let file = SwiftSource.testFile(withContents: cleanTrigger)
-        let expectedLocations = markerOffsets.map { Location(file: file, characterOffset: $0) }
-
-        let violationsAtUnexpectedLocation =
-            triggerViolations
-                .filter { !expectedLocations.contains($0.location) }
-
-        if !violationsAtUnexpectedLocation.isEmpty {
-            Testing.Issue
-                .record(
-                    "triggeringExample violated at unexpected location: \n\(render(violations: violationsAtUnexpectedLocation, in: cleanTrigger))",
-                )
-        }
-
-        let violatedLocations = triggerViolations.map(\.location)
-        let locationsWithoutViolation =
-            expectedLocations
-                .filter { !violatedLocations.contains($0) }
-        if !locationsWithoutViolation.isEmpty {
-            Testing.Issue
-                .record(
-                    "triggeringExample did not violate at expected location: \n\(render(locations: locationsWithoutViolation, in: cleanTrigger))",
-                )
-        }
-
-        #expect(triggerViolations.count == expectedLocations.count)
-        for (triggerViolation, expectedLocation) in zip(triggerViolations, expectedLocations) {
-            #expect(
-                triggerViolation.location == expectedLocation,
-                "'\(trigger)' violation didn't match expected location.",
-            )
-        }
     }
+
+    #expect(triggerViolations.count == expectedLocations.count)
+    for (triggerViolation, expectedLocation) in zip(triggerViolations, expectedLocations) {
+      #expect(
+        triggerViolation.location == expectedLocation,
+        "'\(trigger)' violation didn't match expected location.",
+      )
+    }
+  }
 }
 
 // MARK: - checkError
 
 func checkError<T: Error & Equatable>(
-    _ error: T,
-    sourceLocation: Testing.SourceLocation = #_sourceLocation,
-    closure: () throws -> Void,
+  _ error: T,
+  sourceLocation: Testing.SourceLocation = #_sourceLocation,
+  closure: () throws -> Void,
 ) {
-    do {
-        try closure()
-        Testing.Issue.record("No error caught", sourceLocation: sourceLocation)
-    } catch let rError as T {
-        if error != rError {
-            Testing.Issue.record(
-                "Wrong error caught. Got \(rError) but was expecting \(error)",
-                sourceLocation: sourceLocation,
-            )
-        }
-    } catch {
-        Testing.Issue.record("Wrong error caught", sourceLocation: sourceLocation)
+  do {
+    try closure()
+    Testing.Issue.record("No error caught", sourceLocation: sourceLocation)
+  } catch let rError as T {
+    if error != rError {
+      Testing.Issue.record(
+        "Wrong error caught. Got \(rError) but was expecting \(error)",
+        sourceLocation: sourceLocation,
+      )
     }
+  } catch {
+    Testing.Issue.record("Wrong error caught", sourceLocation: sourceLocation)
+  }
 }

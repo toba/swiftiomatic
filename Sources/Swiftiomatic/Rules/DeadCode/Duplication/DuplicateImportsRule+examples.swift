@@ -1,330 +1,330 @@
 extension DuplicateImportsRule {
-    static let nonTriggeringExamples = [
-        Example(
-            """
-            import A
-            import B
-            import C
-            """,
-        ),
-        Example(
-            """
-            import A.B
-            import A.C
-            """,
-        ),
-        Example(
-            """
-            @_implementationOnly import A
-            @_implementationOnly import B
-            """,
-        ),
-        Example(
-            """
-            @testable import A
-            @testable import B
-            """,
-        ),
-        Example(
-            """
-            #if DEBUG
-                @testable import KsApi
-            #else
-                import KsApi
-            #endif
-            """,
-        ),
-        Example(
-            """
-            import A // module
-            import B // module
-            """,
-        ),
-        Example(
-            """
-            #if TEST
-            func test() {
-            }
-            """,
-        ),
-        Example(
-            """
-            import Foo
-            @testable import struct Foo.Bar
-            """,
-        ),
-        Example(
-            """
-            import CoreImage
-            import CoreImage.CIFilterBuiltins
-            """,
-        ),
+  static let nonTriggeringExamples = [
+    Example(
+      """
+      import A
+      import B
+      import C
+      """,
+    ),
+    Example(
+      """
+      import A.B
+      import A.C
+      """,
+    ),
+    Example(
+      """
+      @_implementationOnly import A
+      @_implementationOnly import B
+      """,
+    ),
+    Example(
+      """
+      @testable import A
+      @testable import B
+      """,
+    ),
+    Example(
+      """
+      #if DEBUG
+          @testable import KsApi
+      #else
+          import KsApi
+      #endif
+      """,
+    ),
+    Example(
+      """
+      import A // module
+      import B // module
+      """,
+    ),
+    Example(
+      """
+      #if TEST
+      func test() {
+      }
+      """,
+    ),
+    Example(
+      """
+      import Foo
+      @testable import struct Foo.Bar
+      """,
+    ),
+    Example(
+      """
+      import CoreImage
+      import CoreImage.CIFilterBuiltins
+      """,
+    ),
+  ]
+
+  static let triggeringExamples = Array(corrections.keys.sorted())
+
+  // sm:disable:next closure_body_length
+  static let corrections: [Example: Example] = {
+    var corrections = [
+      Example(
+        """
+        import Foundation
+        import Dispatch
+        ↓import Foundation
+
+        """,
+      ): Example(
+        """
+        import Foundation
+        import Dispatch
+
+        """,
+      ),
+      Example(
+        """
+        import Foundation
+        ↓import Foundation.NSString
+
+        """,
+      ): Example(
+        """
+        import Foundation
+
+        """,
+      ),
+      Example(
+        """
+        ↓import Foundation.NSString
+        import Foundation
+
+        """,
+      ): Example(
+        """
+        import Foundation
+
+        """,
+      ),
+      Example(
+        """
+        @_implementationOnly import A
+        ↓@_implementationOnly import A
+
+        """,
+      ): Example(
+        """
+        @_implementationOnly import A
+
+        """,
+      ),
+      Example(
+        """
+        @testable import A
+        ↓@testable import A
+
+        """,
+      ): Example(
+        """
+        @testable import A
+
+        """,
+      ),
+      Example(
+        """
+        ↓import A.B.C
+        import A.B
+
+        """,
+      ): Example(
+        """
+        import A.B
+
+        """,
+      ),
+      Example(
+        """
+        import A.B
+        ↓import A.B.C
+
+        """,
+      ): Example(
+        """
+        import A.B
+
+        """,
+      ),
+      Example(
+        """
+        import A
+        #if DEBUG
+            @testable import KsApi
+        #else
+            import KsApi
+        #endif
+        ↓import A
+
+        """,
+      ): Example(
+        """
+        import A
+        #if DEBUG
+            @testable import KsApi
+        #else
+            import KsApi
+        #endif
+
+        """,
+      ),
+      Example(
+        """
+        import Foundation
+        ↓import Foundation
+        ↓import Foundation
+
+        """,
+      ): Example(
+        """
+        import Foundation
+
+        """,
+      ),
+      Example(
+        """
+        @testable import Foo
+        import struct Foo.Bar
+        """,
+      ): Example(
+        """
+        @testable import Foo
+        """,
+      ),
+      Example(
+        """
+        ↓import A.B.C
+        ↓import A.B
+        import A
+
+        """, isExcludedFromDocumentation: true,
+      ): Example(
+        """
+        import A
+
+        """,
+      ),
+      Example(
+        """
+        import A.B.C
+        ↓import A.B.C.D
+        ↓import A.B.C.E
+
+        """, isExcludedFromDocumentation: true,
+      ): Example(
+        """
+        import A.B.C
+
+        """,
+      ),
+      Example(
+        """
+        ↓import A.B.C
+        import A
+        ↓import A.B
+
+        """, isExcludedFromDocumentation: true,
+      ): Example(
+        """
+        import A
+
+        """,
+      ),
+      Example(
+        """
+        ↓import A.B
+        import A
+        ↓import A.B.C
+
+        """, isExcludedFromDocumentation: true,
+      ): Example(
+        """
+        import A
+
+        """,
+      ),
+      Example(
+        """
+        import A
+        ↓import A.B.C
+        ↓import A.B
+
+        """, isExcludedFromDocumentation: true,
+      ): Example(
+        """
+        import A
+
+        """,
+      ),
+      Example(
+        """
+        import CoreImage.CIFilterBuiltins
+        import CoreImage.CIFilterBuiltins
+        """, isExcludedFromDocumentation: true,
+      ): Example(
+        """
+        import CoreImage.CIFilterBuiltins
+        """,
+      ),
     ]
 
-    static let triggeringExamples = Array(corrections.keys.sorted())
+    DuplicateImportsRule.importKinds.map { importKind in
+      Example(
+        """
+        import A
+        ↓import \(importKind) A.Foo
 
-    // sm:disable:next closure_body_length
-    static let corrections: [Example: Example] = {
-        var corrections = [
-            Example(
-                """
-                import Foundation
-                import Dispatch
-                ↓import Foundation
+        """,
+      )
+    }.forEach {
+      corrections[$0] = Example(
+        """
+        import A
 
-                """,
-            ): Example(
-                """
-                import Foundation
-                import Dispatch
+        """,
+      )
+    }
 
-                """,
-            ),
-            Example(
-                """
-                import Foundation
-                ↓import Foundation.NSString
+    DuplicateImportsRule.importKinds.map { importKind in
+      Example(
+        """
+        import A
+        ↓import \(importKind) A.B.Foo
 
-                """,
-            ): Example(
-                """
-                import Foundation
+        """, isExcludedFromDocumentation: true,
+      )
+    }.forEach {
+      corrections[$0] = Example(
+        """
+        import A
 
-                """,
-            ),
-            Example(
-                """
-                ↓import Foundation.NSString
-                import Foundation
+        """,
+      )
+    }
 
-                """,
-            ): Example(
-                """
-                import Foundation
+    DuplicateImportsRule.importKinds.map { importKind in
+      Example(
+        """
+        import A.B
+        ↓import \(importKind) A.B.Foo
 
-                """,
-            ),
-            Example(
-                """
-                @_implementationOnly import A
-                ↓@_implementationOnly import A
+        """, isExcludedFromDocumentation: true,
+      )
+    }.forEach {
+      corrections[$0] = Example(
+        """
+        import A.B
 
-                """,
-            ): Example(
-                """
-                @_implementationOnly import A
+        """,
+      )
+    }
 
-                """,
-            ),
-            Example(
-                """
-                @testable import A
-                ↓@testable import A
-
-                """,
-            ): Example(
-                """
-                @testable import A
-
-                """,
-            ),
-            Example(
-                """
-                ↓import A.B.C
-                import A.B
-
-                """,
-            ): Example(
-                """
-                import A.B
-
-                """,
-            ),
-            Example(
-                """
-                import A.B
-                ↓import A.B.C
-
-                """,
-            ): Example(
-                """
-                import A.B
-
-                """,
-            ),
-            Example(
-                """
-                import A
-                #if DEBUG
-                    @testable import KsApi
-                #else
-                    import KsApi
-                #endif
-                ↓import A
-
-                """,
-            ): Example(
-                """
-                import A
-                #if DEBUG
-                    @testable import KsApi
-                #else
-                    import KsApi
-                #endif
-
-                """,
-            ),
-            Example(
-                """
-                import Foundation
-                ↓import Foundation
-                ↓import Foundation
-
-                """,
-            ): Example(
-                """
-                import Foundation
-
-                """,
-            ),
-            Example(
-                """
-                @testable import Foo
-                import struct Foo.Bar
-                """,
-            ): Example(
-                """
-                @testable import Foo
-                """,
-            ),
-            Example(
-                """
-                ↓import A.B.C
-                ↓import A.B
-                import A
-
-                """, isExcludedFromDocumentation: true,
-            ): Example(
-                """
-                import A
-
-                """,
-            ),
-            Example(
-                """
-                import A.B.C
-                ↓import A.B.C.D
-                ↓import A.B.C.E
-
-                """, isExcludedFromDocumentation: true,
-            ): Example(
-                """
-                import A.B.C
-
-                """,
-            ),
-            Example(
-                """
-                ↓import A.B.C
-                import A
-                ↓import A.B
-
-                """, isExcludedFromDocumentation: true,
-            ): Example(
-                """
-                import A
-
-                """,
-            ),
-            Example(
-                """
-                ↓import A.B
-                import A
-                ↓import A.B.C
-
-                """, isExcludedFromDocumentation: true,
-            ): Example(
-                """
-                import A
-
-                """,
-            ),
-            Example(
-                """
-                import A
-                ↓import A.B.C
-                ↓import A.B
-
-                """, isExcludedFromDocumentation: true,
-            ): Example(
-                """
-                import A
-
-                """,
-            ),
-            Example(
-                """
-                import CoreImage.CIFilterBuiltins
-                import CoreImage.CIFilterBuiltins
-                """, isExcludedFromDocumentation: true,
-            ): Example(
-                """
-                import CoreImage.CIFilterBuiltins
-                """,
-            ),
-        ]
-
-        DuplicateImportsRule.importKinds.map { importKind in
-            Example(
-                """
-                import A
-                ↓import \(importKind) A.Foo
-
-                """,
-            )
-        }.forEach {
-            corrections[$0] = Example(
-                """
-                import A
-
-                """,
-            )
-        }
-
-        DuplicateImportsRule.importKinds.map { importKind in
-            Example(
-                """
-                import A
-                ↓import \(importKind) A.B.Foo
-
-                """, isExcludedFromDocumentation: true,
-            )
-        }.forEach {
-            corrections[$0] = Example(
-                """
-                import A
-
-                """,
-            )
-        }
-
-        DuplicateImportsRule.importKinds.map { importKind in
-            Example(
-                """
-                import A.B
-                ↓import \(importKind) A.B.Foo
-
-                """, isExcludedFromDocumentation: true,
-            )
-        }.forEach {
-            corrections[$0] = Example(
-                """
-                import A.B
-
-                """,
-            )
-        }
-
-        return corrections
-    }()
+    return corrections
+  }()
 }
