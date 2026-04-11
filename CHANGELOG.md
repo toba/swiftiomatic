@@ -44,3 +44,4 @@
 - Rename CLI binary from `swiftiomatic` to `sm` ([#192](https://github.com/toba/swiftiomatic/issues/192))
 - Populate missing rule examples for parameterized testing ([#193](https://github.com/toba/swiftiomatic/issues/193))
 - Speed up tests; invert fast/full defaults; remove disk I/O from correction tests ([#195](https://github.com/toba/swiftiomatic/issues/195))
+- Speed up builds; pin deps to exact versions; remove `SwiftLexicalLookup` dependency ([#197](https://github.com/toba/swiftiomatic/issues/197))
