@@ -37,13 +37,6 @@ import Testing
     await verifyRule(ApplicationMainRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct AssertionFailuresRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(AssertionFailuresRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct BlankLineAfterImportsRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(BlankLineAfterImportsRule.self)
@@ -209,13 +202,6 @@ import Testing
     await verifyRule(HoistTryRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct InitCoderUnavailableRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(InitCoderUnavailableRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct LeadingDelimitersRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(LeadingDelimitersRule.self)
@@ -269,28 +255,38 @@ import Testing
     await verifyRule(NoGuardInTestsRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct NumberFormattingRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(NumberFormattingRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct ObservationPitfallsRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(ObservationPitfallsRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct OrganizeDeclarationsRuleGeneratedTests {
+@Suite(.rulesRegistered) struct DateForTimingRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(OrganizeDeclarationsRule.self)
+    await verifyRule(DateForTimingRule.self)
   }
 }
 
-@Suite(.rulesRegistered) struct PerformanceAntiPatternsRuleGeneratedTests {
+@Suite(.rulesRegistered) struct InlinableGenericRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(PerformanceAntiPatternsRule.self)
+    await verifyRule(InlinableGenericRule.self)
+  }
+}
+
+@Suite(.rulesRegistered) struct LazyChainRuleGeneratedTests {
+  @Test func withDefaultConfiguration() async {
+    await verifyRule(LazyChainRule.self)
+  }
+}
+
+@Suite(.rulesRegistered) struct LockAntiPatternsRuleGeneratedTests {
+  @Test func withDefaultConfiguration() async {
+    await verifyRule(LockAntiPatternsRule.self)
+  }
+}
+
+@Suite(.rulesRegistered) struct MutationDuringIterationRuleGeneratedTests {
+  @Test func withDefaultConfiguration() async {
+    await verifyRule(MutationDuringIterationRule.self)
   }
 }
 
@@ -342,9 +338,9 @@ import Testing
   }
 }
 
-@Suite(.rulesRegistered) struct RedundantFileprivateRuleGeneratedTests {
+@Suite(.rulesRegistered) struct UnnecessaryFileprivateRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(RedundantFileprivateRule.self)
+    await verifyRule(UnnecessaryFileprivateRule.self)
   }
 }
 
@@ -359,13 +355,6 @@ import Testing
     await verifyRule(RedundantInternalRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct RedundantMemberwiseInitRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(RedundantMemberwiseInitRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct RedundantParensRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(RedundantParensRule.self)
@@ -383,13 +372,6 @@ import Testing
     await verifyRule(RedundantPublicRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct RedundantRawValuesRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(RedundantRawValuesRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct RedundantStaticSelfRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(RedundantStaticSelfRule.self)
@@ -525,5 +507,11 @@ import Testing
 @Suite(.rulesRegistered) struct ValidateTestCasesRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(ValidateTestCasesRule.self)
+  }
+}
+
+@Suite(.rulesRegistered) struct PreferWeakLetRuleGeneratedTests {
+  @Test func withDefaultConfiguration() async {
+    await verifyRule(PreferWeakLetRule.self)
   }
 }

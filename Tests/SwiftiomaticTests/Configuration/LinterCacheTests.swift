@@ -84,8 +84,6 @@ private final class TestFileManager: Sendable, LintableFileDiscovering {
     violations: [RuleViolation],
     forFile: String,
     configuration: Configuration,
-    file _: StaticString = #filePath,
-    line _: UInt = #line,
   ) {
     cache.cache(violations: violations, forFile: forFile, configuration: configuration)
     cache = cache.flushed()
@@ -94,26 +92,18 @@ private final class TestFileManager: Sendable, LintableFileDiscovering {
 
   private func cacheAndValidateNoViolationsTwoFiles(
     configuration: Configuration,
-    file: StaticString = #filePath,
-    line: UInt = #line,
   ) {
     let (file1, file2) = ("file1.swift", "file2.swift")
     let fileManager = cache.fileManager as! TestFileManager
     fileManager.stubbedModificationDateByPath.withLock { $0 = [file1: Date(), file2: Date()] }
 
-    cacheAndValidate(
-      violations: [], forFile: file1, configuration: configuration, file: file, line: line,
-    )
-    cacheAndValidate(
-      violations: [], forFile: file2, configuration: configuration, file: file, line: line,
-    )
+    cacheAndValidate(violations: [], forFile: file1, configuration: configuration)
+    cacheAndValidate(violations: [], forFile: file2, configuration: configuration)
   }
 
   private func validateNewConfigDoesNotHitCache(
     dict: [String: Any],
     initialConfig: Configuration,
-    file _: StaticString = #filePath,
-    line _: UInt = #line,
   ) throws {
     let newConfig = try Configuration(dict: dict)
     let (file1, file2) = ("file1.swift", "file2.swift")

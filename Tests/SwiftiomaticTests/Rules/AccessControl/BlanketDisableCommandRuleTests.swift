@@ -114,7 +114,7 @@ import Testing
           "1️⃣",
           message:
             "The 'file_length' rule applies to the whole file and thus doesn't need to be re-enabled"
-        ),
+        )
       ],
       configuration: ["always_blanket_disable": ["file_length"]]
     )
@@ -129,7 +129,7 @@ import Testing
           "1️⃣",
           message:
             "The 'file_length' rule applies to the whole file and thus cannot be disabled locally with 'previous', 'this' or 'next'"
-        ),
+        )
       ],
       configuration: ["always_blanket_disable": ["file_length"]]
     )
@@ -144,7 +144,7 @@ import Testing
           "1️⃣",
           message:
             "The 'file_length' rule applies to the whole file and thus cannot be disabled locally with 'previous', 'this' or 'next'"
-        ),
+        )
       ],
       configuration: ["always_blanket_disable": ["file_length"]]
     )
@@ -159,7 +159,7 @@ import Testing
           "1️⃣",
           message:
             "The 'file_length' rule applies to the whole file and thus cannot be disabled locally with 'previous', 'this' or 'next'"
-        ),
+        )
       ],
       configuration: ["always_blanket_disable": ["file_length"]]
     )
@@ -169,7 +169,9 @@ import Testing
     await assertNoViolation(
       BlanketDisableCommandRule.self,
       "// sm:disable identifier_name\n",
-      configuration: ["always_blanket_disable": ["identifier_name"] as [String], "allowed_rules": [] as [String]]
+      configuration: [
+        "always_blanket_disable": ["identifier_name"] as [String], "allowed_rules": [] as [String],
+      ]
     )
   }
 }

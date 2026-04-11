@@ -386,11 +386,10 @@ extension Configuration {
 // MARK: - YAML Write-Back
 
 extension Configuration {
-  /// Serialize non-default values back to YAML, writing only sections that differ from defaults
+  /// Serialize non-default configuration values to a YAML string
   ///
-  /// - Parameters:
-  ///   - path: The file system path to write the YAML file to.
-  public func writeYAML(to path: String) throws {
+  /// Only values that differ from the defaults are included.
+  public func toYAMLString() throws -> String {
     var yaml: [String: Any] = [:]
 
     // Rules section
@@ -430,14 +429,71 @@ extension Configuration {
       yaml["suggest"] = ["min_confidence": suggestMinConfidence.rawValue]
     }
 
-    let yamlString: String
     if yaml.isEmpty {
-      yamlString =
-        "# Swiftiomatic configuration\n# See https://github.com/toba/swiftiomatic for documentation\n"
-    } else {
-      yamlString = try Yams.dump(object: yaml, allowUnicode: true, sortKeys: true)
+      return "# Swiftiomatic configuration\n# See https://github.com/toba/swiftiomatic for documentation\n"
     }
+    return try Yams.dump(object: yaml, allowUnicode: true, sortKeys: true)
+  }
+
+  /// Create a ``Configuration`` from a YAML string
+  ///
+  /// - Parameters:
+  ///   - yaml: A YAML string containing configuration values.
+  /// - Returns: The parsed ``Configuration``, falling back to ``default`` on failure.
+  public static func fromYAMLString(_ yaml: String) -> Configuration {
+    guard let dict = try? Yams.load(yaml: yaml) as? [String: Any] else {
+      return .default
+    }
+    return loadUnified(from: dict)
+  }
+
+  /// Serialize non-default values back to YAML, writing only sections that differ from defaults
+  ///
+  /// - Parameters:
+  ///   - path: The file system path to write the YAML file to.
+  public func writeYAML(to path: String) throws {
+    let yamlString = try toYAMLString()
     try yamlString.write(toFile: path, atomically: true, encoding: .utf8)
+  }
+
+  /// Serialize ALL configuration values (including defaults) to a dictionary
+  ///
+  /// Unlike ``toYAMLString()`` which only includes non-default values, this method
+  /// includes every setting so the caller can see the full effective configuration.
+  public func toFullDictionary() -> [String: Any] {
+    var yaml: [String: Any] = [:]
+
+    // Rules section
+    var rules: [String: Any] = [:]
+    rules["enabled"] = enabledLintRules
+    rules["disabled"] = disabledLintRules
+    if !lintRuleConfigs.isEmpty {
+      rules["config"] = lintRuleConfigs.mapValues(\.asAny)
+    }
+    yaml["rules"] = rules
+
+    // Format section
+    yaml["format"] = [
+      "indent": formatIndent,
+      "max_width": formatMaxWidth,
+      "swift_version": formatSwiftVersion.rawValue,
+      "maximum_blank_lines": formatMaximumBlankLines,
+      "line_break_before_control_flow_keywords": formatLineBreakBeforeControlFlowKeywords,
+      "line_break_before_each_argument": formatLineBreakBeforeEachArgument,
+      "trailing_commas": formatTrailingCommas,
+    ] as [String: Any]
+
+    // Suggest section
+    yaml["suggest"] = ["min_confidence": suggestMinConfidence.rawValue]
+
+    return yaml
+  }
+
+  /// Serialize ALL configuration values to a YAML string
+  ///
+  /// Includes every setting (even defaults) so the caller can see the full effective configuration.
+  public func toFullYAMLString() throws -> String {
+    try Yams.dump(object: toFullDictionary(), allowUnicode: true, sortKeys: true)
   }
 }
 

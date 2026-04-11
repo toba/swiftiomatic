@@ -204,6 +204,87 @@ import Testing
     }
   }
 
+  // MARK: - Config Chain (Public API)
+
+  @Test func configChainReturnsLeafToRoot() throws {
+    try withTempConfigTree(configs: [
+      ".swiftiomatic.yaml": "format:\n  max_width: 120\n",
+      "Sources/.swiftiomatic.yaml": "format:\n  max_width: 80\n",
+    ]) { root in
+      let resolver = ConfigurationResolver(rootDirectory: root)
+      let chain = resolver.configChain(for: "\(root)/Sources/Foo.swift")
+      #expect(chain.count == 2)
+      #expect(chain[0].contains("Sources"))
+    }
+  }
+
+  @Test func configChainWithExplicitPathReturnsSingleEntry() throws {
+    try withTempConfigTree(configs: [
+      ".swiftiomatic.yaml": "format:\n  max_width: 120\n",
+      "Sources/.swiftiomatic.yaml": "format:\n  max_width: 80\n",
+    ]) { root in
+      let explicitPath = "\(root)/.swiftiomatic.yaml"
+      let resolver = ConfigurationResolver(configPath: explicitPath)
+      let chain = resolver.configChain(for: "\(root)/Sources/Foo.swift")
+      #expect(chain == [explicitPath])
+    }
+  }
+
+  @Test func configChainWithMissingExplicitPathReturnsEmpty() {
+    let resolver = ConfigurationResolver(configPath: "/nonexistent/.swiftiomatic.yaml")
+    let chain = resolver.configChain(for: "/some/file.swift")
+    #expect(chain.isEmpty)
+  }
+
+  // MARK: - Full Dictionary Serialization
+
+  @Test func toFullDictionaryIncludesAllSections() {
+    let cfg = Configuration.default
+    let dict = cfg.toFullDictionary()
+
+    #expect(dict["format"] != nil)
+    #expect(dict["rules"] != nil)
+    #expect(dict["suggest"] != nil)
+  }
+
+  @Test func toFullDictionaryIncludesDefaultFormatValues() throws {
+    let cfg = Configuration.default
+    let dict = cfg.toFullDictionary()
+    let format = try #require(dict["format"] as? [String: Any])
+
+    #expect(format["max_width"] as? Int == 120)
+    #expect(format["trailing_commas"] as? Bool == true)
+    #expect(format["maximum_blank_lines"] as? Int == 1)
+    #expect(format["line_break_before_control_flow_keywords"] as? Bool == false)
+    #expect(format["line_break_before_each_argument"] as? Bool == false)
+    #expect(format["swift_version"] as? String == "6.2")
+  }
+
+  @Test func toFullDictionaryReflectsOverrides() throws {
+    try withTempConfigTree(configs: [
+      ".swiftiomatic.yaml": "format:\n  max_width: 80\n  trailing_commas: false\n"
+    ]) { root in
+      let resolver = ConfigurationResolver(rootDirectory: root)
+      let cfg = resolver.configuration(for: "\(root)/Foo.swift")
+      let dict = cfg.toFullDictionary()
+      let format = try #require(dict["format"] as? [String: Any])
+
+      #expect(format["max_width"] as? Int == 80)
+      #expect(format["trailing_commas"] as? Bool == false)
+      // Defaults still present
+      #expect(format["maximum_blank_lines"] as? Int == 1)
+    }
+  }
+
+  @Test func toFullYAMLStringIsValidYAML() throws {
+    let cfg = Configuration.default
+    let yaml = try cfg.toFullYAMLString()
+
+    #expect(yaml.contains("max_width"))
+    #expect(yaml.contains("trailing_commas"))
+    #expect(yaml.contains("min_confidence"))
+  }
+
   // MARK: - Helpers
 
   private func withTempConfigTree(

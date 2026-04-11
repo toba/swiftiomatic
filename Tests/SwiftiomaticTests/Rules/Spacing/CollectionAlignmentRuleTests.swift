@@ -92,8 +92,10 @@ import Testing
       ])
       """,
       findings: [
-        FindingSpec("1️⃣", message: "All elements in a collection literal should be vertically aligned"),
-        FindingSpec("2️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "1️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "2️⃣", message: "All elements in a collection literal should be vertically aligned"),
       ])
   }
 
@@ -110,8 +112,10 @@ import Testing
       ]
       """,
       findings: [
-        FindingSpec("1️⃣", message: "All elements in a collection literal should be vertically aligned"),
-        FindingSpec("2️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "1️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "2️⃣", message: "All elements in a collection literal should be vertically aligned"),
       ])
   }
 
@@ -126,7 +130,8 @@ import Testing
       ]
       """,
       findings: [
-        FindingSpec("1️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "1️⃣", message: "All elements in a collection literal should be vertically aligned")
       ])
   }
 
@@ -141,7 +146,8 @@ import Testing
       ]
       """,
       findings: [
-        FindingSpec("1️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "1️⃣", message: "All elements in a collection literal should be vertically aligned")
       ])
   }
 
@@ -156,7 +162,8 @@ import Testing
       ]
       """,
       findings: [
-        FindingSpec("1️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "1️⃣", message: "All elements in a collection literal should be vertically aligned")
       ])
   }
 
@@ -226,8 +233,10 @@ import Testing
       ])
       """,
       findings: [
-        FindingSpec("1️⃣", message: "All elements in a collection literal should be vertically aligned"),
-        FindingSpec("2️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "1️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "2️⃣", message: "All elements in a collection literal should be vertically aligned"),
       ],
       configuration: ["align_colons": true])
   }
@@ -245,8 +254,10 @@ import Testing
       ]
       """,
       findings: [
-        FindingSpec("1️⃣", message: "All elements in a collection literal should be vertically aligned"),
-        FindingSpec("2️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "1️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "2️⃣", message: "All elements in a collection literal should be vertically aligned"),
       ],
       configuration: ["align_colons": true])
   }
@@ -262,7 +273,8 @@ import Testing
       ]
       """,
       findings: [
-        FindingSpec("1️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "1️⃣", message: "All elements in a collection literal should be vertically aligned")
       ],
       configuration: ["align_colons": true])
   }
@@ -280,7 +292,8 @@ import Testing
       ]
       """,
       findings: [
-        FindingSpec("1️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "1️⃣", message: "All elements in a collection literal should be vertically aligned")
       ],
       configuration: ["align_colons": true])
   }
@@ -296,7 +309,8 @@ import Testing
       ]
       """,
       findings: [
-        FindingSpec("1️⃣", message: "All elements in a collection literal should be vertically aligned"),
+        FindingSpec(
+          "1️⃣", message: "All elements in a collection literal should be vertically aligned")
       ],
       configuration: ["align_colons": true])
   }

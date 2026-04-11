@@ -36,7 +36,12 @@ import Testing
           case foo, 1️⃣fizzBuzz
       }
       """,
-      findings: [FindingSpec("1️⃣", message: "Declaration fizzBuzz contains the term \"fizzbuzz\" which is not considered inclusive")],
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message:
+            "Declaration fizzBuzz contains the term \"fizzbuzz\" which is not considered inclusive")
+      ],
       configuration: ["additional_terms": ["fizzbuzz"]])
   }
 
@@ -44,7 +49,13 @@ import Testing
     await assertLint(
       InclusiveLanguageRule.self,
       "private func 1️⃣thisIsASwiftyFunction() {}",
-      findings: [FindingSpec("1️⃣", message: "Declaration thisIsASwiftyFunction contains the term \"swift\" which is not considered inclusive")],
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message:
+            "Declaration thisIsASwiftyFunction contains the term \"swift\" which is not considered inclusive"
+        )
+      ],
       configuration: ["additional_terms": ["swift"]])
   }
 
@@ -52,7 +63,12 @@ import Testing
     await assertLint(
       InclusiveLanguageRule.self,
       #"private var 1️⃣fooBar = "abc""#,
-      findings: [FindingSpec("1️⃣", message: "Declaration fooBar contains the term \"foobar\" which is not considered inclusive")],
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message:
+            "Declaration fooBar contains the term \"foobar\" which is not considered inclusive")
+      ],
       configuration: ["additional_terms": ["FoObAr"]])
   }
 }

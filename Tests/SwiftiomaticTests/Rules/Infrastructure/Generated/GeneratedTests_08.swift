@@ -115,13 +115,6 @@ import Testing
     await verifyRule(SortedFirstLastRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct SortedImportsRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(SortedImportsRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct StatementPositionRuleGeneratedTests {
   @Test(.disabled("requires sourcekitd")) func withDefaultConfiguration() async {
     await verifyRule(StatementPositionRule.self)
@@ -143,11 +136,5 @@ import Testing
 @Suite(.rulesRegistered) struct StrictFilePrivateRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(StrictFilePrivateRule.self)
-  }
-}
-
-@Suite(.rulesRegistered) struct StrongIBOutletRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(StrongIBOutletRule.self)
   }
 }

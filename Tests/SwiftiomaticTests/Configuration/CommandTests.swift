@@ -116,6 +116,51 @@ extension Command {
     #expect(Command(string: input) == expected)
   }
 
+  @Test func disableFile() {
+    let input = "// sm:disable:file rule_id\n"
+    let file = SwiftSource(contents: input)
+    let expected = Command(
+      action: .disable, ruleIdentifiers: ["rule_id"], line: 1, range: 4..<27,
+      modifier: .file,
+    )
+    #expect(file.commands() == expected.expand())
+    #expect(Command(string: input) == expected)
+  }
+
+  @Test func enableFile() {
+    let input = "// sm:enable:file rule_id\n"
+    let file = SwiftSource(contents: input)
+    let expected = Command(
+      action: .enable, ruleIdentifiers: ["rule_id"], line: 1, range: 4..<26,
+      modifier: .file,
+    )
+    #expect(file.commands() == expected.expand())
+    #expect(Command(string: input) == expected)
+  }
+
+  @Test func disableFileMultipleRules() {
+    let input = "// sm:disable:file rule_a rule_b\n"
+    let file = SwiftSource(contents: input)
+    let expected = Command(
+      action: .disable, ruleIdentifiers: ["rule_a", "rule_b"], line: 1, range: 4..<33,
+      modifier: .file,
+    )
+    #expect(file.commands() == expected.expand())
+    #expect(Command(string: input) == expected)
+  }
+
+  @Test func disableFileWithTrailingComment() {
+    let input = "// sm:disable:file rule_id - Legacy code\n"
+    let file = SwiftSource(contents: input)
+    let expected = Command(
+      action: .disable, ruleIdentifiers: ["rule_id"], line: 1, range: 4..<41,
+      modifier: .file,
+      trailingComment: "Legacy code",
+    )
+    #expect(file.commands() == expected.expand())
+    #expect(Command(string: input) == expected)
+  }
+
   @Test func trailingComment() {
     let input = "// sm:enable:next rule_id - Comment\n"
     let file = SwiftSource(contents: input)
@@ -332,6 +377,39 @@ extension Command {
     }
   }
 
+  @Test func expandFileCommand() {
+    do {
+      let command = Command(
+        action: .disable, ruleIdentifiers: ["rule_id"], line: 5, range: 4..<48,
+        modifier: .file,
+      )
+      let expanded = [
+        Command(action: .disable, ruleIdentifiers: ["rule_id"], line: 0),
+      ]
+      #expect(command.expand() == expanded)
+    }
+    do {
+      let command = Command(
+        action: .enable, ruleIdentifiers: ["rule_id"], line: 3, range: 4..<48,
+        modifier: .file,
+      )
+      let expanded = [
+        Command(action: .enable, ruleIdentifiers: ["rule_id"], line: 0),
+      ]
+      #expect(command.expand() == expanded)
+    }
+    do {
+      let command = Command(
+        action: .disable, ruleIdentifiers: ["1", "2"], line: 10,
+        modifier: .file,
+      )
+      let expanded = [
+        Command(action: .disable, ruleIdentifiers: ["1", "2"], line: 0),
+      ]
+      #expect(command.expand() == expanded)
+    }
+  }
+
   // MARK: Superfluous Disable Command Detection
 
   @Test func superfluousDisableCommands() async {
@@ -392,6 +470,13 @@ extension Command {
           "// sm:disable all\n// sm:disable:previous nesting\nprint(123)\n",
         ),
       ).isEmpty,
+    )
+  }
+
+  @Test func superfluousDisableCommandsFile() async {
+    #expect(
+      await violations(Example("// sm:disable:file nesting\nprint(123)\n"))
+        .map(\.ruleIdentifier) == ["superfluous_disable_command"],
     )
   }
 

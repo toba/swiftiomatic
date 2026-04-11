@@ -14,7 +14,8 @@ import Testing
   @Test func allowsColorLiteral() async {
     await assertNoViolation(
       ObjectLiteralRule.self,
-      "let color = #colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)")
+      "let color = #colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)"
+    )
   }
 
   @Test func allowsVariableImageName() async {

@@ -1,11 +1,12 @@
 import SwiftSyntax
 
-struct RedundantFileprivateRule {
-  static let id = "redundant_fileprivate"
-  static let name = "Redundant Fileprivate"
+struct UnnecessaryFileprivateRule {
+  static let id = "unnecessary_fileprivate"
+  static let name = "Unnecessary Fileprivate"
   static let summary =
     "`fileprivate` can be replaced with `private` when only accessed within the same declaration scope"
   static let scope: Scope = .suggest
+  static let deprecatedAliases: Set<String> = ["redundant_fileprivate"]
   static var nonTriggeringExamples: [Example] {
     [
       Example(
@@ -39,13 +40,13 @@ struct RedundantFileprivateRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension RedundantFileprivateRule: SwiftSyntaxRule {
+extension UnnecessaryFileprivateRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension RedundantFileprivateRule {
+extension UnnecessaryFileprivateRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: DeclModifierSyntax) {
       guard node.name.tokenKind == .keyword(.fileprivate), node.detail == nil else { return }

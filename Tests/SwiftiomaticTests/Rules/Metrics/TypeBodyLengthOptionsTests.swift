@@ -72,7 +72,7 @@ import Testing
 
   @Test func invalidExcludedTypeConfiguration() {
     var config = TypeBodyLengthOptions()
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: TypeBodyLengthRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: TypeBodyLengthRule.identifier)) {
       try config.apply(
         configuration: [
           "excluded_types": ["invalid_type"]

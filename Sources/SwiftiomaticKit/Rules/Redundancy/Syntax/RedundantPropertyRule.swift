@@ -34,6 +34,14 @@ struct RedundantPropertyRule {
         }
         """,
       ),
+      Example(
+        """
+        func foo() -> MyProtocol {
+          let result: MyProtocol = ConcreteType()
+          return result
+        }
+        """,
+      ),
     ]
   }
 
@@ -168,6 +176,7 @@ extension CodeBlockItemListSyntax {
         let binding = varDecl.bindings.first,
         let pattern = binding.pattern.as(IdentifierPatternSyntax.self),
         binding.initializer != nil,
+        binding.typeAnnotation == nil,
         let returnStmt = current.item.as(ReturnStmtSyntax.self),
         let returnExpr = returnStmt.expression?.as(DeclReferenceExprSyntax.self),
         returnExpr.baseName.text == pattern.identifier.text

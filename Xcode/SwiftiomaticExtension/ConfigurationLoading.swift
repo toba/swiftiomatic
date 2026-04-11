@@ -1,23 +1,12 @@
 import Foundation
 import SwiftiomaticKit
 
-/// Load configuration from the App Group bookmark, falling back to defaults.
+/// Load configuration from the App Group UserDefaults, falling back to defaults.
 func loadConfiguration() -> Configuration {
   guard let defaults = SharedDefaults.suite,
-    let bookmark = defaults.data(forKey: SharedDefaults.configBookmarkKey)
+    let yaml = defaults.string(forKey: SharedDefaults.configYAMLKey)
   else {
     return .default
   }
-  var stale = false
-  guard
-    let url = try? URL(
-      resolvingBookmarkData: bookmark,
-      options: [],
-      bookmarkDataIsStale: &stale
-    ), url.startAccessingSecurityScopedResource()
-  else {
-    return .default
-  }
-  defer { url.stopAccessingSecurityScopedResource() }
-  return (try? Configuration.loadUnified(from: url.path)) ?? .default
+  return Configuration.fromYAMLString(yaml)
 }

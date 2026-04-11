@@ -39,22 +39,6 @@ struct EnumNamespacesRuleTests {
   }
 }
 
-// MARK: - NumberFormattingRule
-
-@Suite(.rulesRegistered)
-struct NumberFormattingRuleTests {
-  @Test func noViolationForFormattedNumbers() async {
-    await assertNoViolation(NumberFormattingRule.self, "let x = 1_000_000")
-  }
-
-  @Test func noViolationForSmallNumbers() async {
-    await assertNoViolation(NumberFormattingRule.self, "let x = 100")
-  }
-
-  @Test func detectsUnformattedLargeNumber() async {
-    await assertViolates(NumberFormattingRule.self, "let x = 1000000")
-  }
-}
 
 // MARK: - SinglePropertyPerLineRule
 

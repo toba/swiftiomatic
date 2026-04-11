@@ -24,7 +24,7 @@ func assertLint<R: Rule>(
   configuration: [String: any Sendable]? = nil,
   sourceLocation: Testing.SourceLocation = #_sourceLocation
 ) async {
-  _ = _ensureRulesRegistered
+  _ = _testSetup
 
   let marked = MarkedText(markedSource)
   let source = marked.textWithoutMarkers
@@ -89,7 +89,7 @@ func assertFormatting<R: Rule>(
   configuration: [String: any Sendable]? = nil,
   sourceLocation: Testing.SourceLocation = #_sourceLocation
 ) async {
-  _ = _ensureRulesRegistered
+  _ = _testSetup
 
   let marked = MarkedText(markedInput)
   let originalSource = marked.textWithoutMarkers
@@ -146,7 +146,7 @@ func assertViolates<R: Rule>(
   configuration: [String: any Sendable]? = nil,
   sourceLocation: Testing.SourceLocation = #_sourceLocation
 ) async {
-  _ = _ensureRulesRegistered
+  _ = _testSetup
 
   let config = makeSingleRuleConfig(R.self, ruleConfiguration: configuration)
   guard let config else {
@@ -240,9 +240,7 @@ private func assertFindings(
 
 // MARK: - Helpers
 
-private let _ensureRulesRegistered: Void = {
-  RuleRegistry.registerAllRulesOnce()
-}()
+/// Uses the shared `_testSetup` from TestTraits.swift.
 
 private func makeSingleRuleConfig<R: Rule>(
   _ ruleType: R.Type,
@@ -275,46 +273,4 @@ private func lineAndColumn(in source: String, atUTF8Offset offset: Int) -> (line
   }
   // Offset at end of string
   return (line, columnBytes + 1)
-}
-
-/// Line-by-line diff for readable test output.
-private func lineDiff(actual: String, expected: String) -> String {
-  let actualLines = actual.components(separatedBy: "\n")
-  let expectedLines = expected.components(separatedBy: "\n")
-  let difference = actualLines.difference(from: expectedLines)
-
-  guard !difference.isEmpty else { return "(no diff)" }
-
-  var insertions = [Int: String]()
-  var removals = [Int: String]()
-
-  for change in difference {
-    switch change {
-    case .insert(let offset, let element, _):
-      insertions[offset] = element
-    case .remove(let offset, let element, _):
-      removals[offset] = element
-    }
-  }
-
-  var result = "Actual (+) vs Expected (-):\n"
-  var expectedLine = 0
-  var actualLine = 0
-
-  while expectedLine < expectedLines.count || actualLine < actualLines.count {
-    if let removal = removals[expectedLine] {
-      result += "-\(removal)\n"
-      expectedLine += 1
-    } else if let insertion = insertions[actualLine] {
-      result += "+\(insertion)\n"
-      actualLine += 1
-    } else if expectedLine < expectedLines.count {
-      result += " \(expectedLines[expectedLine])\n"
-      expectedLine += 1
-      actualLine += 1
-    } else {
-      break
-    }
-  }
-  return result
 }

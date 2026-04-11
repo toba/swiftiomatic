@@ -1,75 +1,70 @@
 nope:
-    rules:
-        - name: git-no-verify
-          pattern: 'git\s+.*--no-verify'
-          message: "--no-verify is never allowed - fix the issue that's failing the hook instead"
-          #        - name: git-checkout-switch
-          #          pattern: 'git\s+(checkout|switch|stash)'
-          #          message: "git checkout/switch not allowed - branch changes require user approval"
-        - name: altering-jig
-          pattern: 'jig.yaml'
-          tools: ["Write", "Edit"]
-          message: "cannot reconfigure jig directly - print desired config and user will edit"
-        - name: bypassing-mcp
-          pattern: 'swift (build|test)'
-          message: "Use xc-mcp to build and test"
-        - name: altering-project
-          pattern: '\.(xcode|pbx)proj'
-          tools: ["Write", "Edit"]
-          message: "Project may only be modified using xc-mcp"
+  rules:
+    - name: git-no-verify
+      pattern: 'git\s+.*--no-verify'
+      message: "--no-verify is never allowed - fix the issue that's failing the hook instead"
+      #        - name: git-checkout-switch
+      #          pattern: 'git\s+(checkout|switch|stash)'
+      #          message: "git checkout/switch not allowed - branch changes require user approval"
+    - name: altering-jig
+      pattern: 'jig.yaml'
+      tools: [ "Write", "Edit" ]
+      message: "cannot reconfigure jig directly - print desired config and user will edit"
+    - name: bypassing-mcp
+      pattern: 'swift (build|test)'
+      message: "Use xc-mcp to build and test"
+    - name: altering-project
+      pattern: '\.(xcode|pbx)proj'
+      tools: [ "Write", "Edit" ]
+      message: "Project may only be modified using xc-mcp"
 companions:
-    brew: toba/homebrew-tap
+  brew: toba/homebrew-tap
 todo:
-    path: .issues
-    default_status: ready
-    default_type: task
-    sync:
-        github:
-            repo: toba/swiftiomatic
+  path: .issues
+  default_status: ready
+  default_type: task
+  sync:
+    github:
+      repo: toba/swiftiomatic
 citations:
-    - repo: swiftlang/swift-syntax
-      branch: main
-      notes: A set of Swift libraries for parsing, inspecting, generating, and transforming Swift source code.
-      last_checked_sha: aacb56bc763b70e27d4f66d901365b45531f76bd
-      last_checked_date: "2026-04-11T16:49:59Z"
-      paths:
-        high: [Sources/**/*.swift]
-        medium: [Package.swift]
-        low: [.github/**, README.md, LICENSE]
-    - repo: nicklockwood/SwiftFormat
-      branch: main
-      notes: A command-line tool and Xcode Extension for formatting Swift code
-      last_checked_sha: c8e50ff2cfc2eab46246c072a9ae25ab656c6ec3
-      last_checked_date: "2026-04-11T16:49:59Z"
-      paths:
-        high: [Sources/**/*.swift]
-        medium: [Package.swift]
-        low: [.github/**, README.md, LICENSE]
-    - repo: realm/SwiftLint
-      branch: main
-      notes: A tool to enforce Swift style and conventions.
-      last_checked_sha: a7878fcd67584dd52ad7b1bea72093faa65c8b4c
-      last_checked_date: "2026-04-11T16:49:59Z"
-      paths:
-        high: ['**/*.swift']
-        medium: [Package.swift]
-        low: [.github/**, README.md, LICENSE]
-    - repo: jpsim/SourceKitten
-      branch: main
-      notes: An adorable little framework and command line tool for interacting with SourceKit.
-      last_checked_sha: 02d1db1084dde306a4f7fd7a85480d6a0f4831c4
-      last_checked_date: "2026-04-11T16:49:59Z"
-      paths:
-        high: ['**/*.swift']
-        medium: [Package.swift]
-        low: [.github/**, README.md, LICENSE]
-    - repo: swiftlang/swift-format
-      branch: main
-      notes: Formatting technology for Swift source code
-      last_checked_sha: 6ddbafa85bff26c7a99c9c86295bbb44ed1a5bfb
-      last_checked_date: "2026-04-11T16:49:59Z"
-      paths:
-        high: [Sources/**/*.swift]
-        medium: [Package.swift]
-        low: [.github/**, README.md, LICENSE]
+  - repo: swiftlang/swift-syntax
+    branch: main
+    last_checked_sha: aacb56bc763b70e27d4f66d901365b45531f76bd
+    last_checked_date: "2026-04-11T17:35:36Z"
+    paths:
+      high: [ Sources/**/*.swift ]
+      medium: [ Package.swift ]
+      low: [ .github/**, README.md, LICENSE ]
+  - repo: nicklockwood/SwiftFormat
+    branch: main
+    last_checked_sha: c8e50ff2cfc2eab46246c072a9ae25ab656c6ec3
+    last_checked_date: "2026-04-11T17:35:36Z"
+    paths:
+      high: [ Sources/**/*.swift ]
+      medium: [ Package.swift ]
+      low: [ .github/**, README.md, LICENSE ]
+  - repo: realm/SwiftLint
+    branch: main
+    last_checked_sha: a7878fcd67584dd52ad7b1bea72093faa65c8b4c
+    last_checked_date: "2026-04-11T17:35:36Z"
+    paths:
+      high: [ '**/*.swift' ]
+      medium: [ Package.swift ]
+      low: [ .github/**, README.md, LICENSE ]
+  - repo: jpsim/SourceKitten
+    branch: main
+    last_checked_sha: 02d1db1084dde306a4f7fd7a85480d6a0f4831c4
+    last_checked_date: "2026-04-11T17:35:36Z"
+    paths:
+      high: [ '**/*.swift' ]
+      medium: [ Package.swift ]
+      low: [ .github/**, README.md, LICENSE ]
+  - repo: swiftlang/swift-format
+    branch: main
+    last_checked_sha: 6ddbafa85bff26c7a99c9c86295bbb44ed1a5bfb
+    last_checked_date: "2026-04-11T17:35:36Z"
+    paths:
+      high: [ Sources/**/*.swift ]
+      medium: [ Package.swift ]
+      low: [ .github/**, README.md, LICENSE ]
 changelog: weekly

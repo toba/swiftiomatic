@@ -88,7 +88,12 @@ import Testing
     await assertLint(
       GenericTypeNameRule.self,
       "func foo<1️⃣T_$>() {}",
-      findings: [FindingSpec("1️⃣", message: "Generic type name 'T_$' should only contain alphanumeric and other allowed characters")],
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message:
+            "Generic type name 'T_$' should only contain alphanumeric and other allowed characters")
+      ],
       configuration: ["allowed_symbols": ["$", "%"]])
   }
 

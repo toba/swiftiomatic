@@ -8,6 +8,8 @@ struct ConcurrencyModernizationRule {
     "Flags GCD usage and legacy concurrency patterns that should use structured concurrency"
   static let isOptIn = true
   static let canEnrichAsync = true
+
+  static var relatedRuleIDs: [String] { ["async_stream_safety"] }
   static var nonTriggeringExamples: [Example] {
     [
       Example("Task { @MainActor in update() }"),
@@ -158,36 +160,6 @@ extension ConcurrencyModernizationRule {
             suggestion: "Use Mutex<Value> for state protection",
           ),
         )
-      }
-
-      // Detect AsyncStream/AsyncThrowingStream without continuation.finish()
-      if callee == "AsyncStream" || callee == "AsyncThrowingStream" {
-        if let trailingClosure = node.trailingClosure {
-          let body = trailingClosure.statements.trimmedDescription
-          if !body.contains("continuation.finish") {
-            violations.append(
-              SyntaxViolation(
-                position: node.positionAfterSkippingLeadingTrivia,
-                reason: "\(callee) may be missing continuation.finish() call",
-                severity: .warning,
-                confidence: .high,
-                suggestion: "Add continuation.finish() in all exit paths",
-              ),
-            )
-          }
-          if !body.contains("onTermination") {
-            violations.append(
-              SyntaxViolation(
-                position: node.positionAfterSkippingLeadingTrivia,
-                reason:
-                  "\(callee) missing onTermination handler — resources may leak on cancellation",
-                severity: .warning,
-                confidence: .medium,
-                suggestion: "Set continuation.onTermination to clean up resources",
-              ),
-            )
-          }
-        }
       }
 
       // Detect withCheckedContinuation wrapping single async call

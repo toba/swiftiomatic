@@ -4,6 +4,7 @@ struct DeadSymbolsRule: CollectingRule {
   static let id = "dead_symbols"
   static let name = "Dead Symbols"
   static let summary = "Private symbols with no references are likely dead code"
+  static let scope: Scope = .suggest
   static let isOptIn = true
   static let isCrossFile = true
   static var nonTriggeringExamples: [Example] {

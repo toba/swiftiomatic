@@ -36,7 +36,7 @@ struct RulesTab: View {
         RuleRow(entry: entry)
           .tag(entry)
       }
-      .searchable(text: $searchText, prompt: "Filter rules")
+      .searchable(text: $searchText, placement: .sidebar, prompt: "Filter rules")
       .toolbar {
         ToolbarItem {
           Picker("Scope", selection: $scopeFilter) {

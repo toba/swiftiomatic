@@ -3,8 +3,7 @@ import SwiftSyntax
 /// Detects mutations on a named collection inside a for-in body
 ///
 /// Walks the loop body looking for calls like `collection.remove(...)` or
-/// `collection.append(...)`. Used by both `PerformanceAntiPatternsCheck`
-/// (suggest) and `PerformanceAntiPatternsRule` (lint).
+/// `collection.append(...)`. Used by `MutationDuringIterationRule` (lint).
 final class MutationDuringIterationFinder: SyntaxVisitor {
   private let mutatingPrefixes: [String]
 

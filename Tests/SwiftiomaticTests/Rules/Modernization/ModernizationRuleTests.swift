@@ -25,6 +25,62 @@ struct ConcurrencyModernizationRuleTests {
   }
 }
 
+// MARK: - AsyncStreamSafetyRule
+
+@Suite(.rulesRegistered)
+struct AsyncStreamSafetyRuleTests {
+  @Test func noViolationForCompleteStream() async {
+    await assertNoViolation(
+      AsyncStreamSafetyRule.self,
+      """
+      let stream = AsyncStream<Int> { continuation in
+          continuation.onTermination = { _ in cleanup() }
+          Task {
+              for i in 0..<10 {
+                  continuation.yield(i)
+              }
+              continuation.finish()
+          }
+      }
+      """)
+  }
+
+  @Test func detectsMissingFinish() async {
+    await assertViolates(
+      AsyncStreamSafetyRule.self,
+      """
+      let stream = AsyncStream<Int> { continuation in
+          continuation.onTermination = { _ in cleanup() }
+          Task {
+              for i in 0..<10 {
+                  continuation.yield(i)
+              }
+          }
+      }
+      """)
+  }
+
+  @Test func detectsMissingOnTermination() async {
+    await assertViolates(
+      AsyncStreamSafetyRule.self,
+      """
+      let stream = AsyncThrowingStream<Data, Error> { continuation in
+          continuation.finish()
+      }
+      """)
+  }
+
+  @Test func detectsBothMissing() async {
+    await assertViolates(
+      AsyncStreamSafetyRule.self,
+      """
+      let stream = AsyncStream<Int> { continuation in
+          continuation.yield(42)
+      }
+      """)
+  }
+}
+
 // MARK: - DelegateToAsyncStreamRule
 
 @Suite(.rulesRegistered)

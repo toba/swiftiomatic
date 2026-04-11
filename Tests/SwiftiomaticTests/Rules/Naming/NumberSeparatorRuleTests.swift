@@ -217,7 +217,7 @@ import Testing
   @Test func missingSeparatorsInFractionReportsCorrectReason() async {
     #expect(
       await violations(in: "1.000000", config: ["minimum_fraction_length": 5]) == [
-        NumberSeparatorRule.missingSeparatorsReason,
+        NumberSeparatorRule.missingSeparatorsReason
       ])
   }
 
@@ -239,14 +239,14 @@ import Testing
   @Test func misplacedSeparatorsWithMinLengthReportsCorrectReason() async {
     #expect(
       await violations(in: "10_00", config: ["minimum_length": 5]) == [
-        NumberSeparatorRule.misplacedSeparatorsReason,
+        NumberSeparatorRule.misplacedSeparatorsReason
       ])
   }
 
   @Test func misplacedFractionSeparatorsWithMinFractionLengthReportsCorrectReason() async {
     #expect(
       await violations(in: "1000.0_00", config: ["minimum_fraction_length": 5]) == [
-        NumberSeparatorRule.misplacedSeparatorsReason,
+        NumberSeparatorRule.misplacedSeparatorsReason
       ])
   }
 

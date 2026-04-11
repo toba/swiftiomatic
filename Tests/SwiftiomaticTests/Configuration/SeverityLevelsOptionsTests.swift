@@ -133,7 +133,7 @@ private struct MockSeverityLevelsRule: Rule {
   @Test func applyConfigurationWithInvalidWarningType() {
     var config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 12, error: nil)
 
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: MockSeverityLevelsRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: MockSeverityLevelsRule.identifier)) {
       try config.apply(configuration: ["warning": "invalid"])
     }
   }
@@ -141,7 +141,7 @@ private struct MockSeverityLevelsRule: Rule {
   @Test func applyConfigurationWithInvalidErrorType() {
     var config = SeverityLevelsConfiguration<MockSeverityLevelsRule>(warning: 12, error: nil)
 
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: MockSeverityLevelsRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: MockSeverityLevelsRule.identifier)) {
       try config.apply(configuration: ["error": "invalid"])
     }
   }

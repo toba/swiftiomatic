@@ -88,7 +88,7 @@ struct UnusedImportRule: Rule {
     numberOfCorrections += missingImports.count
 
     // Attempt to sort imports
-    numberOfCorrections += SortedImportsRule().correct(file: file)
+    numberOfCorrections += SortImportsRule().correct(file: file)
     return numberOfCorrections
   }
 

@@ -30,6 +30,8 @@ struct Command: Equatable {
     case this
     /// The command should only apply to the line following its definition.
     case next
+    /// The command should apply to the entire file regardless of where it appears.
+    case file
     /// The modifier string was invalid.
     case invalid
   }
@@ -91,7 +93,7 @@ struct Command: Equatable {
   init(commandString: String, line: Int, range: Range<Int>) {
     let scanner = Scanner(string: commandString.trimmingCharacters(in: .whitespacesAndNewlines))
     _ = scanner.scanString("sm:")
-    // (enable|disable)(:previous|:this|:next)
+    // (enable|disable)(:previous|:this|:next|:file)
     guard let actionAndModifierString = scanner.scanUpToString(" ") else {
       self.init(action: .invalid, line: line, range: range)
       return
@@ -178,6 +180,10 @@ struct Command: Equatable {
           action: action.inverse(), ruleIdentifiers: ruleIdentifiers, line: line + 1,
           range: 0..<Int.max,
         ),
+      ]
+    case .file:
+      return [
+        Self(action: action, ruleIdentifiers: ruleIdentifiers, line: 0),
       ]
     case .invalid:
       return []

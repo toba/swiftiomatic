@@ -140,6 +140,16 @@ public final class ConfigurationResolver: Sendable {
     return result
   }
 
+  /// Returns the config file paths that were merged for the given path, ordered leaf → root.
+  ///
+  /// When an explicit config path was provided at init, returns that single path (if it exists).
+  public func configChain(for filePath: String) -> [String] {
+    if let path = explicitConfigPath {
+      return FileManager.default.fileExists(atPath: path) ? [path] : []
+    }
+    return collectConfigChain(from: directoryPath(for: filePath))
+  }
+
   // MARK: - Helpers
 
   private func directoryPath(for filePath: String) -> String {

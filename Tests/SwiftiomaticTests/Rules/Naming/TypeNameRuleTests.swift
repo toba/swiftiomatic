@@ -85,7 +85,12 @@ import Testing
     await assertLint(
       TypeNameRule.self,
       "class 1️⃣My_Type$ {}",
-      findings: [FindingSpec("1️⃣", message: "Type name 'My_Type$' should only contain alphanumeric and other allowed characters")],
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message:
+            "Type name 'My_Type$' should only contain alphanumeric and other allowed characters")
+      ],
       configuration: ["allowed_symbols": ["$", "%"]])
   }
 

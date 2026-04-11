@@ -4,6 +4,6 @@ import Foundation
 enum SharedDefaults {
   static let suiteName = "group.com.toba.swiftiomatic"
   static var suite: UserDefaults? { UserDefaults(suiteName: suiteName) }
-  static let configBookmarkKey = "configBookmark"
+  static let configYAMLKey = "configYAML"
   static let configPathKey = "configPath"
 }

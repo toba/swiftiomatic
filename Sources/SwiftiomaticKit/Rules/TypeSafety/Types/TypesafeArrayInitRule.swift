@@ -1,4 +1,5 @@
 import Foundation
+import SwiftSyntax
 
 struct TypesafeArrayInitRule: Rule {
   static let id = "typesafe_array_init"
@@ -68,7 +69,6 @@ struct TypesafeArrayInitRule: Rule {
 
   var options = SeverityOption<Self>(.warning)
 
-  private static let parentRule = ArrayInitRule()
   private static let mapTypePatterns = [
     regex(
       """
@@ -93,7 +93,7 @@ struct TypesafeArrayInitRule: Rule {
         .print()
       return []
     }
-    return Self.parentRule.validate(file: file)
+    return findIdentityMapViolations(in: file)
       .filter { violation in
         guard let offset = getOffset(in: file, at: violation.location) else {
           return false
@@ -125,5 +125,80 @@ struct TypesafeArrayInitRule: Rule {
       return nil
     }
     return file.stringView.byteOffset(forLine: Int64(line), bytePosition: Int64(offset))
+  }
+
+  /// Syntactic detection of `.map { $0 }` identity transforms (inlined from former ArrayInitRule)
+  private func findIdentityMapViolations(in file: SwiftSource) -> [RuleViolation] {
+    let visitor = IdentityMapVisitor(configuration: options, file: file)
+    let violations = visitor.walk(tree: file.syntaxTree, handler: \.violations)
+    return violations.map { violation in
+      RuleViolation(
+        ruleType: Self.self,
+        severity: options.severity,
+        location: Location(file: file, position: violation.position),
+        confidence: .medium,
+      )
+    }
+  }
+}
+
+extension TypesafeArrayInitRule {
+  fileprivate final class IdentityMapVisitor: ViolationCollectingVisitor<OptionsType> {
+    override func visitPost(_ node: FunctionCallExprSyntax) {
+      guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
+        memberAccess.declName.baseName.text == "map"
+      else { return }
+
+      let closure: ClosureExprSyntax
+      if let arg = node.arguments.first?.expression.as(ClosureExprSyntax.self),
+        node.arguments.count == 1
+      {
+        closure = arg
+      } else if node.arguments.isEmpty, let trailing = node.trailingClosure {
+        closure = trailing
+      } else {
+        return
+      }
+
+      guard let onlyStmt = closure.statements.first,
+        closure.statements.count == 1
+      else { return }
+
+      let paramName = closure.signature?.singleInputParamText() ?? "$0"
+      guard statementReturnsIdentifier(onlyStmt, named: paramName) else { return }
+
+      violations.append(
+        SyntaxViolation(
+          position: memberAccess.declName.baseName.positionAfterSkippingLeadingTrivia,
+          reason: "Prefer Array(seq) over seq.map { $0 }",
+          severity: configuration.severity,
+          confidence: .medium,
+        ),
+      )
+    }
+
+    private func statementReturnsIdentifier(
+      _ stmt: CodeBlockItemSyntax, named name: String
+    ) -> Bool {
+      let identifier =
+        stmt.item.as(DeclReferenceExprSyntax.self)
+        ?? stmt.item.as(ReturnStmtSyntax.self)?.expression?.as(DeclReferenceExprSyntax.self)
+      return identifier?.baseName.text == name
+    }
+  }
+}
+
+private extension ClosureSignatureSyntax {
+  func singleInputParamText() -> String? {
+    if let list = parameterClause?.as(ClosureShorthandParameterListSyntax.self), list.count == 1 {
+      return list.first?.name.text
+    }
+    if let clause = parameterClause?.as(ClosureParameterClauseSyntax.self),
+      clause.parameters.count == 1,
+      clause.parameters.first?.secondName == nil
+    {
+      return clause.parameters.first?.firstName.text
+    }
+    return nil
   }
 }

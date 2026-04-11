@@ -9,7 +9,7 @@ struct SwiftiomaticCLI: AsyncParsableCommand {
     version: SwiftiomaticVersion.current.value,
     subcommands: [
       Analyze.self, FormatCommand.self, ListRules.self, GenerateDocs.self,
-      MigrateCommand.self,
+      MigrateCommand.self, DumpConfig.self,
     ],
     defaultSubcommand: Analyze.self,
   )
@@ -322,6 +322,107 @@ struct GenerateDocs: ParsableCommand {
     let count = RuleRegistry.shared.ruleCount
     print("Generated documentation for \(count) rules in \(outputDir)/")
   }
+}
+
+// MARK: - Dump Config
+
+struct DumpConfig: ParsableCommand {
+  static let configuration = CommandConfiguration(
+    commandName: "dump-config",
+    abstract: "Show the resolved configuration for a path",
+  )
+
+  @Argument(help: "Path to resolve configuration for (file or directory)")
+  var path: String = "."
+
+  @Option(name: .long, help: "Path to .swiftiomatic.yaml config file")
+  var config: String?
+
+  @Option(name: .long, help: "Output format: text, json, or yaml")
+  var format: DumpConfigFormat = .text
+
+  @Flag(name: .long, help: "Show which config files were merged")
+  var showChain = false
+
+  func run() throws {
+    let resolver = ConfigurationResolver(configPath: config)
+    let resolved = resolver.configuration(for: path)
+
+    if showChain {
+      let chain = resolver.configChain(for: path)
+      if chain.isEmpty {
+        print("No .swiftiomatic.yaml files found (using defaults)")
+      } else {
+        print("Config chain (leaf \u{2192} root):")
+        for (i, file) in chain.enumerated() {
+          print("  \(i + 1). \(file)")
+        }
+      }
+      print()
+    }
+
+    switch format {
+    case .text:
+      printText(resolved)
+    case .json:
+      try printJSON(resolved)
+    case .yaml:
+      try print(resolved.toFullYAMLString())
+    }
+  }
+
+  private func printText(_ cfg: Configuration) {
+    print("Format:")
+    print("  indent:                                    \(describeIndent(cfg.formatIndent))")
+    print("  max_width:                                 \(cfg.formatMaxWidth)")
+    print("  swift_version:                             \(cfg.formatSwiftVersion)")
+    print("  maximum_blank_lines:                       \(cfg.formatMaximumBlankLines)")
+    print(
+      "  line_break_before_control_flow_keywords:   \(cfg.formatLineBreakBeforeControlFlowKeywords)",
+    )
+    print("  line_break_before_each_argument:           \(cfg.formatLineBreakBeforeEachArgument)")
+    print("  trailing_commas:                           \(cfg.formatTrailingCommas)")
+
+    print("\nRules:")
+    print("  enabled:    \(cfg.enabledLintRules.isEmpty ? "(none)" : cfg.enabledLintRules.joined(separator: ", "))")
+    print("  disabled:   \(cfg.disabledLintRules.isEmpty ? "(none)" : cfg.disabledLintRules.joined(separator: ", "))")
+    if cfg.lintRuleConfigs.isEmpty {
+      print("  config:     (none)")
+    } else {
+      print("  config:")
+      for (key, value) in cfg.lintRuleConfigs.sorted(by: { $0.key < $1.key }) {
+        print("    \(key): \(value)")
+      }
+    }
+
+    print("\nSuggest:")
+    print("  min_confidence:  \(cfg.suggestMinConfidence)")
+  }
+
+  private func printJSON(_ cfg: Configuration) throws {
+    let dict = cfg.toFullDictionary()
+    let data = try JSONSerialization.data(
+      withJSONObject: dict,
+      options: [.prettyPrinted, .sortedKeys],
+    )
+    if let json = String(data: data, encoding: .utf8) {
+      print(json)
+    }
+  }
+
+  private func describeIndent(_ indent: String) -> String {
+    if indent == "\t" {
+      return "tab"
+    }
+    let count = indent.count
+    return count == 1 ? "1 space" : "\(count) spaces"
+  }
+}
+
+enum DumpConfigFormat: String, ExpressibleByArgument {
+  case text
+  case json
+  case yaml
 }
 
 // MARK: - Types

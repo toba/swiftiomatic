@@ -33,7 +33,7 @@ final class FormatSelectionCommand: NSObject, XCSourceEditorCommand {
 
     do {
       let config = loadConfiguration()
-      let formatted = try SwiftiomaticKit.format(source, configuration: config)
+      let formatted = try Swiftiomatic.format(source, configuration: config)
 
       guard formatted != source else {
         completionHandler(nil)

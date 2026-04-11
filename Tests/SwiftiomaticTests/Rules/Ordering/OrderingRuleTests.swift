@@ -105,31 +105,3 @@ struct SortTypealiasesRuleTests {
   }
 }
 
-// MARK: - OrganizeDeclarationsRule
-
-@Suite(.rulesRegistered)
-struct OrganizeDeclarationsRuleTests {
-  @Test func noViolationForOrganizedStruct() async {
-    await assertNoViolation(
-      OrganizeDeclarationsRule.self,
-      """
-      struct Foo {
-          let bar: Int
-          init(bar: Int) { self.bar = bar }
-          func baz() {}
-      }
-      """)
-  }
-
-  @Test func detectsUnorganizedDeclarations() async {
-    await assertViolates(
-      OrganizeDeclarationsRule.self,
-      """
-      struct Foo {
-          func baz() {}
-          let bar: Int
-          init(bar: Int) { self.bar = bar }
-      }
-      """)
-  }
-}

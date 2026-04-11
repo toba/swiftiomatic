@@ -123,6 +123,46 @@ struct RedundantPropertyRuleTests {
       }
       """)
   }
+
+  @Test func correctsRedundantProperty() async {
+    await assertFormatting(
+      RedundantPropertyRule.self,
+      input: """
+        func foo() -> Foo {
+          let 1️⃣foo = Foo()
+          return foo
+        }
+        """,
+      expected: """
+        func foo() -> Foo {
+          return Foo()
+        }
+        """,
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func explicitTypeAnnotationPreserved() async {
+    await assertNoViolation(
+      RedundantPropertyRule.self,
+      """
+      func foo() -> MyProtocol {
+        let result: MyProtocol = ConcreteType()
+        return result
+      }
+      """)
+  }
+
+  @Test func varWithMutationPreserved() async {
+    await assertNoViolation(
+      RedundantPropertyRule.self,
+      """
+      func foo() -> Foo {
+        var foo = Foo()
+        foo.bar = true
+        return foo
+      }
+      """)
+  }
 }
 
 // MARK: - EmptyBracesRule
@@ -243,23 +283,6 @@ struct RedundantEquatableRuleTests {
   }
 }
 
-// MARK: - RedundantMemberwiseInitRule
-
-@Suite(.rulesRegistered)
-struct RedundantMemberwiseInitRuleTests {
-  @Test func noViolationForCustomInit() async {
-    await assertNoViolation(
-      RedundantMemberwiseInitRule.self,
-      """
-      struct Foo {
-          let bar: Int
-          init(bar: Int) {
-              self.bar = bar + 1
-          }
-      }
-      """)
-  }
-}
 
 // MARK: - CaseIterableUsageRule
 

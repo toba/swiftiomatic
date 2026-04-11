@@ -43,13 +43,6 @@ import Testing
     await verifyRule(GenericTypeNameRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct IBInspectableInExtensionRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(IBInspectableInExtensionRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct IdenticalOperandsRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(IdenticalOperandsRule.self)
@@ -61,13 +54,6 @@ import Testing
     await verifyRule(IdentifierNameRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct ImplicitGetterRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(ImplicitGetterRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct ImplicitOptionalInitializationRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(ImplicitOptionalInitializationRule.self)

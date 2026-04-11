@@ -41,8 +41,8 @@ import Testing
         mode: .allExceptIBOutlets,
       )
 
-      checkError(
-        SwiftiomaticError
+      #expect(
+        throws: SwiftiomaticError
           .invalidConfiguration(ruleID: ImplicitlyUnwrappedOptionalRule.identifier)
       ) {
         try configuration.apply(configuration: badConfig)

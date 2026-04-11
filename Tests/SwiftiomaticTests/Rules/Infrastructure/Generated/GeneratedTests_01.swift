@@ -2,27 +2,14 @@ import Testing
 
 @testable import SwiftiomaticKit
 
-@Suite(.rulesRegistered) struct AccessibilityLabelForImageRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(AccessibilityLabelForImageRule.self)
-  }
-}
-
-@Suite(.rulesRegistered) struct AccessibilityTraitForButtonRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(AccessibilityTraitForButtonRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct AnonymousArgumentInMultilineClosureRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(AnonymousArgumentInMultilineClosureRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct ArrayInitRuleGeneratedTests {
+@Suite(.rulesRegistered) struct AsyncStreamSafetyRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
-    await verifyRule(ArrayInitRule.self)
+    await verifyRule(AsyncStreamSafetyRule.self)
   }
 }
 
@@ -67,13 +54,6 @@ import Testing
     await verifyRule(CaptureVariableRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct ClassDelegateProtocolRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(ClassDelegateProtocolRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct ClosingBraceRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(ClosingBraceRule.self)

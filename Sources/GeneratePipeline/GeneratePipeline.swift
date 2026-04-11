@@ -6,12 +6,12 @@ import SwiftSyntax
 struct GeneratePipeline {
   static func main() throws {
     let projectRoot = findProjectRoot()
-    let rulesDir = projectRoot + "/Sources/Swiftiomatic/Rules"
-    let visitorsDir = projectRoot + "/Sources/Swiftiomatic/Support/Visitors"
+    let rulesDir = projectRoot + "/Sources/SwiftiomaticKit/Rules"
+    let visitorsDir = projectRoot + "/Sources/SwiftiomaticKit/Support/Visitors"
     let pipelineOutputPath =
-      projectRoot + "/Sources/Swiftiomatic/Support/LintPipeline.generated.swift"
+      projectRoot + "/Sources/SwiftiomaticKit/Support/LintPipeline.generated.swift"
     let registryOutputPath =
-      projectRoot + "/Sources/Swiftiomatic/Rules/RuleRegistry+AllRules.generated.swift"
+      projectRoot + "/Sources/SwiftiomaticKit/Rules/RuleRegistry+AllRules.generated.swift"
 
     // Collect CodeBlockVisitor node types
     let codeBlockVisitorPath = visitorsDir + "/CodeBlockVisitor.swift"

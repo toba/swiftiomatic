@@ -61,13 +61,6 @@ import Testing
     await verifyRule(UnusedSetterValueRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct ValidIBInspectableRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(ValidIBInspectableRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct VerticalParameterAlignmentOnCallRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(VerticalParameterAlignmentOnCallRule.self)
@@ -115,13 +108,6 @@ import Testing
     await verifyRule(VoidReturnRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct WeakDelegateRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(WeakDelegateRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct XCTFailMessageRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(XCTFailMessageRule.self)

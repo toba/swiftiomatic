@@ -37,7 +37,7 @@ import Testing
   @Test func nestingConfigurationThrowsOnBadConfig() {
     let config: [String: Any] = ["type_level": "not_a_number"]
     var nestingConfig = defaultNestingOptions
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: NestingRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: NestingRule.identifier)) {
       try nestingConfig.apply(configuration: config)
     }
   }
@@ -76,7 +76,7 @@ import Testing
   @Test func severityConfigurationThrowsNothingApplied() {
     let config: [String: Any] = ["unrelated_key": 17]
     var severityConfig = SeverityOption<MockRule>(.error)
-    checkError(SwiftiomaticError.nothingApplied(ruleID: MockRule.identifier)) {
+    #expect(throws: SwiftiomaticError.nothingApplied(ruleID: MockRule.identifier)) {
       try severityConfig.apply(configuration: config)
     }
   }
@@ -84,7 +84,7 @@ import Testing
   @Test func severityConfigurationThrowsInvalidConfiguration() {
     let config: [String: Any] = ["severity": "foo"]
     var severityConfig = SeverityOption<MockRule>(.warning)
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: MockRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: MockRule.identifier)) {
       try severityConfig.apply(configuration: config)
     }
   }
@@ -127,7 +127,7 @@ import Testing
       ignoresComments: true,
       ignoresLiterals: false,
     )
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: TrailingWhitespaceRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: TrailingWhitespaceRule.identifier)) {
       try configuration.apply(configuration: config)
     }
   }
@@ -350,7 +350,7 @@ import Testing
         "preferred_modifier_order": ["specialize"],
       ] as [String: any Sendable]
 
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: ModifierOrderRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: ModifierOrderRule.identifier)) {
       try configuration.apply(configuration: config)
     }
   }
@@ -362,7 +362,7 @@ import Testing
         "severity": "warning",
         "preferred_modifier_order": ["atPrefixed"],
       ] as [String: any Sendable]
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: ModifierOrderRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: ModifierOrderRule.identifier)) {
       try configuration.apply(configuration: config)
     }
   }

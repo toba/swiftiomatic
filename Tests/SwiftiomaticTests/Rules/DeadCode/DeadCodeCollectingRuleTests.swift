@@ -49,7 +49,7 @@ private func testFiles(_ sources: [String]) -> [SwiftSource] {
 
   @Test func unreferencedPrivateFunctionTriggers() async {
     let violations = await testFiles([
-      "private func unused() { }\nfunc main() { }",
+      "private func unused() { }\nfunc main() { }"
     ]).violations(config: Self.config)
 
     #expect(!violations.isEmpty)
@@ -58,7 +58,7 @@ private func testFiles(_ sources: [String]) -> [SwiftSource] {
 
   @Test func unreferencedPrivateVarTriggers() async {
     let violations = await testFiles([
-      "private var dead = 0\nfunc main() { }",
+      "private var dead = 0\nfunc main() { }"
     ]).violations(config: Self.config)
 
     #expect(!violations.isEmpty)
@@ -67,7 +67,7 @@ private func testFiles(_ sources: [String]) -> [SwiftSource] {
 
   @Test func unreferencedPrivateClassTriggers() async {
     let violations = await testFiles([
-      "private class Orphan { }\nfunc main() { }",
+      "private class Orphan { }\nfunc main() { }"
     ]).violations(config: Self.config)
 
     #expect(!violations.isEmpty)
@@ -76,7 +76,7 @@ private func testFiles(_ sources: [String]) -> [SwiftSource] {
 
   @Test func unreferencedFileprivateFunctionTriggers() async {
     let violations = await testFiles([
-      "fileprivate func forgotten() { }\nfunc main() { }",
+      "fileprivate func forgotten() { }\nfunc main() { }"
     ]).violations(config: Self.config)
 
     #expect(!violations.isEmpty)
@@ -119,7 +119,7 @@ private func testFiles(_ sources: [String]) -> [SwiftSource] {
           let y = x * 2
           return
       }
-      """,
+      """
     ]).violations(config: Self.config)
 
     #expect(violations.isEmpty)
@@ -128,7 +128,7 @@ private func testFiles(_ sources: [String]) -> [SwiftSource] {
   @Test func tinyFunctionsDoNotTrigger() async {
     // Functions with fewer than 5 structural nodes are ignored
     let violations = await testFiles([
-      "func a() { 1 }\nfunc b() { 2 }",
+      "func a() { 1 }\nfunc b() { 2 }"
     ]).violations(config: Self.config)
 
     #expect(violations.isEmpty)
@@ -153,7 +153,7 @@ private func testFiles(_ sources: [String]) -> [SwiftSource] {
               print("done")
           }
       }
-      """,
+      """
     ]).violations(config: Self.config)
 
     #expect(violations.count == 2)

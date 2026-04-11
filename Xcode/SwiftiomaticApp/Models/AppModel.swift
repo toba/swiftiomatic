@@ -8,7 +8,6 @@ final class AppModel {
   var rules: [RuleConfigurationEntry] = []
   var configuration: Configuration = .default
   var configPath: String?
-  var configBookmark: Data?
   var showingConfigPicker = false
 
   var lintRules: [RuleConfigurationEntry] {
@@ -24,7 +23,7 @@ final class AppModel {
   }
 
   init() {
-    rules = SwiftiomaticKit.ruleCatalog()
+    rules = Swiftiomatic.ruleCatalog()
     loadFromAppGroup()
   }
 
@@ -59,43 +58,22 @@ final class AppModel {
   }
 
   func loadConfig(from url: URL) {
+    guard url.startAccessingSecurityScopedResource() else { return }
+    defer { url.stopAccessingSecurityScopedResource() }
+
     do {
-      let bookmark = try url.bookmarkData(
-        options: .withSecurityScope,
-        includingResourceValuesForKeys: nil,
-        relativeTo: nil
-      )
-      configBookmark = bookmark
+      configuration = try Swiftiomatic.loadConfiguration(from: url.path)
       configPath = url.path
-
-      guard url.startAccessingSecurityScopedResource() else { return }
-      defer { url.stopAccessingSecurityScopedResource() }
-
-      configuration = try SwiftiomaticKit.loadConfiguration(from: url.path)
-
-      // Persist to App Group
-      if let suite = SharedDefaults.suite {
-        suite.set(bookmark, forKey: SharedDefaults.configBookmarkKey)
-        suite.set(url.path, forKey: SharedDefaults.configPathKey)
-      }
     } catch {
       print("Failed to load config: \(error)")
+      return
     }
+
+    persistToAppGroup()
   }
 
   func saveConfig() {
-    guard let bookmark = configBookmark else { return }
-    var stale = false
-    guard
-      let url = try? URL(
-        resolvingBookmarkData: bookmark,
-        options: .withSecurityScope,
-        bookmarkDataIsStale: &stale
-      ), url.startAccessingSecurityScopedResource()
-    else { return }
-    defer { url.stopAccessingSecurityScopedResource() }
-
-    try? SwiftiomaticKit.saveConfiguration(configuration, to: url.path)
+    persistToAppGroup()
   }
 
   func handleConfigFileSelected(_ result: Result<URL, any Error>) {
@@ -103,25 +81,20 @@ final class AppModel {
     loadConfig(from: url)
   }
 
+  private func persistToAppGroup() {
+    guard let suite = SharedDefaults.suite else { return }
+    if let yaml = try? configuration.toYAMLString() {
+      suite.set(yaml, forKey: SharedDefaults.configYAMLKey)
+    }
+    suite.set(configPath, forKey: SharedDefaults.configPathKey)
+  }
+
   private func loadFromAppGroup() {
     guard let suite = SharedDefaults.suite,
-      let bookmark = suite.data(forKey: SharedDefaults.configBookmarkKey)
-    else {
-      return
-    }
-    configBookmark = bookmark
-    configPath = suite.string(forKey: SharedDefaults.configPathKey)
-
-    var stale = false
-    guard
-      let url = try? URL(
-        resolvingBookmarkData: bookmark,
-        options: .withSecurityScope,
-        bookmarkDataIsStale: &stale
-      ), url.startAccessingSecurityScopedResource()
+      let yaml = suite.string(forKey: SharedDefaults.configYAMLKey)
     else { return }
-    defer { url.stopAccessingSecurityScopedResource() }
 
-    configuration = (try? SwiftiomaticKit.loadConfiguration(from: url.path)) ?? .default
+    configuration = Configuration.fromYAMLString(yaml)
+    configPath = suite.string(forKey: SharedDefaults.configPathKey)
   }
 }

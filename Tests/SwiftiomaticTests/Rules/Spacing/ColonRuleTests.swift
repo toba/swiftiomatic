@@ -228,15 +228,15 @@ import Testing
     await assertFormatting(
       ColonRule.self,
       input: """
-      switch foo {
-      case .bar1️⃣ : return baz
-      }
-      """,
+        switch foo {
+        case .bar1️⃣ : return baz
+        }
+        """,
       expected: """
-      switch foo {
-      case .bar: return baz
-      }
-      """,
+        switch foo {
+        case .bar: return baz
+        }
+        """,
       findings: [FindingSpec("1️⃣", message: "")])
   }
 
@@ -271,21 +271,21 @@ import Testing
     await assertFormatting(
       ColonRule.self,
       input: """
-      class Foo {
-          #if false
-          #else
-              let bar = ["key"1️⃣   : "value"]
-          #endif
-      }
-      """,
+        class Foo {
+            #if false
+            #else
+                let bar = ["key"1️⃣   : "value"]
+            #endif
+        }
+        """,
       expected: """
-      class Foo {
-          #if false
-          #else
-              let bar = ["key": "value"]
-          #endif
-      }
-      """,
+        class Foo {
+            #if false
+            #else
+                let bar = ["key": "value"]
+            #endif
+        }
+        """,
       findings: [FindingSpec("1️⃣", message: "")])
   }
 

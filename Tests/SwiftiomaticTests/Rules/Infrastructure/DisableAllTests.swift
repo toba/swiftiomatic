@@ -120,6 +120,56 @@ import Testing
     }
   }
 
+  // MARK: Enable / Disable File
+
+  /// Tests whether sm:disable:file all protects the entire file
+  @Test func disableAllFile() async {
+    for violatingPhrase in violatingPhrases {
+      let protectedPhrase = violatingPhrase.with(
+        code: "// sm:disable:file all\n" + violatingPhrase.code + "\n",
+      )
+      #expect(
+        await violations(protectedPhrase).isEmpty,
+      )
+    }
+  }
+
+  /// Tests whether sm:disable:file works even when placed after violating code
+  @Test func disableAllFileMidFile() async {
+    for violatingPhrase in violatingPhrases {
+      let protectedPhrase = violatingPhrase.with(
+        code: violatingPhrase.code + "\n// sm:disable:file all\n",
+      )
+      #expect(
+        await violations(protectedPhrase).isEmpty,
+      )
+    }
+  }
+
+  /// Tests whether sm:disable:file works for specific rules
+  @Test func disableFileSpecificRule() async {
+    let code = "// sm:disable:file identifier_name\nlet r = 0\n"
+    #expect(
+      await violations(Example(code)).isEmpty,
+    )
+  }
+
+  /// Tests whether sm:enable:file all re-enables rules disabled in config
+  @Test func enableAllFile() async {
+    for violatingPhrase in violatingPhrases {
+      let unprotectedPhrase = violatingPhrase.with(
+        code: """
+          // sm:disable all
+          \(violatingPhrase.code)
+          // sm:enable:file all
+          """,
+      )
+      #expect(
+        await violations(unprotectedPhrase).count == 1,
+      )
+    }
+  }
+
   // MARK: Enable / Disable This
 
   /// Tests whether sm:disable:this all protects properly

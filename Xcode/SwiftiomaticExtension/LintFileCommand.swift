@@ -14,7 +14,7 @@ final class LintFileCommand: NSObject, XCSourceEditorCommand {
     }
 
     let source = buffer.completeBuffer
-    let diagnostics = SwiftiomaticKit.lint(source)
+    let diagnostics = Swiftiomatic.lint(source)
 
     guard !diagnostics.isEmpty else {
       completionHandler(nil)

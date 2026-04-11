@@ -74,7 +74,12 @@ import Testing
     await assertLint(
       IdentifierNameRule.self,
       "let 1️⃣my_Let$ = 0",
-      findings: [FindingSpec("1️⃣", message: "Variable name 'my_Let$' should only contain alphanumeric and other allowed characters")],
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message:
+            "Variable name 'my_Let$' should only contain alphanumeric and other allowed characters")
+      ],
       configuration: ["allowed_symbols": ["$", "%"]])
   }
 

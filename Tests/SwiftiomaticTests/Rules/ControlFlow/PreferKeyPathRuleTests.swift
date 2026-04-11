@@ -4,10 +4,10 @@ import Testing
 
 @Suite(.rulesRegistered) struct PreferKeyPathRuleTests {
   private static let extendedMode: [String: any Sendable] = [
-    "restrict_to_standard_functions": false,
+    "restrict_to_standard_functions": false
   ]
   private static let ignoreIdentity: [String: any Sendable] = [
-    "ignore_identity_closures": true,
+    "ignore_identity_closures": true
   ]
   private static let extendedModeAndIgnoreIdentity: [String: any Sendable] = [
     "restrict_to_standard_functions": false,

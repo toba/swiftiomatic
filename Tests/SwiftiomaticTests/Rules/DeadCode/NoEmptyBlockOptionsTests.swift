@@ -36,14 +36,14 @@ import Testing
 
   @Test func invalidTypeOfCustomConfiguration() {
     var config = NoEmptyBlockOptions()
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: NoEmptyBlockRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: NoEmptyBlockRule.identifier)) {
       try config.apply(configuration: ["severity": "invalidKey"])
     }
   }
 
   @Test func invalidTypeOfValueInCustomConfiguration() {
     var config = NoEmptyBlockOptions()
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: NoEmptyBlockRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: NoEmptyBlockRule.identifier)) {
       try config.apply(configuration: ["severity": "foo"])
     }
   }

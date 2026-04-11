@@ -19,12 +19,12 @@ import Testing
 
   @Test func migrateSwiftLintOptInRules() {
     var slConfig = SwiftLintConfig()
-    slConfig.optInRules = ["explicit_self", "sorted_imports"]
+    slConfig.optInRules = ["explicit_self", "number_separator"]
 
     let result = ConfigMigrator.migrate(swiftlint: slConfig)
 
     #expect(result.configuration.enabledLintRules.contains("explicit_self"))
-    #expect(result.configuration.enabledLintRules.contains("sorted_imports"))
+    #expect(result.configuration.enabledLintRules.contains("number_separator"))
     #expect(result.mappedRuleCount == 2)
   }
 

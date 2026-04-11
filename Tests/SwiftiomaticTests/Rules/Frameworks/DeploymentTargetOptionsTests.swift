@@ -120,7 +120,7 @@ import Testing
 
     for badConfig in badConfigs {
       var configuration = DeploymentTargetOptions()
-      checkError(SwiftiomaticError.invalidConfiguration(ruleID: DeploymentTargetRule.identifier)) {
+      #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: DeploymentTargetRule.identifier)) {
         try configuration.apply(configuration: badConfig)
       }
     }

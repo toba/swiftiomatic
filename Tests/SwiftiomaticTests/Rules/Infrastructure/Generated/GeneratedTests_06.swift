@@ -13,13 +13,6 @@ import Testing
     await verifyRule(NestingRule.self)
   }
 }
-
-@Suite(.rulesRegistered) struct NimbleOperatorRuleGeneratedTests {
-  @Test func withDefaultConfiguration() async {
-    await verifyRule(NimbleOperatorRule.self)
-  }
-}
-
 @Suite(.rulesRegistered) struct NoEmptyBlockRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {
     await verifyRule(NoEmptyBlockRule.self)

@@ -104,6 +104,34 @@ import Testing
     )
   }
 
+  @Test func regionsFromFileCommand() {
+    let file = SwiftSource(contents: "// sm:disable:file rule_id\nlet x = 1\n")
+    #expect(
+      file.regions() == [
+        Region(
+          start: Location(file: nil, line: 0, column: nil),
+          end: Location(file: nil, line: .max, column: .max),
+          disabledRuleIdentifiers: ["rule_id"],
+        )
+      ],
+    )
+  }
+
+  @Test func regionsFromFileCommandMidFile() {
+    let file = SwiftSource(
+      contents: "let x = 1\n// sm:disable:file rule_id\nlet y = 2\n",
+    )
+    #expect(
+      file.regions() == [
+        Region(
+          start: Location(file: nil, line: 0, column: nil),
+          end: Location(file: nil, line: .max, column: .max),
+          disabledRuleIdentifiers: ["rule_id"],
+        )
+      ],
+    )
+  }
+
   @Test func severalRegionsFromSeveralCommands() {
     let file = SwiftSource(
       contents: """

@@ -7,14 +7,14 @@ import Testing
 struct ConcurrencyModernizationTests {
   @Test func detectsAsyncStreamMissingFinish() throws {
     let violations = try suggestViolations(
-      ConcurrencyModernizationRule(), fixture: "ConcurrencyModernization")
+      AsyncStreamSafetyRule(), fixture: "ConcurrencyModernization")
 
     expectFindings(violations, containing: "continuation.finish()")
   }
 
   @Test func detectsAsyncStreamMissingOnTermination() throws {
     let violations = try suggestViolations(
-      ConcurrencyModernizationRule(), fixture: "ConcurrencyModernization")
+      AsyncStreamSafetyRule(), fixture: "ConcurrencyModernization")
 
     expectFindings(violations, containing: "onTermination")
   }

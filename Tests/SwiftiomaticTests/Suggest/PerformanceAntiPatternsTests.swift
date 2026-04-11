@@ -3,42 +3,36 @@ import Testing
 
 @testable import SwiftiomaticKit
 
-@Suite("PerformanceAntiPatternsRule — new patterns")
-struct PerformanceAntiPatternsTests {
+// NOTE: PerformanceAntiPatternsRule was split into 5 focused rules:
+//   - DateForTimingRule (date_for_timing)
+//   - LockAntiPatternsRule (lock_anti_patterns)
+//   - MutationDuringIterationRule (mutation_during_iteration)
+//   - LazyChainRule (lazy_chain)
+//   - InlinableGenericRule (inlinable_generic)
+//
+// @TaskLocal and Span parameter checks were removed — they will be
+// added to Swift62ModernizationRule separately.
+
+@Suite("LazyChainRule — chained transforms")
+struct LazyChainTests {
   @Test func detectsChainedTransformsWithoutLazy() throws {
     let violations = try suggestViolations(
-      PerformanceAntiPatternsRule(), fixture: "PerformanceAntiPatterns")
+      LazyChainRule(), fixture: "PerformanceAntiPatterns")
 
     expectFindings(violations, containing: "functional transforms")
   }
+}
 
-  @Test func detectsTaskLocalForBusinessState() throws {
-    let violations = try suggestViolations(
-      PerformanceAntiPatternsRule(), fixture: "PerformanceAntiPatterns")
-
-    let taskLocalFindings = violations.filter {
-      $0.reason.contains("@TaskLocal") && $0.reason.contains("business-logic")
-    }
-    // Should flag currentUser but not requestID/traceID
-    #expect(taskLocalFindings.contains { $0.reason.contains("currentUser") })
-    #expect(!taskLocalFindings.contains { $0.reason.contains("requestID") })
-  }
-
+@Suite("InlinableGenericRule — public generic without @inlinable")
+struct InlinableGenericTests {
   @Test func detectsPublicGenericWithoutInlinable() throws {
     let violations = try suggestViolations(
-      PerformanceAntiPatternsRule(), fixture: "PerformanceAntiPatterns")
+      InlinableGenericRule(), fixture: "PerformanceAntiPatterns")
 
     let inlinableFindings = violations.filter { $0.reason.contains("@inlinable") }
     #expect(inlinableFindings.count >= 1)
     // Should flag transform but not inlinableTransform
     #expect(inlinableFindings.contains { $0.reason.contains("'transform'") })
     #expect(!inlinableFindings.contains { $0.reason.contains("'inlinableTransform'") })
-  }
-
-  @Test func detectsCollectionParameterForSpan() throws {
-    let violations = try suggestViolations(
-      PerformanceAntiPatternsRule(), fixture: "PerformanceAntiPatterns")
-
-    expectFindings(violations, containing: "Span")
   }
 }

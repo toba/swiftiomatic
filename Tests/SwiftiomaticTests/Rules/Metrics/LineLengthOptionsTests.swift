@@ -97,7 +97,7 @@ import Testing
   @Test func lineLengthConfigurationThrowsOnBadConfig() {
     let config = ["warning": "unknown"]
     var configuration = LineLengthOptions(length: severityLevels)
-    checkError(SwiftiomaticError.invalidConfiguration(ruleID: LineLengthRule.identifier)) {
+    #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: LineLengthRule.identifier)) {
       try configuration.apply(configuration: config)
     }
   }
@@ -110,7 +110,7 @@ import Testing
 
     for badConfig in badConfigs {
       var configuration = LineLengthOptions(length: severityLevels)
-      checkError(SwiftiomaticError.invalidConfiguration(ruleID: LineLengthRule.identifier)) {
+      #expect(throws: SwiftiomaticError.invalidConfiguration(ruleID: LineLengthRule.identifier)) {
         try configuration.apply(configuration: badConfig)
       }
     }

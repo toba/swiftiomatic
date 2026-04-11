@@ -26,8 +26,8 @@ extension SwiftSource {
     return SwiftSource(contents: contents, isTestFile: true)
   }
 
-  func makeCompilerArguments() -> [String] {
-    let sdk = macOSSDKPath()
+  func makeCompilerArguments() async -> [String] {
+    let sdk = await macOSSDKPath()
     let frameworks = URL(filePath: sdk, directoryHint: .isDirectory)
       .deletingLastPathComponent()
       .deletingLastPathComponent()
@@ -53,18 +53,6 @@ extension String {
   }
 }
 
-private func macOSSDKPath() -> String {
-  let task = Process()
-  task.executableURL = URL(filePath: "/usr/bin/xcrun")
-  task.arguments = ["--show-sdk-path", "--sdk", "macosx"]
-  let pipe = Pipe()
-  task.standardOutput = pipe
-  try? task.run()
-  task.waitUntilExit()
-  let data = pipe.fileHandleForReading.readDataToEndOfFile()
-  return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-    ?? "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
-}
 
 let allRuleIdentifiers = Set(RuleRegistry.shared.list.rules.keys)
 
@@ -113,7 +101,7 @@ func violations(
   let collector = Linter(
     file: file,
     configuration: config,
-    compilerArguments: file.makeCompilerArguments(),
+    compilerArguments: await file.makeCompilerArguments(),
   )
   let linter = await collector.collect(into: storage)
   return linter.ruleViolations(using: storage).withoutFiles()
@@ -146,7 +134,7 @@ extension Collection where Element: SwiftSource {
     for file in self {
       let linter = Linter(
         file: file, configuration: config,
-        compilerArguments: requiresFileOnDisk ? file.makeCompilerArguments() : [],
+        compilerArguments: requiresFileOnDisk ? await file.makeCompilerArguments() : [],
       )
       await collected.append(linter.collect(into: storage))
     }
@@ -167,7 +155,7 @@ extension Collection where Element: SwiftSource {
       let linter = Linter(
         file: file,
         configuration: config,
-        compilerArguments: requiresFileOnDisk ? file.makeCompilerArguments() : [],
+        compilerArguments: requiresFileOnDisk ? await file.makeCompilerArguments() : [],
       )
       await collected.append(linter.collect(into: storage))
     }
@@ -314,7 +302,7 @@ private func assertCorrection(
   let file = SwiftSource.testFile(withContents: cleanedBefore, persistToDisk: true)
   let includeCompilerArguments = config.rules
     .contains(where: { type(of: $0).runsWithCompilerArguments })
-  let compilerArguments = includeCompilerArguments ? file.makeCompilerArguments() : []
+  let compilerArguments = includeCompilerArguments ? await file.makeCompilerArguments() : []
   let storage = RuleStorage()
   let collector = Linter(file: file, configuration: config, compilerArguments: compilerArguments)
   let linter = await collector.collect(into: storage)
@@ -395,9 +383,7 @@ private func addShebang(_ example: Example) -> Example {
 // MARK: - verifyRule (standalone function)
 
 /// Ensures rules are registered before any lint test runs.
-private let _ensureRegistered: Void = {
-  RuleRegistry.registerAllRulesOnce()
-}()
+/// Uses the shared `_testSetup` from TestTraits.swift.
 
 func verifyRule(
   _ ruleType: (some Rule).Type,
@@ -437,7 +423,7 @@ func verifyRule(
   testShebang: Bool = true,
   sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
-  _ = _ensureRegistered
+  _ = _testSetup
 
   guard examples.minSwiftVersion <= .current else { return }
 
@@ -715,27 +701,5 @@ private func verifyExamples(
         "'\(trigger)' violation didn't match expected location.",
       )
     }
-  }
-}
-
-// MARK: - checkError
-
-func checkError<T: Error & Equatable>(
-  _ error: T,
-  sourceLocation: Testing.SourceLocation = #_sourceLocation,
-  closure: () throws -> Void,
-) {
-  do {
-    try closure()
-    Testing.Issue.record("No error caught", sourceLocation: sourceLocation)
-  } catch let rError as T {
-    if error != rError {
-      Testing.Issue.record(
-        "Wrong error caught. Got \(rError) but was expecting \(error)",
-        sourceLocation: sourceLocation,
-      )
-    }
-  } catch {
-    Testing.Issue.record("Wrong error caught", sourceLocation: sourceLocation)
   }
 }

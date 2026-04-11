@@ -5,16 +5,15 @@ struct AgentReviewRule {
   static let name = "Agent Review"
   static let summary = "Lower-confidence checks that benefit from agent verification"
   static let isOptIn = true
+  static let relatedRuleIDs: [String] = ["fire_and_forget_task"]
   static var nonTriggeringExamples: [Example] {
     [
-      Example("let task = Task { await work() }"),
       Example("enum AppError: LocalizedError { case failed }"),
     ]
   }
 
   static var triggeringExamples: [Example] {
     [
-      Example("↓Task { await work() }", configuration: ["severity": "warning"]),
       Example("enum ↓AppError: Error { case failed }", configuration: ["severity": "warning"]),
     ]
   }
@@ -32,27 +31,6 @@ extension AgentReviewRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       let callee = node.calledExpression.trimmedDescription
-
-      // Fire-and-forget Task {}
-      if callee == "Task" || callee == "Task.detached" {
-        let isAssigned =
-          node.parent?.is(InitializerClauseSyntax.self) == true
-          || node.parent?.is(AssignmentExprSyntax.self) == true
-          || node.parent?.is(PatternBindingSyntax.self) == true
-        let isReturned = node.parent?.is(ReturnStmtSyntax.self) == true
-
-        if !isAssigned, !isReturned {
-          violations.append(
-            SyntaxViolation(
-              position: node.positionAfterSkippingLeadingTrivia,
-              reason: "Fire-and-forget Task — result not captured, cancellation not possible",
-              severity: .warning,
-              confidence: .low,
-              suggestion: "Assign to a variable if cancellation matters: `let task = Task { ... }`",
-            ),
-          )
-        }
-      }
 
       // .absoluteString usage
       if callee.hasSuffix(".absoluteString") {

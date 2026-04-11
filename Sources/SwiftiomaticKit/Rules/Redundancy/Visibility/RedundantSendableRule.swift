@@ -13,6 +13,20 @@ struct RedundantSendableRule {
       Example("@MainActor struct S {}"),
       Example("@MyActor enum E: Sendable { case a }"),
       Example("@MainActor protocol P: Sendable {}"),
+      Example(
+        """
+        public extension Foo {
+            struct Bar: Sendable {}
+        }
+        """,
+      ),
+      Example(
+        """
+        extension Foo {
+            struct Bar: Sendable {}
+        }
+        """,
+      ),
     ]
   }
 
@@ -23,6 +37,20 @@ struct RedundantSendableRule {
       Example(
         "@MyActor enum ↓E: Sendable { case a }",
         configuration: ["global_actors": ["MyActor"]],
+      ),
+      Example(
+        """
+        @MainActor extension Foo {
+            struct ↓Bar: Sendable {}
+        }
+        """,
+      ),
+      Example(
+        """
+        @MainActor struct Outer {
+            enum ↓Inner: Sendable { case a }
+        }
+        """,
       ),
     ]
   }
@@ -52,6 +80,34 @@ struct RedundantSendableRule {
         ),
       Example("@MainActor struct P: A, Sendable {}"):
         Example("@MainActor struct P: A {}"),
+      Example(
+        """
+        @MainActor extension Foo {
+            struct Bar: Sendable {}
+        }
+        """,
+      ):
+        Example(
+          """
+          @MainActor extension Foo {
+              struct Bar {}
+          }
+          """,
+        ),
+      Example(
+        """
+        @MainActor struct Outer {
+            enum Inner: Sendable { case a }
+        }
+        """,
+      ):
+        Example(
+          """
+          @MainActor struct Outer {
+              enum Inner { case a }
+          }
+          """,
+        ),
     ]
   }
 
@@ -134,8 +190,21 @@ extension DeclGroupSyntax where Self: NamedDeclSyntax {
   }
 
   fileprivate func isIsolatedToActor(actors: Set<String>) -> Bool {
-    attributes.contains(attributeNamed: "MainActor")
-      || actors.contains { attributes.contains(attributeNamed: $0) }
+    if attributes.isActorIsolated(actors: actors) {
+      return true
+    }
+    // Walk ancestor declarations — types inside a @MainActor extension or
+    // parent type inherit that isolation, making Sendable redundant.
+    var current: Syntax? = Syntax(self).parent
+    while let node = current {
+      if let group = node.asProtocol(DeclGroupSyntax.self),
+        group.attributes.isActorIsolated(actors: actors)
+      {
+        return true
+      }
+      current = node.parent
+    }
+    return false
   }
 
   fileprivate var withoutSendable: Self {
@@ -158,6 +227,13 @@ extension DeclGroupSyntax where Self: NamedDeclSyntax {
         \.name.trailingTrivia,
         inheritanceClause.leadingTrivia + inheritanceClause.trailingTrivia,
       )
+  }
+}
+
+extension AttributeListSyntax {
+  fileprivate func isActorIsolated(actors: Set<String>) -> Bool {
+    contains(attributeNamed: "MainActor")
+      || actors.contains { contains(attributeNamed: $0) }
   }
 }
 

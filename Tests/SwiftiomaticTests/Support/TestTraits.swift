@@ -4,7 +4,7 @@ import Testing
 
 /// Ensures rules are registered and SourceKit is disabled before test execution.
 /// SourceKit is disabled to prevent SIGSEGV during process exit (apple/swift#55112).
-private let _testSetup: Void = {
+let _testSetup: Void = {
   RuleRegistry.registerAllRulesOnce()
   disableSourceKitForTesting()
 }()
