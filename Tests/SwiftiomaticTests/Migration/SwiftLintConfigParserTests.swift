@@ -61,9 +61,9 @@ import Testing
     #expect(config.ruleConfigs.keys.contains("line_length"))
     #expect(config.ruleConfigs.keys.contains("identifier_name"))
 
-    if let lineLength = config.ruleConfigs["line_length"] as? [String: Any] {
-      #expect(lineLength["warning"] as? Int == 120)
-      #expect(lineLength["error"] as? Int == 200)
+    if case .dictionary(let lineLength) = config.ruleConfigs["line_length"] {
+      #expect(lineLength["warning"] == .int(120))
+      #expect(lineLength["error"] == .int(200))
     } else {
       Issue.record("Expected line_length config to be a dictionary")
     }
@@ -74,7 +74,7 @@ import Testing
       force_cast: error
       """
     let config = try SwiftLintConfigParser.parse(yaml: yaml)
-    #expect(config.ruleConfigs["force_cast"] as? String == "error")
+    #expect(config.ruleConfigs["force_cast"] == .string("error"))
   }
 
   @Test func parseAnalyzerRules() throws {

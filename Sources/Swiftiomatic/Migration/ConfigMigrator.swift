@@ -134,9 +134,7 @@ public enum ConfigMigrator {
     for (ruleID, value) in swiftlint.ruleConfigs {
       let mapping = RuleMapping.swiftlint(ruleID)
       guard let smID = mapping.swiftiomaticID else { continue }
-      if let cfgValue = ConfigValue(value) {
-        config.lintRuleConfigs[smID] = cfgValue
-      }
+      config.lintRuleConfigs[smID] = value
     }
 
     // Advisory warnings for included/excluded paths

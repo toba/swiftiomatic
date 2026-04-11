@@ -234,13 +234,6 @@ extension SyntaxProtocol {
   }
 }
 
-extension DeclModifierListSyntax {
-  fileprivate var accessibility: AccessControlLevel? {
-    filter { $0.detail == nil }.compactMap { AccessControlLevel(description: $0.name.text) }
-      .first
-  }
-}
-
 private enum AccessControlBehavior {
   case `actor`(AccessControlLevel?)
   case local

@@ -39,6 +39,12 @@ extension DeclModifierListSyntax {
     return setOnly ? hasSet : !hasSet
   }
 
+  /// The access control level from bare (non-setter) modifiers, or `nil` if none is present
+  var accessibility: AccessControlLevel? {
+    filter { $0.detail == nil }.compactMap { AccessControlLevel(description: $0.name.text) }
+      .first
+  }
+
   /// The first access-level modifier (`public`, `internal`, `private`, etc.) in the list
   var accessLevelModifier: DeclModifierSyntax? {
     first { $0.asAccessLevelModifier != nil }

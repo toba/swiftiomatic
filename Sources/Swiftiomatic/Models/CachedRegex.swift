@@ -7,17 +7,15 @@ struct CachedRegex: Hashable, Comparable, ExpressibleByStringLiteral, @unchecked
   let regex: Regex<AnyRegexOutput>
   let pattern: String
   private let optionsRaw: UInt
-
-  var numberOfCaptureGroups: Int {
-    // Delegate to NSRegularExpression for accurate group counting
-    (try? NSRegularExpression(pattern: pattern)).map(\.numberOfCaptureGroups) ?? 0
-  }
+  let numberOfCaptureGroups: Int
 
   init(pattern: String, options: NSRegularExpression.Options? = nil) throws {
     let opts = options ?? [.anchorsMatchLines, .dotMatchesLineSeparators]
     self.pattern = pattern
     optionsRaw = opts.rawValue
     regex = try Self.compileRegex(pattern: pattern, options: opts)
+    numberOfCaptureGroups =
+      (try? NSRegularExpression(pattern: pattern)).map(\.numberOfCaptureGroups) ?? 0
   }
 
   init(stringLiteral value: String) {

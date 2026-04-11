@@ -16,7 +16,7 @@ public struct SwiftLintConfig: Sendable {
   /// Paths to exclude
   public var excludedPaths: [String] = []
   /// Per-rule configuration (raw YAML values)
-  public nonisolated(unsafe) var ruleConfigs: [String: Any] = [:]
+  public var ruleConfigs: [String: ConfigValue] = [:]
 }
 
 /// Parses SwiftLint `.swiftlint.yml` configuration files
@@ -65,7 +65,9 @@ public enum SwiftLintConfigParser {
 
     // Collect per-rule configurations (any key not in topLevelKeys)
     for (key, value) in dict where !topLevelKeys.contains(key) {
-      config.ruleConfigs[key] = value
+      if let configValue = ConfigValue(value) {
+        config.ruleConfigs[key] = configValue
+      }
     }
 
     return config

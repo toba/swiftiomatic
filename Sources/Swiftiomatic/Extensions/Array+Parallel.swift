@@ -88,53 +88,19 @@ extension Array {
   ///
   /// - Returns: The results of applying `transform` to every element.
   func parallelMap<T>(transform: @Sendable (Element) -> T) -> [T] {
-    var result = ContiguousArray<T?>(repeating: nil, count: count)
-    return result.withUnsafeMutableBufferPointer { buffer in
-      let buffer = SendableMutableBuffer(buffer: buffer)
-      withUnsafeBufferPointer { array in
-        let array = SendableBuffer(buffer: array)
-        DispatchQueue.concurrentPerform(iterations: buffer.count) { idx in
-          buffer[idx] = transform(array[idx])
+    let sourceCount = count
+    guard sourceCount > 0 else { return [] }
+    return Array<T>(unsafeUninitializedCapacity: sourceCount) { buffer, initializedCount in
+      withUnsafeBufferPointer { source in
+        // Both pointers are safe to share: each iteration writes to a unique index
+        // and the enclosing scope guarantees the buffers outlive concurrentPerform.
+        nonisolated(unsafe) let source = source
+        nonisolated(unsafe) let buffer = buffer
+        DispatchQueue.concurrentPerform(iterations: sourceCount) { idx in
+          buffer.initializeElement(at: idx, to: transform(source[idx]))
         }
       }
-      return buffer.data
-    }
-  }
-
-  private final class SendableMutableBuffer<T>: @unchecked Sendable {
-    let buffer: UnsafeMutableBufferPointer<T?>
-
-    init(buffer: UnsafeMutableBufferPointer<T?>) {
-      self.buffer = buffer
-    }
-
-    var data: [T] {
-      buffer.map { $0! }
-    }
-
-    var count: Int {
-      buffer.count
-    }
-
-    subscript(index: Int) -> T {
-      get {
-        Console.fatalError("Do not call this getter.")
-      }
-      set(newValue) {
-        buffer[index] = newValue
-      }
-    }
-  }
-
-  private final class SendableBuffer<T>: @unchecked Sendable {
-    let buffer: UnsafeBufferPointer<T>
-
-    init(buffer: UnsafeBufferPointer<T>) {
-      self.buffer = buffer
-    }
-
-    subscript(index: Int) -> T {
-      buffer[index]
+      initializedCount = sourceCount
     }
   }
 }

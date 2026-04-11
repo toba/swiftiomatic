@@ -4,9 +4,47 @@ import Swiftiomatic
 struct OptionsTab: View {
   @Environment(AppModel.self) private var model
 
-  var body: some View {
-    @Bindable var model = model
+  private var indentation: Binding<String> {
+    Binding(
+      get: { model.configuration.formatIndent == "\t" ? "tabs" : "spaces" },
+      set: { newValue in
+        model.configuration.formatIndent = newValue == "tabs" ? "\t" : "    "
+        model.saveConfig()
+      }
+    )
+  }
 
+  private var indentWidth: Binding<Int> {
+    Binding(
+      get: { model.configuration.formatIndent.count },
+      set: { newValue in
+        model.configuration.formatIndent = String(repeating: " ", count: max(1, newValue))
+        model.saveConfig()
+      }
+    )
+  }
+
+  private var maxLineWidth: Binding<Int> {
+    Binding(
+      get: { model.configuration.formatMaxWidth },
+      set: { newValue in
+        model.configuration.formatMaxWidth = newValue
+        model.saveConfig()
+      }
+    )
+  }
+
+  private var minConfidence: Binding<Confidence> {
+    Binding(
+      get: { model.configuration.suggestMinConfidence },
+      set: { newValue in
+        model.configuration.suggestMinConfidence = newValue
+        model.saveConfig()
+      }
+    )
+  }
+
+  var body: some View {
     Form {
       Section("Configuration File") {
         LabeledContent("Path") {
@@ -26,16 +64,7 @@ struct OptionsTab: View {
       }
 
       Section("Format") {
-        Picker(
-          "Indentation",
-          selection: Binding(
-            get: { model.configuration.formatIndent == "\t" ? "tabs" : "spaces" },
-            set: { newValue in
-              model.configuration.formatIndent = newValue == "tabs" ? "\t" : "    "
-              model.saveConfig()
-            }
-          )
-        ) {
+        Picker("Indentation", selection: indentation) {
           Text("Spaces").tag("spaces")
           Text("Tabs").tag("tabs")
         }
@@ -43,42 +72,21 @@ struct OptionsTab: View {
         if model.configuration.formatIndent != "\t" {
           Stepper(
             "Indent Width: \(model.configuration.formatIndent.count)",
-            value: Binding(
-              get: { model.configuration.formatIndent.count },
-              set: { newValue in
-                model.configuration.formatIndent = String(repeating: " ", count: max(1, newValue))
-                model.saveConfig()
-              }
-            ),
+            value: indentWidth,
             in: 1...8
           )
         }
 
         Stepper(
           "Max Line Width: \(model.configuration.formatMaxWidth)",
-          value: Binding(
-            get: { model.configuration.formatMaxWidth },
-            set: { newValue in
-              model.configuration.formatMaxWidth = newValue
-              model.saveConfig()
-            }
-          ),
+          value: maxLineWidth,
           in: 40...200,
           step: 10
         )
       }
 
       Section("Suggest") {
-        Picker(
-          "Minimum Confidence",
-          selection: Binding(
-            get: { model.configuration.suggestMinConfidence },
-            set: { newValue in
-              model.configuration.suggestMinConfidence = newValue
-              model.saveConfig()
-            }
-          )
-        ) {
+        Picker("Minimum Confidence", selection: minConfidence) {
           Text("Low").tag(Confidence.low)
           Text("Medium").tag(Confidence.medium)
           Text("High").tag(Confidence.high)
