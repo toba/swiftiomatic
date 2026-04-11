@@ -69,6 +69,10 @@ struct Analyze: AsyncParsableCommand {
     var enableRule: [String] = []
 
     mutating func run() async throws {
+        // Must register rules before any Configuration access (which uses RuleRegistry.shared.list
+        // as a default parameter and would cache an empty list).
+        RuleRegistry.registerAllRulesOnce()
+
         let configResolver = ConfigurationResolver(configPath: config)
         // Load a base config for top-level rule/analyzer setup
         let cfg = Configuration.loadUnified(configPath: config)
