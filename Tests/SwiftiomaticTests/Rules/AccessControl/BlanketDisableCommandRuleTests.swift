@@ -169,7 +169,7 @@ import Testing
     await assertNoViolation(
       BlanketDisableCommandRule.self,
       "// sm:disable identifier_name\n",
-      configuration: ["always_blanket_disable": ["identifier_name"], "allowed_rules": []]
+      configuration: ["always_blanket_disable": ["identifier_name"] as [String], "allowed_rules": [] as [String]]
     )
   }
 }

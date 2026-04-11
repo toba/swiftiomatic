@@ -21,3 +21,4 @@
 - Swift review; modernization, shared code, performance ([#172](https://github.com/toba/swiftiomatic/issues/172))
 - Get Xcode Source Editor Extension working as plugin
 - Swiftiomatic; AST-based Swift code analysis CLI ([#59](https://github.com/toba/swiftiomatic/issues/59))
+- Migrate remaining 44 test files to `swift-format` assert pattern ([#175](https://github.com/toba/swiftiomatic/issues/175))

@@ -1,10 +1,10 @@
 /// A type describing the Swiftiomatic version.
-struct SwiftiomaticVersion: VersionComparable, Sendable {
-  let value: String
+public struct SwiftiomaticVersion: VersionComparable, Sendable {
+  public let value: String
 
-  var rawValue: String {
+  public var rawValue: String {
     value
   }
 
-  static let current = Self(value: "1.0.0")
+  public static let current = Self(value: "0.18.3")
 }

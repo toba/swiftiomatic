@@ -1,6 +1,6 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct ComputedAccessorsOrderRuleTests {
   // MARK: - Default (get-set) order — no violations

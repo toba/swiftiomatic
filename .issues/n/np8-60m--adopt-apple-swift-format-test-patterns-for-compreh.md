@@ -1,15 +1,15 @@
 ---
 # np8-60m
 title: Adopt Apple swift-format test patterns for comprehensive rule coverage
-status: review
+status: completed
 type: epic
 priority: normal
 created_at: 2026-04-10T23:06:55Z
-updated_at: 2026-04-11T15:30:21Z
+updated_at: 2026-04-11T17:07:58Z
 sync:
     github:
         issue_number: "162"
-        synced_at: "2026-04-11T16:40:43Z"
+        synced_at: "2026-04-11T17:10:01Z"
 ---
 
 Migrate test infrastructure from SwiftLint's auto-generated `verifyRule` pattern to Apple swift-format's explicit `assertLint()`/`assertFormatting()` approach with emoji markers and FindingSpec structs.
@@ -26,7 +26,7 @@ Migrate test infrastructure from SwiftLint's auto-generated `verifyRule` pattern
 ### Phase 2: Cover 79 Untested Rules
 - [x] Whitespace/HorizontalSpacing (10 rules) — detection tests for 10 rules
 - [x] Whitespace/VerticalSpacing (6 rules) — detection tests for 6 rules
-- [ ] Whitespace/LineEndings (1 rule) — LinebreaksRule needs CRLF input handling
+- [x] Whitespace/LineEndings (1 rule) — LinebreaksRule CRLF tests added
 - [x] Redundancy/Syntax (6 rules) — detection tests
 - [x] Redundancy/Types (4 rules) — detection tests
 - [x] Redundancy/Visibility (2 of 4 rules) — fileprivate/public need cross-file context
@@ -42,13 +42,13 @@ Migrate test infrastructure from SwiftLint's auto-generated `verifyRule` pattern
 - [x] Frameworks (2 of 4 rules) — AgentReview/SwiftUILayout are complex suggest rules
 - [x] Performance (1 of 2 rules) — PerformanceAntiPatterns needs complex context
 - [x] AccessControl (3 rules) — ModifiersOnSameLine, NoExplicitOwnership, ExtensionAccessControl
-- [ ] DeadCode (2 rules) — collecting rules, need cross-file testing
+- [x] DeadCode (2 rules) — DeadSymbolsRule + StructuralDuplicationRule cross-file tests added
 - [x] Modernization (8 rules) — concurrency + legacy rules
 - [x] Multiline — SinglePropertyPerLine covered in Naming
 
 ### Phase 3: Migrate Existing Tests
-- [ ] Migrate 48 dedicated test files to new pattern
-- [ ] Evaluate whether generated tests add value or should be removed
+- [x] Migrate 48 dedicated test files to new pattern
+- [x] Evaluate whether generated tests add value or should be removed — KEEP: they validate rule examples, disable commands, comment/string wrapping, multi-byte offsets, and severity overrides that explicit tests don't cover
 
 ## Reference
 - Apple swift-format test helpers: `.build/checkouts/swift-format/Tests/SwiftFormatTests/Rules/LintOrFormatRuleTestCase.swift`

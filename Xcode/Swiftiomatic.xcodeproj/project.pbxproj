@@ -355,7 +355,7 @@
 				INFOPLIST_FILE = SwiftiomaticExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @executable_path/../../../../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.18.3;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = app.toba.swiftiomatic.extension;
 				PRODUCT_NAME = SwiftiomaticExtension;
@@ -380,12 +380,14 @@
 				CODE_SIGN_ENTITLEMENTS = SwiftiomaticApp/SwiftiomaticApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = D6GX9PC3SR;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = SwiftiomaticApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Swiftiomatic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.18.3;
 				PRODUCT_BUNDLE_IDENTIFIER = app.toba.swiftiomatic;
 				PRODUCT_MODULE_NAME = SwiftiomaticApp;
 				PRODUCT_NAME = Swiftiomatic;
@@ -402,12 +404,14 @@
 				CODE_SIGN_ENTITLEMENTS = SwiftiomaticApp/SwiftiomaticApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = D6GX9PC3SR;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = SwiftiomaticApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Swiftiomatic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 0.18.3;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = app.toba.swiftiomatic;
 				PRODUCT_MODULE_NAME = SwiftiomaticApp;
@@ -436,7 +440,7 @@
 				INFOPLIST_FILE = SwiftiomaticExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @executable_path/../../../../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.18.3;
 				PRODUCT_BUNDLE_IDENTIFIER = app.toba.swiftiomatic.extension;
 				PRODUCT_NAME = SwiftiomaticExtension;
 				SKIP_INSTALL = YES;

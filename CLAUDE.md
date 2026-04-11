@@ -125,9 +125,18 @@ Rules span these areas regardless of scope:
 - Naming heuristics (Swift API Design Guidelines)
 - Observation framework pitfalls
 
+## Versioning
+
+Version is defined in two places that must stay in sync:
+
+1. **`Sources/SwiftiomaticKit/Models/SwiftiomaticVersion.swift`** — `SwiftiomaticVersion.current` controls CLI `--version` and internal code
+2. **`MARKETING_VERSION`** build setting in the Xcode project — controls app and extension bundle version (use `xc-project set_build_setting` to update both targets)
+
+Info.plists use `$(MARKETING_VERSION)` placeholders — never hardcode versions there.
+
 ## Swift & Build Settings
 
-- swift-tools-version: 6.2
+- swift-tools-version: 6.3
 - Swift 6.3, `.swiftLanguageMode(.v6)`
 - macOS 26+
 - Build destination: **My Mac** (macOS only — no iOS target)

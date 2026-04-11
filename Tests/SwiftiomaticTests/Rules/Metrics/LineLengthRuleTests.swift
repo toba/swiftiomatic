@@ -330,7 +330,7 @@ import Testing
     await assertViolates(
       LineLengthRule.self,
       "print(\"\(longString))\"" + "\n",
-      configuration: ["excluded_lines_patterns": []])
+      configuration: ["excluded_lines_patterns": [] as [String]])
   }
 
   // MARK: - Configuration: ignores_regex_literals

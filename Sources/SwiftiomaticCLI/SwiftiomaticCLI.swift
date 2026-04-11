@@ -6,7 +6,7 @@ import SwiftiomaticKit
 struct SwiftiomaticCLI: AsyncParsableCommand {
   static let configuration = CommandConfiguration(
     abstract: "AST-based Swift code analysis and formatting",
-    version: "0.2.0",
+    version: SwiftiomaticVersion.current.value,
     subcommands: [
       Analyze.self, FormatCommand.self, ListRules.self, GenerateDocs.self,
       MigrateCommand.self,

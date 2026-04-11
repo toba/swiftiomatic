@@ -580,7 +580,7 @@ import Testing
   @Test func violationMessage() async {
     await assertLint(
       ModifierOrderRule.self,
-      "1️⃣final public var foo: String",
+      "final public 1️⃣var foo: String",
       findings: [
         FindingSpec("1️⃣", message: "public modifier should come before final")
       ],
