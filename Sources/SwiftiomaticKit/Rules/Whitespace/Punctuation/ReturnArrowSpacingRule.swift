@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct ReturnArrowWhitespaceRule {
-  static let id = "return_arrow_whitespace"
-  static let name = "Returning Whitespace"
+struct ReturnArrowSpacingRule {
+  static let id = "return_arrow_spacing"
+  static let name = "Return Arrow Spacing"
   static let summary =
     "Return arrow and return type should be separated by a single space or on a separate line"
   static let isCorrectable = true
@@ -61,13 +61,13 @@ struct ReturnArrowWhitespaceRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension ReturnArrowWhitespaceRule: SwiftSyntaxRule {
+extension ReturnArrowSpacingRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension ReturnArrowWhitespaceRule {
+extension ReturnArrowSpacingRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionTypeSyntax) {
       if let violation = node.returnClause.arrow.arrowViolation {

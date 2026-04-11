@@ -2,8 +2,8 @@ import Testing
 
 @testable import SwiftiomaticKit
 
-@Suite(.rulesRegistered) struct FunctionNameWhitespaceRuleTests {
-  private typealias GenericSpacingType = FunctionNameWhitespaceOptions.GenericSpacingType
+@Suite(.rulesRegistered) struct FunctionNameSpacingRuleTests {
+  private typealias GenericSpacingType = FunctionNameSpacingOptions.GenericSpacingType
 
   private static let operatorWhitespaceViolationReason =
     "Operators should be surrounded by a single whitespace when defining them"
@@ -30,7 +30,7 @@ import Testing
     _ example: Example,
     ruleConfiguration: Any? = nil,
   ) async -> [RuleViolation] {
-    guard let config = makeConfig(ruleConfiguration, FunctionNameWhitespaceRule.identifier)
+    guard let config = makeConfig(ruleConfiguration, FunctionNameSpacingRule.identifier)
     else {
       return []
     }

@@ -75,8 +75,8 @@ import Testing
     await assertNoViolation(
       CollectionAlignmentRule.self,
       """
-      NSAttributedString(string: "\u{2026}", attributes: [.font: UIFont.systemFont(ofSize: 12, weight: .regular),
-                                                           .foregroundColor: UIColor(white: 0, alpha: 0.2)])
+      NSAttributedString(string: "...", attributes: [.font: UIFont.systemFont(ofSize: 12, weight: .regular),
+                                                     .foregroundColor: UIColor(white: 0, alpha: 0.2)])
       """)
   }
 
@@ -211,12 +211,12 @@ import Testing
       configuration: ["align_colons": true])
   }
 
-  @Test func alignColonsNoViolationForAttributeString() async {
+  @Test func alignColonsNoViolationForMultilineDict() async {
     await assertNoViolation(
       CollectionAlignmentRule.self,
       """
-      NSAttributedString(string: "\u{2026}", attributes: [.font: UIFont.systemFont(ofSize: 12, weight: .regular),
-                                                .foregroundColor: UIColor(white: 0, alpha: 0.2)])
+      let d = [    "short": 1,
+                "veryLong": 2]
       """,
       configuration: ["align_colons": true])
   }

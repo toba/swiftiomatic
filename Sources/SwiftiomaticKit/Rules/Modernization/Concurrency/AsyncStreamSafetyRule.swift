@@ -70,7 +70,12 @@ extension AsyncStreamSafetyRule: SwiftSyntaxRule {
 extension AsyncStreamSafetyRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
-      let callee = node.calledExpression.trimmedDescription
+      let callee: String
+      if let generic = node.calledExpression.as(GenericSpecializationExprSyntax.self) {
+        callee = generic.expression.trimmedDescription
+      } else {
+        callee = node.calledExpression.trimmedDescription
+      }
 
       guard callee == "AsyncStream" || callee == "AsyncThrowingStream" else {
         return

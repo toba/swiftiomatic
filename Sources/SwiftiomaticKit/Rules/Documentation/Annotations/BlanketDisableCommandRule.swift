@@ -54,11 +54,11 @@ struct BlanketDisableCommandRule: Rule {
     The intent of this rule is to prevent code like
 
     ```
-    // sm:disable force_unwrapping
+    // sm:disable force_unwrap
     let foo = bar!
     ```
 
-    which disables the `force_unwrapping` rule for the remainder of the file, instead of just for the specific \
+    which disables the `force_unwrap` rule for the remainder of the file, instead of just for the specific \
     violation.
 
     `next`, `this`, or `previous` can be used to restrict the disable command's scope to a single line, or it \
@@ -68,7 +68,7 @@ struct BlanketDisableCommandRule: Rule {
 
     ```
     // sm:disable:next blanket_disable_command
-    // sm:disable force_unwrapping
+    // sm:disable force_unwrap
     ```
     """
   var options = BlanketDisableCommandOptions()

@@ -45,7 +45,7 @@ import Testing
       #expect(SwiftSource(contents: original).parserDiagnostics == [])
     }
 
-    let ruleDescription = TestExamples(from: ReturnArrowWhitespaceRule.self)
+    let ruleDescription = TestExamples(from: ReturnArrowSpacingRule.self)
       .with(corrections: [Example(original): Example(corrected)])
 
     let config = try #require(

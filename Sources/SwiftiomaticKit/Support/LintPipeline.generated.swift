@@ -6,28 +6,28 @@ import SwiftSyntax
 let pipelineEligibleRuleIDs: Set<String> = [
     "acronyms",
     "agent_review",
-    "anonymous_argument_in_multiline_closure",
     "any_elimination",
     "any_object_protocol",
     "application_main",
     "async_stream_safety",
     "async_without_await",
     "attribute_name_spacing",
-    "attributes",
+    "attribute_placement",
     "balanced_xctest_lifecycle",
+    "blank_line_after_guard",
     "blank_line_after_imports",
-    "blank_lines_after_guard_statements",
     "blank_lines_around_mark",
-    "blank_lines_between_chained_functions",
     "blank_lines_between_imports",
     "blank_lines_between_scopes",
     "block_based_kvo",
     "block_comments",
+    "call_parameter_alignment",
     "closing_brace",
     "closure_body_length",
     "closure_end_indentation",
     "closure_parameter_position",
     "closure_spacing",
+    "codable_enum_raw_value",
     "collection_alignment",
     "colon",
     "comma_inheritance",
@@ -40,10 +40,11 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "contains_over_filter_count",
     "contains_over_filter_is_empty",
     "contrasted_opening_brace",
-    "control_statement",
+    "control_statement_parens",
     "convenience_type",
     "cyclomatic_complexity",
     "date_for_timing",
+    "declaration_whitespace",
     "delegate_to_async_stream",
     "deployment_target",
     "direct_return",
@@ -65,7 +66,6 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "empty_enum_arguments",
     "empty_extensions",
     "empty_parameters",
-    "empty_parentheses_with_trailing_closure",
     "empty_string",
     "empty_xctest_method",
     "enum_case_associated_values_count",
@@ -91,10 +91,10 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "for_where",
     "force_cast",
     "force_try",
-    "force_unwrapping",
+    "force_unwrap",
     "function_body_length",
     "function_default_parameter_at_end",
-    "function_name_whitespace",
+    "function_name_spacing",
     "function_parameter_count",
     "generic_consolidation",
     "generic_extensions",
@@ -119,7 +119,6 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "legacy_hashing",
     "legacy_objc_type",
     "legacy_random",
-    "let_var_whitespace",
     "line_length",
     "linebreaks",
     "local_doc_comment",
@@ -127,18 +126,21 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "lower_acl_than_parent",
     "mark",
     "mark_types",
+    "min_max_over_sorted",
     "missing_docs",
     "modifier_order",
     "modifiers_on_same_line",
     "multiline_arguments",
     "multiline_arguments_brackets",
     "multiline_call_arguments",
+    "multiline_closure_anonymous_argument",
     "multiline_literal_brackets",
     "multiline_parameters",
-    "multiple_closures_with_trailing_closure",
+    "multiple_trailing_closures",
     "mutation_during_iteration",
     "naming_heuristics",
     "nesting",
+    "no_blank_line_in_chain",
     "no_empty_block",
     "no_explicit_ownership",
     "no_extension_access_modifier",
@@ -148,7 +150,6 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "no_grouping_extension",
     "no_guard_in_tests",
     "no_space_in_method_call",
-    "non_optional_string_data_conversion",
     "non_overridable_class_declaration",
     "notification_center_detachment",
     "ns_number_init_as_function_reference",
@@ -172,10 +173,8 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "prefer_for_loop",
     "prefer_key_path",
     "prefer_self_in_static_references",
-    "prefer_self_type_over_type_of_self",
     "prefer_swift_testing",
     "prefer_weak_let",
-    "prefer_zero_over_explicit_init",
     "prefixed_toplevel_constant",
     "private_over_fileprivate",
     "private_subject",
@@ -183,18 +182,22 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "private_unit_test",
     "prohibited_super_call",
     "protocol_property_accessors_order",
-    "raw_value_for_camel_cased_codable_enum",
     "reduce_boolean",
     "reduce_into",
     "redundant_backticks",
+    "redundant_break_in_switch",
     "redundant_closure",
+    "redundant_closure_argument_parens",
     "redundant_discardable_let",
+    "redundant_else",
     "redundant_equatable",
     "redundant_extension_acl",
+    "redundant_fileprivate",
     "redundant_get",
     "redundant_internal",
     "redundant_nil_coalescing",
     "redundant_objc_attribute",
+    "redundant_override",
     "redundant_parens",
     "redundant_property",
     "redundant_public",
@@ -202,26 +205,27 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "redundant_set_access_control",
     "redundant_static_self",
     "redundant_string_enum_value",
+    "redundant_synthesized_initializer",
     "redundant_type_annotation",
     "redundant_view_builder",
     "redundant_void_return",
     "required_deinit",
     "required_enum_case",
-    "return_arrow_whitespace",
+    "return_arrow_spacing",
     "return_value_from_void_function",
     "self_binding",
     "self_in_property_initialization",
+    "self_type_over_type_of_self",
     "shorthand_argument",
     "shorthand_optional_binding",
     "simplify_generic_constraints",
     "single_line_body",
     "single_property_per_line",
     "sort_declarations",
+    "sort_enum_cases",
     "sort_imports",
     "sort_switch_cases",
     "sort_typealiases",
-    "sorted_enum_cases",
-    "sorted_first_last",
     "space_around_brackets",
     "space_around_comments",
     "space_around_generics",
@@ -232,8 +236,8 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "static_operator",
     "static_over_final_class",
     "strict_fileprivate",
+    "string_data_conversion",
     "strongified_self",
-    "superfluous_else",
     "swift62_modernization",
     "swift_testing_test_case_names",
     "swiftui_layout",
@@ -243,6 +247,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "todo",
     "toggle_bool",
     "trailing_closure",
+    "trailing_closure_empty_parens",
     "trailing_comma",
     "trailing_semicolon",
     "trailing_whitespace",
@@ -253,11 +258,6 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "unavailable_condition",
     "unavailable_function",
     "unhandled_throwing_task",
-    "unnecessary_fileprivate",
-    "unneeded_break_in_switch",
-    "unneeded_override",
-    "unneeded_parentheses_in_closure_argument",
-    "unneeded_synthesized_initializer",
     "unowned_variable_capture",
     "untyped_error_in_catch",
     "unused_closure_parameter",
@@ -268,7 +268,6 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "url_macro",
     "validate_test_cases",
     "vertical_parameter_alignment",
-    "vertical_parameter_alignment_on_call",
     "vertical_whitespace",
     "vertical_whitespace_between_cases",
     "void_function_in_ternary",
@@ -276,6 +275,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "xct_specific_matcher",
     "xctfail_message",
     "yoda_condition",
+    "zero_over_explicit_init",
 ]
 
 final class LintPipeline: SyntaxVisitor {
@@ -447,10 +447,6 @@ final class LintPipeline: SyntaxVisitor {
                 memberAccessExpr_visitPost.append(idx)
                 variableDecl_visitPost.append(idx)
 
-            case "anonymous_argument_in_multiline_closure":
-                closureExpr_visit.append(idx)
-                declReferenceExpr_visitPost.append(idx)
-
             case "any_elimination":
                 asExpr_visitPost.append(idx)
                 dictionaryType_visitPost.append(idx)
@@ -493,22 +489,19 @@ final class LintPipeline: SyntaxVisitor {
                 attribute_visitPost.append(idx)
                 declModifier_visitPost.append(idx)
 
-            case "attributes":
+            case "attribute_placement":
                 attributeList_visitPost.append(idx)
 
             case "balanced_xctest_lifecycle":
                 classDecl_visitPost.append(idx)
 
+            case "blank_line_after_guard":
+                codeBlock_visitPost.append(idx)
+
             case "blank_line_after_imports":
                 sourceFile_visitPost.append(idx)
 
-            case "blank_lines_after_guard_statements":
-                codeBlock_visitPost.append(idx)
-
             case "blank_lines_around_mark":
-                token_visit.append(idx)
-
-            case "blank_lines_between_chained_functions":
                 token_visit.append(idx)
 
             case "blank_lines_between_imports":
@@ -524,6 +517,9 @@ final class LintPipeline: SyntaxVisitor {
             case "block_comments":
                 token_visit.append(idx)
 
+            case "call_parameter_alignment":
+                functionCallExpr_visitPost.append(idx)
+
             case "closing_brace":
                 token_visitPost.append(idx)
 
@@ -538,6 +534,10 @@ final class LintPipeline: SyntaxVisitor {
 
             case "closure_spacing":
                 closureExpr_visitPost.append(idx)
+
+            case "codable_enum_raw_value":
+                enumDecl_visit.append(idx)
+                enumCaseElement_visitPost.append(idx)
 
             case "collection_alignment":
                 arrayExpr_visitPost.append(idx)
@@ -608,7 +608,7 @@ final class LintPipeline: SyntaxVisitor {
                 switchExpr_visitPost.append(idx)
                 whileStmt_visitPost.append(idx)
 
-            case "control_statement":
+            case "control_statement_parens":
                 catchClause_visitPost.append(idx)
                 guardStmt_visitPost.append(idx)
                 ifExpr_visitPost.append(idx)
@@ -629,6 +629,10 @@ final class LintPipeline: SyntaxVisitor {
 
             case "date_for_timing":
                 functionCallExpr_visitPost.append(idx)
+
+            case "declaration_whitespace":
+                codeBlockItemList_visitPost.append(idx)
+                memberBlockItemList_visitPost.append(idx)
 
             case "delegate_to_async_stream":
                 protocolDecl_visitPost.append(idx)
@@ -718,9 +722,6 @@ final class LintPipeline: SyntaxVisitor {
 
             case "empty_parameters":
                 functionType_visitPost.append(idx)
-
-            case "empty_parentheses_with_trailing_closure":
-                functionCallExpr_visitPost.append(idx)
 
             case "empty_string":
                 stringLiteralExpr_visitPost.append(idx)
@@ -831,7 +832,7 @@ final class LintPipeline: SyntaxVisitor {
             case "force_try":
                 tryExpr_visitPost.append(idx)
 
-            case "force_unwrapping":
+            case "force_unwrap":
                 forceUnwrapExpr_visitPost.append(idx)
 
             case "function_body_length":
@@ -844,7 +845,7 @@ final class LintPipeline: SyntaxVisitor {
                 functionDecl_visitPost.append(idx)
                 initializerDecl_visitPost.append(idx)
 
-            case "function_name_whitespace":
+            case "function_name_spacing":
                 functionDecl_visitPost.append(idx)
 
             case "function_parameter_count":
@@ -958,10 +959,6 @@ final class LintPipeline: SyntaxVisitor {
             case "legacy_random":
                 functionCallExpr_visitPost.append(idx)
 
-            case "let_var_whitespace":
-                codeBlockItemList_visitPost.append(idx)
-                memberBlockItemList_visitPost.append(idx)
-
             case "line_length":
                 sourceFile_visit.append(idx)
                 sourceFile_visitPost.append(idx)
@@ -983,6 +980,9 @@ final class LintPipeline: SyntaxVisitor {
 
             case "mark_types":
                 sourceFile_visitPost.append(idx)
+
+            case "min_max_over_sorted":
+                memberAccessExpr_visitPost.append(idx)
 
             case "missing_docs":
                 actorDecl_visit.append(idx)
@@ -1026,6 +1026,10 @@ final class LintPipeline: SyntaxVisitor {
             case "multiline_call_arguments":
                 functionCallExpr_visitPost.append(idx)
 
+            case "multiline_closure_anonymous_argument":
+                closureExpr_visit.append(idx)
+                declReferenceExpr_visitPost.append(idx)
+
             case "multiline_literal_brackets":
                 arrayExpr_visitPost.append(idx)
                 dictionaryExpr_visitPost.append(idx)
@@ -1034,7 +1038,7 @@ final class LintPipeline: SyntaxVisitor {
                 functionDecl_visitPost.append(idx)
                 initializerDecl_visitPost.append(idx)
 
-            case "multiple_closures_with_trailing_closure":
+            case "multiple_trailing_closures":
                 functionCallExpr_visitPost.append(idx)
 
             case "mutation_during_iteration":
@@ -1064,6 +1068,9 @@ final class LintPipeline: SyntaxVisitor {
                 protocolDecl_visitPost.append(idx)
                 structDecl_visitPost.append(idx)
                 typeAliasDecl_visitPost.append(idx)
+
+            case "no_blank_line_in_chain":
+                token_visit.append(idx)
 
             case "no_empty_block":
                 closureExpr_visitPost.append(idx)
@@ -1111,9 +1118,6 @@ final class LintPipeline: SyntaxVisitor {
 
             case "no_space_in_method_call":
                 functionCallExpr_visitPost.append(idx)
-
-            case "non_optional_string_data_conversion":
-                memberAccessExpr_visitPost.append(idx)
 
             case "non_overridable_class_declaration":
                 classDecl_visit.append(idx)
@@ -1242,17 +1246,11 @@ final class LintPipeline: SyntaxVisitor {
                 protocolDecl_visitPost.append(idx)
                 structDecl_visitPost.append(idx)
 
-            case "prefer_self_type_over_type_of_self":
-                memberAccessExpr_visitPost.append(idx)
-
             case "prefer_swift_testing":
                 classDecl_visitPost.append(idx)
 
             case "prefer_weak_let":
                 variableDecl_visitPost.append(idx)
-
-            case "prefer_zero_over_explicit_init":
-                functionCallExpr_visitPost.append(idx)
 
             case "prefixed_toplevel_constant":
                 closureExpr_visit.append(idx)
@@ -1294,10 +1292,6 @@ final class LintPipeline: SyntaxVisitor {
             case "protocol_property_accessors_order":
                 accessorBlock_visitPost.append(idx)
 
-            case "raw_value_for_camel_cased_codable_enum":
-                enumDecl_visit.append(idx)
-                enumCaseElement_visitPost.append(idx)
-
             case "reduce_boolean":
                 functionCallExpr_visitPost.append(idx)
 
@@ -1307,8 +1301,14 @@ final class LintPipeline: SyntaxVisitor {
             case "redundant_backticks":
                 token_visitPost.append(idx)
 
+            case "redundant_break_in_switch":
+                switchCase_visitPost.append(idx)
+
             case "redundant_closure":
                 functionCallExpr_visitPost.append(idx)
+
+            case "redundant_closure_argument_parens":
+                closureSignature_visitPost.append(idx)
 
             case "redundant_discardable_let":
                 accessorBlock_visit.append(idx)
@@ -1321,11 +1321,17 @@ final class LintPipeline: SyntaxVisitor {
                 codeBlock_visitPost.append(idx)
                 variableDecl_visitPost.append(idx)
 
+            case "redundant_else":
+                ifExpr_visitPost.append(idx)
+
             case "redundant_equatable":
                 structDecl_visitPost.append(idx)
 
             case "redundant_extension_acl":
                 extensionDecl_visitPost.append(idx)
+
+            case "redundant_fileprivate":
+                declModifier_visitPost.append(idx)
 
             case "redundant_get":
                 accessorBlock_visitPost.append(idx)
@@ -1338,6 +1344,10 @@ final class LintPipeline: SyntaxVisitor {
 
             case "redundant_objc_attribute":
                 attributeList_visitPost.append(idx)
+
+            case "redundant_override":
+                functionDecl_visitPost.append(idx)
+                initializerDecl_visitPost.append(idx)
 
             case "redundant_parens":
                 conditionElement_visitPost.append(idx)
@@ -1364,6 +1374,9 @@ final class LintPipeline: SyntaxVisitor {
             case "redundant_string_enum_value":
                 enumDecl_visitPost.append(idx)
 
+            case "redundant_synthesized_initializer":
+                structDecl_visit.append(idx)
+
             case "redundant_type_annotation":
                 optionalBindingCondition_visitPost.append(idx)
                 patternBinding_visitPost.append(idx)
@@ -1381,7 +1394,7 @@ final class LintPipeline: SyntaxVisitor {
             case "required_enum_case":
                 enumDecl_visitPost.append(idx)
 
-            case "return_arrow_whitespace":
+            case "return_arrow_spacing":
                 closureSignature_visitPost.append(idx)
                 functionSignature_visitPost.append(idx)
                 functionType_visitPost.append(idx)
@@ -1394,6 +1407,9 @@ final class LintPipeline: SyntaxVisitor {
 
             case "self_in_property_initialization":
                 variableDecl_visitPost.append(idx)
+
+            case "self_type_over_type_of_self":
+                memberAccessExpr_visitPost.append(idx)
 
             case "shorthand_argument":
                 closureExpr_visitPost.append(idx)
@@ -1421,6 +1437,10 @@ final class LintPipeline: SyntaxVisitor {
                 enumDecl_visitPost.append(idx)
                 structDecl_visitPost.append(idx)
 
+            case "sort_enum_cases":
+                enumDecl_visit.append(idx)
+                enumCaseDecl_visitPost.append(idx)
+
             case "sort_imports":
                 sourceFile_visitPost.append(idx)
 
@@ -1429,13 +1449,6 @@ final class LintPipeline: SyntaxVisitor {
 
             case "sort_typealiases":
                 typeAliasDecl_visitPost.append(idx)
-
-            case "sorted_enum_cases":
-                enumDecl_visit.append(idx)
-                enumCaseDecl_visitPost.append(idx)
-
-            case "sorted_first_last":
-                memberAccessExpr_visitPost.append(idx)
 
             case "space_around_brackets":
                 subscriptCallExpr_visitPost.append(idx)
@@ -1472,11 +1485,11 @@ final class LintPipeline: SyntaxVisitor {
             case "strict_fileprivate":
                 declModifier_visitPost.append(idx)
 
+            case "string_data_conversion":
+                memberAccessExpr_visitPost.append(idx)
+
             case "strongified_self":
                 optionalBindingCondition_visitPost.append(idx)
-
-            case "superfluous_else":
-                ifExpr_visitPost.append(idx)
 
             case "swift62_modernization":
                 accessorDecl_visitPost.append(idx)
@@ -1516,6 +1529,9 @@ final class LintPipeline: SyntaxVisitor {
             case "trailing_closure":
                 conditionElementList_visit.append(idx)
                 forStmt_visit.append(idx)
+                functionCallExpr_visitPost.append(idx)
+
+            case "trailing_closure_empty_parens":
                 functionCallExpr_visitPost.append(idx)
 
             case "trailing_comma":
@@ -1568,22 +1584,6 @@ final class LintPipeline: SyntaxVisitor {
             case "unhandled_throwing_task":
                 functionCallExpr_visitPost.append(idx)
 
-            case "unnecessary_fileprivate":
-                declModifier_visitPost.append(idx)
-
-            case "unneeded_break_in_switch":
-                switchCase_visitPost.append(idx)
-
-            case "unneeded_override":
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
-
-            case "unneeded_parentheses_in_closure_argument":
-                closureSignature_visitPost.append(idx)
-
-            case "unneeded_synthesized_initializer":
-                structDecl_visit.append(idx)
-
             case "unowned_variable_capture":
                 token_visitPost.append(idx)
 
@@ -1621,9 +1621,6 @@ final class LintPipeline: SyntaxVisitor {
                 functionDecl_visitPost.append(idx)
                 initializerDecl_visitPost.append(idx)
 
-            case "vertical_parameter_alignment_on_call":
-                functionCallExpr_visitPost.append(idx)
-
             case "vertical_whitespace":
                 token_visit.append(idx)
 
@@ -1648,6 +1645,9 @@ final class LintPipeline: SyntaxVisitor {
                 ifExpr_visitPost.append(idx)
                 repeatStmt_visitPost.append(idx)
                 whileStmt_visitPost.append(idx)
+
+            case "zero_over_explicit_init":
+                functionCallExpr_visitPost.append(idx)
 
             default:
                 break

@@ -100,7 +100,7 @@ import Testing
   @Test func alwaysBlanketDisableAllowsBlanketDisable() async {
     await assertNoViolation(
       BlanketDisableCommandRule.self,
-      "// sm:disable file_length\n// sm:enable file_length",
+      "// sm:disable file_length",
       configuration: ["always_blanket_disable": ["file_length"]]
     )
   }

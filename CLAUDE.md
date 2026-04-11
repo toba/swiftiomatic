@@ -10,7 +10,7 @@ AST-accurate Swift linting, formatting, and code analysis — used from Xcode, t
 - Use the xc-mcp services to build and test, but **only at the end of a work session or when the user asks**. Builds take a long time; don't build or test after every small change. Batch your work and verify once.
 - Never git stash to avoid an error — FIX the error
 - **Never directly edit generated files** (`*.generated.swift`). After adding, removing, or renaming rules, run `swift run GeneratePipeline` to regenerate `RuleRegistry+AllRules.generated.swift` and `LintPipeline.generated.swift`. The generator scans `Sources/SwiftiomaticKit/Rules/` for all `Rule`-conforming types.
-- Generated test files in `Tests/SwiftiomaticTests/Rules/Infrastructure/Generated/` are also regenerated — do not edit them manually.
+- Rule example validation is handled by a single parameterized test in `Tests/SwiftiomaticTests/Rules/Infrastructure/RuleExampleTests.swift`. It iterates over all registered rules automatically — no per-rule test boilerplate needed. Rules that require SourceKit, compiler arguments, or cross-file collection are excluded. Rules with no examples are also excluded (see follow-up issue to populate missing examples).
 
 ## How It's Used
 
@@ -21,10 +21,10 @@ Swiftiomatic has three audiences. The same rules power all of them.
 Works exactly like SwiftLint — add a Run Script phase:
 
 ```sh
-if command -v swiftiomatic >/dev/null 2>&1; then
-    swiftiomatic lint "$SRCROOT"
+if command -v sm >/dev/null 2>&1; then
+    sm lint "$SRCROOT"
 else
-    echo "warning: swiftiomatic not found — see https://github.com/toba/swiftiomatic"
+    echo "warning: sm not found — see https://github.com/toba/swiftiomatic"
 fi
 ```
 
@@ -34,14 +34,14 @@ Xcode displays warnings and errors inline in the editor. Only rules with scope `
 
 Installs as an Xcode plugin that appears in **Editor > Swiftiomatic** with commands like "Format File", "Format Selection". Applies automatic corrections from all correctable rules.
 
-Also available from the CLI: `swiftiomatic format`.
+Also available from the CLI: `sm format`.
 
 ### 3. Agent Analysis (analyze)
 
 The all-in-one command for LLM agents. It auto-formats, lints, and surfaces suggestions in a single pass:
 
 ```sh
-swiftiomatic analyze Sources/ --format json
+sm analyze Sources/ --format json
 ```
 
 What it does:
@@ -66,9 +66,9 @@ Where the rule participates. Every rule declares exactly one scope:
 
 | Scope | Runs in | Purpose |
 |---|---|---|
-| **`.lint`** | Xcode Build Phase, `swiftiomatic lint` | Definitive checks — wrong code, anti-patterns, style violations. Shows warnings/errors in the editor. |
-| **`.format`** | Xcode Editor Extension, `swiftiomatic format` | Formatting only — whitespace, indentation, brace placement. Never appears as a lint warning. |
-| **`.suggest`** | `swiftiomatic suggest` | Research patterns for agent investigation. Identifies code worth reviewing, not exact errors. Never part of lint or format runs on their own. |
+| **`.lint`** | Xcode Build Phase, `sm lint` | Definitive checks — wrong code, anti-patterns, style violations. Shows warnings/errors in the editor. |
+| **`.format`** | Xcode Editor Extension, `sm format` | Formatting only — whitespace, indentation, brace placement. Never appears as a lint warning. |
+| **`.suggest`** | `sm suggest` | Research patterns for agent investigation. Identifies code worth reviewing, not exact errors. Never part of lint or format runs on their own. |
 
 ### Correctable
 

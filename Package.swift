@@ -7,7 +7,7 @@ let package = Package(
     platforms: [.macOS(.v26)],
     products: [
         .library(name: "SwiftiomaticKit", targets: ["SwiftiomaticKit"]),
-        .executable(name: "swiftiomatic", targets: ["SwiftiomaticCLI"]),
+        .executable(name: "sm", targets: ["SwiftiomaticCLI"]),
         .plugin(name: "Format Source Code", targets: ["FormatPlugin"]),
         .plugin(name: "Lint Source Code", targets: ["LintPlugin"]),
     ],

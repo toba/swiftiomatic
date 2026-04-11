@@ -1,4 +1,4 @@
-struct FunctionNameWhitespaceOptions: SeverityBasedRuleOptions {
+struct FunctionNameSpacingOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "generic_spacing")
@@ -29,7 +29,7 @@ struct FunctionNameWhitespaceOptions: SeverityBasedRuleOptions {
     }
   }
 
-  typealias Parent = FunctionNameWhitespaceRule
+  typealias Parent = FunctionNameSpacingRule
   mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$genericSpacing.key] {

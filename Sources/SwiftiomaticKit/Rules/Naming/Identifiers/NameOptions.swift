@@ -101,7 +101,10 @@ extension NameOptions {
   }
 
   func containsOnlyAllowedCharacters(name: String) -> Bool {
-    allowedSymbolsAndAlphanumerics.isSuperset(of: CharacterSet(charactersIn: name))
+    let allowed = allowedSymbolsAndAlphanumerics
+    return name.unicodeScalars.allSatisfy { scalar in
+      allowed.contains(scalar) || !scalar.isASCII
+    }
   }
 }
 

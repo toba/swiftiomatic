@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct MultipleClosuresWithTrailingClosureRule {
-  static let id = "multiple_closures_with_trailing_closure"
-  static let name = "Multiple Closures with Trailing Closure"
+struct MultipleTrailingClosuresRule {
+  static let id = "multiple_trailing_closures"
+  static let name = "Multiple Trailing Closures"
   static let summary =
     "Trailing closure syntax should not be used when passing more than one closure argument"
   static var nonTriggeringExamples: [Example] {
@@ -43,13 +43,13 @@ struct MultipleClosuresWithTrailingClosureRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension MultipleClosuresWithTrailingClosureRule: SwiftSyntaxRule {
+extension MultipleTrailingClosuresRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension MultipleClosuresWithTrailingClosureRule {
+extension MultipleTrailingClosuresRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard let trailingClosure = node.trailingClosure,

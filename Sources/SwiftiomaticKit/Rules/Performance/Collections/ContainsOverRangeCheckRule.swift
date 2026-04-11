@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct ContainsOverRangeNilComparisonRule {
-  static let id = "contains_over_range_nil_comparison"
-  static let name = "Contains over Range Comparison to Nil"
+struct ContainsOverRangeCheckRule {
+  static let id = "contains_over_range_check"
+  static let name = "Contains Over Range Check"
   static let summary = "Prefer `contains` over `range(of:) != nil` and `range(of:) == nil`"
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {
@@ -25,19 +25,19 @@ struct ContainsOverRangeNilComparisonRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension ContainsOverRangeNilComparisonRule: SwiftSyntaxRule {
+extension ContainsOverRangeCheckRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension ContainsOverRangeNilComparisonRule {
+extension ContainsOverRangeCheckRule {
   func preprocess(file: SwiftSource) -> SourceFileSyntax? {
     file.foldedSyntaxTree
   }
 }
 
-extension ContainsOverRangeNilComparisonRule {
+extension ContainsOverRangeCheckRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: InfixOperatorExprSyntax) {
       guard

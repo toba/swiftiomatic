@@ -44,13 +44,13 @@ struct BlankLineAfterImportsRuleTests {
   }
 }
 
-// MARK: - BlankLinesAfterGuardStatementsRule
+// MARK: - BlankLineAfterGuardRule
 
 @Suite(.rulesRegistered)
-struct BlankLinesAfterGuardStatementsRuleTests {
+struct BlankLineAfterGuardRuleTests {
   @Test func noViolationWithBlankLine() async {
     await assertNoViolation(
-      BlankLinesAfterGuardStatementsRule.self,
+      BlankLineAfterGuardRule.self,
       """
       func foo() {
           guard let foo = bar else { return }
@@ -62,7 +62,7 @@ struct BlankLinesAfterGuardStatementsRuleTests {
 
   @Test func noViolationForConsecutiveGuards() async {
     await assertNoViolation(
-      BlankLinesAfterGuardStatementsRule.self,
+      BlankLineAfterGuardRule.self,
       """
       func foo() {
           guard let a = b else { return }
@@ -75,7 +75,7 @@ struct BlankLinesAfterGuardStatementsRuleTests {
 
   @Test func detectsMissingBlankAfterGuard() async {
     await assertViolates(
-      BlankLinesAfterGuardStatementsRule.self,
+      BlankLineAfterGuardRule.self,
       """
       func foo() {
           guard let foo = bar else { return }
@@ -112,13 +112,13 @@ struct BlankLinesAroundMarkRuleTests {
   }
 }
 
-// MARK: - BlankLinesBetweenChainedFunctionsRule
+// MARK: - NoBlankLineInChainRule
 
 @Suite(.rulesRegistered)
-struct BlankLinesBetweenChainedFunctionsRuleTests {
+struct NoBlankLineInChainRuleTests {
   @Test func noViolationForDirectChain() async {
     await assertNoViolation(
-      BlankLinesBetweenChainedFunctionsRule.self,
+      NoBlankLineInChainRule.self,
       """
       let result = [0, 1, 2]
           .map { $0 * 2 }
@@ -128,7 +128,7 @@ struct BlankLinesBetweenChainedFunctionsRuleTests {
 
   @Test func detectsBlankLineBetweenChainedCalls() async {
     await assertViolates(
-      BlankLinesBetweenChainedFunctionsRule.self,
+      NoBlankLineInChainRule.self,
       """
       let result = [0, 1, 2]
           .map { $0 * 2 }

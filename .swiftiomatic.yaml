@@ -14,7 +14,7 @@ rules:
     - function_parameter_count
     - line_length
     - mark
-    - multiple_closures_with_trailing_closure
+    - multiple_trailing_closures
     - nesting
     - opening_brace
     - shorthand_argument
@@ -37,7 +37,7 @@ rules:
     - contains_over_filter_count
     - contains_over_filter_is_empty
     - first_where
-    - contains_over_range_nil_comparison
+    - contains_over_range_check
     - discouraged_assert
     - direct_return
     - empty_collection_literal
@@ -55,13 +55,13 @@ rules:
     - legacy_multiple
     - legacy_objc_type
     - multiline_parameters
-    - operator_usage_whitespace
+    - operator_usage_spacing
     - optional_enum_case_matching
     - pattern_matching_keywords
     - period_spacing
     - prefer_key_path
-    - prefer_self_type_over_type_of_self
-    - prefer_zero_over_explicit_init
+    - self_type_over_type_of_self
+    - zero_over_explicit_init
     - reduce_into
     - redundant_nil_coalescing
     - redundant_self
@@ -69,13 +69,13 @@ rules:
     - redundant_type_annotation
     - return_value_from_void_function
     - shorthand_optional_binding
-    - sorted_first_last
+    - min_max_over_sorted
     - toggle_bool
     - unavailable_function
     - unhandled_throwing_task
     - redundant_escaping
-    - unneeded_parentheses_in_closure_argument
-    - unneeded_throws_rethrows
+    - redundant_closure_argument_parens
+    - redundant_throws
     - unused_declaration
     - unused_import
     - block_comments

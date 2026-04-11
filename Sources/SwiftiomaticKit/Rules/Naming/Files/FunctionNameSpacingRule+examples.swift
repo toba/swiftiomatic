@@ -1,4 +1,4 @@
-extension FunctionNameWhitespaceRule {
+extension FunctionNameSpacingRule {
   static let nonTriggeringExamples: [Example] = [
     Example("func abc(lhs: Int, rhs: Int) -> Int {}"),
     Example("func <| (lhs: Int, rhs: Int) -> Int {}"),

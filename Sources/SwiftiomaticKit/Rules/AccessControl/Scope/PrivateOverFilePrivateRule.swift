@@ -103,10 +103,6 @@ extension PrivateOverFilePrivateRule: SwiftSyntaxRule {
 
 extension PrivateOverFilePrivateRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-    override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      .all
-    }
-
     override func visitPost(_ node: ActorDeclSyntax) {
       checkModifier(on: node)
     }
@@ -149,7 +145,11 @@ extension PrivateOverFilePrivateRule {
       checkModifier(on: node)
     }
 
-    private func checkModifier(on node: some WithModifiersSyntax) {
+    private func checkModifier(on node: some WithModifiersSyntax & SyntaxProtocol) {
+      guard node.parent?.as(CodeBlockItemSyntax.self)?
+        .parent?.as(CodeBlockItemListSyntax.self)?
+        .parent?.is(SourceFileSyntax.self) ?? false
+      else { return }
       if let modifier = node.modifiers
         .first(where: { $0.name.tokenKind == .keyword(.fileprivate) })
       {

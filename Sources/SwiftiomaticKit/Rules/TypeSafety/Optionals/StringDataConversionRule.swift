@@ -1,9 +1,9 @@
 import SwiftSyntax
 
-struct NonOptionalStringDataConversionRule {
+struct StringDataConversionRule {
   private static let variablesIncluded = ["include_variables": true]
-  static let id = "non_optional_string_data_conversion"
-  static let name = "Non-optional String -> Data Conversion"
+  static let id = "string_data_conversion"
+  static let name = "String Data Conversion"
   static let summary =
     "Prefer non-optional `Data(_:)` initializer when converting `String` to `Data`"
   static var nonTriggeringExamples: [Example] {
@@ -31,16 +31,16 @@ struct NonOptionalStringDataConversionRule {
     ]
   }
 
-  var options = NonOptionalStringDataConversionOptions()
+  var options = StringDataConversionOptions()
 }
 
-extension NonOptionalStringDataConversionRule: SwiftSyntaxRule {
+extension StringDataConversionRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension NonOptionalStringDataConversionRule {
+extension StringDataConversionRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       if node.declName.baseName.text == "data",

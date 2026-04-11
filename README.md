@@ -16,9 +16,9 @@ Instead, *Swiftiomatic* has a single set of rules, each configured either to
 
 | Scope | Runs in | What it does |
 |---|---|---|
-| `.lint` | Xcode Build Phase, `swiftiomatic lint` | Wrong code, anti-patterns, style violations. Shows warnings and errors in the editor. |
-| `.format` | Xcode Editor Extension, `swiftiomatic format` | Formatting only; whitespace, indentation, brace placement. Never surfaces as a lint warning. |
-| `.suggest` | `swiftiomatic analyze` | Research patterns for nvestigation. Identifies code worth reviewing, not definitive errors. |
+| `.lint` | Xcode Build Phase, `sm lint` | Wrong code, anti-patterns, style violations. Shows warnings and errors in the editor. |
+| `.format` | Xcode Editor Extension, `sm format` | Formatting only; whitespace, indentation, brace placement. Never surfaces as a lint warning. |
+| `.suggest` | `sm analyze` | Research patterns for nvestigation. Identifies code worth reviewing, not definitive errors. |
 
 Each rule has a separate *auto-fix* property. All `.format` rules are auto-fixable (of course) whereas not all `.lint` rules are auto-fixable.
 
@@ -31,7 +31,7 @@ This tool is fully Swift 6.3 with strict concurrency and Swift Testing. Any patt
 ### Homebrew
 
 ```sh
-brew install toba/tap/swiftiomatic
+brew install toba/tap/sm
 ```
 
 ### Swift Package Manager
@@ -50,19 +50,19 @@ SPM plugins are included for both formatting and linting — usable from Xcode o
 
 ```sh
 # Lint (warnings and errors, Xcode-compatible output)
-swiftiomatic lint Sources/
+sm lint Sources/
 
 # Format (rewrite files in place)
-swiftiomatic format Sources/
+sm format Sources/
 
 # Analyze (format + lint + suggest in one pass — designed for agents)
-swiftiomatic analyze Sources/ --format json
+sm analyze Sources/ --format json
 
 # List all rules
-swiftiomatic list-rules
+sm list-rules
 
 # List only format-scope rules
-swiftiomatic list-rules --source format
+sm list-rules --source format
 ```
 
 The `analyze` command is the all-in-one mode. It formats first (applying all correctable rules), then reports remaining lint violations and suggestions. Use `--no-fix` if you want diagnostics without file changes.
@@ -72,10 +72,10 @@ The `analyze` command is the all-in-one mode. It formats first (applying all cor
 Add a Run Script phase, just like the venerable *SwiftLint*:
 
 ```sh
-if command -v swiftiomatic >/dev/null 2>&1; then
-    swiftiomatic lint "$SRCROOT"
+if command -v sm >/dev/null 2>&1; then
+    sm lint "$SRCROOT"
 else
-    echo "warning: swiftiomatic not found — see https://github.com/toba/swiftiomatic"
+    echo "warning: sm not found — see https://github.com/toba/swiftiomatic"
 fi
 ```
 

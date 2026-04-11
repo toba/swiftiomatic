@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct BlankLinesBetweenChainedFunctionsRule {
-  static let id = "blank_lines_between_chained_functions"
-  static let name = "Blank Lines Between Chained Functions"
+struct NoBlankLineInChainRule {
+  static let id = "no_blank_line_in_chain"
+  static let name = "No Blank Line in Chain"
   static let summary = "There should be no blank lines between chained function calls"
   static let scope: Scope = .format
   static var nonTriggeringExamples: [Example] {
@@ -33,13 +33,13 @@ struct BlankLinesBetweenChainedFunctionsRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension BlankLinesBetweenChainedFunctionsRule: SwiftSyntaxRule {
+extension NoBlankLineInChainRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension BlankLinesBetweenChainedFunctionsRule {
+extension NoBlankLineInChainRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
       // Look for `.` (period) tokens that are member access operators

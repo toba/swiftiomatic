@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct AttributesRule {
-  static let id = "attributes"
-  static let name = "Attributes"
+struct AttributePlacementRule {
+  static let id = "attribute_placement"
+  static let name = "Attribute Placement"
   static let summary = "Attributes should be on their own line for functions and types, same line for variables and imports"
   static let isOptIn = true
   static let rationale: String? = """
@@ -21,16 +21,16 @@ struct AttributesRule {
     Swiftiomatic's rule requires attributes to be on their own lines for functions and types, but on the same line \
     for variables and imports.
     """
-  var options = AttributesOptions()
+  var options = AttributePlacementOptions()
 }
 
-extension AttributesRule: SwiftSyntaxRule {
+extension AttributePlacementRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension AttributesRule {
+extension AttributePlacementRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: AttributeListSyntax) {
       guard let helper = node.makeHelper(locationConverter: locationConverter) else {
@@ -179,7 +179,7 @@ private struct RuleHelper {
 
 extension AttributeListSyntax {
   fileprivate func attributesAndPlacements(
-    configuration: AttributesOptions, shouldBeOnSameLine: Bool,
+    configuration: AttributePlacementOptions, shouldBeOnSameLine: Bool,
   )
     -> [(AttributeSyntax, AttributePlacement)]
   {

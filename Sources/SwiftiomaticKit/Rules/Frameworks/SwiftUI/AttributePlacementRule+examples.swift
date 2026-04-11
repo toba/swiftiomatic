@@ -1,4 +1,4 @@
-extension AttributesRule {
+extension AttributePlacementRule {
   static let nonTriggeringExamples = [
     Example("@objc var x: String"),
     Example("@objc private var x: String"),

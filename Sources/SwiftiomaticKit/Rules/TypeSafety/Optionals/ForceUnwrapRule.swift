@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct ForceUnwrappingRule {
-  static let id = "force_unwrapping"
-  static let name = "Force Unwrapping"
+struct ForceUnwrapRule {
+  static let id = "force_unwrap"
+  static let name = "Force Unwrap"
   static let summary = "Force unwrapping should be avoided"
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {
@@ -81,13 +81,13 @@ struct ForceUnwrappingRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension ForceUnwrappingRule: SwiftSyntaxRule {
+extension ForceUnwrapRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension ForceUnwrappingRule {
+extension ForceUnwrapRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ForceUnwrapExprSyntax) {
       violations.append(node.exclamationMark.positionAfterSkippingLeadingTrivia)

@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct EmptyParenthesesWithTrailingClosureRule {
-  static let id = "empty_parentheses_with_trailing_closure"
-  static let name = "Empty Parentheses with Trailing Closure"
+struct TrailingClosureEmptyParensRule {
+  static let id = "trailing_closure_empty_parens"
+  static let name = "Trailing Closure Empty Parens"
   static let summary =
     "When using trailing closures, empty parentheses should be avoided after the method call"
   static let isCorrectable = true
@@ -53,7 +53,7 @@ struct EmptyParenthesesWithTrailingClosureRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension EmptyParenthesesWithTrailingClosureRule: SwiftSyntaxRule {
+extension TrailingClosureEmptyParensRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
@@ -63,7 +63,7 @@ extension EmptyParenthesesWithTrailingClosureRule: SwiftSyntaxRule {
   }
 }
 
-extension EmptyParenthesesWithTrailingClosureRule {
+extension TrailingClosureEmptyParensRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       guard let position = node.violationPosition else {

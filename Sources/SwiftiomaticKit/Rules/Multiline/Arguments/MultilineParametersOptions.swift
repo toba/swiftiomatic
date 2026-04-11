@@ -6,7 +6,7 @@ struct MultilineParametersOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "max_number_of_single_line_parameters")
   private(set) var maxNumberOfSingleLineParameters: Int?
 
-  // sm:disable:next unneeded_throws_rethrows
+  // sm:disable:next redundant_throws
   func validate() {
     guard let maxNumberOfSingleLineParameters else {
       return

@@ -1,6 +1,6 @@
-struct CaptureVariableRule: CollectingRule {
-  static let id = "capture_variable"
-  static let name = "Capture Variable"
+struct ImplicitSelfCaptureRule: CollectingRule {
+  static let id = "implicit_self_capture"
+  static let name = "Implicit Self Capture"
   static let summary =
     "Non-constant variables should not be listed in a closure's capture list to avoid confusion about closures capturing variables at creation time"
   static let isOptIn = true
@@ -236,7 +236,7 @@ extension SwiftSource {
   }
 
   fileprivate func captureListVariables(compilerArguments: [String]) -> Set<
-    CaptureVariableRule.Variable,
+    ImplicitSelfCaptureRule.Variable,
   > {
     let offsets = captureListVariableOffsets()
     guard !offsets.isEmpty,
@@ -256,7 +256,7 @@ extension SwiftSource {
           let offset = stringView.byteOffset(forLine: line, bytePosition: column)
         else { return nil }
         return offsets.contains(offset)
-          ? CaptureVariableRule.Variable(usr: usr, offset: offset) : nil
+          ? ImplicitSelfCaptureRule.Variable(usr: usr, offset: offset) : nil
       },
     )
   }
@@ -286,7 +286,7 @@ extension SwiftSource {
   }
 
   fileprivate func declaredVariables(compilerArguments: [String])
-    -> Set<CaptureVariableRule.USR>
+    -> Set<ImplicitSelfCaptureRule.USR>
   {
     let offsets = declaredVariableOffsets()
     guard !offsets.isEmpty,
@@ -316,7 +316,7 @@ extension SwiftSource {
       let response = try? Request.index(file: path, arguments: compilerArguments)
         .sendIfNotDisabled()
     else {
-      SwiftiomaticError.indexingError(path: path, ruleID: CaptureVariableRule.identifier)
+      SwiftiomaticError.indexingError(path: path, ruleID: ImplicitSelfCaptureRule.identifier)
         .print()
       return nil
     }

@@ -2,8 +2,8 @@ import XCTest
 
 @testable import SwiftLintBuiltInRulesTests
 
-extension AttributesRuleTests {
-  static var allTests: [(String, (AttributesRuleTests) -> () throws -> Void)] = [
+extension AttributePlacementRuleTests {
+  static var allTests: [(String, (AttributePlacementRuleTests) -> () throws -> Void)] = [
     ("testAttributesWithDefaultConfiguration", testAttributesWithDefaultConfiguration),
     ("testAttributesWithAlwaysOnSameLine", testAttributesWithAlwaysOnSameLine),
     ("testAttributesWithAlwaysOnLineAbove", testAttributesWithAlwaysOnLineAbove),

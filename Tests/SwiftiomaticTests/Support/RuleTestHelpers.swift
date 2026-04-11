@@ -9,7 +9,7 @@ import Testing
 /// Uses emoji markers (1️⃣, 2️⃣, ...) to pinpoint where violations should occur.
 /// If `findings` is empty, asserts the source triggers no violations.
 ///
-///     assertLint(ForceUnwrappingRule.self, """
+///     assertLint(ForceUnwrapRule.self, """
 ///         let x = 1️⃣a!
 ///         let y = b
 ///         """,
@@ -51,7 +51,7 @@ func assertLint<R: Rule>(
 
 /// Assert that the source produces no violations for the given rule.
 ///
-///     assertNoViolation(ForceUnwrappingRule.self, "let x = a ?? b")
+///     assertNoViolation(ForceUnwrapRule.self, "let x = a ?? b")
 func assertNoViolation<R: Rule>(
   _ ruleType: R.Type,
   _ source: String,
@@ -101,7 +101,7 @@ func assertFormatting<R: Rule>(
   }
 
   // First pass: check violations
-  let file = SwiftSource.testFile(withContents: originalSource, persistToDisk: true)
+  let file = SwiftSource.testFile(withContents: originalSource)
   let storage = RuleStorage()
   let linter = await Linter(file: file, configuration: config).collect(into: storage)
   let violations = linter.ruleViolations(using: storage)
@@ -120,7 +120,7 @@ func assertFormatting<R: Rule>(
   await $parserDiagnosticsDisabledForTests.withValue(true) {
     var source = originalSource
     for _ in 0..<10 {
-      let corrFile = SwiftSource.testFile(withContents: source, persistToDisk: true)
+      let corrFile = SwiftSource.testFile(withContents: source)
       let corrStorage = RuleStorage()
       let corrLinter = await Linter(file: corrFile, configuration: config)
         .collect(into: corrStorage)

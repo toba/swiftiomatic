@@ -48,7 +48,7 @@ extension RuleOptions {
     nil
   }
 
-  // sm:disable:next unneeded_throws_rethrows
+  // sm:disable:next redundant_throws
   func validate() {
     // Do nothing by default.
   }

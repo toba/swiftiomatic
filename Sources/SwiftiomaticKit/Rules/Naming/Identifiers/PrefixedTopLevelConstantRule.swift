@@ -112,7 +112,7 @@ extension PrefixedTopLevelConstantRule {
     private let topLevelPrefix = "k"
 
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
-      .all
+      .allExcept(VariableDeclSyntax.self)
     }
 
     override func visitPost(_ node: VariableDeclSyntax) {

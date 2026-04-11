@@ -1,9 +1,9 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct PreferSelfTypeOverTypeOfSelfRule {
-  static let id = "prefer_self_type_over_type_of_self"
-  static let name = "Prefer Self Type Over Type of Self"
+struct SelfTypeOverTypeOfSelfRule {
+  static let id = "self_type_over_type_of_self"
+  static let name = "Self Type Over Type of Self"
   static let summary =
     "Prefer `Self` over `type(of: self)` when accessing properties or calling methods"
   static let isCorrectable = true
@@ -140,7 +140,7 @@ struct PreferSelfTypeOverTypeOfSelfRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension PreferSelfTypeOverTypeOfSelfRule: SwiftSyntaxRule {
+extension SelfTypeOverTypeOfSelfRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
@@ -150,7 +150,7 @@ extension PreferSelfTypeOverTypeOfSelfRule: SwiftSyntaxRule {
   }
 }
 
-extension PreferSelfTypeOverTypeOfSelfRule {
+extension SelfTypeOverTypeOfSelfRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       if let function = node.base?.as(FunctionCallExprSyntax.self), function.hasViolation {

@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct AnonymousArgumentInMultilineClosureRule {
-  static let id = "anonymous_argument_in_multiline_closure"
-  static let name = "Anonymous Argument in Multiline Closure"
+struct MultilineClosureAnonymousArgumentRule {
+  static let id = "multiline_closure_anonymous_argument"
+  static let name = "Multiline Closure Anonymous Argument"
   static let summary = "Use named arguments in multiline closures"
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {
@@ -58,13 +58,13 @@ struct AnonymousArgumentInMultilineClosureRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension AnonymousArgumentInMultilineClosureRule: SwiftSyntaxRule {
+extension MultilineClosureAnonymousArgumentRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension AnonymousArgumentInMultilineClosureRule {
+extension MultilineClosureAnonymousArgumentRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
       let startLocation = locationConverter.location(

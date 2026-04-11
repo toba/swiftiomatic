@@ -1,4 +1,4 @@
-struct AttributesOptions: SeverityBasedRuleOptions {
+struct AttributePlacementOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "attributes_with_arguments_always_on_line_above")
@@ -7,7 +7,7 @@ struct AttributesOptions: SeverityBasedRuleOptions {
   private(set) var alwaysOnSameLine = Set<String>(["@IBAction", "@NSManaged"])
   @OptionElement(key: "always_on_line_above")
   private(set) var alwaysOnNewLine = Set<String>()
-  typealias Parent = AttributesRule
+  typealias Parent = AttributePlacementRule
   mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$attributesWithArgumentsAlwaysOnNewLine.key] {

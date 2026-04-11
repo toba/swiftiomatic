@@ -1,9 +1,9 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct PreferZeroOverExplicitInitRule {
-  static let id = "prefer_zero_over_explicit_init"
-  static let name = "Prefer Zero Over Explicit Init"
+struct ZeroOverExplicitInitRule {
+  static let id = "zero_over_explicit_init"
+  static let name = "Zero Over Explicit Init"
   static let summary =
     "Prefer `.zero` over explicit init with zero parameters (e.g. `CGPoint(x: 0, y: 0)`)"
   static let isCorrectable = true
@@ -46,7 +46,7 @@ struct PreferZeroOverExplicitInitRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension PreferZeroOverExplicitInitRule: SwiftSyntaxRule {
+extension ZeroOverExplicitInitRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
@@ -56,7 +56,7 @@ extension PreferZeroOverExplicitInitRule: SwiftSyntaxRule {
   }
 }
 
-extension PreferZeroOverExplicitInitRule {
+extension ZeroOverExplicitInitRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       if node.hasViolation {

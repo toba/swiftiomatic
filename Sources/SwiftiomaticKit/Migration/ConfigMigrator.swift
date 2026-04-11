@@ -157,6 +157,9 @@ public enum ConfigMigrator {
         ))
     }
 
+    config.disabledLintRules = config.disabledLintRules.uniqued()
+    config.enabledLintRules = config.enabledLintRules.uniqued()
+
     return MigrationResult(
       configuration: config,
       warnings: warnings,
@@ -253,6 +256,9 @@ public enum ConfigMigrator {
       }
     }
 
+    config.disabledLintRules = config.disabledLintRules.uniqued()
+    config.enabledLintRules = config.enabledLintRules.uniqued()
+
     return MigrationResult(
       configuration: config,
       warnings: warnings,
@@ -304,5 +310,13 @@ public enum ConfigMigrator {
       mappedRuleCount: swiftlint.mappedRuleCount + swiftformat.mappedRuleCount,
       unmappedRuleCount: swiftlint.unmappedRuleCount + swiftformat.unmappedRuleCount,
     )
+  }
+}
+
+extension Array where Element: Hashable {
+  /// Returns elements in order, removing duplicates after their first occurrence.
+  func uniqued() -> [Element] {
+    var seen: Set<Element> = []
+    return filter { seen.insert($0).inserted }
   }
 }

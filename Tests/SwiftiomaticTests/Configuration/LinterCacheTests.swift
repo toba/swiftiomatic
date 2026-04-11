@@ -243,7 +243,7 @@ private final class TestFileManager: Sendable, LintableFileDiscovering {
   }
 
   @Test func optInRulesChangedOrAddedOrRemovedCausesAllFilesToBeReLinted() throws {
-    let initialConfig = try Configuration(dict: ["opt_in_rules": ["attributes"]])
+    let initialConfig = try Configuration(dict: ["opt_in_rules": ["attribute_placement"]])
     cacheAndValidateNoViolationsTwoFiles(configuration: initialConfig)
 
     // Change
@@ -252,7 +252,7 @@ private final class TestFileManager: Sendable, LintableFileDiscovering {
     )
     // Rules addition
     try validateNewConfigDoesNotHitCache(
-      dict: ["opt_in_rules": ["attributes", "empty_count"]],
+      dict: ["opt_in_rules": ["attribute_placement", "empty_count"]],
       initialConfig: initialConfig,
     )
     // Removal
@@ -262,7 +262,7 @@ private final class TestFileManager: Sendable, LintableFileDiscovering {
   }
 
   @Test func enabledRulesChangedOrAddedOrRemovedCausesAllFilesToBeReLinted() throws {
-    let initialConfig = try Configuration(dict: ["enabled_rules": ["attributes"]])
+    let initialConfig = try Configuration(dict: ["enabled_rules": ["attribute_placement"]])
     cacheAndValidateNoViolationsTwoFiles(configuration: initialConfig)
 
     // Change
@@ -271,7 +271,7 @@ private final class TestFileManager: Sendable, LintableFileDiscovering {
     )
     // Addition
     try validateNewConfigDoesNotHitCache(
-      dict: ["enabled_rules": ["attributes", "empty_count"]],
+      dict: ["enabled_rules": ["attribute_placement", "empty_count"]],
       initialConfig: initialConfig,
     )
     // Removal

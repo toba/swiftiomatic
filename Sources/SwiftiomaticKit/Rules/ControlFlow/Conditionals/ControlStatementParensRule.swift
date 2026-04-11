@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct ControlStatementRule {
-  static let id = "control_statement"
-  static let name = "Control Statement"
+struct ControlStatementParensRule {
+  static let id = "control_statement_parens"
+  static let name = "Control Statement Parens"
   static let summary =
     "`if`, `for`, `guard`, `switch`, `while`, and `catch` statements shouldn't unnecessarily wrap their conditionals or arguments in parentheses"
   static let isCorrectable = true
@@ -89,7 +89,7 @@ struct ControlStatementRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension ControlStatementRule: SwiftSyntaxRule {
+extension ControlStatementParensRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
@@ -99,7 +99,7 @@ extension ControlStatementRule: SwiftSyntaxRule {
   }
 }
 
-extension ControlStatementRule {
+extension ControlStatementParensRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]

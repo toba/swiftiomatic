@@ -110,7 +110,7 @@ public enum RuleMapping {
     "spaceAroundBrackets": "space_around_brackets",
     "spaceAroundComments": "space_around_comments",
     "spaceAroundGenerics": "space_around_generics",
-    "spaceAroundOperators": "operator_usage_whitespace",
+    "spaceAroundOperators": "operator_usage_spacing",
     "spaceAroundParens": "space_around_parens",
     "spaceInsideBraces": "space_inside_brackets",
     "spaceInsideBrackets": "space_inside_brackets",

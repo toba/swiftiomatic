@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct RawValueForCamelCasedCodableEnumRule {
-  static let id = "raw_value_for_camel_cased_codable_enum"
-  static let name = "Raw Value for Camel Cased Codable Enum"
+struct CodableEnumRawValueRule {
+  static let id = "codable_enum_raw_value"
+  static let name = "Codable Enum Raw Value"
   static let summary = "Camel cased cases of Codable String enums should have raw values"
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {
@@ -119,13 +119,13 @@ struct RawValueForCamelCasedCodableEnumRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension RawValueForCamelCasedCodableEnumRule: SwiftSyntaxRule {
+extension CodableEnumRawValueRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension RawValueForCamelCasedCodableEnumRule {
+extension CodableEnumRawValueRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private let codableTypes = Set(["Codable", "Decodable", "Encodable"])
 

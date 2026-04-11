@@ -18,6 +18,7 @@
 - Config file selected via file importer not loaded into app ([#184](https://github.com/toba/swiftiomatic/issues/184))
 - `redundant_sendable`; detect redundant conformance in public extension context ([#177](https://github.com/toba/swiftiomatic/issues/177))
 - Release workflow fails; `macos-15` runner lacks Swift 6.3 / Xcode 26 ([#190](https://github.com/toba/swiftiomatic/issues/190))
+- Fix 11 rule bugs surfaced by pipeline regeneration and test coverage
 
 ### 🗜️ Tweaks
 
@@ -35,4 +36,7 @@
 - Review upstream SwiftLint, SwiftFormat, and swift-format releases ([#185](https://github.com/toba/swiftiomatic/issues/185))
 - Improve rule summaries; fill empty `static let summary` fields ([#181](https://github.com/toba/swiftiomatic/issues/181))
 - Clean up test infrastructure from Swift review ([#179](https://github.com/toba/swiftiomatic/issues/179))
-- Add test job to CI; gate Homebrew update on tests passing
+- Add test job to CI; gate Homebrew update on tests passing ([#191](https://github.com/toba/swiftiomatic/issues/191))
+- Standardize rule names for consistency ([#189](https://github.com/toba/swiftiomatic/issues/189))
+- Rename CLI binary from `swiftiomatic` to `sm` ([#192](https://github.com/toba/swiftiomatic/issues/192))
+- Populate missing rule examples for parameterized testing ([#193](https://github.com/toba/swiftiomatic/issues/193))

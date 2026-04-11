@@ -1,4 +1,4 @@
-struct OperatorUsageWhitespaceOptions: SeverityBasedRuleOptions {
+struct OperatorUsageSpacingOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "lines_look_around")
@@ -7,7 +7,7 @@ struct OperatorUsageWhitespaceOptions: SeverityBasedRuleOptions {
   private(set) var skipAlignedConstants = true
   @OptionElement(key: "allowed_no_space_operators")
   private(set) var allowedNoSpaceOperators = ["...", "..<"]
-  typealias Parent = OperatorUsageWhitespaceRule
+  typealias Parent = OperatorUsageSpacingRule
   mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$linesLookAround.key] {

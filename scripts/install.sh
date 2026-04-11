@@ -10,19 +10,19 @@ PROJECT="Xcode/Swiftiomatic.xcodeproj"
 
 # --- CLI (Swift Package) ---
 
-bin="$(realpath "$(brew --prefix swiftiomatic)/bin")"
+bin="$(realpath "$(brew --prefix sm)/bin")"
 
 echo "Building CLI (release)..."
 swift build -c release
 
-src="$(swift build -c release --show-bin-path)/swiftiomatic"
+src="$(swift build -c release --show-bin-path)/sm"
 if [[ ! -f "$src" ]]; then
-    echo "  ERROR: swiftiomatic binary not found at $src"
+    echo "  ERROR: sm binary not found at $src"
     exit 1
 fi
 
-strip -x -o "$bin/swiftiomatic" "$src"
-echo "  swiftiomatic → $bin/swiftiomatic"
+strip -x -o "$bin/sm" "$src"
+echo "  sm → $bin/sm"
 
 # --- App + Source Editor Extension (Xcode project) ---
 

@@ -30,6 +30,99 @@ struct SortImportsRuleTests {
       input: "import Foo\nimport Bar\n",
       expected: "import Bar\nimport Foo\n")
   }
+
+  // MARK: Length sorting
+
+  @Test func noViolationForLengthSortedImports() async {
+    await assertNoViolation(
+      SortImportsRule.self,
+      """
+      import Foo
+      import BarBar
+      import BazBazBaz
+      """,
+      configuration: ["sort_order": "length"])
+  }
+
+  @Test func detectsUnsortedImportsByLength() async {
+    await assertViolates(
+      SortImportsRule.self,
+      """
+      import BazBazBaz
+      import Foo
+      import BarBar
+      """,
+      configuration: ["sort_order": "length"])
+  }
+
+  @Test func correctsUnsortedImportsByLength() async {
+    await assertFormatting(
+      SortImportsRule.self,
+      input: "import BazBazBaz\nimport Foo\nimport BarBar\n",
+      expected: "import Foo\nimport BarBar\nimport BazBazBaz\n",
+      configuration: ["sort_order": "length"])
+  }
+
+  @Test func lengthSortBreaksTiesAlphabetically() async {
+    await assertFormatting(
+      SortImportsRule.self,
+      input: "import Foo\nimport Bar\nimport Baz\n",
+      expected: "import Bar\nimport Baz\nimport Foo\n",
+      configuration: ["sort_order": "length"])
+  }
+
+  // MARK: Contiguous grouping (default)
+
+  @Test func contiguousGroupingPreservesBlankLineSeparation() async {
+    await assertNoViolation(
+      SortImportsRule.self,
+      """
+      import Foundation
+      import UIKit
+
+      import Alamofire
+      import SnapKit
+      """)
+  }
+
+  @Test func contiguousGroupingSortsWithinEachGroup() async {
+    await assertFormatting(
+      SortImportsRule.self,
+      input: "import UIKit\nimport Foundation\n\nimport SnapKit\nimport Alamofire\n",
+      expected: "import Foundation\nimport UIKit\n\nimport Alamofire\nimport SnapKit\n")
+  }
+
+  @Test func contiguousGroupingBreaksOnComments() async {
+    await assertNoViolation(
+      SortImportsRule.self,
+      """
+      import Foundation
+      import UIKit
+      // Third party
+      import Alamofire
+      """)
+  }
+
+  // MARK: All grouping
+
+  @Test func allGroupingIgnoresBlankLines() async {
+    await assertFormatting(
+      SortImportsRule.self,
+      input: "import UIKit\nimport Foundation\n\nimport Alamofire\n",
+      expected: "import Alamofire\nimport Foundation\n\nimport UIKit\n",
+      configuration: ["grouping": "all"])
+  }
+
+  @Test func allGroupingIgnoresComments() async {
+    await assertViolates(
+      SortImportsRule.self,
+      """
+      import UIKit
+      // Third party
+      import Alamofire
+      """,
+      configuration: ["grouping": "all"])
+  }
 }
 
 // MARK: - SortDeclarationsRule

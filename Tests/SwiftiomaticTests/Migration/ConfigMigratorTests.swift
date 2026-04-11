@@ -164,4 +164,49 @@ import Testing
     let count = merged.configuration.disabledLintRules.filter { $0 == "trailing_comma" }.count
     #expect(count == 1)
   }
+
+  @Test func migrateSwiftLintDeduplicatesWithinSource() {
+    // empty_count is renamed to empty_collection_literal; including both
+    // should produce only one entry in the disabled list
+    var slConfig = SwiftLintConfig()
+    slConfig.disabledRules = ["empty_count", "empty_collection_literal"]
+
+    let result = ConfigMigrator.migrate(swiftlint: slConfig)
+
+    let count = result.configuration.disabledLintRules.filter {
+      $0 == "empty_collection_literal"
+    }.count
+    #expect(count == 1)
+  }
+
+  @Test func migrateSwiftLintDeduplicatesEnabledWithinSource() {
+    var slConfig = SwiftLintConfig()
+    slConfig.optInRules = ["contains_over_first_not_nil", "first_where"]
+
+    let result = ConfigMigrator.migrate(swiftlint: slConfig)
+
+    let count = result.configuration.enabledLintRules.filter {
+      $0 == "first_where"
+    }.count
+    #expect(count == 1)
+  }
+
+  @Test func mergeDeduplicatesWithinAndAcrossSources() {
+    // SwiftLint has both the old and new name
+    var slConfig = SwiftLintConfig()
+    slConfig.disabledRules = ["empty_count", "empty_collection_literal"]
+
+    // SwiftFormat also maps to empty_collection_literal
+    var sfConfig = SwiftFormatConfig()
+    sfConfig.disabledRules = ["isEmpty"]  // unmapped, won't collide
+
+    let slResult = ConfigMigrator.migrate(swiftlint: slConfig)
+    let sfResult = ConfigMigrator.migrate(swiftformat: sfConfig)
+    let merged = ConfigMigrator.merge(swiftlint: slResult, swiftformat: sfResult)
+
+    let count = merged.configuration.disabledLintRules.filter {
+      $0 == "empty_collection_literal"
+    }.count
+    #expect(count == 1)
+  }
 }

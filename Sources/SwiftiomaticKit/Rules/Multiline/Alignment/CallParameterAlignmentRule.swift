@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct VerticalParameterAlignmentOnCallRule {
-  static let id = "vertical_parameter_alignment_on_call"
-  static let name = "Vertical Parameter Alignment on Call"
+struct CallParameterAlignmentRule {
+  static let id = "call_parameter_alignment"
+  static let name = "Call Parameter Alignment"
   static let summary =
     "Function parameters should be aligned vertically if they're in multiple lines in a method call"
   static let isOptIn = true
@@ -167,13 +167,13 @@ struct VerticalParameterAlignmentOnCallRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension VerticalParameterAlignmentOnCallRule: SwiftSyntaxRule {
+extension CallParameterAlignmentRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension VerticalParameterAlignmentOnCallRule {
+extension CallParameterAlignmentRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       let arguments = node.arguments

@@ -43,7 +43,7 @@ import Testing
   }
 
   @Test func severityWorksAsOnlyParameter() throws {
-    var config = AttributesOptions()
+    var config = AttributePlacementOptions()
     #expect(config.severity == .warning)
     try config.apply(configuration: ["severity": "error"])
     #expect(config.severity == .error)

@@ -5,6 +5,7 @@ struct FileNameNoSpaceRule: Rule {
   static let name = "File Name no Space"
   static let summary = "File name should not contain any whitespace"
   static let isOptIn = true
+  static let requiresFileOnDisk = true
   var options = FileNameNoSpaceOptions()
 
   func validate(file: SwiftSource) -> [RuleViolation] {

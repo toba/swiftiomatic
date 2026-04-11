@@ -1,14 +1,14 @@
 import Foundation
 import SwiftSyntax
 
-struct OperatorUsageWhitespaceRule: Rule {
-  static let id = "operator_usage_whitespace"
-  static let name = "Operator Usage Whitespace"
+struct OperatorUsageSpacingRule: Rule {
+  static let id = "operator_usage_spacing"
+  static let name = "Operator Usage Spacing"
   static let summary =
     "Operators should be surrounded by a single whitespace when they are being used"
   static let isCorrectable = true
   static let isOptIn = true
-  var options = OperatorUsageWhitespaceOptions()
+  var options = OperatorUsageSpacingOptions()
 
   func validate(file: SwiftSource) -> [RuleViolation] {
     violationRanges(file: file).map { range, _ in

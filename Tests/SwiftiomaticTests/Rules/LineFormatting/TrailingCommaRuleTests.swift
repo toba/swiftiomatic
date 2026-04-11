@@ -60,8 +60,8 @@ import Testing
   @Test func multipleTrailingCommasTrigger() async {
     await assertLint(
       TrailingCommaRule.self,
-      "let foo = [1, 2, 3,] + [4, 5, 61️⃣,]",
-      findings: [FindingSpec("1️⃣")])
+      "let foo = [1, 2, 31️⃣,] + [4, 5, 62️⃣,]",
+      findings: [FindingSpec("1️⃣"), FindingSpec("2️⃣")])
   }
 
   @Test func stringInterpolationTrailingCommaTriggers() async {
@@ -117,7 +117,7 @@ import Testing
   @Test func violationMessageForDefault() async {
     await assertLint(
       TrailingCommaRule.self,
-      "let array = [\n\t1,\n\t2,\n1️⃣]\n",
+      "let array = [\n\t1,\n\t21️⃣,\n]\n",
       findings: [
         FindingSpec("1️⃣", message: "Collection literals should not have trailing commas")
       ])

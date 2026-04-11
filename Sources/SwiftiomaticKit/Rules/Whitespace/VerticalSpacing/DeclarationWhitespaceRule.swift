@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct LetVarWhitespaceRule {
-  static let id = "let_var_whitespace"
-  static let name = "Variable Declaration Whitespace"
+struct DeclarationWhitespaceRule {
+  static let id = "declaration_whitespace"
+  static let name = "Declaration Whitespace"
   static let summary =
     "Variable declarations should be separated from other statements by a blank line"
   static let isOptIn = true
@@ -215,13 +215,13 @@ struct LetVarWhitespaceRule {
   }
 }
 
-extension LetVarWhitespaceRule: SwiftSyntaxRule {
+extension DeclarationWhitespaceRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension LetVarWhitespaceRule {
+extension DeclarationWhitespaceRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberBlockItemListSyntax) {
       collectViolations(from: node, using: \.decl)

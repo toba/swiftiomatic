@@ -1,22 +1,22 @@
 import SwiftSyntax
 
-struct FunctionNameWhitespaceRule {
-  static let id = "function_name_whitespace"
-  static let name = "Function Name Whitespace"
+struct FunctionNameSpacingRule {
+  static let id = "function_name_spacing"
+  static let name = "Function Name Spacing"
   static let summary =
     "There should be consistent whitespace before and after function names and generic parameters."
   static let isCorrectable = true
   static let deprecatedAliases: Set<String> = ["operator_whitespace"]
-  var options = FunctionNameWhitespaceOptions()
+  var options = FunctionNameSpacingOptions()
 }
 
-extension FunctionNameWhitespaceRule: SwiftSyntaxRule {
+extension FunctionNameSpacingRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension FunctionNameWhitespaceRule {
+extension FunctionNameSpacingRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       validateFuncKeywordSpacing(for: node)

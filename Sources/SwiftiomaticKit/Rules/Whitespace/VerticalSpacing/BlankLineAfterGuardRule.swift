@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct BlankLinesAfterGuardStatementsRule {
-  static let id = "blank_lines_after_guard_statements"
-  static let name = "Blank Lines After Guard Statements"
+struct BlankLineAfterGuardRule {
+  static let id = "blank_line_after_guard"
+  static let name = "Blank Line After Guard"
   static let summary =
     "There should be a blank line after the last guard statement before other code"
   static let scope: Scope = .format
@@ -46,13 +46,13 @@ struct BlankLinesAfterGuardStatementsRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension BlankLinesAfterGuardStatementsRule: SwiftSyntaxRule {
+extension BlankLineAfterGuardRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension BlankLinesAfterGuardStatementsRule {
+extension BlankLineAfterGuardRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: CodeBlockSyntax) {
       checkStatements(node.statements)

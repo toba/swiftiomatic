@@ -14,7 +14,7 @@ public enum DiagnosticDeduplicator {
     "duplicate_imports": "duplicateImports",
     "opening_brace": "braces",
     "statement_position": "elseOnSameLine",
-    "return_arrow_whitespace": "spaceAroundOperators",
+    "return_arrow_spacing": "spaceAroundOperators",
     "colon": "spaceAroundOperators",
     "mark": "blankLinesAroundMark",
   ]

@@ -6,6 +6,7 @@ struct FileNameRule: Rule {
   static let name = "File Name"
   static let summary = "File name should match a type or extension declared in the file (if any)"
   static let isOptIn = true
+  static let requiresFileOnDisk = true
   var options = FileNameOptions()
 
   func validate(file: SwiftSource) -> [RuleViolation] {

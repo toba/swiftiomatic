@@ -26,7 +26,7 @@ extension LintPlugin: CommandPlugin {
         context: PluginContext,
         arguments: [String]
     ) async throws {
-        let tool = try context.tool(named: "swiftiomatic")
+        let tool = try context.tool(named: "sm")
 
         var argExtractor = ArgumentExtractor(arguments)
         let targetNames = argExtractor.extractOption(named: "target")
@@ -48,7 +48,7 @@ import XcodeProjectPlugin
 
 extension LintPlugin: XcodeCommandPlugin {
     func performCommand(context: XcodeProjectPlugin.XcodePluginContext, arguments: [String]) throws {
-        let tool = try context.tool(named: "swiftiomatic")
+        let tool = try context.tool(named: "sm")
         try lint(
             tool: tool,
             targetDirectories: [context.xcodeProject.directoryURL.path()]

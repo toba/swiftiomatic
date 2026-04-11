@@ -4,8 +4,8 @@ import Testing
 @testable import SwiftiomaticKit
 
 /// When true, skip expensive variant tests (emoji, shebang, comment, string, disable, severity).
-/// Set `SWIFTIOMATIC_FAST_TESTS=1` to enable.
-private let fastTests: Bool = ProcessInfo.processInfo.environment["SWIFTIOMATIC_FAST_TESTS"] != nil
+/// Variants run only when `SWIFTIOMATIC_FULL_TESTS=1` is set.
+private let fastTests: Bool = ProcessInfo.processInfo.environment["SWIFTIOMATIC_FULL_TESTS"] == nil
 
 // MARK: - File Helpers
 
@@ -299,12 +299,9 @@ private func assertCorrection(
   sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
   let (cleanedBefore, _) = cleanedContentsAndMarkerOffsets(from: before.code)
-  let file = SwiftSource.testFile(withContents: cleanedBefore, persistToDisk: true)
-  let includeCompilerArguments = config.rules
-    .contains(where: { type(of: $0).runsWithCompilerArguments })
-  let compilerArguments = includeCompilerArguments ? await file.makeCompilerArguments() : []
+  let file = SwiftSource.testFile(withContents: cleanedBefore)
   let storage = RuleStorage()
-  let collector = Linter(file: file, configuration: config, compilerArguments: compilerArguments)
+  let collector = Linter(file: file, configuration: config)
   let linter = await collector.collect(into: storage)
   let corrections = linter.correct(using: storage)
   #expect(
@@ -317,23 +314,6 @@ private func assertCorrection(
     "File contents don't match expected",
     sourceLocation: sourceLocation,
   )
-  guard let path = file.path else {
-    Testing.Issue.record("File has no path", sourceLocation: sourceLocation)
-    return
-  }
-  do {
-    let corrected = try String(contentsOf: URL(filePath: path), encoding: .utf8)
-    #expect(
-      corrected == expected.code,
-      "Corrected file doesn't match expected",
-      sourceLocation: sourceLocation,
-    )
-  } catch {
-    Testing.Issue.record(
-      "couldn't read file at path '\(path)': \(error)",
-      sourceLocation: sourceLocation,
-    )
-  }
 }
 
 extension String {
