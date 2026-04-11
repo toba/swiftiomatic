@@ -1,15 +1,15 @@
 ---
 # 6d8-j44
 title: Deduplicate rules in migrate config output
-status: in-progress
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-11T20:34:38Z
-updated_at: 2026-04-11T20:35:06Z
+updated_at: 2026-04-11T20:56:49Z
 sync:
     github:
         issue_number: "194"
-        synced_at: "2026-04-11T20:48:50Z"
+        synced_at: "2026-04-11T21:07:03Z"
 ---
 
 When `swiftiomatic migrate` merges both a `.swiftlint.yml` and `.swiftformat` config, the generated `.swiftiomatic.yaml` contains duplicate rule entries in the enabled/disabled lists.
@@ -27,6 +27,13 @@ This happens because both SwiftLint and SwiftFormat map different source rules t
 
 ## Fix
 
-- [ ] Deduplicate enabled/disabled rule lists in `ConfigMigrator.merge()`
-- [ ] Also deduplicate within a single source (e.g. two SwiftLint rules both mapping to `function_parameter_count`)
-- [ ] Add a test covering the merge dedup behavior
+- [x] Deduplicate enabled/disabled rule lists in `ConfigMigrator.merge()`
+- [x] Also deduplicate within a single source (e.g. two SwiftLint rules both mapping to `function_parameter_count`)
+- [x] Add a test covering the merge dedup behavior
+
+
+## Summary of Changes
+
+Added `uniqued()` (order-preserving dedup) to both `migrate(swiftlint:)` and `migrate(swiftformat:)` return paths in `ConfigMigrator.swift`. The `merge()` method already deduplicated across sources but the individual migrate methods did not deduplicate when multiple source rules mapped to the same target.
+
+Added 3 new tests covering within-source and cross-source dedup scenarios. All 17 ConfigMigratorTests pass.

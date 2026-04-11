@@ -19,6 +19,7 @@
 - `redundant_sendable`; detect redundant conformance in public extension context ([#177](https://github.com/toba/swiftiomatic/issues/177))
 - Release workflow fails; `macos-15` runner lacks Swift 6.3 / Xcode 26 ([#190](https://github.com/toba/swiftiomatic/issues/190))
 - Fix 11 rule bugs surfaced by pipeline regeneration and test coverage
+- Deduplicate rules in migrate config output ([#194](https://github.com/toba/swiftiomatic/issues/194))
 
 ### 🗜️ Tweaks
 

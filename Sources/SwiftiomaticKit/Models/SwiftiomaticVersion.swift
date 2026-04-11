@@ -6,5 +6,5 @@ public struct SwiftiomaticVersion: VersionComparable, Sendable {
     value
   }
 
-  public static let current = Self(value: "0.18.3")
+  public static let current = Self(value: "0.22.0")
 }

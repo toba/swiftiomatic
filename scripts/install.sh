@@ -10,7 +10,8 @@ PROJECT="Xcode/Swiftiomatic.xcodeproj"
 
 # --- CLI (Swift Package) ---
 
-bin="$(realpath "$(brew --prefix sm)/bin")"
+cellar="$(brew --cellar)/sm/dev"
+mkdir -p "$cellar/bin"
 
 echo "Building CLI (release)..."
 swift build -c release
@@ -21,8 +22,9 @@ if [[ ! -f "$src" ]]; then
     exit 1
 fi
 
-strip -x -o "$bin/sm" "$src"
-echo "  sm → $bin/sm"
+strip -x -o "$cellar/bin/sm" "$src"
+brew link --overwrite sm
+echo "  sm → $(brew --prefix)/bin/sm"
 
 # --- App + Source Editor Extension (Xcode project) ---
 

@@ -78,7 +78,8 @@
       "Bash(codesign -dv \"/Applications/Swiftiomatic.app/Contents/PlugIns/SwiftiomaticExtension.appex\")",
       "Bash(swift:*)",
       "Bash(xcode-select:*)",
-      "Bash(swiftiomatic migrate:*)"
+      "Bash(swiftiomatic migrate:*)",
+      "Bash(gh workflow:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
