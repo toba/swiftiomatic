@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct SortedFirstLastRule {
-  static let id = "sorted_first_last"
-  static let name = "Min or Max over Sorted First or Last"
+struct MinMaxOverSortedRule {
+  static let id = "min_max_over_sorted"
+  static let name = "Min/Max Over Sorted"
   static let summary = "Prefer using `min()` or `max()` over `sorted().first` or `sorted().last`"
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {
@@ -50,13 +50,13 @@ struct SortedFirstLastRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension SortedFirstLastRule: SwiftSyntaxRule {
+extension MinMaxOverSortedRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension SortedFirstLastRule {
+extension MinMaxOverSortedRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: MemberAccessExprSyntax) {
       guard

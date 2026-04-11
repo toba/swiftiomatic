@@ -1,9 +1,9 @@
 import Foundation
 import SwiftSyntax
 
-struct SortedEnumCasesRule {
-  static let id = "sorted_enum_cases"
-  static let name = "Sorted Enum Cases"
+struct SortEnumCasesRule {
+  static let id = "sort_enum_cases"
+  static let name = "Sort Enum Cases"
   static let summary = "Enum cases should be sorted"
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {
@@ -142,13 +142,13 @@ struct SortedEnumCasesRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension SortedEnumCasesRule: SwiftSyntaxRule {
+extension SortEnumCasesRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension SortedEnumCasesRule {
+extension SortEnumCasesRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .allExcept(EnumDeclSyntax.self)

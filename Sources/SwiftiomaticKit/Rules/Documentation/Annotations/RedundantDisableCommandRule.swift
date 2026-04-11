@@ -1,7 +1,7 @@
 struct RedundantDisableCommandRule: Rule, Sendable {
   static let id = "redundant_disable_command"
   static let name = "Redundant Disable Command"
-  static let summary = "Disable commands for rules that didn't trigger a violation are superfluous"
+  static let summary = "Disable commands for rules that didn't trigger a violation are redundant"
   static var nonTriggeringExamples: [Example] {
     [
       Example("let abc:Void // sm:disable:this colon"),

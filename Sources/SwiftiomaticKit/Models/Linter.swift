@@ -20,24 +20,24 @@ private struct LintResult {
 }
 
 extension Rule {
-  private func superfluousDisableCommandViolations(
+  private func redundantDisableCommandViolations(
     regions: [Region],
-    superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
+    redundantDisableCommandRule: RedundantDisableCommandRule?,
     allViolations: [RuleViolation],
   ) -> [RuleViolation] {
-    guard regions.isNotEmpty, let superfluousDisableCommandRule else {
+    guard regions.isNotEmpty, let redundantDisableCommandRule else {
       return []
     }
 
     let regions = regions.perIdentifierRegions
 
-    let regionsDisablingSuperfluousDisableRule = regions.filter { region in
-      region.isRuleDisabled(superfluousDisableCommandRule)
+    let regionsDisablingRedundantDisableRule = regions.filter { region in
+      region.isRuleDisabled(redundantDisableCommandRule)
     }
 
-    var superfluousDisableCommandViolations = [RuleViolation]()
+    var redundantDisableCommandViolations = [RuleViolation]()
     for region in regions {
-      if regionsDisablingSuperfluousDisableRule
+      if regionsDisablingRedundantDisableRule
         .contains(where: { $0.contains(region.start) })
       {
         continue
@@ -56,20 +56,20 @@ extension Rule {
         }
       }
       if !disableCommandValid {
-        let reason = superfluousDisableCommandRule.reason(
+        let reason = redundantDisableCommandRule.reason(
           forRuleIdentifier: disabledRuleIdentifier.stringRepresentation,
         )
-        superfluousDisableCommandViolations.append(
+        redundantDisableCommandViolations.append(
           RuleViolation(
-            anyRuleType: type(of: superfluousDisableCommandRule),
-            severity: superfluousDisableCommandRule.options.severity,
+            anyRuleType: type(of: redundantDisableCommandRule),
+            severity: redundantDisableCommandRule.options.severity,
             location: region.start,
             reason: reason,
           ),
         )
       }
     }
-    return superfluousDisableCommandViolations
+    return redundantDisableCommandViolations
   }
 
   fileprivate func shouldRun(onFile file: SwiftSource) -> Bool {
@@ -101,7 +101,7 @@ extension Rule {
     regions: [Region],
     benchmark: Bool,
     storage: RuleStorage,
-    superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
+    redundantDisableCommandRule: RedundantDisableCommandRule?,
     compilerArguments: [String],
   ) -> LintResult {
     let ruleID = Self.identifier
@@ -117,7 +117,7 @@ extension Rule {
         regions: regions,
         benchmark: benchmark,
         storage: storage,
-        superfluousDisableCommandRule: superfluousDisableCommandRule,
+        redundantDisableCommandRule: redundantDisableCommandRule,
         compilerArguments: compilerArguments,
       )
     }
@@ -129,7 +129,7 @@ extension Rule {
     regions: [Region],
     benchmark: Bool,
     storage: RuleStorage,
-    superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
+    redundantDisableCommandRule: RedundantDisableCommandRule?,
     compilerArguments: [String],
   ) -> LintResult {
     let violations = validate(file: file, using: storage, compilerArguments: compilerArguments)
@@ -139,7 +139,7 @@ extension Rule {
       regions: regions,
       benchmark: benchmark,
       ruleTime: nil,
-      superfluousDisableCommandRule: superfluousDisableCommandRule,
+      redundantDisableCommandRule: redundantDisableCommandRule,
     )
   }
 
@@ -151,7 +151,7 @@ extension Rule {
     regions: [Region],
     benchmark _: Bool,
     ruleTime: (String, Double)?,
-    superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
+    redundantDisableCommandRule: RedundantDisableCommandRule?,
   ) -> LintResult {
     let ruleID = Self.identifier
 
@@ -168,15 +168,15 @@ extension Rule {
 
     let ruleIDs =
       Self.allIdentifiers
-      + (superfluousDisableCommandRule.map { type(of: $0) }?.allIdentifiers ?? []) + [
+      + (redundantDisableCommandRule.map { type(of: $0) }?.allIdentifiers ?? []) + [
         RuleIdentifier.all.stringRepresentation
       ]
     let ruleIdentifiers = Set(ruleIDs.map { RuleIdentifier($0) })
 
-    let superfluousDisableCommandViolations = superfluousDisableCommandViolations(
+    let redundantDisableCommandViolations = redundantDisableCommandViolations(
       regions: regions.count > 1
         ? file.regions(restrictingRuleIdentifiers: ruleIdentifiers) : regions,
-      superfluousDisableCommandRule: superfluousDisableCommandRule,
+      redundantDisableCommandRule: redundantDisableCommandRule,
       allViolations: violations,
     )
 
@@ -198,7 +198,7 @@ extension Rule {
     }
 
     return LintResult(
-      violations: enabledViolations + superfluousDisableCommandViolations,
+      violations: enabledViolations + redundantDisableCommandViolations,
       ruleTime: ruleTime,
       deprecatedToValidIDPairs: deprecatedToValidIDPairs,
     )
@@ -206,7 +206,7 @@ extension Rule {
 }
 
 extension [Region] {
-  /// Normally regions correspond to changes in the set of enabled rules. To detect superfluous disable command
+  /// Normally regions correspond to changes in the set of enabled rules. To detect redundant disable command
   /// rule violations effectively, we need individual regions for each disabled rule identifier.
   fileprivate var perIdentifierRegions: [Region] {
     guard isNotEmpty else {
@@ -298,7 +298,7 @@ struct Linter: @unchecked Sendable {
       if compilerArguments.isEmpty {
         return !type(of: rule).runsWithCompilerArguments
       }
-      return type(of: rule).runsWithCompilerArguments || rule is SuperfluousDisableCommandRule
+      return type(of: rule).runsWithCompilerArguments || rule is RedundantDisableCommandRule
     }
     self.rules = rules
     isCollecting = rules.contains(where: { type(of: $0).isCrossFile })
@@ -385,10 +385,10 @@ struct CollectedLinter: @unchecked Sendable {
     }
 
     let regions = file.regions()
-    let superfluousDisableCommandRule =
+    let redundantDisableCommandRule =
       rules.first(where: {
-        $0 is SuperfluousDisableCommandRule
-      }) as? SuperfluousDisableCommandRule
+        $0 is RedundantDisableCommandRule
+      }) as? RedundantDisableCommandRule
 
     // Partition rules into pipeline-eligible and fallback
     var pipelineRules: [(rule: any SwiftSyntaxRule, index: Int)] = []
@@ -414,7 +414,7 @@ struct CollectedLinter: @unchecked Sendable {
         file: file,
         regions: regions,
         benchmark: benchmark,
-        superfluousDisableCommandRule: superfluousDisableCommandRule,
+        redundantDisableCommandRule: redundantDisableCommandRule,
       )
     } else {
       pipelineResults = []
@@ -425,20 +425,20 @@ struct CollectedLinter: @unchecked Sendable {
       $0.lint(
         file: file, regions: regions, benchmark: benchmark,
         storage: storage,
-        superfluousDisableCommandRule: superfluousDisableCommandRule,
+        redundantDisableCommandRule: redundantDisableCommandRule,
         compilerArguments: compilerArguments,
       )
     }
 
     let validationResults = pipelineResults + fallbackResults
-    let undefinedSuperfluousCommandViolations = undefinedSuperfluousCommandViolations(
+    let undefinedRedundantCommandViolations = undefinedRedundantCommandViolations(
       regions: regions, configuration: configuration,
-      superfluousDisableCommandRule: superfluousDisableCommandRule,
+      redundantDisableCommandRule: redundantDisableCommandRule,
     )
 
     let violations =
       validationResults
-      .flatMap(\.violations) + undefinedSuperfluousCommandViolations
+      .flatMap(\.violations) + undefinedRedundantCommandViolations
     let ruleTimes = validationResults.compactMap(\.ruleTime)
     var deprecatedToValidIdentifier = [String: String]()
     for (key, value) in validationResults.flatMap(\.deprecatedToValidIDPairs) {
@@ -465,7 +465,7 @@ struct CollectedLinter: @unchecked Sendable {
     file: SwiftSource,
     regions: [Region],
     benchmark: Bool,
-    superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
+    redundantDisableCommandRule: RedundantDisableCommandRule?,
   ) -> [LintResult] {
     let syntaxTree = file.syntaxTree
 
@@ -550,7 +550,7 @@ struct CollectedLinter: @unchecked Sendable {
           regions: regions,
           benchmark: benchmark,
           ruleTime: ruleTime,
-          superfluousDisableCommandRule: superfluousDisableCommandRule,
+          redundantDisableCommandRule: redundantDisableCommandRule,
         )
       }
       results.append(lintResult)
@@ -626,12 +626,12 @@ struct CollectedLinter: @unchecked Sendable {
     return corrections
   }
 
-  private func undefinedSuperfluousCommandViolations(
+  private func undefinedRedundantCommandViolations(
     regions: [Region],
     configuration _: Configuration,
-    superfluousDisableCommandRule: SuperfluousDisableCommandRule?,
+    redundantDisableCommandRule: RedundantDisableCommandRule?,
   ) -> [RuleViolation] {
-    guard regions.isNotEmpty, let superfluousDisableCommandRule else {
+    guard regions.isNotEmpty, let redundantDisableCommandRule else {
       return []
     }
 
@@ -639,19 +639,19 @@ struct CollectedLinter: @unchecked Sendable {
       RuleIdentifier($0)
     }
     let allValidIdentifiers = Set(allRuleIdentifiers + [.all])
-    let superfluousRuleIdentifier = RuleIdentifier(SuperfluousDisableCommandRule.identifier)
+    let redundantRuleIdentifier = RuleIdentifier(RedundantDisableCommandRule.identifier)
 
     return regions.flatMap { region in
       region.disabledRuleIdentifiers.filter {
         !allValidIdentifiers.contains($0) && !region.disabledRuleIdentifiers.contains(.all)
-          && !region.disabledRuleIdentifiers.contains(superfluousRuleIdentifier)
+          && !region.disabledRuleIdentifiers.contains(redundantRuleIdentifier)
       }.map { id in
         RuleViolation(
-          ruleType: type(of: superfluousDisableCommandRule),
-          severity: superfluousDisableCommandRule.options.severity,
+          ruleType: type(of: redundantDisableCommandRule),
+          severity: redundantDisableCommandRule.options.severity,
           location: region.start,
           reason:
-            superfluousDisableCommandRule
+            redundantDisableCommandRule
             .reason(forNonExistentRule: id.stringRepresentation),
         )
       }

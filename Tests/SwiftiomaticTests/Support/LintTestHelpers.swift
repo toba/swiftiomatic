@@ -62,7 +62,7 @@ extension Configuration {
   func applyingConfiguration(from example: Example) -> Configuration {
     guard let exampleConfiguration = example.configuration,
       case .onlyConfiguration(let onlyRules) = rulesMode,
-      let firstRule = (onlyRules.first { $0 != "superfluous_disable_command" }),
+      let firstRule = (onlyRules.first { $0 != "redundant_disable_command" }),
       case let configDict:[_: any Sendable] = [
         "only_rules": onlyRules,
         firstRule: exampleConfiguration,
@@ -206,11 +206,11 @@ func makeConfig(
   _ identifier: String,
   skipDisableCommandTests: Bool = false,
 ) -> Configuration? {
-  let superfluousDisableCommandRuleIdentifier = SuperfluousDisableCommandRule.identifier
+  let redundantDisableCommandRuleIdentifier = RedundantDisableCommandRule.identifier
   let identifiers: Set<String> =
     skipDisableCommandTests
     ? [identifier]
-    : [identifier, superfluousDisableCommandRuleIdentifier]
+    : [identifier, redundantDisableCommandRuleIdentifier]
 
   if let ruleConfiguration, let ruleType = RuleRegistry.shared.rule(forID: identifier) {
     return (try? ruleType.init(configuration: ruleConfiguration)).flatMap { configuredRule in
@@ -219,7 +219,7 @@ func makeConfig(
         ? [configuredRule]
         : [
           configuredRule,
-          SuperfluousDisableCommandRule(),
+          RedundantDisableCommandRule(),
         ]
       return Configuration(
         rulesMode: .onlyConfiguration(identifiers),
@@ -352,7 +352,7 @@ private func testCorrection(
   var config = configuration
   if let correctionConfiguration = correction.0.configuration,
     case .onlyConfiguration(let onlyRules) = configuration.rulesMode,
-    let ruleToConfigure = (onlyRules.first { $0 != SuperfluousDisableCommandRule.identifier }),
+    let ruleToConfigure = (onlyRules.first { $0 != RedundantDisableCommandRule.identifier }),
     case let configDict:[_: any Sendable] = [
       "only_rules": onlyRules,
       ruleToConfigure: correctionConfiguration,
@@ -547,7 +547,7 @@ func verifyLint(
     )
   }
 
-  // Disabled rule doesn't violate and disable command isn't superfluous
+  // Disabled rule doesn't violate and disable command isn't redundant
   for command in disableCommands {
     let disabledTriggers =
       triggers
@@ -556,7 +556,7 @@ func verifyLint(
 
     for trigger in disabledTriggers {
       let violationsPartitionedByType = await makeViolations(trigger)
-        .partitioned { $0.ruleIdentifier == SuperfluousDisableCommandRule.identifier }
+        .partitioned { $0.ruleIdentifier == RedundantDisableCommandRule.identifier }
 
       #expect(
         violationsPartitionedByType.first.isEmpty,
@@ -564,7 +564,7 @@ func verifyLint(
       )
       #expect(
         violationsPartitionedByType.second.isEmpty,
-        "Disable command was superfluous since no violations(s) triggered",
+        "Disable command was redundant since no violations(s) triggered",
       )
     }
   }

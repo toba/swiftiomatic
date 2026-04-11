@@ -417,25 +417,25 @@ extension Command {
       await violations(Example("// sm:disable nesting\nprint(123)\n"))
         .map(\.ruleIdentifier) == [
           "blanket_disable_command",
-          "superfluous_disable_command",
+          "redundant_disable_command",
         ],
     )
     #expect(
       await violations(Example("// sm:disable:next nesting\nprint(123)\n"))[0].ruleIdentifier
-        == "superfluous_disable_command",
+        == "redundant_disable_command",
     )
     #expect(
       await violations(Example("print(123) // sm:disable:this nesting\n"))[0].ruleIdentifier
-        == "superfluous_disable_command",
+        == "redundant_disable_command",
     )
     #expect(
       await violations(Example("print(123)\n// sm:disable:previous nesting\n"))[0]
         .ruleIdentifier
-        == "superfluous_disable_command",
+        == "redundant_disable_command",
     )
   }
 
-  @Test(.disabled("SuperfluousDisableCommand behavior differs"))
+  @Test(.disabled("RedundantDisableCommand behavior differs"))
   func disableAllOverridesSuperfluousDisableCommand() async {
     #expect(
       await violations(
@@ -476,7 +476,7 @@ extension Command {
   @Test func superfluousDisableCommandsFile() async {
     #expect(
       await violations(Example("// sm:disable:file nesting\nprint(123)\n"))
-        .map(\.ruleIdentifier) == ["superfluous_disable_command"],
+        .map(\.ruleIdentifier) == ["redundant_disable_command"],
     )
   }
 
@@ -485,19 +485,19 @@ extension Command {
     #expect(
       await violations(Example("// sm:disable nesting - \(longComment)\nprint(123)\n")).map(
         \.ruleIdentifier,
-      ) == ["blanket_disable_command", "superfluous_disable_command"],
+      ) == ["blanket_disable_command", "redundant_disable_command"],
     )
     #expect(
       await violations(Example("// sm:disable:next nesting - Comment\nprint(123)\n"))[0]
-        .ruleIdentifier == "superfluous_disable_command",
+        .ruleIdentifier == "redundant_disable_command",
     )
     #expect(
       await violations(Example("print(123) // sm:disable:this nesting - Comment\n"))[0]
-        .ruleIdentifier == "superfluous_disable_command",
+        .ruleIdentifier == "redundant_disable_command",
     )
     #expect(
       await violations(Example("print(123)\n// sm:disable:previous nesting - Comment\n"))[0]
-        .ruleIdentifier == "superfluous_disable_command",
+        .ruleIdentifier == "redundant_disable_command",
     )
   }
 
@@ -509,19 +509,19 @@ extension Command {
             + "// sm:enable nesting_foo\n",
         ),
       )[0].ruleIdentifier
-        == "superfluous_disable_command",
+        == "redundant_disable_command",
     )
     #expect(
       await violations(Example("// sm:disable:next nesting_foo\nprint(123)\n"))[0]
-        .ruleIdentifier == "superfluous_disable_command",
+        .ruleIdentifier == "redundant_disable_command",
     )
     #expect(
       await violations(Example("print(123) // sm:disable:this nesting_foo\n"))[0]
-        .ruleIdentifier == "superfluous_disable_command",
+        .ruleIdentifier == "redundant_disable_command",
     )
     #expect(
       await violations(Example("print(123)\n// sm:disable:previous nesting_foo\n"))[0]
-        .ruleIdentifier == "superfluous_disable_command",
+        .ruleIdentifier == "redundant_disable_command",
     )
 
     #expect(
@@ -535,7 +535,7 @@ extension Command {
     let multipleViolations = await violations(example)
     #expect(
       multipleViolations
-        .count(where: { $0.ruleIdentifier == "superfluous_disable_command" }) == 9,
+        .count(where: { $0.ruleIdentifier == "redundant_disable_command" }) == 9,
     )
     #expect(
       multipleViolations
@@ -547,7 +547,7 @@ extension Command {
     )
     #expect(
       onlyNonExistentRulesViolations
-        .count(where: { $0.ruleIdentifier == "superfluous_disable_command" })
+        .count(where: { $0.ruleIdentifier == "redundant_disable_command" })
         == 4,
     )
     #expect(
@@ -566,23 +566,23 @@ extension Command {
     #expect(
       await violations(
         Example(
-          "// sm:disable superfluous_disable_command nesting\n" + "print(123)\n"
-            + "// sm:enable superfluous_disable_command nesting\n",
+          "// sm:disable redundant_disable_command nesting\n" + "print(123)\n"
+            + "// sm:enable redundant_disable_command nesting\n",
         ),
       ) == [],
     )
     #expect(
       await violations(
         Example(
-          "// sm:disable superfluous_disable_command\n" + "// sm:disable nesting\n"
-            + "print(123)\n" + "// sm:enable superfluous_disable_command nesting\n",
+          "// sm:disable redundant_disable_command\n" + "// sm:disable nesting\n"
+            + "print(123)\n" + "// sm:enable redundant_disable_command nesting\n",
         ),
       ) == [],
     )
     #expect(
       await violations(
         Example(
-          "// sm:disable:next superfluous_disable_command nesting\nprint(123)\n",
+          "// sm:disable:next redundant_disable_command nesting\nprint(123)\n",
         ),
       )
         == [],
@@ -590,14 +590,14 @@ extension Command {
     #expect(
       await violations(
         Example(
-          "print(123) // sm:disable:this superfluous_disable_command nesting\n",
+          "print(123) // sm:disable:this redundant_disable_command nesting\n",
         ),
       ) == [],
     )
     #expect(
       await violations(
         Example(
-          "print(123)\n// sm:disable:previous superfluous_disable_command nesting\n",
+          "print(123)\n// sm:disable:previous redundant_disable_command nesting\n",
         ),
       )
         == [],
@@ -606,7 +606,7 @@ extension Command {
 
   @Test func superfluousDisableCommandsDisabledOnConfiguration() async {
     let rulesMode = Configuration.RulesMode.defaultConfiguration(
-      disabled: ["superfluous_disable_command"], optIn: [],
+      disabled: ["redundant_disable_command"], optIn: [],
     )
     let configuration = Configuration(rulesMode: rulesMode)
 
@@ -675,7 +675,7 @@ extension Command {
     )
   }
 
-  @Test(.disabled("SuperfluousDisableCommand behavior differs"))
+  @Test(.disabled("RedundantDisableCommand behavior differs"))
   func superfluousDisableCommandsEnabledForAnalyzer() async {
     let configuration = Configuration(
       rulesMode: .defaultConfiguration(
@@ -700,7 +700,7 @@ extension Command {
       requiresFileOnDisk: true,
     )
     #expect(violations.count == 1)
-    #expect(violations.first?.ruleIdentifier == "superfluous_disable_command")
+    #expect(violations.first?.ruleIdentifier == "redundant_disable_command")
     #expect(violations.first?.location.line == 3)
   }
 }

@@ -41,8 +41,8 @@ public enum RuleResolver {
       // Skip analyzer rules when we don't have compiler arguments
       if skipAnalyzerRules, ruleType.runsWithCompilerArguments { return nil }
 
-      // Skip SuperfluousDisableCommandRule — depends on the Lint orchestration layer
-      if ruleType is SuperfluousDisableCommandRule.Type { return nil }
+      // Skip RedundantDisableCommandRule — depends on the Lint orchestration layer
+      if ruleType is RedundantDisableCommandRule.Type { return nil }
 
       // Build effective config: format defaults (filtered to declared keys) + rule overrides
       let ruleConfig = ruleConfigs[identifier]
