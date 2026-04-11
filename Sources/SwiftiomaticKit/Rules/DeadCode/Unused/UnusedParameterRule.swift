@@ -3,7 +3,7 @@ import SwiftSyntax
 struct UnusedParameterRule {
   static let id = "unused_parameter"
   static let name = "Unused Parameter"
-  static let summary = ""
+  static let summary = "Unused function parameters should be removed or replaced with `_`"
   static let isCorrectable = true
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {

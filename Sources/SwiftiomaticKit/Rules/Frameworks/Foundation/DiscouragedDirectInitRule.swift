@@ -3,7 +3,7 @@ import SwiftSyntax
 struct DiscouragedDirectInitRule {
   static let id = "discouraged_direct_init"
   static let name = "Discouraged Direct Initialization"
-  static let summary = "Discouraged direct initialization of types that can be harmful"
+  static let summary = "Avoid directly initializing types like `Bundle()` or `UIDevice()` that have preferred alternatives"
   static var nonTriggeringExamples: [Example] {
     [
       Example("let foo = UIDevice.current"),

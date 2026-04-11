@@ -257,6 +257,7 @@ private let allRules: [any Rule.Type] = [
   ShorthandOperatorRule.self,
   ShorthandOptionalBindingRule.self,
   SimplifyGenericConstraintsRule.self,
+  SingleLineBodyRule.self,
   SinglePropertyPerLineRule.self,
   SingleTestClassRule.self,
   SortDeclarationsRule.self,

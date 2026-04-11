@@ -7,7 +7,7 @@ private typealias FileTypeOffset = (
 struct FileTypesOrderRule: Rule {
   static let id = "file_types_order"
   static let name = "File Types Order"
-  static let summary = "Specifies how the types within a file should be ordered."
+  static let summary = "Types within a file should follow a consistent ordering"
   static let isOptIn = true
   static let requiresSourceKit = true
   var options = FileTypesOrderOptions()

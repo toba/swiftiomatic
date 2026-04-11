@@ -3,7 +3,7 @@ import SwiftSyntax
 struct UnusedSetterValueRule {
   static let id = "unused_setter_value"
   static let name = "Unused Setter Value"
-  static let summary = "Setter value is not used"
+  static let summary = "Setter value (`newValue`) should be referenced in the setter body"
   static var nonTriggeringExamples: [Example] {
     [
       Example(

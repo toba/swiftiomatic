@@ -4,7 +4,7 @@ import SwiftSyntax
 struct SyntacticSugarRule: Rule {
   static let id = "syntactic_sugar"
   static let name = "Syntactic Sugar"
-  static let summary = "Shorthand syntactic sugar should be used, i.e. [Int] instead of Array<Int>."
+  static let summary = "Prefer shorthand syntax like `[Int]` over `Array<Int>` and `Int?` over `Optional<Int>`"
   static let isCorrectable = true
   var options = SeverityOption<Self>(.warning)
 

@@ -133,6 +133,7 @@ struct FormatCommand: ParsableCommand {
       enabled: cfg.enabledLintRules.isEmpty ? nil : Set(cfg.enabledLintRules),
       disabled: Set(cfg.disabledLintRules),
       ruleConfigs: cfg.lintRuleConfigs,
+      formatDefaults: ["max_width": cfg.formatMaxWidth],
     )
     let correctableRules = allRules.filter { type(of: $0).isCorrectable }
     guard !correctableRules.isEmpty else { return 0 }

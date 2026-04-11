@@ -9,6 +9,7 @@
 - Nested per-directory configuration ([#169](https://github.com/toba/swiftiomatic/issues/169))
 - Add `dump-config` CLI subcommand to show resolved configuration
 - Support file-level `sm:disable:file` scope
+- `single_line_body` format rule; condense single-statement blocks to one line ([#188](https://github.com/toba/swiftiomatic/issues/188))
 
 ### 🐛 Fixes
 

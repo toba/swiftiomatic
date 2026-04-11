@@ -3,7 +3,7 @@ import SwiftSyntax
 struct StaticOverFinalClassRule {
   static let id = "static_over_final_class"
   static let name = "Static Over Final Class"
-  static let summary = ""
+  static let summary = "Prefer `static` over `final class` or `class` in a final class"
   static var nonTriggeringExamples: [Example] {
     [
       Example(

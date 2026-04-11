@@ -4,7 +4,7 @@ import SwiftSyntax
 struct XCTSpecificMatcherRule {
   static let id = "xct_specific_matcher"
   static let name = "XCTest Specific Matcher"
-  static let summary = "Prefer specific XCTest matchers."
+  static let summary = "Prefer specific XCTest assertions like `XCTAssertEqual` over generic `XCTAssertTrue`"
   static let isOptIn = true
   static let rationale: String? = """
     Using specific matchers like `XCTAssertEqual`, `XCTAssertNotEqual`, `XCTAssertTrue`, `XCTAssertFalse`,

@@ -3,7 +3,7 @@ import Foundation
 struct InvalidCommandRule: Rule {
   static let id = "invalid_command"
   static let name = "Invalid Command"
-  static let summary = "sm: command is invalid"
+  static let summary = "Inline `sm:` commands must use valid syntax and known directives"
   static var nonTriggeringExamples: [Example] {
     [
       Example("// sm:disable unused_import"),

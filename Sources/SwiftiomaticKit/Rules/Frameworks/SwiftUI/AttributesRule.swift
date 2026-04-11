@@ -3,7 +3,7 @@ import SwiftSyntax
 struct AttributesRule {
   static let id = "attributes"
   static let name = "Attributes"
-  static let summary = ""
+  static let summary = "Attributes should be on their own line for functions and types, same line for variables and imports"
   static let isOptIn = true
   static let rationale: String? = """
     Erica Sadun says:

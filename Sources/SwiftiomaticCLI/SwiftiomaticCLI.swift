@@ -108,6 +108,7 @@ struct Analyze: AsyncParsableCommand {
       disabled: mergedDisabled,
       onlyRules: Set(onlyRule),
       ruleConfigs: cfg.lintRuleConfigs,
+      formatDefaults: ["max_width": cfg.formatMaxWidth],
     )
 
     let analyzer = Analyzer(

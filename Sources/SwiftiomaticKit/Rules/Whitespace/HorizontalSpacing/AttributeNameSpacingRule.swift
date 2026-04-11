@@ -3,7 +3,7 @@ import SwiftSyntax
 struct AttributeNameSpacingRule {
   static let id = "attribute_name_spacing"
   static let name = "Attribute Name Spacing"
-  static let summary = ""
+  static let summary = "There should be no space between an attribute or modifier and its arguments"
   static let isCorrectable = true
   static var nonTriggeringExamples: [Example] {
     [

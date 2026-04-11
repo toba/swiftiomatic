@@ -214,6 +214,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "shorthand_argument",
     "shorthand_optional_binding",
     "simplify_generic_constraints",
+    "single_line_body",
     "single_property_per_line",
     "sort_declarations",
     "sort_imports",
@@ -1405,6 +1406,12 @@ final class LintPipeline: SyntaxVisitor {
                 enumDecl_visitPost.append(idx)
                 functionDecl_visitPost.append(idx)
                 structDecl_visitPost.append(idx)
+
+            case "single_line_body":
+                accessorBlock_visitPost.append(idx)
+                accessorDecl_visitPost.append(idx)
+                closureExpr_visitPost.append(idx)
+                codeBlock_visitPost.append(idx)
 
             case "single_property_per_line":
                 variableDecl_visitPost.append(idx)

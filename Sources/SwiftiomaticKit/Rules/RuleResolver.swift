@@ -9,6 +9,8 @@ public enum RuleResolver {
   ///   - disabled: Rule IDs to skip.
   ///   - onlyRules: If non-empty, ONLY these rules run (overrides enabled/disabled).
   ///   - ruleConfigs: Per-rule configuration dictionaries from `.swiftiomatic.yaml`.
+  ///   - formatDefaults: Global `format:` values (e.g. `["max_width": 120]`) injected into
+  ///     rules conforming to ``FormatAwareRule``. Per-rule config takes precedence.
   ///   - skipAnalyzerRules: If `true`, skip rules that require compiler arguments.
   /// - Returns: The instantiated and configured rules.
   public static func loadRules(
@@ -16,6 +18,7 @@ public enum RuleResolver {
     disabled: Set<String> = [],
     onlyRules: Set<String> = [],
     ruleConfigs: [String: ConfigValue] = [:],
+    formatDefaults: [String: Any] = [:],
     skipAnalyzerRules: Bool = true,
   ) -> [any Rule] {
     RuleRegistry.registerAllRulesOnce()
@@ -41,11 +44,44 @@ public enum RuleResolver {
       // Skip SuperfluousDisableCommandRule — depends on the Lint orchestration layer
       if ruleType is SuperfluousDisableCommandRule.Type { return nil }
 
-      // Instantiate with config override if provided
-      if let config = ruleConfigs[identifier] {
-        return try? ruleType.init(configuration: config.asAny)
+      // Build effective config: format defaults (filtered to declared keys) + rule overrides
+      let ruleConfig = ruleConfigs[identifier]
+      let effectiveConfig = Self.mergeFormatDefaults(
+        formatDefaults, into: ruleConfig, for: ruleType,
+      )
+
+      if let effectiveConfig {
+        return try? ruleType.init(configuration: effectiveConfig)
       }
       return ruleType.init()
     }
+  }
+
+  /// Merge global format defaults into a rule's config for ``FormatAwareRule`` conformers.
+  ///
+  /// Returns `nil` when no configuration is needed (no rule config and rule doesn't use format defaults).
+  private static func mergeFormatDefaults(
+    _ formatDefaults: [String: Any],
+    into ruleConfig: ConfigValue?,
+    for ruleType: any Rule.Type,
+  ) -> Any? {
+    // Only inject for FormatAwareRule conformers
+    guard let formatAwareType = ruleType as? any FormatAwareRule.Type,
+      !formatDefaults.isEmpty
+    else {
+      return ruleConfig?.asAny
+    }
+
+    // Filter format defaults to keys the rule declares
+    let keys = formatAwareType.formatConfigKeys
+    var merged: [String: Any] = formatDefaults.filter { keys.contains($0.key) }
+    guard !merged.isEmpty || ruleConfig != nil else { return nil }
+
+    // Rule-specific config takes precedence
+    if let dict = ruleConfig?.asAny as? [String: Any] {
+      merged.merge(dict) { _, ruleValue in ruleValue }
+    }
+
+    return merged.isEmpty ? ruleConfig?.asAny : merged
   }
 }

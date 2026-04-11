@@ -1,7 +1,7 @@
 struct SuperfluousDisableCommandRule: Rule, Sendable {
   static let id = "superfluous_disable_command"
   static let name = "Superfluous Disable Command"
-  static let summary = ""
+  static let summary = "Disable commands for rules that didn't trigger a violation are superfluous"
   static var nonTriggeringExamples: [Example] {
     [
       Example("let abc:Void // sm:disable:this colon"),

@@ -3,7 +3,7 @@ import SwiftSyntax
 struct ShorthandArgumentRule {
   static let id = "shorthand_argument"
   static let name = "Shorthand Argument"
-  static let summary = ""
+  static let summary = "Shorthand closure arguments (`$0`, `$1`) should be used sparingly and close to the closure opening"
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {
     [

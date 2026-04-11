@@ -375,6 +375,19 @@ extension Rule {
   }
 }
 
+/// A rule whose options can receive defaults from the global `format:` config section
+///
+/// Rules conforming to this protocol declare which format config keys they use
+/// (e.g. `"max_width"`). ``RuleResolver`` injects the global values as defaults —
+/// explicit per-rule config in `rules.config` takes precedence.
+protocol FormatAwareRule: Rule {
+  /// Keys from the global `format:` section this rule uses as defaults.
+  ///
+  /// For example, `["max_width"]` causes `format.max_width` to be injected
+  /// when the rule doesn't have its own `max_width` in `rules.config`.
+  static var formatConfigKeys: Set<String> { get }
+}
+
 /// A rule that can produce additional violations via async SourceKit enrichment
 ///
 /// After the synchronous ``Rule/validate(file:)`` pass, the ``Analyzer`` calls

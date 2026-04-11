@@ -3,7 +3,7 @@ import SwiftSyntax
 struct JoinedDefaultParameterRule {
   static let id = "joined_default_parameter"
   static let name = "Joined Default Parameter"
-  static let summary = "Discouraged explicit usage of the default separator"
+  static let summary = "Prefer `joined()` over `joined(separator: \"\")` when using the default separator"
   static let isCorrectable = true
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {

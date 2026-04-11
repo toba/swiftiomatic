@@ -3,7 +3,7 @@ import SwiftSyntax
 struct SwitchCaseAlignmentRule {
   static let id = "switch_case_alignment"
   static let name = "Switch and Case Statement Alignment"
-  static let summary = ""
+  static let summary = "Case statements should vertically align with their enclosing switch's closing brace"
   static var nonTriggeringExamples: [Example] {
     Examples(indentedCases: false).nonTriggeringExamples + [
       Example(

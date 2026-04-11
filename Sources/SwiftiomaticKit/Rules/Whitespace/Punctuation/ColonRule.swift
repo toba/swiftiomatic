@@ -4,7 +4,7 @@ import SwiftSyntax
 struct ColonRule {
   static let id = "colon"
   static let name = "Colon Spacing"
-  static let summary = ""
+  static let summary = "Colons should have no space before and one space after"
   static let isCorrectable = true
   var options = ColonOptions()
 }

@@ -4,7 +4,7 @@ import SwiftSyntax
 struct OpeningBraceRule {
   static let id = "opening_brace"
   static let name = "Opening Brace Spacing"
-  static let summary = ""
+  static let summary = "Opening braces should be preceded by a single space and on the same line as the declaration"
   static let isCorrectable = true
   var options = OpeningBraceOptions()
 }

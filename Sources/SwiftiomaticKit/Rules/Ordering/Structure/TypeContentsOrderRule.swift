@@ -3,7 +3,7 @@ import SwiftSyntax
 struct TypeContentsOrderRule {
   static let id = "type_contents_order"
   static let name = "Type Contents Order"
-  static let summary = "Specifies the order of subtypes, properties, methods & more within a type."
+  static let summary = "Members within a type should follow a consistent ordering"
   static let isOptIn = true
   var options = TypeContentsOrderOptions()
 }

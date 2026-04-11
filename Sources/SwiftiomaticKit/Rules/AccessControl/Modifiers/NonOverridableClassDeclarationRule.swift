@@ -3,7 +3,7 @@ import SwiftSyntax
 struct NonOverridableClassDeclarationRule {
   static let id = "non_overridable_class_declaration"
   static let name = "Class Declaration in Final Class"
-  static let summary = ""
+  static let summary = "Use `static` or `final` instead of `class` for non-overridable members"
   static let isCorrectable = true
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {

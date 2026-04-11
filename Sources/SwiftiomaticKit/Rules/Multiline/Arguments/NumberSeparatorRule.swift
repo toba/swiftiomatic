@@ -4,7 +4,7 @@ import SwiftSyntax
 struct NumberSeparatorRule {
   static let id = "number_separator"
   static let name = "Number Separator"
-  static let summary = ""
+  static let summary = "Underscores should be used as thousand separators in large decimal numbers"
   static let isCorrectable = true
   static let isOptIn = true
   var options = NumberSeparatorOptions()

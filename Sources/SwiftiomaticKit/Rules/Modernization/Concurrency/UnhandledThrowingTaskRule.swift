@@ -3,7 +3,7 @@ import SwiftSyntax
 struct UnhandledThrowingTaskRule {
   static let id = "unhandled_throwing_task"
   static let name = "Unhandled Throwing Task"
-  static let summary = ""
+  static let summary = "Errors thrown inside a Task are silently lost unless the result is checked"
   static let isOptIn = true
 
   var options = SeverityOption<Self>(.error)

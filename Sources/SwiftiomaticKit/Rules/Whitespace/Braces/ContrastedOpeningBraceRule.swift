@@ -4,7 +4,7 @@ import SwiftSyntax
 struct ContrastedOpeningBraceRule {
   static let id = "contrasted_opening_brace"
   static let name = "Contrasted Opening Brace"
-  static let summary = ""
+  static let summary = "Opening braces should be on a separate line from the preceding declaration"
   static let isCorrectable = true
   static let isOptIn = true
   var options = SeverityOption<Self>(.warning)

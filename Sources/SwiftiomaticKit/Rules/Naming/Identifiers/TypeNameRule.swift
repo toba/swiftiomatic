@@ -4,7 +4,7 @@ import SwiftSyntax
 struct TypeNameRule {
   static let id = "type_name"
   static let name = "Type Name"
-  static let summary = ""
+  static let summary = "Type names should be alphanumeric, start uppercase, and have a reasonable length"
   var options = TypeNameOptions()
 }
 

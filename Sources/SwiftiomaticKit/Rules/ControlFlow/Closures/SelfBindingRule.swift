@@ -5,7 +5,7 @@ import SwiftSyntax
 struct SelfBindingRule {
   static let id = "self_binding"
   static let name = "Self Binding"
-  static let summary = "Re-bind `self` to a consistent identifier name."
+  static let summary = "Rebind `self` to a consistent identifier name in closures"
   static let isCorrectable = true
   static let isOptIn = true
   static var nonTriggeringExamples: [Example] {
