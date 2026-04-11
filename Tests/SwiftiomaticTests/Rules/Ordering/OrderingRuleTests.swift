@@ -103,6 +103,65 @@ struct SortImportsRuleTests {
       """)
   }
 
+  // MARK: Attributed import grouping
+
+  @Test func groupAttributedImportsNoViolationWhenGrouped() async {
+    await assertNoViolation(
+      SortImportsRule.self,
+      """
+      import Bar
+      import Foo
+
+      @testable import Baz
+      """,
+      configuration: ["group_attributed_imports": true])
+  }
+
+  @Test func groupAttributedImportsDetectsUngrouped() async {
+    await assertViolates(
+      SortImportsRule.self,
+      """
+      @testable import Baz
+      import Bar
+      import Foo
+      """,
+      configuration: ["group_attributed_imports": true])
+  }
+
+  @Test func groupAttributedImportsCorrects() async {
+    await assertFormatting(
+      SortImportsRule.self,
+      input: "@testable import Baz\nimport Foo\nimport Bar\n",
+      expected: "import Bar\nimport Foo\n\n@testable import Baz\n",
+      configuration: ["group_attributed_imports": true])
+  }
+
+  @Test func groupAttributedImportsSortsWithinKind() async {
+    await assertFormatting(
+      SortImportsRule.self,
+      input: "import Foo\nimport Bar\n@testable import Zed\n@testable import Abc\n",
+      expected: "import Bar\nimport Foo\n\n@testable import Abc\n@testable import Zed\n",
+      configuration: ["group_attributed_imports": true])
+  }
+
+  @Test func groupAttributedImportsHandlesImplementationOnly() async {
+    await assertFormatting(
+      SortImportsRule.self,
+      input: "@testable import Z\n@_implementationOnly import Y\nimport X\n",
+      expected: "import X\n\n@_implementationOnly import Y\n\n@testable import Z\n",
+      configuration: ["group_attributed_imports": true])
+  }
+
+  @Test func groupAttributedImportsDisabledByDefault() async {
+    // Without the option, @testable and regular imports are sorted together
+    await assertNoViolation(
+      SortImportsRule.self,
+      """
+      import Bar
+      @testable import Foo
+      """)
+  }
+
   // MARK: All grouping
 
   @Test func allGroupingIgnoresBlankLines() async {

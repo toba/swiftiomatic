@@ -3,9 +3,9 @@ nope:
     - name: git-no-verify
       pattern: 'git\s+.*--no-verify'
       message: "--no-verify is never allowed - fix the issue that's failing the hook instead"
-      #        - name: git-checkout-switch
-      #          pattern: 'git\s+(checkout|switch|stash)'
-      #          message: "git checkout/switch not allowed - branch changes require user approval"
+    - name: git-checkout-switch
+      pattern: 'git\s+(checkout|switch|stash)'
+      message: "git checkout/switch not allowed - branch changes require user approval"
     - name: altering-jig
       pattern: 'jig.yaml'
       tools: [ "Write", "Edit" ]
@@ -17,6 +17,9 @@ nope:
       pattern: '\.(xcode|pbx)proj'
       tools: [ "Write", "Edit" ]
       message: "Project may only be modified using xc-mcp"
+    - name: incompetent-agent
+      pattern: '"\, timeout: \d{3,}\)'
+      message: "Code is bad if anything takes that long. Must user shorter timeout."
 companions:
   brew: toba/homebrew-tap
 todo:

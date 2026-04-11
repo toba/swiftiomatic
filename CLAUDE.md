@@ -4,6 +4,7 @@ AST-accurate Swift linting, formatting, and code analysis — used from Xcode, t
 
 ## Important Agent Rules
 
+- **When a jig issue references a cited source**, always look at the reference implementation first before designing anything. Cited repos are cloned at `~/Developer/<repo-name>-ref/`. Search it for the relevant feature, understand how they did it, then adapt that approach. Do not design from scratch when a working reference exists.
 - When working on errors, always create a failing test first then fix the issue and confirm the test passes
 - Always create a jig issue before beginning work
 - Update the jig issue continuously as you work

@@ -21,6 +21,15 @@ struct SortImportsRule {
         @testable import Foo
         """,
       ),
+      Example(
+        """
+        import Bar
+        import Foo
+
+        @testable import Baz
+        """,
+        configuration: ["group_attributed_imports": true],
+      ),
     ]
   }
 
@@ -53,8 +62,38 @@ extension SortImportsRule: SwiftSyntaxRule {
 }
 
 extension SortImportsRule {
+  /// Classification of imports by their leading attribute.
+  fileprivate enum ImportKind: Int, Comparable {
+    case regular = 0
+    case implementationOnly = 1
+    case testable = 2
+
+    static func < (lhs: ImportKind, rhs: ImportKind) -> Bool {
+      lhs.rawValue < rhs.rawValue
+    }
+  }
+
+  /// Classify an import declaration by its leading attribute.
+  fileprivate static func importKind(of decl: ImportDeclSyntax) -> ImportKind {
+    for attr in decl.attributes {
+      guard let identAttr = attr.as(AttributeSyntax.self) else { continue }
+      let name = identAttr.attributeName.trimmedDescription
+      if name == "_implementationOnly" { return .implementationOnly }
+      if name == "testable" { return .testable }
+    }
+    return .regular
+  }
+
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SourceFileSyntax) {
+      if configuration.groupAttributedImports {
+        visitGroupedByAttribute(node)
+      } else {
+        visitDefault(node)
+      }
+    }
+
+    private func visitDefault(_ node: SourceFileSyntax) {
       let groups = SortImportsRule.collectImportGroups(from: node, grouping: configuration.grouping)
       let comparator = SortImportsRule.importComparator(for: configuration.sortOrder)
       for group in groups where group.count > 1 {
@@ -65,32 +104,59 @@ extension SortImportsRule {
         }
       }
     }
+
+    private func visitGroupedByAttribute(_ node: SourceFileSyntax) {
+      let groups = SortImportsRule.collectImportGroups(from: node, grouping: configuration.grouping)
+      let comparator = SortImportsRule.importComparator(for: configuration.sortOrder)
+
+      for group in groups where group.count > 1 {
+        // Check that imports are ordered by kind, then alphabetically within each kind
+        let kinds = group.map(\.kind)
+        let sortedKinds = kinds.sorted()
+        if kinds != sortedKinds {
+          violations.append(group[0].position)
+          continue
+        }
+        // Within each kind subgroup, check alphabetical order
+        let kindSubgroups = Dictionary(grouping: group, by: \.kind)
+        for (_, subgroup) in kindSubgroups where subgroup.count > 1 {
+          let names = subgroup.map(\.moduleName)
+          let sorted = names.sorted(by: comparator)
+          if names != sorted {
+            violations.append(subgroup[0].position)
+          }
+        }
+      }
+    }
   }
 
   fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
     override func visit(_ node: SourceFileSyntax) -> SourceFileSyntax {
+      if configuration.groupAttributedImports {
+        return visitGroupedByAttribute(node)
+      }
+      return visitDefault(node)
+    }
+
+    private func visitDefault(_ node: SourceFileSyntax) -> SourceFileSyntax {
       var statements = Array(node.statements)
       var modified = false
       let comparator = SortImportsRule.importComparator(for: configuration.sortOrder)
       let grouping = configuration.grouping
 
-      // Find import ranges, then split into groups respecting the grouping mode
       var i = 0
       while i < statements.count {
-        // Skip non-imports
         guard statements[i].item.is(ImportDeclSyntax.self) else {
           i += 1
           continue
         }
 
-        // Collect the full run of consecutive import statements
         let runStart = i
         i += 1
         while i < statements.count, statements[i].item.is(ImportDeclSyntax.self) {
           i += 1
         }
 
-        // Split the run into groups based on grouping mode
         let subgroups = SortImportsRule.splitIntoGroups(
           statements[runStart..<i], grouping: grouping
         )
@@ -104,7 +170,6 @@ extension SortImportsRule {
             return comparator(lhsName, rhsName)
           }
 
-          // Preserve leading trivia from original positions
           for j in 0..<group.count {
             let originalTrivia = group[j].leadingTrivia
             var sortedItem = sorted[j]
@@ -134,11 +199,82 @@ extension SortImportsRule {
         node.with(\.statements, CodeBlockItemListSyntax(statements)),
       )
     }
+
+    private func visitGroupedByAttribute(_ node: SourceFileSyntax) -> SourceFileSyntax {
+      var statements = Array(node.statements)
+      var modified = false
+      let comparator = SortImportsRule.importComparator(for: configuration.sortOrder)
+
+      var i = 0
+      while i < statements.count {
+        guard statements[i].item.is(ImportDeclSyntax.self) else {
+          i += 1
+          continue
+        }
+
+        let runStart = i
+        i += 1
+        while i < statements.count, statements[i].item.is(ImportDeclSyntax.self) {
+          i += 1
+        }
+
+        let run = Array(statements[runStart..<i])
+
+        // Sort by kind first, then alphabetically within each kind
+        let sorted = run.sorted { lhs, rhs in
+          let lhsDecl = lhs.item.as(ImportDeclSyntax.self)!
+          let rhsDecl = rhs.item.as(ImportDeclSyntax.self)!
+          let lhsKind = SortImportsRule.importKind(of: lhsDecl)
+          let rhsKind = SortImportsRule.importKind(of: rhsDecl)
+          if lhsKind != rhsKind { return lhsKind < rhsKind }
+          return comparator(lhsDecl.moduleName, rhsDecl.moduleName)
+        }
+
+        // Preserve leading trivia, but insert blank line between kind groups
+        var result = [CodeBlockItemSyntax]()
+        var prevKind: ImportKind?
+        for (j, item) in sorted.enumerated() {
+          let kind = SortImportsRule.importKind(of: item.item.as(ImportDeclSyntax.self)!)
+          var stmt = item
+          if j < run.count {
+            // Start with the original position's trivia
+            stmt = stmt.with(\.leadingTrivia, run[j].leadingTrivia)
+          }
+          // Insert blank line at kind boundaries (except for the first item)
+          if let prev = prevKind, prev != kind {
+            let existingTrivia = stmt.leadingTrivia
+            let hasBlankLine = SortImportsRule.hasGroupBreak(in: existingTrivia)
+            if !hasBlankLine {
+              stmt = stmt.with(\.leadingTrivia, .newlines(1) + existingTrivia)
+            }
+          }
+          prevKind = kind
+          result.append(stmt)
+        }
+
+        let originalModules = run.map { $0.item.as(ImportDeclSyntax.self)?.moduleName ?? "" }
+        let sortedModules = result.map { $0.item.as(ImportDeclSyntax.self)?.moduleName ?? "" }
+
+        if originalModules != sortedModules {
+          for (offset, item) in result.enumerated() {
+            statements[runStart + offset] = item
+          }
+          modified = true
+          numberOfCorrections += 1
+        }
+      }
+
+      guard modified else { return super.visit(node) }
+      return super.visit(
+        node.with(\.statements, CodeBlockItemListSyntax(statements)),
+      )
+    }
   }
 
   fileprivate struct ImportInfo {
     let moduleName: String
     let position: AbsolutePosition
+    let kind: ImportKind
   }
 
   // MARK: - Grouping
@@ -156,6 +292,7 @@ extension SortImportsRule {
         let info = ImportInfo(
           moduleName: importDecl.moduleName,
           position: importDecl.importKeyword.positionAfterSkippingLeadingTrivia,
+          kind: importKind(of: importDecl),
         )
 
         if previousWasImport, grouping == .contiguous,

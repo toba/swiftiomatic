@@ -15,6 +15,8 @@ struct SortImportsOptions: RuleOptions {
   private(set) var sortOrder: ImportSortOrder = .alphabetical
   @OptionElement(key: "grouping")
   private(set) var grouping: ImportGrouping = .contiguous
+  @OptionElement(key: "group_attributed_imports")
+  private(set) var groupAttributedImports: Bool = false
 
   typealias Parent = SortImportsRule
   mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
@@ -23,6 +25,9 @@ struct SortImportsOptions: RuleOptions {
     }
     if let value = configuration[$grouping.key] {
       try grouping.apply(value, ruleID: Parent.identifier)
+    }
+    if let value = configuration[$groupAttributedImports.key] {
+      try groupAttributedImports.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
     validate()

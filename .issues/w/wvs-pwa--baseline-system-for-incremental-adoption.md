@@ -1,16 +1,16 @@
 ---
 # wvs-pwa
 title: Baseline system for incremental adoption
-status: ready
+status: scrapped
 type: feature
 priority: critical
 created_at: 2026-04-10T22:25:29Z
-updated_at: 2026-04-10T22:25:29Z
+updated_at: 2026-04-11T21:31:48Z
 parent: pms-xpz
 sync:
     github:
         issue_number: "163"
-        synced_at: "2026-04-11T01:01:47Z"
+        synced_at: "2026-04-11T22:00:31Z"
 ---
 
 Allow teams to adopt Swiftiomatic on large codebases without fixing every pre-existing violation first.

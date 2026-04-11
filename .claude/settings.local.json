@@ -79,7 +79,9 @@
       "Bash(swift:*)",
       "Bash(xcode-select:*)",
       "Bash(swiftiomatic migrate:*)",
-      "Bash(gh workflow:*)"
+      "Bash(gh workflow:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh --version)"
     ]
   },
   "enableAllProjectMcpServers": true,

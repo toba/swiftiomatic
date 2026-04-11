@@ -24,14 +24,12 @@ extension Request {
             )
           }
 
-          // Check if the current rule does not require SourceKit
+          // Warn if the current rule uses SourceKit without declaring it.
+          // Non-fatal: some legacy rules (e.g. statement_position) use SourceKit
+          // via file.syntaxMap/file.match without declaring requiresSourceKit.
           if !ruleType.runsWithSourceKit {
-            Console.fatalError(
-              """
-              '\(
-                                ruleID
-                            )' is a SyntaxOnlyRule and should not be making requests to SourceKit.
-              """,
+            Console.printError(
+              "warning: '\(ruleID)' uses SourceKit but does not declare requiresSourceKit.",
             )
           }
         }

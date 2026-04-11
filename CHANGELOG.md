@@ -10,6 +10,8 @@
 - Add `dump-config` CLI subcommand to show resolved configuration ([#178](https://github.com/toba/swiftiomatic/issues/178))
 - Support file-level `sm:disable:file` scope ([#180](https://github.com/toba/swiftiomatic/issues/180))
 - `single_line_body` format rule; condense single-statement blocks to one line ([#188](https://github.com/toba/swiftiomatic/issues/188))
+- `SortImportsRule`; group `@_implementationOnly` imports separately ([#182](https://github.com/toba/swiftiomatic/issues/182))
+- GitHub Actions action ([#167](https://github.com/toba/swiftiomatic/issues/167))
 
 ### 🐛 Fixes
 
@@ -41,3 +43,4 @@
 - Standardize rule names for consistency ([#189](https://github.com/toba/swiftiomatic/issues/189))
 - Rename CLI binary from `swiftiomatic` to `sm` ([#192](https://github.com/toba/swiftiomatic/issues/192))
 - Populate missing rule examples for parameterized testing ([#193](https://github.com/toba/swiftiomatic/issues/193))
+- Speed up tests; invert fast/full defaults; remove disk I/O from correction tests ([#195](https://github.com/toba/swiftiomatic/issues/195))

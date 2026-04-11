@@ -5,11 +5,11 @@ status: in-progress
 type: epic
 priority: high
 created_at: 2026-04-10T22:24:48Z
-updated_at: 2026-04-10T22:29:24Z
+updated_at: 2026-04-11T21:31:51Z
 sync:
     github:
         issue_number: "161"
-        synced_at: "2026-04-11T01:01:45Z"
+        synced_at: "2026-04-11T22:00:29Z"
 ---
 
 Address the remaining gaps to make Swiftiomatic a credible drop-in replacement for SwiftLint and SwiftFormat across teams. The rule coverage and core architecture are solid — these issues target the adoption and migration barriers that prevent teams from switching.

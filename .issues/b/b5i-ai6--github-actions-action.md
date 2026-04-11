@@ -1,16 +1,16 @@
 ---
 # b5i-ai6
 title: GitHub Actions action
-status: ready
+status: completed
 type: feature
 priority: normal
 created_at: 2026-04-10T22:25:29Z
-updated_at: 2026-04-10T22:25:29Z
+updated_at: 2026-04-11T21:31:58Z
 parent: pms-xpz
 sync:
     github:
         issue_number: "167"
-        synced_at: "2026-04-11T01:01:47Z"
+        synced_at: "2026-04-11T22:00:31Z"
 ---
 
 Provide a GitHub Action so teams can add Swiftiomatic to CI with minimal config:
