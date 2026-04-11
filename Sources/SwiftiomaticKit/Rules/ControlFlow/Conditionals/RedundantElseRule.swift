@@ -1,9 +1,9 @@
 import SwiftBasicFormat
 import SwiftSyntax
 
-struct SuperfluousElseRule {
-  static let id = "superfluous_else"
-  static let name = "Superfluous Else"
+struct RedundantElseRule {
+  static let id = "redundant_else"
+  static let name = "Redundant Else"
   static let summary =
     "Else branches should be avoided when the previous if-block exits the current scope"
   static let isCorrectable = true
@@ -299,7 +299,7 @@ struct SuperfluousElseRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension SuperfluousElseRule: SwiftSyntaxRule {
+extension RedundantElseRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
@@ -309,7 +309,7 @@ extension SuperfluousElseRule: SwiftSyntaxRule {
   }
 }
 
-extension SuperfluousElseRule {
+extension RedundantElseRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]

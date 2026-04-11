@@ -15,16 +15,16 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct UnneededSynthesizedInitializerRule {
-  static let id = "unneeded_synthesized_initializer"
-  static let name = "Unneeded Synthesized Initializer"
+struct RedundantSynthesizedInitializerRule {
+  static let id = "redundant_synthesized_initializer"
+  static let name = "Redundant Synthesized Initializer"
   static let summary =
     "Default or memberwise initializers that will be automatically synthesized do not need to be manually defined."
   static let isCorrectable = true
   var options = SeverityOption<Self>(.warning)
 }
 
-extension UnneededSynthesizedInitializerRule: SwiftSyntaxRule {
+extension RedundantSynthesizedInitializerRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
@@ -34,7 +34,7 @@ extension UnneededSynthesizedInitializerRule: SwiftSyntaxRule {
   }
 }
 
-extension UnneededSynthesizedInitializerRule {
+extension RedundantSynthesizedInitializerRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .allExcept(StructDeclSyntax.self, ClassDeclSyntax.self)

@@ -1,6 +1,6 @@
 // sm:disable file_length
 // sm:disable:next type_body_length
-extension UnneededSynthesizedInitializerRule {
+extension RedundantSynthesizedInitializerRule {
   static let nonTriggeringExamples = [
     Example(
       """

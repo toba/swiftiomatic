@@ -32,4 +32,5 @@
 - Modernize `macOSSDKPath()` from `Process` to `Subprocess`
 - Rename `SwiftiomaticKit` enum to avoid shadowing module name
 - Review upstream SwiftLint, SwiftFormat, and swift-format releases
+- Improve rule summaries; fill empty `static let summary` fields ([#181](https://github.com/toba/swiftiomatic/issues/181))
 - Clean up test infrastructure from Swift review

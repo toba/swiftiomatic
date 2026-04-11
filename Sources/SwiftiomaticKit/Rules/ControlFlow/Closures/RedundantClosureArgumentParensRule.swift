@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct UnneededParenthesesInClosureArgumentRule {
-  static let id = "unneeded_parentheses_in_closure_argument"
-  static let name = "Unneeded Parentheses in Closure Argument"
+struct RedundantClosureArgumentParensRule {
+  static let id = "redundant_closure_argument_parens"
+  static let name = "Redundant Parentheses in Closure Argument"
   static let summary = "Parentheses are not needed when declaring closure arguments"
   static let isCorrectable = true
   static let isOptIn = true
@@ -94,7 +94,7 @@ struct UnneededParenthesesInClosureArgumentRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension UnneededParenthesesInClosureArgumentRule: SwiftSyntaxRule {
+extension RedundantClosureArgumentParensRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
@@ -104,7 +104,7 @@ extension UnneededParenthesesInClosureArgumentRule: SwiftSyntaxRule {
   }
 }
 
-extension UnneededParenthesesInClosureArgumentRule {
+extension RedundantClosureArgumentParensRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ClosureSignatureSyntax) {
       guard let clause = node.parameterClause?.as(ClosureParameterClauseSyntax.self),

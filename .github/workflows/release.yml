@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
 
     steps:
     - uses: actions/checkout@v4
@@ -70,7 +70,7 @@ jobs:
             sha256 "${SHA}"
             license "MIT"
 
-            depends_on :macos => :sequoia
+            depends_on :macos => :tahoe
             depends_on arch: :arm64
 
             def install

@@ -2,12 +2,12 @@ import Testing
 
 @testable import SwiftiomaticKit
 
-@Suite(.rulesRegistered) struct UnneededOverrideRuleTests {
+@Suite(.rulesRegistered) struct RedundantOverrideRuleTests {
   // MARK: - Non-triggering (default: affect_initializers = false)
 
   @Test func overrideWithExtraWorkDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           override func bar() {
@@ -21,7 +21,7 @@ import Testing
 
   @Test func overrideWithUnavailableAttributeDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           @available(*, unavailable)
@@ -35,7 +35,7 @@ import Testing
 
   @Test func overrideWithObjcDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           @objc override func bar() {
@@ -48,7 +48,7 @@ import Testing
 
   @Test func overrideCallingTwiceDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           override func bar() {
@@ -62,7 +62,7 @@ import Testing
 
   @Test func overrideWithTryBangDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           override func bar() throws {
@@ -75,7 +75,7 @@ import Testing
 
   @Test func overrideWithTryQuestionDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           override func bar() throws {
@@ -88,7 +88,7 @@ import Testing
 
   @Test func overrideFlippingArgDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           override func bar(arg: Bool) {
@@ -101,7 +101,7 @@ import Testing
 
   @Test func overrideChangingArgDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           override func bar(_ arg: Int) {
@@ -114,7 +114,7 @@ import Testing
 
   @Test func overrideOmittingArgsDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           override func bar(_ arg: Int) {
@@ -127,7 +127,7 @@ import Testing
 
   @Test func overrideChangingLabelsDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           override func bar(arg: Int, _ arg3: Bool) {
@@ -140,7 +140,7 @@ import Testing
 
   @Test func overrideWithTrailingClosureDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           override func bar(animated: Bool, completion: () -> Void) {
@@ -154,7 +154,7 @@ import Testing
 
   @Test func overrideWithDefaultArgDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Baz: Foo {
           override func bar(value: String = "Hello") {
@@ -167,7 +167,7 @@ import Testing
 
   @Test func excludedMethodDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class FooTestCase: XCTestCase {
           override func setUp() {
@@ -181,7 +181,7 @@ import Testing
 
   @Test func initOverrideDoesNotTriggerByDefault() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           override init(i: Int) {
@@ -196,7 +196,7 @@ import Testing
 
   @Test func simpleOverrideTriggers() async {
     await assertLint(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           1️⃣override func bar() {
@@ -210,7 +210,7 @@ import Testing
 
   @Test func overrideWithReturnTriggers() async {
     await assertLint(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           1️⃣override func bar() {
@@ -224,7 +224,7 @@ import Testing
 
   @Test func overrideWithCommentTriggers() async {
     await assertLint(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           1️⃣override func bar() {
@@ -239,7 +239,7 @@ import Testing
 
   @Test func asyncOverrideTriggers() async {
     await assertLint(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           1️⃣override func bar() async {
@@ -253,7 +253,7 @@ import Testing
 
   @Test func throwingOverrideTriggers() async {
     await assertLint(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           1️⃣override func bar() throws {
@@ -267,7 +267,7 @@ import Testing
 
   @Test func overrideWithArgsTriggers() async {
     await assertLint(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           1️⃣override func bar(arg: Bool) throws {
@@ -281,7 +281,7 @@ import Testing
 
   @Test func overridePassingCompletionTriggers() async {
     await assertLint(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           1️⃣override func bar(animated: Bool, completion: () -> Void) {
@@ -297,7 +297,7 @@ import Testing
 
   @Test func correctsSimpleOverride() async {
     await assertFormatting(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       input: """
         class Foo {
             1️⃣override func bar() {
@@ -315,7 +315,7 @@ import Testing
 
   @Test func correctsOverridePreservesOtherMembers() async {
     await assertFormatting(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       input: """
         class Foo {
             1️⃣override func bar() {
@@ -339,7 +339,7 @@ import Testing
 
   @Test func correctsOverrideButNotInitByDefault() async {
     await assertFormatting(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       input: """
         class Foo {
             1️⃣override func foo() { super.foo() }
@@ -363,7 +363,7 @@ import Testing
 
   @Test func initWithDifferentSuperArgsDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       override init() {
           super.init(frame: .zero)
@@ -375,7 +375,7 @@ import Testing
 
   @Test func failableInitDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       override init?() {
           super.init()
@@ -387,7 +387,7 @@ import Testing
 
   @Test func implicitlyUnwrappedInitDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       override init!() {
           super.init()
@@ -399,7 +399,7 @@ import Testing
 
   @Test func privateOverrideInitDoesNotTrigger() async {
     await assertNoViolation(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       private override init() {
           super.init()
@@ -411,7 +411,7 @@ import Testing
 
   @Test func simpleInitOverrideTriggers() async {
     await assertLint(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           1️⃣override init() {
@@ -426,7 +426,7 @@ import Testing
 
   @Test func publicInitOverrideTriggers() async {
     await assertLint(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       """
       class Foo {
           1️⃣public override init(frame: CGRect) {
@@ -441,7 +441,7 @@ import Testing
 
   @Test func correctsInitOverride() async {
     await assertFormatting(
-      UnneededOverrideRule.self,
+      RedundantOverrideRule.self,
       input: """
         class Foo {
             1️⃣override init(frame: CGRect) {

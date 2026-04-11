@@ -1,4 +1,4 @@
-extension UnneededEscapingRule {
+extension RedundantEscapingRule {
   static let nonTriggeringExamples = [
     Example(
       """

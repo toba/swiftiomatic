@@ -1,9 +1,9 @@
 import SwiftLexicalLookup
 import SwiftSyntax
 
-struct UnneededEscapingRule {
-  static let id = "unneeded_escaping"
-  static let name = "Unneeded Escaping"
+struct RedundantEscapingRule {
+  static let id = "redundant_escaping"
+  static let name = "Redundant Escaping"
   static let summary =
     "The `@escaping` attribute should only be used when the closure actually escapes."
   static let isCorrectable = true
@@ -11,19 +11,19 @@ struct UnneededEscapingRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension UnneededEscapingRule: SwiftSyntaxRule {
+extension RedundantEscapingRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension UnneededEscapingRule {
+extension RedundantEscapingRule {
   func preprocess(file: SwiftSource) -> SourceFileSyntax? {
     file.foldedSyntaxTree
   }
 }
 
-extension UnneededEscapingRule {
+extension RedundantEscapingRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [ProtocolDeclSyntax.self]

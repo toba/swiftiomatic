@@ -1,6 +1,6 @@
-struct SuperfluousDisableCommandRule: Rule, Sendable {
-  static let id = "superfluous_disable_command"
-  static let name = "Superfluous Disable Command"
+struct RedundantDisableCommandRule: Rule, Sendable {
+  static let id = "redundant_disable_command"
+  static let name = "Redundant Disable Command"
   static let summary = "Disable commands for rules that didn't trigger a violation are superfluous"
   static var nonTriggeringExamples: [Example] {
     [

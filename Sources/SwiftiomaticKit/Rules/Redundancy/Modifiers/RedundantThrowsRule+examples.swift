@@ -1,4 +1,4 @@
-extension UnneededThrowsRule {
+extension RedundantThrowsRule {
   static let nonTriggeringExamples = [
     Example(
       """

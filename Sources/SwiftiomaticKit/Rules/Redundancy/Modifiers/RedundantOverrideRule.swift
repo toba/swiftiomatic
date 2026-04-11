@@ -1,15 +1,15 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-struct UnneededOverrideRule {
-  static let id = "unneeded_override"
-  static let name = "Unneeded Overridden Functions"
+struct RedundantOverrideRule {
+  static let id = "redundant_override"
+  static let name = "Redundant Override"
   static let summary = "Remove overridden functions that don't do anything except call their super"
   static let isCorrectable = true
-  var options = UnneededOverrideOptions()
+  var options = RedundantOverrideOptions()
 }
 
-extension UnneededOverrideRule: SwiftSyntaxRule {
+extension RedundantOverrideRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
@@ -19,7 +19,7 @@ extension UnneededOverrideRule: SwiftSyntaxRule {
   }
 }
 
-extension UnneededOverrideRule {
+extension RedundantOverrideRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionDeclSyntax) {
       if node.isUnneededOverride(excludedMethods: configuration.excludedMethods) {

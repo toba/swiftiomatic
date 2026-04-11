@@ -1,9 +1,9 @@
 import SwiftBasicFormat
 import SwiftSyntax
 
-struct UnneededBreakInSwitchRule {
-  static let id = "unneeded_break_in_switch"
-  static let name = "Unneeded Break in Switch"
+struct RedundantBreakInSwitchRule {
+  static let id = "redundant_break_in_switch"
+  static let name = "Redundant Break in Switch"
   static let summary = "Avoid using unneeded break statements"
   static let isCorrectable = true
 
@@ -109,7 +109,7 @@ struct UnneededBreakInSwitchRule {
   var options = SeverityOption<Self>(.warning)
 }
 
-extension UnneededBreakInSwitchRule: SwiftSyntaxRule {
+extension RedundantBreakInSwitchRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
@@ -119,7 +119,7 @@ extension UnneededBreakInSwitchRule: SwiftSyntaxRule {
   }
 }
 
-extension UnneededBreakInSwitchRule {
+extension RedundantBreakInSwitchRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: SwitchCaseSyntax) {
       guard let statement = node.unneededBreak else {

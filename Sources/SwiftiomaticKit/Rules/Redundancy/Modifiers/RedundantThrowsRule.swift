@@ -1,8 +1,8 @@
 import SwiftSyntax
 
-struct UnneededThrowsRule: SwiftSyntaxRule {
-  static let id = "unneeded_throws_rethrows"
-  static let name = "Unneeded (Re)Throws Keyword"
+struct RedundantThrowsRule: SwiftSyntaxRule {
+  static let id = "redundant_throws"
+  static let name = "Redundant (Re)Throws Keyword"
   static let summary =
     "Non-throwing functions/properties/closures should not be marked as `throws` or `rethrows`."
   static let isCorrectable = true
@@ -177,7 +177,7 @@ struct UnneededThrowsRule: SwiftSyntaxRule {
 
 // MARK: - Support
 
-extension Stack where Element == UnneededThrowsRule.Scope {
+extension Stack where Element == RedundantThrowsRule.Scope {
   fileprivate mutating func markCurrentScopeAsThrowing() {
     modifyLast { currentScope in
       currentScope.throwsClause = nil
@@ -185,7 +185,7 @@ extension Stack where Element == UnneededThrowsRule.Scope {
   }
 
   fileprivate mutating func openScope(with throwsClause: ThrowsClauseSyntax? = nil) {
-    push(UnneededThrowsRule.Scope(throwsClause: throwsClause))
+    push(RedundantThrowsRule.Scope(throwsClause: throwsClause))
   }
 
   @discardableResult

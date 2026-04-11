@@ -1,11 +1,11 @@
-struct UnneededOverrideOptions: SeverityBasedRuleOptions {
+struct RedundantOverrideOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)
   @OptionElement(key: "affect_initializers")
   private(set) var affectInits = false
   @OptionElement(key: "excluded_methods")
   private(set) var excludedMethods = Set<String>()
-  typealias Parent = UnneededOverrideRule
+  typealias Parent = RedundantOverrideRule
   mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$affectInits.key] {

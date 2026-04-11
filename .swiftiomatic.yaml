@@ -73,7 +73,7 @@ rules:
     - toggle_bool
     - unavailable_function
     - unhandled_throwing_task
-    - unneeded_escaping
+    - redundant_escaping
     - unneeded_parentheses_in_closure_argument
     - unneeded_throws_rethrows
     - unused_declaration
