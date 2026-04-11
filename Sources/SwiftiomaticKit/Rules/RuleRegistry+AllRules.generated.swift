@@ -20,6 +20,7 @@ private let allRules: [any Rule.Type] = [
   AnyEliminationRule.self,
   AnyObjectProtocolRule.self,
   ApplicationMainRule.self,
+  AssignmentWrappingRule.self,
   AsyncStreamSafetyRule.self,
   AsyncWithoutAwaitRule.self,
   AttributeNameSpacingRule.self,

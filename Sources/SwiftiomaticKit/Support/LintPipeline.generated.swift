@@ -9,6 +9,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "any_elimination",
     "any_object_protocol",
     "application_main",
+    "assignment_wrapping",
     "async_stream_safety",
     "async_without_await",
     "attribute_name_spacing",
@@ -386,6 +387,7 @@ final class LintPipeline: SyntaxVisitor {
     private var identifierType_visitPost: [Int] = []
     private var ifExpr_visitPost: [Int] = []
     private var implicitlyUnwrappedOptionalType_visitPost: [Int] = []
+    private var infixOperatorExpr_visitPost: [Int] = []
     private var inheritedType_visitPost: [Int] = []
     private var initializerClause_visitPost: [Int] = []
     private var initializerDecl_visitPost: [Int] = []
@@ -458,6 +460,10 @@ final class LintPipeline: SyntaxVisitor {
 
             case "application_main":
                 attribute_visitPost.append(idx)
+
+            case "assignment_wrapping":
+                infixOperatorExpr_visitPost.append(idx)
+                initializerClause_visitPost.append(idx)
 
             case "async_stream_safety":
                 functionCallExpr_visitPost.append(idx)
@@ -2678,6 +2684,12 @@ final class LintPipeline: SyntaxVisitor {
 
     override func visitPost(_ node: ImplicitlyUnwrappedOptionalTypeSyntax) {
         for idx in implicitlyUnwrappedOptionalType_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
+        }
+    }
+
+    override func visitPost(_ node: InfixOperatorExprSyntax) {
+        for idx in infixOperatorExpr_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
     }

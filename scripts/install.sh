@@ -29,7 +29,6 @@ echo "  sm → $(brew --prefix)/bin/sm"
 # --- App + Source Editor Extension (Xcode project) ---
 
 echo "Building app (release)..."
-rm -rf .build/xcode
 xcodebuild -project "$PROJECT" \
     -scheme Swiftiomatic \
     -configuration Release \

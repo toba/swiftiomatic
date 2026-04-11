@@ -22,9 +22,30 @@ import Testing
     }
   }
 
-  @Test func swiftlintRenamedRule() {
-    let result = RuleMapping.swiftlint("empty_count")
-    #expect(result == .renamed(old: "empty_count", new: "empty_collection_literal"))
+  @Test func swiftlintExactMatchFormerlyMismapped() {
+    // These rules exist in Swiftiomatic with the same ID as SwiftLint
+    for ruleID in [
+      "empty_count", "syntactic_sugar", "shorthand_operator",
+      "statement_position", "large_tuple", "contains_over_first_not_nil",
+    ] {
+      let result = RuleMapping.swiftlint(ruleID)
+      #expect(result == .exact(ruleID), "Expected \(ruleID) to map as .exact")
+    }
+  }
+
+  @Test func swiftlintDeprecatedAliasResolved() {
+    // redundant_self_in_closure is a deprecated alias for redundant_self
+    let result = RuleMapping.swiftlint("redundant_self_in_closure")
+    #expect(result == .renamed(old: "redundant_self_in_closure", new: "redundant_self"))
+  }
+
+  @Test func swiftlintRemovedUnusedCaptureList() {
+    let result = RuleMapping.swiftlint("unused_capture_list")
+    if case .removed(let reason) = result {
+      #expect(reason.contains("compiler"))
+    } else {
+      Issue.record("Expected .removed, got \(result)")
+    }
   }
 
   @Test func swiftlintRemovedRule() {
@@ -43,8 +64,7 @@ import Testing
 
   @Test func swiftlintMappedRuleHasID() {
     #expect(RuleMapping.swiftlint("force_cast").swiftiomaticID == "force_cast")
-    #expect(
-      RuleMapping.swiftlint("empty_count").swiftiomaticID == "empty_collection_literal")
+    #expect(RuleMapping.swiftlint("empty_count").swiftiomaticID == "empty_count")
     #expect(RuleMapping.swiftlint("completely_fake_rule_xyz").swiftiomaticID == nil)
   }
 
@@ -62,7 +82,7 @@ import Testing
 
   @Test func swiftformatSortImports() {
     let result = RuleMapping.swiftformat("sortImports")
-    #expect(result == .renamed(old: "sortImports", new: "sorted_imports"))
+    #expect(result == .renamed(old: "sortImports", new: "sort_imports"))
   }
 
   @Test func swiftformatUnmappedRule() {

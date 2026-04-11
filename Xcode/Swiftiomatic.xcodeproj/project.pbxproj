@@ -355,7 +355,7 @@
 				INFOPLIST_FILE = SwiftiomaticExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @executable_path/../../../../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.18.3;
+				MARKETING_VERSION = 0.22.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = app.toba.swiftiomatic.extension;
 				PRODUCT_NAME = SwiftiomaticExtension;
@@ -387,7 +387,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Swiftiomatic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.18.3;
+				MARKETING_VERSION = 0.22.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.toba.swiftiomatic;
 				PRODUCT_MODULE_NAME = SwiftiomaticApp;
 				PRODUCT_NAME = Swiftiomatic;
@@ -411,7 +411,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Swiftiomatic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.18.3;
+				MARKETING_VERSION = 0.22.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = app.toba.swiftiomatic;
 				PRODUCT_MODULE_NAME = SwiftiomaticApp;
@@ -440,7 +440,7 @@
 				INFOPLIST_FILE = SwiftiomaticExtension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @executable_path/../../../../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 0.18.3;
+				MARKETING_VERSION = 0.22.0;
 				PRODUCT_BUNDLE_IDENTIFIER = app.toba.swiftiomatic.extension;
 				PRODUCT_NAME = SwiftiomaticExtension;
 				SKIP_INSTALL = YES;

@@ -10,7 +10,7 @@ public enum DiagnosticDeduplicator {
     "leading_whitespace": "leadingDelimiters",
     "vertical_whitespace": "consecutiveBlankLines",
     "comma": "spaceAroundOperators",
-    "sorted_imports": "sortImports",
+    "sort_imports": "sortImports",
     "duplicate_imports": "duplicateImports",
     "opening_brace": "braces",
     "statement_position": "elseOnSameLine",

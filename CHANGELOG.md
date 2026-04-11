@@ -12,8 +12,9 @@
 - `single_line_body` format rule; condense single-statement blocks to one line ([#188](https://github.com/toba/swiftiomatic/issues/188))
 - `SortImportsRule`; group `@_implementationOnly` imports separately ([#182](https://github.com/toba/swiftiomatic/issues/182))
 - GitHub Actions action ([#167](https://github.com/toba/swiftiomatic/issues/167))
+- `AttributePlacementRule`; add `inline_when_fits` option
 
-### 🐛 Fixes
+### 🐞 Fixes
 
 - Fix 7 test failures in Swiftiomatic test suite ([#126](https://github.com/toba/swiftiomatic/issues/126))
 - Xcode cannot compile swiftiomatic; module resolution failure due to case-insensitive FS collision ([#173](https://github.com/toba/swiftiomatic/issues/173))
@@ -22,6 +23,7 @@
 - Release workflow fails; `macos-15` runner lacks Swift 6.3 / Xcode 26 ([#190](https://github.com/toba/swiftiomatic/issues/190))
 - Fix 11 rule bugs surfaced by pipeline regeneration and test coverage
 - Deduplicate rules in migrate config output ([#194](https://github.com/toba/swiftiomatic/issues/194))
+- `sm migrate`; fix wrong rename mappings and add `.swiftformat` config migration
 
 ### 🗜️ Tweaks
 

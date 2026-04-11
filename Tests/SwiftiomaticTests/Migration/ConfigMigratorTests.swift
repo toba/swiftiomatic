@@ -41,13 +41,23 @@ import Testing
     #expect(!result.configuration.enabledLintRules.contains("explicit_self"))
   }
 
-  @Test func migrateSwiftLintRenamedRule() {
+  @Test func migrateSwiftLintExactMatchRule() {
     var slConfig = SwiftLintConfig()
     slConfig.disabledRules = ["empty_count"]
 
     let result = ConfigMigrator.migrate(swiftlint: slConfig)
 
-    #expect(result.configuration.disabledLintRules.contains("empty_collection_literal"))
+    #expect(result.configuration.disabledLintRules.contains("empty_count"))
+    #expect(result.mappedRuleCount == 1)
+  }
+
+  @Test func migrateSwiftLintDeprecatedAlias() {
+    var slConfig = SwiftLintConfig()
+    slConfig.optInRules = ["redundant_self_in_closure"]
+
+    let result = ConfigMigrator.migrate(swiftlint: slConfig)
+
+    #expect(result.configuration.enabledLintRules.contains("redundant_self"))
     #expect(result.warnings.contains { $0.message.contains("Renamed") })
   }
 
@@ -165,48 +175,71 @@ import Testing
     #expect(count == 1)
   }
 
-  @Test func migrateSwiftLintDeduplicatesWithinSource() {
-    // empty_count is renamed to empty_collection_literal; including both
-    // should produce only one entry in the disabled list
+  @Test func migrateSwiftLintDeduplicatesSameRule() {
+    // Same rule appearing twice should be deduplicated
     var slConfig = SwiftLintConfig()
-    slConfig.disabledRules = ["empty_count", "empty_collection_literal"]
+    slConfig.disabledRules = ["force_cast", "force_cast"]
 
     let result = ConfigMigrator.migrate(swiftlint: slConfig)
 
-    let count = result.configuration.disabledLintRules.filter {
-      $0 == "empty_collection_literal"
-    }.count
+    let count = result.configuration.disabledLintRules.filter { $0 == "force_cast" }.count
     #expect(count == 1)
   }
 
-  @Test func migrateSwiftLintDeduplicatesEnabledWithinSource() {
+  @Test func migrateSwiftLintDeduplicatesAliasAndCanonical() {
+    // Deprecated alias and canonical name should deduplicate
     var slConfig = SwiftLintConfig()
-    slConfig.optInRules = ["contains_over_first_not_nil", "first_where"]
+    slConfig.optInRules = ["redundant_self_in_closure", "redundant_self"]
 
     let result = ConfigMigrator.migrate(swiftlint: slConfig)
 
-    let count = result.configuration.enabledLintRules.filter {
-      $0 == "first_where"
-    }.count
+    let count = result.configuration.enabledLintRules.filter { $0 == "redundant_self" }.count
     #expect(count == 1)
   }
 
-  @Test func mergeDeduplicatesWithinAndAcrossSources() {
-    // SwiftLint has both the old and new name
+  @Test func mergeDeduplicatesAcrossSources() {
     var slConfig = SwiftLintConfig()
-    slConfig.disabledRules = ["empty_count", "empty_collection_literal"]
+    slConfig.disabledRules = ["trailing_comma"]
 
-    // SwiftFormat also maps to empty_collection_literal
     var sfConfig = SwiftFormatConfig()
-    sfConfig.disabledRules = ["isEmpty"]  // unmapped, won't collide
+    sfConfig.disabledRules = ["trailingCommas"]  // maps to trailing_comma
 
     let slResult = ConfigMigrator.migrate(swiftlint: slConfig)
     let sfResult = ConfigMigrator.migrate(swiftformat: sfConfig)
     let merged = ConfigMigrator.merge(swiftlint: slResult, swiftformat: sfResult)
 
-    let count = merged.configuration.disabledLintRules.filter {
-      $0 == "empty_collection_literal"
-    }.count
+    let count = merged.configuration.disabledLintRules.filter { $0 == "trailing_comma" }.count
     #expect(count == 1)
+  }
+
+  // MARK: - SwiftFormat Config Options
+
+  @Test func migrateSwiftFormatElsePosition() {
+    var sfConfig = SwiftFormatConfig()
+    sfConfig.rawOptions["else-position"] = "next-line"
+
+    let result = ConfigMigrator.migrate(swiftformat: sfConfig)
+    #expect(result.configuration.formatLineBreakBeforeControlFlowKeywords == true)
+  }
+
+  @Test func migrateSwiftFormatWrapArguments() {
+    var sfConfig = SwiftFormatConfig()
+    sfConfig.rawOptions["wrap-arguments"] = "before-first"
+
+    let result = ConfigMigrator.migrate(swiftformat: sfConfig)
+    #expect(result.configuration.formatLineBreakBeforeEachArgument == true)
+  }
+
+  @Test func migrateSwiftFormatPerRuleConfigs() {
+    var sfConfig = SwiftFormatConfig()
+    sfConfig.rawOptions["self"] = "remove"
+    sfConfig.rawOptions["indent-case"] = "true"
+    sfConfig.rawOptions["pattern-let"] = "hoist"
+
+    let result = ConfigMigrator.migrate(swiftformat: sfConfig)
+
+    #expect(result.configuration.lintRuleConfigs["explicit_self"] != nil)
+    #expect(result.configuration.lintRuleConfigs["switch_case_alignment"] != nil)
+    #expect(result.configuration.lintRuleConfigs["pattern_matching_keywords"] != nil)
   }
 }

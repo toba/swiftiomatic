@@ -5,6 +5,7 @@ struct AttributePlacementRule {
   static let name = "Attribute Placement"
   static let summary = "Attributes should be on their own line for functions and types, same line for variables and imports"
   static let isOptIn = true
+  static let isCorrectable = true
   static let rationale: String? = """
     Erica Sadun says:
 
@@ -20,8 +21,45 @@ struct AttributePlacementRule {
 
     Swiftiomatic's rule requires attributes to be on their own lines for functions and types, but on the same line \
     for variables and imports.
+
+    When `inline_when_fits` is enabled, a single argument-less attribute on a function or type declaration \
+    will be placed on the same line if the combined result fits within `max_width`.
     """
+
+  static var corrections: [Example: Example] {
+    [
+      Example(
+        """
+        ↓@Test
+        func foo() { }
+        """,
+        configuration: ["inline_when_fits": true, "max_width": 120],
+      ): Example(
+        """
+        @Test func foo() { }
+        """
+      ),
+      Example(
+        """
+        ↓@MainActor
+        func update() { }
+        """,
+        configuration: ["inline_when_fits": true, "max_width": 120],
+      ): Example(
+        """
+        @MainActor func update() { }
+        """
+      ),
+    ]
+  }
+
   var options = AttributePlacementOptions()
+}
+
+// MARK: - FormatAwareRule
+
+extension AttributePlacementRule: FormatAwareRule {
+  static var formatConfigKeys: Set<String> { ["max_width"] }
 }
 
 extension AttributePlacementRule: SwiftSyntaxRule {
@@ -97,6 +135,59 @@ extension AttributePlacementRule {
         violations.append(helper.violationPosition)
         return
       }
+
+      // inline_when_fits: collapse a single argument-less attribute onto the declaration line
+      // when the combined result fits within max_width
+      checkInlineWhenFits(node: node, helper: helper)
+    }
+
+    private func checkInlineWhenFits(node: AttributeListSyntax, helper: RuleHelper) {
+      guard configuration.inlineWhenFits else { return }
+      guard !helper.shouldBeOnSameLine else { return }
+
+      let attributes = node.children(viewMode: .sourceAccurate)
+        .compactMap { $0.as(AttributeSyntax.self) }
+      guard attributes.count == 1, let attribute = attributes.first else { return }
+      guard attribute.arguments == nil else { return }
+
+      let atPrefixedName = "@\(attribute.attributeNameText)"
+      guard !configuration.alwaysOnNewLine.contains(atPrefixedName) else { return }
+
+      // Attribute must be on a separate line from the keyword
+      let attrLocation = locationConverter.location(
+        for: attribute.positionAfterSkippingLeadingTrivia
+      )
+      guard attrLocation.line != helper.keywordLine else { return }
+
+      // Calculate combined width: indent + "@Attr" + " " + keywordLineContent
+      let indent = attrLocation.column - 1
+      let attrText = attribute.trimmedDescription
+      let keywordLineIndex = helper.keywordLine - 1
+      guard keywordLineIndex >= 0, keywordLineIndex < file.lines.count else { return }
+      let keywordLineContent = file.lines[keywordLineIndex].content
+      let strippedLength = keywordLineContent.drop(while: { $0 == " " || $0 == "\t" }).count
+      let combinedWidth = indent + attrText.count + 1 + strippedLength
+
+      guard combinedWidth <= configuration.maxWidth else { return }
+
+      // Build correction: replace trivia between attribute and next token with a space
+      guard let lastAttrToken = node.lastToken(viewMode: .sourceAccurate),
+        let nextToken = lastAttrToken.nextToken(viewMode: .sourceAccurate)
+      else { return }
+
+      let correction = SyntaxViolation.Correction(
+        start: lastAttrToken.endPositionBeforeTrailingTrivia,
+        end: nextToken.positionAfterSkippingLeadingTrivia,
+        replacement: " ",
+      )
+
+      violations.append(
+        SyntaxViolation(
+          position: attribute.positionAfterSkippingLeadingTrivia,
+          reason: "Attribute '\(atPrefixedName)' can be placed on the same line as the declaration",
+          correction: correction,
+        ),
+      )
     }
   }
 }

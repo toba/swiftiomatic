@@ -81,7 +81,9 @@
       "Bash(swiftiomatic migrate:*)",
       "Bash(gh workflow:*)",
       "Bash(gh auth:*)",
-      "Bash(gh --version)"
+      "Bash(gh --version)",
+      "Read(//Users/jason/Developer/toba/thesis/**)",
+      "Read(//Users/jason/Developer/thesis/**)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -256,6 +256,26 @@ public enum ConfigMigrator {
       }
     }
 
+    // Map additional raw options to format settings
+    let raw = swiftformat.rawOptions
+
+    if let elsePosition = raw["else-position"] {
+      config.formatLineBreakBeforeControlFlowKeywords = elsePosition == "next-line"
+    }
+
+    if let wrapArguments = raw["wrap-arguments"] {
+      config.formatLineBreakBeforeEachArgument = wrapArguments == "before-first"
+    }
+
+    if let consecutiveBlankLines = raw["consecutive-blank-lines"] {
+      if let count = Int(consecutiveBlankLines) {
+        config.formatMaximumBlankLines = count
+      }
+    }
+
+    // Map raw options to per-rule configs
+    migrateSwiftFormatRuleConfigs(from: raw, into: &config)
+
     config.disabledLintRules = config.disabledLintRules.uniqued()
     config.enabledLintRules = config.enabledLintRules.uniqued()
 
@@ -303,6 +323,23 @@ public enum ConfigMigrator {
     if sfConfig.formatTrailingCommas != defaults.formatTrailingCommas {
       config.formatTrailingCommas = sfConfig.formatTrailingCommas
     }
+    if sfConfig.formatMaximumBlankLines != defaults.formatMaximumBlankLines {
+      config.formatMaximumBlankLines = sfConfig.formatMaximumBlankLines
+    }
+    if sfConfig.formatLineBreakBeforeControlFlowKeywords
+      != defaults.formatLineBreakBeforeControlFlowKeywords
+    {
+      config.formatLineBreakBeforeControlFlowKeywords =
+        sfConfig.formatLineBreakBeforeControlFlowKeywords
+    }
+    if sfConfig.formatLineBreakBeforeEachArgument != defaults.formatLineBreakBeforeEachArgument {
+      config.formatLineBreakBeforeEachArgument = sfConfig.formatLineBreakBeforeEachArgument
+    }
+
+    // Merge per-rule configs (SwiftFormat overrides SwiftLint)
+    for (ruleID, value) in sfConfig.lintRuleConfigs {
+      config.lintRuleConfigs[ruleID] = value
+    }
 
     return MigrationResult(
       configuration: config,
@@ -310,6 +347,65 @@ public enum ConfigMigrator {
       mappedRuleCount: swiftlint.mappedRuleCount + swiftformat.mappedRuleCount,
       unmappedRuleCount: swiftlint.unmappedRuleCount + swiftformat.unmappedRuleCount,
     )
+  }
+}
+
+// MARK: - SwiftFormat Per-Rule Config
+
+extension ConfigMigrator {
+  /// Map SwiftFormat raw options to Swiftiomatic per-rule configuration entries
+  static func migrateSwiftFormatRuleConfigs(
+    from raw: [String: String],
+    into config: inout Configuration,
+  ) {
+    // --self remove|insert → explicit_self config
+    if let selfOption = raw["self"] {
+      config.lintRuleConfigs["explicit_self"] = .dictionary([
+        "mode": .string(selfOption == "insert" ? "required" : "remove"),
+      ])
+    }
+
+    // --indent-case true|false → switch_case_alignment config
+    if let indentCase = raw["indent-case"] {
+      config.lintRuleConfigs["switch_case_alignment"] = .dictionary([
+        "indented_cases": .bool(indentCase == "true"),
+      ])
+    }
+
+    // --pattern-let hoist|inline → pattern_matching_keywords config
+    if let patternLet = raw["pattern-let"] {
+      config.lintRuleConfigs["pattern_matching_keywords"] = .dictionary([
+        "mode": .string(patternLet),
+      ])
+    }
+
+    // --sort-imports length|alpha → sorted_imports config
+    if let importGrouping = raw["import-grouping"] {
+      config.lintRuleConfigs["sort_imports"] = .dictionary([
+        "grouping": .string(importGrouping),
+      ])
+    }
+
+    // --empty-braces no-space|spaced → empty_braces config
+    if let emptyBraces = raw["empty-braces"] {
+      config.lintRuleConfigs["empty_braces"] = .dictionary([
+        "style": .string(emptyBraces),
+      ])
+    }
+
+    // --closing-paren balanced|same-line → multiline_arguments config
+    if let closingParen = raw["closing-paren"] {
+      config.lintRuleConfigs["multiline_arguments"] = .dictionary([
+        "closing_paren": .string(closingParen),
+      ])
+    }
+
+    // --strip-unused-args always|closure-only|unnamed-only → unused_closure_parameter config
+    if let stripUnused = raw["strip-unused-args"] {
+      config.lintRuleConfigs["unused_closure_parameter"] = .dictionary([
+        "mode": .string(stripUnused),
+      ])
+    }
   }
 }
 
