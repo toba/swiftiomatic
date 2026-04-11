@@ -39,9 +39,14 @@ extension ObservationPitfallsRule {
                   callExpr.calledExpression.trimmedDescription == "Observations"
             else { return }
 
-            if let trailingClosure = callExpr.trailingClosure {
+            // Check trailing closure or first argument closure
+            let closure: ClosureExprSyntax? =
+                callExpr.trailingClosure
+                    ?? callExpr.arguments.first?.expression.as(ClosureExprSyntax.self)
+
+            if let closure {
                 let hasWeakSelf =
-                    trailingClosure.signature?.capture?.items.contains { item in
+                    closure.signature?.capture?.items.contains { item in
                         item.trimmedDescription.contains("weak self")
                     } ?? false
 
@@ -50,7 +55,7 @@ extension ObservationPitfallsRule {
                         SyntaxViolation(
                             position: callExpr.positionAfterSkippingLeadingTrivia,
                             reason: "Observations closure missing [weak self] — may cause retain cycle",
-                            severity: .error,
+                            severity: configuration.severity,
                             confidence: .medium,
                             suggestion: "Add [weak self] to the Observations closure",
                         ),

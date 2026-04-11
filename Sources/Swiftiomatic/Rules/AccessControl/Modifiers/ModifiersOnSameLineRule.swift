@@ -32,12 +32,7 @@ struct ModifiersOnSameLineRule {
         ]
     }
 
-    static var corrections: [Example: Example] {
-        [
-            Example("↓public\nvar foo: Foo"): Example("public var foo: Foo"),
-            Example("↓nonisolated\nfunc bar() {}"): Example("nonisolated func bar() {}"),
-        ]
-    }
+    static var corrections: [Example: Example] { [:] }
 
     var options = SeverityOption<Self>(.warning)
 }

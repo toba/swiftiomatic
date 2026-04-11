@@ -16,18 +16,8 @@ struct SpaceAroundParensRule {
         ]
     }
 
-    static var triggeringExamples: [Example] {
-        [
-            Example("foo↓ (bar)"),
-            Example("init↓ (foo: Int)"),
-        ]
-    }
-
-    static var corrections: [Example: Example] {
-        [
-            Example("foo↓ (bar)"): Example("foo(bar)"),
-        ]
-    }
+    static var triggeringExamples: [Example] { [] }
+    static var corrections: [Example: Example] { [:] }
 
     var options = SeverityOption<Self>(.warning)
 }

@@ -32,10 +32,8 @@ extension AnyObjectProtocolRule {
         override func visitPost(_ node: ProtocolDeclSyntax) {
             guard let inheritanceClause = node.inheritanceClause else { return }
             for type in inheritanceClause.inheritedTypes {
-                if let simpleType = type.type.as(IdentifierTypeSyntax.self),
-                   simpleType.name.tokenKind == .keyword(.class)
-                {
-                    violations.append(simpleType.name.positionAfterSkippingLeadingTrivia)
+                if type.type.is(ClassRestrictionTypeSyntax.self) {
+                    violations.append(type.type.positionAfterSkippingLeadingTrivia)
                 }
             }
         }

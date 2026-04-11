@@ -8,7 +8,6 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "accessibility_trait_for_button",
     "acronyms",
     "agent_review",
-    "and_operator",
     "anonymous_argument_in_multiline_closure",
     "any_elimination",
     "any_object_protocol",
@@ -39,7 +38,6 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "compiler_protocol_init",
     "computed_accessors_order",
     "concurrency_modernization",
-    "conditional_assignment",
     "conditional_returns_on_newline",
     "consecutive_spaces",
     "contains_over_filter_count",
@@ -206,7 +204,6 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "redundant_fileprivate",
     "redundant_get",
     "redundant_internal",
-    "redundant_memberwise_init",
     "redundant_nil_coalescing",
     "redundant_objc_attribute",
     "redundant_parens",
@@ -476,9 +473,6 @@ final class LintPipeline: SyntaxVisitor {
                 memberAccessExpr_visitPost.append(idx)
                 variableDecl_visitPost.append(idx)
 
-            case "and_operator":
-                conditionElement_visitPost.append(idx)
-
             case "anonymous_argument_in_multiline_closure":
                 closureExpr_visit.append(idx)
                 declReferenceExpr_visitPost.append(idx)
@@ -606,9 +600,6 @@ final class LintPipeline: SyntaxVisitor {
                 functionCallExpr_visitPost.append(idx)
                 functionDecl_visitPost.append(idx)
                 memberAccessExpr_visitPost.append(idx)
-
-            case "conditional_assignment":
-                codeBlockItemList_visitPost.append(idx)
 
             case "conditional_returns_on_newline":
                 guardStmt_visitPost.append(idx)
@@ -838,7 +829,7 @@ final class LintPipeline: SyntaxVisitor {
                 sourceFile_visitPost.append(idx)
 
             case "file_macro":
-                token_visit.append(idx)
+                macroExpansionExpr_visitPost.append(idx)
 
             case "final_test_case":
                 classDecl_visitPost.append(idx)
@@ -1409,9 +1400,6 @@ final class LintPipeline: SyntaxVisitor {
 
             case "redundant_internal":
                 declModifier_visitPost.append(idx)
-
-            case "redundant_memberwise_init":
-                structDecl_visitPost.append(idx)
 
             case "redundant_nil_coalescing":
                 token_visitPost.append(idx)

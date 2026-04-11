@@ -28,18 +28,10 @@ extension FileMacroRule: SwiftSyntaxRule {
 
 extension FileMacroRule {
     fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
-        override func visit(_ token: TokenSyntax) -> SyntaxVisitorContinueKind {
-            if token.tokenKind == .poundAvailable || token.text == "#fileID" {
-                // Check for #fileID keyword
-                if case .keyword = token.tokenKind, token.text == "#fileID" {
-                    violations.append(token.positionAfterSkippingLeadingTrivia)
-                }
+        override func visitPost(_ node: MacroExpansionExprSyntax) {
+            if node.macroName.text == "fileID" {
+                violations.append(node.positionAfterSkippingLeadingTrivia)
             }
-            // Also check raw token text for #fileID
-            if token.text == "#fileID" {
-                violations.append(token.positionAfterSkippingLeadingTrivia)
-            }
-            return .visitChildren
         }
     }
 }

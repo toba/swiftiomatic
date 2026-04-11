@@ -31,9 +31,10 @@ extension StrongifiedSelfRule {
     fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
         override func visitPost(_ node: OptionalBindingConditionSyntax) {
             // Check for `let \`self\` = self` pattern
+            // In modern SwiftSyntax, backticked `self` may parse as .keyword(.self)
+            // or .identifier("self"); check trimmedDescription for backticks
             if let pattern = node.pattern.as(IdentifierPatternSyntax.self),
-               pattern.identifier.text == "self",
-               pattern.identifier.tokenKind == .identifier("`self`")
+               pattern.identifier.trimmedDescription == "`self`"
             {
                 violations.append(pattern.identifier.positionAfterSkippingLeadingTrivia)
             }

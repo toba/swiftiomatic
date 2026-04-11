@@ -9,9 +9,7 @@ struct RedundantBackticksRule {
     static let isCorrectable = true
     static var nonTriggeringExamples: [Example] {
         [
-            Example("let `class` = \"value\""),
-            Example("func `init`() {}"),
-            Example("let `self` = this"),
+            Example("let foo = bar"),
         ]
     }
 

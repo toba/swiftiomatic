@@ -50,6 +50,10 @@ struct RedundantMemberwiseInitRule {
 }
 
 extension RedundantMemberwiseInitRule: SwiftSyntaxRule {
+    func preprocess(file: SwiftSource) -> SourceFileSyntax? {
+        file.foldedSyntaxTree
+    }
+
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }

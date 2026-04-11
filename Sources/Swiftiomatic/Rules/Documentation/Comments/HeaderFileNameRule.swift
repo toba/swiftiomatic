@@ -29,6 +29,8 @@ struct HeaderFileNameRule {
         ]
     }
 
+    static let requiresFileOnDisk = true
+
     var options = SeverityOption<Self>(.warning)
 }
 

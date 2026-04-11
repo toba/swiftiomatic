@@ -71,12 +71,22 @@ extension ConditionalAssignmentRule {
 
                 let name = pattern.identifier.text
 
+                // Extract the expression from the item, unwrapping ExpressionStmtSyntax
+                let expr: ExprSyntax?
+                if let exprStmt = current.item.as(ExpressionStmtSyntax.self) {
+                    expr = exprStmt.expression
+                } else if let e = ExprSyntax(current.item) {
+                    expr = e
+                } else {
+                    expr = nil
+                }
+
                 // Check if current is an if/switch that assigns to `name` in all branches
-                if let ifExpr = current.item.as(IfExprSyntax.self) {
+                if let ifExpr = expr?.as(IfExprSyntax.self) {
                     if ifExprAssignsInAllBranches(ifExpr, to: name) {
                         violations.append(ifExpr.ifKeyword.positionAfterSkippingLeadingTrivia)
                     }
-                } else if let switchExpr = current.item.as(SwitchExprSyntax.self) {
+                } else if let switchExpr = expr?.as(SwitchExprSyntax.self) {
                     if switchExprAssignsInAllBranches(switchExpr, to: name) {
                         violations
                             .append(switchExpr.switchKeyword.positionAfterSkippingLeadingTrivia)
@@ -115,12 +125,35 @@ extension ConditionalAssignmentRule {
                   let stmt = statements.first
             else { return false }
 
-            if let infixExpr = stmt.item.as(InfixOperatorExprSyntax.self),
+            // Extract expression, unwrapping ExpressionStmtSyntax if needed
+            let expr: ExprSyntax?
+            if let exprStmt = stmt.item.as(ExpressionStmtSyntax.self) {
+                expr = exprStmt.expression
+            } else if let e = ExprSyntax(stmt.item) {
+                expr = e
+            } else {
+                expr = nil
+            }
+            guard let expr else { return false }
+
+            // After operator folding: InfixOperatorExprSyntax with AssignmentExprSyntax
+            if let infixExpr = expr.as(InfixOperatorExprSyntax.self),
                infixExpr.operator.is(AssignmentExprSyntax.self),
                let lhs = infixExpr.leftOperand.as(DeclReferenceExprSyntax.self),
                lhs.baseName.text == name
             {
                 return true
+            }
+            // Without folding: SequenceExprSyntax with [DeclRef, Assignment, value]
+            if let seqExpr = expr.as(SequenceExprSyntax.self) {
+                let elements = Array(seqExpr.elements)
+                if elements.count >= 2,
+                   let lhs = elements[0].as(DeclReferenceExprSyntax.self),
+                   lhs.baseName.text == name,
+                   elements[1].is(AssignmentExprSyntax.self)
+                {
+                    return true
+                }
             }
             return false
         }

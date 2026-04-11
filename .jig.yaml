@@ -26,6 +26,8 @@ nope:
           pattern: '"file_path"\s*:\s*"[^"]*(\.pem|\.key|\.p12|credentials\.json)"'
           tools: ["Write", "Edit"]
           message: "writing to credential files not allowed"
+companions:
+    brew: toba/homebrew-tap
 todo:
     path: .issues
     default_status: ready

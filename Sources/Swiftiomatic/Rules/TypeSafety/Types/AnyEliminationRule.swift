@@ -126,7 +126,7 @@ extension AnyEliminationRule {
                     SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "[String: \(value)] dictionary should be a Codable struct",
-                        severity: .warning,
+                        severity: configuration.severity,
                         confidence: .medium,
                         suggestion: "Define a struct with typed properties instead",
                     ),
@@ -140,7 +140,7 @@ extension AnyEliminationRule {
                     SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Force cast 'as!' — trace back to where the type was erased",
-                        severity: .warning,
+                        severity: configuration.severity,
                         confidence: .medium,
                         suggestion: "Use generics or a typed API to avoid the cast",
                     ),
@@ -155,7 +155,7 @@ extension AnyEliminationRule {
                 SyntaxViolation(
                     position: type.positionAfterSkippingLeadingTrivia,
                     reason: match.message,
-                    severity: .warning,
+                    severity: configuration.severity,
                     confidence: match == .any ? .medium : .low,
                     suggestion: match.suggestion,
                 ),

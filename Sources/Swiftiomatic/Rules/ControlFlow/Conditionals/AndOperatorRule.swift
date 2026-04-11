@@ -25,6 +25,10 @@ struct AndOperatorRule {
 }
 
 extension AndOperatorRule: SwiftSyntaxRule {
+    func preprocess(file: SwiftSource) -> SourceFileSyntax? {
+        file.foldedSyntaxTree
+    }
+
     func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
         Visitor(configuration: options, file: file)
     }
@@ -33,22 +37,18 @@ extension AndOperatorRule: SwiftSyntaxRule {
 extension AndOperatorRule {
     fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
         override func visitPost(_ node: ConditionElementSyntax) {
-            // Check if this condition element contains a && operator
-            // that could be replaced with a comma
-            checkForAndOperator(in: node.condition)
+            if case let .expression(expr) = node.condition {
+                checkForAndOperator(in: expr)
+            }
         }
 
-        private func checkForAndOperator(in syntax: some SyntaxProtocol) {
-            // Look for infix && in condition expressions
-            for child in syntax.children(viewMode: .sourceAccurate) {
-                if let infixOp = child.as(InfixOperatorExprSyntax.self),
-                   let op = infixOp.operator.as(BinaryOperatorExprSyntax.self),
-                   op.operator.text == "&&"
-                {
-                    // Skip if the expression also contains ||
-                    if containsOrOperator(infixOp) { continue }
-                    violations.append(op.operator.positionAfterSkippingLeadingTrivia)
-                }
+        private func checkForAndOperator(in expr: ExprSyntax) {
+            if let infixOp = expr.as(InfixOperatorExprSyntax.self),
+               let op = infixOp.operator.as(BinaryOperatorExprSyntax.self),
+               op.operator.text == "&&",
+               !containsOrOperator(infixOp)
+            {
+                violations.append(op.operator.positionAfterSkippingLeadingTrivia)
             }
         }
 

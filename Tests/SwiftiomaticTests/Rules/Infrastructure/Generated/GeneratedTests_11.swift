@@ -15,19 +15,19 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct AndOperatorRuleGeneratedTests {
-  @Test(.disabled("visitor checks InfixOperatorExprSyntax but unfolded tree uses SequenceExprSyntax — needs preprocess override")) func withDefaultConfiguration() async {
+  @Test func withDefaultConfiguration() async {
     await verifyRule(AndOperatorRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct AnyEliminationRuleGeneratedTests {
-  @Test(.disabled("severity hardcoded in SyntaxViolation — cannot pass severity-change test")) func withDefaultConfiguration() async {
+  @Test func withDefaultConfiguration() async {
     await verifyRule(AnyEliminationRule.self)
   }
 }
 
 @Suite(.rulesRegistered) struct AnyObjectProtocolRuleGeneratedTests {
-  @Test(.disabled("visitor checks IdentifierTypeSyntax but class constraint is ClassRestrictionTypeSyntax")) func withDefaultConfiguration() async {
+  @Test func withDefaultConfiguration() async {
     await verifyRule(AnyObjectProtocolRule.self)
   }
 }
@@ -99,7 +99,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct ConditionalAssignmentRuleGeneratedTests {
-  @Test(.disabled("branchAssigns checks InfixOperatorExprSyntax but unfolded tree uses SequenceExprSyntax — needs preprocess override")) func withDefaultConfiguration() async {
+  @Test func withDefaultConfiguration() async {
     await verifyRule(ConditionalAssignmentRule.self)
   }
 }
@@ -165,7 +165,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct FileMacroRuleGeneratedTests {
-  @Test(.disabled("#fileID is parsed as MacroExpansionExprSyntax, not a keyword token — visitor never sees it")) func withDefaultConfiguration() async {
+  @Test func withDefaultConfiguration() async {
     await verifyRule(FileMacroRule.self)
   }
 }
@@ -189,7 +189,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct HeaderFileNameRuleGeneratedTests {
-  @Test(.disabled("rule reads file.path which is nil for in-memory test files — needs requiresFileOnDisk = true")) func withDefaultConfiguration() async {
+  @Test(.disabled("requiresFileOnDisk with UUID temp paths — examples need file_name config that verifyRule cannot provide")) func withDefaultConfiguration() async {
     await verifyRule(HeaderFileNameRule.self)
   }
 }
@@ -273,7 +273,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct ObservationPitfallsRuleGeneratedTests {
-  @Test(.disabled("rule checks trailingClosure but Observations({ ... }) uses regular argument — visitor never finds the closure")) func withDefaultConfiguration() async {
+  @Test func withDefaultConfiguration() async {
     await verifyRule(ObservationPitfallsRule.self)
   }
 }
@@ -339,7 +339,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct RedundantFileprivateRuleGeneratedTests {
-  @Test(.disabled("file-scope check walks wrong parent depth — CodeBlockItemSyntax vs CodeBlockItemListSyntax")) func withDefaultConfiguration() async {
+  @Test func withDefaultConfiguration() async {
     await verifyRule(RedundantFileprivateRule.self)
   }
 }
@@ -357,7 +357,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct RedundantMemberwiseInitRuleGeneratedTests {
-  @Test(.disabled("body checks InfixOperatorExprSyntax for self.x = x but unfolded tree uses SequenceExprSyntax — needs preprocess override")) func withDefaultConfiguration() async {
+  @Test func withDefaultConfiguration() async {
     await verifyRule(RedundantMemberwiseInitRule.self)
   }
 }
@@ -477,7 +477,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct StrongifiedSelfRuleGeneratedTests {
-  @Test(.disabled("tokenKind check uses .identifier(\"`self`\") but backticks are not part of identifier text in SwiftSyntax")) func withDefaultConfiguration() async {
+  @Test func withDefaultConfiguration() async {
     await verifyRule(StrongifiedSelfRule.self)
   }
 }
@@ -507,7 +507,7 @@ import Testing
 }
 
 @Suite(.rulesRegistered) struct TypedThrowsRuleGeneratedTests {
-  @Test(.disabled("severity hardcoded in SyntaxViolation — cannot pass severity-change test")) func withDefaultConfiguration() async {
+  @Test func withDefaultConfiguration() async {
     await verifyRule(TypedThrowsRule.self)
   }
 }

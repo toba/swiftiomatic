@@ -31,7 +31,6 @@ struct ConditionalAssignmentRuleTests {
     }
 
     // ConditionalAssignment requires specific binding/assignment pattern analysis
-
 }
 
 // MARK: - StrongifiedSelfRule

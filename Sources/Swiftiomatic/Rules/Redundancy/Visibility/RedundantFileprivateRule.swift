@@ -17,8 +17,8 @@ struct RedundantFileprivateRule {
             ),
             Example(
                 """
-                fileprivate func helper() {}
                 class Foo {
+                  fileprivate func helper() {}
                   func bar() { helper() }
                 }
                 """,
@@ -54,8 +54,9 @@ extension RedundantFileprivateRule {
             guard let parentDecl = node.parent?.parent else { return }
 
             // Check if the declaration is at file scope
-            if parentDecl.parent?.is(CodeBlockItemListSyntax.self) == true,
-               parentDecl.parent?.parent?.is(SourceFileSyntax.self) == true
+            // Tree: SourceFileSyntax > CodeBlockItemListSyntax > CodeBlockItemSyntax > Decl
+            if parentDecl.parent?.is(CodeBlockItemSyntax.self) == true,
+               parentDecl.parent?.parent?.parent?.is(SourceFileSyntax.self) == true
             {
                 violations.append(node.positionAfterSkippingLeadingTrivia)
             }

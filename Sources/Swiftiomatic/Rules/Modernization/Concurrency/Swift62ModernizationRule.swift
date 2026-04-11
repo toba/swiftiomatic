@@ -70,7 +70,7 @@ extension Swift62ModernizationRule {
                     SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Task.detached may be replaceable with @concurrent",
-                        severity: .warning,
+                        severity: configuration.severity,
                         confidence: .low,
                         suggestion:
                         "Use @concurrent on an async function instead — but note @concurrent inherits @TaskLocal values while Task.detached drops them",
@@ -84,7 +84,7 @@ extension Swift62ModernizationRule {
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason:
                         "withObservationTracking can be replaced with Observations AsyncSequence in Swift 6.2",
-                        severity: .warning,
+                        severity: configuration.severity,
                         confidence: .medium,
                         suggestion: "for await value in Observations { ... }",
                     ),
@@ -114,7 +114,7 @@ extension Swift62ModernizationRule {
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason:
                             "weak var '\(bindingName)' is never reassigned — use weak let (SE-0481)",
-                            severity: .warning,
+                            severity: configuration.severity,
                             correction: correction,
                             confidence: .medium,
                             suggestion: "weak let \(bindingName)",
@@ -141,7 +141,7 @@ extension Swift62ModernizationRule {
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason:
                             "Mutable static var '\(bindingName)' without isolation — data race risk in concurrent contexts",
-                            severity: .warning,
+                            severity: configuration.severity,
                             confidence: .low,
                             suggestion: "Protect with actor isolation, Mutex, or convert to @TaskLocal",
                         ),
@@ -159,7 +159,7 @@ extension Swift62ModernizationRule {
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason:
                         "nonisolated method '\(node.name.text)' in @MainActor type — consider isolated conformances (SE-0470)",
-                        severity: .warning,
+                        severity: configuration.severity,
                         confidence: .low,
                         suggestion: "Use @preconcurrency conformance or isolated protocol adoption",
                     ),
@@ -199,7 +199,7 @@ extension Swift62ModernizationRule {
                             position: node.positionAfterSkippingLeadingTrivia,
                             reason:
                             "Function '\(node.name.text)' threads context parameter to all callees — consider @TaskLocal",
-                            severity: .warning,
+                            severity: configuration.severity,
                             confidence: .low,
                             suggestion: "Use @TaskLocal for implicit context propagation",
                         ),
@@ -219,7 +219,7 @@ extension Swift62ModernizationRule {
                     SyntaxViolation(
                         position: node.positionAfterSkippingLeadingTrivia,
                         reason: "Unsafe buffer pointer — consider Span/RawSpan (macOS 26.0+)",
-                        severity: .warning,
+                        severity: configuration.severity,
                         confidence: .low,
                         suggestion: "Use Span<T> or RawSpan for safe, non-owning buffer access",
                     ),
@@ -238,7 +238,7 @@ extension Swift62ModernizationRule {
                                 position: node.positionAfterSkippingLeadingTrivia,
                                 reason:
                                 "Homogeneous tuple of \(elements.count) elements — consider InlineArray<\(elements.count), \(types[0])> (SE-0453)",
-                                severity: .warning,
+                                severity: configuration.severity,
                                 confidence: .low,
                                 suggestion: "InlineArray<\(elements.count), \(types[0])>",
                             ),
@@ -346,7 +346,7 @@ extension Swift62ModernizationRule {
                     position: node.positionAfterSkippingLeadingTrivia,
                     reason:
                     "\(accessorKind) with side-effect logic — consider Observations framework if on an @Observable type",
-                    severity: .warning,
+                    severity: configuration.severity,
                     confidence: .low,
                 ),
             )
