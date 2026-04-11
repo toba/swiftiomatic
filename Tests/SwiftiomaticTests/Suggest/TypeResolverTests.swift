@@ -2,7 +2,7 @@ import SwiftParser
 import SwiftSyntax
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 /// Mock resolver for testing SourceKit-enhanced rules without sourcekitd.
 struct MockResolver: TypeResolver {

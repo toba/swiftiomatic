@@ -1,6 +1,6 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct RedundantObjcAttributeRuleGeneratedTests {
   @Test func withDefaultConfiguration() async {

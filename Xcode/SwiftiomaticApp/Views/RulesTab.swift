@@ -1,5 +1,5 @@
 import SwiftUI
-import Swiftiomatic
+import SwiftiomaticKit
 
 struct RulesTab: View {
   @Environment(AppModel.self) private var model
@@ -48,6 +48,7 @@ struct RulesTab: View {
         }
       }
       .navigationTitle("Rules")
+      .navigationSplitViewColumnWidth(min: 280, ideal: 340, max: 500)
     } detail: {
       if let rule = selectedRule {
         RuleDetailView(entry: rule)

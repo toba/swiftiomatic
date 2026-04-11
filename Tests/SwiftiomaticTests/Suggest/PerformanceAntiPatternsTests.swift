@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite("PerformanceAntiPatternsRule — new patterns")
 struct PerformanceAntiPatternsTests {

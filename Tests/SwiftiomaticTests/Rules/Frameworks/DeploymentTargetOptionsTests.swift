@@ -1,6 +1,6 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct DeploymentTargetOptionsTests {
   private typealias Version = DeploymentTargetOptions.Version

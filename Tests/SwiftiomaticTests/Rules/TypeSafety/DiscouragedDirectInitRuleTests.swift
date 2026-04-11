@@ -1,47 +1,135 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct DiscouragedDirectInitRuleTests {
-  private let baseExamples = TestExamples(from: DiscouragedDirectInitRule.self)
+  // MARK: - Non-triggering
 
-  @Test func discouragedDirectInitWithConfiguredSeverity() async {
-    await verifyRule(baseExamples, ruleConfiguration: ["severity": "error"])
+  @Test func allowsInitWithArguments() async {
+    await assertNoViolation(
+      DiscouragedDirectInitRule.self,
+      "let foo = Bundle(path: \"bar\")")
   }
 
-  @Test func discouragedDirectInitWithNewIncludedTypes() async {
-    let triggeringExamples = [
-      Example("let foo = ↓Foo()"),
-      Example("let bar = ↓Bar()"),
-    ]
-
-    let nonTriggeringExamples = [
-      Example("let foo = Foo(arg: toto)"),
-      Example("let bar = Bar(arg: \"toto\")"),
-    ]
-
-    let description = baseExamples.with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-    )
-
-    await verifyRule(description, ruleConfiguration: ["types": ["Foo", "Bar"]])
+  @Test func allowsInitIdentifierWithArguments() async {
+    await assertNoViolation(
+      DiscouragedDirectInitRule.self,
+      "let foo = Bundle.init(path: \"bar\")")
   }
 
-  @Test func discouragedDirectInitWithReplacedTypes() async {
-    let triggeringExamples = [
-      Example("let bundle = ↓Bundle()")
-    ]
+  @Test func allowsPropertyAccess() async {
+    await assertNoViolation(
+      DiscouragedDirectInitRule.self,
+      "let foo = UIDevice.current")
+  }
 
-    let nonTriggeringExamples = [
-      Example("let device = UIDevice()")
-    ]
+  @Test func allowsBundleMain() async {
+    await assertNoViolation(
+      DiscouragedDirectInitRule.self,
+      "let foo = Bundle.main")
+  }
 
-    let description = baseExamples.with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-    )
+  @Test func allowsFunctionNameMatchingType() async {
+    await assertNoViolation(
+      DiscouragedDirectInitRule.self,
+      "func testNSError()")
+  }
 
-    await verifyRule(description, ruleConfiguration: ["types": ["Bundle"]])
+  // MARK: - Triggering (default types)
+
+  @Test func detectsUIDeviceInit() async {
+    await assertLint(
+      DiscouragedDirectInitRule.self,
+      "let foo = 1️⃣UIDevice()",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func detectsBundleInit() async {
+    await assertLint(
+      DiscouragedDirectInitRule.self,
+      "let foo = 1️⃣Bundle()",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func detectsNSErrorInit() async {
+    await assertLint(
+      DiscouragedDirectInitRule.self,
+      "let foo = 1️⃣NSError()",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func detectsDotInitVariant() async {
+    await assertLint(
+      DiscouragedDirectInitRule.self,
+      "let foo = 1️⃣Bundle.init()",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func detectsMultipleInitsInOneExpression() async {
+    await assertLint(
+      DiscouragedDirectInitRule.self,
+      "let foo = bar(bundle: 1️⃣Bundle(), device: 2️⃣UIDevice(), error: 3️⃣NSError())",
+      findings: [
+        FindingSpec("1️⃣"),
+        FindingSpec("2️⃣"),
+        FindingSpec("3️⃣"),
+      ])
+  }
+
+  @Test func detectsStandaloneInit() async {
+    await assertLint(
+      DiscouragedDirectInitRule.self,
+      "1️⃣UIDevice()",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  // MARK: - Custom severity
+
+  @Test func respectsCustomSeverity() async {
+    await assertViolates(
+      DiscouragedDirectInitRule.self,
+      "let foo = Bundle()",
+      configuration: ["severity": "error"])
+  }
+
+  // MARK: - Custom types
+
+  @Test func detectsCustomTypes() async {
+    await assertLint(
+      DiscouragedDirectInitRule.self,
+      "let foo = 1️⃣Foo()",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["types": ["Foo", "Bar"]])
+  }
+
+  @Test func detectsCustomTypeDotInit() async {
+    await assertLint(
+      DiscouragedDirectInitRule.self,
+      "let bar = 1️⃣Bar()",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["types": ["Foo", "Bar"]])
+  }
+
+  @Test func allowsCustomTypeWithArguments() async {
+    await assertNoViolation(
+      DiscouragedDirectInitRule.self,
+      "let foo = Foo(arg: toto)",
+      configuration: ["types": ["Foo", "Bar"]])
+  }
+
+  @Test func customTypesReplaceDefaults() async {
+    // When custom types are set, the default types are replaced
+    await assertNoViolation(
+      DiscouragedDirectInitRule.self,
+      "let device = UIDevice()",
+      configuration: ["types": ["Bundle"]])
+  }
+
+  @Test func detectsBundleWithCustomTypesIncludingBundle() async {
+    await assertLint(
+      DiscouragedDirectInitRule.self,
+      "let bundle = 1️⃣Bundle()",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["types": ["Bundle"]])
   }
 }

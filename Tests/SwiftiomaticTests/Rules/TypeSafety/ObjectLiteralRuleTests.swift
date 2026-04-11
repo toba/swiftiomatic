@@ -1,79 +1,140 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct ObjectLiteralRuleTests {
-  // MARK: - Instance Properties
+  // MARK: - Non-triggering
 
-  private let imageLiteralTriggeringExamples = ["", ".init"].flatMap {
-    (method: String) -> [Example] in
-    ["UI", "NS"].flatMap { (prefix: String) -> [Example] in
-      [
-        Example("let image = ↓\(prefix)Image\(method)(named: \"foo\")")
-      ]
-    }
+  @Test func allowsImageLiteral() async {
+    await assertNoViolation(
+      ObjectLiteralRule.self,
+      #"let image = #imageLiteral(resourceName: "image.jpg")"#)
   }
 
-  private let colorLiteralTriggeringExamples = ["", ".init"].flatMap {
-    (method: String) -> [Example] in
-    ["UI", "NS"].flatMap { (prefix: String) -> [Example] in
-      [
-        Example(
-          "let color = ↓\(prefix)Color\(method)(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)",
-        ),
-        Example(
-          "let color = ↓\(prefix)Color\(method)(red: 100 / 255.0, green: 50 / 255.0, blue: 0, alpha: 1)",
-        ),
-        Example("let color = ↓\(prefix)Color\(method)(white: 0.5, alpha: 1)"),
-      ]
-    }
+  @Test func allowsColorLiteral() async {
+    await assertNoViolation(
+      ObjectLiteralRule.self,
+      "let color = #colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)")
   }
 
-  private var allTriggeringExamples: [Example] {
-    imageLiteralTriggeringExamples + colorLiteralTriggeringExamples
+  @Test func allowsVariableImageName() async {
+    await assertNoViolation(
+      ObjectLiteralRule.self,
+      "let image = UIImage(named: aVariable)")
   }
 
-  // MARK: - Test Methods
-
-  @Test func objectLiteralWithImageLiteral() async {
-    // Verify ObjectLiteral rule for when image_literal is true.
-    let baseExamples = TestExamples(from: ObjectLiteralRule.self)
-    let nonTriggeringColorLiteralExamples =
-      colorLiteralTriggeringExamples.removingViolationMarkers()
-    let nonTriggeringExamples =
-      baseExamples.nonTriggeringExamples + nonTriggeringColorLiteralExamples
-
-    let description = baseExamples.with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: imageLiteralTriggeringExamples,
-    )
-
-    await verifyRule(
-      description, ruleConfiguration: ["image_literal": true, "color_literal": false])
+  @Test func allowsInterpolatedImageName() async {
+    await assertNoViolation(
+      ObjectLiteralRule.self,
+      #"let image = UIImage(named: "interpolated \(variable)")"#)
   }
 
-  @Test func objectLiteralWithColorLiteral() async {
-    // Verify ObjectLiteral rule for when color_literal is true.
-    let baseExamples = TestExamples(from: ObjectLiteralRule.self)
-    let nonTriggeringImageLiteralExamples =
-      imageLiteralTriggeringExamples.removingViolationMarkers()
-    let nonTriggeringExamples =
-      baseExamples.nonTriggeringExamples + nonTriggeringImageLiteralExamples
-
-    let description = baseExamples.with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: colorLiteralTriggeringExamples,
-    )
-
-    await verifyRule(
-      description, ruleConfiguration: ["image_literal": false, "color_literal": true])
+  @Test func allowsColorWithNonLiteralValues() async {
+    await assertNoViolation(
+      ObjectLiteralRule.self,
+      "let color = UIColor(red: value, green: value, blue: value, alpha: 1)")
   }
 
-  @Test func objectLiteralWithImageAndColorLiteral() async {
-    // Verify ObjectLiteral rule for when image_literal & color_literal are true.
-    let description = TestExamples(from: ObjectLiteralRule.self)
-      .with(triggeringExamples: allTriggeringExamples)
-    await verifyRule(
-      description, ruleConfiguration: ["image_literal": true, "color_literal": true])
+  // MARK: - Image literal only
+
+  @Test func detectsUIImageNamedInit() async {
+    await assertLint(
+      ObjectLiteralRule.self,
+      #"let image = 1️⃣UIImage(named: "foo")"#,
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["image_literal": true, "color_literal": false])
+  }
+
+  @Test func detectsNSImageNamedInit() async {
+    await assertLint(
+      ObjectLiteralRule.self,
+      #"let image = 1️⃣NSImage(named: "foo")"#,
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["image_literal": true, "color_literal": false])
+  }
+
+  @Test func detectsUIImageDotInit() async {
+    await assertLint(
+      ObjectLiteralRule.self,
+      #"let image = 1️⃣UIImage.init(named: "foo")"#,
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["image_literal": true, "color_literal": false])
+  }
+
+  @Test func detectsNSImageDotInit() async {
+    await assertLint(
+      ObjectLiteralRule.self,
+      #"let image = 1️⃣NSImage.init(named: "foo")"#,
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["image_literal": true, "color_literal": false])
+  }
+
+  @Test func allowsColorInitWhenImageOnly() async {
+    await assertNoViolation(
+      ObjectLiteralRule.self,
+      "let color = UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)",
+      configuration: ["image_literal": true, "color_literal": false])
+  }
+
+  // MARK: - Color literal only
+
+  @Test func detectsUIColorRGBAInit() async {
+    await assertLint(
+      ObjectLiteralRule.self,
+      "let color = 1️⃣UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["image_literal": false, "color_literal": true])
+  }
+
+  @Test func detectsNSColorRGBAInit() async {
+    await assertLint(
+      ObjectLiteralRule.self,
+      "let color = 1️⃣NSColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["image_literal": false, "color_literal": true])
+  }
+
+  @Test func detectsUIColorWhiteAlphaInit() async {
+    await assertLint(
+      ObjectLiteralRule.self,
+      "let color = 1️⃣UIColor(white: 0.5, alpha: 1)",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["image_literal": false, "color_literal": true])
+  }
+
+  @Test func detectsUIColorDotInit() async {
+    await assertLint(
+      ObjectLiteralRule.self,
+      "let color = 1️⃣UIColor.init(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["image_literal": false, "color_literal": true])
+  }
+
+  @Test func detectsColorWithArithmeticValues() async {
+    await assertLint(
+      ObjectLiteralRule.self,
+      "let color = 1️⃣UIColor(red: 100 / 255.0, green: 50 / 255.0, blue: 0, alpha: 1)",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["image_literal": false, "color_literal": true])
+  }
+
+  @Test func allowsImageInitWhenColorOnly() async {
+    await assertNoViolation(
+      ObjectLiteralRule.self,
+      #"let image = UIImage(named: "foo")"#,
+      configuration: ["image_literal": false, "color_literal": true])
+  }
+
+  // MARK: - Both enabled
+
+  @Test func detectsBothImageAndColorInits() async {
+    await assertLint(
+      ObjectLiteralRule.self,
+      """
+      let image = 1️⃣UIImage(named: "foo")
+      let color = 2️⃣UIColor(red: 0.3, green: 0.3, blue: 0.3, alpha: 1)
+      """,
+      findings: [FindingSpec("1️⃣"), FindingSpec("2️⃣")],
+      configuration: ["image_literal": true, "color_literal": true])
   }
 }

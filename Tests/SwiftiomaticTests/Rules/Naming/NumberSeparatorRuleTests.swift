@@ -2,139 +2,252 @@ import SwiftParser
 import SwiftSyntax
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct NumberSeparatorRuleTests {
-  @Test func numberSeparatorWithMinimumLength() async {
-    let nonTriggeringExamples = [
-      Example("let foo = 10_000"),
-      Example("let foo = 1000"),
-      Example("let foo = 1000.0001"),
-      Example("let foo = 10_000.0001"),
-      Example("let foo = 1000.00001"),
-    ]
-    let triggeringExamples = [
-      Example("let foo = ↓1_000"),
-      Example("let foo = ↓1.000_1"),
-      Example("let foo = ↓1_000.000_1"),
-    ]
-    let corrections = [
-      Example("let foo = ↓1_000"): Example("let foo = 1000"),
-      Example("let foo = ↓1.000_1"): Example("let foo = 1.0001"),
-      Example("let foo = ↓1_000.000_1"): Example("let foo = 1000.0001"),
-    ]
+  // MARK: - Minimum length
 
-    let description = TestExamples(from: NumberSeparatorRule.self).with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-      corrections: corrections,
-    )
-
-    await verifyRule(description, ruleConfiguration: ["minimum_length": 5])
+  @Test func separatedFourDigitsDoesNotViolateWithMinLength5() async {
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 10_000",
+      configuration: ["minimum_length": 5])
   }
 
-  @Test func numberSeparatorWithMinimumFractionLength() async {
-    let nonTriggeringExamples = [
-      Example("let foo = 1_000.000_000_1"),
-      Example("let foo = 1.000_001"),
-      Example("let foo = 100.0001"),
-      Example("let foo = 1_000.000_01"),
-    ]
-    let triggeringExamples = [
-      Example("let foo = ↓1000"),
-      Example("let foo = ↓1.000_1"),
-      Example("let foo = ↓1_000.000_1"),
-    ]
-    let corrections = [
-      Example("let foo = ↓1000"): Example("let foo = 1_000"),
-      Example("let foo = ↓1.000_1"): Example("let foo = 1.0001"),
-      Example("let foo = ↓1_000.000_1"): Example("let foo = 1_000.0001"),
-    ]
-
-    let description = TestExamples(from: NumberSeparatorRule.self).with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-      corrections: corrections,
-    )
-
-    await verifyRule(description, ruleConfiguration: ["minimum_fraction_length": 5])
+  @Test func unseparatedFourDigitsDoesNotViolateWithMinLength5() async {
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 1000",
+      configuration: ["minimum_length": 5])
   }
 
-  @Test func numberSeparatorWithExcludeRanges() async {
-    let nonTriggeringExamples = [
-      Example("let foo = 1950"),
-      Example("let foo = 1_950"),
-      Example("let foo = 1985"),
-      Example("let foo = 1_985"),
-      Example("let foo = 2020"),
-      Example("let foo = 2_020"),
-      Example("let foo = 2.10042"),
-      Example("let foo = 2.100_42"),
-      Example("let foo = 2.833333"),
-      Example("let foo = 2.833_333"),
-    ]
-    let triggeringExamples = [
-      Example("let foo = ↓1000"),
-      Example("let foo = ↓2100"),
-      Example("let foo = ↓1.920442"),
-      Example("let foo = ↓3.343434"),
-    ]
-    let corrections = [
-      Example("let foo = ↓1000"): Example("let foo = 1_000"),
-      Example("let foo = ↓2100"): Example("let foo = 2_100"),
-      Example("let foo = ↓1.920442"): Example("let foo = 1.920_442"),
-      Example("let foo = ↓3.343434"): Example("let foo = 3.343_434"),
-    ]
-
-    let description = TestExamples(from: NumberSeparatorRule.self).with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-      corrections: corrections,
-    )
-
-    await verifyRule(
-      description,
-      ruleConfiguration: [
-        "exclude_ranges": [
-          ["min": 1900, "max": 2030],
-          ["min": 2.0, "max": 3.0],
-        ] as Any,
-        "minimum_fraction_length": 3,
-      ] as Any,
-    )
+  @Test func unseparatedFractionDoesNotViolateWithMinLength5() async {
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 1000.0001",
+      configuration: ["minimum_length": 5])
   }
 
-  @Test func specificViolationReasons() async {
+  @Test func separatedIntegerWithUnseparatedFractionDoesNotViolateWithMinLength5() async {
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 10_000.0001",
+      configuration: ["minimum_length": 5])
+  }
+
+  @Test func fiveDigitFractionDoesNotViolateWithMinLength5() async {
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 1000.00001",
+      configuration: ["minimum_length": 5])
+  }
+
+  @Test func wrongSeparatorPositionViolatesWithMinLength5() async {
+    await assertFormatting(
+      NumberSeparatorRule.self,
+      input: "let foo = 1️⃣1_000",
+      expected: "let foo = 1000",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["minimum_length": 5])
+  }
+
+  @Test func wrongFractionSeparatorViolatesWithMinLength5() async {
+    await assertFormatting(
+      NumberSeparatorRule.self,
+      input: "let foo = 1️⃣1.000_1",
+      expected: "let foo = 1.0001",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["minimum_length": 5])
+  }
+
+  @Test func bothPartsWrongWithMinLength5() async {
+    await assertFormatting(
+      NumberSeparatorRule.self,
+      input: "let foo = 1️⃣1_000.000_1",
+      expected: "let foo = 1000.0001",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["minimum_length": 5])
+  }
+
+  // MARK: - Minimum fraction length
+
+  @Test func longFractionSeparatedDoesNotViolateWithMinFraction5() async {
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 1_000.000_000_1",
+      configuration: ["minimum_fraction_length": 5])
+  }
+
+  @Test func sixDigitFractionSeparatedDoesNotViolateWithMinFraction5() async {
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 1.000_001",
+      configuration: ["minimum_fraction_length": 5])
+  }
+
+  @Test func fourDigitFractionUnseparatedDoesNotViolateWithMinFraction5() async {
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 100.0001",
+      configuration: ["minimum_fraction_length": 5])
+  }
+
+  @Test func fiveDigitFractionUnseparatedDoesNotViolateWithMinFraction5() async {
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 1_000.000_01",
+      configuration: ["minimum_fraction_length": 5])
+  }
+
+  @Test func missingIntegerSeparatorViolatesWithMinFraction5() async {
+    await assertFormatting(
+      NumberSeparatorRule.self,
+      input: "let foo = 1️⃣1000",
+      expected: "let foo = 1_000",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["minimum_fraction_length": 5])
+  }
+
+  @Test func wrongFractionSeparatorViolatesWithMinFraction5() async {
+    await assertFormatting(
+      NumberSeparatorRule.self,
+      input: "let foo = 1️⃣1.000_1",
+      expected: "let foo = 1.0001",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["minimum_fraction_length": 5])
+  }
+
+  @Test func bothPartsWrongWithMinFraction5() async {
+    await assertFormatting(
+      NumberSeparatorRule.self,
+      input: "let foo = 1️⃣1_000.000_1",
+      expected: "let foo = 1_000.0001",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["minimum_fraction_length": 5])
+  }
+
+  // MARK: - Exclude ranges
+
+  @Test func numberInExcludedRangeDoesNotViolate() async {
+    let config: [String: any Sendable] = [
+      "exclude_ranges": [
+        ["min": 1900, "max": 2030],
+        ["min": 2.0, "max": 3.0],
+      ],
+      "minimum_fraction_length": 3,
+    ]
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 1950",
+      configuration: config)
+  }
+
+  @Test func separatedNumberInExcludedRangeDoesNotViolate() async {
+    let config: [String: any Sendable] = [
+      "exclude_ranges": [
+        ["min": 1900, "max": 2030],
+        ["min": 2.0, "max": 3.0],
+      ],
+      "minimum_fraction_length": 3,
+    ]
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 1_985",
+      configuration: config)
+  }
+
+  @Test func fractionInExcludedRangeDoesNotViolate() async {
+    let config: [String: any Sendable] = [
+      "exclude_ranges": [
+        ["min": 1900, "max": 2030],
+        ["min": 2.0, "max": 3.0],
+      ],
+      "minimum_fraction_length": 3,
+    ]
+    await assertNoViolation(
+      NumberSeparatorRule.self,
+      "let foo = 2.10042",
+      configuration: config)
+  }
+
+  @Test func numberOutsideExcludedRangeViolates() async {
+    let config: [String: any Sendable] = [
+      "exclude_ranges": [
+        ["min": 1900, "max": 2030],
+        ["min": 2.0, "max": 3.0],
+      ],
+      "minimum_fraction_length": 3,
+    ]
+    await assertFormatting(
+      NumberSeparatorRule.self,
+      input: "let foo = 1️⃣1000",
+      expected: "let foo = 1_000",
+      findings: [FindingSpec("1️⃣")],
+      configuration: config)
+  }
+
+  @Test func fractionOutsideExcludedRangeViolates() async {
+    let config: [String: any Sendable] = [
+      "exclude_ranges": [
+        ["min": 1900, "max": 2030],
+        ["min": 2.0, "max": 3.0],
+      ],
+      "minimum_fraction_length": 3,
+    ]
+    await assertFormatting(
+      NumberSeparatorRule.self,
+      input: "let foo = 1️⃣3.343434",
+      expected: "let foo = 3.343_434",
+      findings: [FindingSpec("1️⃣")],
+      configuration: config)
+  }
+
+  // MARK: - Specific violation reasons
+
+  @Test func correctlySeparatedNumberHasNoViolation() async {
     #expect(
-      await violations(in: "1_000") == [],
-    )
+      await violations(in: "1_000") == [])
+  }
+
+  @Test func missingSeparatorsReportsCorrectReason() async {
     #expect(
-      await violations(in: "1000") == [NumberSeparatorRule.missingSeparatorsReason],
-    )
+      await violations(in: "1000") == [NumberSeparatorRule.missingSeparatorsReason])
+  }
+
+  @Test func missingSeparatorsInFractionReportsCorrectReason() async {
     #expect(
       await violations(in: "1.000000", config: ["minimum_fraction_length": 5]) == [
-        NumberSeparatorRule.missingSeparatorsReason
-      ],
-    )
+        NumberSeparatorRule.missingSeparatorsReason,
+      ])
+  }
+
+  @Test func misplacedSeparatorsReportsCorrectReason() async {
     #expect(
-      await violations(in: "10_00") == [NumberSeparatorRule.misplacedSeparatorsReason],
-    )
+      await violations(in: "10_00") == [NumberSeparatorRule.misplacedSeparatorsReason])
+  }
+
+  @Test func misplacedSeparatorsWithExtraDigitReportsCorrectReason() async {
     #expect(
-      await violations(in: "1_000_0") == [NumberSeparatorRule.misplacedSeparatorsReason],
-    )
+      await violations(in: "1_000_0") == [NumberSeparatorRule.misplacedSeparatorsReason])
+  }
+
+  @Test func misplacedFractionSeparatorsReportsCorrectReason() async {
     #expect(
-      await violations(in: "1000.0_00") == [NumberSeparatorRule.misplacedSeparatorsReason],
-    )
+      await violations(in: "1000.0_00") == [NumberSeparatorRule.misplacedSeparatorsReason])
+  }
+
+  @Test func misplacedSeparatorsWithMinLengthReportsCorrectReason() async {
     #expect(
       await violations(in: "10_00", config: ["minimum_length": 5]) == [
-        NumberSeparatorRule.misplacedSeparatorsReason
-      ],
-    )
+        NumberSeparatorRule.misplacedSeparatorsReason,
+      ])
+  }
+
+  @Test func misplacedFractionSeparatorsWithMinFractionLengthReportsCorrectReason() async {
     #expect(
       await violations(in: "1000.0_00", config: ["minimum_fraction_length": 5]) == [
-        NumberSeparatorRule.misplacedSeparatorsReason
-      ],
-    )
+        NumberSeparatorRule.misplacedSeparatorsReason,
+      ])
   }
 
   private func violations(in code: String, config: [String: Any] = [:]) -> [String] {

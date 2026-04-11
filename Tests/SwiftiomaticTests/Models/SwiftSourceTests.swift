@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct SwiftSourceTests {
   private let tempFile = FileManager.default.temporaryDirectory.appendingPathComponent(

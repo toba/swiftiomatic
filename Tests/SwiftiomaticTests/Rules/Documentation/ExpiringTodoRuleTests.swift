@@ -1,197 +1,258 @@
 import Foundation
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct ExpiringTodoRuleTests {
-  @Test func expiringTodo() async {
-    await verifyRule(ExpiringTodoRule.self, commentDoesNotViolate: false)
+  // MARK: - Non-triggering
+
+  @Test func notATodoDoesNotTrigger() async {
+    await assertNoViolation(ExpiringTodoRule.self, "// notaTODO:")
   }
+
+  @Test func notAFixmeDoesNotTrigger() async {
+    await assertNoViolation(ExpiringTodoRule.self, "// notaFIXME:")
+  }
+
+  @Test func todoWithFarFutureDateDoesNotTrigger() async {
+    await assertNoViolation(ExpiringTodoRule.self, "// TODO: [12/31/9999]")
+  }
+
+  @Test func todoWithParenNoteDoesNotTrigger() async {
+    await assertNoViolation(ExpiringTodoRule.self, "// TODO(note)")
+  }
+
+  @Test func fixmeWithParenNoteDoesNotTrigger() async {
+    await assertNoViolation(ExpiringTodoRule.self, "// FIXME(note)")
+  }
+
+  @Test func blockFixmeDoesNotTrigger() async {
+    await assertNoViolation(ExpiringTodoRule.self, "/* FIXME: */")
+  }
+
+  @Test func blockTodoDoesNotTrigger() async {
+    await assertNoViolation(ExpiringTodoRule.self, "/* TODO: */")
+  }
+
+  @Test func docBlockFixmeDoesNotTrigger() async {
+    await assertNoViolation(ExpiringTodoRule.self, "/** FIXME: */")
+  }
+
+  @Test func docBlockTodoDoesNotTrigger() async {
+    await assertNoViolation(ExpiringTodoRule.self, "/** TODO: */")
+  }
+
+  @Test func nonExpiredTodoDoesNotTrigger() async {
+    let date = dateString(for: .badFormatting)
+    await assertNoViolation(
+      ExpiringTodoRule.self,
+      "fatalError() // TODO: [\(date)] Implement")
+  }
+
+  // MARK: - Triggering (expired)
 
   @Test func expiredTodo() async {
-    let example = Example("fatalError() // TODO: [\(dateString(for: .expired))] Implement")
-    let violations = await violations(example)
-    #expect(violations.count == 1)
-    #expect(violations.first?.reason == "TODO/FIXME has expired and must be resolved")
+    let date = dateString(for: .expired)
+    await assertLint(
+      ExpiringTodoRule.self,
+      "fatalError() // TODO: [1️⃣\(date)] Implement",
+      findings: [FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")])
   }
 
-  @Test func expiredFixMe() async {
-    let example = Example("fatalError() // FIXME: [\(dateString(for: .expired))] Implement")
-    let violations = await violations(example)
-    #expect(violations.count == 1)
-    #expect(violations.first?.reason == "TODO/FIXME has expired and must be resolved")
+  @Test func expiredFixme() async {
+    let date = dateString(for: .expired)
+    await assertLint(
+      ExpiringTodoRule.self,
+      "fatalError() // FIXME: [1️⃣\(date)] Implement",
+      findings: [FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")])
   }
+
+  @Test func hardcodedExpiredTodo() async {
+    await assertLint(
+      ExpiringTodoRule.self,
+      "// TODO: [1️⃣10/14/2019]",
+      findings: [FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")])
+  }
+
+  @Test func hardcodedExpiredFixme() async {
+    await assertLint(
+      ExpiringTodoRule.self,
+      "// FIXME: [1️⃣10/14/2019]",
+      findings: [FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")])
+  }
+
+  @Test func hardcodedExpiredFixmeShortMonth() async {
+    await assertLint(
+      ExpiringTodoRule.self,
+      "// FIXME: [1️⃣1/14/2019]",
+      findings: [FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")])
+  }
+
+  // MARK: - Triggering (approaching expiry)
 
   @Test func approachingExpiryTodo() async {
-    let example = Example(
-      "fatalError() // TODO: [\(dateString(for: .approachingExpiry))] Implement",
-    )
-    let violations = await violations(example)
-    #expect(violations.count == 1)
-    #expect(
-      violations.first?
-        .reason == "TODO/FIXME is approaching its expiry and should be resolved soon",
-    )
+    let date = dateString(for: .approachingExpiry)
+    await assertLint(
+      ExpiringTodoRule.self,
+      "fatalError() // TODO: [1️⃣\(date)] Implement",
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "TODO/FIXME is approaching its expiry and should be resolved soon")
+      ])
   }
 
-  @Test func nonExpiredTodo() async {
-    let example =
-      Example("fatalError() // TODO: [\(dateString(for: .badFormatting))] Implement")
-    #expect(await violations(example).isEmpty)
+  // MARK: - Triggering (bad formatting)
+
+  @Test func badExpiryTodoFormat() async {
+    await assertLint(
+      ExpiringTodoRule.self,
+      "fatalError() // TODO: [1️⃣31/01/2020] Implement",
+      findings: [
+        FindingSpec("1️⃣", message: "Expiring TODO/FIXME is incorrectly formatted")
+      ],
+      configuration: ["date_format": "dd/yyyy/MM"])
   }
 
-  @Test func expiredCustomDelimiters() async {
-    let ruleConfig = ExpiringTodoOptions(
-      dateDelimiters: .init(opening: "<", closing: ">"),
-    )
-    let example = Example("fatalError() // TODO: <\(dateString(for: .expired))> Implement")
-    let violations = await violations(example, ruleConfig)
-    #expect(violations.count == 1)
-    #expect(violations.first?.reason == "TODO/FIXME has expired and must be resolved")
+  @Test func hardcodedBadFormatTodo() async {
+    await assertLint(
+      ExpiringTodoRule.self,
+      "// TODO: [1️⃣9999/14/10]",
+      findings: [
+        FindingSpec("1️⃣", message: "Expiring TODO/FIXME is incorrectly formatted")
+      ])
   }
 
-  @Test func expiredCustomSeparator() async {
-    let ruleConfig = ExpiringTodoOptions(
-      dateFormat: "MM-dd-yyyy",
-      dateSeparator: "-",
-    )
-    let example = Example(
-      "fatalError() // TODO: [\(dateString(for: .expired, format: ruleConfig.dateFormat))] Implement",
-    )
-    let violations = await violations(example, ruleConfig)
-    #expect(violations.count == 1)
-    #expect(violations.first?.reason == "TODO/FIXME has expired and must be resolved")
-  }
-
-  @Test func expiredCustomFormat() async {
-    let ruleConfig = ExpiringTodoOptions(dateFormat: "yyyy/MM/dd")
-    let example = Example(
-      "fatalError() // TODO: [\(dateString(for: .expired, format: ruleConfig.dateFormat))] Implement",
-    )
-    let violations = await violations(example, ruleConfig)
-    #expect(violations.count == 1)
-    #expect(violations.first?.reason == "TODO/FIXME has expired and must be resolved")
-  }
+  // MARK: - Multiple violations
 
   @Test func multipleExpiredTodos() async {
-    let example = Example(
+    let date = dateString(for: .expired)
+    await assertLint(
+      ExpiringTodoRule.self,
       """
-      fatalError() // TODO: [\(dateString(for: .expired))] Implement one
-      fatalError() // TODO: Implement two by [\(dateString(for: .expired))]
+      fatalError() // TODO: [1️⃣\(date)] Implement one
+      fatalError() // TODO: Implement two by [2️⃣\(date)]
       """,
-    )
-    let violations = await violations(example)
-    #expect(violations.count == 2)
-    #expect(violations[0].reason == "TODO/FIXME has expired and must be resolved")
-    #expect(violations[0].location.line == 1)
-    #expect(violations[1].reason == "TODO/FIXME has expired and must be resolved")
-    #expect(violations[1].location.line == 2)
+      findings: [
+        FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved"),
+        FindingSpec("2️⃣", message: "TODO/FIXME has expired and must be resolved"),
+      ])
   }
 
   @Test func todoAndExpiredTodo() async {
-    let example = Example(
+    let date = dateString(for: .expired)
+    await assertLint(
+      ExpiringTodoRule.self,
       """
       // TODO: Implement one - without deadline
       fatalError()
-      // TODO: Implement two by [\(dateString(for: .expired))]
+      // TODO: Implement two by [1️⃣\(date)]
       """,
-    )
-    let violations = await violations(example)
-    #expect(violations.count == 1)
-    #expect(violations[0].reason == "TODO/FIXME has expired and must be resolved")
-    #expect(violations[0].location.line == 3)
+      findings: [
+        FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")
+      ])
   }
 
   @Test func multilineExpiredTodo() async {
-    let example = Example(
+    let date = dateString(for: .expired)
+    await assertLint(
+      ExpiringTodoRule.self,
       """
       // TODO: Multi-line task
       //       for: @MATODOLU
-      //       deadline: [\(dateString(for: .expired))]
+      //       deadline: [1️⃣\(date)]
       //       severity: fatal
       """,
-    )
-    let violations = await violations(example)
-    #expect(violations.count == 1)
-    #expect(violations[0].reason == "TODO/FIXME has expired and must be resolved")
-    #expect(violations[0].location.line == 3)
+      findings: [
+        FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")
+      ])
   }
 
   @Test func todoFunctionAndExpiredTodo() async {
-    let example = Example(
+    let date = dateString(for: .expired)
+    await assertLint(
+      ExpiringTodoRule.self,
       """
       TODO()
-      // TODO: Implement two by [\(dateString(for: .expired))]
+      // TODO: Implement two by [1️⃣\(date)]
       """,
-    )
-    let violations = await violations(example)
-    #expect(violations.count == 1)
-    #expect(violations[0].reason == "TODO/FIXME has expired and must be resolved")
-    #expect(violations[0].location.line == 2)
+      findings: [
+        FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")
+      ])
   }
 
-  @Test func badExpiryTodoFormat() async {
-    let ruleConfig = ExpiringTodoOptions(
-      dateFormat: "dd/yyyy/MM",
-    )
-    let example = Example("fatalError() // TODO: [31/01/2020] Implement")
-    let violations = await violations(example, ruleConfig)
-    #expect(violations.count == 1)
-    #expect(violations.first?.reason == "Expiring TODO/FIXME is incorrectly formatted")
+  // MARK: - Custom configuration
+
+  @Test func expiredCustomDelimiters() async {
+    let date = dateString(for: .expired)
+    await assertLint(
+      ExpiringTodoRule.self,
+      "fatalError() // TODO: <1️⃣\(date)> Implement",
+      findings: [
+        FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")
+      ],
+      configuration: [
+        "date_delimiters": ["opening": "<", "closing": ">"]
+      ])
   }
 
-  private func violations(_ example: Example, _ config: ExpiringTodoOptions? = nil)
-    async -> [RuleViolation]
-  {
-    let config = config ?? ExpiringTodoOptions()
-    let serializedConfig =
-      [
-        "expired_severity": config.expiredSeverity.severity.rawValue,
-        "approaching_expiry_severity": config.approachingExpirySeverity.severity.rawValue,
-        "bad_formatting_severity": config.badFormattingSeverity.severity.rawValue,
-        "approaching_expiry_threshold": config.approachingExpiryThreshold,
-        "date_format": config.dateFormat,
-        "date_delimiters": [
-          "opening": config.dateDelimiters.opening,
-          "closing": config.dateDelimiters.closing,
-        ],
-        "date_separator": config.dateSeparator,
-      ] as [String: Any]
-    return await SwiftiomaticTests.violations(
-      example, config: makeConfig(serializedConfig, ExpiringTodoRule.identifier)!,
-    )
+  @Test func expiredCustomSeparator() async {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "MM-dd-yyyy"
+    let date = formatter.string(from: date(for: .expired))
+    await assertLint(
+      ExpiringTodoRule.self,
+      "fatalError() // TODO: [1️⃣\(date)] Implement",
+      findings: [
+        FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")
+      ],
+      configuration: [
+        "date_format": "MM-dd-yyyy",
+        "date_separator": "-",
+      ])
   }
+
+  @Test func expiredCustomFormat() async {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy/MM/dd"
+    let date = formatter.string(from: date(for: .expired))
+    await assertLint(
+      ExpiringTodoRule.self,
+      "fatalError() // TODO: [1️⃣\(date)] Implement",
+      findings: [
+        FindingSpec("1️⃣", message: "TODO/FIXME has expired and must be resolved")
+      ],
+      configuration: ["date_format": "yyyy/MM/dd"])
+  }
+
+  // MARK: - Date Helpers
 
   private func dateString(
     for status: ExpiringTodoRule.ExpiryViolationLevel,
-    format: String? = nil,
-  )
-    -> String
-  {
+    format: String? = nil
+  ) -> String {
     let formatter = DateFormatter()
     formatter.dateFormat = format ?? ExpiringTodoOptions().dateFormat
     return formatter.string(from: date(for: status))
   }
 
   private func date(for status: ExpiringTodoRule.ExpiryViolationLevel) -> Date {
-    let ruleConfiguration = ExpiringTodoRule().options
+    let config = ExpiringTodoRule().options
 
     let daysToAdvance: Int
-
     switch status {
     case .approachingExpiry:
-      daysToAdvance = ruleConfiguration.approachingExpiryThreshold
+      daysToAdvance = config.approachingExpiryThreshold
     case .expired:
       daysToAdvance = 0
     case .badFormatting:
-      daysToAdvance = ruleConfiguration.approachingExpiryThreshold + 1
+      daysToAdvance = config.approachingExpiryThreshold + 1
     }
 
-    return Calendar.current
-      .date(
-        byAdding: .day,
-        value: daysToAdvance,
-        to: .init(),
-      )!
+    return Calendar.current.date(
+      byAdding: .day,
+      value: daysToAdvance,
+      to: .init()
+    )!
   }
 }

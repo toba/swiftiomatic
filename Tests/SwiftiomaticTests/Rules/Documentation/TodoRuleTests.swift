@@ -1,49 +1,105 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct TodoRuleTests {
-  @Test func todo() async {
-    await verifyRule(TodoRule.self, commentDoesNotViolate: false)
+  // MARK: - Non-triggering
+
+  @Test func notATodoDoesNotTrigger() async {
+    await assertNoViolation(TodoRule.self, "// notaTODO:")
   }
 
-  @Test func todoMessage() async throws {
-    let example = Example("fatalError() // TODO: Implement")
-    let allViolations = try await ruleViolations(example, rule: TodoRule.identifier)
-    #expect(allViolations.count == 1)
-    #expect(allViolations.first?.reason == "TODOs should be resolved (Implement)")
+  @Test func notAFixmeDoesNotTrigger() async {
+    await assertNoViolation(TodoRule.self, "// notaFIXME:")
   }
 
-  @Test func fixMeMessage() async throws {
-    let example = Example("fatalError() // FIXME: Implement")
-    let allViolations = try await ruleViolations(example, rule: TodoRule.identifier)
-    #expect(allViolations.count == 1)
-    #expect(allViolations.first?.reason == "FIXMEs should be resolved (Implement)")
+  // MARK: - Triggering
+
+  @Test func todoInLineCommentTriggers() async {
+    await assertLint(
+      TodoRule.self, "// 1️⃣TODO:",
+      findings: [FindingSpec("1️⃣", message: "TODOs should be resolved")])
   }
 
-  @Test func onlyFixMe() async throws {
-    let example = Example(
-      """
-          fatalError() // TODO: Implement todo
-          fatalError() // FIXME: Implement fixme
-      """,
-    )
-    let allViolations = try await ruleViolations(
-      example, rule: TodoRule.identifier, configuration: ["only": ["FIXME"]])
-    #expect(allViolations.count == 1)
-    #expect(allViolations.first?.reason == "FIXMEs should be resolved (Implement fixme)")
+  @Test func fixmeInLineCommentTriggers() async {
+    await assertLint(
+      TodoRule.self, "// 1️⃣FIXME:",
+      findings: [FindingSpec("1️⃣", message: "FIXMEs should be resolved")])
   }
 
-  @Test func onlyTodo() async throws {
-    let example = Example(
-      """
-          fatalError() // TODO: Implement todo
-          fatalError() // FIXME: Implement fixme
-      """,
-    )
-    let allViolations = try await ruleViolations(
-      example, rule: TodoRule.identifier, configuration: ["only": ["TODO"]])
-    #expect(allViolations.count == 1)
-    #expect(allViolations.first?.reason == "TODOs should be resolved (Implement todo)")
+  @Test func todoWithParenNoteTriggers() async {
+    await assertViolates(TodoRule.self, "// TODO(note)")
+  }
+
+  @Test func fixmeWithParenNoteTriggers() async {
+    await assertViolates(TodoRule.self, "// FIXME(note)")
+  }
+
+  @Test func fixmeInBlockCommentTriggers() async {
+    await assertViolates(TodoRule.self, "/* FIXME: */")
+  }
+
+  @Test func todoInBlockCommentTriggers() async {
+    await assertViolates(TodoRule.self, "/* TODO: */")
+  }
+
+  @Test func fixmeInDocBlockCommentTriggers() async {
+    await assertViolates(TodoRule.self, "/** FIXME: */")
+  }
+
+  @Test func todoInDocBlockCommentTriggers() async {
+    await assertViolates(TodoRule.self, "/** TODO: */")
+  }
+
+  // MARK: - Messages
+
+  @Test func todoMessageIncludesDescription() async {
+    await assertLint(
+      TodoRule.self,
+      "fatalError() // 1️⃣TODO: Implement",
+      findings: [FindingSpec("1️⃣", message: "TODOs should be resolved (Implement)")])
+  }
+
+  @Test func fixmeMessageIncludesDescription() async {
+    await assertLint(
+      TodoRule.self,
+      "fatalError() // 1️⃣FIXME: Implement",
+      findings: [FindingSpec("1️⃣", message: "FIXMEs should be resolved (Implement)")])
+  }
+
+  // MARK: - Configuration: only
+
+  @Test func onlyFixmeIgnoresTodo() async {
+    await assertNoViolation(
+      TodoRule.self,
+      "fatalError() // TODO: Implement todo",
+      configuration: ["only": ["FIXME"]])
+  }
+
+  @Test func onlyFixmeReportsFixme() async {
+    await assertLint(
+      TodoRule.self,
+      "fatalError() // 1️⃣FIXME: Implement fixme",
+      findings: [
+        FindingSpec("1️⃣", message: "FIXMEs should be resolved (Implement fixme)")
+      ],
+      configuration: ["only": ["FIXME"]])
+  }
+
+  @Test func onlyTodoIgnoresFixme() async {
+    await assertNoViolation(
+      TodoRule.self,
+      "fatalError() // FIXME: Implement fixme",
+      configuration: ["only": ["TODO"]])
+  }
+
+  @Test func onlyTodoReportsTodo() async {
+    await assertLint(
+      TodoRule.self,
+      "fatalError() // 1️⃣TODO: Implement todo",
+      findings: [
+        FindingSpec("1️⃣", message: "TODOs should be resolved (Implement todo)")
+      ],
+      configuration: ["only": ["TODO"]])
   }
 }

@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 /// Load a fixture file relative to the caller and validate with a rule.
 func suggestViolations(

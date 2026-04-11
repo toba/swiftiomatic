@@ -1,49 +1,111 @@
 import Testing
 
-@testable import Swiftiomatic
-
-private func funcWithParameters(
-  _ parameters: String,
-  violates: Bool = false,
-) -> Example {
-  let marker = violates ? "↓" : ""
-
-  return Example("func \(marker)abc(\(parameters)) {}\n")
-}
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct FunctionParameterCountRuleTests {
-  @Test func functionParameterCount() async {
-    let nonTriggeringExamples = [
-      funcWithParameters(repeatElement("x: Int, ", count: 3).joined() + "x: Int")
-    ]
+  // MARK: - Helpers
 
-    let triggeringExamples = [
-      funcWithParameters(repeatElement("x: Int, ", count: 5).joined() + "x: Int")
-    ]
-
-    let description = TestExamples(from: FunctionParameterCountRule.self).with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-    )
-
-    await verifyRule(description)
+  private static func params(_ count: Int, defaultValue: Bool = false) -> String {
+    let suffix = defaultValue ? " = 0" : ""
+    return (0..<count).map { "p\($0): Int\(suffix)" }.joined(separator: ", ")
   }
 
-  @Test func defaultFunctionParameterCount() async {
-    let nonTriggeringExamples = [
-      funcWithParameters(repeatElement("x: Int, ", count: 3).joined() + "x: Int")
-    ]
+  // MARK: - Non-triggering (default config: warning at 5, ignores_default_parameters: true)
 
-    let defaultParams = repeatElement("x: Int = 0, ", count: 2).joined() + "x: Int = 0"
-    let triggeringExamples = [
-      funcWithParameters(repeatElement("x: Int, ", count: 3).joined() + defaultParams)
-    ]
+  @Test func fewParametersDoesNotTrigger() async {
+    await assertNoViolation(
+      FunctionParameterCountRule.self,
+      "func f2(p1: Int, p2: Int) { }")
+  }
 
-    let description = TestExamples(from: FunctionParameterCountRule.self).with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-    )
+  @Test func fiveParametersDoesNotTrigger() async {
+    // Exactly at the threshold (5) -- not over
+    await assertNoViolation(
+      FunctionParameterCountRule.self,
+      "func f(a: Int, b: Int, c: Int, d: Int, e: Int) {}")
+  }
 
-    await verifyRule(description, ruleConfiguration: ["ignores_default_parameters": false])
+  @Test func defaultParametersIgnoredByDefault() async {
+    // 5 regular + 1 default = 6 total, but default is ignored so effective count is 5
+    await assertNoViolation(
+      FunctionParameterCountRule.self,
+      "func f(a: Int, b: Int, c: Int, d: Int, x: Int = 42) {}")
+  }
+
+  @Test func initExcluded() async {
+    // init is not checked by this rule (6 params)
+    await assertNoViolation(
+      FunctionParameterCountRule.self,
+      "init(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}")
+  }
+
+  @Test func overrideExcluded() async {
+    await assertNoViolation(
+      FunctionParameterCountRule.self,
+      "override func f(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}")
+  }
+
+  @Test func closureInBodyDoesNotAffectCount() async {
+    await assertNoViolation(
+      FunctionParameterCountRule.self,
+      """
+      func f(a: [Int], b: Int, c: Int, d: Int, f: Int) -> [Int] {
+          let s = a.flatMap { $0 as? [String: Int] } ?? []}}
+      """)
+  }
+
+  // MARK: - Triggering (default config: warning at 5)
+
+  @Test func sixParametersTriggers() async {
+    await assertLint(
+      FunctionParameterCountRule.self,
+      "1️⃣func f(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func functionNamedLikeInitStillTriggers() async {
+    await assertLint(
+      FunctionParameterCountRule.self,
+      "1️⃣func initialValue(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func privateWithDefaultParamsTriggers() async {
+    // 7 total params, 1 default ignored = 6 effective, still over 5
+    await assertLint(
+      FunctionParameterCountRule.self,
+      "private 1️⃣func f(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int = 2, g: Int) {}",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func funcInStructTriggersButInitDoesNot() async {
+    await assertLint(
+      FunctionParameterCountRule.self,
+      """
+      struct Foo {
+          init(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}
+          1️⃣func bar(a: Int, b: Int, c: Int, d: Int, e: Int, f: Int) {}}
+      """,
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  // MARK: - Configuration: ignores_default_parameters = false
+
+  @Test func fourParamsDoesNotTriggerIgnoringDefaults() async {
+    // 4 regular params = under threshold
+    await assertNoViolation(
+      FunctionParameterCountRule.self,
+      "func f(\(Self.params(4))) {}",
+      configuration: ["ignores_default_parameters": false])
+  }
+
+  @Test func defaultParametersCountWhenNotIgnored() async {
+    // 3 regular + 3 default = 6 total, all counted, exceeds threshold of 5
+    let regularParams = Self.params(3)
+    let defaultParams = Self.params(3, defaultValue: true)
+    await assertViolates(
+      FunctionParameterCountRule.self,
+      "func f(\(regularParams), \(defaultParams)) {}",
+      configuration: ["ignores_default_parameters": false])
   }
 }

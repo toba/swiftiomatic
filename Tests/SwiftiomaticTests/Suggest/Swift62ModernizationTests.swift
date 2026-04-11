@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite("Swift62ModernizationRule — new patterns")
 struct Swift62ModernizationTests {

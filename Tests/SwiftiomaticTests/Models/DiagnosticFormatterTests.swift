@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite struct DiagnosticFormatterTests {
   private static func makeDiagnostic(

@@ -1,5 +1,5 @@
 import SwiftUI
-import Swiftiomatic
+import SwiftiomaticKit
 
 struct OptionsTab: View {
   @Environment(AppModel.self) private var model

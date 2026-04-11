@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite("CaseIterableUsageRule")
 struct CaseIterableUsageTests {

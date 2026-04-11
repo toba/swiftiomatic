@@ -1,6 +1,6 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct DeploymentTargetRuleTests {
   @Test(.disabled("Rule produces 0 violations in this configuration"))

@@ -2,7 +2,7 @@ import Foundation
 import Testing
 import Yams
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct YamlSwiftLintTests {
   @Test func flattenYaml() throws {

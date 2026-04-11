@@ -1,6 +1,6 @@
 import ArgumentParser
 import Foundation
-import Swiftiomatic
+import SwiftiomaticKit
 
 struct MigrateCommand: ParsableCommand {
   static let configuration = CommandConfiguration(

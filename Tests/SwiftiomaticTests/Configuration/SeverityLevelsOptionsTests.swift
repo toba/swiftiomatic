@@ -1,6 +1,6 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 private struct MockSeverityLevelsRule: Rule {
   static let id = "test_severity_levels"

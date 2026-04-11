@@ -2,7 +2,7 @@ import SwiftParser
 import SwiftSyntax
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct CodeIndentingRewriterTests {
   @Test func indentDefaultStyle() {

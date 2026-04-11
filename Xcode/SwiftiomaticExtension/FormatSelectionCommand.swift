@@ -1,4 +1,4 @@
-import Swiftiomatic
+import SwiftiomaticKit
 import XcodeKit
 
 final class FormatSelectionCommand: NSObject, XCSourceEditorCommand {
@@ -33,7 +33,7 @@ final class FormatSelectionCommand: NSObject, XCSourceEditorCommand {
 
     do {
       let config = loadConfiguration()
-      let formatted = try SwiftiomaticLib.format(source, configuration: config)
+      let formatted = try SwiftiomaticKit.format(source, configuration: config)
 
       guard formatted != source else {
         completionHandler(nil)

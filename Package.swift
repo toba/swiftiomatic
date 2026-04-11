@@ -6,7 +6,7 @@ let package = Package(
     name: "swiftiomatic",
     platforms: [.macOS(.v26)],
     products: [
-        .library(name: "SwiftiomaticLib", targets: ["Swiftiomatic"]),
+        .library(name: "SwiftiomaticKit", targets: ["SwiftiomaticKit"]),
         .executable(name: "swiftiomatic", targets: ["SwiftiomaticCLI"]),
         .plugin(name: "Format Source Code", targets: ["FormatPlugin"]),
         .plugin(name: "Lint Source Code", targets: ["LintPlugin"]),
@@ -19,7 +19,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Swiftiomatic",
+            name: "SwiftiomaticKit",
             dependencies: [
                 "SourceKitC",
                 .product(name: "SwiftIDEUtils", package: "swift-syntax"),
@@ -43,7 +43,7 @@ let package = Package(
         .executableTarget(
             name: "SwiftiomaticCLI",
             dependencies: [
-                "Swiftiomatic",
+                "SwiftiomaticKit",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],
             swiftSettings: [
@@ -90,7 +90,7 @@ let package = Package(
         .testTarget(
             name: "SwiftiomaticTests",
             dependencies: [
-                "Swiftiomatic",
+                "SwiftiomaticKit",
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
             ],

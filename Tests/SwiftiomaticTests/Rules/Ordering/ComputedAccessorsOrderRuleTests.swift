@@ -3,76 +3,227 @@ import Testing
 @testable import Swiftiomatic
 
 @Suite(.rulesRegistered) struct ComputedAccessorsOrderRuleTests {
-  @Test func setGetConfiguration() async {
-    let nonTriggeringExamples = [
-      Example(
-        """
-        class Foo {
-            var foo: Int {
-                set {
-                    print(newValue)
-                }
-                get {
-                    return 20
-                }
-            }
-        }
-        """,
-      )
-    ]
-    let triggeringExamples = [
-      Example(
-        """
-        class Foo {
-            var foo: Int {
-                ↓get {
-                    print(newValue)
-                }
-                set {
-                    return 20
-                }
-            }
-        }
-        """,
-      )
-    ]
+  // MARK: - Default (get-set) order — no violations
 
-    let description = TestExamples(from: ComputedAccessorsOrderRule.self).with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-    )
-
-    await verifyRule(description, ruleConfiguration: ["order": "set_get"])
-  }
-
-  @Test func getSetPropertyReason() async {
-    let example = Example(
+  @Test func getSetPropertyNoViolation() async {
+    await assertNoViolation(
+      ComputedAccessorsOrderRule.self,
       """
       class Foo {
           var foo: Int {
-              set {
-                  return 20
+              get { return 3 }
+              set { _abc = newValue }
+          }
+      }
+      """)
+  }
+
+  @Test func getterOnlyPropertyNoViolation() async {
+    await assertNoViolation(
+      ComputedAccessorsOrderRule.self,
+      """
+      class Foo {
+          var foo: Int {
+              return 20
+          }
+      }
+      """)
+  }
+
+  @Test func protocolPropertyNoViolation() async {
+    await assertNoViolation(
+      ComputedAccessorsOrderRule.self,
+      """
+      protocol Foo {
+          var foo: Int { get set }
+      }
+      """)
+  }
+
+  @Test func getSetSubscriptNoViolation() async {
+    await assertNoViolation(
+      ComputedAccessorsOrderRule.self,
+      """
+      class Foo {
+          subscript(i: Int) -> Int {
+              get { return 3 }
+              set { _abc = newValue }
+          }
+      }
+      """)
+  }
+
+  @Test func nestedPropertyNoViolation() async {
+    await assertNoViolation(
+      ComputedAccessorsOrderRule.self,
+      """
+      class Foo {
+          var foo: Int {
+              struct Bar {
+                  var bar: Int {
+                      get { return 1 }
+                      set { _ = newValue }
+                  }
+              }
+              return Bar().bar
+          }
+      }
+      """)
+  }
+
+  @Test func inlineGetWithAttributeNoViolation() async {
+    await assertNoViolation(
+      ComputedAccessorsOrderRule.self,
+      """
+      var _objCTaggedPointerBits: UInt {
+          @inline(__always) get { return 0 }
+          set { print(newValue) }
+      }
+      """)
+  }
+
+  @Test func mutatingGetNoViolation() async {
+    await assertNoViolation(
+      ComputedAccessorsOrderRule.self,
+      """
+      var next: Int? {
+          mutating get {
+              defer { self.count += 1 }
+              return self.count
+          }
+          set {
+              self.count = newValue
+          }
+      }
+      """)
+  }
+
+  @Test func nonmutatingSetNoViolation() async {
+    await assertNoViolation(
+      ComputedAccessorsOrderRule.self,
+      """
+      extension Reactive where Base: UITapGestureRecognizer {
+          var tapped: CocoaAction<Base>? {
+              get {
+                  return associatedAction.withValue { $0.flatMap { $0.action } }
+              }
+              nonmutating set {
+                  setAction(newValue)
+              }
+          }
+      }
+      """)
+  }
+
+  // MARK: - Default (get-set) order — violations
+
+  @Test func setBeforeGetPropertyViolation() async {
+    await assertLint(
+      ComputedAccessorsOrderRule.self,
+      """
+      class Foo {
+          var foo: Int {
+              1️⃣set {
+                  print(newValue)
               }
               get {
-                  print(newValue)
+                  return 20
               }
           }
       }
       """,
-    )
-
-    #expect(
-      await ruleViolations(example).first?.reason
-        == "Computed properties should first declare the getter and then the setter",
-    )
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "Computed properties should first declare the getter and then the setter")
+      ])
   }
 
-  @Test func getSetSubscriptReason() async {
-    let example = Example(
+  @Test func setBeforeGetStaticPropertyViolation() async {
+    await assertLint(
+      ComputedAccessorsOrderRule.self,
+      """
+      class Foo {
+          static var foo: Int {
+              1️⃣set {
+                  print(newValue)
+              }
+              get {
+                  return 20
+              }
+          }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "Computed properties should first declare the getter and then the setter")
+      ])
+  }
+
+  @Test func setBeforeGetInlineViolation() async {
+    await assertLint(
+      ComputedAccessorsOrderRule.self,
+      """
+      var foo: Int {
+          1️⃣set { print(newValue) }
+          get { return 20 }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "Computed properties should first declare the getter and then the setter")
+      ])
+  }
+
+  @Test func setBeforeGetExtensionViolation() async {
+    await assertLint(
+      ComputedAccessorsOrderRule.self,
+      """
+      extension Foo {
+          var bar: Bool {
+              1️⃣set { print(bar) }
+              get { _bar }
+          }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "Computed properties should first declare the getter and then the setter")
+      ])
+  }
+
+  @Test func setBeforeMutatingGetViolation() async {
+    await assertLint(
+      ComputedAccessorsOrderRule.self,
+      """
+      class Foo {
+          var foo: Int {
+              1️⃣set {
+                  print(newValue)
+              }
+              mutating get {
+                  return 20
+              }
+          }
+      }
+      """,
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "Computed properties should first declare the getter and then the setter")
+      ])
+  }
+
+  @Test func setBeforeGetSubscriptViolation() async {
+    await assertLint(
+      ComputedAccessorsOrderRule.self,
       """
       class Foo {
           subscript(i: Int) -> Int {
-              set {
+              1️⃣set {
                   print(i)
               }
               get {
@@ -81,20 +232,42 @@ import Testing
           }
       }
       """,
-    )
-
-    #expect(
-      await ruleViolations(example).first?.reason
-        == "Computed subscripts should first declare the getter and then the setter",
-    )
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "Computed subscripts should first declare the getter and then the setter")
+      ])
   }
 
-  @Test func setGetPropertyReason() async {
-    let example = Example(
+  // MARK: - set_get configuration — no violations
+
+  @Test func setGetConfigNoViolation() async {
+    await assertNoViolation(
+      ComputedAccessorsOrderRule.self,
       """
       class Foo {
           var foo: Int {
+              set {
+                  print(newValue)
+              }
               get {
+                  return 20
+              }
+          }
+      }
+      """,
+      configuration: ["order": "set_get"])
+  }
+
+  // MARK: - set_get configuration — violations
+
+  @Test func getBeforeSetPropertyWithSetGetConfig() async {
+    await assertLint(
+      ComputedAccessorsOrderRule.self,
+      """
+      class Foo {
+          var foo: Int {
+              1️⃣get {
                   print(newValue)
               }
               set {
@@ -103,20 +276,21 @@ import Testing
           }
       }
       """,
-    )
-
-    #expect(
-      await ruleViolations(example, ruleConfiguration: ["order": "set_get"]).first?.reason
-        == "Computed properties should first declare the setter and then the getter",
-    )
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "Computed properties should first declare the setter and then the getter")
+      ],
+      configuration: ["order": "set_get"])
   }
 
-  @Test func setGetSubscriptReason() async {
-    let example = Example(
+  @Test func getBeforeSetSubscriptWithSetGetConfig() async {
+    await assertLint(
+      ComputedAccessorsOrderRule.self,
       """
       class Foo {
           subscript(i: Int) -> Int {
-              get {
+              1️⃣get {
                   return 20
               }
               set {
@@ -125,23 +299,11 @@ import Testing
           }
       }
       """,
-    )
-
-    #expect(
-      await ruleViolations(example, ruleConfiguration: ["order": "set_get"]).first?.reason
-        == "Computed subscripts should first declare the setter and then the getter",
-    )
-  }
-
-  private func ruleViolations(
-    _ example: Example,
-    ruleConfiguration: Any? = nil
-  ) async -> [RuleViolation] {
-    guard let config = makeConfig(ruleConfiguration, ComputedAccessorsOrderRule.identifier)
-    else {
-      return []
-    }
-
-    return await violations(example, config: config)
+      findings: [
+        FindingSpec(
+          "1️⃣",
+          message: "Computed subscripts should first declare the setter and then the getter")
+      ],
+      configuration: ["order": "set_get"])
   }
 }

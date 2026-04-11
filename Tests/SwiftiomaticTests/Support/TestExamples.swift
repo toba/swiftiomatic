@@ -1,4 +1,4 @@
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 /// Test-only container for rule examples, built from a ``Rule`` type's static metadata.
 struct TestExamples {

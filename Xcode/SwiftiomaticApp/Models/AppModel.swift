@@ -1,6 +1,6 @@
 import AppKit
 import Observation
-import Swiftiomatic
+import SwiftiomaticKit
 import UniformTypeIdentifiers
 
 @Observable
@@ -24,7 +24,7 @@ final class AppModel {
   }
 
   init() {
-    rules = SwiftiomaticLib.ruleCatalog()
+    rules = SwiftiomaticKit.ruleCatalog()
     loadFromAppGroup()
   }
 
@@ -71,7 +71,7 @@ final class AppModel {
       guard url.startAccessingSecurityScopedResource() else { return }
       defer { url.stopAccessingSecurityScopedResource() }
 
-      configuration = try SwiftiomaticLib.loadConfiguration(from: url.path)
+      configuration = try SwiftiomaticKit.loadConfiguration(from: url.path)
 
       // Persist to App Group
       if let suite = SharedDefaults.suite {
@@ -95,7 +95,7 @@ final class AppModel {
     else { return }
     defer { url.stopAccessingSecurityScopedResource() }
 
-    try? SwiftiomaticLib.saveConfiguration(configuration, to: url.path)
+    try? SwiftiomaticKit.saveConfiguration(configuration, to: url.path)
   }
 
   func selectConfigFile() {
@@ -128,6 +128,6 @@ final class AppModel {
     else { return }
     defer { url.stopAccessingSecurityScopedResource() }
 
-    configuration = (try? SwiftiomaticLib.loadConfiguration(from: url.path)) ?? .default
+    configuration = (try? SwiftiomaticKit.loadConfiguration(from: url.path)) ?? .default
   }
 }

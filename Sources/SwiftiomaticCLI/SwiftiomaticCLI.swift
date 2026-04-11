@@ -1,6 +1,6 @@
 public import ArgumentParser
 import Foundation
-import Swiftiomatic
+import SwiftiomaticKit
 
 @main
 struct SwiftiomaticCLI: AsyncParsableCommand {

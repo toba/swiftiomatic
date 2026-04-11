@@ -1,6 +1,6 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 private let fixturesDirectory = "\(TestResources.path())/FileNameNoSpaceRuleFixtures"
 

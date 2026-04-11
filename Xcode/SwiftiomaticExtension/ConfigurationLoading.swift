@@ -1,5 +1,5 @@
 import Foundation
-import Swiftiomatic
+import SwiftiomaticKit
 
 /// Load configuration from the App Group bookmark, falling back to defaults.
 func loadConfiguration() -> Configuration {

@@ -73,7 +73,9 @@
       "WebFetch(domain:wwdcnotes.com)",
       "mcp__xc-build__open_in_xcode",
       "mcp__xc-build__get_mac_app_path",
-      "mcp__xc-build__launch_mac_app"
+      "mcp__xc-build__launch_mac_app",
+      "Bash(codesign -dv /Applications/Swiftiomatic.app)",
+      "Bash(codesign -dv \"/Applications/Swiftiomatic.app/Contents/PlugIns/SwiftiomaticExtension.appex\")"
     ]
   },
   "enableAllProjectMcpServers": true,

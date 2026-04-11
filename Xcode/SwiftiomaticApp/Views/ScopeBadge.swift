@@ -1,5 +1,5 @@
 import SwiftUI
-import Swiftiomatic
+import SwiftiomaticKit
 
 struct ScopeBadge: View {
   let scope: Scope

@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 /// When true, skip expensive variant tests (emoji, shebang, comment, string, disable, severity).
 /// Set `SWIFTIOMATIC_FAST_TESTS=1` to enable.

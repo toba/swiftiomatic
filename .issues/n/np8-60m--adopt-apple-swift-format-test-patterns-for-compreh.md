@@ -5,11 +5,11 @@ status: review
 type: epic
 priority: normal
 created_at: 2026-04-10T23:06:55Z
-updated_at: 2026-04-11T00:55:11Z
+updated_at: 2026-04-11T15:30:21Z
 sync:
     github:
         issue_number: "162"
-        synced_at: "2026-04-11T01:01:45Z"
+        synced_at: "2026-04-11T16:40:43Z"
 ---
 
 Migrate test infrastructure from SwiftLint's auto-generated `verifyRule` pattern to Apple swift-format's explicit `assertLint()`/`assertFormatting()` approach with emoji markers and FindingSpec structs.
@@ -17,11 +17,11 @@ Migrate test infrastructure from SwiftLint's auto-generated `verifyRule` pattern
 ## Phases
 
 ### Phase 1: Test Infrastructure
-- [ ] Build `assertLint()` helper adapted from swift-format's `LintOrFormatRuleTestCase`
-- [ ] Build `assertFormatting()` helper that validates both output AND findings
-- [ ] Create `FindingSpec` and `MarkedText` support types
-- [ ] Create base test protocol/suite for rule tests
-- [ ] Verify infrastructure works with one existing rule test
+- [x] Build `assertLint()` helper adapted from swift-format's `LintOrFormatRuleTestCase`
+- [x] Build `assertFormatting()` helper that validates both output AND findings
+- [x] Create `FindingSpec` and `MarkedText` support types
+- [x] Create base test protocol/suite for rule tests
+- [x] Verify infrastructure works with one existing rule test
 
 ### Phase 2: Cover 79 Untested Rules
 - [x] Whitespace/HorizontalSpacing (10 rules) — detection tests for 10 rules

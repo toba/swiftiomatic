@@ -1,24 +1,42 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct PrefixedTopLevelConstantRuleTests {
-  @Test func privateOnly() async {
-    let triggeringExamples = [
-      Example("private let ↓Foo = 20.0"),
-      Example("fileprivate let ↓foo = 20.0"),
-    ]
-    let nonTriggeringExamples = [
-      Example("let Foo = 20.0"),
-      Example("internal let Foo = \"Foo\""),
-      Example("public let Foo = 20.0"),
-    ]
+  // MARK: - Private only mode
 
-    let description = TestExamples(from: PrefixedTopLevelConstantRule.self).with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-    )
+  @Test func privateConstantWithoutPrefixViolatesInPrivateOnlyMode() async {
+    await assertViolates(
+      PrefixedTopLevelConstantRule.self,
+      "private let Foo = 20.0",
+      configuration: ["only_private": true])
+  }
 
-    await verifyRule(description, ruleConfiguration: ["only_private": true])
+  @Test func fileprivateConstantWithoutPrefixViolatesInPrivateOnlyMode() async {
+    await assertViolates(
+      PrefixedTopLevelConstantRule.self,
+      "fileprivate let foo = 20.0",
+      configuration: ["only_private": true])
+  }
+
+  @Test func publicConstantDoesNotViolateInPrivateOnlyMode() async {
+    await assertNoViolation(
+      PrefixedTopLevelConstantRule.self,
+      "let Foo = 20.0",
+      configuration: ["only_private": true])
+  }
+
+  @Test func internalConstantDoesNotViolateInPrivateOnlyMode() async {
+    await assertNoViolation(
+      PrefixedTopLevelConstantRule.self,
+      "internal let Foo = \"Foo\"",
+      configuration: ["only_private": true])
+  }
+
+  @Test func explicitPublicConstantDoesNotViolateInPrivateOnlyMode() async {
+    await assertNoViolation(
+      PrefixedTopLevelConstantRule.self,
+      "public let Foo = 20.0",
+      configuration: ["only_private": true])
   }
 }

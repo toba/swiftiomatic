@@ -1,5 +1,5 @@
 import SwiftUI
-import Swiftiomatic
+import SwiftiomaticKit
 
 struct RuleDetailView: View {
   @Environment(AppModel.self) private var model
@@ -53,11 +53,25 @@ struct RuleDetailView: View {
         }
 
         // Metadata
-        GroupBox("Details") {
-          LabeledContent("Scope", value: entry.scope.displayName)
-          LabeledContent("Opt-In", value: entry.isOptIn ? "Yes" : "No")
-          LabeledContent("Auto-Fix", value: entry.isCorrectable ? "Yes" : "No")
+        GroupBox {
+          Grid(alignment: .leading, verticalSpacing: 8) {
+            GridRow {
+              Text("Scope")
+                .gridColumnAlignment(.trailing)
+              Text(entry.scope.displayName)
+            }
+            GridRow {
+              Text("Opt-In")
+              Text(entry.isOptIn ? "Yes" : "No")
+            }
+            GridRow {
+              Text("Auto-Fix")
+              Text(entry.isCorrectable ? "Yes" : "No")
+            }
+          }
+          .padding(4)
         }
+        .padding(.top, 4)
       }
       .padding()
     }

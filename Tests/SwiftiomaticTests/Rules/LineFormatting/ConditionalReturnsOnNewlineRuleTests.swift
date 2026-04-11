@@ -1,32 +1,128 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct ConditionalReturnsOnNewlineRuleTests {
-  @Test func conditionalReturnsOnNewlineWithIfOnly() async {
-    // Test with `if_only` set to true
-    let nonTriggeringExamples = [
-      Example("guard true else {\n return true\n}"),
-      Example("guard true,\n let x = true else {\n return true\n}"),
-      Example("if true else {\n return true\n}"),
-      Example("if true,\n let x = true else {\n return true\n}"),
-      Example("if textField.returnKeyType == .Next {"),
-      Example("if true { // return }"),
-      Example("/*if true { */ return }"),
-      Example("guard true else { return }"),
-    ]
-    let triggeringExamples = [
-      Example("↓if true { return }"),
-      Example("↓if true { break } else { return }"),
-      Example("↓if true { break } else {       return }"),
-      Example("↓if true { return \"YES\" } else { return \"NO\" }"),
-    ]
+  // MARK: - Non-triggering (default)
 
-    let description = TestExamples(from: ConditionalReturnsOnNewlineRule.self).with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-    )
+  @Test func guardOnNewlineDoesNotTrigger() async {
+    await assertNoViolation(
+      ConditionalReturnsOnNewlineRule.self,
+      "guard true else {\n return true\n}")
+  }
 
-    await verifyRule(description, ruleConfiguration: ["if_only": true])
+  @Test func guardWithMultipleConditionsDoesNotTrigger() async {
+    await assertNoViolation(
+      ConditionalReturnsOnNewlineRule.self,
+      "guard true,\n let x = true else {\n return true\n}")
+  }
+
+  @Test func ifOnNewlineDoesNotTrigger() async {
+    await assertNoViolation(
+      ConditionalReturnsOnNewlineRule.self,
+      "if true else {\n return true\n}")
+  }
+
+  @Test func ifWithMultipleConditionsDoesNotTrigger() async {
+    await assertNoViolation(
+      ConditionalReturnsOnNewlineRule.self,
+      "if true,\n let x = true else {\n return true\n}")
+  }
+
+  @Test func returnKeywordInIdentifierDoesNotTrigger() async {
+    await assertNoViolation(
+      ConditionalReturnsOnNewlineRule.self,
+      "if textField.returnKeyType == .Next {")
+  }
+
+  @Test func commentContainingReturnDoesNotTrigger() async {
+    await assertNoViolation(
+      ConditionalReturnsOnNewlineRule.self,
+      "if true { // return }")
+  }
+
+  @Test func guardElseOnSeparateLineDoesNotTrigger() async {
+    await assertNoViolation(
+      ConditionalReturnsOnNewlineRule.self,
+      """
+      guard something
+      else { return }
+      """)
+  }
+
+  // MARK: - Triggering (default)
+
+  @Test func guardSameLineReturnTriggers() async {
+    await assertLint(
+      ConditionalReturnsOnNewlineRule.self,
+      "1️⃣guard true else { return }",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func ifSameLineReturnTriggers() async {
+    await assertLint(
+      ConditionalReturnsOnNewlineRule.self,
+      "1️⃣if true { return }",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func ifElseSameLineReturnTriggers() async {
+    await assertLint(
+      ConditionalReturnsOnNewlineRule.self,
+      "1️⃣if true { break } else { return }",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func ifElseWithSpacesSameLineReturnTriggers() async {
+    await assertLint(
+      ConditionalReturnsOnNewlineRule.self,
+      "1️⃣if true { break } else {       return }",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func ifElseReturnStringTriggers() async {
+    await assertLint(
+      ConditionalReturnsOnNewlineRule.self,
+      #"1️⃣if true { return "YES" } else { return "NO" }"#,
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  @Test func guardXCTFailSameLineReturnTriggers() async {
+    await assertLint(
+      ConditionalReturnsOnNewlineRule.self,
+      "1️⃣guard condition else { XCTFail(); return }",
+      findings: [FindingSpec("1️⃣")])
+  }
+
+  // MARK: - if_only configuration
+
+  @Test func guardSameLineDoesNotTriggerWithIfOnly() async {
+    await assertNoViolation(
+      ConditionalReturnsOnNewlineRule.self,
+      "guard true else { return }",
+      configuration: ["if_only": true])
+  }
+
+  @Test func ifSameLineReturnTriggersWithIfOnly() async {
+    await assertLint(
+      ConditionalReturnsOnNewlineRule.self,
+      "1️⃣if true { return }",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["if_only": true])
+  }
+
+  @Test func ifElseReturnTriggersWithIfOnly() async {
+    await assertLint(
+      ConditionalReturnsOnNewlineRule.self,
+      "1️⃣if true { break } else { return }",
+      findings: [FindingSpec("1️⃣")],
+      configuration: ["if_only": true])
+  }
+
+  @Test func commentInIfDoesNotTriggerWithIfOnly() async {
+    await assertNoViolation(
+      ConditionalReturnsOnNewlineRule.self,
+      "/*if true { */ return }",
+      configuration: ["if_only": true])
   }
 }

@@ -1,84 +1,151 @@
 import Testing
 
-@testable import Swiftiomatic
+@testable import SwiftiomaticKit
 
 @Suite(.rulesRegistered) struct CyclomaticComplexityRuleTests {
-  private var complexSwitchExample: Example {
-    var example = "func switcheroo() {\n"
-    example += "    switch foo {\n"
-    for index in 0...30 {
-      example += "  case \(index):   print(\"\(index)\")\n"
+  // MARK: - Helpers
+
+  /// Build a function with the given number of `if` branches to exceed complexity thresholds.
+  private static func functionWithIfBranches(count: Int, name: String = "f") -> String {
+    var lines = ["func \(name)() {"]
+    for i in 0..<count {
+      lines.append("    if condition\(i) { print(\(i)) }")
     }
-    example += "    }\n"
-    example += "}\n"
-    return Example(example)
+    lines.append("}")
+    return lines.joined(separator: "\n")
   }
 
-  private var complexSwitchInitExample: Example {
-    var example = "init() {\n"
-    example += "    switch foo {\n"
-    for index in 0...30 {
-      example += "  case \(index):   print(\"\(index)\")\n"
+  /// Build a function with a switch statement having the given number of cases.
+  private static func functionWithSwitchCases(
+    count: Int, keyword: String = "func switcheroo()"
+  ) -> String {
+    var lines = ["\(keyword) {", "    switch foo {"]
+    for i in 0..<count {
+      lines.append("    case \(i): print(\"\(i)\")")
     }
-    example += "    }\n"
-    example += "}\n"
-    return Example(example)
+    lines.append("    }")
+    lines.append("}")
+    return lines.joined(separator: "\n")
   }
 
-  private var complexIfExample: Example {
-    let nest = 22
-    var example = "func nestThoseIfs() {\n"
-    for index in 0...nest {
-      let indent = String(repeating: "    ", count: index + 1)
-      example += indent + "if false != true {\n"
-      example += indent + "   print \"\\(i)\"\n"
-    }
+  // MARK: - Non-triggering (default config: warning at 10)
 
-    for index in (0...nest).reversed() {
-      let indent = String(repeating: "    ", count: index + 1)
-      example += indent + "}\n"
-    }
-    example += "}\n"
-    return Example(example)
+  @Test func simpleFunctionDoesNotTrigger() async {
+    await assertNoViolation(
+      CyclomaticComplexityRule.self,
+      """
+      func f1() {
+          if true {
+              for _ in 1..5 { }
+          }
+          if false { }
+      }
+      """)
   }
 
-  @Test func cyclomaticComplexity() async {
-    await verifyRule(
-      CyclomaticComplexityRule.self, commentDoesNotViolate: true,
-      stringDoesNotViolate: true,
-    )
+  @Test func switchWithFallthroughDoesNotTrigger() async {
+    // 10 cases but fallthrough reduces effective complexity
+    await assertNoViolation(
+      CyclomaticComplexityRule.self,
+      """
+      func f(code: Int) -> Int {
+          switch code {
+          case 0: fallthrough
+          case 1: return 1
+          case 2: return 1
+          case 3: return 1
+          case 4: return 1
+          case 5: return 1
+          case 6: return 1
+          case 7: return 1
+          case 8: return 1
+          default: return 1
+          }
+      }
+      """)
   }
 
-  @Test func ignoresCaseStatementsConfigurationEnabled() async {
-    let baseExamples = TestExamples(from: CyclomaticComplexityRule.self)
-    let triggeringExamples = [complexIfExample]
-    let nonTriggeringExamples = baseExamples.nonTriggeringExamples + [complexSwitchExample]
-
-    let description = baseExamples.with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-    )
-
-    await verifyRule(
-      description, ruleConfiguration: ["ignores_case_statements": true],
-      commentDoesNotViolate: true, stringDoesNotViolate: true,
-    )
+  @Test func nestedFunctionsCountSeparately() async {
+    // Each function's complexity is counted independently
+    await assertNoViolation(
+      CyclomaticComplexityRule.self,
+      """
+      func f1() {
+          if true {}; if true {}; if true {}; if true {}; if true {}; if true {}
+          func f2() {
+              if true {}; if true {}; if true {}; if true {}; if true {}
+          }
+      }
+      """)
   }
 
-  @Test func ignoresCaseStatementsConfigurationDisabled() async {
-    let baseExamples = TestExamples(from: CyclomaticComplexityRule.self)
-    let triggeringExamples =
-      baseExamples.triggeringExamples + [complexSwitchExample, complexSwitchInitExample]
-    let nonTriggeringExamples = baseExamples.nonTriggeringExamples
+  // MARK: - Triggering (default config: warning at 10)
 
-    let description = baseExamples.with(
-      nonTriggeringExamples: nonTriggeringExamples,
-      triggeringExamples: triggeringExamples,
-    )
+  @Test func highComplexityFunctionTriggers() async {
+    // 11 branches exceeds the warning threshold of 10
+    await assertLint(
+      CyclomaticComplexityRule.self,
+      """
+      1️⃣func f1() {
+          if true {
+              if true {
+                  if false {}
+              }
+          }
+          if false {}
+          let i = 0
+          switch i {
+              case 1: break
+              case 2: break
+              case 3: break
+              case 4: break
+              default: break
+          }
+          for _ in 1...5 {
+              guard true else {
+                  return
+              }
+          }
+      }
+      """,
+      findings: [FindingSpec("1️⃣")])
+  }
 
-    await verifyRule(
-      description, ruleConfiguration: ["ignores_case_statements": false],
-      commentDoesNotViolate: true, stringDoesNotViolate: true,
-    )
+  // MARK: - Configuration: ignores_case_statements
+
+  @Test func switchCasesIgnoredWhenConfigured() async {
+    // 31 switch cases would normally exceed threshold, but are ignored
+    let source = Self.functionWithSwitchCases(count: 31)
+    await assertNoViolation(
+      CyclomaticComplexityRule.self,
+      source,
+      configuration: ["ignores_case_statements": true])
+  }
+
+  @Test func ifBranchesStillCountWhenCasesIgnored() async {
+    // 11 if-branches exceed threshold even when case statements are ignored
+    let source = Self.functionWithIfBranches(count: 11)
+    await assertViolates(
+      CyclomaticComplexityRule.self,
+      source,
+      configuration: ["ignores_case_statements": true])
+  }
+
+  @Test func switchCasesCountWhenNotIgnored() async {
+    // 31 switch cases exceed threshold when case statements are NOT ignored
+    let source = Self.functionWithSwitchCases(count: 31)
+    await assertViolates(
+      CyclomaticComplexityRule.self,
+      source,
+      configuration: ["ignores_case_statements": false])
+  }
+
+  @Test func switchCasesInInitCountWhenNotIgnored() async {
+    // Switch cases in init also count
+    let source = Self.functionWithSwitchCases(count: 31, keyword: "init()")
+    await assertViolates(
+      CyclomaticComplexityRule.self,
+      source,
+      configuration: ["ignores_case_statements": false])
   }
 }
