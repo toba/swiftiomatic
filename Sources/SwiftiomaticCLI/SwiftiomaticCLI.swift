@@ -7,7 +7,10 @@ struct SwiftiomaticCLI: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "AST-based Swift code analysis and formatting",
         version: "0.2.0",
-        subcommands: [Analyze.self, FormatCommand.self, ListRules.self, GenerateDocs.self],
+        subcommands: [
+            Analyze.self, FormatCommand.self, ListRules.self, GenerateDocs.self,
+            MigrateCommand.self,
+        ],
         defaultSubcommand: Analyze.self,
     )
 }
@@ -66,6 +69,8 @@ struct Analyze: AsyncParsableCommand {
     var enableRule: [String] = []
 
     mutating func run() async throws {
+        let configResolver = ConfigurationResolver(configPath: config)
+        // Load a base config for top-level rule/analyzer setup
         let cfg = Configuration.loadUnified(configPath: config)
 
         // Create SourceKit resolver if requested
@@ -88,7 +93,7 @@ struct Analyze: AsyncParsableCommand {
             }
         }
 
-        // Load lint rules
+        // Load lint rules from base config (CLI overrides apply globally)
         let mergedDisabled = Set(disableRule + cfg.disabledLintRules)
         let mergedEnabled: Set<String>? = enableRule.isEmpty && cfg.enabledLintRules.isEmpty
             ? nil
@@ -109,7 +114,7 @@ struct Analyze: AsyncParsableCommand {
 
         // Fix mode
         if fix {
-            try runFix(analyzer: analyzer, cfg: cfg)
+            try runFix(analyzer: analyzer, configResolver: configResolver)
             return
         }
 
@@ -118,7 +123,7 @@ struct Analyze: AsyncParsableCommand {
 
         // Optionally merge format-lint diagnostics
         if includeFormat {
-            diagnostics += runFormatLint(cfg: cfg)
+            diagnostics += runFormatLint(configResolver: configResolver)
             diagnostics.sort()
         }
 
@@ -154,7 +159,7 @@ struct Analyze: AsyncParsableCommand {
 
     // MARK: - Fix Mode
 
-    private func runFix(analyzer: Analyzer, cfg: Configuration) throws {
+    private func runFix(analyzer: Analyzer, configResolver: ConfigurationResolver) throws {
         let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
         guard !files.isEmpty else {
             print("No Swift files found")
@@ -163,18 +168,27 @@ struct Analyze: AsyncParsableCommand {
 
         var totalCorrections = 0
 
-        // 1. Format engine writes formatted files (swift-format pretty-printer)
-        let formatEngine = cfg.makeFormatEngine()
-        for file in files {
-            do {
-                let source = try String(contentsOfFile: file, encoding: .utf8)
-                let formatted = try formatEngine.format(source)
-                if source != formatted {
-                    try formatted.write(toFile: file, atomically: true, encoding: .utf8)
-                    totalCorrections += 1
+        // 1. Format engine writes formatted files (per-directory config)
+        // Group files by resolved config directory for efficient engine reuse
+        let grouped = Dictionary(grouping: files) { file in
+            configResolver.configuration(for: file)
+        }
+
+        for (fileCfg, groupFiles) in grouped {
+            let formatEngine = fileCfg.makeFormatEngine()
+            for file in groupFiles {
+                do {
+                    let source = try String(contentsOfFile: file, encoding: .utf8)
+                    let formatted = try formatEngine.format(source)
+                    if source != formatted {
+                        try formatted.write(toFile: file, atomically: true, encoding: .utf8)
+                        totalCorrections += 1
+                    }
+                } catch {
+                    FileHandle.standardError.write(
+                        Data("Error formatting \(file): \(error)\n".utf8),
+                    )
                 }
-            } catch {
-                FileHandle.standardError.write(Data("Error formatting \(file): \(error)\n".utf8))
             }
         }
 
@@ -208,13 +222,14 @@ struct Analyze: AsyncParsableCommand {
 
     // MARK: - Format-Lint Integration
 
-    private func runFormatLint(cfg: Configuration) -> [Diagnostic] {
-        let engine = cfg.makeFormatEngine()
+    private func runFormatLint(configResolver: ConfigurationResolver) -> [Diagnostic] {
         let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
         var diagnostics: [Diagnostic] = []
 
         for file in files {
             do {
+                let fileCfg = configResolver.configuration(for: file)
+                let engine = fileCfg.makeFormatEngine()
                 let source = try String(contentsOfFile: file, encoding: .utf8)
                 let findings = try engine.lint(source, filePath: file)
                 diagnostics += findings.map { $0.toDiagnostic() }

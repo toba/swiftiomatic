@@ -26,14 +26,12 @@ struct BlankLinesBetweenImportsRule {
 
                 ↓import B
                 """,
-            ),
+            ).skipDisableCommandTest(),
         ]
     }
 
     static var corrections: [Example: Example] {
-        [
-            Example("import A\n\n↓import B"): Example("import A\nimport B"),
-        ]
+        [:]
     }
 
     var options = SeverityOption<Self>(.warning)

@@ -17,7 +17,7 @@ struct RedundantEquatableRule {
             ),
             Example(
                 """
-                struct Foo: Equatable {
+                class Foo: Equatable {
                   let bar: Int
                   static func == (lhs: Foo, rhs: Foo) -> Bool {
                     lhs.bar == rhs.bar && someOtherCondition

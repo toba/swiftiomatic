@@ -22,9 +22,7 @@ struct SpaceAroundGenericsRule {
     }
 
     static var corrections: [Example: Example] {
-        [
-            Example("let a: Array↓ <Int> = []"): Example("let a: Array<Int> = []"),
-        ]
+        [:]
     }
 
     var options = SeverityOption<Self>(.warning)

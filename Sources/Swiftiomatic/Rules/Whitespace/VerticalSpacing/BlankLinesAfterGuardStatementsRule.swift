@@ -10,17 +10,21 @@ struct BlankLinesAfterGuardStatementsRule {
         [
             Example(
                 """
-                guard let foo = bar else { return }
+                func test() {
+                  guard let foo = bar else { return }
 
-                print(foo)
+                  print(foo)
+                }
                 """,
             ),
             Example(
                 """
-                guard let a = b else { return }
-                guard let c = d else { return }
+                func test() {
+                  guard let a = b else { return }
+                  guard let c = d else { return }
 
-                print(a, c)
+                  print(a, c)
+                }
                 """,
             ),
         ]
@@ -30,8 +34,10 @@ struct BlankLinesAfterGuardStatementsRule {
         [
             Example(
                 """
-                guard let foo = bar else { return }
-                ↓print(foo)
+                func test() {
+                  guard let foo = bar else { return }
+                  ↓print(foo)
+                }
                 """,
             ),
         ]

@@ -1,15 +1,15 @@
 ---
 # 52u-0w0
 title: 'Swiftiomatic: AST-based Swift code analysis CLI'
-status: review
+status: completed
 type: epic
 priority: normal
 created_at: 2026-02-27T21:32:03Z
-updated_at: 2026-02-27T21:55:41Z
+updated_at: 2026-04-10T22:23:47Z
 sync:
     github:
         issue_number: "59"
-        synced_at: "2026-03-01T01:01:39Z"
+        synced_at: "2026-04-11T01:01:46Z"
 ---
 
 Build a swift-syntax CLI tool that performs AST-accurate Swift code analysis across 8 categories derived from the swift-review skill. Replaces grep-based heuristics with structural analysis that eliminates false positives and enables checks grep cannot do.

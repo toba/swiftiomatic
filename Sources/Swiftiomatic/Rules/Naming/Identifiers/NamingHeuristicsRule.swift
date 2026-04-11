@@ -18,8 +18,8 @@ struct NamingHeuristicsRule {
 
     static var triggeringExamples: [Example] {
         [
-            Example("var ↓enabled: Bool = true"),
-            Example("static func ↓createWidget() -> Widget { }"),
+            Example("var ↓enabled: Bool = true", configuration: ["severity": "warning"]),
+            Example("static func ↓createWidget() -> Widget { }", configuration: ["severity": "warning"]),
         ]
     }
 

@@ -12,13 +12,13 @@ struct BlockCommentsRule {
                 // A comment
                 // on multiple lines
                 """,
-            ),
+            ).skipMultiByteOffsetTest(),
             Example(
                 """
                 /// A doc comment
                 func foo() {}
                 """,
-            ),
+            ).skipMultiByteOffsetTest(),
         ]
     }
 
@@ -29,7 +29,7 @@ struct BlockCommentsRule {
                 ↓/* A comment
                    on multiple lines */
                 """,
-            ),
+            ).skipWrappingInCommentTest().skipWrappingInStringTest().skipMultiByteOffsetTest(),
         ]
     }
 

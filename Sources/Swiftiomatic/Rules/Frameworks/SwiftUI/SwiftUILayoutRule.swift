@@ -14,7 +14,7 @@ struct SwiftUILayoutRule {
 
     static var triggeringExamples: [Example] {
         [
-            Example("NavigationStack { ↓NavigationStack { Text(\"Hello\") } }"),
+            Example("NavigationStack { ↓NavigationStack { Text(\"Hello\") } }", configuration: ["severity": "warning"]),
         ]
     }
 

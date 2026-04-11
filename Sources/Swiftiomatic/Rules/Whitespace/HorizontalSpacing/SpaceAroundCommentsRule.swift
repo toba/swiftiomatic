@@ -21,13 +21,13 @@ struct SpaceAroundCommentsRule {
 
     static var triggeringExamples: [Example] {
         [
-            Example("let a = 5↓// comment"),
+            Example("/*a*/↓/*b*/\nlet x = 1"),
         ]
     }
 
     static var corrections: [Example: Example] {
         [
-            Example("let a = 5↓// comment"): Example("let a = 5 // comment"),
+            Example("/*a*/↓/*b*/\nlet x = 1"): Example("/*a*/ /*b*/\nlet x = 1"),
         ]
     }
 

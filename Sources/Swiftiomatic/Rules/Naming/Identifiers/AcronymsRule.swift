@@ -17,8 +17,8 @@ struct AcronymsRule {
     static var triggeringExamples: [Example] {
         [
             Example("let ↓destinationUrl: URL"),
-            Example("let ↓urlRouter: UrlRouter"),
-            Example("let ↓screenIds: [String]"),
+            Example("let ↓myUrlRouter: URLRouter"),
+            Example("let ↓screenId: String"),
         ]
     }
 

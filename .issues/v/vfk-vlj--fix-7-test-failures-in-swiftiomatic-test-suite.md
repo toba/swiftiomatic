@@ -1,15 +1,15 @@
 ---
 # vfk-vlj
 title: Fix 7 test failures in Swiftiomatic test suite
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-03-01T19:42:47Z
-updated_at: 2026-03-01T19:49:30Z
+updated_at: 2026-04-10T22:23:45Z
 sync:
     github:
         issue_number: "126"
-        synced_at: "2026-03-01T21:06:26Z"
+        synced_at: "2026-04-11T01:01:46Z"
 ---
 
 7 test failures to fix:

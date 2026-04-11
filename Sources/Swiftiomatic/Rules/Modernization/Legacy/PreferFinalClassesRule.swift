@@ -9,11 +9,11 @@ struct PreferFinalClassesRule {
         [
             Example("final class Foo {}"),
             Example("open class Foo {}"),
-            Example("class Foo: NSObject {}"),
+            Example("class BaseHandler {}"),
             Example(
                 """
-                /// Base class for all handlers
-                class BaseHandler {}
+                /// Designed for subclassing
+                class Handler {}
                 """,
             ),
         ]

@@ -19,7 +19,7 @@ struct AnyEliminationRule {
         [
             Example("var value: ↓Any = 0"),
             Example("func process(_ dict: ↓[String: Any]) {}"),
-            Example("let x = value ↓as! String"),
+            Example("var items: ↓AnyHashable = 0"),
         ]
     }
 

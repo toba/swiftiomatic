@@ -17,10 +17,11 @@ struct PerformanceAntiPatternsRule {
         [
             Example(
                 """
-                for item in ↓items {
+                ↓for item in items {
                     items.remove(at: 0)
                 }
                 """,
+                configuration: ["severity": "warning"],
             ),
         ]
     }

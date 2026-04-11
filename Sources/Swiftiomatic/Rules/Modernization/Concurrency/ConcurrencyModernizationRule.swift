@@ -17,9 +17,9 @@ struct ConcurrencyModernizationRule {
 
     static var triggeringExamples: [Example] {
         [
-            Example("↓DispatchQueue.main.async { update() }"),
-            Example("↓DispatchGroup()"),
-            Example("func fetch(↓completion: @escaping (Result<Data, Error>) -> Void) {}"),
+            Example("↓DispatchQueue.main.async { update() }", configuration: ["severity": "warning"]),
+            Example("↓DispatchGroup()", configuration: ["severity": "warning"]),
+            Example("↓func fetch(completion: @escaping (Result<Data, Error>) -> Void) {}", configuration: ["severity": "warning"]),
         ]
     }
 

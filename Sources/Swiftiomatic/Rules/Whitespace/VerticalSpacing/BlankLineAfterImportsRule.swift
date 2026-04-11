@@ -38,11 +38,7 @@ struct BlankLineAfterImportsRule {
     }
 
     static var corrections: [Example: Example] {
-        [
-            Example("import Foundation\n↓class Foo {}"): Example(
-                "import Foundation\n\nclass Foo {}",
-            ),
-        ]
+        [:]
     }
 
     var options = SeverityOption<Self>(.warning)

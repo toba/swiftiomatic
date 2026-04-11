@@ -25,7 +25,7 @@ struct BlankLinesAroundMarkRule {
             Example(
                 """
                 func foo() {}
-                ↓// MARK: - Bar
+                ↓// MARK: - Bar↓
                 func bar() {}
                 """,
             ),

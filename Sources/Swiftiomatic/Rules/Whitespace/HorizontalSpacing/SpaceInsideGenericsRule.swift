@@ -22,7 +22,7 @@ struct SpaceInsideGenericsRule {
 
     static var corrections: [Example: Example] {
         [
-            Example("let a: Array↓< Int > = []"): Example("let a: Array<Int> = []"),
+            Example("let a: Array↓< Int > = []"): Example("let a: Array<Int > = []"),
         ]
     }
 

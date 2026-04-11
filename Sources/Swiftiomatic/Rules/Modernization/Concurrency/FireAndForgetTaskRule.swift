@@ -21,6 +21,7 @@ struct FireAndForgetTaskRule {
                     ↓Task { await cleanup() }
                 }
                 """,
+                configuration: ["severity": "warning"],
             ),
         ]
     }

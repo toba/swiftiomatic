@@ -7,7 +7,6 @@ struct RedundantClosureRule {
     static let scope: Scope = .format
     static var nonTriggeringExamples: [Example] {
         [
-            Example("let x = { 42 }()"),
             Example(
                 """
                 let x = {

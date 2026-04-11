@@ -30,6 +30,7 @@ struct DelegateToAsyncStreamRule {
                     func downloadDidFail(_ download: Download, error: Error)
                 }
                 """,
+                configuration: ["severity": "warning"],
             ),
         ]
     }

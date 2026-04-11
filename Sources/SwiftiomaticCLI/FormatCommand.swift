@@ -27,8 +27,8 @@ struct FormatCommand: ParsableCommand {
     var format: OutputFormat = .text
 
     func run() throws {
-        let cfg = loadConfig()
-        let engine = cfg.makeFormatEngine()
+        let configResolver = ConfigurationResolver(configPath: config)
+        let baseCfg = loadConfig()
         let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
 
         if files.isEmpty {
@@ -37,16 +37,18 @@ struct FormatCommand: ParsableCommand {
         }
 
         if lint {
-            try runLintMode(engine: engine, files: files)
+            try runLintMode(configResolver: configResolver, files: files)
             return
         }
 
         var hasChanges = false
         var errorCount = 0
 
-        // 1. swift-format pretty-printer
+        // 1. swift-format pretty-printer (per-directory config)
         for file in files {
             do {
+                let fileCfg = configResolver.configuration(for: file)
+                let engine = fileCfg.makeFormatEngine()
                 let source = try String(contentsOfFile: file, encoding: .utf8)
                 let formatted = try engine.format(source)
 
@@ -66,7 +68,9 @@ struct FormatCommand: ParsableCommand {
         }
 
         // 2. Correctable lint rules
-        let lintCorrections = applyCorrectableLintRules(cfg: cfg, files: files, checkOnly: check)
+        let lintCorrections = applyCorrectableLintRules(
+            cfg: baseCfg, files: files, checkOnly: check,
+        )
         if lintCorrections > 0 {
             hasChanges = true
         }
@@ -80,11 +84,13 @@ struct FormatCommand: ParsableCommand {
         }
     }
 
-    private func runLintMode(engine: FormatEngine, files: [String]) throws {
+    private func runLintMode(configResolver: ConfigurationResolver, files: [String]) throws {
         var allDiagnostics: [Diagnostic] = []
 
         for file in files {
             do {
+                let fileCfg = configResolver.configuration(for: file)
+                let engine = fileCfg.makeFormatEngine()
                 let source = try String(contentsOfFile: file, encoding: .utf8)
                 let findings = try engine.lint(source, filePath: file)
                 allDiagnostics.append(contentsOf: findings.map { $0.toDiagnostic() })

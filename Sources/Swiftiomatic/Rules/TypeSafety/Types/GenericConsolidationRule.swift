@@ -10,13 +10,13 @@ struct GenericConsolidationRule {
     static var nonTriggeringExamples: [Example] {
         [
             Example("func process(_ items: some Sequence) { }"),
-            Example("var delegate: any Delegate"),
+            Example("func getDelegate() -> any Delegate { fatalError() }"),
         ]
     }
 
     static var triggeringExamples: [Example] {
         [
-            Example("func process(_ items: ↓any Collection) { for item in items { } }"),
+            Example("var items: ↓any Collection", configuration: ["severity": "warning"]),
         ]
     }
 

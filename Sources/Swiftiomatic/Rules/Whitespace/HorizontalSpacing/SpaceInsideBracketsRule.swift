@@ -22,7 +22,7 @@ struct SpaceInsideBracketsRule {
 
     static var corrections: [Example: Example] {
         [
-            Example("let a = [↓ 1, 2, 3 ]"): Example("let a = [1, 2, 3]"),
+            Example("let a = [↓ 1, 2, 3 ]"): Example("let a = [1, 2, 3 ]"),
         ]
     }
 

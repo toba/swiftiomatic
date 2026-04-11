@@ -27,9 +27,9 @@ struct DocCommentsBeforeModifiersRule {
         [
             Example(
                 """
-                @MainActor
-                ↓/// Doc comment
-                func foo() {}
+                public
+                /// Doc comment
+                ↓func foo() {}
                 """,
             ),
         ]

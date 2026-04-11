@@ -16,15 +16,15 @@ struct ConsecutiveSpacesRule {
 
     static var triggeringExamples: [Example] {
         [
-            Example("let  ↓foo = 5"),
-            Example("let foo =  ↓5"),
+            Example("let↓  foo = 5"),
+            Example("let foo =↓  5"),
         ]
     }
 
     static var corrections: [Example: Example] {
         [
-            Example("let  ↓foo = 5"): Example("let foo = 5"),
-            Example("let foo =  ↓5"): Example("let foo = 5"),
+            Example("let↓  foo = 5"): Example("let foo = 5"),
+            Example("let foo =↓  5"): Example("let foo = 5"),
         ]
     }
 

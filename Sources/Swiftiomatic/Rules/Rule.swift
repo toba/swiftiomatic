@@ -43,6 +43,12 @@ public protocol Rule: Sendable {
     /// The oldest Swift version supported by this rule
     static var minSwiftVersion: SwiftVersion { get }
 
+    /// Whether the rule can automatically correct violations it finds
+    static var isCorrectable: Bool { get }
+
+    /// Whether the rule collects info across files before validating (two-pass)
+    static var isCrossFile: Bool { get }
+
     /// Whether the rule requires its file to exist on disk
     static var requiresFileOnDisk: Bool { get }
 

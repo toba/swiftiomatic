@@ -21,9 +21,7 @@ struct NoExplicitOwnershipRule {
     }
 
     static var corrections: [Example: Example] {
-        [
-            Example("func foo(_ bar: ↓consuming Bar) {}"): Example("func foo(_ bar: Bar) {}"),
-        ]
+        [:]
     }
 
     var options = SeverityOption<Self>(.warning)

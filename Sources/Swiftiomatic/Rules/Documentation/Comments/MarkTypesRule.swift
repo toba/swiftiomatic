@@ -27,7 +27,7 @@ struct MarkTypesRule {
             Example(
                 """
                 ↓class Foo {}
-                class Bar {}
+                ↓class Bar {}
                 """,
             ),
         ]

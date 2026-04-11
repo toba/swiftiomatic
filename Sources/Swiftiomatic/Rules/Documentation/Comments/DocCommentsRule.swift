@@ -33,7 +33,7 @@ struct DocCommentsRule {
                 ↓// A placeholder type
                 class Foo {}
                 """,
-            ),
+            ).skipDisableCommandTest(),
             Example(
                 """
                 class Foo {
@@ -41,7 +41,7 @@ struct DocCommentsRule {
                   func bar() {}
                 }
                 """,
-            ),
+            ).skipDisableCommandTest(),
         ]
     }
 

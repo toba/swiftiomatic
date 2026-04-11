@@ -252,7 +252,7 @@ public struct Configuration {
     /// - Parameters:
     ///   - path: The file system path to the YAML file.
     /// - Returns: The parsed top-level dictionary.
-    private static func loadYAML(from path: String) throws -> [String: Any] {
+    static func loadYAML(from path: String) throws -> [String: Any] {
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         guard
             let yaml = try Yams
@@ -272,6 +272,15 @@ public struct Configuration {
     /// - Returns: The parsed ``Configuration``.
     public static func loadUnified(from path: String) throws -> Configuration {
         let yaml = try loadYAML(from: path)
+        return loadUnified(from: yaml)
+    }
+
+    /// Load a unified configuration from an already-parsed YAML dictionary
+    ///
+    /// - Parameters:
+    ///   - yaml: The parsed YAML dictionary.
+    /// - Returns: The parsed ``Configuration``.
+    static func loadUnified(from yaml: [String: Any]) -> Configuration {
         guard !yaml.isEmpty else { return .default }
 
         var config = Configuration()

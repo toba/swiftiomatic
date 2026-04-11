@@ -14,8 +14,8 @@ struct AgentReviewRule {
 
     static var triggeringExamples: [Example] {
         [
-            Example("↓Task { await work() }"),
-            Example("enum ↓AppError: Error { case failed }"),
+            Example("↓Task { await work() }", configuration: ["severity": "warning"]),
+            Example("enum ↓AppError: Error { case failed }", configuration: ["severity": "warning"]),
         ]
     }
 

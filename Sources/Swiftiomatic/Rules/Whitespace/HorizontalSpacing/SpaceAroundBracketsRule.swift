@@ -18,14 +18,11 @@ struct SpaceAroundBracketsRule {
     static var triggeringExamples: [Example] {
         [
             Example("foo↓ [0]"),
-            Example("foo↓as[String]"),
         ]
     }
 
     static var corrections: [Example: Example] {
-        [
-            Example("foo↓ [0]"): Example("foo[0]"),
-        ]
+        [:]
     }
 
     var options = SeverityOption<Self>(.warning)

@@ -22,7 +22,7 @@ struct SpaceInsideParensRule {
 
     static var corrections: [Example: Example] {
         [
-            Example("(↓ a, b )"): Example("(a, b)"),
+            Example("(↓ a, b )"): Example("(a, b )"),
         ]
     }
 

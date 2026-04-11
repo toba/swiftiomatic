@@ -84,8 +84,34 @@ When the formatter runs (Editor Extension or CLI), it applies corrections from a
 - **swift-argument-parser** CLI with subcommands: `lint`, `format`, `analyze` (format + lint + suggest in one pass), `list-rules`, `generate-docs`
 - Two-pass architecture for cross-file checks (dead symbols, duplication): pass 1 collects declarations, pass 2 finds references
 - Optional SourceKit enrichment for type-aware rules
-- YAML configuration (`.swiftiomatic.yaml`) for per-project rule settings
+- YAML configuration (`.swiftiomatic.yaml`) with nested per-directory overrides
 - Installable via Homebrew
+
+## Nested Configuration
+
+`.swiftiomatic.yaml` files in subdirectories override the root config for files within that subtree:
+
+```
+MyApp/
+  .swiftiomatic.yaml          # root: max_width 120, trailing_commas false
+  Sources/
+    .swiftiomatic.yaml        # overrides: max_width 80 (inherits trailing_commas)
+  Packages/LegacySDK/
+    .swiftiomatic.yaml        # inherit: false — ignores all parent configs
+```
+
+### Merge semantics
+
+- Configs are collected leaf → root, then merged root → leaf (child wins)
+- **Scalars**: child overrides parent
+- **Arrays** (e.g. `rules.disabled`): child replaces parent entirely (no append)
+- **Nested dicts** (e.g. `format`, `rules.config`): deep-merged key by key
+- **`inherit: false`**: stops the chain — that file's config stands alone with defaults
+- **`--config` flag**: bypasses chain resolution entirely, uses only the specified file
+
+### Resolution
+
+`ConfigurationResolver` caches the resolved config per directory. All files in the same directory share one resolved config. Format settings are per-directory; lint rule sets use the root config for cross-file consistency.
 
 ## Rule Categories
 
