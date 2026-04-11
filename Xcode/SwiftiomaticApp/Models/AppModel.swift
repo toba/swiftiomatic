@@ -1,7 +1,6 @@
-import AppKit
+import Foundation
 import Observation
 import SwiftiomaticKit
-import UniformTypeIdentifiers
 
 @Observable
 @MainActor
@@ -10,6 +9,7 @@ final class AppModel {
   var configuration: Configuration = .default
   var configPath: String?
   var configBookmark: Data?
+  var showingConfigPicker = false
 
   var lintRules: [RuleConfigurationEntry] {
     rules.filter { $0.scope == .lint }
@@ -98,14 +98,8 @@ final class AppModel {
     try? SwiftiomaticKit.saveConfiguration(configuration, to: url.path)
   }
 
-  func selectConfigFile() {
-    let panel = NSOpenPanel()
-    panel.allowedContentTypes = [.yaml]
-    panel.allowsMultipleSelection = false
-    panel.canChooseDirectories = false
-    panel.title = "Choose Swiftiomatic Configuration"
-
-    guard panel.runModal() == .OK, let url = panel.url else { return }
+  func handleConfigFileSelected(_ result: Result<URL, any Error>) {
+    guard case let .success(url) = result else { return }
     loadConfig(from: url)
   }
 

@@ -1,31 +1,30 @@
 # Swiftiomatic
 
-AST-accurate Swift linting, formatting, and code analysis, usable from Xcode, the command line, and by LLM agents. This tool derives directly from, and aspires to combine the best of,
+AST-accurate Swift linting, formatting, and code analysis, usable from Xcode, command line, and your LLM agent frenemy. This tool derives directly from, and aspires to combine the best of,
 
 - **[SwiftLint](https://github.com/realm/SwiftLint)**
-- **[swift-format](https://github.com/apple/swift-format)**
-- **[swift-syntax](https://github.com/swiftlang/swift-syntax)**
+- Nick Lockwood's **[SwiftFormat](https://github.com/nicklockwood/SwiftFormat)**
+- Apple's **[swift-format](https://github.com/apple/swift-format)**
 
-My goal here was to address the substantial overlap between linting and formatting. I often had to 
+My goal here was to address the overlap between linting and formatting. Using *SwiftLint* and *SwiftFormat*, I had to configure and exclude similar rules twice.
+```swift
+// swiftlint:disable async_without_await
+// swiftformat:disable redundantAsync redundantThrows
+```
 
-
-Most tools draw a hard line between linting and formatting. SwiftLint finds problems. swift-format fixes whitespace. They have different configs, different rule sets, different invocations, and — inevitably — different opinions that conflict with each other.
-
-Swiftiomatic treats every check as a **rule** and tags it with a **scope** that determines where it participates:
+Instead, *Swiftiomatic* has a single set of rules, each configured either to
 
 | Scope | Runs in | What it does |
 |---|---|---|
-| `.lint` | Xcode Build Phase, `swiftiomatic lint` | Definitive checks — wrong code, anti-patterns, style violations. Shows warnings and errors in the editor. |
-| `.format` | Xcode Editor Extension, `swiftiomatic format` | Formatting only — whitespace, indentation, brace placement. Never surfaces as a lint warning. |
-| `.suggest` | `swiftiomatic analyze` | Research patterns for agent investigation. Identifies code worth reviewing, not definitive errors. |
+| `.lint` | Xcode Build Phase, `swiftiomatic lint` | Wrong code, anti-patterns, style violations. Shows warnings and errors in the editor. |
+| `.format` | Xcode Editor Extension, `swiftiomatic format` | Formatting only; whitespace, indentation, brace placement. Never surfaces as a lint warning. |
+| `.suggest` | `swiftiomatic analyze` | Research patterns for nvestigation. Identifies code worth reviewing, not definitive errors. |
 
-A rule's scope is *the only thing* that determines where it runs. The rule itself doesn't know or care whether it was invoked from a build phase, an editor extension, or an agent pipeline. Same `SyntaxVisitor`, same violation model, same configuration — different audiences.
+Each rule has a separate *auto-fix* property. All `.format` rules are auto-fixable (of course) whereas not all `.lint` rules are auto-fixable.
 
-### Why this matters
+Scope is the only thing that determines where a rule runs. The rule itself is agnostic (though it flirts with atheism), using the same `SyntaxVisitor`, violation model, and configuration.
 
-When the formatter runs, it applies corrections from *all* `.format` rules plus any `.lint` rules that are also correctable. One pass, both concerns, no contradictions. When the linter runs, it skips `.format` rules entirely — formatting choices aren't lint violations. And when an agent runs `analyze`, it gets everything: formatting applied, lint issues flagged, and suggestions surfaced for investigation.
-
-No separate tools arguing with each other. No "the formatter undid what the linter wanted." Just rules, scopes, and a pipeline that knows which rules belong where.
+This tool is fully Swift 6.3 with strict concurrency and Swift Testing. Any patterns older than about 20 minutes ago were eliminated with vigor.
 
 ## Installation
 
@@ -70,7 +69,7 @@ The `analyze` command is the all-in-one mode. It formats first (applying all cor
 
 ### Xcode Build Phase
 
-Add a Run Script phase — works exactly like SwiftLint:
+Add a Run Script phase, just like the venerable *SwiftLint*:
 
 ```sh
 if command -v swiftiomatic >/dev/null 2>&1; then

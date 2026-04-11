@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftiomaticKit
+import UniformTypeIdentifiers
 
 struct OptionsTab: View {
   @Environment(AppModel.self) private var model
@@ -59,7 +60,7 @@ struct OptionsTab: View {
           }
         }
         Button("Choose...") {
-          model.selectConfigFile()
+          model.showingConfigPicker = true
         }
       }
 
@@ -95,5 +96,12 @@ struct OptionsTab: View {
     }
     .formStyle(.grouped)
     .navigationTitle("Options")
+    .fileImporter(
+      isPresented: Bindable(model).showingConfigPicker,
+      allowedContentTypes: [.yaml]
+    ) { result in
+      model.handleConfigFileSelected(result)
+    }
+    .fileDialogBrowserOptions(.includeHiddenFiles)
   }
 }
