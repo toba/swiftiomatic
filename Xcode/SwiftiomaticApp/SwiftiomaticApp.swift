@@ -2,8 +2,8 @@ import SwiftUI
 
 @main
 struct SwiftiomaticApp: App {
-    @State private var model = AppModel()
     @Environment(\.openWindow) private var openWindow
+    @State private var model = AppModel()
 
     var body: some Scene {
         WindowGroup {

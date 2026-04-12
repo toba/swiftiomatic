@@ -29,7 +29,7 @@
 		CF926FFEC899C2AC52BB3F13 /* ConfigurationLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD60A865C86BE3D473E1626F /* ConfigurationLoading.swift */; };
 		E03F9815386CCFAACABB1F4E /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66DD048FBC008D5BC66ED1C /* SharedDefaults.swift */; };
 		E2C9421B768338EE3417292E /* XCSourceTextBuffer+Swiftiomatic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D3C4DA88B1B43080C931E91 /* XCSourceTextBuffer+Swiftiomatic.swift */; };
-		E7334B41026487C8C7E6C799 /* OptionsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F55E5982085DEEFEB7CB95E /* OptionsTab.swift */; };
+		E7334B41026487C8C7E6C799 /* FormatOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F55E5982085DEEFEB7CB95E /* FormatOptions.swift */; };
 		F25C7543CBB44BBAC0347262 /* RuleDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79885F8900E2F7F9506BE0B2 /* RuleDetailView.swift */; };
 		FE8FEE85F5BDEB4CB8C880BC /* FormatFileCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C5363612C7FB0CFADDBED5 /* FormatFileCommand.swift */; };
 		FF252533FD18C32ABF9D902C /* FormatCommandError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531FCA9452A741FBD889EC07 /* FormatCommandError.swift */; };
@@ -78,7 +78,7 @@
 		1EC22484CAE196AB22576CCC /* LintFileCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LintFileCommand.swift; path = SwiftiomaticExtension/LintFileCommand.swift; sourceTree = "<group>"; };
 		22C5363612C7FB0CFADDBED5 /* FormatFileCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FormatFileCommand.swift; path = SwiftiomaticExtension/FormatFileCommand.swift; sourceTree = "<group>"; };
 		2EB64C472274C585B839F0B9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = SwiftiomaticApp/Info.plist; sourceTree = "<group>"; };
-		2F55E5982085DEEFEB7CB95E /* OptionsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OptionsTab.swift; path = SwiftiomaticApp/Views/OptionsTab.swift; sourceTree = "<group>"; };
+		2F55E5982085DEEFEB7CB95E /* FormatOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FormatOptions.swift; path = SwiftiomaticApp/Views/FormatOptions.swift; sourceTree = "<group>"; };
 		340FEA820F6BC1C61AD1B9CF /* Assets.xcassets */ = {isa = PBXFileReference; name = Assets.xcassets; path = SwiftiomaticApp/Assets.xcassets; sourceTree = "<group>"; };
 		37EDBEB9DB4D7A72F60130F8 /* AboutView.swift */ = {isa = PBXFileReference; name = AboutView.swift; path = SwiftiomaticApp/Views/AboutView.swift; sourceTree = "<group>"; };
 		3BFF43A282AC841BC385FEB6 /* SwiftiomaticApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SwiftiomaticApp.entitlements; path = SwiftiomaticApp/SwiftiomaticApp.entitlements; sourceTree = "<group>"; };
@@ -155,7 +155,7 @@
 				15826515C1254BEDABFD2A46 /* RuleRow.swift */,
 				79885F8900E2F7F9506BE0B2 /* RuleDetailView.swift */,
 				D4BF4E93983E00BCB0B50F5E /* ScopeBadge.swift */,
-				2F55E5982085DEEFEB7CB95E /* OptionsTab.swift */,
+				2F55E5982085DEEFEB7CB95E /* FormatOptions.swift */,
 				37EDBEB9DB4D7A72F60130F8 /* AboutView.swift */,
 			);
 			name = Views;
@@ -310,7 +310,7 @@
 				442A015E239C8324635F9471 /* RuleRow.swift in Sources */,
 				F25C7543CBB44BBAC0347262 /* RuleDetailView.swift in Sources */,
 				038458AB629699369CD0565D /* ScopeBadge.swift in Sources */,
-				E7334B41026487C8C7E6C799 /* OptionsTab.swift in Sources */,
+				E7334B41026487C8C7E6C799 /* FormatOptions.swift in Sources */,
 				89084640799C8BFE46F6910C /* AboutView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

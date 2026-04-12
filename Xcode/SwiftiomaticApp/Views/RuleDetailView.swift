@@ -24,13 +24,7 @@ struct RuleDetailView: View {
                             .foregroundStyle(.green)
                     }
                     Spacer()
-                    Toggle(
-                        "Enabled",
-                        isOn: Binding(
-                            get: { model.isRuleEnabled(entry) },
-                            set: { _ in model.toggleRule(entry) }
-                        )
-                    )
+                    Toggle("Enabled", isOn: model.ruleEnabledBinding(for: entry))
                     .toggleStyle(.switch)
                 }
 

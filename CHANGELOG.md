@@ -15,6 +15,7 @@
 - `AttributePlacementRule`; add `inline_when_fits` option ([#199](https://github.com/toba/swiftiomatic/issues/199))
 - `AssignmentWrappingRule`; keep RHS on the `=` line when it fits ([#201](https://github.com/toba/swiftiomatic/issues/201))
 - Dry-run diff for `--fix` ([#170](https://github.com/toba/swiftiomatic/issues/170))
+- Move format options to sidebar navigation ([#221](https://github.com/toba/swiftiomatic/issues/221))
 
 ### 🐞 Fixes
 
@@ -56,6 +57,11 @@
 - Speed up builds; pin deps to exact versions; remove `SwiftLexicalLookup` dependency ([#197](https://github.com/toba/swiftiomatic/issues/197))
 - Extract `SwiftiomaticSyntax` wrapper target; cache swift-syntax builds across rule edits ([#202](https://github.com/toba/swiftiomatic/issues/202))
 - Investigate module splitting for incremental build speed ([#196](https://github.com/toba/swiftiomatic/issues/196))
-- Suggest rules: `FoundationModernizationRule`, `SwiftUIViewAntiPatternsRule`, `PreferModuleSelectorRule`
-- Correctable lint rules: `PreferCAttributeRule`, `PreferSpecializeAttributeRule`, `RedundantMainActorViewRule`
-- Suggest rule: `SwiftUISupersededPatternsRule`
+- Suggest rule: Foundation modernization; `AttributedString`, typed notifications ([#215](https://github.com/toba/swiftiomatic/issues/215))
+- Suggest rule: SwiftUI view anti-patterns; formatters in `body`, unstable identity ([#208](https://github.com/toba/swiftiomatic/issues/208))
+- Suggest rule: module selector syntax; `import struct`/`class`/`func` → `::` ([#212](https://github.com/toba/swiftiomatic/issues/212))
+- Suggest rule: SwiftUI superseded patterns ([#211](https://github.com/toba/swiftiomatic/issues/211))
+- Correctable lint rule: `@_cdecl` → `@c` ([#214](https://github.com/toba/swiftiomatic/issues/214))
+- Correctable lint rule: `@_specialize` → `@specialize` ([#210](https://github.com/toba/swiftiomatic/issues/210))
+- Correctable lint rule: redundant `@MainActor` on `View` ([#213](https://github.com/toba/swiftiomatic/issues/213))
+- Production-ready SwiftLint/SwiftFormat replacement ([#161](https://github.com/toba/swiftiomatic/issues/161))

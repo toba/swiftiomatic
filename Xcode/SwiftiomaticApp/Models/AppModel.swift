@@ -1,7 +1,11 @@
 import Foundation
 import Observation
+import OSLog
+import SwiftUI
 import SwiftiomaticKit
 import SwiftiomaticSyntax
+
+private let logger = Logger(subsystem: "app.toba.swiftiomatic", category: "AppModel")
 
 @Observable
 @MainActor
@@ -10,18 +14,6 @@ final class AppModel {
     var configuration: Configuration = .default
     var configPath: String?
     var showingConfigPicker = false
-
-    var lintRules: [RuleConfigurationEntry] {
-        rules.filter { $0.scope == .lint }
-    }
-
-    var formatRules: [RuleConfigurationEntry] {
-        rules.filter { $0.scope == .format }
-    }
-
-    var suggestRules: [RuleConfigurationEntry] {
-        rules.filter { $0.scope == .suggest }
-    }
 
     init() {
         rules = Swiftiomatic.ruleCatalog()
@@ -39,6 +31,13 @@ final class AppModel {
         case .format, .suggest:
             return true
         }
+    }
+
+    func ruleEnabledBinding(for entry: RuleConfigurationEntry) -> Binding<Bool> {
+        Binding(
+            get: { [self] in isRuleEnabled(entry) },
+            set: { [self] _ in toggleRule(entry) }
+        )
     }
 
     func toggleRule(_ entry: RuleConfigurationEntry) {
@@ -66,7 +65,7 @@ final class AppModel {
             configuration = try Swiftiomatic.loadConfiguration(from: url.path)
             configPath = url.path
         } catch {
-            print("Failed to load config: \(error)")
+            logger.error("Failed to load config: \(error)")
             return
         }
 
