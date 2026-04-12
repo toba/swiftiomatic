@@ -13,7 +13,14 @@ struct LockAntiPatternsRule {
         mutex.withLock {
             count += 1
         }
-        """,
+        """
+      ),
+      Example(
+        """
+        mutex.withLock {
+            doSyncWork()
+        }
+        """
       ),
     ]
   }
@@ -24,6 +31,16 @@ struct LockAntiPatternsRule {
         """
         mutex.↓withLock {
             await fetchData()
+        }
+        """,
+        configuration: ["severity": "error"],
+      ),
+      Example(
+        """
+        outer.↓withLock {
+            inner.↓withLock {
+                count += 1
+            }
         }
         """,
         configuration: ["severity": "error"],
@@ -44,39 +61,55 @@ extension LockAntiPatternsRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var withLockDepth = 0
 
-    override func visitPost(_ node: FunctionCallExprSyntax) {
-      let callee = node.calledExpression.trimmedDescription
-      guard callee.hasSuffix(".withLock") || callee == "withLock" else { return }
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+      guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
+        memberAccess.declName.baseName.text == "withLock"
+      else {
+        return .visitChildren
+      }
+
+      let position = memberAccess.declName.baseName.positionAfterSkippingLeadingTrivia
 
       withLockDepth += 1
-      defer { withLockDepth -= 1 }
 
       if withLockDepth > 1 {
         violations.append(
           SyntaxViolation(
-            position: node.positionAfterSkippingLeadingTrivia,
+            position: position,
             reason: "Nested withLock — potential deadlock risk",
             severity: .error,
             confidence: .high,
-          ),
+          )
         )
       }
 
       if let trailingClosure = node.trailingClosure {
-        let bodyStr = trailingClosure.statements.trimmedDescription
-        if bodyStr.contains("await ") {
+        let hasAwait = trailingClosure.statements.children(viewMode: .sourceAccurate)
+          .contains { node in
+            node.tokens(viewMode: .sourceAccurate).contains { $0.tokenKind == .keyword(.await) }
+          }
+        if hasAwait {
           violations.append(
             SyntaxViolation(
-              position: node.positionAfterSkippingLeadingTrivia,
+              position: position,
               reason:
                 "withLock closure contains await — lock will be held across suspension point",
               severity: .error,
               confidence: .high,
               suggestion: "Move the await outside the lock or use an actor instead",
-            ),
+            )
           )
         }
       }
+
+      return .visitChildren
+    }
+
+    override func visitPost(_ node: FunctionCallExprSyntax) {
+      guard let memberAccess = node.calledExpression.as(MemberAccessExprSyntax.self),
+        memberAccess.declName.baseName.text == "withLock"
+      else { return }
+      withLockDepth -= 1
     }
   }
 }

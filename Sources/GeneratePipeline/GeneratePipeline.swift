@@ -7,14 +7,14 @@ struct GeneratePipeline {
   static func main() throws {
     let projectRoot = findProjectRoot()
     let rulesDir = projectRoot + "/Sources/SwiftiomaticKit/Rules"
-    let visitorsDir = projectRoot + "/Sources/SwiftiomaticKit/Support/Visitors"
+    let syntaxDir = projectRoot + "/Sources/SwiftiomaticSyntax"
     let pipelineOutputPath =
       projectRoot + "/Sources/SwiftiomaticKit/Support/LintPipeline.generated.swift"
     let registryOutputPath =
       projectRoot + "/Sources/SwiftiomaticKit/Rules/RuleRegistry+AllRules.generated.swift"
 
     // Collect CodeBlockVisitor node types
-    let codeBlockVisitorPath = visitorsDir + "/CodeBlockVisitor.swift"
+    let codeBlockVisitorPath = syntaxDir + "/CodeBlockVisitor.swift"
     let codeBlockNodeTypes = collectCodeBlockVisitorNodeTypes(filePath: codeBlockVisitorPath)
 
     // Collect BodyLengthVisitor node types (none in base class, subclasses add their own)

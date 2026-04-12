@@ -1,0 +1,238 @@
+import SwiftiomaticSyntax
+
+struct SwiftUIViewAntiPatternsRule {
+  static let id = "swiftui_view_anti_patterns"
+  static let name = "SwiftUI View Anti-Patterns"
+  static let summary =
+    "Detect common SwiftUI performance and correctness anti-patterns in view code"
+  static let scope: Scope = .suggest
+
+  static var nonTriggeringExamples: [Example] {
+    [
+      Example(
+        """
+        struct MyView: View {
+          var body: some View {
+            Text("Hello").visualEffect { content, proxy in
+              content.offset(x: proxy.size.width)
+            }
+          }
+        }
+        """
+      ),
+      Example(
+        """
+        struct MyView: View {
+          private static let formatter: DateFormatter = {
+            let f = DateFormatter()
+            f.dateStyle = .short
+            return f
+          }()
+          var body: some View { Text(Self.formatter.string(from: Date())) }
+        }
+        """
+      ),
+      Example(
+        """
+        struct MyView: View {
+          let sortedItems: [Item]
+          var body: some View {
+            ForEach(sortedItems) { item in Text(item.name) }
+          }
+        }
+        """
+      ),
+      Example(
+        """
+        struct MyView: View {
+          var body: some View {
+            Text("Hello")
+              .fileImporter(isPresented: $show, allowedContentTypes: [.text]) { _ in }
+          }
+        }
+        """
+      ),
+    ]
+  }
+
+  static var triggeringExamples: [Example] {
+    [
+      Example(
+        """
+        struct MyView: View {
+          var body: some View {
+            ↓GeometryReader { proxy in
+              Text("Width: \\(proxy.size.width)")
+            }
+          }
+        }
+        """
+      ),
+      Example(
+        """
+        struct MyView: View {
+          func showPicker() {
+            let panel = ↓NSOpenPanel()
+            panel.runModal()
+          }
+        }
+        """
+      ),
+      Example(
+        """
+        struct MyView: View {
+          func savePicker() {
+            let panel = ↓NSSavePanel()
+            panel.runModal()
+          }
+        }
+        """
+      ),
+      Example(
+        """
+        struct MyView: View {
+          var body: some View {
+            Text(↓DateFormatter().string(from: Date()))
+          }
+        }
+        """
+      ),
+      Example(
+        """
+        struct MyView: View {
+          @State var items: [Item]
+          var body: some View {
+            ↓ForEach(items.sorted(by: { $0.name < $1.name })) { item in
+              Text(item.name)
+            }
+          }
+        }
+        """,
+        isExcludedFromDocumentation: true,
+      ),
+    ]
+  }
+
+  var options = SeverityOption<Self>(.warning)
+}
+
+extension SwiftUIViewAntiPatternsRule: SwiftSyntaxRule {
+  func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
+    Visitor(configuration: options, file: file)
+  }
+}
+
+extension ViolationMessage {
+  fileprivate static let geometryReader: Self =
+    "GeometryReader is often replaceable with Layout protocol or .visualEffect modifier"
+
+  fileprivate static func panelAPI(_ name: String) -> Self {
+    "\(name) should be replaced with .fileImporter/.fileExporter in SwiftUI"
+  }
+
+  fileprivate static func formatterInBody(_ name: String) -> Self {
+    "\(name) allocated in view body — cache as static property or @State"
+  }
+
+  fileprivate static let sortFilterInForEach: Self =
+    "Sorting/filtering inside ForEach runs every body evaluation — precompute the collection"
+}
+
+private let panelTypes: Set<String> = ["NSOpenPanel", "NSSavePanel"]
+
+private let formatterTypes: Set<String> = [
+  "DateFormatter", "NumberFormatter", "MeasurementFormatter",
+]
+
+extension SwiftUIViewAntiPatternsRule {
+  fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+    private var bodyDepth = 0
+
+    // MARK: - Track whether we're inside a `body` computed property
+
+    override func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
+      if node.pattern.trimmedDescription == "body",
+        node.accessorBlock != nil
+      {
+        bodyDepth += 1
+      }
+      return .visitChildren
+    }
+
+    override func visitPost(_ node: PatternBindingSyntax) {
+      if node.pattern.trimmedDescription == "body",
+        node.accessorBlock != nil
+      {
+        bodyDepth -= 1
+      }
+    }
+
+    // MARK: - GeometryReader and panel APIs
+
+    override func visitPost(_ node: DeclReferenceExprSyntax) {
+      let name = node.baseName.text
+
+      if name == "GeometryReader" {
+        violations.append(
+          SyntaxViolation(
+            position: node.positionAfterSkippingLeadingTrivia,
+            message: .geometryReader,
+            confidence: .medium,
+            suggestion: "Consider using the Layout protocol or .visualEffect modifier",
+          )
+        )
+        return
+      }
+
+      if panelTypes.contains(name) {
+        violations.append(
+          SyntaxViolation(
+            position: node.positionAfterSkippingLeadingTrivia,
+            message: .panelAPI(name),
+            confidence: .high,
+            suggestion: "Use .fileImporter or .fileExporter modifier instead",
+          )
+        )
+        return
+      }
+    }
+
+    // MARK: - Formatter allocation in body
+
+    override func visitPost(_ node: FunctionCallExprSyntax) {
+      guard bodyDepth > 0 else { return }
+
+      let callee = node.calledExpression.trimmedDescription
+      if formatterTypes.contains(callee) {
+        violations.append(
+          SyntaxViolation(
+            position: node.calledExpression.positionAfterSkippingLeadingTrivia,
+            message: .formatterInBody(callee),
+            confidence: .high,
+            suggestion: "Cache as a static property or @State",
+          )
+        )
+      }
+
+      // MARK: - Sorting/filtering inside ForEach
+
+      if callee == "ForEach",
+        let firstArg = node.arguments.first
+      {
+        let argText = firstArg.expression.trimmedDescription
+        if argText.contains(".sorted(") || argText.contains(".sorted {")
+          || argText.contains(".filter(") || argText.contains(".filter {")
+        {
+          violations.append(
+            SyntaxViolation(
+              position: node.positionAfterSkippingLeadingTrivia,
+              message: .sortFilterInForEach,
+              confidence: .high,
+              suggestion: "Precompute the sorted/filtered collection before ForEach",
+            )
+          )
+        }
+      }
+    }
+  }
+}

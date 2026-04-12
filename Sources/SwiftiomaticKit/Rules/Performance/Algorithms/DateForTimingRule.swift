@@ -16,8 +16,8 @@ struct DateForTimingRule {
 
   static var triggeringExamples: [Example] {
     [
-      Example("let start = ↓Date(); doWork(); let elapsed = Date().timeIntervalSince(start)"),
-      Example("let start = ↓Date(); let duration = Date().timeIntervalSince(start)"),
+      Example("let start = Date(); doWork(); let elapsed = ↓Date().timeIntervalSince(start)"),
+      Example("let start = Date(); let duration = ↓Date().timeIntervalSince(start)"),
     ]
   }
 

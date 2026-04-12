@@ -93,6 +93,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "force_cast",
     "force_try",
     "force_unwrap",
+    "foundation_modernization",
     "function_body_length",
     "function_default_parameter_at_end",
     "function_name_spacing",
@@ -169,11 +170,14 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "override_in_extension",
     "pattern_matching_keywords",
     "prefer_asset_symbols",
+    "prefer_c_attribute",
     "prefer_count_where",
     "prefer_final_classes",
     "prefer_for_loop",
     "prefer_key_path",
+    "prefer_module_selector",
     "prefer_self_in_static_references",
+    "prefer_specialize_attribute",
     "prefer_swift_testing",
     "prefer_weak_let",
     "prefixed_toplevel_constant",
@@ -196,6 +200,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "redundant_fileprivate",
     "redundant_get",
     "redundant_internal",
+    "redundant_main_actor_view",
     "redundant_nil_coalescing",
     "redundant_objc_attribute",
     "redundant_override",
@@ -242,6 +247,8 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "swift62_modernization",
     "swift_testing_test_case_names",
     "swiftui_layout",
+    "swiftui_superseded_patterns",
+    "swiftui_view_anti_patterns",
     "switch_case_alignment",
     "switch_case_on_newline",
     "test_case_accessibility",
@@ -315,6 +322,7 @@ final class LintPipeline: SyntaxVisitor {
     private var memberBlock_visit: [Int] = []
     private var objCSelectorPiece_visit: [Int] = []
     private var operatorPrecedenceAndTypes_visit: [Int] = []
+    private var patternBinding_visit: [Int] = []
     private var protocolDecl_visit: [Int] = []
     private var returnClause_visit: [Int] = []
     private var sourceFile_visit: [Int] = []
@@ -387,6 +395,7 @@ final class LintPipeline: SyntaxVisitor {
     private var identifierType_visitPost: [Int] = []
     private var ifExpr_visitPost: [Int] = []
     private var implicitlyUnwrappedOptionalType_visitPost: [Int] = []
+    private var importDecl_visitPost: [Int] = []
     private var infixOperatorExpr_visitPost: [Int] = []
     private var inheritedType_visitPost: [Int] = []
     private var initializerClause_visitPost: [Int] = []
@@ -841,6 +850,13 @@ final class LintPipeline: SyntaxVisitor {
             case "force_unwrap":
                 forceUnwrapExpr_visitPost.append(idx)
 
+            case "foundation_modernization":
+                declReferenceExpr_visitPost.append(idx)
+                functionDecl_visitPost.append(idx)
+                identifierType_visitPost.append(idx)
+                memberAccessExpr_visitPost.append(idx)
+                memberType_visitPost.append(idx)
+
             case "function_body_length":
                 deinitializerDecl_visitPost.append(idx)
                 functionDecl_visitPost.append(idx)
@@ -1211,6 +1227,9 @@ final class LintPipeline: SyntaxVisitor {
             case "prefer_asset_symbols":
                 functionCallExpr_visitPost.append(idx)
 
+            case "prefer_c_attribute":
+                attribute_visitPost.append(idx)
+
             case "prefer_count_where":
                 memberAccessExpr_visitPost.append(idx)
 
@@ -1222,6 +1241,9 @@ final class LintPipeline: SyntaxVisitor {
 
             case "prefer_key_path":
                 closureExpr_visitPost.append(idx)
+
+            case "prefer_module_selector":
+                importDecl_visitPost.append(idx)
 
             case "prefer_self_in_static_references":
                 actorDecl_visit.append(idx)
@@ -1251,6 +1273,9 @@ final class LintPipeline: SyntaxVisitor {
                 memberBlock_visitPost.append(idx)
                 protocolDecl_visitPost.append(idx)
                 structDecl_visitPost.append(idx)
+
+            case "prefer_specialize_attribute":
+                attribute_visitPost.append(idx)
 
             case "prefer_swift_testing":
                 classDecl_visitPost.append(idx)
@@ -1344,6 +1369,11 @@ final class LintPipeline: SyntaxVisitor {
 
             case "redundant_internal":
                 declModifier_visitPost.append(idx)
+
+            case "redundant_main_actor_view":
+                classDecl_visitPost.append(idx)
+                enumDecl_visitPost.append(idx)
+                structDecl_visitPost.append(idx)
 
             case "redundant_nil_coalescing":
                 token_visitPost.append(idx)
@@ -1510,6 +1540,17 @@ final class LintPipeline: SyntaxVisitor {
             case "swiftui_layout":
                 functionCallExpr_visit.append(idx)
                 functionCallExpr_visitPost.append(idx)
+
+            case "swiftui_superseded_patterns":
+                attribute_visitPost.append(idx)
+                classDecl_visitPost.append(idx)
+                declReferenceExpr_visitPost.append(idx)
+
+            case "swiftui_view_anti_patterns":
+                patternBinding_visit.append(idx)
+                declReferenceExpr_visitPost.append(idx)
+                functionCallExpr_visitPost.append(idx)
+                patternBinding_visitPost.append(idx)
 
             case "switch_case_alignment":
                 switchExpr_visitPost.append(idx)
@@ -2019,6 +2060,18 @@ final class LintPipeline: SyntaxVisitor {
     override func visit(_ node: OperatorPrecedenceAndTypesSyntax) -> SyntaxVisitorContinueKind {
         var skippedByReturn: [Int] = []
         for idx in operatorPrecedenceAndTypes_visit where skipDepths[idx] == 0 {
+            if visitors[idx].visit(node) == .skipChildren {
+                skipDepths[idx] += 1
+                skippedByReturn.append(idx)
+            }
+        }
+        visitSkipStack.append(skippedByReturn)
+        return .visitChildren
+    }
+
+    override func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
+        var skippedByReturn: [Int] = []
+        for idx in patternBinding_visit where skipDepths[idx] == 0 {
             if visitors[idx].visit(node) == .skipChildren {
                 skipDepths[idx] += 1
                 skippedByReturn.append(idx)
@@ -2688,6 +2741,12 @@ final class LintPipeline: SyntaxVisitor {
         }
     }
 
+    override func visitPost(_ node: ImportDeclSyntax) {
+        for idx in importDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
+        }
+    }
+
     override func visitPost(_ node: InfixOperatorExprSyntax) {
         for idx in infixOperatorExpr_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
@@ -2831,6 +2890,11 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visitPost(_ node: PatternBindingSyntax) {
+        if let skippedByReturn = visitSkipStack.popLast() {
+            for idx in skippedByReturn {
+                skipDepths[idx] -= 1
+            }
+        }
         for idx in patternBinding_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }

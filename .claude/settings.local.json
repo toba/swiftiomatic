@@ -87,7 +87,8 @@
       "Bash(gh config:*)",
       "Bash(gh help:*)",
       "mcp__xc-project__add_file",
-      "mcp__xc-project__list_targets"
+      "mcp__xc-project__list_targets",
+      "Bash(~/.claude/skills/gha/scripts/gha.sh:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

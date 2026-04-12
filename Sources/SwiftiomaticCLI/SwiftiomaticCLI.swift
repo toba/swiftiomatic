@@ -57,6 +57,9 @@ struct Analyze: AsyncParsableCommand {
   @Flag(name: .long, help: "Autocorrect violations where possible")
   var fix = false
 
+  @Flag(name: .long, help: "Preview changes without modifying files (show unified diff)")
+  var dryRun = false
+
   @Flag(name: .long, help: "Also run format-lint checks")
   var includeFormat = false
 
@@ -68,6 +71,12 @@ struct Analyze: AsyncParsableCommand {
 
   @Option(name: .long, parsing: .upToNextOption, help: "Enable specific opt-in rules")
   var enableRule: [String] = []
+
+  func validate() throws {
+    if dryRun, !fix {
+      throw ValidationError("--dry-run requires --fix")
+    }
+  }
 
   mutating func run() async throws {
     // Must register rules before any Configuration access (which uses RuleRegistry.shared.list
@@ -123,7 +132,7 @@ struct Analyze: AsyncParsableCommand {
 
     // Fix mode
     if fix {
-      try runFix(analyzer: analyzer, configResolver: configResolver)
+      try runFix(analyzer: analyzer, configResolver: configResolver, dryRun: dryRun)
       return
     }
 
@@ -168,17 +177,26 @@ struct Analyze: AsyncParsableCommand {
 
   // MARK: - Fix Mode
 
-  private func runFix(analyzer: Analyzer, configResolver: ConfigurationResolver) throws {
+  private func runFix(
+    analyzer: Analyzer, configResolver: ConfigurationResolver, dryRun: Bool = false
+  ) throws {
     let files = FileDiscovery.findSwiftFiles(in: paths, additionalExclusions: exclude)
     guard !files.isEmpty else {
       print("No Swift files found")
       return
     }
 
+    // Save originals for dry-run restore
+    var originals: [String: String] = [:]
+    if dryRun {
+      for file in files {
+        originals[file] = try? String(contentsOfFile: file, encoding: .utf8)
+      }
+    }
+
     var totalCorrections = 0
 
     // 1. Format engine writes formatted files (per-directory config)
-    // Group files by resolved config directory for efficient engine reuse
     let grouped = Dictionary(grouping: files) { file in
       configResolver.configuration(for: file)
     }
@@ -207,7 +225,6 @@ struct Analyze: AsyncParsableCommand {
     let collectingRules = analyzer.lintRules.filter { type(of: $0).isCrossFile }
     let lintFiles = files.compactMap { SwiftSource(path: $0) }
 
-    // Collect phase for collecting rules
     for file in lintFiles {
       for rule in collectingRules {
         rule.collectInfo(
@@ -216,7 +233,6 @@ struct Analyze: AsyncParsableCommand {
       }
     }
 
-    // Correct phase
     for file in lintFiles {
       for rule in correctableRules {
         let corrections = rule.correct(
@@ -226,7 +242,34 @@ struct Analyze: AsyncParsableCommand {
       }
     }
 
-    print("Applied \(totalCorrections) corrections")
+    if dryRun {
+      // Generate diffs and restore originals
+      var diffs: [UnifiedDiff.FileDiff] = []
+      for file in files {
+        guard let original = originals[file] else { continue }
+        let final = (try? String(contentsOfFile: file, encoding: .utf8)) ?? original
+        if let diff = UnifiedDiff.generate(
+          original: original, modified: final, filePath: file
+        ) {
+          diffs.append(UnifiedDiff.FileDiff(file: file, diff: diff))
+        }
+        try? original.write(toFile: file, atomically: true, encoding: .utf8)
+      }
+
+      if diffs.isEmpty {
+        print("No changes.")
+      } else {
+        switch format {
+        case .text, .xcode:
+          print(diffs.map(\.diff).joined(separator: "\n"))
+        case .json:
+          try print(UnifiedDiff.formatJSON(diffs))
+        }
+        throw ExitCode(1)
+      }
+    } else {
+      print("Applied \(totalCorrections) corrections")
+    }
   }
 
   // MARK: - Format-Lint Integration

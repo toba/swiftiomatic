@@ -14,6 +14,7 @@
 - GitHub Actions action ([#167](https://github.com/toba/swiftiomatic/issues/167))
 - `AttributePlacementRule`; add `inline_when_fits` option ([#199](https://github.com/toba/swiftiomatic/issues/199))
 - `AssignmentWrappingRule`; keep RHS on the `=` line when it fits ([#201](https://github.com/toba/swiftiomatic/issues/201))
+- Dry-run diff for `--fix` ([#170](https://github.com/toba/swiftiomatic/issues/170))
 
 ### 🐞 Fixes
 
@@ -25,6 +26,8 @@
 - Fix 11 rule bugs surfaced by pipeline regeneration and test coverage
 - Deduplicate rules in migrate config output ([#194](https://github.com/toba/swiftiomatic/issues/194))
 - `sm migrate`; fix wrong rename mappings and add `.swiftformat` config migration ([#198](https://github.com/toba/swiftiomatic/issues/198))
+- Agents push broken releases in a loop; each fix introducing new failures ([#204](https://github.com/toba/swiftiomatic/issues/204))
+- Fix example bugs in `lock_anti_patterns`, `async_stream_safety`, `date_for_timing` rules
 
 ### 🗜️ Tweaks
 
@@ -50,3 +53,6 @@
 - Speed up builds; pin deps to exact versions; remove `SwiftLexicalLookup` dependency ([#197](https://github.com/toba/swiftiomatic/issues/197))
 - Extract `SwiftiomaticSyntax` wrapper target; cache swift-syntax builds across rule edits ([#202](https://github.com/toba/swiftiomatic/issues/202))
 - Investigate module splitting for incremental build speed ([#196](https://github.com/toba/swiftiomatic/issues/196))
+- Suggest rules: `FoundationModernizationRule`, `SwiftUIViewAntiPatternsRule`, `PreferModuleSelectorRule`
+- Correctable lint rules: `PreferCAttributeRule`, `PreferSpecializeAttributeRule`, `RedundantMainActorViewRule`
+- Suggest rule: `SwiftUISupersededPatternsRule`

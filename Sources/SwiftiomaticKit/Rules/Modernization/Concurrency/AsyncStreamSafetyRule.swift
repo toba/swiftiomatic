@@ -40,6 +40,7 @@ struct AsyncStreamSafetyRule {
       Example(
         """
         let stream = ↓AsyncStream<Int> { continuation in
+            continuation.onTermination = { _ in cleanup() }
             Task {
                 for i in 0..<10 {
                     continuation.yield(i)

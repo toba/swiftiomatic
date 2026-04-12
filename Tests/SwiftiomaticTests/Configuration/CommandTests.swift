@@ -416,7 +416,7 @@ extension Command {
   @Test func superfluousDisableCommands() async {
     #expect(
       await violations(Example("// sm:disable nesting\nprint(123)\n"))
-        .map(\.ruleIdentifier) == [
+        .map(\.ruleIdentifier).sorted() == [
           "blanket_disable_command",
           "redundant_disable_command",
         ],
@@ -486,7 +486,7 @@ extension Command {
     #expect(
       await violations(Example("// sm:disable nesting - \(longComment)\nprint(123)\n")).map(
         \.ruleIdentifier,
-      ) == ["blanket_disable_command", "redundant_disable_command"],
+      ).sorted() == ["blanket_disable_command", "redundant_disable_command"],
     )
     #expect(
       await violations(Example("// sm:disable:next nesting - Comment\nprint(123)\n"))[0]

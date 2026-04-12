@@ -22,7 +22,7 @@ struct RuleCase: Sendable, CustomTestStringConvertible {
   }
 }
 
-@Suite(.rulesRegistered)
+@Suite(.rulesRegistered, .serialized)
 struct RuleExampleTests {
   @Test("Rule examples validate", arguments: RuleCase.testable)
   func verifyExamples(_ rule: RuleCase) async {

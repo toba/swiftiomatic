@@ -21,11 +21,23 @@ struct FormatCommand: ParsableCommand {
   @Option(name: .long, parsing: .upToNextOption, help: "Exclusion patterns")
   var exclude: [String] = []
 
+  @Flag(name: .long, help: "Preview changes without modifying files (show unified diff)")
+  var dryRun = false
+
   @Flag(name: .long, help: "Lint mode: report issues as diagnostics without modifying files")
   var lint = false
 
-  @Option(name: .long, help: "Output format for lint mode: text or json")
+  @Option(name: .long, help: "Output format for lint and dry-run modes: text or json")
   var format: OutputFormat = .text
+
+  func validate() throws {
+    if dryRun, check {
+      throw ValidationError("--dry-run and --check are mutually exclusive")
+    }
+    if dryRun, lint {
+      throw ValidationError("--dry-run cannot be used with --lint")
+    }
+  }
 
   func run() throws {
     let configResolver = ConfigurationResolver(configPath: config)
@@ -39,6 +51,11 @@ struct FormatCommand: ParsableCommand {
 
     if lint {
       try runLintMode(configResolver: configResolver, files: files)
+      return
+    }
+
+    if dryRun {
+      try runDryRun(configResolver: configResolver, baseCfg: baseCfg, files: files)
       return
     }
 
@@ -122,13 +139,66 @@ struct FormatCommand: ParsableCommand {
     }
   }
 
+  // MARK: - Dry Run
+
+  private func runDryRun(
+    configResolver: ConfigurationResolver, baseCfg: Configuration, files: [String]
+  ) throws {
+    // Save originals
+    var originals: [String: String] = [:]
+    for file in files {
+      originals[file] = try? String(contentsOfFile: file, encoding: .utf8)
+    }
+
+    // 1. Format engine (writes to disk so lint corrections see formatted content)
+    for file in files {
+      do {
+        let fileCfg = configResolver.configuration(for: file)
+        let engine = fileCfg.makeFormatEngine()
+        let source = try originals[file] ?? String(contentsOfFile: file, encoding: .utf8)
+        let formatted = try engine.format(source)
+        if source != formatted {
+          try formatted.write(toFile: file, atomically: true, encoding: .utf8)
+        }
+      } catch {}
+    }
+
+    // 2. Lint corrections (writes to disk)
+    _ = applyCorrectableLintRules(cfg: baseCfg, files: files, checkOnly: false, silent: true)
+
+    // Generate diffs and restore originals
+    var diffs: [UnifiedDiff.FileDiff] = []
+    for file in files {
+      guard let original = originals[file] else { continue }
+      let final = (try? String(contentsOfFile: file, encoding: .utf8)) ?? original
+      if let diff = UnifiedDiff.generate(
+        original: original, modified: final, filePath: file
+      ) {
+        diffs.append(UnifiedDiff.FileDiff(file: file, diff: diff))
+      }
+      try? original.write(toFile: file, atomically: true, encoding: .utf8)
+    }
+
+    if diffs.isEmpty {
+      print("No changes.")
+    } else {
+      switch format {
+      case .text, .xcode:
+        print(diffs.map(\.diff).joined(separator: "\n"))
+      case .json:
+        try print(UnifiedDiff.formatJSON(diffs))
+      }
+      throw ExitCode(1)
+    }
+  }
+
   // MARK: - Correctable Lint Rules
 
   /// Load correctable lint rules and apply (or check) corrections on the given files.
   /// Returns the total number of corrections applied (or detected in check mode).
   private func applyCorrectableLintRules(
     cfg: Configuration, files: [String],
-    checkOnly: Bool
+    checkOnly: Bool, silent: Bool = false
   ) -> Int {
     let allRules = RuleResolver.loadRules(
       enabled: cfg.enabledLintRules.isEmpty ? nil : Set(cfg.enabledLintRules),
@@ -166,9 +236,9 @@ struct FormatCommand: ParsableCommand {
         if checkOnly {
           // Restore original contents — check mode should not modify files
           try? original?.write(toFile: path, atomically: true, encoding: .utf8)
-          print("\(path): needs lint corrections")
+          if !silent { print("\(path): needs lint corrections") }
         } else {
-          print("\(path): lint corrections applied")
+          if !silent { print("\(path): lint corrections applied") }
         }
       }
     }

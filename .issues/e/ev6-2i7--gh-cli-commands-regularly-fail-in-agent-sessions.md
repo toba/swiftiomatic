@@ -1,15 +1,15 @@
 ---
 # ev6-2i7
 title: Agents push broken releases in a loop, each "fix" introducing new failures
-status: review
+status: completed
 type: bug
 priority: high
 created_at: 2026-04-11T23:57:59Z
-updated_at: 2026-04-12T00:19:54Z
+updated_at: 2026-04-12T01:32:54Z
 sync:
     github:
         issue_number: "204"
-        synced_at: "2026-04-12T01:32:29Z"
+        synced_at: "2026-04-12T03:13:32Z"
 ---
 
 Agents repeatedly push tagged releases that fail CI, then claim to have "fixed" the issue by pushing another broken tag. Ten consecutive release failures between v0.18.4 and v0.22.3.

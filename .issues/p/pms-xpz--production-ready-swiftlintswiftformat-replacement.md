@@ -1,15 +1,15 @@
 ---
 # pms-xpz
 title: Production-ready SwiftLint/SwiftFormat replacement
-status: in-progress
+status: completed
 type: epic
 priority: high
 created_at: 2026-04-10T22:24:48Z
-updated_at: 2026-04-11T21:31:51Z
+updated_at: 2026-04-12T02:22:10Z
 sync:
     github:
         issue_number: "161"
-        synced_at: "2026-04-11T22:00:29Z"
+        synced_at: "2026-04-12T03:13:32Z"
 ---
 
 Address the remaining gaps to make Swiftiomatic a credible drop-in replacement for SwiftLint and SwiftFormat across teams. The rule coverage and core architecture are solid — these issues target the adoption and migration barriers that prevent teams from switching.

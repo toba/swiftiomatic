@@ -101,9 +101,18 @@ extension StatementPositionRule {
   private func defaultViolationRanges(in file: SwiftSource, matching pattern: String)
     -> [Range<String.Index>]
   {
-    file.match(pattern: pattern).filter { _, syntaxKinds in
-      syntaxKinds.starts(with: [.keyword])
-    }.compactMap(\.0)
+    let results = file.match(pattern: pattern)
+    // When SourceKit is available, verify the match contains a keyword token
+    if results.contains(where: { !$0.1.isEmpty }) {
+      return results.filter { _, syntaxKinds in
+        syntaxKinds.starts(with: [.keyword])
+      }.compactMap(\.0)
+    }
+    // Without SourceKit, exclude matches inside string literals or comments
+    return file.match(
+      pattern: pattern,
+      excludingSyntaxKinds: SourceKitSyntaxKind.commentAndStringKinds
+    )
   }
 
   private func defaultCorrect(file: SwiftSource) -> Int {

@@ -11,6 +11,11 @@ import Testing
     Example("// TODO: Some todo"),  // Violates todo
   ]
 
+  /// Annotation-infrastructure rules excluded from violation counts in enable/disable tests.
+  private static let infrastructureRules: Set<String> = [
+    "blanket_disable_command", "redundant_disable_command",
+  ]
+
   // MARK: Violating Phrase
 
   /// Tests whether example violating phrases trigger when not applying disable rule
@@ -159,14 +164,12 @@ import Testing
   @Test func enableAllFile() async {
     for violatingPhrase in violatingPhrases {
       let unprotectedPhrase = violatingPhrase.with(
-        code: """
-          // sm:disable all
-          \(violatingPhrase.code)
-          // sm:enable:file all
-          """,
+        code: "// sm:disable all\n" + violatingPhrase.code + "\n// sm:enable:file all\n",
       )
+      let result = await violations(unprotectedPhrase)
+        .filter { !Self.infrastructureRules.contains($0.ruleIdentifier) }
       #expect(
-        await violations(unprotectedPhrase).count == 1,
+        result.count == 1,
       )
     }
   }

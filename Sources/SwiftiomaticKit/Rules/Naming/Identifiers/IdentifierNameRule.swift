@@ -141,7 +141,10 @@ extension IdentifierNameRule {
           return (reason, nameConfiguration.unallowedSymbolsSeverity.severity)
         }
 
-        if let severity = nameConfiguration.severity(forLength: type.name.count) {
+        let isEntirelyNonASCII = type.name.unicodeScalars.allSatisfy { !$0.isASCII }
+        if !isEntirelyNonASCII,
+          let severity = nameConfiguration.severity(forLength: type.name.count)
+        {
           let reason = """
             \(type) should be between \
             \(nameConfiguration.minLengthThreshold) and \
@@ -231,15 +234,15 @@ private enum NamedDeclType: CustomStringConvertible {
 
 extension String {
   fileprivate var isViolatingCase: Bool {
-    let firstCharacter = String(self[startIndex])
-    guard firstCharacter.isUppercase else {
-      return false
-    }
+    let first = self[startIndex]
+    // Lowercase start is never a case violation
+    guard !first.isLowercase else { return false }
+    // Non-ASCII non-letter characters (e.g. emoji) have no case concept
+    guard first.isASCII || first.isLetter else { return false }
     guard count > 1 else {
       return true
     }
-    let secondCharacter = String(self[index(after: startIndex)])
-    return secondCharacter.isLowercase
+    return self[index(after: startIndex)].isLowercase
   }
 
   fileprivate var leadingDollarStripped: Self {

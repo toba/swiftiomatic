@@ -1,15 +1,15 @@
 ---
 # ogh-b3l
 title: New suggestion rules from /swift skill gap analysis
-status: ready
+status: in-progress
 type: epic
 priority: normal
 created_at: 2026-04-11T23:47:28Z
-updated_at: 2026-04-11T23:47:28Z
+updated_at: 2026-04-12T02:37:46Z
 sync:
     github:
         issue_number: "200"
-        synced_at: "2026-04-11T23:48:38Z"
+        synced_at: "2026-04-12T03:13:32Z"
 ---
 
 ## Overview
@@ -23,26 +23,26 @@ Existing rules already cover: `typed_throws`, `concurrency_modernization`, `swif
 ## High Value — Clear AST patterns, straightforward to implement
 
 ### Swift 6.3 Attribute Modernization (correctable lint rules)
-- [ ] **`@_cdecl` → `@c`** — `@_cdecl` is replaced by `@c` in Swift 6.3. Simple attribute name match, auto-correctable. Also flag `@c("name")` syntax for custom C names.
-- [ ] **`@_specialize` → `@specialize`** — No longer underscored. Simple attribute rename, auto-correctable. (`syntactic_sugar` has it in examples but doesn't check for it.)
-- [ ] **`import struct`/`import class`/`import func` → `::`** — Module name selectors (`ModuleA::Type`) replace verbose selective imports. Suggest `::` syntax.
+- [x] **`@_cdecl` → `@c`** — `@_cdecl` is replaced by `@c` in Swift 6.3. Simple attribute name match, auto-correctable. Also flag `@c("name")` syntax for custom C names.
+- [x] **`@_specialize` → `@specialize`** — No longer underscored. Simple attribute rename, auto-correctable. (`syntactic_sugar` has it in examples but doesn't check for it.)
+- [x] **`import struct`/`import class`/`import func` → `::`** — Module name selectors (`ModuleA::Type`) replace verbose selective imports. Suggest `::` syntax.
 
 ### SwiftUI Superseded Patterns (suggest rules)
-- [ ] **`ObservableObject`/`@Published`/`@StateObject`/`@ObservedObject`/`@EnvironmentObject`** — All superseded by `@Observable` + `@State` + `@Environment`. Detect class conforming to `ObservableObject`, `@Published` properties, `@StateObject`/`@ObservedObject`/`@EnvironmentObject` wrappers. Very common in older code.
-- [ ] **`NavigationView` → `NavigationSplitView`/`NavigationStack`** — Direct type reference detection.
-- [ ] **`GeometryReader` → `Layout` protocol or `.visualEffect`** — Flag `GeometryReader` usage in SwiftUI views, suggest modern alternatives.
-- [ ] **`@MainActor` on `View` conformance** — Redundant since SwiftUI views are implicitly `@MainActor`. Detect `@MainActor struct Foo: View` or `@MainActor` on View body. Could be a correctable lint rule.
-- [ ] **`NSOpenPanel`/`NSSavePanel` → `.fileImporter`/`.fileExporter`** — Direct API reference detection. Flag in SwiftUI view files.
-- [ ] **Formatters in SwiftUI body** — `DateFormatter()`, `NumberFormatter()`, `MeasurementFormatter()` allocated inside `body` or view computed properties. Causes re-creation every evaluation. Suggest caching as static/shared.
-- [ ] **Sorting/filtering inside ForEach** — `.sorted(by:)`, `.filter { }` inside `ForEach` runs every body evaluation. Suggest precomputing.
+- [x] **`ObservableObject`/`@Published`/`@StateObject`/`@ObservedObject`/`@EnvironmentObject`** — All superseded by `@Observable` + `@State` + `@Environment`. Detect class conforming to `ObservableObject`, `@Published` properties, `@StateObject`/`@ObservedObject`/`@EnvironmentObject` wrappers. Very common in older code.
+- [x] **`NavigationView` → `NavigationSplitView`/`NavigationStack`** — Direct type reference detection.
+- [x] **`GeometryReader` → `Layout` protocol or `.visualEffect`** — Flag `GeometryReader` usage in SwiftUI views, suggest modern alternatives.
+- [x] **`@MainActor` on `View` conformance** — Redundant since SwiftUI views are implicitly `@MainActor`. Detect `@MainActor struct Foo: View` or `@MainActor` on View body. Could be a correctable lint rule.
+- [x] **`NSOpenPanel`/`NSSavePanel` → `.fileImporter`/`.fileExporter`** — Direct API reference detection. Flag in SwiftUI view files.
+- [x] **Formatters in SwiftUI body** — `DateFormatter()`, `NumberFormatter()`, `MeasurementFormatter()` allocated inside `body` or view computed properties. Causes re-creation every evaluation. Suggest caching as static/shared.
+- [x] **Sorting/filtering inside ForEach** — `.sorted(by:)`, `.filter { }` inside `ForEach` runs every body evaluation. Suggest precomputing.
 - [ ] **Unstable ForEach identity** — `id: \.self` on non-`Identifiable`/mutable types. `UUID()` created per render.
 - [ ] **Top-level if/else in View body** — Root-level conditional branches cause identity churn. Suggest stable root with conditional content inside.
 - [ ] **`withAnimation` inside `onChange`** — When view has frequent non-animated state updates, last transaction wins. Suggest `.animation(_:value:)` scoped to animating view.
 
 ### Foundation Modernization (suggest rules)
-- [ ] **`NSAttributedString`/`NSMutableAttributedString` → `AttributedString`** — Value type, Sendable, no bridging. Also flag `NSParagraphStyle`, `NSMutableParagraphStyle`, `enumerateAttributes(in:)`. Exception: TextKit 2 layout pipeline internals.
-- [ ] **`Notification.Name` + `userInfo` → `NotificationCenter.Message`** (SE-0011) — Flag `Notification.Name` definitions, `post(name:object:userInfo:)` calls with userInfo dictionaries. Suggest typed `MainActorMessage`/`AsyncMessage` structs.
-- [ ] **`Result<T, E>` return types → typed throws** — Functions returning `Result` that immediately switch/map can use typed throws instead. (Complements existing `typed_throws` which looks at throw statements.)
+- [x] **`NSAttributedString`/`NSMutableAttributedString` → `AttributedString`** — Value type, Sendable, no bridging. Also flag `NSParagraphStyle`, `NSMutableParagraphStyle`, `enumerateAttributes(in:)`. Exception: TextKit 2 layout pipeline internals.
+- [x] **`Notification.Name` + `userInfo` → `NotificationCenter.Message`** (SE-0011) — Flag `Notification.Name` definitions, `post(name:object:userInfo:)` calls with userInfo dictionaries. Suggest typed `MainActorMessage`/`AsyncMessage` structs.
+- [x] **`Result<T, E>` return types → typed throws** — Functions returning `Result` that immediately switch/map can use typed throws instead. (Complements existing `typed_throws` which looks at throw statements.)
 
 ### Concurrency Modernization (suggest/lint rules)
 - [ ] **`Task { }` in `@MainActor` → `Task.immediate`** (SE-0472) — Detect `Task { }` init inside `@MainActor` functions/closures where body does MainActor work first. Also flag debounce patterns (`task?.cancel(); task = Task { }`). Suggest `Task.immediate`.
