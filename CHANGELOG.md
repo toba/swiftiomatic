@@ -37,6 +37,9 @@
 - Xcode app build fails; `SwiftiomaticKit` types not visible to `SwiftiomaticApp` ([#220](https://github.com/toba/swiftiomatic/issues/220))
 - Search/filter bar missing from above the rule list ([#217](https://github.com/toba/swiftiomatic/issues/217))
 - Fix SF Symbol sizing and placement in rule list
+- SourceKit warnings spam stderr when running `sm` with no arguments ([#228](https://github.com/toba/swiftiomatic/issues/228))
+- `sm format` emits SourceKit warnings after formatting ([#226](https://github.com/toba/swiftiomatic/issues/226))
+- Formatter strips backtick-quoted test names ([#227](https://github.com/toba/swiftiomatic/issues/227))
 
 ### 🗜️ Tweaks
 

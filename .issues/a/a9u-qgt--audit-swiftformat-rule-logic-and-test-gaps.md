@@ -1,0 +1,136 @@
+---
+# a9u-qgt
+title: 'Audit: SwiftFormat rule logic and test gaps'
+status: ready
+type: task
+priority: high
+created_at: 2026-04-12T19:05:30Z
+updated_at: 2026-04-12T19:05:30Z
+sync:
+    github:
+        issue_number: "229"
+        synced_at: "2026-04-12T19:05:36Z"
+---
+
+Systematic audit of Swiftiomatic rules mapped from SwiftFormat (via `RuleMapping.swiftformatMapping`) comparing logic completeness and test coverage against the reference at `~/Developer/swiftiomatic-ref/SwiftFormat/`.
+
+## Mapping Errors
+
+- [ ] **`spaceAroundBraces → SpaceAroundBracketsRule`**: WRONG. SwiftFormat's SpaceAroundBraces handles `{ }` spacing; our SpaceAroundBracketsRule handles `[ ]` spacing. Either create a SpaceAroundBracesRule or remove this mapping entry.
+- [ ] **`spaceInsideBraces → SpaceInsideBracketsRule`**: Same issue. SpaceInsideBraces handles `{ }` interior spacing; our rule handles `[ ]`.
+- [ ] **`linebreakAtEndOfFile → TrailingWhitespaceRule`**: Semantic mismatch. SwiftFormat's rule ensures a trailing newline exists at EOF; our TrailingWhitespaceRule removes trailing whitespace from lines. These are different concerns.
+- [ ] **`indent → IndentationWidthRule`**: Scope mismatch. SwiftFormat's Indent is a full indentation engine; our IndentationWidthRule only checks width violations. Not functionally equivalent.
+
+## Critical Logic Gaps
+
+### RedundantBackticks (a88-mbv partially addressed)
+SwiftFormat's `backticksRequired(at:)` (~80 lines in `ParsingHelpers.swift:1306`) handles 15+ context-dependent scenarios. Our rule only checks `isSwiftKeyword` + `isValidBareIdentifier`.
+
+Missing scenarios:
+- [ ] `_`, `$` — always need backticks
+- [ ] `self` after `.` — needs backticks
+- [ ] `super`, `nil`, `true`, `false` — not in keyword set, handled contextually by SwiftFormat
+- [ ] `Self`, `Any` — context-dependent (safe after `:` or `->` type positions)
+- [ ] `Type` — context-dependent (needed inside type declarations, after `.`)
+- [ ] Accessor keywords (`get`, `set`, `willSet`, `didSet`, `init`, `_modify`) — needed only in accessor position
+- [ ] `actor` after infix operator — doesn't need backticks
+- [ ] After `.` — keywords don't need backticks (except `init`)
+- [ ] After `::` (module selector) — keywords are ordinary except `deinit`, `init`, `subscript`
+- [ ] `let`, `var` — always need backticks
+- [ ] Argument position — keywords used as argument labels don't need backticks
+
+SwiftFormat tests: 369 lines. Our examples: 6.
+
+### RedundantParens
+SwiftFormat: 200+ lines handling conditionals, closure types, nested parens, operator precedence, `@Test()`, `queue.async() {}`, Selector contexts, unwrap operators.
+
+Our rule: only visits `ConditionElementSyntax` and `ReturnStmtSyntax`. Missing:
+- [ ] Empty attribute parens (`@Test()` → `@Test`)
+- [ ] Trailing closure empty parens (`queue.async() { }` → `queue.async { }`)
+- [ ] Nested redundant parens
+- [ ] Operator precedence parens
+- [ ] Closure argument parens
+
+SwiftFormat tests: 1,617 lines. Our examples: 11.
+
+### TrailingComma
+SwiftFormat: 350 lines with Swift version-specific trailing comma support.
+
+Our rule: only handles `ArrayElementListSyntax` and `DictionaryElementListSyntax`. Missing:
+- [ ] Function call trailing commas (Swift 6.1+)
+- [ ] Parameter list trailing commas (Swift 6.1+)
+- [ ] Generic list trailing commas (Swift 6.1+ concrete, 6.2+ all)
+- [ ] Tuple trailing commas (Swift 6.2+)
+- [ ] Closure argument list trailing commas (Swift 6.2+)
+- [ ] Built-in attribute exclusion (`@available`, `@backDeployed` don't support trailing commas)
+- [ ] `multiElementLists` option mode
+
+SwiftFormat tests: 3,829 lines. Our examples: 18.
+
+### RedundantClosure
+SwiftFormat: 200+ lines handling if/switch expressions, Never-returning functions, leading try/await, Void type properties, correction.
+
+Our rule: 71 lines, detect-only (not correctable). Missing:
+- [ ] Not correctable (no rewriter)
+- [ ] No `fatalError`/`preconditionFailure`/`throw` (Never-returning) exclusion
+- [ ] No Void type annotation property exclusion
+- [ ] No if/switch conditional expression support
+- [ ] No leading `try`/`await` removal
+
+SwiftFormat tests: 1,042 lines. Our examples: 3.
+
+### ImplicitReturn (redundantReturn)
+SwiftFormat: 175+ lines (rule + helpers) handling closures, functions, if/switch expression branches, failable init?, void returns, `as?` bug workaround.
+
+Our rule: 87 lines, single-statement return only. Missing:
+- [ ] No if/switch expression branch support (SE-0380, Swift 5.9+)
+- [ ] No void return handling
+- [ ] No failable `init?` exclusion
+- [ ] No `as?` operator bug workaround in branches
+- [ ] No `conditionalAssignment` rule interaction
+
+SwiftFormat tests: 1,491 lines. Our examples: 0 (uses options-based examples elsewhere).
+
+## Medium Logic Gaps
+
+### ImplicitOptionalInitialization (redundantNilInit)
+SwiftFormat handles additional exclusions:
+- [ ] Result builder context exclusion
+- [ ] Codable/Decodable type exclusion  
+- [ ] Struct synthesized memberwise init (Swift < 5.2) exclusion
+
+### EmptyBraces
+SwiftFormat supports three formatting modes via `--empty-braces` option:
+- [ ] `noSpace` (our only behavior)
+- [ ] `spaced` (`{ }` with space)
+- [ ] `linebreak` (brace on new line with indentation)
+
+### Void (VoidReturnRule)
+SwiftFormat: 175 lines normalizing `Void`/`()`/`(Void)` across contexts.
+- [ ] Configurable `--void-type` option (use Void vs use ())
+- [ ] Local `Void` type declaration detection (`typealias Void = MyType`)
+- [ ] `(Void)` → `()` parameter normalization
+- [ ] Typealias handling (`typealias X = ()` → `typealias X = Void`)
+
+### RedundantType (RedundantTypeAnnotationRule)
+SwiftFormat: 145+ lines (rule) + 130 lines (helpers).
+- [ ] `inferLocalsOnly` mode (infer in local scopes, explicit in types)
+- [ ] If/switch expression branch type comparison (SE-0380)
+- [ ] `@Model` class exclusion
+- [ ] Ternary expression detection
+- [ ] Set with inferred array literal element type
+
+## Summary
+
+| Rule | SwiftFormat complexity | Our complexity | Gap |
+|---|---|---|---|
+| RedundantBackticks | 80 lines context logic + 369 test lines | 6 examples, keyword-only check | Critical |
+| RedundantParens | 200+ lines + 1,617 test lines | 11 examples, condition/return only | Critical |
+| TrailingComma | 350 lines + 3,829 test lines | 18 examples, array/dict only | Critical |
+| RedundantClosure | 200+ lines + 1,042 test lines | 3 examples, not correctable | High |
+| ImplicitReturn | 175+ lines + 1,491 test lines | ~0 examples inline | High |
+| ImplicitOptionalInit | Codable/ResultBuilder exclusions | Missing 3 exclusions | Medium |
+| EmptyBraces | 3 formatting modes | 1 mode only | Medium |
+| Void | 175 lines, configurable | 104 lines | Medium |
+| RedundantType | 275+ lines, 3 modes | Likely simpler | Medium |
+| Brace spacing (2 rules) | Explicit brace rules | Wrong mapping to bracket rules | Mapping error |

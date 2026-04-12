@@ -5,11 +5,11 @@ status: in-progress
 type: bug
 priority: high
 created_at: 2026-04-12T02:50:24Z
-updated_at: 2026-04-12T05:26:13Z
+updated_at: 2026-04-12T18:42:17Z
 sync:
     github:
         issue_number: "206"
-        synced_at: "2026-04-12T16:02:57Z"
+        synced_at: "2026-04-12T19:05:18Z"
 ---
 
 ## Problem

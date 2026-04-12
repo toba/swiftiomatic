@@ -625,18 +625,19 @@ private func verifyExamples(
   configuration config: Configuration,
   requiresFileOnDisk: Bool,
 ) async {
-  // Non-triggering examples don't violate
+  // Non-triggering examples must not violate
   for nonTrigger in nonTriggers {
     let unexpectedViolations = await violations(
       nonTrigger, config: config,
       requiresFileOnDisk: requiresFileOnDisk,
     )
-    // Pipeline batch runs can produce false positives (l3v-pn5).
-    // Individual rule tests catch real regressions.
-    if unexpectedViolations.isEmpty { continue }
+    #expect(
+      unexpectedViolations.isEmpty,
+      "Non-triggering example had violations: \(unexpectedViolations)",
+    )
   }
 
-  // Triggering examples violate
+  // Triggering examples must violate at marked locations
   for trigger in triggers {
     let triggerViolations = await violations(
       trigger, config: config,
@@ -645,7 +646,10 @@ private func verifyExamples(
 
     let (cleanTrigger, markerOffsets) = cleanedContentsAndMarkerOffsets(from: trigger.code)
     if markerOffsets.isEmpty {
-      // Marker-less: just check some violation exists. Pipeline batch may miss (l3v-pn5).
+      #expect(
+        !triggerViolations.isEmpty,
+        "Marker-less triggering example produced 0 violations: '\(trigger)'",
+      )
       continue
     }
     let file = SwiftSource.testFile(withContents: cleanTrigger)
@@ -654,24 +658,29 @@ private func verifyExamples(
     let violationsAtUnexpectedLocation =
       triggerViolations
       .filter { !expectedLocations.contains($0.location) }
-
-    // Pipeline batch may produce violations at different positions (l3v-pn5).
+    #expect(
+      violationsAtUnexpectedLocation.isEmpty,
+      "Violations at unexpected locations: \(violationsAtUnexpectedLocation)",
+    )
 
     let violatedLocations = triggerViolations.map(\.location)
     let locationsWithoutViolation =
       expectedLocations
       .filter { !violatedLocations.contains($0) }
-    // Pipeline batch may miss expected locations (l3v-pn5).
+    #expect(
+      locationsWithoutViolation.isEmpty,
+      "Expected violations not found at: \(locationsWithoutViolation)",
+    )
 
-    // Strict count and location checks — pipeline batch may have discrepancies (l3v-pn5)
-    // but individual rule tests enforce these strictly.
-    if triggerViolations.count == expectedLocations.count {
-      for (triggerViolation, expectedLocation) in zip(triggerViolations, expectedLocations) {
-        #expect(
-          triggerViolation.location == expectedLocation,
-          "'\(trigger)' violation didn't match expected location.",
-        )
-      }
+    #expect(
+      triggerViolations.count == expectedLocations.count,
+      "Expected \(expectedLocations.count) violations, got \(triggerViolations.count) for '\(trigger)'",
+    )
+    for (triggerViolation, expectedLocation) in zip(triggerViolations, expectedLocations) {
+      #expect(
+        triggerViolation.location == expectedLocation,
+        "'\(trigger)' violation didn't match expected location.",
+      )
     }
   }
 }

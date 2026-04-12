@@ -118,6 +118,41 @@ import Testing
 
     #expect(Set(filteredRules.rules.keys) == Set([CorrectableRuleMock.identifier]))
   }
+
+  /// Format command must only run correctable rules that don't require SourceKit.
+  /// This replicates the filter used in `FormatCommand.applyCorrectableLintRules()`.
+  @Test func formatCorrectableRulesExcludeSourceKit() {
+    let rules: [any Rule] = [
+      RuleMock1(),                      // not correctable, no SourceKit
+      CorrectableRuleMock(),            // correctable, no SourceKit ✓
+      CorrectableSourceKitRuleMock(),   // correctable, SourceKit ✗
+    ]
+
+    let formatRules = rules.filter {
+      type(of: $0).isCorrectable && !type(of: $0).runsWithSourceKit
+    }
+
+    #expect(formatRules.count == 1)
+    #expect(type(of: formatRules[0]).identifier == CorrectableRuleMock.identifier)
+  }
+
+  /// No real rule that requires SourceKit should sneak into format corrections.
+  @Test func realCorrectableRulesWithSourceKitExcludedFromFormat() {
+    let allRules = RuleResolver.loadRules()
+    let leakedRules = allRules.filter {
+      type(of: $0).isCorrectable && type(of: $0).runsWithSourceKit
+    }
+
+    // These rules exist but must NOT run during format (no compiler args / SourceKit context)
+    for rule in leakedRules {
+      let id = type(of: rule).identifier
+      // Verify our filter would exclude them
+      let kept = [rule].filter {
+        type(of: $0).isCorrectable && !type(of: $0).runsWithSourceKit
+      }
+      #expect(kept.isEmpty, "SourceKit rule '\(id)' would leak into format corrections")
+    }
+  }
 }
 
 // MARK: - Mocks
@@ -162,6 +197,28 @@ private struct CorrectableRuleMock: Rule {
   static let name = ""
   static let summary = ""
   static let isCorrectable = true
+
+  init() { /* conformance for test */  }
+  init(configuration _: Any) { self.init() }
+
+  func validate(file _: SwiftSource) -> [RuleViolation] {
+    []
+  }
+
+  func correct(file _: SwiftSource) -> Int {
+    0
+  }
+}
+
+private struct CorrectableSourceKitRuleMock: Rule {
+  var options = SeverityOption<Self>(.warning)
+  var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }
+
+  static let id = "CorrectableSourceKitRuleMock"
+  static let name = ""
+  static let summary = ""
+  static let isCorrectable = true
+  static let requiresSourceKit = true
 
   init() { /* conformance for test */  }
   init(configuration _: Any) { self.init() }

@@ -61,6 +61,18 @@ struct RedundantBackticksRuleTests {
       input: "let `foo` = bar",
       expected: "let foo = bar")
   }
+
+  @Test func preservesBackticksOnTestNames() async {
+    await assertNoViolation(
+      RedundantBackticksRule.self,
+      "func `test something`() {}")
+  }
+
+  @Test func preservesBackticksOnKeywords() async {
+    await assertNoViolation(
+      RedundantBackticksRule.self,
+      "let `class` = foo")
+  }
 }
 
 // MARK: - RedundantStaticSelfRule

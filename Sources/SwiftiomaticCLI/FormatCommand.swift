@@ -206,10 +206,14 @@ struct FormatCommand: ParsableCommand {
       ruleConfigs: cfg.lintRuleConfigs,
       formatDefaults: ["max_width": cfg.formatMaxWidth],
     )
-    let correctableRules = allRules.filter { type(of: $0).isCorrectable }
+    let correctableRules = allRules.filter {
+      type(of: $0).isCorrectable && !type(of: $0).runsWithSourceKit
+    }
     guard !correctableRules.isEmpty else { return 0 }
 
-    let collectingRules = allRules.filter { type(of: $0).isCrossFile }
+    let collectingRules = allRules.filter {
+      type(of: $0).isCrossFile && !type(of: $0).runsWithSourceKit
+    }
     let lintFiles = files.compactMap { SwiftSource(path: $0) }
 
     let storage = RuleStorage()
@@ -217,7 +221,9 @@ struct FormatCommand: ParsableCommand {
     // Collect phase for collecting rules
     for file in lintFiles {
       for rule in collectingRules {
-        rule.collectInfo(for: file, into: storage, compilerArguments: [])
+        CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+          rule.collectInfo(for: file, into: storage, compilerArguments: [])
+        }
       }
     }
 
@@ -228,7 +234,9 @@ struct FormatCommand: ParsableCommand {
       var fileCorrections = 0
 
       for rule in correctableRules {
-        fileCorrections += rule.correct(file: file, using: storage, compilerArguments: [])
+        fileCorrections += CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+          rule.correct(file: file, using: storage, compilerArguments: [])
+        }
       }
 
       if fileCorrections > 0 {

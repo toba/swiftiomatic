@@ -28,6 +28,12 @@ description: >
 | `.format` | Xcode Editor Extension, `sm format` | Whitespace, indentation, brace placement. Always correctable |
 | `.suggest` | `sm suggest` | Research patterns for agent review. Never correctable |
 
+### SourceKit and format corrections
+
+`sm format` filters out rules where `requiresSourceKit = true`. If a rule is both correctable and SourceKit-dependent (e.g., `UnusedImportRule`, `ExplicitSelfRule`), its corrections only apply during `sm lint` or `sm analyze` — never during `sm format`. This is because format runs without compiler arguments or SourceKit context.
+
+When calling `rule.correct()` outside the `Linter` (e.g., in CLI commands), wrap calls in `CurrentRule.$identifier.withValue(type(of: rule).identifier) { ... }` to set the rule execution context. Without this, any SourceKit request triggers a stderr warning. See `FormatCommand.applyCorrectableLintRules()` and `Linter.correct(using:)` for the correct pattern.
+
 ## Directory Organization
 
 Place rules under `Sources/SwiftiomaticKit/Rules/<Category>/`:
@@ -127,6 +133,7 @@ fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
 - Always check `isDisabled(atStartPositionOf:)` before correcting
 - Increment `numberOfCorrections` for each correction
 - Call `super.visit(node)` when not modifying (continues traversal)
+- If the rule also sets `requiresSourceKit = true`, corrections only run in `sm lint`/`sm analyze`, not `sm format`
 
 ### Alternative: Visitor-based corrections (no Rewriter)
 

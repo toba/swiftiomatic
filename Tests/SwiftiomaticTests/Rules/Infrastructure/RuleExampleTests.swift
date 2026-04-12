@@ -40,5 +40,7 @@ struct RuleExampleTests {
       shouldTestMultiByteOffsets: false,
       testShebang: false,
     )
+    // Prevent memory buildup across ~290 parameterized cases (CI SIGBUS).
+    SwiftSource.clearCaches()
   }
 }
