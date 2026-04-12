@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PreferWeakLetRule {
   static let id = "prefer_weak_let"

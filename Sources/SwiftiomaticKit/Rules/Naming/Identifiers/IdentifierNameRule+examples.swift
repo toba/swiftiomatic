@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension IdentifierNameRule {
   static let nonTriggeringExamples = [
     Example("let myLet = 0"),

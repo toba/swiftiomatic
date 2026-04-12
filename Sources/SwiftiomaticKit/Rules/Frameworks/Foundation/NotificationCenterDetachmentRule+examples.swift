@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension NotificationCenterDetachmentRule {
   static let nonTriggeringExamples = [
     Example(

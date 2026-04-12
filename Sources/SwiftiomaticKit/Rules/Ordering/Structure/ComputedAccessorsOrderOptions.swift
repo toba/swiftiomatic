@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct ComputedAccessorsOrderOptions: SeverityBasedRuleOptions {
   enum Order: String, AcceptableByOptionElement {
     case getSet = "get_set"

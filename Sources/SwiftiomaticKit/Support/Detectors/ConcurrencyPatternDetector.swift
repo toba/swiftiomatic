@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 /// Shared concurrency pattern detection for GCD and completion-handler code
 ///

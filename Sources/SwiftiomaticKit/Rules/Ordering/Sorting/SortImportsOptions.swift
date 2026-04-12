@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 enum ImportSortOrder: String, Sendable, Equatable, AcceptableByOptionElement {
   case alphabetical
   case length

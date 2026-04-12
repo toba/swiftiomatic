@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension ModifierOrderRule {
   static let nonTriggeringExamples = [
     Example(

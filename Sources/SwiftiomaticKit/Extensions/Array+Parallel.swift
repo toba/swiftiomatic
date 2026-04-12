@@ -1,4 +1,5 @@
 import Dispatch
+import SwiftiomaticSyntax
 
 extension Array {
   /// Groups elements into a dictionary by a key extracted via `transform`, discarding `nil` keys

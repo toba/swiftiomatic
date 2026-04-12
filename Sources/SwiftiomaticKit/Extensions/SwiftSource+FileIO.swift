@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 extension SwiftSource {
   /// Appends a string to the file's contents and writes it to disk

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DirectReturnRule {
   static let id = "direct_return"

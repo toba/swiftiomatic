@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct FirstWhereRule {
   static let id = "first_where"

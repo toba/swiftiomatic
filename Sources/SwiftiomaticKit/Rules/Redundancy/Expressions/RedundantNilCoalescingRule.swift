@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantNilCoalescingRule {
   static let id = "redundant_nil_coalescing"

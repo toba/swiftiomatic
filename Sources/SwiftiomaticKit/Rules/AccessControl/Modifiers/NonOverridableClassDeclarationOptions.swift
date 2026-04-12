@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct NonOverridableClassDeclarationOptions: SeverityBasedRuleOptions {
   enum FinalClassModifier: String, AcceptableByOptionElement {
     case finalClass = "final class"

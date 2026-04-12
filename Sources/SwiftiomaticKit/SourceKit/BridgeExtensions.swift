@@ -4,6 +4,7 @@
 /// bridging intent is explicit at the call site.
 
 import Foundation
+import SwiftiomaticSyntax
 
 extension Array {
   /// Bridge this Swift `Array` to an ``NSArray``

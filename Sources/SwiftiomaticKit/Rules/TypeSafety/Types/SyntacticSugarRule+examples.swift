@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension SyntacticSugarRule {
   static let nonTriggeringExamples = [
     Example("let x: [Int]"),

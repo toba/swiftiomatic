@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SpaceAroundBracketsRule {
   static let id = "space_around_brackets"

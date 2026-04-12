@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 /// Detects mutations on a named collection inside a for-in body
 ///

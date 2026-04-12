@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct VerticalParameterAlignmentRule {
   static let id = "vertical_parameter_alignment"

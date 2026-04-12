@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct RedundantDisableCommandRule: Rule, Sendable {
   static let id = "redundant_disable_command"
   static let name = "Redundant Disable Command"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LargeTupleRule: SwiftSyntaxRule {
   static let id = "large_tuple"

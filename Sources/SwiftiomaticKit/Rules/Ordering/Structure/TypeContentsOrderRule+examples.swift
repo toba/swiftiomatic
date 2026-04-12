@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension TypeContentsOrderRule {
   static let defaultOrderParts = [
     """

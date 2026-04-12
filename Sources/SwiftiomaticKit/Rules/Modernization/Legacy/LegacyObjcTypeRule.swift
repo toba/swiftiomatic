@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 private let legacyObjcTypes = [
   "NSAffineTransform",

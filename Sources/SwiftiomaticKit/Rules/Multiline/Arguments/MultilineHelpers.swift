@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 func containsMultilineViolation(
   positions: [AbsolutePosition],

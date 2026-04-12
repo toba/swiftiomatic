@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct GenericTypeNameRule {
   static let id = "generic_type_name"

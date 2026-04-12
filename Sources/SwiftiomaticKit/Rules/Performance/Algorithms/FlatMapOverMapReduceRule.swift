@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct FlatMapOverMapReduceRule {
   static let id = "flatmap_over_map_reduce"

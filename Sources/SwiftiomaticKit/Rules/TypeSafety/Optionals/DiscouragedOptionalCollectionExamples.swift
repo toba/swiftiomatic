@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 enum DiscouragedOptionalCollectionExamples {
   static let nonTriggeringExamples = [
     // Global variable

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension PrivateSwiftUIStatePropertyRule {
   static let nonTriggeringExamples: [Example] = [
     Example(

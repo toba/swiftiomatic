@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct VerticalWhitespaceRule {
   static let id = "vertical_whitespace"

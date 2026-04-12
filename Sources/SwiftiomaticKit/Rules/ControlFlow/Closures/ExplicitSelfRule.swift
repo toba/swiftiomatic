@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct ExplicitSelfRule: Rule {
   static let id = "explicit_self"

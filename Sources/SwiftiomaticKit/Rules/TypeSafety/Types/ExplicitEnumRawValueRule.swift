@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ExplicitEnumRawValueRule {
   static let id = "explicit_enum_raw_value"

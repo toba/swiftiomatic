@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 /// A declaration of an identifier within a lexical scope
 enum IdentifierDeclaration: Hashable {

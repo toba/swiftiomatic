@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantBackticksRule {
   static let id = "redundant_backticks"

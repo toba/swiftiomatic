@@ -12,8 +12,7 @@
 //
 
 import Foundation
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct RedundantSynthesizedInitializerRule {
   static let id = "redundant_synthesized_initializer"

@@ -1,5 +1,4 @@
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct VoidReturnRule {
   static let id = "void_return"

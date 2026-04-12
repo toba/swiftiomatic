@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SimplifyGenericConstraintsRule {
   static let id = "simplify_generic_constraints"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct BlankLinesBetweenImportsRule {
   static let id = "blank_lines_between_imports"

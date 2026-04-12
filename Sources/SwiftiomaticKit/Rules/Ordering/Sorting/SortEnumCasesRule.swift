@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SortEnumCasesRule {
   static let id = "sort_enum_cases"

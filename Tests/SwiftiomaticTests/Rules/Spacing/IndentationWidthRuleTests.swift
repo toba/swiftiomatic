@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered, .disabled("requires sourcekitd")) struct IndentationWidthRuleTests {
   @Test func invalidIndentation() async throws {

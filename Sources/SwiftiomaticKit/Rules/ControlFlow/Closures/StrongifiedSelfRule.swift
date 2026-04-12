@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct StrongifiedSelfRule {
   static let id = "strongified_self"

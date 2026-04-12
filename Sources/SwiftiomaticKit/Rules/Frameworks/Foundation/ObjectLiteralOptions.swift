@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 typealias DiscouragedObjectLiteralOptions = ObjectLiteralOptions<
   DiscouragedObjectLiteralRule,
 >

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct DeploymentTargetOptions: SeverityBasedRuleOptions {
   typealias Parent = DeploymentTargetRule

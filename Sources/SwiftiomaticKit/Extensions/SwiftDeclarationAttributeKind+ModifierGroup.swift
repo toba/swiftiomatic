@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension SwiftDeclarationAttributeKind {
   /// Attributes that imply an Objective-C runtime dependency (Foundation)
   static let attributesRequiringFoundation: Set<SwiftDeclarationAttributeKind> = [

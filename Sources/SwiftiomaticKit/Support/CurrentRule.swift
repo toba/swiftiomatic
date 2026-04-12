@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Task-local storage for the currently executing rule
 ///
 /// Allows SourceKit request handling to determine certain properties without

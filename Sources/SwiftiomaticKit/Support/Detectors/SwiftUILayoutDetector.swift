@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 /// Detects SwiftUI layout anti-patterns such as nested navigation stacks and
 /// conflicting scrollable containers

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension TestCaseAccessibilityRule {
   static let nonTriggeringExamples = [
     // Valid XCTestCase class

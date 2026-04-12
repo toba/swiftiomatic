@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct CollectionAlignmentRule {
   static let id = "collection_alignment"

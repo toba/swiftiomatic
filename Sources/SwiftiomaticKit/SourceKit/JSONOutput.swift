@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// Shared pretty-printing JSON encoder with sorted keys
 private let jsonEncoder: JSONEncoder = {

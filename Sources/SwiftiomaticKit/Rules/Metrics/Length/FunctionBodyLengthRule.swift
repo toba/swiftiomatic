@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct FunctionBodyLengthRule {
   private static let testConfig = ["warning": 2]

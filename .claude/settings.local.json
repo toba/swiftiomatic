@@ -83,7 +83,11 @@
       "Bash(gh auth:*)",
       "Bash(gh --version)",
       "Read(//Users/jason/Developer/toba/thesis/**)",
-      "Read(//Users/jason/Developer/thesis/**)"
+      "Read(//Users/jason/Developer/thesis/**)",
+      "Bash(gh config:*)",
+      "Bash(gh help:*)",
+      "mcp__xc-project__add_file",
+      "mcp__xc-project__list_targets"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ClosureEndIndentationRule {
   static let id = "closure_end_indentation"

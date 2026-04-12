@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct FunctionNameSpacingRule {
   static let id = "function_name_spacing"

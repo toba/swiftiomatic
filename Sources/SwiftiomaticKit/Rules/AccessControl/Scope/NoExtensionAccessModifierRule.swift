@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NoExtensionAccessModifierRule {
   static let id = "no_extension_access_modifier"

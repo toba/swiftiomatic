@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct UnusedOptionalBindingRule {
   static let id = "unused_optional_binding"

@@ -1,3 +1,5 @@
+public import SwiftiomaticSyntax
+
 /// A type describing the Swiftiomatic version.
 public struct SwiftiomaticVersion: VersionComparable, Sendable {
   public let value: String

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct FunctionDefaultParameterAtEndRule {
   static let id = "function_default_parameter_at_end"

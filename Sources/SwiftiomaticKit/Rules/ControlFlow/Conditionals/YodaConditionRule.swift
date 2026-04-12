@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct YodaConditionRule {
   static let id = "yoda_condition"

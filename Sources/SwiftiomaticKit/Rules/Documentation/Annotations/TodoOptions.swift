@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct TodoOptions: SeverityBasedRuleOptions {
   enum TodoKeyword: String, AcceptableByOptionElement, CaseIterable {
     case todo = "TODO"

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// No-op ``TypeResolver`` used when `--sourcekit` is not passed
 ///
 /// Returns `nil` or empty for all queries so that rules fall back to

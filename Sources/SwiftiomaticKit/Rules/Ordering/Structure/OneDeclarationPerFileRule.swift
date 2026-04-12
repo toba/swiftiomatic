@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct OneDeclarationPerFileRule {
   static let id = "one_declaration_per_file"

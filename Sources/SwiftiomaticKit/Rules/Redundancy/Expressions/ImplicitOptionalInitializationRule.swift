@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ImplicitOptionalInitializationRule {
   static let id = "implicit_optional_initialization"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantDiscardableLetRule {
   static let id = "redundant_discardable_let"

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct LineLengthOptions: RuleOptions {
   @OptionElement(isInline: true)
   private(set) var length = SeverityLevelsConfiguration<Parent>(warning: 120, error: 200)

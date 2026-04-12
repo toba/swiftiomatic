@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension RedundantThrowsRule {
   static let nonTriggeringExamples = [
     Example(

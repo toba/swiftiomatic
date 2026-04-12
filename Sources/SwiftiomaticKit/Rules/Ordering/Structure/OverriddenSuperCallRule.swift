@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct OverriddenSuperCallRule {
   static let id = "overridden_super_call"

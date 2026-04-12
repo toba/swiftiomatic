@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PatternMatchingKeywordsRule {
   static let id = "pattern_matching_keywords"

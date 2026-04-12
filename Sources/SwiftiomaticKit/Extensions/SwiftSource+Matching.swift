@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 /// Creates or retrieves a cached regular expression for the given pattern
 ///

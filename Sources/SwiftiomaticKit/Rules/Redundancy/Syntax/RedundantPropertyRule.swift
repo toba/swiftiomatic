@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantPropertyRule {
   static let id = "redundant_property"

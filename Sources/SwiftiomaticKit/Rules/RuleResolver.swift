@@ -1,3 +1,5 @@
+public import SwiftiomaticSyntax
+
 /// Instantiates lint rules based on enable/disable lists and per-rule configuration
 ///
 /// Replaces the ``Configuration/RuleSelection`` layer from the vendored lint orchestration.

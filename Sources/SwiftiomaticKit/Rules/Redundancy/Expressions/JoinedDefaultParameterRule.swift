@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct JoinedDefaultParameterRule {
   static let id = "joined_default_parameter"

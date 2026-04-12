@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct OverrideInExtensionRule: SwiftSyntaxRule {
   static let id = "override_in_extension"

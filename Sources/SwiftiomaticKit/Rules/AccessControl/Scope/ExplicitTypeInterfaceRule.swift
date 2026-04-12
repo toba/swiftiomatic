@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ExplicitTypeInterfaceRule {
   static let id = "explicit_type_interface"

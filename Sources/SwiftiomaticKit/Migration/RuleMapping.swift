@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// Result of mapping a rule ID from SwiftLint or SwiftFormat to Swiftiomatic
 public enum MappedRule: Equatable, Sendable {

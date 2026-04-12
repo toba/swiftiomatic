@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct AnyEliminationRule {
   static let id = "any_elimination"

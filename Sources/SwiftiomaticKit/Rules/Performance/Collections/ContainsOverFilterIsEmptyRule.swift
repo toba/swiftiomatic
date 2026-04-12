@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ContainsOverFilterIsEmptyRule {
   static let id = "contains_over_filter_is_empty"

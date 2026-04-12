@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct UnusedSetterValueRule {
   static let id = "unused_setter_value"

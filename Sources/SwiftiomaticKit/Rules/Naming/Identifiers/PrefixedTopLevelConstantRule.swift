@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PrefixedTopLevelConstantRule {
   static let id = "prefixed_toplevel_constant"

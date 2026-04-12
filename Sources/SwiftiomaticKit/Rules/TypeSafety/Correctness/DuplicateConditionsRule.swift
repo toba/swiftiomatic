@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DuplicateConditionsRule {
   static let id = "duplicate_conditions"

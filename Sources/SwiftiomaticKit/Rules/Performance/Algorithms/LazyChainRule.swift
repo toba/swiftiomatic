@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LazyChainRule {
   static let id = "lazy_chain"

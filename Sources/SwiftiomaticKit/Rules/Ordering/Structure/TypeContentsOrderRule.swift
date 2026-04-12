@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct TypeContentsOrderRule {
   static let id = "type_contents_order"

@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct RedundantOverrideRuleTests {
   // MARK: - Non-triggering (default: affect_initializers = false)

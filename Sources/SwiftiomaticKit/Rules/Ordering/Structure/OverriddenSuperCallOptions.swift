@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct OverriddenSuperCallOptions: SeverityBasedRuleOptions {
   private static let defaultIncluded = [
     // NSObject

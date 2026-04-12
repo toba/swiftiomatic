@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 private typealias FileTypeOffset = (
   fileType: FileTypesOrderOptions.FileType, offset: ByteCount,

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NonOverridableClassDeclarationRule {
   static let id = "non_overridable_class_declaration"

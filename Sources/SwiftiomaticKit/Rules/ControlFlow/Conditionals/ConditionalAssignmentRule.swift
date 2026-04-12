@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ConditionalAssignmentRule {
   static let id = "conditional_assignment"

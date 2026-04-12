@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct TrailingClosureOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)

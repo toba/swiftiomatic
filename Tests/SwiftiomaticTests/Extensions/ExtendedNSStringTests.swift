@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct ExtendedNSStringTests {
   @Test func lineAndCharacterForByteOffset_forContentsContainingMultibyteCharacters() {

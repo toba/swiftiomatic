@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct FileLengthOptions: RuleOptions {
   @OptionElement(isInline: true)
   var severityConfiguration = SeverityLevelsConfiguration<Parent>(

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct RequiredEnumCaseOptions: RuleOptions {
   typealias Parent = RequiredEnumCaseRule
 

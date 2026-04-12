@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension DiscouragedOptionalBooleanRule {
   static let nonTriggeringExamples = [
     // Global variable

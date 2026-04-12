@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct ExpiringTodoOptions: RuleOptions {
   typealias Severity = SeverityOption<Parent>
 

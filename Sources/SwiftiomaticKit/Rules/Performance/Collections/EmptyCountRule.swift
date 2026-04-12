@@ -1,6 +1,4 @@
-import SwiftLexicalLookup
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct EmptyCountRule {
   static let id = "empty_count"

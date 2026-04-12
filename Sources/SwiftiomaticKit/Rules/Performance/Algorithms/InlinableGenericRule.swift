@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct InlinableGenericRule {
   static let id = "inlinable_generic"

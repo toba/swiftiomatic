@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LegacyMultipleRule {
   static let id = "legacy_multiple"

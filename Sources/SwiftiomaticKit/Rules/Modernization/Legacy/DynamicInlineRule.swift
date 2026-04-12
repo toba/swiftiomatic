@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DynamicInlineRule {
   static let id = "dynamic_inline"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct UnusedParameterRule {
   static let id = "unused_parameter"

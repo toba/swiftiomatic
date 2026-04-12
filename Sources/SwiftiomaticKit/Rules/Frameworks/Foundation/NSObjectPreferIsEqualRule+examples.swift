@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension NSObjectPreferIsEqualRule {
   static let nonTriggeringExamples: [Example] = [
     // NSObject subclass without ==

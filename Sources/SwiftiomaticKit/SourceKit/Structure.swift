@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// The structural information in a Swift source file as returned by SourceKit's `editor.open`
 struct Structure: Equatable {
   /// The raw SourceKit response dictionary (with `key.syntaxmap` removed)

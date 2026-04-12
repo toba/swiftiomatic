@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct UnavailableFunctionRule {
   static let id = "unavailable_function"

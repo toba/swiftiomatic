@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct TrailingClosureEmptyParensRule {
   static let id = "trailing_closure_empty_parens"

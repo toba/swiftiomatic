@@ -1,4 +1,5 @@
 import Foundation
+public import SwiftiomaticSyntax
 import Yams
 
 /// The configuration struct, user-defined in the `.swiftiomatic.yaml` file

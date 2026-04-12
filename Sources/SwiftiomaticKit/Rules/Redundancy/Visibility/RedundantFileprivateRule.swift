@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantFileprivateRule {
   static let id = "redundant_fileprivate"

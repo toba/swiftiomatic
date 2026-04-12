@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// Represents unused or missing import statements.
 enum ImportUsage {

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ComputedAccessorsOrderRule {
   static let id = "computed_accessors_order"

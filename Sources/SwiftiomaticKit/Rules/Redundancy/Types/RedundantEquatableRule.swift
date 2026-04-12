@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantEquatableRule {
   static let id = "redundant_equatable"

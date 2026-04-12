@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension InclusiveLanguageRule {
   // MARK: - Default config
 

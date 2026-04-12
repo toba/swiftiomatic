@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct IndentationWidthRule: Rule {
   static let id = "indentation_width"

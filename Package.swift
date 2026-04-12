@@ -20,7 +20,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "SwiftiomaticKit",
+            name: "SwiftiomaticSyntax",
             dependencies: [
                 "SourceKitC",
                 .product(name: "SwiftIDEUtils", package: "swift-syntax"),
@@ -29,6 +29,21 @@ let package = Package(
                 .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+                .product(name: "SwiftBasicFormat", package: "swift-syntax"),
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
+                .enableExperimentalFeature("ApproachableConcurrency"),
+                .enableUpcomingFeature("InternalImportsByDefault"),
+                .enableUpcomingFeature("MemberImportVisibility"),
+                .enableUpcomingFeature("DisableOutwardActorIsolation"),
+                .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+            ],
+        ),
+        .target(
+            name: "SwiftiomaticKit",
+            dependencies: [
+                "SwiftiomaticSyntax",
                 .product(name: "SwiftFormat", package: "swift-format"),
                 .product(name: "Yams", package: "Yams"),
             ],
@@ -45,6 +60,7 @@ let package = Package(
             name: "SwiftiomaticCLI",
             dependencies: [
                 "SwiftiomaticKit",
+                "SwiftiomaticSyntax",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],
             swiftSettings: [
@@ -92,8 +108,7 @@ let package = Package(
             name: "SwiftiomaticTests",
             dependencies: [
                 "SwiftiomaticKit",
-                .product(name: "SwiftParser", package: "swift-syntax"),
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                "SwiftiomaticSyntax",
                 .product(name: "Subprocess", package: "swift-subprocess"),
             ],
             resources: [

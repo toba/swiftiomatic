@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct FileNameOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")

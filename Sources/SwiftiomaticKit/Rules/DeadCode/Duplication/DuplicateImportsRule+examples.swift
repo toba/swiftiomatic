@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension DuplicateImportsRule {
   static let nonTriggeringExamples = [
     Example(

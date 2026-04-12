@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct MutationDuringIterationRule {
   static let id = "mutation_during_iteration"

@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ConcurrencyModernizationRule {
   static let id = "concurrency_modernization"

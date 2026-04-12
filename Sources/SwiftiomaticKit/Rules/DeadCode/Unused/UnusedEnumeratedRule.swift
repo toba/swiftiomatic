@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct UnusedEnumeratedRule {
   static let id = "unused_enumerated"

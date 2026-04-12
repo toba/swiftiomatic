@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct EnumCaseAssociatedValuesCountRule {
   static let id = "enum_case_associated_values_count"

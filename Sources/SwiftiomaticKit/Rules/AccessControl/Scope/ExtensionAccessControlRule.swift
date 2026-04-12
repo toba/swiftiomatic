@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ExtensionAccessControlRule {
   static let id = "extension_access_control"

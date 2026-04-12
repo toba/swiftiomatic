@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct IdentifierNameOptions: RuleOptions {
   private static let defaultOperators = [
     "/", "=", "-", "+", "!", "*", "|", "^", "~", "?", ".", "%", "<", ">", "&",

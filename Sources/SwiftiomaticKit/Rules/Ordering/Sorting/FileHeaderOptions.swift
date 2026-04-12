@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct FileHeaderOptions: SeverityBasedRuleOptions {
   typealias Parent = FileHeaderRule

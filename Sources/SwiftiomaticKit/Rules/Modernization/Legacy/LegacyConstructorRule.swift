@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LegacyConstructorRule {
   static let id = "legacy_constructor"

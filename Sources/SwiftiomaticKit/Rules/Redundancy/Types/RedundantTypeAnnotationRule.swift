@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantTypeAnnotationRule {
   static let id = "redundant_type_annotation"

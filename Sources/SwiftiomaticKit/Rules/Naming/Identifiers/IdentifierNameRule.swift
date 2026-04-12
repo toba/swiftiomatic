@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct IdentifierNameRule {
   static let id = "identifier_name"

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension FileTypesOrderRule {
   static let defaultOrderParts = [
     """

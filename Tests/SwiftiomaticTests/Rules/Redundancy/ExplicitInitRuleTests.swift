@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct ExplicitInitRuleTests {
   // MARK: - Non-triggering (default: include_bare_init = false)

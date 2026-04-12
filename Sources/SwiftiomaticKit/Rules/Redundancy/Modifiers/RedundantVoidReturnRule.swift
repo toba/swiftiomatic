@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantVoidReturnRule {
   static let id = "redundant_void_return"

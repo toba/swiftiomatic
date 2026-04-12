@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension ExplicitTypeInterfaceRule {
   static var nonTriggeringExamples: [Example] {
     [

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 import Yams
 
 private struct SwiftPMCommand: Codable {

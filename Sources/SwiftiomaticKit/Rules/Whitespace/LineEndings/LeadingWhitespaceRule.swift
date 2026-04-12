@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct LeadingWhitespaceRule: Rule {
   static let id = "leading_whitespace"

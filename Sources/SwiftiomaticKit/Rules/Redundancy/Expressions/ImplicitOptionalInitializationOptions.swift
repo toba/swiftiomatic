@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct ImplicitOptionalInitializationOptions: SeverityBasedRuleOptions {  // sm:disable:this type_name
   enum Style: String, AcceptableByOptionElement {
     case always

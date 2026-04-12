@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Filters the full ``RuleList`` according to enabled/disabled/correctable criteria
 final class RuleFilter {
   /// Options controlling which categories of rules to exclude

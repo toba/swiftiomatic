@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LegacyHashingRule {
   static let id = "legacy_hashing"

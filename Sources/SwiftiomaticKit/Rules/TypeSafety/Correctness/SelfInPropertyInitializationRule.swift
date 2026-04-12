@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SelfInPropertyInitializationRule {
   static let id = "self_in_property_initialization"

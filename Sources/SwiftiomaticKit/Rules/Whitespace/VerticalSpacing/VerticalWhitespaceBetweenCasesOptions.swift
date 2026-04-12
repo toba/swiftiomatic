@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct VerticalWhitespaceBetweenCasesOptions: SeverityBasedRuleOptions {
   enum SeparationStyle: String, AcceptableByOptionElement {
     case always

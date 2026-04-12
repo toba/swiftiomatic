@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension Configuration {
   /// Return the rule for the specified ID, if configured in this configuration
   ///

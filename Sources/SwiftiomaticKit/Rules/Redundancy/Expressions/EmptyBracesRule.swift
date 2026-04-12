@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct EmptyBracesRule {
   static let id = "empty_braces"

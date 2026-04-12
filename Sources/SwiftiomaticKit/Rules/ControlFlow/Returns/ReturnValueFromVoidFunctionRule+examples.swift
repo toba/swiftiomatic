@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension ReturnValueFromVoidFunctionRule {
   static let nonTriggeringExamples = [
     Example(

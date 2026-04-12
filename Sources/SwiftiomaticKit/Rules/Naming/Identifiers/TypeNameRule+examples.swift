@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension TypeNameRule {
   static let nonTriggeringExamples: [Example] = [
     Example("class MyType {}"),

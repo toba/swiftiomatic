@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct MultilineClosureAnonymousArgumentRule {
   static let id = "multiline_closure_anonymous_argument"

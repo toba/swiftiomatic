@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct IndentationWidthOptions: SeverityBasedRuleOptions {
   private static let defaultIndentationWidth = 4
 

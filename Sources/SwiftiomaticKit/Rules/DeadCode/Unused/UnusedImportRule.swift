@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 private let moduleToLog = ProcessInfo.processInfo.environment["SWIFTIOMATIC_LOG_MODULE_USAGE"]
 

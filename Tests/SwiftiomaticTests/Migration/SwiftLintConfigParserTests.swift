@@ -2,6 +2,7 @@ import Foundation
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite struct SwiftLintConfigParserTests {
   @Test func parseDisabledRules() throws {

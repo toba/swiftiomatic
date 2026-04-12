@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// A generic LIFO stack where only the last inserted element can be accessed or removed
 struct Stack<Element> {
   private var elements = [Element]()

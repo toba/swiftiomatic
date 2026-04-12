@@ -1,4 +1,5 @@
 import Foundation
+public import SwiftiomaticSyntax
 
 /// Unified output type that all three analysis engines produce at the reporting boundary.
 /// Maps directly to the swift-review skill's output format and the JSON spec from CLAUDE.md.

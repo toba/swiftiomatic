@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PrivateSubjectRule {
   static let id = "private_subject"

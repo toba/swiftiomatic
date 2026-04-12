@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DeploymentTargetRule {
   static let id = "deployment_target"

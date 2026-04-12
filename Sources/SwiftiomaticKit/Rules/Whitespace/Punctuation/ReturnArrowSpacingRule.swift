@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ReturnArrowSpacingRule {
   static let id = "return_arrow_spacing"

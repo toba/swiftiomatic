@@ -1,6 +1,7 @@
 // Fixture: agent review candidates
 
 import Foundation
+import SwiftiomaticSyntax
 
 // 8b: Fire-and-forget Task
 func doWork() {

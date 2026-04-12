@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct MultilineArgumentsOptions: SeverityBasedRuleOptions {
   enum FirstArgumentLocation: String, AcceptableByOptionElement {
     case anyLine = "any_line"

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct NameOptions<Parent: Rule>: RuleOptions, InlinableOption {
   typealias SeverityConfig = SeverityOption<Parent>

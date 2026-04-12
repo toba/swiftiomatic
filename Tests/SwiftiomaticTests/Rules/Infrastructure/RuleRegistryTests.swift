@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite struct RuleRegistryTests {
   @Test func ruleCountMatchesAfterRegistration() {

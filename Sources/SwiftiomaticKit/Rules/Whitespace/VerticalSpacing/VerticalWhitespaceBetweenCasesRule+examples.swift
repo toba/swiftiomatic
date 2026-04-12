@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 // sm:disable file_length
 // sm:disable:next type_body_length
 extension VerticalWhitespaceBetweenCasesRule {

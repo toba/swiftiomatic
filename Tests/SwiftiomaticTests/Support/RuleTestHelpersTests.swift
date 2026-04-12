@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 /// Validates that the assertLint/assertFormatting test infrastructure works correctly.
 @Suite(.rulesRegistered)

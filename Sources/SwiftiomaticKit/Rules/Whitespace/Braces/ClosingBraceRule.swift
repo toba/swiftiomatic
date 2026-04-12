@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ClosingBraceRule {
   static let id = "closing_brace"

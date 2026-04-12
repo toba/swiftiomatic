@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension ImplicitOptionalInitializationRule {
   static let nonTriggeringExamples = [
     Example(  // properties with body should be ignored

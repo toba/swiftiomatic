@@ -1,6 +1,7 @@
 import Foundation
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 enum TestResources {
   static func path(_ calleePath: String = #filePath) -> String {

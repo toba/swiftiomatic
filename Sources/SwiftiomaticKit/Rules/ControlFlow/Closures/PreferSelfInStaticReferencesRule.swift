@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PreferSelfInStaticReferencesRule {
   static let id = "prefer_self_in_static_references"

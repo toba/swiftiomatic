@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct MultilineLiteralBracketsRule {
   static let id = "multiline_literal_brackets"

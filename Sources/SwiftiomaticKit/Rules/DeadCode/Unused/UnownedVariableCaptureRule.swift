@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct UnownedVariableCaptureRule {
   static let id = "unowned_variable_capture"

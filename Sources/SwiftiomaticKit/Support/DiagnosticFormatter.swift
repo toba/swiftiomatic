@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// Formats ``Diagnostic`` arrays for CLI and Xcode output
 public enum DiagnosticFormatter {

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct EmptyCountOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.error)

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct VerticalWhitespaceOptions: SeverityBasedRuleOptions {
   static let defaultDescriptionReason = "Limit vertical whitespace to a single empty line"
 

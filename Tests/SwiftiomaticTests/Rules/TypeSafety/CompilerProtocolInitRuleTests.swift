@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct CompilerProtocolInitRuleTests {
   private let ruleID = CompilerProtocolInitRule.identifier

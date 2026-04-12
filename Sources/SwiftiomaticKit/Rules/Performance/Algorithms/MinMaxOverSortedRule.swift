@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct MinMaxOverSortedRule {
   static let id = "min_max_over_sorted"

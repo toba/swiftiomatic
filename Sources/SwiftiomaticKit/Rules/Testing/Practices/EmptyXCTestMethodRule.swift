@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct EmptyXCTestMethodRule {
   static let id = "empty_xctest_method"

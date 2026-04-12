@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct PrivateOverFilePrivateRuleTests {
   // MARK: - Non-triggering (default: validate_extensions = false)

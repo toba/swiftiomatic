@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LowerACLThanParentRule {
   static let id = "lower_acl_than_parent"

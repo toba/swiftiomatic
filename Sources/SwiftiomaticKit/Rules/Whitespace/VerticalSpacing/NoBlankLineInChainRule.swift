@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NoBlankLineInChainRule {
   static let id = "no_blank_line_in_chain"

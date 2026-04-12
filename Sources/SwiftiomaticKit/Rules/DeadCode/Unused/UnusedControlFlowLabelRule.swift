@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct UnusedControlFlowLabelRule {
   static let id = "unused_control_flow_label"

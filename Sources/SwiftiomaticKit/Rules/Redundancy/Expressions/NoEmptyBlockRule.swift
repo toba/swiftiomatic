@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NoEmptyBlockRule {
   static let id = "no_empty_block"

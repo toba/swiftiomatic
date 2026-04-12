@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension RedundantOverrideRule {
   static let nonTriggeringExamples = [
     Example(

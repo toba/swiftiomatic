@@ -2,6 +2,7 @@ import Foundation
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct ConfigMigratorTests {
   // MARK: - SwiftLint Migration

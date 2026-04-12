@@ -1,8 +1,8 @@
 import SwiftIDEUtils
-import SwiftSyntax
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct SyntaxKindMapperTests {
   @Test func basicKeywordMapping() {

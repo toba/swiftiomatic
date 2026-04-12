@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 import SourceKitC
 import Synchronization
 

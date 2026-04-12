@@ -1,5 +1,4 @@
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct ZeroOverExplicitInitRule {
   static let id = "zero_over_explicit_init"

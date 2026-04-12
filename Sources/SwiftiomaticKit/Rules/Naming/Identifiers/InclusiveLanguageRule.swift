@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct InclusiveLanguageRule {
   static let id = "inclusive_language"

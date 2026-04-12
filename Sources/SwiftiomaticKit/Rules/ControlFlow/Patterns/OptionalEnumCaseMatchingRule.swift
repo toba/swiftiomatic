@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct OptionalEnumCaseMatchingRule {
   static let id = "optional_enum_case_matching"

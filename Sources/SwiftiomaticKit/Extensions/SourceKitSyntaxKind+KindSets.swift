@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension SourceKitSyntaxKind {
   /// Creates a syntax kind from its short name (e.g. `"comment"` instead of the full raw value)
   ///

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct StatementPositionOptions: SeverityBasedRuleOptions {
   enum StatementModeConfiguration: String, AcceptableByOptionElement {
     case `default`

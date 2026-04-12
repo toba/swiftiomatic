@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension UnusedClosureParameterRule {
   static let nonTriggeringExamples = [
     Example("[1, 2].map { $0 + 1 }"),

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// A Swift file's syntax information with token kinds resolved to ``SourceKitSyntaxKind``
 struct ResolvedSyntaxMap {
   /// The resolved syntax tokens for this map

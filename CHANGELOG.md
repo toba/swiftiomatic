@@ -12,7 +12,8 @@
 - `single_line_body` format rule; condense single-statement blocks to one line ([#188](https://github.com/toba/swiftiomatic/issues/188))
 - `SortImportsRule`; group `@_implementationOnly` imports separately ([#182](https://github.com/toba/swiftiomatic/issues/182))
 - GitHub Actions action ([#167](https://github.com/toba/swiftiomatic/issues/167))
-- `AttributePlacementRule`; add `inline_when_fits` option
+- `AttributePlacementRule`; add `inline_when_fits` option ([#199](https://github.com/toba/swiftiomatic/issues/199))
+- `AssignmentWrappingRule`; keep RHS on the `=` line when it fits ([#201](https://github.com/toba/swiftiomatic/issues/201))
 
 ### 🐞 Fixes
 
@@ -23,7 +24,7 @@
 - Release workflow fails; `macos-15` runner lacks Swift 6.3 / Xcode 26 ([#190](https://github.com/toba/swiftiomatic/issues/190))
 - Fix 11 rule bugs surfaced by pipeline regeneration and test coverage
 - Deduplicate rules in migrate config output ([#194](https://github.com/toba/swiftiomatic/issues/194))
-- `sm migrate`; fix wrong rename mappings and add `.swiftformat` config migration
+- `sm migrate`; fix wrong rename mappings and add `.swiftformat` config migration ([#198](https://github.com/toba/swiftiomatic/issues/198))
 
 ### 🗜️ Tweaks
 
@@ -47,3 +48,5 @@
 - Populate missing rule examples for parameterized testing ([#193](https://github.com/toba/swiftiomatic/issues/193))
 - Speed up tests; invert fast/full defaults; remove disk I/O from correction tests ([#195](https://github.com/toba/swiftiomatic/issues/195))
 - Speed up builds; pin deps to exact versions; remove `SwiftLexicalLookup` dependency ([#197](https://github.com/toba/swiftiomatic/issues/197))
+- Extract `SwiftiomaticSyntax` wrapper target; cache swift-syntax builds across rule edits ([#202](https://github.com/toba/swiftiomatic/issues/202))
+- Investigate module splitting for incremental build speed ([#196](https://github.com/toba/swiftiomatic/issues/196))

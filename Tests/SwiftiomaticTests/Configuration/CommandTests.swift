@@ -2,6 +2,7 @@ import Foundation
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 extension Command {
   fileprivate init?(string: String) {

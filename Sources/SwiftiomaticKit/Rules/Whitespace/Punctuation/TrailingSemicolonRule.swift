@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct TrailingSemicolonRule {
   static let id = "trailing_semicolon"

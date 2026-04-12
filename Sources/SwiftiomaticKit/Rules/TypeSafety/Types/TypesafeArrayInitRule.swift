@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct TypesafeArrayInitRule: Rule {
   static let id = "typesafe_array_init"

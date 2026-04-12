@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// A warning generated during config migration
 public struct MigrationWarning: Equatable, Sendable {

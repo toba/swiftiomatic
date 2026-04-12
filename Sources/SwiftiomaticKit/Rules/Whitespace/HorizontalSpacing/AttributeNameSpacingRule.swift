@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct AttributeNameSpacingRule {
   static let id = "attribute_name_spacing"

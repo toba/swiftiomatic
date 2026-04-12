@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantExtensionACLRule {
   static let id = "redundant_extension_acl"

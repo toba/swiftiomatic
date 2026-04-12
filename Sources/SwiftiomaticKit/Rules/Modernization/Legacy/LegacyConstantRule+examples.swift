@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension LegacyConstantRule {
   static let nonTriggeringExamples: [Example] = [
     Example("CGRect.infinite"),

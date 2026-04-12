@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension RedundantSelfRule {
   static let nonTriggeringExamples = [
     Example(

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DocCommentsBeforeModifiersRule {
   static let id = "doc_comments_before_modifiers"

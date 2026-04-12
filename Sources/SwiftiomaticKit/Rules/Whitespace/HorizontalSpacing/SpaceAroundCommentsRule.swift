@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SpaceAroundCommentsRule {
   static let id = "space_around_comments"

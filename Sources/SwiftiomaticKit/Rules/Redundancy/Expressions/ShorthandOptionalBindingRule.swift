@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ShorthandOptionalBindingRule {
   static let id = "shorthand_optional_binding"

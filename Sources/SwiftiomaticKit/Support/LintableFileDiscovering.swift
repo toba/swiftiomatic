@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// An interface for discovering files that can be linted
 protocol LintableFileDiscovering: Sendable {

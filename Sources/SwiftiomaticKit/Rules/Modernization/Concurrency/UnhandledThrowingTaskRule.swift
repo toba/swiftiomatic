@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct UnhandledThrowingTaskRule {
   static let id = "unhandled_throwing_task"

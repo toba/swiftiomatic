@@ -1,6 +1,6 @@
 import Foundation
 import SwiftParser
-import SwiftSyntax
+public import SwiftiomaticSyntax
 
 /// Orchestrates analysis of Swift source files through a single Rule-based pipeline.
 ///

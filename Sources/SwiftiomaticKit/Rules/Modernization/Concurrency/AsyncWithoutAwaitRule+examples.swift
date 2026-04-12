@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension AsyncWithoutAwaitRule {
   static let nonTriggeringExamples = [
     Example(

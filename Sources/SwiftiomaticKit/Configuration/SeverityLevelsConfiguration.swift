@@ -1,3 +1,10 @@
+import SwiftiomaticSyntax
+
+extension SeverityLevelsConfiguration: SeverityLevelsBasedRuleOptions {
+  var warningThreshold: Int { warning }
+  var errorThreshold: Int? { error }
+}
+
 /// A rule configuration that allows specifying thresholds for `warning` and `error` severities
 struct SeverityLevelsConfiguration<Parent: Rule>: RuleOptions, InlinableOption, Sendable {
   /// The threshold for a violation to be a warning

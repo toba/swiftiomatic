@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct EmptyCollectionLiteralRule {
   static let id = "empty_collection_literal"

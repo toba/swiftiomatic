@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ExplicitTopLevelACLRule {
   static let id = "explicit_top_level_acl"

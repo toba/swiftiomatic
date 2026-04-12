@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DateForTimingRule {
   static let id = "date_for_timing"

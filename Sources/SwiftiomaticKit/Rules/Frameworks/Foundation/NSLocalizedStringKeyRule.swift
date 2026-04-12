@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NSLocalizedStringKeyRule {
   static let id = "nslocalizedstring_key"

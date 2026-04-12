@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct TrailingWhitespaceOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)

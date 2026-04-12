@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct NoEmptyBlockOptions: SeverityBasedRuleOptions {
   enum CodeBlockType: String, AcceptableByOptionElement, CaseIterable {
     case functionBodies = "function_bodies"

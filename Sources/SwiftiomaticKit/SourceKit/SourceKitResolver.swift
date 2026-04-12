@@ -1,4 +1,5 @@
 import Foundation
+public import SwiftiomaticSyntax
 import Synchronization
 
 /// SourceKit-backed ``TypeResolver`` that wraps cursorinfo, index, and expression-type requests

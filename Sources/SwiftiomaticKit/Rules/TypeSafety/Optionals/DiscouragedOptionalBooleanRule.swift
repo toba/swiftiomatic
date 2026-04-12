@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DiscouragedOptionalBooleanRule {
   static let id = "discouraged_optional_boolean"

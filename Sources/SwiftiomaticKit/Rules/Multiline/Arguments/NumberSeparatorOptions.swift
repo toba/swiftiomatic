@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct NumberSeparatorOptions: SeverityBasedRuleOptions {
   struct ExcludeRange: AcceptableByOptionElement, Equatable {
     private let min: Double

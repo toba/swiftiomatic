@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension AttributePlacementRule {
   static let nonTriggeringExamples = [
     Example("@objc var x: String"),

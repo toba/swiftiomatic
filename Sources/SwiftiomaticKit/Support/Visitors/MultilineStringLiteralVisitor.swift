@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 /// Collects line numbers that fall within multiline string literals (`"""`)
 ///

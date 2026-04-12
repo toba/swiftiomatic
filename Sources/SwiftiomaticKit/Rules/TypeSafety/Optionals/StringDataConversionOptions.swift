@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct StringDataConversionOptions: SeverityBasedRuleOptions {
   // sm:disable:previous type_name
 

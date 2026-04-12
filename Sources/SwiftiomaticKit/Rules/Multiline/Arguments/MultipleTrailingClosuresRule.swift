@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct MultipleTrailingClosuresRule {
   static let id = "multiple_trailing_closures"

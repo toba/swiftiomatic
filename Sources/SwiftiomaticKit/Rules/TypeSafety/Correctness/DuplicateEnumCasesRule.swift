@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DuplicateEnumCasesRule {
   static let id = "duplicate_enum_cases"

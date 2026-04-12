@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct InclusiveLanguageRuleTests {
   // MARK: - Non-triggering with override_terms config

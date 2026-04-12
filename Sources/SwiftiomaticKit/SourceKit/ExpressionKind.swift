@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// The kind of expression for a contiguous set of Swift source tokens
 ///
 /// Maps directly to SourceKit `source.lang.swift.expr.*` UIDs.

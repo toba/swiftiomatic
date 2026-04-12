@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// A single Swift syntax token from a SourceKit syntax map
 struct SyntaxToken: Equatable, Encodable {
   /// The SourceKit syntax type UID string (e.g. `source.lang.swift.syntaxtype.keyword`)

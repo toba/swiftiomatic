@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NSLocalizedStringRequireBundleRule {
   static let id = "nslocalizedstring_require_bundle"

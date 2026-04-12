@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension UnusedDeclarationRule {
   static let nonTriggeringExamples =
     [

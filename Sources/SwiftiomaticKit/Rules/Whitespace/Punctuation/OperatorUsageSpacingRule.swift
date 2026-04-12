@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct OperatorUsageSpacingRule: Rule {
   static let id = "operator_usage_spacing"

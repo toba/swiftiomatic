@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct MultilineArgumentsRule {
   static let id = "multiline_arguments"

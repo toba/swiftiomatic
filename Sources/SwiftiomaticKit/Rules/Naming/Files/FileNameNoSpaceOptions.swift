@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct FileNameNoSpaceOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>.warning

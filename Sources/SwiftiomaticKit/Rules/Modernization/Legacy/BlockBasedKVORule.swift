@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct BlockBasedKVORule {
   static let id = "block_based_kvo"

@@ -1,5 +1,4 @@
-import SwiftBasicFormat
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantBreakInSwitchRule {
   static let id = "redundant_break_in_switch"

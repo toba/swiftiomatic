@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SwitchCaseAlignmentRule {
   static let id = "switch_case_alignment"

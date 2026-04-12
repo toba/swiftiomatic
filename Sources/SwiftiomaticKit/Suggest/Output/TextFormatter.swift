@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Formats diagnostics as human-readable text grouped by source.
 public enum TextFormatter {
   public static func format(_ diagnostics: [Diagnostic]) -> String {

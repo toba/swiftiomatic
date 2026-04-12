@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LockAntiPatternsRule {
   static let id = "lock_anti_patterns"

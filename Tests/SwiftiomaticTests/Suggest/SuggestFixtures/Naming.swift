@@ -1,6 +1,7 @@
 // Fixture: naming heuristics
 
 import Foundation
+import SwiftiomaticSyntax
 
 // Should flag: Bool not reading as assertion
 var enabled: Bool = true

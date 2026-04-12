@@ -1,4 +1,5 @@
 import SourceKitC
+import SwiftiomaticSyntax
 
 /// Swift wrapper around `sourcekitd_uid_t`, the interned string identifier used by sourcekitd
 struct UID: Hashable {

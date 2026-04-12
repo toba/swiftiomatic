@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SpaceInsideGenericsRule {
   static let id = "space_inside_generics"

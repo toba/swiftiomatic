@@ -1,4 +1,5 @@
 import Foundation
+public import SwiftiomaticSyntax
 
 /// Unified read-only facade that queries Suggest, Lint, and Format rule registries
 public enum RuleCatalog {

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NoForceTryInTestsRule {
   static let id = "no_force_try_in_tests"

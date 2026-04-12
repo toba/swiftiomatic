@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct EmptyEnumArgumentsRule {
   static let id = "empty_enum_arguments"

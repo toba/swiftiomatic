@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 enum TypeBodyLengthCheckType: String, AcceptableByOptionElement, CaseIterable, Comparable {
   case `actor`
   case `class`
@@ -16,6 +18,8 @@ struct TypeBodyLengthOptions: SeverityLevelsBasedRuleOptions {
   var severityConfiguration = SeverityLevelsConfiguration<Parent>(
     warning: 250, error: 350,
   )
+  var warningThreshold: Int { severityConfiguration.warning }
+  var errorThreshold: Int? { severityConfiguration.error }
   @OptionElement(key: "excluded_types")
   private(set) var excludedTypes = Set<TypeBodyLengthCheckType>([.extension, .protocol])
   typealias Parent = TypeBodyLengthRule

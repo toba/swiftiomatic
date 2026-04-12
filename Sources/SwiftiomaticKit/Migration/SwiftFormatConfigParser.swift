@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// Parsed representation of a `.swiftformat` configuration file
 public struct SwiftFormatConfig: Sendable {

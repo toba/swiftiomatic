@@ -1,5 +1,4 @@
-import SwiftLexicalLookup
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantEscapingRule {
   static let id = "redundant_escaping"

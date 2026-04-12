@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct CyclomaticComplexityOptions: RuleOptions {
   typealias Parent = CyclomaticComplexityRule
 

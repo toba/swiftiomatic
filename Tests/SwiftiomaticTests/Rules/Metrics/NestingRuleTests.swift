@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct NestingRuleTests {
   // MARK: - Configuration: always_allow_one_type_in_functions

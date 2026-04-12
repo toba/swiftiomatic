@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 extension Configuration {
   // MARK: On-Disk Cache

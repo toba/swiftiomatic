@@ -1,5 +1,4 @@
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct ExplicitInitRule {
   static let id = "explicit_init"

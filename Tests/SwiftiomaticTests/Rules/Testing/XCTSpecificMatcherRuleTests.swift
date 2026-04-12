@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct XCTSpecificMatcherRuleTests {
   @Test func equalTrue() async throws {

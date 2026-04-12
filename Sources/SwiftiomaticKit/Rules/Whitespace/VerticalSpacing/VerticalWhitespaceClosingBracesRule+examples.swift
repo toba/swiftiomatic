@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension VerticalWhitespaceClosingBracesRule {
   private static let beforeTrivialLinesConfiguration = ["only_enforce_before_trivial_lines": true]
 

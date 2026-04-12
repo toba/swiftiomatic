@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// Shared naming convention checking aligned with the Swift API Design Guidelines
 ///

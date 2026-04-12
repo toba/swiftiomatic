@@ -1,5 +1,4 @@
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct RedundantOverrideRule {
   static let id = "redundant_override"

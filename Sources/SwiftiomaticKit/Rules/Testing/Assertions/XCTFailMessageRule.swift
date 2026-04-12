@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct XCTFailMessageRule {
   static let id = "xctfail_message"

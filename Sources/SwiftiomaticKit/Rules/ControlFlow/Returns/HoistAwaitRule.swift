@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct HoistAwaitRule {
   static let id = "hoist_await"

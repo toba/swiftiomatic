@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension Array where Element: Hashable {
   /// The elements in this array, discarding duplicates after the first one.
   /// Order-preserving. O(n) via `Set` membership checks.

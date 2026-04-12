@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PreferConditionListRule {
   static let id = "prefer_condition_list"

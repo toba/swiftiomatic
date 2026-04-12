@@ -1,5 +1,4 @@
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct ToggleBoolRule {
   static let id = "toggle_bool"

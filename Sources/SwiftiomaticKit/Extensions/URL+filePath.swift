@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 extension URL {
   /// The POSIX file system path for this URL, trapping if the URL has no file representation

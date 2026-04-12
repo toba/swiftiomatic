@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 typealias BalancedXCTestLifecycleOptions = UnitTestOptions<BalancedXCTestLifecycleRule>
 typealias EmptyXCTestMethodOptions = UnitTestOptions<EmptyXCTestMethodRule>
 typealias FinalTestCaseOptions = UnitTestOptions<FinalTestCaseRule>

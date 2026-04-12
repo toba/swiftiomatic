@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct StaticOverFinalClassRule {
   static let id = "static_over_final_class"

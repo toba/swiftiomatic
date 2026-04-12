@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension MarkRule {
   static let nonTriggeringExamples = [
     Example("// MARK: good"),

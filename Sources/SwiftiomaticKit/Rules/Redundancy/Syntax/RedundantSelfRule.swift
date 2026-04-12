@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 @_spi(Diagnostics) import SwiftParser
 @_spi(RawSyntax) import SwiftSyntax
 

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct TypeNameOptions: RuleOptions {
   @OptionElement(isInline: true)
   private(set) var nameConfiguration = NameOptions<Parent>(

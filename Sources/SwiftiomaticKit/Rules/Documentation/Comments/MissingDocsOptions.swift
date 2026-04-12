@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct MissingDocsOptions: RuleOptions {
   typealias Parent = MissingDocsRule
 

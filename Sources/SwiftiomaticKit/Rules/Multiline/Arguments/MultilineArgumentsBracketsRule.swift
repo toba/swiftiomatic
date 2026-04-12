@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct MultilineArgumentsBracketsRule {
   static let id = "multiline_arguments_brackets"

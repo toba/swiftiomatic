@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct LegacyNSGeometryFunctionsRule {
   static let id = "legacy_nsgeometry_functions"
   static let name = "Legacy NSGeometry Functions"

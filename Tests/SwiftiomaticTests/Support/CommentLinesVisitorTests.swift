@@ -1,7 +1,7 @@
-import SwiftSyntax
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct CommentLinesVisitorTests {
   @Test func emptyFile() {

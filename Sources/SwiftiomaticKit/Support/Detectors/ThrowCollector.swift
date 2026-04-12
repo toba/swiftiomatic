@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 /// Collects thrown error types from `throw` expressions within a single function scope
 ///

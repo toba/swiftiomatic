@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NumberSeparatorRule {
   static let id = "number_separator"

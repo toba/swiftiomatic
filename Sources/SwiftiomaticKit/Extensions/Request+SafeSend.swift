@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 extension Request {
   /// Send this SourceKit request after verifying the current rule is allowed to use SourceKit

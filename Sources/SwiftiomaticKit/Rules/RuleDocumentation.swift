@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// User-facing documentation for a single Swiftiomatic rule
 struct RuleDocumentation {

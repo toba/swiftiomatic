@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ConditionalReturnsOnNewlineRule {
   static let id = "conditional_returns_on_newline"

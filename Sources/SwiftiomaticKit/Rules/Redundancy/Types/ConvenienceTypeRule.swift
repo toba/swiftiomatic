@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ConvenienceTypeRule {
   static let id = "convenience_type"

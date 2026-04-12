@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ContrastedOpeningBraceRule {
   static let id = "contrasted_opening_brace"

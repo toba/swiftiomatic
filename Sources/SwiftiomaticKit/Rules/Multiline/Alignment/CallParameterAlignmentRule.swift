@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct CallParameterAlignmentRule {
   static let id = "call_parameter_alignment"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ModifierOrderRule {
   static let id = "modifier_order"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 /// Require that any state properties in SwiftUI be declared as private
 ///

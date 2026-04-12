@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct IncompatibleConcurrencyAnnotationOptions: SeverityBasedRuleOptions {
   // sm:disable:previous type_name
 

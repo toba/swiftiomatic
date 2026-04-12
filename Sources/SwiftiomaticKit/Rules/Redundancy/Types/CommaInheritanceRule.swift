@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct CommaInheritanceRule {
   static let id = "comma_inheritance"

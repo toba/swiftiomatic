@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct FatalErrorMessageRule {
   static let id = "fatal_error_message"

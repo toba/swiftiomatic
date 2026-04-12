@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantClosureArgumentParensRule {
   static let id = "redundant_closure_argument_parens"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct EmptyStringRule {
   static let id = "empty_string"

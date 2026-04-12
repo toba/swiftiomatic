@@ -1,5 +1,4 @@
-import SwiftIDEUtils
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LocalDocCommentRule: SwiftSyntaxRule {
   static let id = "local_doc_comment"

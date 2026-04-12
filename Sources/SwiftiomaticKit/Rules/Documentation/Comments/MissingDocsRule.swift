@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct MissingDocsRule {
   static let id = "missing_docs"

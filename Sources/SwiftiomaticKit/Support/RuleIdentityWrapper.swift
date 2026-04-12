@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Wraps a ``ConfiguredRule`` to provide identity based solely on the rule's identifier
 ///
 /// Two wrappers are equal when their underlying rules share the same identifier,

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension MissingDocsRule {
   static let nonTriggeringExamples = [
     // locally-defined superclass member is documented, but subclass member is not

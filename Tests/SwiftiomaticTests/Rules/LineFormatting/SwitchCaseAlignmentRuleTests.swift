@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct SwitchCaseAlignmentRuleTests {
   // MARK: - Non-triggering (default: non-indented cases)

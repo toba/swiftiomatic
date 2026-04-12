@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LinebreaksRule {
   static let id = "linebreaks"

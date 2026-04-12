@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 /// Rewrites leading trivia to indent or unindent a syntax subtree
 ///

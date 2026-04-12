@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 import Synchronization
 
 private enum LinterCacheError: Error {

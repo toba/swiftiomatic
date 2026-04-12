@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct BlockCommentsRule {
   static let id = "block_comments"

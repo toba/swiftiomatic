@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct TypeBodyLengthRule {
   private static let testConfig = ["warning": 2] as [String: any Sendable]

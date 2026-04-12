@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension ClosureEndIndentationRule {
   static let nonTriggeringExamples = [
     Example(

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct ImplicitSelfCaptureRule: CollectingRule {
   static let id = "implicit_self_capture"
   static let name = "Implicit Self Capture"

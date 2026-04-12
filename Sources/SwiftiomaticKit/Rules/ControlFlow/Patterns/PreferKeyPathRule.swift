@@ -1,5 +1,4 @@
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct PreferKeyPathRule {
   private static let extendedMode = ["restrict_to_standard_functions": false]

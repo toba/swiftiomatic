@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ReduceBooleanRule {
   static let id = "reduce_boolean"

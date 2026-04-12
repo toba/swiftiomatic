@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct BlanketDisableCommandRule: Rule {
   static let id = "blanket_disable_command"

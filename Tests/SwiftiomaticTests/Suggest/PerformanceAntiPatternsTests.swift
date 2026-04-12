@@ -2,6 +2,7 @@ import Foundation
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 // NOTE: PerformanceAntiPatternsRule was split into 5 focused rules:
 //   - DateForTimingRule (date_for_timing)

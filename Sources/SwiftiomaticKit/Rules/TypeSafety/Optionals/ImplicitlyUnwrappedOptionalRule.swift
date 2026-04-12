@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ImplicitlyUnwrappedOptionalRule {
   static let id = "implicitly_unwrapped_optional"

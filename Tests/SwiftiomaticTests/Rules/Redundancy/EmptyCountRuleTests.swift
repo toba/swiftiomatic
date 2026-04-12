@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct EmptyCountRuleTests {
   // MARK: - Non-triggering (default: only_after_dot = false)

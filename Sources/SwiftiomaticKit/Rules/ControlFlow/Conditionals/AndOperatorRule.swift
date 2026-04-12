@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct AndOperatorRule {
   static let id = "and_operator"

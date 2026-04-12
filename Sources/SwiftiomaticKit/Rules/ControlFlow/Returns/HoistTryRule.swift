@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct HoistTryRule {
   static let id = "hoist_try"

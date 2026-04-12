@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension ColonRule {
   static let nonTriggeringExamples = [
     Example("let abc: Void"),

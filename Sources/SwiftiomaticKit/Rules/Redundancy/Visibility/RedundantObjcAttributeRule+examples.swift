@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension RedundantObjcAttributeRule {
   static let nonTriggeringExamples = [
     Example("@objc private var foo: String? {}"),

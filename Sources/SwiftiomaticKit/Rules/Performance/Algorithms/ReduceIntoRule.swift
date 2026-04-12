@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ReduceIntoRule {
   static let id = "reduce_into"

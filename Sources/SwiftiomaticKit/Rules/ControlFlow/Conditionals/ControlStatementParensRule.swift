@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ControlStatementParensRule {
   static let id = "control_statement_parens"

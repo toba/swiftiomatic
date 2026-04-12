@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct IsDisjointRule {
   static let id = "is_disjoint"

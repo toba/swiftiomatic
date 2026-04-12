@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct CodableEnumRawValueRule {
   static let id = "codable_enum_raw_value"

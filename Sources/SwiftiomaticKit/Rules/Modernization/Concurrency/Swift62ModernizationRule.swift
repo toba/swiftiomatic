@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct Swift62ModernizationRule {
   static let id = "swift62_modernization"

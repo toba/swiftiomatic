@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Maps lint rules that are superseded by format rules to avoid duplicate diagnostics
 ///
 /// When format-lint is active, lint rules in this map are skipped because the format

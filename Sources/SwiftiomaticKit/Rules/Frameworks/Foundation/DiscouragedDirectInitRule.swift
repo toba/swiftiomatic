@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DiscouragedDirectInitRule {
   static let id = "discouraged_direct_init"

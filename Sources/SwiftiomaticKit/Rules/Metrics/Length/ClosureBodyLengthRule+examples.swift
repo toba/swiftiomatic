@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension ClosureBodyLengthRule {
   static let nonTriggeringExamples: [Example] = [
     singleLineClosure(),

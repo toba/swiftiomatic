@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct TrailingCommaRuleTests {
   // MARK: - Non-triggering (default: no trailing commas)

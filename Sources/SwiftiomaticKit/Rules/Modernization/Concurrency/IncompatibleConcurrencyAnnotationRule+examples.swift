@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension IncompatibleConcurrencyAnnotationRule {
   static let nonTriggeringExamples = [
     // Sendable conformance is fine

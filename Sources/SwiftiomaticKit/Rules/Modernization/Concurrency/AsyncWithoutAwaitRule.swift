@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct AsyncWithoutAwaitRule {
   static let id = "async_without_await"

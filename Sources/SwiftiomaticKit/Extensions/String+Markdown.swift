@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension String {
   /// Returns a copy with markdown code-formatting (backticks) stripped.
   var strippingMarkdown: String {

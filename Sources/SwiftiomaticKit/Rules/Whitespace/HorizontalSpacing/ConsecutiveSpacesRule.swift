@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ConsecutiveSpacesRule {
   static let id = "consecutive_spaces"

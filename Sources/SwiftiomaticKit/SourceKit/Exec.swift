@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// Namespace for synchronous child-process execution utilities
 enum Exec {

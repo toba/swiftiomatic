@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct VerticalWhitespaceClosingBracesRule: Rule {
   static let id = "vertical_whitespace_closing_braces"

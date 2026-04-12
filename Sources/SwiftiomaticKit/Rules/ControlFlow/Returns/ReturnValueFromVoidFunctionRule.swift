@@ -1,5 +1,4 @@
-import SwiftBasicFormat
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ReturnValueFromVoidFunctionRule {
   static let id = "return_value_from_void_function"

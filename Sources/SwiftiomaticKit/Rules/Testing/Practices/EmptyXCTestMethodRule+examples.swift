@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension EmptyXCTestMethodRule {
   static let nonTriggeringExamples = [
     // Valid XCTestCase class

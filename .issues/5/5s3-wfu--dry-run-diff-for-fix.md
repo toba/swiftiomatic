@@ -1,16 +1,16 @@
 ---
 # 5s3-wfu
 title: Dry-run diff for --fix
-status: ready
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-04-10T22:25:29Z
-updated_at: 2026-04-10T22:25:29Z
+updated_at: 2026-04-12T01:32:19Z
 parent: pms-xpz
 sync:
     github:
         issue_number: "170"
-        synced_at: "2026-04-11T01:01:47Z"
+        synced_at: "2026-04-12T01:32:30Z"
 ---
 
 Show a unified diff of what \`--fix\` would change without modifying files. This lets teams review auto-corrections before applying them.

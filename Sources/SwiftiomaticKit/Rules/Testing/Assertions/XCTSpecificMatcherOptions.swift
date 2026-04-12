@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct XCTSpecificMatcherOptions: SeverityBasedRuleOptions {
   enum Matcher: String, AcceptableByOptionElement, CaseIterable {
     case oneArgumentAsserts = "one-argument-asserts"

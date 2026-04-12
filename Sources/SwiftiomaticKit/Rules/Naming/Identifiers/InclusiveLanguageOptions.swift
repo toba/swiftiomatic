@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct InclusiveLanguageOptions: SeverityBasedRuleOptions {
   private static let defaultTerms: Set<String> = [
     "whitelist",

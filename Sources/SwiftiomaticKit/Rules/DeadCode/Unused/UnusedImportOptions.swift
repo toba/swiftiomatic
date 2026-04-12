@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// The configuration payload mapping an imported module to a set of modules that are allowed to be
 /// transitively imported.
 struct TransitiveModuleOptions<Parent: Rule>: Equatable, AcceptableByOptionElement {

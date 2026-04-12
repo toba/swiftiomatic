@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PreferFinalClassesRule {
   static let id = "prefer_final_classes"

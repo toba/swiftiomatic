@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DiscouragedObjectLiteralRule {
   static let id = "discouraged_object_literal"

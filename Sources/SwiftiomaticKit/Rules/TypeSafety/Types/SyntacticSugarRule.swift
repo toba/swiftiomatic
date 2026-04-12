@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SyntacticSugarRule: Rule {
   static let id = "syntactic_sugar"

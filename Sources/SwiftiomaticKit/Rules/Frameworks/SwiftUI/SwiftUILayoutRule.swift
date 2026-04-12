@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SwiftUILayoutRule {
   static let id = "swiftui_layout"

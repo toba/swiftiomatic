@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension ExplicitSelfRule {
   static let nonTriggeringExamples = [
     Example(

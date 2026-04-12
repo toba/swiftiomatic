@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Extracts emoji markers from source text, mapping each to its UTF-8 offset.
 ///
 /// Adapted from Apple's swift-format test support. Markers pinpoint expected

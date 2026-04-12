@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct TrailingClosureRule {
   private static let onlySingleMutedConfig = ["only_single_muted_parameter": true]

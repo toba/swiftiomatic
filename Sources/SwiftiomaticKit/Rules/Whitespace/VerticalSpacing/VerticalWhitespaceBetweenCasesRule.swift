@@ -1,5 +1,4 @@
-import SwiftBasicFormat
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct VerticalWhitespaceBetweenCasesRule {
   static let id = "vertical_whitespace_between_cases"

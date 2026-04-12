@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 public import Foundation
 
 /// Adds `TextOutputStream` conformance so ``FileHandle`` can be used as a

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct AttributePlacementRule {
   static let id = "attribute_placement"

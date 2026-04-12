@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DelegateToAsyncStreamRule {
   static let id = "delegate_to_async_stream"

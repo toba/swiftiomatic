@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 enum TypeContent: String, AcceptableByOptionElement {
   case `case`
   case typeAlias = "type_alias"

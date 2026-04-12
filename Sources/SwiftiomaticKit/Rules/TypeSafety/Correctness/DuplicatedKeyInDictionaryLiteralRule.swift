@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DuplicatedKeyInDictionaryLiteralRule {
   static let id = "duplicated_key_in_dictionary_literal"

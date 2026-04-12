@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ModifiersOnSameLineRule {
   static let id = "modifiers_on_same_line"

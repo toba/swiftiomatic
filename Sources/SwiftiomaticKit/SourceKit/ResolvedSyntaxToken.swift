@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// A ``SyntaxToken`` wrapper with its kind resolved to a ``SourceKitSyntaxKind``
 struct ResolvedSyntaxToken {
   /// The raw ``SyntaxToken`` obtained from SourceKit

@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct TypedThrowsRule {
   static let id = "typed_throws"

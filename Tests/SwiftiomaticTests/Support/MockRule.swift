@@ -1,4 +1,6 @@
+
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 struct MockRule: Rule {
   var configurationDescription: some Documentable { RuleOptionsEntry.noOptions }

@@ -1,15 +1,15 @@
 ---
 # fwk-0kx
 title: Investigate module splitting for incremental build speed
-status: ready
+status: completed
 type: epic
 priority: normal
 created_at: 2026-04-11T22:03:03Z
-updated_at: 2026-04-11T23:08:04Z
+updated_at: 2026-04-12T01:32:33Z
 sync:
     github:
         issue_number: "196"
-        synced_at: "2026-04-11T23:48:38Z"
+        synced_at: "2026-04-12T01:32:51Z"
 ---
 
 SwiftiomaticKit is 618 files in one module. Rules (472 files) are completely independent of each other but all depend on Models/Support/Configuration.

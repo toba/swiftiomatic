@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct BlankLinesAroundMarkRule {
   static let id = "blank_lines_around_mark"

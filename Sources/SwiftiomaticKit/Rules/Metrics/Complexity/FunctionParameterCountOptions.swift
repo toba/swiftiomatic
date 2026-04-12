@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct FunctionParameterCountOptions: RuleOptions {
   @OptionElement(isInline: true)
   var severityConfiguration = SeverityLevelsConfiguration<Parent>(

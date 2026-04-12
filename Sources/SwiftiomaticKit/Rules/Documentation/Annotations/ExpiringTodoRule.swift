@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ExpiringTodoRule {
   static let id = "expiring_todo"

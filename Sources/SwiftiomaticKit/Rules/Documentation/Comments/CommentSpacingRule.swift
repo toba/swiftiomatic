@@ -1,5 +1,5 @@
 import Foundation
-import SwiftIDEUtils
+import SwiftiomaticSyntax
 
 struct CommentSpacingRule: Rule {
   static let id = "comment_spacing"

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct TrailingCommaOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)

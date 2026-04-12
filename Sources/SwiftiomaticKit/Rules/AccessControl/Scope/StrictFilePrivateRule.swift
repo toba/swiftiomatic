@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct StrictFilePrivateRule {
   static let id = "strict_fileprivate"

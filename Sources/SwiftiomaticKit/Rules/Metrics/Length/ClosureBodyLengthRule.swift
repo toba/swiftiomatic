@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ClosureBodyLengthRule {
   static let id = "closure_body_length"

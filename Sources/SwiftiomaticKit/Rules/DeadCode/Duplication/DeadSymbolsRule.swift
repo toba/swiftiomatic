@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DeadSymbolsRule: CollectingRule {
   static let id = "dead_symbols"

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct MultilineFunctionChainsRule: SourceKitASTRule {
   static let id = "multiline_function_chains"

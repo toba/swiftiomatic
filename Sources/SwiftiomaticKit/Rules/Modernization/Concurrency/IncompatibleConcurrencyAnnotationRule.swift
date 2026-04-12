@@ -1,5 +1,4 @@
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct IncompatibleConcurrencyAnnotationRule {
   static let id = "incompatible_concurrency_annotation"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct StructuralDuplicationRule: CollectingRule {
   static let id = "structural_duplication"

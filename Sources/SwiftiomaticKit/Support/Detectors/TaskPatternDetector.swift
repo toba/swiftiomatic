@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 /// Detects fire-and-forget `Task {}` patterns where the result is discarded
 ///

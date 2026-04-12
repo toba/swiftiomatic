@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension DeploymentTargetRule {
   static let nonTriggeringExamples: [Example] = [
     Example("@available(iOS 12.0, *)\nclass A {}"),

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NotificationCenterDetachmentRule {
   static let id = "notification_center_detachment"

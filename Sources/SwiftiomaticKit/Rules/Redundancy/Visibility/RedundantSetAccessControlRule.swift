@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantSetAccessControlRule {
   static let id = "redundant_set_access_control"

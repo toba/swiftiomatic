@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 import Yams
 
 /// Parsed representation of a `.swiftlint.yml` configuration file

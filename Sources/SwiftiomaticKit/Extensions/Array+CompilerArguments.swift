@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// Partially filters compiler arguments from `xcodebuild` to something that SourceKit/Clang will accept
 ///

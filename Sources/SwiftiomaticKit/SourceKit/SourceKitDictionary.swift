@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// A parsed SourceKit response dictionary with typed accessors for common keys
 ///
 /// Eagerly resolves the entity kind (expression, declaration, or statement)

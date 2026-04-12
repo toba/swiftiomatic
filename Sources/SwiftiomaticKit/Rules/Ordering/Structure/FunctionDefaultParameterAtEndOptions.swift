@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct FunctionDefaultParameterAtEndOptions: SeverityBasedRuleOptions {
   // sm:disable:previous type_name
 

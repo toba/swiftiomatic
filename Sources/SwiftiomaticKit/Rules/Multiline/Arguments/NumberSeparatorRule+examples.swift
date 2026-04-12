@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension NumberSeparatorRule {
   static let nonTriggeringExamples: [Example] = ["-", "+", ""]
     .flatMap { (sign: String) -> [Example] in

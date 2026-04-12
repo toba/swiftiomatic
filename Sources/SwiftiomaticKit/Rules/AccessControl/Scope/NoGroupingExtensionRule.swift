@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NoGroupingExtensionRule {
   static let id = "no_grouping_extension"

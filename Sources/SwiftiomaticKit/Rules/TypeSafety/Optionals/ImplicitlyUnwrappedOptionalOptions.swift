@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct ImplicitlyUnwrappedOptionalOptions: SeverityBasedRuleOptions {
   enum ImplicitlyUnwrappedOptionalModeConfiguration: String,
     AcceptableByOptionElement

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct BalancedXCTestLifecycleRule {
   static let id = "balanced_xctest_lifecycle"

@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct HeaderFileNameRule {
   static let id = "header_file_name"

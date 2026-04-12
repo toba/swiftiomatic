@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension PreferSelfInStaticReferencesRule {
   static let nonTriggeringExamples = [
     Example(

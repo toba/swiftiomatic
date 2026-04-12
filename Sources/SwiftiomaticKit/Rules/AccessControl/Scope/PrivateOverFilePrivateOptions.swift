@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct PrivateOverFilePrivateOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)

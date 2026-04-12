@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 extension SourceKitDictionary {
   /// Collects all structure kinds and their byte ranges that contain the given offset

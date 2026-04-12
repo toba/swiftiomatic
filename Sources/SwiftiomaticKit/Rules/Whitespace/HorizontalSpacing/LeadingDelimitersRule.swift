@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LeadingDelimitersRule {
   static let id = "leading_delimiters"

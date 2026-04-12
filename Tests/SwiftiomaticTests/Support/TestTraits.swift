@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 /// Ensures rules are registered and SourceKit is disabled before test execution.
 /// SourceKit is disabled to prevent SIGSEGV during process exit (apple/swift#55112).

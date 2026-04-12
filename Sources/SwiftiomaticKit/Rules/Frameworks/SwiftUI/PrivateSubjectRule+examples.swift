@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension PrivateSubjectRule {
   static let nonTriggeringExamples: [Example] = [
     Example(

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct CompilerProtocolInitRule {
   static let id = "compiler_protocol_init"

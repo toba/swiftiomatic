@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct PreferKeyPathRuleTests {
   private static let extendedMode: [String: any Sendable] = [

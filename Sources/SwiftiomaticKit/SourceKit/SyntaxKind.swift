@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// SourceKit syntax token kinds from `source.lang.swift.syntaxtype.*` UIDs
 enum SourceKitSyntaxKind: String, CaseIterable {
   case argument = "source.lang.swift.syntaxtype.argument"

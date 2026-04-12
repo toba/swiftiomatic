@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct IdenticalOperandsRule {
   static let operators = ["==", "!=", "===", "!==", ">", ">=", "<", "<="]

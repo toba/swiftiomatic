@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ApplicationMainRule {
   static let id = "application_main"

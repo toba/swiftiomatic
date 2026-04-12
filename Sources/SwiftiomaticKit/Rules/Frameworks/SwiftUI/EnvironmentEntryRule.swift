@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct EnvironmentEntryRule {
   static let id = "environment_entry"

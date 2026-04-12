@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Swift statement kinds from SourceKit `source.lang.swift.stmt.*` UIDs
 enum StatementKind: String {
   case brace = "source.lang.swift.stmt.brace"

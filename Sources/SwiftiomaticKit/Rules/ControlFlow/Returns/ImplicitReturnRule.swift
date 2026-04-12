@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ImplicitReturnRule {
   static let id = "implicit_return"

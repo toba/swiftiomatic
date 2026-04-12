@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct ImplicitReturnOptions: SeverityBasedRuleOptions {
   enum ReturnKind: String, AcceptableByOptionElement, CaseIterable, Comparable {
     case closure

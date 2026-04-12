@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct NestingOptions: RuleOptions {
   typealias SeverityLevels = SeverityLevelsConfiguration<Parent>
 

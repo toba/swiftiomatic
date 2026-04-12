@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SwitchCaseOnNewlineRule {
   static let id = "switch_case_on_newline"

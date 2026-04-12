@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SortTypealiasesRule {
   static let id = "sort_typealiases"

@@ -1,6 +1,7 @@
 // Fixture: concurrency modernization patterns
 
 import Foundation
+import SwiftiomaticSyntax
 
 // Should flag: AsyncStream without continuation.finish()
 func makeStream() -> AsyncStream<Int> {

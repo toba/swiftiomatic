@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ContainsOverFirstNotNilRule {
   static let id = "contains_over_first_not_nil"

@@ -4,6 +4,7 @@
 /// from the Xcode toolchain's `sourcekitdInProc.framework`.
 
 import SourceKitC
+import SwiftiomaticSyntax
 
 /// The dynamically loaded sourcekitdInProc framework handle
 private let library = toolchainLoader.load(

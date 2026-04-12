@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantViewBuilderRule {
   static let id = "redundant_view_builder"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NSObjectPreferIsEqualRule {
   static let id = "nsobject_prefer_isequal"

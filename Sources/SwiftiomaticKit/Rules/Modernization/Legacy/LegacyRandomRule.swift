@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct LegacyRandomRule {
   static let id = "legacy_random"

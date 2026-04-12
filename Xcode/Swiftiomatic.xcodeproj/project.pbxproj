@@ -18,6 +18,7 @@
 		8BA05A382AD0FF38284456AF /* SwiftiomaticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4831E2A3C4C23AEFF4FC23B6 /* SwiftiomaticApp.swift */; };
 		8F9016E4513A14EEB13B13F8 /* XcodeKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 74451B9DAFD7634322EB04B4 /* XcodeKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		96238D6E2F54CC690031E7BE /* SwiftiomaticKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5C3A24064CB44E3ECA06520F /* SwiftiomaticKit */; };
+		9DFB18B93A33E405CA1BE09D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 340FEA820F6BC1C61AD1B9CF /* Assets.xcassets */; };
 		A6E1294B2C63820D1F254933 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C39F96F1469B6489D1DDCA /* SharedDefaults.swift */; };
 		A806D875AC9978E3801E7E30 /* XcodeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74451B9DAFD7634322EB04B4 /* XcodeKit.framework */; };
 		ABFAF6674DD3BB99BF1E076C /* AboutTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049C2ADD85F4083024B1AD9C /* AboutTab.swift */; };
@@ -78,6 +79,7 @@
 		22C5363612C7FB0CFADDBED5 /* FormatFileCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FormatFileCommand.swift; path = SwiftiomaticExtension/FormatFileCommand.swift; sourceTree = "<group>"; };
 		2EB64C472274C585B839F0B9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = SwiftiomaticApp/Info.plist; sourceTree = "<group>"; };
 		2F55E5982085DEEFEB7CB95E /* OptionsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OptionsTab.swift; path = SwiftiomaticApp/Views/OptionsTab.swift; sourceTree = "<group>"; };
+		340FEA820F6BC1C61AD1B9CF /* Assets.xcassets */ = {isa = PBXFileReference; name = Assets.xcassets; path = SwiftiomaticApp/Assets.xcassets; sourceTree = "<group>"; };
 		3BFF43A282AC841BC385FEB6 /* SwiftiomaticApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SwiftiomaticApp.entitlements; path = SwiftiomaticApp/SwiftiomaticApp.entitlements; sourceTree = "<group>"; };
 		4831E2A3C4C23AEFF4FC23B6 /* SwiftiomaticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwiftiomaticApp.swift; path = SwiftiomaticApp/SwiftiomaticApp.swift; sourceTree = "<group>"; };
 		531FCA9452A741FBD889EC07 /* FormatCommandError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FormatCommandError.swift; path = SwiftiomaticExtension/FormatCommandError.swift; sourceTree = "<group>"; };
@@ -175,6 +177,7 @@
 				35AE5E26DE31EF8C73B07063 /* Views */,
 				4831E2A3C4C23AEFF4FC23B6 /* SwiftiomaticApp.swift */,
 				3BFF43A282AC841BC385FEB6 /* SwiftiomaticApp.entitlements */,
+				340FEA820F6BC1C61AD1B9CF /* Assets.xcassets */,
 			);
 			name = SwiftiomaticApp;
 			sourceTree = "<group>";
@@ -279,6 +282,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9DFB18B93A33E405CA1BE09D /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,6 +380,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				BUNDLE_IDENTIFIER = com.toba.swiftiomatic;
 				CODE_SIGN_ENTITLEMENTS = SwiftiomaticApp/SwiftiomaticApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -400,6 +405,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				BUNDLE_IDENTIFIER = com.toba.swiftiomatic;
 				CODE_SIGN_ENTITLEMENTS = SwiftiomaticApp/SwiftiomaticApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";

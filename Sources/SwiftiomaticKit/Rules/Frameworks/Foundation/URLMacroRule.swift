@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct URLMacroRule {
   static let id = "url_macro"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DeclarationWhitespaceRule {
   static let id = "declaration_whitespace"

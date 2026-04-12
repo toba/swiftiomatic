@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension Configuration {
   // MARK: - Subtypes
 

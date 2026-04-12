@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct VoidFunctionInTernaryConditionRule {
   static let id = "void_function_in_ternary"

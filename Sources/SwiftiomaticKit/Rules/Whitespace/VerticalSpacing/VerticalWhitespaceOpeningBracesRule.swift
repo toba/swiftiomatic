@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 extension SwiftSource {
   fileprivate func violatingRanges(for pattern: String) -> [Range<String.Index>] {

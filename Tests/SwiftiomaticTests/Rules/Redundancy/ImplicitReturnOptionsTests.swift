@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct ImplicitReturnOptionsTests {
   @Test func implicitReturnConfigurationFromDictionary() throws {

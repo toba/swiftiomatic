@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 /// Wraps a rule metatype so it can be used as a `@Test(arguments:)` parameter.
 struct RuleCase: Sendable, CustomTestStringConvertible {

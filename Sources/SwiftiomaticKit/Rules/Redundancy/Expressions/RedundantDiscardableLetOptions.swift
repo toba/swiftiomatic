@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct RedundantDiscardableLetOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)

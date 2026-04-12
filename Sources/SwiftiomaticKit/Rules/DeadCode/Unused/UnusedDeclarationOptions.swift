@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct UnusedDeclarationOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>.error

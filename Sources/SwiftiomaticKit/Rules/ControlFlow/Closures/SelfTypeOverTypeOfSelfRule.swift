@@ -1,5 +1,4 @@
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct SelfTypeOverTypeOfSelfRule {
   static let id = "self_type_over_type_of_self"

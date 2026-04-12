@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SwiftTestingTestCaseNamesRule {
   static let id = "swift_testing_test_case_names"

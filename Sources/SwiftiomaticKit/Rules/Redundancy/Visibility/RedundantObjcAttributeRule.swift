@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 private let attributeNamesImplyingObjc: Set<String> = [
   "IBAction", "IBOutlet", "IBInspectable", "GKInspectable", "IBDesignable", "NSManaged",

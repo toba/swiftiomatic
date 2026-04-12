@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct FileTypesOrderOptions: SeverityBasedRuleOptions {
   enum FileType: String, AcceptableByOptionElement {
     case supportingType = "supporting_type"

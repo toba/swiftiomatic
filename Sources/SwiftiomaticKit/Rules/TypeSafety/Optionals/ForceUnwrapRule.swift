@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ForceUnwrapRule {
   static let id = "force_unwrap"

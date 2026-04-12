@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct AttributePlacementOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)

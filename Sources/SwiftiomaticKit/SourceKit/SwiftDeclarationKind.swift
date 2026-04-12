@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Swift declaration kinds from SourceKit `source.lang.swift.decl.*` UIDs
 enum SwiftDeclarationKind: String, CaseIterable {
   case `associatedtype` = "source.lang.swift.decl.associatedtype"

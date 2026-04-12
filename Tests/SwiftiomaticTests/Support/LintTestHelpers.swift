@@ -2,6 +2,7 @@ import Foundation
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 /// When true, skip expensive variant tests (emoji, shebang, comment, string, disable, severity).
 /// Variants run only when `SWIFTIOMATIC_FULL_TESTS=1` is set.

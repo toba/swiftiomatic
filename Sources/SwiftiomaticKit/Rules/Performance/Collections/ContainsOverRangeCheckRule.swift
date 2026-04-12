@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ContainsOverRangeCheckRule {
   static let id = "contains_over_range_check"

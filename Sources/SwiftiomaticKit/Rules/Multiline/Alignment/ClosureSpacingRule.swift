@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ClosureSpacingRule {
   static let id = "closure_spacing"

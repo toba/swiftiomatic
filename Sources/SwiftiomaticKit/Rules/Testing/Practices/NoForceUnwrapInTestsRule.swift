@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NoForceUnwrapInTestsRule {
   static let id = "no_force_unwrap_in_tests"

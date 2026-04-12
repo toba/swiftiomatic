@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct LiteralExpressionEndIndentationRule: Rule {
   static let id = "literal_expression_end_indentation"

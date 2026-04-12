@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension ComputedAccessorsOrderRule {
   static var nonTriggeringExamples: [Example] {
     [

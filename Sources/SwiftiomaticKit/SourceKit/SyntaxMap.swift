@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// A Swift file's syntax token map as returned by SourceKit
 struct SyntaxMap: Equatable {
   /// The ordered syntax tokens in the file

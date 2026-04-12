@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct FileNameNoSpaceRule: Rule {
   static let id = "file_name_no_space"

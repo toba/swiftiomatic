@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct UntypedErrorInCatchRule {
   static let id = "untyped_error_in_catch"

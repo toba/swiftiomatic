@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct CaseIterableUsageRule: CollectingRule {
   static let id = "case_iterable_usage"

@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NamingHeuristicsRule {
   static let id = "naming_heuristics"

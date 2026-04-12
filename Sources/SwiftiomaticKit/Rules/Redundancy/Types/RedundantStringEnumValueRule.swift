@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantStringEnumValueRule {
   static let id = "redundant_string_enum_value"

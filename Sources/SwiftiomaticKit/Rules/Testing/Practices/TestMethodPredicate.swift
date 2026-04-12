@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 extension FunctionDeclSyntax {
   package var isDiscoverableTestMethod: Bool {

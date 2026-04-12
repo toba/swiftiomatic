@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct TestCaseAccessibilityRule {
   static let id = "test_case_accessibility"

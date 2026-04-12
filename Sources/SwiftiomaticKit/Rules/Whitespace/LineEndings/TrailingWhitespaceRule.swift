@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct TrailingWhitespaceRule {
   static let id = "trailing_whitespace"

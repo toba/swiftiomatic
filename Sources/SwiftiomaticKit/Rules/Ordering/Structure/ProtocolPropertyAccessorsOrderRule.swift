@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ProtocolPropertyAccessorsOrderRule {
   static let id = "protocol_property_accessors_order"

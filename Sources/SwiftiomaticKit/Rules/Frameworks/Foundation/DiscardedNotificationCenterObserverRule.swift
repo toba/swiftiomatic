@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct DiscardedNotificationCenterObserverRule {
   static let id = "discarded_notification_center_observer"

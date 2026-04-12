@@ -1,6 +1,7 @@
 public import ArgumentParser
 import Foundation
 import SwiftiomaticKit
+import SwiftiomaticSyntax
 
 @main
 struct SwiftiomaticCLI: AsyncParsableCommand {
@@ -72,6 +73,8 @@ struct Analyze: AsyncParsableCommand {
     // Must register rules before any Configuration access (which uses RuleRegistry.shared.list
     // as a default parameter and would cache an empty list).
     RuleRegistry.registerAllRulesOnce()
+    // Detect Swift version via SourceKit (if available) before any rule evaluation.
+    SwiftVersion.detectViaSourceKit()
 
     let configResolver = ConfigurationResolver(configPath: config)
     // Load a base config for top-level rule/analyzer setup

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PreferAssetSymbolsRule {
   static let id = "prefer_asset_symbols"

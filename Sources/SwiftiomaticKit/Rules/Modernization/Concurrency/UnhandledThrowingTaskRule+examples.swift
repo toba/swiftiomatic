@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension UnhandledThrowingTaskRule {
   static var nonTriggeringExamples: [Example] {
     [

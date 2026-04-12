@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Classification of `Any`-family type annotations
 ///
 /// Used by both `AnyEliminationCheck` (suggest) and `AnyEliminationRule` (lint).

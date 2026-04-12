@@ -1,6 +1,7 @@
 // Fixture: Swift 6.2 modernization patterns
 
 import Foundation
+import SwiftiomaticSyntax
 
 // Should flag: tuple as fixed-size buffer
 let buffer: (UInt8, UInt8, UInt8, UInt8) = (0, 0, 0, 0)

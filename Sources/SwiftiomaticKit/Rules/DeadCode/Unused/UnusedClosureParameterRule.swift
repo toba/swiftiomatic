@@ -1,6 +1,5 @@
 import Foundation
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct UnusedClosureParameterRule {
   static let id = "unused_closure_parameter"

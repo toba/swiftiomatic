@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 extension String {
   private func countOfTrailingCharacters(in characterSet: CharacterSet) -> Int {

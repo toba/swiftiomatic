@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct OptionalDataStringConversionRule {
   static let id = "optional_data_string_conversion"

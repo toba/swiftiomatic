@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct CollectionAlignmentOptions: SeverityBasedRuleOptions {
   @OptionElement(key: "severity")
   var severityConfiguration = SeverityOption<Parent>(.warning)

@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// A `Sendable` wrapper for untyped YAML configuration values
 ///
 /// Replaces `[String: Any]` in configuration properties where `Sendable` conformance

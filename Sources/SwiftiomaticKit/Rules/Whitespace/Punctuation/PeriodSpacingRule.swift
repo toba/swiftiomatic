@@ -1,5 +1,5 @@
 import Foundation
-import SwiftIDEUtils
+import SwiftiomaticSyntax
 
 struct PeriodSpacingRule: Rule {
   static let id = "period_spacing"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PreferForLoopRule {
   static let id = "prefer_for_loop"

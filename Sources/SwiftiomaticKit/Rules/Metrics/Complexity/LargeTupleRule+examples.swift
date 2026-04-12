@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension LargeTupleRule {
   static var nonTriggeringExamples: [Example] {
     [

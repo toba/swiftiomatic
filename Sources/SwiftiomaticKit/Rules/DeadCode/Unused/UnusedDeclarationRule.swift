@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct UnusedDeclarationRule: CollectingRule {
   static let id = "unused_declaration"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ClosureParameterPositionRule {
   static let id = "closure_parameter_position"

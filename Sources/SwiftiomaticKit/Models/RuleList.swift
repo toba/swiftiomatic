@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// A rule paired with whether it was initialized with a non-empty configuration.
 struct ConfiguredRule: Sendable {
   let rule: any Rule

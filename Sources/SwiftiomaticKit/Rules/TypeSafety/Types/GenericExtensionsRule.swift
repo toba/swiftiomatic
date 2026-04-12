@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct GenericExtensionsRule {
   static let id = "generic_extensions"

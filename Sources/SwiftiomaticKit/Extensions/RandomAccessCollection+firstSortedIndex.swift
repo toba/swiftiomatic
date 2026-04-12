@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension RandomAccessCollection where Index == Int {
   /// Returns the first index whose element satisfies `predicate` in a sorted collection
   ///

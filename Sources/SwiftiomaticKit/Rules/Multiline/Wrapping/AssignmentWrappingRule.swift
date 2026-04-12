@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct AssignmentWrappingRule {
   static let id = "assignment_wrapping"

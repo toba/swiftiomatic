@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct InvalidCommandRule: Rule {
   static let id = "invalid_command"

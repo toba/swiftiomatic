@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension RedundantEscapingRule {
   static let nonTriggeringExamples = [
     Example(

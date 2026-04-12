@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PrivateUnitTestRule {
   static let id = "private_unit_test"

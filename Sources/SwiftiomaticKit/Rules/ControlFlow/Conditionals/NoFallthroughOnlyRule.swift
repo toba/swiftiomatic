@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NoFallthroughOnlyRule {
   static let id = "no_fallthrough_only"

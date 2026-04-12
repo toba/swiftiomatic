@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Reserved keywords in Swift that require backtick escaping when used as identifiers.
 ///
 /// Context-specific keywords (`async`, `lazy`, `mutating`, `some`, etc.) are excluded

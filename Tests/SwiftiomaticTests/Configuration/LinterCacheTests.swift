@@ -3,6 +3,7 @@ import Synchronization
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 private struct CacheTestHelper {
   fileprivate let configuration: Configuration

@@ -1,5 +1,4 @@
-import SwiftBasicFormat
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct RedundantElseRule {
   static let id = "redundant_else"

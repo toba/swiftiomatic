@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NoSpaceInMethodCallRule {
   static let id = "no_space_in_method_call"

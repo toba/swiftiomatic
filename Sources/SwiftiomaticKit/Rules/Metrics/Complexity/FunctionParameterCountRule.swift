@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct FunctionParameterCountRule {
   static let id = "function_parameter_count"

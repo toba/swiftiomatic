@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 extension FileManager: LintableFileDiscovering, @unchecked @retroactive Sendable {
   /// Collect Swift file paths eligible for linting under the given path

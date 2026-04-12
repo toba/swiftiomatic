@@ -1,5 +1,6 @@
 public import Foundation
 import Synchronization
+import SwiftiomaticSyntax
 
 /// Thread-safe container to register and look up Swiftiomatic rules
 public final class RuleRegistry: Sendable {
@@ -49,6 +50,9 @@ public final class RuleRegistry: Sendable {
       $0.isRegistered = true
       $0.list = nil  // Invalidate cached list
     }
+    #if DEBUG
+      Self.installViolationValidation()
+    #endif
   }
 
   /// Look up a rule for a given ID

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 import MachO
 
 /// Metadata extracted from the running Mach-O binary

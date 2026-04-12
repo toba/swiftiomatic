@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct AgentReviewRule {
   static let id = "agent_review"

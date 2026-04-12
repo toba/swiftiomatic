@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NoExplicitOwnershipRule {
   static let id = "no_explicit_ownership"

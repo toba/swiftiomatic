@@ -1,5 +1,4 @@
-import SwiftSyntax
-import SwiftSyntaxBuilder
+import SwiftiomaticSyntax
 
 struct PreferTypeCheckingRule {
   static let id = "prefer_type_checking"

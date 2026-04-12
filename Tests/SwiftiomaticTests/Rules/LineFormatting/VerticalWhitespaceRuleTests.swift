@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct VerticalWhitespaceRuleTests {
   // MARK: - Non-triggering (default: max_empty_lines = 1)

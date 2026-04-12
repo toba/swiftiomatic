@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// Discovers Swift source files, excluding build artifacts and vendored code
 public enum FileDiscovery {

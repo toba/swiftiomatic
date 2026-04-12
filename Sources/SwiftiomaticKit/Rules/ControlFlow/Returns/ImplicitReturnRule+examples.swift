@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension ImplicitReturnRule {
   enum ClosureExamples {
     static let nonTriggeringExamples = [

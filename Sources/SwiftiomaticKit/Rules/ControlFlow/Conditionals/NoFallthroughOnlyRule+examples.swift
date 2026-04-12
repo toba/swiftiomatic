@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension NoFallthroughOnlyRule {
   static let nonTriggeringExamples: [Example] = [
     Example(

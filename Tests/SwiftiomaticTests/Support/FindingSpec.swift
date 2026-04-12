@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// Describes an expected rule violation for test assertions.
 ///
 /// Pair with ``MarkedText`` to verify that a rule emits the correct violations

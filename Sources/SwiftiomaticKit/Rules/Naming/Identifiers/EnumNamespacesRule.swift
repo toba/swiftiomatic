@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct EnumNamespacesRule {
   static let id = "enum_namespaces"

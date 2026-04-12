@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ShorthandArgumentRule {
   static let id = "shorthand_argument"

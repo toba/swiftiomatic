@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct AnyObjectProtocolRule {
   static let id = "any_object_protocol"

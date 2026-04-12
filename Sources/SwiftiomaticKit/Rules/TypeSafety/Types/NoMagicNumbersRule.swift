@@ -1,7 +1,7 @@
 // sm:disable file_length
 
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct NoMagicNumbersRule {
   static let id = "no_magic_numbers"

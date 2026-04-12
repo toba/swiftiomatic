@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct CyclomaticComplexityRule {
   static let id = "cyclomatic_complexity"

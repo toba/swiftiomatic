@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct LineLengthOptionsTests {
   private let severityLevels = SeverityLevelsConfiguration<LineLengthRule>(

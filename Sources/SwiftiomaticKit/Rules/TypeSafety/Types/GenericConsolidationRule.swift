@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct GenericConsolidationRule {
   static let id = "generic_consolidation"

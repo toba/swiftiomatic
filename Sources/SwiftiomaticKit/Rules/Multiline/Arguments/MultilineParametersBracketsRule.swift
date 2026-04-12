@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct MultilineParametersBracketsRule: Rule {
   static let id = "multiline_parameters_brackets"

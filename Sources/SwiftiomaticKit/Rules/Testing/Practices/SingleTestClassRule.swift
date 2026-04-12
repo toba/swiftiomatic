@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SingleTestClassRule: Rule {
   static let id = "single_test_class"

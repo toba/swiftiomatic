@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct OrphanedDocCommentRule {
   static let id = "orphaned_doc_comment"

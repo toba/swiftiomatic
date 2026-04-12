@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 @Suite(.rulesRegistered) struct ContainsOverFirstNotNilRuleTests {
   @Test(.disabled("Rule produces 0 violations"))

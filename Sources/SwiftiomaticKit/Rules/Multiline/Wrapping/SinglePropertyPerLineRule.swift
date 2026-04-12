@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SinglePropertyPerLineRule {
   static let id = "single_property_per_line"

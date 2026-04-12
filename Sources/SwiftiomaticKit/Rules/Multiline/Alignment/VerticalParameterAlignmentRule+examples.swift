@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension VerticalParameterAlignmentRule {
   static let nonTriggeringExamples: [Example] = [
     Example(

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 /// A single inline comment replacement
 public struct InlineCommentChange: Equatable, Sendable {

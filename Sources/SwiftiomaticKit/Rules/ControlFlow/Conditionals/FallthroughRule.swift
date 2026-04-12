@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct FallthroughRule {
   static let id = "fallthrough"

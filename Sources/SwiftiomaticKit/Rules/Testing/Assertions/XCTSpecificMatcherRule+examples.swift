@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension XCTSpecificMatcherRule {
   static let nonTriggeringExamples = [
     // True/False

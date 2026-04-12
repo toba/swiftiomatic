@@ -1,6 +1,7 @@
 // Fixture: performance anti-pattern patterns
 
 import Foundation
+import SwiftiomaticSyntax
 
 // Should flag: withLock containing await
 struct SafeState {

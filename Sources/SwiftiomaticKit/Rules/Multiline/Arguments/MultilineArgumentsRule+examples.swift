@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension MultilineArgumentsRule {
   static let nonTriggeringExamples = [
     Example("foo()"),

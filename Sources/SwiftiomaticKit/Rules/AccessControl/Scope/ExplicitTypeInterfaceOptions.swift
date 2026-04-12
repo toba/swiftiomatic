@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 struct ExplicitTypeInterfaceOptions: SeverityBasedRuleOptions {
   enum VariableKind: String, AcceptableByOptionElement, CaseIterable {
     case instance

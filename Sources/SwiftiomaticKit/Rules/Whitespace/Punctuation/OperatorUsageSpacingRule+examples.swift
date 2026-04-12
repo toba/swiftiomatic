@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension OperatorUsageSpacingRule {
   static let nonTriggeringExamples = [
     Example("let foo = 1 + 2"),

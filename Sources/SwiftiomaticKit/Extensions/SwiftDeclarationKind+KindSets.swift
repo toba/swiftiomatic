@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension SwiftDeclarationKind {
   /// All declaration kinds that represent functions, methods, accessors, and subscripts
   static let functionKinds: Set<SwiftDeclarationKind> = [

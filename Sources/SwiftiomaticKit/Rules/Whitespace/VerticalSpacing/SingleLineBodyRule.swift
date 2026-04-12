@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SingleLineBodyRule {
   static let id = "single_line_body"

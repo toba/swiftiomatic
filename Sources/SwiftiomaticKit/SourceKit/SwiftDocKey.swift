@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// SourceKit response dictionary keys (`key.*` strings)
 ///
 /// Provides both raw key constants and typed static accessors that extract

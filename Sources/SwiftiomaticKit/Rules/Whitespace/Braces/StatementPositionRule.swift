@@ -1,4 +1,5 @@
 import Foundation
+import SwiftiomaticSyntax
 
 struct StatementPositionRule: Rule {
   static let id = "statement_position"

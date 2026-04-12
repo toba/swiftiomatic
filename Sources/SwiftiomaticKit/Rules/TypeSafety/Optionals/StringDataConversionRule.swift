@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct StringDataConversionRule {
   private static let variablesIncluded = ["include_variables": true]

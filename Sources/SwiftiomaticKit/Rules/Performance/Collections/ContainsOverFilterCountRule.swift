@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ContainsOverFilterCountRule {
   static let id = "contains_over_filter_count"

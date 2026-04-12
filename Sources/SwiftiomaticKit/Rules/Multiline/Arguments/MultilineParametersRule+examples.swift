@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension MultilineParametersRule {
   static let nonTriggeringExamples: [Example] = [
     Example("func foo() { }"),

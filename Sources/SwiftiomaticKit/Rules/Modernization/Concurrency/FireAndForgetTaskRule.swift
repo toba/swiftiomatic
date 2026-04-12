@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct FireAndForgetTaskRule {
   static let id = "fire_and_forget_task"

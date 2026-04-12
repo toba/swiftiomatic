@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension Configuration {
   /// The style of indentation used in a Swift project
   public enum IndentationStyle: Hashable, Sendable {

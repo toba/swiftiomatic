@@ -1,6 +1,7 @@
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 /// Create test files persisted to disk (so they have paths) but without compiler arguments.
 /// Collecting rules need file paths but don't need compiler arguments.

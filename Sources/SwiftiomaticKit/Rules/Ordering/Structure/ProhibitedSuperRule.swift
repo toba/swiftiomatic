@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct ProhibitedSuperRule {
   static let id = "prohibited_super_call"

@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct PrivateOverFilePrivateRule {
   static let id = "private_over_fileprivate"

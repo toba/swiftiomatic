@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct BlankLineAfterGuardRule {
   static let id = "blank_line_after_guard"

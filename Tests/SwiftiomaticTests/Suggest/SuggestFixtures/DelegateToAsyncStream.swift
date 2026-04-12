@@ -1,5 +1,6 @@
 // Fixture: delegate to async stream patterns
 import Foundation
+import SwiftiomaticSyntax
 
 // Should flag: all methods are delegate callbacks
 protocol DownloadDelegate {

@@ -2,6 +2,7 @@ import Foundation
 import Testing
 
 @testable import SwiftiomaticKit
+@testable import SwiftiomaticSyntax
 
 /// Load a fixture file relative to the caller and validate with a rule.
 func suggestViolations(
@@ -37,7 +38,7 @@ func expectFindings(
   _ violations: [RuleViolation],
   containing text: String,
   atLeast count: Int = 1,
-  sourceLocation: SourceLocation = #_sourceLocation,
+  sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) {
   let matches = violations.filter { $0.reason.contains(text) }
   #expect(

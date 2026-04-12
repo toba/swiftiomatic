@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SortDeclarationsRule {
   static let id = "sort_declarations"

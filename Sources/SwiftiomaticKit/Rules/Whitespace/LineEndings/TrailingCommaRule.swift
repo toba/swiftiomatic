@@ -1,5 +1,5 @@
 import Foundation
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct TrailingCommaRule {
   private static let _triggeringExamples: [Example] = [

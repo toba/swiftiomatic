@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct SpaceAroundParensRule {
   static let id = "space_around_parens"

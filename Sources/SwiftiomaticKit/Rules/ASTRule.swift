@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 /// A rule that recurses into a pre-typechecked AST via SourceKit structure dictionaries
 ///
 /// Conforming rules validate each node whose ``KindType`` matches, walking the

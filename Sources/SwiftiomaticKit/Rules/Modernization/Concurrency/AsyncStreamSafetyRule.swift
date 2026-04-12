@@ -1,4 +1,4 @@
-import SwiftSyntax
+import SwiftiomaticSyntax
 
 struct AsyncStreamSafetyRule {
   static let id = "async_stream_safety"

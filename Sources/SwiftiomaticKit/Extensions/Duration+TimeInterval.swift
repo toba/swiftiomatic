@@ -1,3 +1,5 @@
+import SwiftiomaticSyntax
+
 extension Duration {
   /// Convert to a `TimeInterval` (seconds as `Double`) by combining seconds and attoseconds
   var timeInterval: Double {
