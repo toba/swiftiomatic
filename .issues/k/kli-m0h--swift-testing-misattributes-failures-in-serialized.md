@@ -1,15 +1,15 @@
 ---
 # kli-m0h
 title: Swift Testing misattributes failures in serialized parameterized tests
-status: ready
+status: in-progress
 type: bug
 priority: low
 created_at: 2026-04-12T20:54:57Z
-updated_at: 2026-04-12T20:54:57Z
+updated_at: 2026-04-12T21:30:47Z
 sync:
     github:
         issue_number: "234"
-        synced_at: "2026-04-12T21:03:02Z"
+        synced_at: "2026-04-12T21:32:11Z"
 ---
 
 ## Problem

@@ -5,11 +5,11 @@ status: in-progress
 type: epic
 priority: high
 created_at: 2026-04-12T19:05:30Z
-updated_at: 2026-04-12T21:29:52Z
+updated_at: 2026-04-12T21:32:00Z
 sync:
     github:
         issue_number: "229"
-        synced_at: "2026-04-12T21:29:56Z"
+        synced_at: "2026-04-12T21:32:12Z"
 ---
 
 Systematic audit of Swiftiomatic rules mapped from SwiftFormat (via `RuleMapping.swiftformatMapping`) comparing logic completeness and test coverage against the reference at `~/Developer/swiftiomatic-ref/SwiftFormat/`.
@@ -83,11 +83,11 @@ SwiftFormat tests: 1,042 lines. Our examples: 3.
 SwiftFormat: 175+ lines (rule + helpers) handling closures, functions, if/switch expression branches, failable init?, void returns, `as?` bug workaround.
 
 Our rule: 87 lines, single-statement return only. Missing:
-- [ ] No if/switch expression branch support (SE-0380, Swift 5.9+)
-- [ ] No void return handling
-- [ ] No failable `init?` exclusion
-- [ ] No `as?` operator bug workaround in branches
-- [ ] No `conditionalAssignment` rule interaction
+- [x] No if/switch expression branch support (SE-0380, Swift 5.9+) — deferred; requires conditionalAssignment rule interaction
+- [x] No void return handling — already handled (`func f() { return }` is a triggering example)
+- [x] No failable `init?` exclusion — already handled correctly; `init?() { nil }` is valid implicit return
+- [x] No `as?` operator bug workaround in branches — deferred; compiler-specific edge case
+- [x] No `conditionalAssignment` rule interaction — deferred; we don't have that rule yet
 
 SwiftFormat tests: 1,491 lines. Our examples: 0 (uses options-based examples elsewhere).
 
