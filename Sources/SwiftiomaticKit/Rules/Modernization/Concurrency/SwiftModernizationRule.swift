@@ -40,6 +40,18 @@ struct SwiftModernizationRule {
       Example("func work() { Task { await fetch() } }"),
       // nonisolated(unsafe) on a non-Sendable type is fine
       Example("nonisolated(unsafe) let callback: () -> Void = { }"),
+      // @unchecked Sendable struct without metatype storage is not flagged here
+      Example(
+        """
+        struct Wrapper: @unchecked Sendable {
+            let value: Int
+        }
+        """),
+      // Subprocess.run with teardownSequence is fine
+      Example(
+        """
+        try await Subprocess.run(exe, arguments: args, platformOptions: opts, output: .string)
+        """),
     ]
   }
 
@@ -80,6 +92,18 @@ struct SwiftModernizationRule {
         """),
       // nonisolated(unsafe) on Sendable value
       Example("↓nonisolated(unsafe) let pattern = /\\d+/"),
+      // @unchecked Sendable struct with metatype array
+      Example(
+        """
+        struct Registry: @unchecked ↓Sendable {
+            let types: [any Codable.Type]
+        }
+        """),
+      // Subprocess.run without teardownSequence
+      Example(
+        """
+        try await ↓Subprocess.run(.named("swift"), arguments: ["build"], output: .string)
+        """),
     ]
   }
 
@@ -137,6 +161,24 @@ extension SwiftModernizationRule {
             suggestion: "Task.immediate { ... }",
           ),
         )
+      }
+
+      // Subprocess.run without teardownSequence — orphan processes on cancellation
+      if callee == "Subprocess.run" {
+        let hasTeardown = node.arguments.contains { $0.label?.text == "platformOptions" }
+        if !hasTeardown {
+          violations.append(
+            SyntaxViolation(
+              position: node.calledExpression.positionAfterSkippingLeadingTrivia,
+              reason:
+                "Subprocess.run without platformOptions — child processes orphaned on cancellation",
+              severity: configuration.severity,
+              confidence: .medium,
+              suggestion:
+                "Pass platformOptions with teardownSequence: [.gracefulShutDown(allowedDurationToNextStep: .seconds(5))]",
+            ),
+          )
+        }
       }
     }
 
@@ -222,6 +264,44 @@ extension SwiftModernizationRule {
             ),
           )
         }
+      }
+    }
+
+    // MARK: - @unchecked Sendable metatype storage (SE-0470)
+
+    override func visitPost(_ node: StructDeclSyntax) {
+      guard ConcurrencyPatternDetector.hasUncheckedSendable(node.inheritanceClause)
+      else { return }
+
+      // Check if any stored property contains a metatype type (.Type or .Protocol)
+      let members = node.memberBlock.members
+      let hasMetatypeStorage = members.contains { member in
+        guard let varDecl = member.decl.as(VariableDeclSyntax.self) else { return false }
+        return varDecl.bindings.contains { binding in
+          guard let typeAnnotation = binding.typeAnnotation else { return false }
+          let typeText = typeAnnotation.type.trimmedDescription
+          return typeText.contains(".Type") || typeText.contains(".Protocol")
+        }
+      }
+
+      if hasMetatypeStorage {
+        // Find the Sendable token position in the inheritance clause
+        let sendablePosition =
+          node.inheritanceClause?.inheritedTypes.first {
+            $0.type.trimmedDescription.contains("Sendable")
+          }?.type.positionAfterSkippingLeadingTrivia
+          ?? node.positionAfterSkippingLeadingTrivia
+
+        violations.append(
+          SyntaxViolation(
+            position: sendablePosition,
+            reason:
+              "Struct '\(node.name.text)' uses @unchecked Sendable — metatypes are now Sendable (SE-0470)",
+            severity: configuration.severity,
+            confidence: .medium,
+            suggestion: "Remove @unchecked if metatype storage is the only reason for it",
+          ),
+        )
       }
     }
 

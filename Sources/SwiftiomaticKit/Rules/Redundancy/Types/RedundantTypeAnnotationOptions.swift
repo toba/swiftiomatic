@@ -9,6 +9,12 @@ struct RedundantTypeAnnotationOptions: SeverityBasedRuleOptions {
   private(set) var ignoreProperties = false
   @OptionElement(key: "consider_default_literal_types_redundant")
   private(set) var considerDefaultLiteralTypesRedundant = false
+
+  /// When `true`, only infer types in local scopes (function bodies, closures).
+  /// Global and type-member properties keep their explicit annotations.
+  @OptionElement(key: "infer_locals_only")
+  private(set) var inferLocalsOnly = false
+
   typealias Parent = RedundantTypeAnnotationRule
   mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
@@ -20,6 +26,9 @@ struct RedundantTypeAnnotationOptions: SeverityBasedRuleOptions {
     }
     if let value = configuration[$considerDefaultLiteralTypesRedundant.key] {
       try considerDefaultLiteralTypesRedundant.apply(value, ruleID: Parent.identifier)
+    }
+    if let value = configuration[$inferLocalsOnly.key] {
+      try inferLocalsOnly.apply(value, ruleID: Parent.identifier)
     }
     warnAboutUnknownKeys(in: configuration)
     validate()

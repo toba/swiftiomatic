@@ -86,3 +86,6 @@
 - Generator: detect pipeline-ineligible rules automatically ([#233](https://github.com/toba/swiftiomatic/issues/233))
 - Investigate 5 unmapped SwiftFormat rules for Swiftiomatic equivalents ([#203](https://github.com/toba/swiftiomatic/issues/203))
 - Medium gap fixes: `ImplicitOptionalInit` exclusions, `RedundantType` `@Model`/ternary ([#236](https://github.com/toba/swiftiomatic/issues/236))
+- Correctable lint rule: XCTest assertions → Swift Testing assertions ([#209](https://github.com/toba/swiftiomatic/issues/209))
+- Suggest rule: concurrency modernization additions; `Task.immediate`, `SendableMetatype`, `nonisolated` ([#207](https://github.com/toba/swiftiomatic/issues/207))
+- Trim `/rule` skill for conciseness ([#237](https://github.com/toba/swiftiomatic/issues/237))

@@ -82,6 +82,18 @@ struct RedundantTypeAnnotationRule {
       Example(  // ternary — type annotation needed for disambiguation
         "var status: Status = condition ? .active : .inactive"
       ),
+      Example(  // inferLocalsOnly — type member keeps explicit annotation
+        """
+        struct Foo {
+            var url: URL = URL()
+        }
+        """,
+        configuration: ["infer_locals_only": true],
+      ),
+      Example(  // inferLocalsOnly — global keeps explicit annotation
+        "var url: URL = URL()",
+        configuration: ["infer_locals_only": true],
+      ),
     ]
   }
 
@@ -151,6 +163,14 @@ struct RedundantTypeAnnotationRule {
             return i
         }
         """, configuration: ["ignore_attributes": ["IgnoreMe"]],
+      ),
+      Example(  // inferLocalsOnly — local variable still flagged
+        """
+        func foo() {
+            let myVar↓: Int = Int(5)
+        }
+        """,
+        configuration: ["infer_locals_only": true],
       ),
       Example(
         "var bol↓: Bool = true",
@@ -366,12 +386,29 @@ extension RedundantTypeAnnotationOptions {
     if ignoreAttributes.contains(where: { varDecl.attributes.contains(attributeNamed: $0) }) {
       return true
     }
-
-    return ignoreProperties && varDecl.parent?.is(MemberBlockItemSyntax.self) == true
+    if ignoreProperties && varDecl.parent?.is(MemberBlockItemSyntax.self) == true {
+      return true
+    }
+    if inferLocalsOnly && !varDecl.isInLocalScope {
+      return true
+    }
+    return false
   }
 }
 
 extension VariableDeclSyntax {
+  /// Whether this variable is in a local scope (function body, closure, loop) vs global or type member
+  fileprivate var isInLocalScope: Bool {
+    if parent?.is(MemberBlockItemSyntax.self) == true { return false }
+    var current: Syntax? = parent
+    while let node = current {
+      if node.is(CodeBlockSyntax.self) { return true }
+      if node.is(SourceFileSyntax.self) { return false }
+      current = node.parent
+    }
+    return false
+  }
+
   /// Whether this is a stored property inside a @Model class (SwiftData requires explicit types)
   fileprivate var isInModelType: Bool {
     guard parent?.is(MemberBlockItemSyntax.self) == true else { return false }

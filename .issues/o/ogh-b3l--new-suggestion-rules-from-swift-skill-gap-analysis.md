@@ -5,11 +5,11 @@ status: in-progress
 type: epic
 priority: normal
 created_at: 2026-04-11T23:47:28Z
-updated_at: 2026-04-12T21:52:03Z
+updated_at: 2026-04-12T23:19:36Z
 sync:
     github:
         issue_number: "200"
-        synced_at: "2026-04-12T22:20:43Z"
+        synced_at: "2026-04-12T23:20:52Z"
 ---
 
 ## Overview
@@ -45,14 +45,14 @@ Existing rules already cover: `typed_throws`, `concurrency_modernization`, `swif
 - [x] **`Result<T, E>` return types → typed throws** — Functions returning `Result` that immediately switch/map can use typed throws instead. (Complements existing `typed_throws` which looks at throw statements.)
 
 ### Concurrency Modernization (suggest/lint rules)
-- [ ] **`Task { }` in `@MainActor` → `Task.immediate`** (SE-0472) — Detect `Task { }` init inside `@MainActor` functions/closures where body does MainActor work first. Also flag debounce patterns (`task?.cancel(); task = Task { }`). Suggest `Task.immediate`.
-- [ ] **`@unchecked Sendable` for metatype storage → remove** (SE-0470) — `@unchecked Sendable` on structs/classes holding `[any P.Type]` arrays where `P: Sendable`. Metatypes are now Sendable automatically.
-- [ ] **`nonisolated(unsafe)` that's now safe** — Values that are Sendable in Swift 6.2+ (regex, enum, struct) no longer need `nonisolated(unsafe)`. Flag and suggest removal.
-- [ ] **Subprocess without `teardownSequence`** — `Subprocess.run()` with default `PlatformOptions()` orphans child processes on cancellation. Flag when `teardownSequence` is empty/default.
+- [x] **`Task { }` in `@MainActor` → `Task.immediate`** (SE-0472) — Detect `Task { }` init inside `@MainActor` functions/closures where body does MainActor work first. Also flag debounce patterns (`task?.cancel(); task = Task { }`). Suggest `Task.immediate`.
+- [x] **`@unchecked Sendable` for metatype storage → remove** (SE-0470) — `@unchecked Sendable` on structs/classes holding `[any P.Type]` arrays where `P: Sendable`. Metatypes are now Sendable automatically.
+- [x] **`nonisolated(unsafe)` that's now safe** — Values that are Sendable in Swift 6.2+ (regex, enum, struct) no longer need `nonisolated(unsafe)`. Flag and suggest removal.
+- [x] **Subprocess without `teardownSequence`** — `Subprocess.run()` with default `PlatformOptions()` orphans child processes on cancellation. Flag when `teardownSequence` is empty/default.
 
 ### Testing Modernization (correctable lint rules)
-- [ ] **XCTest assertion → Swift Testing assertion** — Individual XCT* calls: `XCTAssertEqual` → `#expect(==)`, `XCTAssertTrue` → `#expect()`, `XCTAssertNil` → `#expect(== nil)`, `XCTAssertThrowsError` → `#expect(throws:)`, `XCTUnwrap` → `try #require()`, etc. The existing `prefer_swift_testing` only flags `XCTestCase` classes — these would flag individual assertion calls even in mixed files. Could be a separate `prefer_swift_testing_assertions` rule.
-- [ ] **`file: StaticString, line: UInt` → `sourceLocation: SourceLocation`** — Test helper source location parameter pattern. Detect the XCTest two-param pattern, suggest single `sourceLocation: SourceLocation = #_sourceLocation`.
+- [x] **XCTest assertion → Swift Testing assertion** — Individual XCT* calls: `XCTAssertEqual` → `#expect(==)`, `XCTAssertTrue` → `#expect()`, `XCTAssertNil` → `#expect(== nil)`, `XCTAssertThrowsError` → `#expect(throws:)`, `XCTUnwrap` → `try #require()`, etc. The existing `prefer_swift_testing` only flags `XCTestCase` classes — these would flag individual assertion calls even in mixed files. Could be a separate `prefer_swift_testing_assertions` rule.
+- [x] **`file: StaticString, line: UInt` → `sourceLocation: SourceLocation`** — Test helper source location parameter pattern. Detect the XCTest two-param pattern, suggest single `sourceLocation: SourceLocation = #_sourceLocation`.
 
 ---
 

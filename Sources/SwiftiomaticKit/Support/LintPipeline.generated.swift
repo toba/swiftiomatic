@@ -176,8 +176,10 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "prefer_key_path",
     "prefer_module_selector",
     "prefer_self_in_static_references",
+    "prefer_source_location",
     "prefer_specialize_attribute",
     "prefer_swift_testing",
+    "prefer_swift_testing_assertions",
     "prefer_weak_let",
     "prefixed_toplevel_constant",
     "private_over_fileprivate",
@@ -1262,11 +1264,18 @@ final class LintPipeline: SyntaxVisitor {
                 protocolDecl_visitPost.append(idx)
                 structDecl_visitPost.append(idx)
 
+            case "prefer_source_location":
+                functionDecl_visitPost.append(idx)
+                initializerDecl_visitPost.append(idx)
+
             case "prefer_specialize_attribute":
                 attribute_visitPost.append(idx)
 
             case "prefer_swift_testing":
                 classDecl_visitPost.append(idx)
+
+            case "prefer_swift_testing_assertions":
+                functionCallExpr_visitPost.append(idx)
 
             case "prefer_weak_let":
                 variableDecl_visitPost.append(idx)
@@ -1519,6 +1528,7 @@ final class LintPipeline: SyntaxVisitor {
                 accessorDecl_visitPost.append(idx)
                 functionCallExpr_visitPost.append(idx)
                 functionDecl_visitPost.append(idx)
+                structDecl_visitPost.append(idx)
                 typeAnnotation_visitPost.append(idx)
                 variableDecl_visitPost.append(idx)
 
@@ -1674,7 +1684,10 @@ final class LintPipeline: SyntaxVisitor {
                 unresolvedTernaryExpr_visitPost.append(idx)
 
             case "void_return":
+                sourceFile_visit.append(idx)
+                functionType_visitPost.append(idx)
                 returnClause_visitPost.append(idx)
+                typeAliasDecl_visitPost.append(idx)
 
             case "xct_specific_matcher":
                 functionCallExpr_visitPost.append(idx)

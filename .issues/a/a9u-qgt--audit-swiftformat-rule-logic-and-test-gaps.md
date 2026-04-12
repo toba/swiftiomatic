@@ -5,11 +5,11 @@ status: completed
 type: epic
 priority: high
 created_at: 2026-04-12T19:05:30Z
-updated_at: 2026-04-12T22:05:15Z
+updated_at: 2026-04-12T23:18:37Z
 sync:
     github:
         issue_number: "229"
-        synced_at: "2026-04-12T22:20:43Z"
+        synced_at: "2026-04-12T23:20:52Z"
 ---
 
 Systematic audit of Swiftiomatic rules mapped from SwiftFormat (via `RuleMapping.swiftformatMapping`) comparing logic completeness and test coverage against the reference at `~/Developer/swiftiomatic-ref/SwiftFormat/`.
@@ -101,20 +101,20 @@ SwiftFormat handles additional exclusions:
 
 ### EmptyBraces
 SwiftFormat supports three formatting modes via `--empty-braces` option:
-- [ ] `noSpace` (our only behavior)
-- [ ] `spaced` (`{ }` with space)
+- [x] `noSpace` (our only behavior) — already implemented as default
+- [x] `spaced` (`{ }` with space)
 - [ ] `linebreak` (brace on new line with indentation)
 
 ### Void (VoidReturnRule)
 SwiftFormat: 175 lines normalizing `Void`/`()`/`(Void)` across contexts.
-- [ ] Configurable `--void-type` option (use Void vs use ())
-- [ ] Local `Void` type declaration detection (`typealias Void = MyType`)
+- [x] Configurable `--void-type` option (use Void vs use ())
+- [x] Local `Void` type declaration detection (`typealias Void = MyType`)
 - [x] `(Void)` → `()` parameter normalization
 - [x] Typealias handling (`typealias X = ()` → `typealias X = Void`)
 
 ### RedundantType (RedundantTypeAnnotationRule)
 SwiftFormat: 145+ lines (rule) + 130 lines (helpers).
-- [ ] `inferLocalsOnly` mode (infer in local scopes, explicit in types)
+- [x] `inferLocalsOnly` mode (infer in local scopes, explicit in types)
 - [ ] If/switch expression branch type comparison (SE-0380)
 - [x] `@Model` class exclusion
 - [x] Ternary expression detection
