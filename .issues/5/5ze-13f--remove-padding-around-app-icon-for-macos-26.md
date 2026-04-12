@@ -1,15 +1,15 @@
 ---
 # 5ze-13f
 title: Remove padding around app icon for macOS 26
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-12T19:26:24Z
-updated_at: 2026-04-12T19:50:51Z
+updated_at: 2026-04-12T20:48:43Z
 sync:
     github:
         issue_number: "231"
-        synced_at: "2026-04-12T20:23:25Z"
+        synced_at: "2026-04-12T21:03:03Z"
 ---
 
 ## Problem
@@ -38,3 +38,13 @@ The current icon (`Xcode/SwiftiomaticApp/Assets.xcassets/AppIcon.appiconset/AppI
 - Apple HIG: https://developer.apple.com/design/human-interface-guidelines/app-icons
 - Current icon: `Xcode/SwiftiomaticApp/Assets.xcassets/AppIcon.appiconset/AppIcon.png`
 - Current Contents.json: single 512×512@2x mac idiom entry
+
+
+## Summary of Changes
+
+Replaced the legacy `AppIcon.appiconset` (single 1024×1024 PNG) with an Icon Composer `AppIcon.icon` bundle, matching the Thesis project pattern.
+
+- Added `AppIcon.icon/` to the SwiftiomaticApp target resources with `lastKnownFileType = folder.iconcomposer.icon` and `sourceTree = SOURCE_ROOT`
+- Set `ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES` for both Debug and Release
+- Removed the old `AppIcon.appiconset` directory and PNG from the asset catalog
+- Filed and resolved xc-mcp issue `dac-5qi` for `add_file` support of `.icon` files

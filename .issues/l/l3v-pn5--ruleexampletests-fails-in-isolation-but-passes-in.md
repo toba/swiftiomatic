@@ -1,15 +1,15 @@
 ---
 # l3v-pn5
 title: RuleExampleTests fails in isolation but passes in full suite
-status: in-progress
+status: completed
 type: bug
 priority: high
 created_at: 2026-04-12T02:50:24Z
-updated_at: 2026-04-12T18:42:17Z
+updated_at: 2026-04-12T21:00:08Z
 sync:
     github:
         issue_number: "206"
-        synced_at: "2026-04-12T19:05:18Z"
+        synced_at: "2026-04-12T21:03:03Z"
 ---
 
 ## Problem
@@ -147,7 +147,7 @@ After the pipeline fix, `identifier_name` still fails with 0 violations for mark
 - [x] Pipeline skip depth ordering fixed in PipelineEmitter.swift
 - [x] requiresFileOnDisk rules excluded from batch test
 - [x] Marker-less triggering examples use withKnownIssue
-- [ ] `identifier_name` batch-only failure — needs further investigation
+- [x] `identifier_name` batch-only failure — resolved in uye-na5: was Swift Testing misattribution of 4 separate rule bugs (PrefixedTopLevelConstantRule, RedundantBackticksRule, NoGroupingExtensionRule, IdentifierNameRule)
 
 
 
@@ -196,3 +196,16 @@ CI crashes with **SIGBUS (signal code 10)** during RuleExampleTests execution. T
 2. **Or reduce batch size** — split into smaller batches (A-M, N-Z) to reduce memory pressure
 3. **Or clear syntax caches between test cases** — call `syntaxTreeCache.clear()` after each rule in the batch
 4. **File upstream** — this may be a swift-testing or SwiftPM bug with large parameterized tests on CI runners
+
+
+
+## Final Resolution (uye-na5)
+
+The remaining `identifier_name` batch-only failure was a Swift Testing misattribution bug — all parameterized test failures were reported as `(→ identifier_name)` regardless of which rule actually failed. The real failures were:
+
+1. **PrefixedTopLevelConstantRule**: missing `AccessorBlockSyntax` skip — `let` inside computed properties flagged as top-level
+2. **RedundantBackticksRule**: 3 context-logic bugs from vjl-m9o rewrite (`isInsideTypeDeclaration` too broad, `isInAccessorContext` missed implicit getters, check ordering short-circuited `::` context)
+3. **NoGroupingExtensionRule**: two-pass rule incorrectly routed through single-pass pipeline (added `requiresPostProcessing` signal)
+4. **IdentifierNameRule**: incorrect `√` triggering example (math symbols are not case-violating)
+
+All 1864 tests now pass. The Swift Testing misattribution issue is tracked separately in kli-m0h.

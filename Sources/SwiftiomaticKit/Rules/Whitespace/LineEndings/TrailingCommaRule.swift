@@ -13,6 +13,10 @@ struct TrailingCommaRule {
     Example("let foo = [\"אבג\", \"αβγ\", \"🇺🇸\"↓,]"),
     Example("class C {\n #if true\n func f() {\n let foo = [1, 2, 3↓,]\n }\n #endif\n}"),
     Example("foo([1: \"\\(error)\"↓,])"),
+    Example("foo(bar: 1, baz: 2↓,)"),
+    Example("DispatchQueue.main.async(execute: work↓,)"),
+    Example("func foo(a: Int, b: Int↓,) {}"),
+    Example("init(x: Int, y: Int↓,) {}"),
   ]
 
   private static let _corrections: [Example: Example] = {
@@ -29,7 +33,7 @@ struct TrailingCommaRule {
 
   static let id = "trailing_comma"
   static let name = "Trailing Comma"
-  static let summary = "Trailing commas in arrays and dictionaries should be avoided/enforced."
+  static let summary = "Trailing commas in collection literals and function calls should be avoided/enforced."
   static let isCorrectable = true
   static var nonTriggeringExamples: [Example] {
     [
@@ -41,6 +45,9 @@ struct TrailingCommaRule {
       Example("let example = [ 1,\n 2\n // 3,\n]"),
       Example("foo([1: \"\\(error)\"])"),
       Example("let foo = [Int]()"),
+      Example("foo(bar: 1, baz: 2)"),
+      Example("@available(iOS 16, *) func foo() {}"),
+      Example("func foo(a: Int, b: Int) {}"),
     ]
   }
 
@@ -71,6 +78,34 @@ extension TrailingCommaRule {
       guard let lastElement = node.last else {
         return
       }
+
+      switch (lastElement.trailingComma, configuration.mandatoryComma) {
+      case (let commaToken?, false):
+        violations.append(violation(for: commaToken.positionAfterSkippingLeadingTrivia))
+      case (nil, true) where !locationConverter.isSingleLine(node: node):
+        violations.append(violation(for: lastElement.endPositionBeforeTrailingTrivia))
+      case (_, true), (nil, false):
+        break
+      }
+    }
+
+    override func visitPost(_ node: LabeledExprListSyntax) {
+      guard node.supportsTrailingComma,
+        let lastElement = node.last
+      else { return }
+
+      switch (lastElement.trailingComma, configuration.mandatoryComma) {
+      case (let commaToken?, false):
+        violations.append(violation(for: commaToken.positionAfterSkippingLeadingTrivia))
+      case (nil, true) where !locationConverter.isSingleLine(node: node):
+        violations.append(violation(for: lastElement.endPositionBeforeTrailingTrivia))
+      case (_, true), (nil, false):
+        break
+      }
+    }
+
+    override func visitPost(_ node: FunctionParameterListSyntax) {
+      guard let lastElement = node.last else { return }
 
       switch (lastElement.trailingComma, configuration.mandatoryComma) {
       case (let commaToken?, false):
@@ -144,6 +179,81 @@ extension TrailingCommaRule {
       }
     }
 
+    override func visit(_ node: LabeledExprListSyntax) -> LabeledExprListSyntax {
+      guard node.supportsTrailingComma,
+        let lastElement = node.last,
+        let index = node.index(of: lastElement)
+      else {
+        return super.visit(node)
+      }
+
+      switch (lastElement.trailingComma, configuration.mandatoryComma) {
+      case (let commaToken?, false):
+        numberOfCorrections += 1
+        let newTrailingTrivia = (lastElement.expression.trailingTrivia)
+          .appending(trivia: commaToken.leadingTrivia)
+          .appending(trivia: commaToken.trailingTrivia)
+        let newNode =
+          node
+          .with(
+            \.[index],
+            lastElement
+              .with(\.trailingComma, nil)
+              .with(
+                \.expression,
+                lastElement.expression.with(\.trailingTrivia, newTrailingTrivia)),
+          )
+        return super.visit(newNode)
+      case (nil, true) where !locationConverter.isSingleLine(node: node):
+        numberOfCorrections += 1
+        let newNode =
+          node
+          .with(
+            \.[index],
+            lastElement
+              .with(
+                \.expression,
+                lastElement.expression.with(\.trailingTrivia, []))
+              .with(\.trailingComma, .commaToken())
+              .with(\.trailingTrivia, lastElement.expression.trailingTrivia),
+          )
+        return super.visit(newNode)
+      case (_, true), (nil, false):
+        return super.visit(node)
+      }
+    }
+
+    override func visit(_ node: FunctionParameterListSyntax) -> FunctionParameterListSyntax {
+      guard let lastElement = node.last, let index = node.index(of: lastElement) else {
+        return super.visit(node)
+      }
+
+      switch (lastElement.trailingComma, configuration.mandatoryComma) {
+      case (let commaToken?, false):
+        numberOfCorrections += 1
+        var cleaned = lastElement.with(\.trailingComma, nil)
+        let mergedTrivia = cleaned.trailingTrivia
+          .appending(trivia: commaToken.leadingTrivia)
+          .appending(trivia: commaToken.trailingTrivia)
+        cleaned = cleaned.with(\.trailingTrivia, mergedTrivia)
+        return super.visit(node.with(\.[index], cleaned))
+      case (nil, true) where !locationConverter.isSingleLine(node: node):
+        numberOfCorrections += 1
+        let newNode =
+          node
+          .with(
+            \.[index],
+            lastElement
+              .with(\.trailingTrivia, [])
+              .with(\.trailingComma, .commaToken())
+              .with(\.trailingTrivia, lastElement.trailingTrivia),
+          )
+        return super.visit(newNode)
+      case (_, true), (nil, false):
+        return super.visit(node)
+      }
+    }
+
     override func visit(_ node: ArrayElementListSyntax) -> ArrayElementListSyntax {
       guard let lastElement = node.last, let index = node.index(of: lastElement) else {
         return super.visit(node)
@@ -192,6 +302,28 @@ extension SourceLocationConverter {
   fileprivate func isSingleLine(node: some SyntaxProtocol) -> Bool {
     location(for: node.positionAfterSkippingLeadingTrivia).line
       == location(for: node.endPositionBeforeTrailingTrivia).line
+  }
+}
+
+extension LabeledExprListSyntax {
+  /// Whether this argument list is in a context that supports trailing commas (Swift 6.1+).
+  /// Excludes built-in attributes like `@available`, `@backDeployed`.
+  fileprivate var supportsTrailingComma: Bool {
+    if parent?.is(FunctionCallExprSyntax.self) == true
+      || parent?.is(MacroExpansionExprSyntax.self) == true
+      || parent?.is(MacroExpansionDeclSyntax.self) == true
+      || parent?.is(SubscriptCallExprSyntax.self) == true
+    {
+      return true
+    }
+    // User-defined attributes (uppercase first letter) support trailing commas;
+    // built-in attributes (@available, @objc, @_exported) do not.
+    if let attr = parent?.as(AttributeSyntax.self) {
+      let name = attr.attributeNameText
+      guard let first = name.first else { return false }
+      return first.isUppercase
+    }
+    return false
   }
 }
 

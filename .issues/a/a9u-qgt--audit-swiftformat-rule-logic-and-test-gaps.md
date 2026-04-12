@@ -5,11 +5,11 @@ status: in-progress
 type: epic
 priority: high
 created_at: 2026-04-12T19:05:30Z
-updated_at: 2026-04-12T20:05:09Z
+updated_at: 2026-04-12T21:02:32Z
 sync:
     github:
         issue_number: "229"
-        synced_at: "2026-04-12T20:23:25Z"
+        synced_at: "2026-04-12T21:03:03Z"
 ---
 
 Systematic audit of Swiftiomatic rules mapped from SwiftFormat (via `RuleMapping.swiftformatMapping`) comparing logic completeness and test coverage against the reference at `~/Developer/swiftiomatic-ref/SwiftFormat/`.
@@ -48,8 +48,8 @@ Our rule: only visits `ConditionElementSyntax` and `ReturnStmtSyntax`. Missing:
 - [x] Empty attribute parens (`@Test()` → `@Test`)
 - [x] Trailing closure empty parens (`queue.async() { }` → `queue.async { }`)
 - [x] Nested redundant parens
-- [ ] Operator precedence parens
-- [ ] Closure argument parens
+- [x] Operator precedence parens — deferred; SwiftFormat's token-based operator context doesn't translate to AST visitors
+- [x] Closure argument parens — already handled by separate `RedundantClosureArgumentParensRule`
 
 SwiftFormat tests: 1,617 lines. Our examples: 11.
 
@@ -57,8 +57,8 @@ SwiftFormat tests: 1,617 lines. Our examples: 11.
 SwiftFormat: 350 lines with Swift version-specific trailing comma support.
 
 Our rule: only handles `ArrayElementListSyntax` and `DictionaryElementListSyntax`. Missing:
-- [ ] Function call trailing commas (Swift 6.1+)
-- [ ] Parameter list trailing commas (Swift 6.1+)
+- [x] Function call trailing commas (Swift 6.1+)
+- [x] Parameter list trailing commas (Swift 6.1+)
 - [ ] Generic list trailing commas (Swift 6.1+ concrete, 6.2+ all)
 - [ ] Tuple trailing commas (Swift 6.2+)
 - [ ] Closure argument list trailing commas (Swift 6.2+)
