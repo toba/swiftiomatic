@@ -10,7 +10,6 @@
 		038458AB629699369CD0565D /* ScopeBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BF4E93983E00BCB0B50F5E /* ScopeBadge.swift */; };
 		0C2E778E37A8A7A630D86A80 /* SelectionSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA94BF388A12820A5E1597C6 /* SelectionSnapshot.swift */; };
 		1BBED5ADBBC5CBEC6C35A565 /* FormatSelectionCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6610B8742E60BB8F47EC4DA /* FormatSelectionCommand.swift */; };
-		22F2D42881BAFCBAD9C79ABF /* RulesTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFBA738B85AF6E691D7022C1 /* RulesTab.swift */; };
 		442A015E239C8324635F9471 /* RuleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15826515C1254BEDABFD2A46 /* RuleRow.swift */; };
 		7FED0BB65F174A26DDE860E5 /* SourceEditorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC80A0FBEE4DCB483B684BC /* SourceEditorExtension.swift */; };
 		83FD3E22AF06488263FDEFF0 /* SwiftiomaticSyntax in Frameworks */ = {isa = PBXBuildFile; productRef = FF42C1289549FC8FD144F7C7 /* SwiftiomaticSyntax */; };
@@ -94,7 +93,6 @@
 		A961AF4FDCFFD96D3EA03C0D /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppModel.swift; path = SwiftiomaticApp/Models/AppModel.swift; sourceTree = "<group>"; };
 		AD60A865C86BE3D473E1626F /* ConfigurationLoading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ConfigurationLoading.swift; path = SwiftiomaticExtension/ConfigurationLoading.swift; sourceTree = "<group>"; };
 		B66DD048FBC008D5BC66ED1C /* SharedDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SharedDefaults.swift; path = SwiftiomaticApp/Models/SharedDefaults.swift; sourceTree = "<group>"; };
-		CFBA738B85AF6E691D7022C1 /* RulesTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RulesTab.swift; path = SwiftiomaticApp/Views/RulesTab.swift; sourceTree = "<group>"; };
 		D4BF4E93983E00BCB0B50F5E /* ScopeBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScopeBadge.swift; path = SwiftiomaticApp/Views/ScopeBadge.swift; sourceTree = "<group>"; };
 		DA94BF388A12820A5E1597C6 /* SelectionSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SelectionSnapshot.swift; path = SwiftiomaticExtension/SelectionSnapshot.swift; sourceTree = "<group>"; };
 		F2BACA1AD327A1773988F8E0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = SwiftiomaticApp/Views/ContentView.swift; sourceTree = "<group>"; };
@@ -154,7 +152,6 @@
 			isa = PBXGroup;
 			children = (
 				F2BACA1AD327A1773988F8E0 /* ContentView.swift */,
-				CFBA738B85AF6E691D7022C1 /* RulesTab.swift */,
 				15826515C1254BEDABFD2A46 /* RuleRow.swift */,
 				79885F8900E2F7F9506BE0B2 /* RuleDetailView.swift */,
 				D4BF4E93983E00BCB0B50F5E /* ScopeBadge.swift */,
@@ -310,7 +307,6 @@
 				CA2EA007E52B7D3B97320701 /* AppModel.swift in Sources */,
 				E03F9815386CCFAACABB1F4E /* SharedDefaults.swift in Sources */,
 				8B987048271BA353692FAB56 /* ContentView.swift in Sources */,
-				22F2D42881BAFCBAD9C79ABF /* RulesTab.swift in Sources */,
 				442A015E239C8324635F9471 /* RuleRow.swift in Sources */,
 				F25C7543CBB44BBAC0347262 /* RuleDetailView.swift in Sources */,
 				038458AB629699369CD0565D /* ScopeBadge.swift in Sources */,

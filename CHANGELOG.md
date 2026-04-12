@@ -30,6 +30,7 @@
 - Fix example bugs in `lock_anti_patterns`, `async_stream_safety`, `date_for_timing` rules
 - Fix `LintPipeline` skip-depth ordering bug; `visitPost` never dispatched for rules using `skippableDeclarations` ([#206](https://github.com/toba/swiftiomatic/issues/206))
 - Fix Xcode app build; add `SwiftiomaticSyntax` dependency after module extraction
+- Replace custom About toolbar button with standard macOS About window ([#216](https://github.com/toba/swiftiomatic/issues/216))
 
 ### 🗜️ Tweaks
 

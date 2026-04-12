@@ -3,7 +3,7 @@ import SwiftiomaticKit
 import SwiftiomaticSyntax
 import UniformTypeIdentifiers
 
-struct OptionsTab: View {
+struct OptionsDetailView: View {
   @Environment(AppModel.self) private var model
 
   private var indentation: Binding<String> {

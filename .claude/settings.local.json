@@ -94,7 +94,13 @@
       "WebFetch(domain:nilcoalescing.com)",
       "mcp__xc-project__remove_file",
       "mcp__xc-build__get_mac_bundle_id",
-      "mcp__xc-build__build_run_macos"
+      "mcp__xc-build__build_run_macos",
+      "mcp__xc-build__start_mac_log_cap",
+      "mcp__xc-debug__screenshot_mac_window",
+      "mcp__xc-build__stop_mac_log_cap",
+      "mcp__xc-build__stop_mac_app",
+      "WebFetch(domain:www.createwithswift.com)",
+      "mcp__xc-project__list_test_plans"
     ]
   },
   "enableAllProjectMcpServers": true,
