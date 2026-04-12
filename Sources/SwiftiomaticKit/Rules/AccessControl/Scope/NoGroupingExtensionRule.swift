@@ -5,9 +5,6 @@ struct NoGroupingExtensionRule {
   static let name = "No Grouping Extension"
   static let summary = "Extensions shouldn't be used to group code within the same source file"
   static let isOptIn = true
-  // Cross-references type declarations with extensions after a full tree walk;
-  // the single-pass pipeline only reads the visitor's violations array.
-  static let requiresPostProcessing = true
   static var nonTriggeringExamples: [Example] {
     [
       Example("protocol Food {}\nextension Food {}"),

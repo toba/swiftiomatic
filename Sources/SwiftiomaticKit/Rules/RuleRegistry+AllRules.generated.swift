@@ -295,7 +295,7 @@ private let allRules: [any Rule.Type] = [
   StringDataConversionRule.self,
   StrongifiedSelfRule.self,
   StructuralDuplicationRule.self,
-  Swift62ModernizationRule.self,
+  SwiftModernizationRule.self,
   SwiftTestingTestCaseNamesRule.self,
   SwiftUILayoutRule.self,
   SwiftUISupersededPatternsRule.self,

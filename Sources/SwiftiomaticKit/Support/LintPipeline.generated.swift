@@ -243,7 +243,7 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "strict_fileprivate",
     "string_data_conversion",
     "strongified_self",
-    "swift62_modernization",
+    "swift_modernization",
     "swift_testing_test_case_names",
     "swiftui_layout",
     "swiftui_superseded_patterns",
@@ -642,11 +642,7 @@ final class LintPipeline: SyntaxVisitor {
 
             case "convenience_type":
                 classDecl_visitPost.append(idx)
-                functionDecl_visitPost.append(idx)
-                initializerDecl_visitPost.append(idx)
                 structDecl_visitPost.append(idx)
-                subscriptDecl_visitPost.append(idx)
-                variableDecl_visitPost.append(idx)
 
             case "cyclomatic_complexity":
                 functionDecl_visitPost.append(idx)
@@ -1210,7 +1206,6 @@ final class LintPipeline: SyntaxVisitor {
 
             case "override_in_extension":
                 extensionDecl_visit.append(idx)
-                classDecl_visitPost.append(idx)
                 functionDecl_visitPost.append(idx)
                 variableDecl_visitPost.append(idx)
 
@@ -1419,7 +1414,6 @@ final class LintPipeline: SyntaxVisitor {
 
             case "required_deinit":
                 classDecl_visitPost.append(idx)
-                deinitializerDecl_visitPost.append(idx)
 
             case "required_enum_case":
                 enumDecl_visitPost.append(idx)
@@ -1521,7 +1515,7 @@ final class LintPipeline: SyntaxVisitor {
             case "strongified_self":
                 optionalBindingCondition_visitPost.append(idx)
 
-            case "swift62_modernization":
+            case "swift_modernization":
                 accessorDecl_visitPost.append(idx)
                 functionCallExpr_visitPost.append(idx)
                 functionDecl_visitPost.append(idx)
@@ -1541,6 +1535,7 @@ final class LintPipeline: SyntaxVisitor {
                 declReferenceExpr_visitPost.append(idx)
 
             case "swiftui_view_anti_patterns":
+                functionCallExpr_visit.append(idx)
                 patternBinding_visit.append(idx)
                 declReferenceExpr_visitPost.append(idx)
                 functionCallExpr_visitPost.append(idx)

@@ -1,15 +1,15 @@
 ---
 # uor-g1t
 title: Investigate 5 unmapped SwiftFormat rules for Swiftiomatic equivalents
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-11T23:49:49Z
-updated_at: 2026-04-11T23:56:09Z
+updated_at: 2026-04-12T21:40:32Z
 sync:
     github:
         issue_number: "203"
-        synced_at: "2026-04-11T23:57:07Z"
+        synced_at: "2026-04-12T21:41:30Z"
 ---
 
 Five SwiftFormat rules have no Swiftiomatic equivalent and show as unmapped during `sm migrate`. Investigate whether each warrants a new rule, maps to an existing one, or should remain unmapped.
@@ -75,7 +75,12 @@ For each rule:
 
 ## Recommended Actions
 
-- [ ] Add mapping: `consistentSwitchCaseSpacing` → `vertical_whitespace_between_cases` in `RuleMapping.swiftformatMapping`
-- [ ] Add to `swiftformatRemoved`: `wrapFunctionBodies`, `wrapLoopBodies`, `wrapPropertyBodies` with reason "Swiftiomatic uses single_line_body (inverse behavior — collapses short bodies instead of expanding them)"
-- [ ] `wrapSingleLineComments` — create follow-up issue for new comment-wrapping format rule (low priority)
-- [ ] Keep `wrapSingleLineComments` as unmapped in migration output until rule is implemented
+- [x] Add mapping: `consistentSwitchCaseSpacing` → `vertical_whitespace_between_cases` in `RuleMapping.swiftformatMapping` — deferred to a9u-qgt audit
+- [x] Add to `swiftformatRemoved`: `wrapFunctionBodies`, `wrapLoopBodies`, `wrapPropertyBodies` — deferred to a9u-qgt audit
+- [x] `wrapSingleLineComments` — deferred; low priority, no blocking migration impact
+- [x] Keep `wrapSingleLineComments` as unmapped in migration output until rule is implemented
+
+
+## Summary of Changes
+
+Investigation complete for all 5 unmapped rules. Remaining code changes (adding mapping entries) deferred to audit epic a9u-qgt (#229).

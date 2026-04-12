@@ -12,7 +12,7 @@ import Testing
 //   - InlinableGenericRule (inlinable_generic)
 //
 // @TaskLocal and Span parameter checks were removed — they will be
-// added to Swift62ModernizationRule separately.
+// added to SwiftModernizationRule separately.
 
 @Suite("LazyChainRule — chained transforms")
 struct LazyChainTests {

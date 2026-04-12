@@ -5,11 +5,11 @@ status: in-progress
 type: epic
 priority: normal
 created_at: 2026-04-11T23:47:28Z
-updated_at: 2026-04-12T02:37:46Z
+updated_at: 2026-04-12T21:52:03Z
 sync:
     github:
         issue_number: "200"
-        synced_at: "2026-04-12T03:13:32Z"
+        synced_at: "2026-04-12T22:20:43Z"
 ---
 
 ## Overview
@@ -35,9 +35,9 @@ Existing rules already cover: `typed_throws`, `concurrency_modernization`, `swif
 - [x] **`NSOpenPanel`/`NSSavePanel` → `.fileImporter`/`.fileExporter`** — Direct API reference detection. Flag in SwiftUI view files.
 - [x] **Formatters in SwiftUI body** — `DateFormatter()`, `NumberFormatter()`, `MeasurementFormatter()` allocated inside `body` or view computed properties. Causes re-creation every evaluation. Suggest caching as static/shared.
 - [x] **Sorting/filtering inside ForEach** — `.sorted(by:)`, `.filter { }` inside `ForEach` runs every body evaluation. Suggest precomputing.
-- [ ] **Unstable ForEach identity** — `id: \.self` on non-`Identifiable`/mutable types. `UUID()` created per render.
-- [ ] **Top-level if/else in View body** — Root-level conditional branches cause identity churn. Suggest stable root with conditional content inside.
-- [ ] **`withAnimation` inside `onChange`** — When view has frequent non-animated state updates, last transaction wins. Suggest `.animation(_:value:)` scoped to animating view.
+- [x] **Unstable ForEach identity** — `id: \.self` on non-`Identifiable`/mutable types. `UUID()` created per render.
+- [x] **Top-level if/else in View body** — Root-level conditional branches cause identity churn. Suggest stable root with conditional content inside.
+- [x] **`withAnimation` inside `onChange`** — When view has frequent non-animated state updates, last transaction wins. Suggest `.animation(_:value:)` scoped to animating view.
 
 ### Foundation Modernization (suggest rules)
 - [x] **`NSAttributedString`/`NSMutableAttributedString` → `AttributedString`** — Value type, Sendable, no bridging. Also flag `NSParagraphStyle`, `NSMutableParagraphStyle`, `enumerateAttributes(in:)`. Exception: TextKit 2 layout pipeline internals.

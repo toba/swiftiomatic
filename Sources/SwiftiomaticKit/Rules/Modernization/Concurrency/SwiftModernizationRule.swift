@@ -1,13 +1,14 @@
 import SwiftiomaticSyntax
 
-struct Swift62ModernizationRule {
-  static let id = "swift62_modernization"
-  static let name = "Swift 6.2 Modernization"
+struct SwiftModernizationRule {
+  static let id = "swift_modernization"
+  static let name = "Swift Modernization"
   static let summary =
-    "Code that can benefit from Swift 6.2 features like @concurrent, Observations, weak let, and Span"
+    "Code that can benefit from modern Swift features like Task.immediate, @concurrent, Observations, weak let, and Span"
   static let scope: Scope = .suggest
   static let isOptIn = true
   static let isCorrectable = true
+  static var deprecatedAliases: Set<String> { ["swift62_modernization"] }
   static var nonTriggeringExamples: [Example] {
     [
       Example("func work() async { }"),
@@ -28,6 +29,17 @@ struct Swift62ModernizationRule {
             }
         }
         """),
+      // Task.immediate already used
+      Example(
+        """
+        @MainActor func refresh() {
+            Task.immediate { await fetchData() }
+        }
+        """),
+      // Task { } outside @MainActor context is fine
+      Example("func work() { Task { await fetch() } }"),
+      // nonisolated(unsafe) on a non-Sendable type is fine
+      Example("nonisolated(unsafe) let callback: () -> Void = { }"),
     ]
   }
 
@@ -50,21 +62,39 @@ struct Swift62ModernizationRule {
             }
         }
         """),
+      // Task { } in @MainActor function → Task.immediate
+      Example(
+        """
+        @MainActor func refresh() {
+            ↓Task { await fetchData() }
+        }
+        """),
+      // Task { } in @MainActor type
+      Example(
+        """
+        @MainActor class ViewModel {
+            func load() {
+                ↓Task { await fetch() }
+            }
+        }
+        """),
+      // nonisolated(unsafe) on Sendable value
+      Example("↓nonisolated(unsafe) let pattern = /\\d+/"),
     ]
   }
 
   var options = SeverityOption<Self>(.warning)
 }
 
-extension Swift62ModernizationRule: SwiftSyntaxRule {
+extension SwiftModernizationRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
 }
 
-extension Swift62ModernizationRule: Rule {}
+extension SwiftModernizationRule: Rule {}
 
-extension Swift62ModernizationRule {
+extension SwiftModernizationRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: FunctionCallExprSyntax) {
       let callee = node.calledExpression.trimmedDescription
@@ -91,6 +121,20 @@ extension Swift62ModernizationRule {
             severity: configuration.severity,
             confidence: .medium,
             suggestion: "for await value in Observations { ... }",
+          ),
+        )
+      }
+
+      // Task { } in @MainActor context → Task.immediate (SE-0472)
+      if callee == "Task", isInsideMainActorContext(Syntax(node)) {
+        violations.append(
+          SyntaxViolation(
+            position: node.positionAfterSkippingLeadingTrivia,
+            reason:
+              "Task { } in @MainActor context can use Task.immediate to start synchronously (SE-0472)",
+            severity: configuration.severity,
+            confidence: .medium,
+            suggestion: "Task.immediate { ... }",
           ),
         )
       }
@@ -124,6 +168,33 @@ extension Swift62ModernizationRule {
               suggestion: "weak let \(bindingName)",
             ),
           )
+        }
+      }
+
+      // Detect nonisolated(unsafe) on values likely Sendable in Swift 6.2+
+      let hasNonisolatedUnsafe = node.modifiers.contains { modifier in
+        modifier.name.text == "nonisolated" && modifier.detail?.detail.text == "unsafe"
+      }
+      if hasNonisolatedUnsafe {
+        // Check if the initializer is a regex literal, enum case, or struct literal
+        if let initializer = node.bindings.first?.initializer?.value {
+          let initText = initializer.trimmedDescription
+          if initializer.is(RegexLiteralExprSyntax.self)
+            || initializer.is(MemberAccessExprSyntax.self)
+            || initText.hasPrefix("/")
+          {
+            let bindingName = node.bindings.first?.pattern.trimmedDescription ?? "unknown"
+            violations.append(
+              SyntaxViolation(
+                position: node.positionAfterSkippingLeadingTrivia,
+                reason:
+                  "nonisolated(unsafe) on '\(bindingName)' may be unnecessary — value types, enums, and regex are Sendable in Swift 6.2+",
+                severity: configuration.severity,
+                confidence: .low,
+                suggestion: "Remove nonisolated(unsafe) if the value is Sendable",
+              ),
+            )
+          }
         }
       }
 
@@ -324,12 +395,13 @@ extension Swift62ModernizationRule {
       node.nearestAncestor(ofType: ActorDeclSyntax.self) != nil
     }
 
-    private func isInsideMainActorType(_ node: Syntax) -> Bool {
-      func hasMainActorAttribute(_ attributes: AttributeListSyntax) -> Bool {
-        attributes.contains { attr in
-          attr.as(AttributeSyntax.self)?.attributeName.trimmedDescription == "MainActor"
-        }
+    private func hasMainActorAttribute(_ attributes: AttributeListSyntax) -> Bool {
+      attributes.contains { attr in
+        attr.as(AttributeSyntax.self)?.attributeName.trimmedDescription == "MainActor"
       }
+    }
+
+    private func isInsideMainActorType(_ node: Syntax) -> Bool {
       if let classDecl = node.nearestAncestor(ofType: ClassDeclSyntax.self) {
         return hasMainActorAttribute(classDecl.attributes)
       }
@@ -337,6 +409,18 @@ extension Swift62ModernizationRule {
         return hasMainActorAttribute(structDecl.attributes)
       }
       return false
+    }
+
+    /// Checks if the node is inside a @MainActor function or @MainActor type.
+    private func isInsideMainActorContext(_ node: Syntax) -> Bool {
+      // Check enclosing function
+      if let funcDecl = node.nearestAncestor(ofType: FunctionDeclSyntax.self),
+        hasMainActorAttribute(funcDecl.attributes)
+      {
+        return true
+      }
+      // Check enclosing type
+      return isInsideMainActorType(node)
     }
 
     override func visitPost(_ node: AccessorDeclSyntax) {

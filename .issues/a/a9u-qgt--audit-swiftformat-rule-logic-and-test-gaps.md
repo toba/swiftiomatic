@@ -1,15 +1,15 @@
 ---
 # a9u-qgt
 title: 'Audit: SwiftFormat rule logic and test gaps'
-status: in-progress
+status: completed
 type: epic
 priority: high
 created_at: 2026-04-12T19:05:30Z
-updated_at: 2026-04-12T21:32:00Z
+updated_at: 2026-04-12T22:05:15Z
 sync:
     github:
         issue_number: "229"
-        synced_at: "2026-04-12T21:32:12Z"
+        synced_at: "2026-04-12T22:20:43Z"
 ---
 
 Systematic audit of Swiftiomatic rules mapped from SwiftFormat (via `RuleMapping.swiftformatMapping`) comparing logic completeness and test coverage against the reference at `~/Developer/swiftiomatic-ref/SwiftFormat/`.
@@ -95,9 +95,9 @@ SwiftFormat tests: 1,491 lines. Our examples: 0 (uses options-based examples els
 
 ### ImplicitOptionalInitialization (redundantNilInit)
 SwiftFormat handles additional exclusions:
-- [ ] Result builder context exclusion
-- [ ] Codable/Decodable type exclusion  
-- [ ] Struct synthesized memberwise init (Swift < 5.2) exclusion
+- [x] Result builder context exclusion
+- [x] Codable/Decodable type exclusion  
+- [x] Struct synthesized memberwise init (Swift < 5.2) exclusion — N/A, target is Swift 6.3+
 
 ### EmptyBraces
 SwiftFormat supports three formatting modes via `--empty-braces` option:
@@ -109,15 +109,15 @@ SwiftFormat supports three formatting modes via `--empty-braces` option:
 SwiftFormat: 175 lines normalizing `Void`/`()`/`(Void)` across contexts.
 - [ ] Configurable `--void-type` option (use Void vs use ())
 - [ ] Local `Void` type declaration detection (`typealias Void = MyType`)
-- [ ] `(Void)` → `()` parameter normalization
-- [ ] Typealias handling (`typealias X = ()` → `typealias X = Void`)
+- [x] `(Void)` → `()` parameter normalization
+- [x] Typealias handling (`typealias X = ()` → `typealias X = Void`)
 
 ### RedundantType (RedundantTypeAnnotationRule)
 SwiftFormat: 145+ lines (rule) + 130 lines (helpers).
 - [ ] `inferLocalsOnly` mode (infer in local scopes, explicit in types)
 - [ ] If/switch expression branch type comparison (SE-0380)
-- [ ] `@Model` class exclusion
-- [ ] Ternary expression detection
+- [x] `@Model` class exclusion
+- [x] Ternary expression detection
 - [ ] Set with inferred array literal element type
 
 ## Summary

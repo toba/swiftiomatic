@@ -176,6 +176,18 @@ private final class RuleFileVisitor: SyntaxVisitor {
       }
     }
 
+    // Check if the visitor class references `violations` in any method body.
+    // BodyLengthVisitor subclasses don't reference it directly — the base class's
+    // registerViolations() appends on their behalf.
+    let referencesViolations: Bool
+    if parent == "BodyLengthVisitor" {
+      referencesViolations = true
+    } else {
+      let checker = ViolationsReferenceChecker(viewMode: .sourceAccurate)
+      checker.walk(node.memberBlock)
+      referencesViolations = checker.found
+    }
+
     // Associate with enclosing rule struct
     let enclosingType = currentExtensionType
     visitorClasses[className] = VisitorClassInfo(
@@ -184,6 +196,7 @@ private final class RuleFileVisitor: SyntaxVisitor {
       enclosingRuleType: enclosingType,
       visitNodeTypes: visitNodeTypes,
       visitPostNodeTypes: visitPostNodeTypes,
+      referencesViolations: referencesViolations,
     )
 
     return .skipChildren
@@ -201,13 +214,17 @@ private final class RuleFileVisitor: SyntaxVisitor {
       // Only consider rules that conform to SwiftSyntaxRule
       guard ruleInfo.conformsToSwiftSyntaxRule else { continue }
 
-      // Determine pipeline eligibility
+      // Determine pipeline eligibility.
+      // The visitor must reference `violations` somewhere in its body, proving it
+      // produces violations during the walk. Otherwise the rule relies on
+      // post-processing in validate(file:) and can't run in the single-pass pipeline.
       let eligible =
         !ruleInfo.hasPreprocessOverride
         && !ruleInfo.isCollecting
         && !ruleInfo.isAnalyzer
         && !ruleInfo.isSourceKitAST
         && !ruleInfo.requiresPostProcessing
+        && visitorInfo.referencesViolations
 
       // Merge visit/visitPost node types from the base class handling in
       // ViolationCollectingVisitor (the 10 skippable declaration types are
@@ -303,4 +320,20 @@ private struct VisitorClassInfo {
   let enclosingRuleType: String?
   let visitNodeTypes: Set<String>
   let visitPostNodeTypes: Set<String>
+  /// Whether the visitor (or its known base class) appends to `violations` during the walk.
+  /// When `false`, the rule produces violations in a `validate(file:)` override after the walk,
+  /// making it ineligible for the single-pass pipeline.
+  let referencesViolations: Bool
+}
+
+/// Checks whether a syntax subtree contains any reference to `violations` in expression context
+private final class ViolationsReferenceChecker: SyntaxVisitor {
+  var found = false
+
+  override func visit(_ node: DeclReferenceExprSyntax) -> SyntaxVisitorContinueKind {
+    if node.baseName.text == "violations" {
+      found = true
+    }
+    return .visitChildren
+  }
 }

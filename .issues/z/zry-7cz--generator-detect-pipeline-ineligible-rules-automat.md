@@ -1,15 +1,15 @@
 ---
 # zry-7cz
 title: 'Generator: detect pipeline-ineligible rules automatically'
-status: ready
+status: completed
 type: task
 priority: normal
 created_at: 2026-04-12T20:54:39Z
-updated_at: 2026-04-12T20:54:39Z
+updated_at: 2026-04-12T21:51:33Z
 sync:
     github:
         issue_number: "233"
-        synced_at: "2026-04-12T21:03:02Z"
+        synced_at: "2026-04-12T22:20:43Z"
 ---
 
 ## Problem
@@ -33,3 +33,17 @@ Option 3 is simplest and most maintainable. The `requiresPostProcessing` flag se
 - `NoGroupingExtensionRule` (already marked)
 
 Scan for others that override `validate(file:)` on `SwiftSyntaxRule` conformers — see uye-na5 investigation notes.
+
+## Implementation Plan
+
+- [x] Add `ViolationsReferenceChecker` visitor to `RuleCollector.swift` — scans class body for `violations` in expression context
+- [x] Add `referencesViolations` to `VisitorClassInfo`; for `BodyLengthVisitor` subclasses, always `true` (base class handles it)
+- [x] Add `visitorInfo.referencesViolations` to eligibility check (alongside existing `requiresPostProcessing` escape hatch)
+- [x] Remove manual `requiresPostProcessing` from `NoGroupingExtensionRule` (now auto-detected)
+- [x] Run `GeneratePipeline` and verify output unchanged
+- [x] Run tests
+
+
+## Summary of Changes
+
+The generator now auto-detects pipeline-ineligible rules by checking whether a visitor class references `violations` in expression context. If the visitor never appends to `violations`, it must be a post-processing rule (violations are computed in `validate(file:)` after the walk). `BodyLengthVisitor` subclasses are exempt since the base class appends on their behalf. The manual `requiresPostProcessing` flag remains as an escape hatch for edge cases where auto-detection gets it wrong. Removed the now-redundant flag from `NoGroupingExtensionRule`.

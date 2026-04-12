@@ -5,12 +5,12 @@ status: completed
 type: task
 priority: normal
 created_at: 2026-04-12T02:27:03Z
-updated_at: 2026-04-12T02:37:46Z
+updated_at: 2026-04-12T21:52:11Z
 parent: ogh-b3l
 sync:
     github:
         issue_number: "208"
-        synced_at: "2026-04-12T03:13:34Z"
+        synced_at: "2026-04-12T22:20:45Z"
 ---
 
 ## Overview
@@ -23,9 +23,9 @@ Create a suggest-scope rule detecting common SwiftUI performance and correctness
 - [ ] `NSOpenPanel` / `NSSavePanel` in SwiftUI view files → `.fileImporter` / `.fileExporter`
 - [ ] `DateFormatter()` / `NumberFormatter()` / `MeasurementFormatter()` allocated inside `body` → cache as static/shared
 - [ ] `.sorted(by:)` / `.filter { }` inside `ForEach` → precompute
-- [ ] `id: \.self` on non-Identifiable/mutable types, `UUID()` in ForEach → unstable identity
-- [ ] Top-level `if/else` in View body swapping root branches → stable root with conditional content
-- [ ] `withAnimation` inside `onChange` with frequent non-animated updates → `.animation(_:value:)` scoped modifier
+- [x] `id: \.self` on non-Identifiable/mutable types, `UUID()` in ForEach → unstable identity
+- [x] Top-level `if/else` in View body swapping root branches → stable root with conditional content
+- [x] `withAnimation` inside `onChange` with frequent non-animated updates → `.animation(_:value:)` scoped modifier
 
 ## Notes
 

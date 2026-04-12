@@ -52,6 +52,53 @@ struct SwiftUIViewAntiPatternsRule {
         }
         """
       ),
+      // Stable ForEach identity — uses Identifiable conformance
+      Example(
+        """
+        struct MyView: View {
+          let items: [Item]
+          var body: some View {
+            ForEach(items) { item in Text(item.name) }
+          }
+        }
+        """
+      ),
+      // Stable root with conditional content inside
+      Example(
+        """
+        struct MyView: View {
+          @State var isLoaded = false
+          var body: some View {
+            VStack {
+              if isLoaded { Text("Done") } else { ProgressView() }
+            }
+          }
+        }
+        """
+      ),
+      // withAnimation outside onChange is fine
+      Example(
+        """
+        struct MyView: View {
+          var body: some View {
+            Button("Tap") { withAnimation { toggle() } }
+              .onChange(of: value) { _, new in update(new) }
+          }
+        }
+        """
+      ),
+      // .animation(_:value:) inside onChange is the recommended pattern
+      Example(
+        """
+        struct MyView: View {
+          var body: some View {
+            Text("Hello")
+              .animation(.default, value: offset)
+              .onChange(of: value) { _, new in offset = new }
+          }
+        }
+        """
+      ),
     ]
   }
 
@@ -110,6 +157,46 @@ struct SwiftUIViewAntiPatternsRule {
         """,
         isExcludedFromDocumentation: true,
       ),
+      // Unstable ForEach identity: id: \.self
+      Example(
+        """
+        struct MyView: View {
+          let names: [String]
+          var body: some View {
+            ForEach(names, ↓id: \\.self) { name in Text(name) }
+          }
+        }
+        """
+      ),
+      // Top-level if/else in body swaps root identity
+      Example(
+        """
+        struct MyView: View {
+          @State var isLoaded = false
+          var body: some View {
+            ↓if isLoaded {
+              ContentView()
+            } else {
+              LoadingView()
+            }
+          }
+        }
+        """
+      ),
+      // withAnimation inside onChange — last transaction wins
+      Example(
+        """
+        struct MyView: View {
+          @State var offset: CGFloat = 0
+          var body: some View {
+            Text("Hello")
+              .onChange(of: value) { _, new in
+                ↓withAnimation { offset = new }
+              }
+          }
+        }
+        """
+      ),
     ]
   }
 
@@ -136,6 +223,15 @@ extension ViolationMessage {
 
   fileprivate static let sortFilterInForEach: Self =
     "Sorting/filtering inside ForEach runs every body evaluation — precompute the collection"
+
+  fileprivate static let unstableForEachIdentity: Self =
+    "ForEach with 'id: \\.self' uses unstable identity — prefer Identifiable conformance"
+
+  fileprivate static let topLevelConditionalBody: Self =
+    "Top-level if/else in View body swaps root identity — wrap in a stable container"
+
+  fileprivate static let withAnimationInOnChange: Self =
+    "withAnimation inside onChange can be overridden by non-animated updates — use .animation(_:value:) modifier instead"
 }
 
 private let panelTypes: Set<String> = ["NSOpenPanel", "NSSavePanel"]
@@ -147,14 +243,16 @@ private let formatterTypes: Set<String> = [
 extension SwiftUIViewAntiPatternsRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var bodyDepth = 0
+    private var onChangeDepth = 0
 
-    // MARK: - Track whether we're inside a `body` computed property
+    // MARK: - Track `body` computed property scope
 
     override func visit(_ node: PatternBindingSyntax) -> SyntaxVisitorContinueKind {
       if node.pattern.trimmedDescription == "body",
         node.accessorBlock != nil
       {
         bodyDepth += 1
+        checkTopLevelConditional(in: node)
       }
       return .visitChildren
     }
@@ -197,9 +295,26 @@ extension SwiftUIViewAntiPatternsRule {
       }
     }
 
-    // MARK: - Formatter allocation in body
+    // MARK: - Formatter allocation in body & ForEach patterns
+
+    override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
+      // Track .onChange modifier depth for withAnimation detection
+      if let member = node.calledExpression.as(MemberAccessExprSyntax.self),
+        member.declName.baseName.text == "onChange"
+      {
+        onChangeDepth += 1
+      }
+      return .visitChildren
+    }
 
     override func visitPost(_ node: FunctionCallExprSyntax) {
+      // Untrack onChange depth
+      if let member = node.calledExpression.as(MemberAccessExprSyntax.self),
+        member.declName.baseName.text == "onChange"
+      {
+        onChangeDepth -= 1
+      }
+
       guard bodyDepth > 0 else { return }
 
       let callee = node.calledExpression.trimmedDescription
@@ -232,7 +347,58 @@ extension SwiftUIViewAntiPatternsRule {
             )
           )
         }
+
+        // MARK: - Unstable ForEach identity (id: \.self)
+
+        for arg in node.arguments where arg.label?.text == "id" {
+          if arg.expression.trimmedDescription == "\\.self" {
+            violations.append(
+              SyntaxViolation(
+                position: arg.positionAfterSkippingLeadingTrivia,
+                message: .unstableForEachIdentity,
+                confidence: .medium,
+                suggestion: "Conform elements to Identifiable or use a stable key path",
+              )
+            )
+          }
+        }
       }
+
+      // MARK: - withAnimation inside onChange
+
+      if callee == "withAnimation", onChangeDepth > 0 {
+        violations.append(
+          SyntaxViolation(
+            position: node.calledExpression.positionAfterSkippingLeadingTrivia,
+            message: .withAnimationInOnChange,
+            confidence: .medium,
+            suggestion: "Use .animation(_:value:) modifier scoped to the animating view",
+          )
+        )
+      }
+    }
+
+    // MARK: - Top-level if/else in body
+
+    private func checkTopLevelConditional(in node: PatternBindingSyntax) {
+      guard let accessorBlock = node.accessorBlock,
+        case let .getter(items) = accessorBlock.accessors
+      else { return }
+
+      // Only flag when the if/else is the sole root expression
+      guard items.count == 1,
+        let ifExpr = items.first?.item.as(IfExprSyntax.self),
+        ifExpr.elseBody != nil
+      else { return }
+
+      violations.append(
+        SyntaxViolation(
+          position: ifExpr.positionAfterSkippingLeadingTrivia,
+          message: .topLevelConditionalBody,
+          confidence: .medium,
+          suggestion: "Wrap in a stable container like VStack, Group, or ZStack",
+        )
+      )
     }
   }
 }

@@ -43,6 +43,7 @@
 - Fix 5 test failures; `StatementPositionRule` no-SourceKit fallback, `IdentifierNameRule` emoji length ([#205](https://github.com/toba/swiftiomatic/issues/205))
 - `RuleExampleTests`; `identifier_name` false failure from `prefixed_toplevel_constant` ([#230](https://github.com/toba/swiftiomatic/issues/230))
 - Rules that skip `CodeBlockSyntax` but not `AccessorBlockSyntax`; add structural `skipsNestedScopes` flag ([#235](https://github.com/toba/swiftiomatic/issues/235))
+- Swift Testing misattributes failures in serialized parameterized tests ([#234](https://github.com/toba/swiftiomatic/issues/234))
 
 ### 🗜️ Tweaks
 
@@ -81,3 +82,7 @@
 - Remove padding around app icon for macOS 26 ([#231](https://github.com/toba/swiftiomatic/issues/231))
 - Fix SF Symbol sizing and placement in rule list ([#224](https://github.com/toba/swiftiomatic/issues/224))
 - Replace scope badges with SF Symbols ([#225](https://github.com/toba/swiftiomatic/issues/225))
+- Audit SwiftFormat rule logic and test gaps ([#229](https://github.com/toba/swiftiomatic/issues/229))
+- Generator: detect pipeline-ineligible rules automatically ([#233](https://github.com/toba/swiftiomatic/issues/233))
+- Investigate 5 unmapped SwiftFormat rules for Swiftiomatic equivalents ([#203](https://github.com/toba/swiftiomatic/issues/203))
+- Medium gap fixes: `ImplicitOptionalInit` exclusions, `RedundantType` `@Model`/ternary ([#236](https://github.com/toba/swiftiomatic/issues/236))

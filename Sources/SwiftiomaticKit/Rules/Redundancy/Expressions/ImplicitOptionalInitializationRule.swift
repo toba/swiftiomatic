@@ -91,6 +91,17 @@ extension PatternBindingSyntax {
       typeAnnotation.isOptionalType
     else { return nil }
 
+    // Skip stored properties in Codable/Decodable types —
+    // removing = nil can change synthesized decoder behavior for missing keys
+    if parent.isStoredPropertyInCodableType {
+      return nil
+    }
+
+    // Skip in result builder bodies
+    if parent.isInResultBuilderContext {
+      return nil
+    }
+
     // ignore properties with accessors unless they have only willSet or didSet
     if let accessorBlock {
       if let accessors = accessorBlock.accessors.as(AccessorDeclListSyntax.self) {
@@ -130,5 +141,57 @@ extension TypeAnnotationSyntax {
     }
 
     return false
+  }
+}
+
+// MARK: - Context Exclusions
+
+private let codableConformances: Set<String> = ["Codable", "Decodable"]
+
+extension VariableDeclSyntax {
+  /// Whether this is a stored property inside a type conforming to Codable or Decodable
+  fileprivate var isStoredPropertyInCodableType: Bool {
+    guard parent?.is(MemberBlockItemSyntax.self) == true else { return false }
+    var current: Syntax? = parent
+    while let node = current {
+      if let decl = node.as(StructDeclSyntax.self) {
+        return decl.inheritanceClause.containsInheritedType(inheritedTypes: codableConformances)
+      }
+      if let decl = node.as(ClassDeclSyntax.self) {
+        return decl.inheritanceClause.containsInheritedType(inheritedTypes: codableConformances)
+      }
+      if let decl = node.as(EnumDeclSyntax.self) {
+        return decl.inheritanceClause.containsInheritedType(inheritedTypes: codableConformances)
+      }
+      if let decl = node.as(ActorDeclSyntax.self) {
+        return decl.inheritanceClause.containsInheritedType(inheritedTypes: codableConformances)
+      }
+      current = node.parent
+    }
+    return false
+  }
+
+  /// Whether this variable is inside a result builder body (function or property with a Builder attribute)
+  fileprivate var isInResultBuilderContext: Bool {
+    var current: Syntax? = parent
+    while let node = current {
+      if let funcDecl = node.as(FunctionDeclSyntax.self) {
+        return funcDecl.attributes.containsResultBuilderAttribute
+      }
+      if let varDecl = node.as(VariableDeclSyntax.self) {
+        return varDecl.attributes.containsResultBuilderAttribute
+      }
+      current = node.parent
+    }
+    return false
+  }
+}
+
+extension AttributeListSyntax {
+  fileprivate var containsResultBuilderAttribute: Bool {
+    contains { element in
+      guard let attr = element.as(AttributeSyntax.self) else { return false }
+      return attr.attributeNameText.hasSuffix("Builder")
+    }
   }
 }

@@ -4,11 +4,11 @@ import Testing
 @testable import SwiftiomaticKit
 @testable import SwiftiomaticSyntax
 
-@Suite("Swift62ModernizationRule — new patterns")
-struct Swift62ModernizationTests {
+@Suite("SwiftModernizationRule — new patterns")
+struct SwiftModernizationTests {
   @Test func detectsTupleAsFixedSizeBuffer() throws {
     let violations = try suggestViolations(
-      Swift62ModernizationRule(), fixture: "Swift62Modernization")
+      SwiftModernizationRule(), fixture: "SwiftModernization")
 
     let tupleFindings = violations.filter { $0.reason.contains("InlineArray") }
     #expect(tupleFindings.count >= 1)
@@ -18,7 +18,7 @@ struct Swift62ModernizationTests {
 
   @Test func detectsMutableStaticVarWithoutIsolation() throws {
     let violations = try suggestViolations(
-      Swift62ModernizationRule(), fixture: "Swift62Modernization")
+      SwiftModernizationRule(), fixture: "SwiftModernization")
 
     let staticVarFindings = violations.filter {
       $0.reason.contains("static var") && $0.reason.contains("isolation")
@@ -30,7 +30,7 @@ struct Swift62ModernizationTests {
 
   @Test func detectsNonisolatedInMainActorType() throws {
     let violations = try suggestViolations(
-      Swift62ModernizationRule(), fixture: "Swift62Modernization")
+      SwiftModernizationRule(), fixture: "SwiftModernization")
 
     let nonisolatedFindings = violations.filter { $0.reason.contains("nonisolated") }
     #expect(nonisolatedFindings.count >= 1)
@@ -39,7 +39,7 @@ struct Swift62ModernizationTests {
 
   @Test func detectsWeakVarNotReassigned() throws {
     let violations = try suggestViolations(
-      Swift62ModernizationRule(), fixture: "Swift62Modernization")
+      SwiftModernizationRule(), fixture: "SwiftModernization")
 
     let weakVarFindings = violations.filter {
       $0.reason.contains("weak var") && $0.reason.contains("weak let")
@@ -54,7 +54,7 @@ struct Swift62ModernizationTests {
 
   @Test func detectsContextParameterThreading() throws {
     let violations = try suggestViolations(
-      Swift62ModernizationRule(), fixture: "Swift62Modernization")
+      SwiftModernizationRule(), fixture: "SwiftModernization")
 
     let contextFindings = violations.filter { $0.reason.contains("@TaskLocal") }
     #expect(contextFindings.count >= 1)

@@ -17,23 +17,9 @@ description: >
 | Protocol | Input | Pipeline Eligible | Use Case |
 |----------|-------|-------------------|----------|
 | `SwiftSyntaxRule` | SwiftSyntax AST | Yes | Syntactic checks, formatting, most rules |
-| `SwiftSyntaxRule` + `requiresPostProcessing` | SwiftSyntax AST | No (fallback) | Rules whose `validate(file:)` cross-references visitor data after the walk |
+| `SwiftSyntaxRule` (visitor doesn't reference `violations`) | SwiftSyntax AST | No (auto-detected fallback) | Rules whose `validate(file:)` cross-references visitor data after the walk |
 | `SourceKitASTRule` | SourceKit dictionaries | No | Semantic/type-aware checks |
 | `CollectingRule` | Two-pass (collect + validate) | No | Cross-file analysis (dead symbols, duplication) |
-
-## Scopes
-
-| Scope | Runs in | Purpose |
-|-------|---------|---------|
-| `.lint` | Xcode Build Phase, `sm lint` | Wrong code, anti-patterns, style violations |
-| `.format` | Xcode Editor Extension, `sm format` | Whitespace, indentation, brace placement. Always correctable |
-| `.suggest` | `sm suggest` | Research patterns for agent review. Never correctable |
-
-### SourceKit and format corrections
-
-`sm format` filters out rules where `requiresSourceKit = true`. If a rule is both correctable and SourceKit-dependent (e.g., `UnusedImportRule`, `ExplicitSelfRule`), its corrections only apply during `sm lint` or `sm analyze` — never during `sm format`. This is because format runs without compiler arguments or SourceKit context.
-
-When calling `rule.correct()` outside the `Linter` (e.g., in CLI commands), wrap calls in `CurrentRule.$identifier.withValue(type(of: rule).identifier) { ... }` to set the rule execution context. Without this, any SourceKit request triggers a stderr warning. See `FormatCommand.applyCorrectableLintRules()` and `Linter.correct(using:)` for the correct pattern.
 
 ## Directory Organization
 
@@ -134,7 +120,8 @@ fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
 - Always check `isDisabled(atStartPositionOf:)` before correcting
 - Increment `numberOfCorrections` for each correction
 - Call `super.visit(node)` when not modifying (continues traversal)
-- If the rule also sets `requiresSourceKit = true`, corrections only run in `sm lint`/`sm analyze`, not `sm format`
+- If `requiresSourceKit = true`, corrections only run in `sm lint`/`sm analyze` — `sm format` runs without SourceKit context
+- When calling `rule.correct()` outside the `Linter`, wrap in `CurrentRule.$identifier.withValue(type(of: rule).identifier) { ... }`. See `FormatCommand.applyCorrectableLintRules()` for the pattern.
 
 ### Alternative: Visitor-based corrections (no Rewriter)
 
@@ -206,7 +193,7 @@ The `RuleResolver` filters global `formatDefaults` to only declared keys, then m
 
 ## Typed Violation Messages
 
-For rules with multiple message variants, define typed messages:
+For rules with multiple message variants, define `ViolationMessage` factory methods instead of inline strings:
 
 ```swift
 extension ViolationMessage {
@@ -214,14 +201,7 @@ extension ViolationMessage {
     "\(name) nested deeper than \(threshold) levels"
   }
 }
-```
-
-Use in visitor:
-```swift
-violations.append(SyntaxViolation(
-  position: node.positionAfterSkippingLeadingTrivia,
-  message: .tooDeep("Type", threshold: 2)
-))
+// Usage: violations.append(SyntaxViolation(position: pos, message: .tooDeep("Type", threshold: 2)))
 ```
 
 ## Skipping Nested Scopes
@@ -293,99 +273,13 @@ static var corrections: [Example: Example] {
 }
 ```
 
-## swift-syntax API Quick Reference
+## swift-syntax API
 
-Key APIs used in Visitor/Rewriter implementations:
-
-### Position & Location
-
-```swift
-// SourceLocationConverter — available as `locationConverter` in Visitor/Rewriter
-let loc = locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
-loc.line    // Int (1-based, NON-optional)
-loc.column  // Int (1-based, NON-optional)
-
-// Key position properties on syntax nodes:
-node.position                          // AbsolutePosition — start including leading trivia
-node.positionAfterSkippingLeadingTrivia // AbsolutePosition — start of actual text
-node.endPosition                       // AbsolutePosition — end including trailing trivia
-node.endPositionBeforeTrailingTrivia    // AbsolutePosition — end of actual text
-```
-
-### Trivia Manipulation
-
-```swift
-// Read trivia
-token.leadingTrivia     // Trivia before the token text
-token.trailingTrivia    // Trivia after the token text
-trivia.pieces           // [TriviaPiece] — individual pieces (spaces, newlines, comments)
-trivia.containsNewlines()  // helper extension
-trivia.containsComments    // helper extension
-
-// Modify trivia (returns new node — SwiftSyntax is immutable)
-token.with(\.leadingTrivia, .space)          // single space
-token.with(\.leadingTrivia, Trivia(pieces: newPieces))
-token.with(\.trailingTrivia, [])             // remove all
-
-// Common trivia values
-Trivia.space                     // single space
-Trivia.newline                   // single newline
-Trivia(pieces: [.spaces(4)])     // 4 spaces
-```
-
-### Token Navigation
-
-```swift
-node.lastToken(viewMode: .sourceAccurate)    // last token in a syntax node
-token.nextToken(viewMode: .sourceAccurate)    // next token in the source
-token.previousToken(viewMode: .sourceAccurate)
-```
-
-### File Access
-
-```swift
-// In Visitor/Rewriter, `file` is the SwiftSource instance
-file.contents         // String — full source text
-file.lines            // [Line] — parsed lines (0-based array, but Line.index is 1-based)
-file.lines[n - 1].content  // String — text of line n (no newline terminator)
-file.stringView       // StringView — optimized string operations
-```
-
-### Common Patterns
-
-**Replace trivia between two tokens** (e.g., collapse newline+indent to space):
-```swift
-let lastToken = node.lastToken(viewMode: .sourceAccurate)!
-let nextToken = lastToken.nextToken(viewMode: .sourceAccurate)!
-let correction = SyntaxViolation.Correction(
-  start: lastToken.endPositionBeforeTrailingTrivia,
-  end: nextToken.positionAfterSkippingLeadingTrivia,
-  replacement: " ",
-)
-```
-
-**Compute line width** (for max_width checks):
-```swift
-let loc = locationConverter.location(for: node.positionAfterSkippingLeadingTrivia)
-let indent = loc.column - 1  // 0-based column
-let lineContent = file.lines[loc.line - 1].content
-let strippedLength = lineContent.drop(while: { $0 == " " || $0 == "\t" }).count
-```
-
-**Check attribute properties**:
-```swift
-// AttributeSyntax
-attribute.attributeNameText     // String, e.g. "Test" (extension in SwiftSyntax+Declarations.swift)
-attribute.arguments             // nil if no arguments, non-nil for @Test(.tags(...))
-attribute.trimmedDescription    // "@Test" — text without surrounding trivia
-
-// AttributeListSyntax
-node.children(viewMode: .sourceAccurate).compactMap { $0.as(AttributeSyntax.self) }
-```
+For position, trivia, token navigation, file access, and common patterns, see [references/swift-syntax-api.md](references/swift-syntax-api.md). Key project-specific accessors: `locationConverter` (in Visitor/Rewriter), `file.contents`, `file.lines`, `attribute.attributeNameText`.
 
 ## SourceKitASTRule
 
-For rules needing SourceKit's pre-typechecked AST:
+Use only when the check requires resolved types that syntax alone can't determine.
 
 ```swift
 struct MyRule: SourceKitASTRule {
@@ -400,6 +294,8 @@ struct MyRule: SourceKitASTRule {
 ```
 
 ## CollectingRule (Cross-File)
+
+Use only for cross-file checks (e.g., unused declarations across a module).
 
 ```swift
 struct MyRule: CollectingRule {
@@ -471,7 +367,7 @@ Run tests for a specific rule: filter by rule name (e.g., `--filter AttributePla
 
 1. Run `swift run GeneratePipeline`
 2. Check `RuleRegistry+AllRules.generated.swift` for the rule type
-3. Pipeline-eligible requires: SwiftSyntaxRule, no `preprocess` override, not CollectingRule, not SourceKitASTRule, not `requiresPostProcessing`
+3. Pipeline-eligible requires: SwiftSyntaxRule, no `preprocess` override, not CollectingRule, not SourceKitASTRule, not `requiresPostProcessing`, and **visitor must reference `violations`** (auto-detected by the generator — if the visitor never appends to `violations`, the rule is routed to the fallback path). `BodyLengthVisitor` subclasses are exempt since the base class appends on their behalf.
 
 ### Rule works alone but fails in full RuleExampleTests suite
 
@@ -481,39 +377,17 @@ Swift Testing misattributes failures from `.serialized` parameterized tests — 
 2. **Write debug state to `/tmp/` files** — the MCP test runner truncates `#expect` messages and swallows `print()` output.
 3. **Common causes of suite-only failures:**
    - **Visitor scope skipping.** Use `override var skipsNestedScopes: Bool { true }` to skip all nested scope blocks (CodeBlock, AccessorBlock, ClosureExpr) together. Don't manually override individual `visit(_:)` methods just to return `.skipChildren`.
-   - **Two-pass rules in the pipeline.** If a rule's visitor collects data (e.g., type names) but violations are determined in a custom `validate(file:)` override that post-processes after the walk, the pipeline will report 0 violations (it only reads the visitor's `violations` array). Mark with `static let requiresPostProcessing = true` so the generator routes it to the fallback path.
+   - **Two-pass rules in the pipeline.** If a rule's visitor collects data (e.g., type names) but violations are determined in a custom `validate(file:)` override that post-processes after the walk, the pipeline will report 0 violations (it only reads the visitor's `violations` array). The generator auto-detects this: if the visitor class never references `violations`, the rule is routed to the fallback path. Use `static let requiresPostProcessing = true` as an escape hatch if auto-detection gets it wrong (e.g., the visitor references `violations` for counting but real violations come from post-processing).
    - **Check ordering in multi-branch logic.** Context-specific overrides (after `::` module selector, after `.` member access) must precede blanket checks (e.g., `backtickAlwaysRequired`), or the blanket check short-circuits before the override runs.
 4. **`MemberBlockSyntax` vs type declaration nodes.** To check "inside a type body", walk up to `MemberBlockSyntax` — not `ClassDeclSyntax`/`StructDeclSyntax`/`EnumDeclSyntax`, which also match the type NAME position itself.
 
-## Default Values Reference
-
-```swift
-static var scope: Scope { .lint }
-static var isCorrectable: Bool { false }
-static var isOptIn: Bool { false }          // false = enabled by default
-static var isDeprecated: Bool { false }
-static var requiresSourceKit: Bool { false }
-static var isCrossFile: Bool { false }
-static var requiresFileOnDisk: Bool { false }
-static var minSwiftVersion: SwiftVersion { .v6 }
-static var deprecatedAliases: Set<String> { [] }
-static var relatedRuleIDs: [String] { [] }
-static var nonTriggeringExamples: [Example] { [] }
-static var triggeringExamples: [Example] { [] }
-static var corrections: [Example: Example] { [:] }
-```
-
 ## Key Reference Files
+
+All paths relative to `Sources/SwiftiomaticKit/`.
 
 | File | Purpose |
 |------|---------|
-| `Rules/Rule.swift` | Core `Rule` protocol, `FormatAwareRule` protocol |
-| `Rules/RuleOptions.swift` | `RuleOptions`, `SeverityBasedRuleOptions`, `@OptionElement` |
+| `Rules/RuleOptions.swift` | `SeverityBasedRuleOptions`, `@OptionElement` macro |
 | `Rules/RuleResolver.swift` | Config injection, `FormatAwareRule` merging logic |
-| `Rules/SwiftSyntaxRule.swift` | `SwiftSyntaxRule` protocol, `ViolationCollectingRewriter` base class |
-| `Support/Visitors/ViolationCollectingVisitor.swift` | `ViolationCollectingVisitor` base class, `skipsNestedScopes`, `skippableDeclarations` |
-| `Models/SyntaxViolation.swift` | `SyntaxViolation`, `Correction`, append helpers |
-| `Models/Example.swift` | `Example` struct with `configuration:` parameter |
-| `Models/SwiftSource.swift` | `SwiftSource` — `contents`, `lines`, `stringView` |
-| `SourceKit/Line.swift` | `Line` struct — `index` (1-based), `content` (String) |
+| `Support/Visitors/ViolationCollectingVisitor.swift` | `ViolationCollectingVisitor`, `skipsNestedScopes`, `skippableDeclarations` |
 | `Extensions/SwiftSyntax+Declarations.swift` | `attributeNameText` and other SwiftSyntax extensions |

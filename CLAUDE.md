@@ -49,6 +49,8 @@ Correctable lint rules fix on format. Format rules are always correctable. Sugge
 
 **Philosophy**: prefer false positives over missed issues. The consumer filters.
 
+**Grouping**: suggest-scope rules may group related patterns into one rule (e.g., `swiftui_view_anti_patterns` covers multiple view body smells). Lint and format rules must be one rule per concern — users need per-rule enable/disable control for anything that appears in the editor or auto-fixes.
+
 ## Architecture
 
 - **swift-syntax** AST parsing (no grep heuristics)

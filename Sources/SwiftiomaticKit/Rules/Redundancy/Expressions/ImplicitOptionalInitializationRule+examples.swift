@@ -68,6 +68,59 @@ extension ImplicitOptionalInitializationRule {
       """, configuration: ["style": "always"],
     ),
     Example("var x: Int? // comment", configuration: ["style": "always"]),  // with comment after
+
+    // Codable/Decodable types — preserve to avoid changing synthesized decoder behavior
+    Example(
+      """
+      struct User: Codable {
+          var name: String? = nil
+      }
+      """
+    ),
+    Example(
+      """
+      class Response: Decodable {
+          var error: String? = nil
+      }
+      """
+    ),
+    Example(
+      """
+      struct User: Codable {
+          var name: String?
+      }
+      """,
+      configuration: ["style": "never"],
+    ),
+
+    // Result builder contexts — preserve as-is
+    Example(
+      """
+      @ViewBuilder
+      func makeContent() -> some View {
+          var title: String? = nil
+      }
+      """
+    ),
+    Example(
+      """
+      struct ContentView {
+          @ViewBuilder
+          var body: some View {
+              var title: String? = nil
+          }
+      }
+      """
+    ),
+    Example(
+      """
+      @MyCustomBuilder
+      func build() -> [Any] {
+          var name: String?
+      }
+      """,
+      configuration: ["style": "never"],
+    ),
   ]
 
   static let triggeringExamples = [

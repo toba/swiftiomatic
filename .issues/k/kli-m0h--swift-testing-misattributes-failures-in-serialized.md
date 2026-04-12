@@ -1,15 +1,15 @@
 ---
 # kli-m0h
 title: Swift Testing misattributes failures in serialized parameterized tests
-status: in-progress
+status: completed
 type: bug
 priority: low
 created_at: 2026-04-12T20:54:57Z
-updated_at: 2026-04-12T21:30:47Z
+updated_at: 2026-04-12T21:37:22Z
 sync:
     github:
         issue_number: "234"
-        synced_at: "2026-04-12T21:32:11Z"
+        synced_at: "2026-04-12T21:41:30Z"
 ---
 
 ## Problem
@@ -29,3 +29,7 @@ Misleading test output. Agents and developers waste time investigating the wrong
 3. **Workaround**: split the single parameterized test into per-scope-letter suites to reduce the misattribution blast radius
 
 Option 2 is cheapest and was partially done during the uye-na5 debug session (then reverted). Could be made permanent.
+
+## Summary of Changes
+
+Implemented option 2: added `[ruleID]` prefix to every `#expect` message in `LintTestHelpers.swift`. Threaded the rule identifier through `verifyExamples`, `testCorrection`, and `assertCorrection` private helpers. Now when Swift Testing misattributes a failure to the wrong parameterized case, the actual failing rule is always visible in the assertion message.

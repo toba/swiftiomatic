@@ -71,6 +71,17 @@ struct RedundantTypeAnnotationRule {
         }
         """, configuration: ["ignore_properties": true],
       ),
+      Example(  // @Model classes — SwiftData requires explicit type annotations
+        """
+        @Model
+        class User {
+            var name: String = String()
+        }
+        """
+      ),
+      Example(  // ternary — type annotation needed for disambiguation
+        "var status: Status = condition ? .active : .inactive"
+      ),
     ]
   }
 
@@ -262,6 +273,7 @@ extension RedundantTypeAnnotationRule {
     override func visitPost(_ node: PatternBindingSyntax) {
       if let varDecl = node.parent?.parent?.as(VariableDeclSyntax.self),
         !configuration.shouldSkipRuleCheck(for: varDecl),
+        !varDecl.isInModelType,
         let typeAnnotation = node.typeAnnotation,
         let initializer = node.initializer?.value
       {
@@ -356,5 +368,25 @@ extension RedundantTypeAnnotationOptions {
     }
 
     return ignoreProperties && varDecl.parent?.is(MemberBlockItemSyntax.self) == true
+  }
+}
+
+extension VariableDeclSyntax {
+  /// Whether this is a stored property inside a @Model class (SwiftData requires explicit types)
+  fileprivate var isInModelType: Bool {
+    guard parent?.is(MemberBlockItemSyntax.self) == true else { return false }
+    var current: Syntax? = parent
+    while let node = current {
+      if let decl = node.as(ClassDeclSyntax.self) {
+        return decl.attributes.contains(attributeNamed: "Model")
+      }
+      if node.is(StructDeclSyntax.self) || node.is(EnumDeclSyntax.self)
+        || node.is(ActorDeclSyntax.self)
+      {
+        return false
+      }
+      current = node.parent
+    }
+    return false
   }
 }

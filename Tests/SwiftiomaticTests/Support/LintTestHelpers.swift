@@ -297,6 +297,7 @@ private func render(locations: [Location], in contents: String) -> String {
 
 private func assertCorrection(
   _ before: Example, expected: Example, config: Configuration,
+  ruleID: String,
   sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
   let (cleanedBefore, _) = cleanedContentsAndMarkerOffsets(from: before.code)
@@ -307,12 +308,12 @@ private func assertCorrection(
   let corrections = linter.correct(using: storage)
   #expect(
     corrections.count >= (before.code != expected.code ? 1 : 0),
-    "Expected corrections",
+    "[\(ruleID)] Expected corrections",
     sourceLocation: sourceLocation,
   )
   #expect(
     file.contents == expected.code,
-    "File contents don't match expected",
+    "[\(ruleID)] File contents don't match expected",
     sourceLocation: sourceLocation,
   )
 }
@@ -328,6 +329,7 @@ extension String {
 private func testCorrection(
   _ correction: (Example, Example),
   configuration: Configuration,
+  ruleID: String,
   shouldTestMultiByteOffsets: Bool,
 ) async {
   var config = configuration
@@ -343,12 +345,13 @@ private func testCorrection(
     config = newConfig
   }
 
-  await assertCorrection(correction.0, expected: correction.1, config: config)
+  await assertCorrection(correction.0, expected: correction.1, config: config, ruleID: ruleID)
   if shouldTestMultiByteOffsets, correction.0.shouldTestMultiByteOffsets {
     await assertCorrection(
       addEmoji(correction.0),
       expected: addEmoji(correction.1),
       config: config,
+      ruleID: ruleID,
     )
   }
 }
@@ -415,7 +418,7 @@ func verifyRule(
       skipDisableCommandTests: skipDisableCommandTests,
     )
   else {
-    Testing.Issue.record("Failed to create configuration", sourceLocation: sourceLocation)
+    Testing.Issue.record("[\(examples.identifier)] Failed to create configuration", sourceLocation: sourceLocation)
     return
   }
 
@@ -460,9 +463,11 @@ func verifyLint(
   testShebang: Bool = true,
   sourceLocation: Testing.SourceLocation = #_sourceLocation,
 ) async {
+  let ruleID = examples.identifier
   func verify(triggers: [Example], nonTriggers: [Example]) async {
     await verifyExamples(
       triggers: triggers, nonTriggers: nonTriggers, configuration: config,
+      ruleID: ruleID,
       requiresFileOnDisk: examples.requiresFileOnDisk,
     )
   }
@@ -507,7 +512,7 @@ func verifyLint(
     }
     #expect(
       commentViolationCount == (commentDoesNotViolate ? 0 : triggersToCheck.count),
-      "Violation(s) still triggered when code was nested inside a comment",
+      "[\(ruleID)] Violation(s) still triggered when code was nested inside a comment",
       sourceLocation: sourceLocation,
     )
   }
@@ -523,7 +528,7 @@ func verifyLint(
     }
     #expect(
       stringViolationCount == (stringDoesNotViolate ? 0 : triggersToCheck.count),
-      "Violation(s) still triggered when code was nested inside a string literal",
+      "[\(ruleID)] Violation(s) still triggered when code was nested inside a string literal",
       sourceLocation: sourceLocation,
     )
   }
@@ -541,11 +546,11 @@ func verifyLint(
 
       #expect(
         violationsPartitionedByType.first.isEmpty,
-        "Violation(s) still triggered although rule was disabled",
+        "[\(ruleID)] Violation(s) still triggered although rule was disabled",
       )
       #expect(
         violationsPartitionedByType.second.isEmpty,
-        "Disable command was redundant since no violations(s) triggered",
+        "[\(ruleID)] Disable command was redundant since no violations(s) triggered",
       )
     }
   }
@@ -560,14 +565,14 @@ func verifyLint(
     let warningViolations = await violations(withWarning, config: config)
     #expect(
       warningViolations.allSatisfy { $0.severity == .warning },
-      "Violation severity cannot be changed to warning",
+      "[\(ruleID)] Violation severity cannot be changed to warning",
     )
 
     let withError = Example(example.code, configuration: ["severity": "error"])
     let errorViolations = await violations(withError, config: config)
     #expect(
       errorViolations.allSatisfy { $0.severity == .error },
-      "Violation severity cannot be changed to error",
+      "[\(ruleID)] Violation severity cannot be changed to error",
     )
   }
 }
@@ -589,6 +594,7 @@ func verifyCorrections(
       await testCorrection(
         correction,
         configuration: config,
+        ruleID: examples.identifier,
         shouldTestMultiByteOffsets: !fastTests && shouldTestMultiByteOffsets,
       )
     }
@@ -597,6 +603,7 @@ func verifyCorrections(
       await testCorrection(
         (nonTriggeringExample, nonTriggeringExample),
         configuration: config,
+        ruleID: examples.identifier,
         shouldTestMultiByteOffsets: !fastTests && shouldTestMultiByteOffsets,
       )
     }
@@ -611,7 +618,7 @@ func verifyCorrections(
         let expectedCleaned =
           before
           .with(code: cleanedContentsAndMarkerOffsets(from: beforeDisabled).0)
-        await assertCorrection(expectedCleaned, expected: expectedCleaned, config: config)
+        await assertCorrection(expectedCleaned, expected: expectedCleaned, config: config, ruleID: examples.identifier)
       }
     }
   }
@@ -623,6 +630,7 @@ private func verifyExamples(
   triggers: [Example],
   nonTriggers: [Example],
   configuration config: Configuration,
+  ruleID: String,
   requiresFileOnDisk: Bool,
 ) async {
   // Non-triggering examples must not violate
@@ -633,7 +641,7 @@ private func verifyExamples(
     )
     #expect(
       unexpectedViolations.isEmpty,
-      "Non-triggering example had violations: \(unexpectedViolations)",
+      "[\(ruleID)] Non-triggering example had violations: \(unexpectedViolations)",
     )
   }
 
@@ -648,7 +656,7 @@ private func verifyExamples(
     if markerOffsets.isEmpty {
       #expect(
         !triggerViolations.isEmpty,
-        "Marker-less triggering example produced 0 violations: '\(trigger)'",
+        "[\(ruleID)] Marker-less triggering example produced 0 violations: '\(trigger)'",
       )
       continue
     }
@@ -660,7 +668,7 @@ private func verifyExamples(
       .filter { !expectedLocations.contains($0.location) }
     #expect(
       violationsAtUnexpectedLocation.isEmpty,
-      "Violations at unexpected locations: \(violationsAtUnexpectedLocation)",
+      "[\(ruleID)] Violations at unexpected locations: \(violationsAtUnexpectedLocation)",
     )
 
     let violatedLocations = triggerViolations.map(\.location)
@@ -669,17 +677,17 @@ private func verifyExamples(
       .filter { !violatedLocations.contains($0) }
     #expect(
       locationsWithoutViolation.isEmpty,
-      "Expected violations not found at: \(locationsWithoutViolation)",
+      "[\(ruleID)] Expected violations not found at: \(locationsWithoutViolation)",
     )
 
     #expect(
       triggerViolations.count == expectedLocations.count,
-      "Expected \(expectedLocations.count) violations, got \(triggerViolations.count) for '\(trigger)'",
+      "[\(ruleID)] Expected \(expectedLocations.count) violations, got \(triggerViolations.count) for '\(trigger)'",
     )
     for (triggerViolation, expectedLocation) in zip(triggerViolations, expectedLocations) {
       #expect(
         triggerViolation.location == expectedLocation,
-        "'\(trigger)' violation didn't match expected location.",
+        "[\(ruleID)] '\(trigger)' violation didn't match expected location.",
       )
     }
   }

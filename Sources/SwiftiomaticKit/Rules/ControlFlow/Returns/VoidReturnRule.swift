@@ -3,7 +3,7 @@ import SwiftiomaticSyntax
 struct VoidReturnRule {
   static let id = "void_return"
   static let name = "Void Return"
-  static let summary = "Prefer `-> Void` over `-> ()`"
+  static let summary = "Prefer `-> Void` over `-> ()`, and `()` over `(Void)` in parameters"
   static let isCorrectable = true
   static var nonTriggeringExamples: [Example] {
     [
@@ -20,6 +20,8 @@ struct VoidReturnRule {
       Example("func foo() -> () async throws -> Void {}"),
       Example("func foo() async throws -> () async -> Void { return {} }"),
       Example("func foo() -> () async -> Int { 1 }"),
+      Example("typealias Completion = Void"),
+      Example("let callback: () -> Void = {}"),
     ]
   }
 
@@ -34,6 +36,10 @@ struct VoidReturnRule {
       Example("let foo: (ConfigurationTests) -> () throws -> ↓()"),
       Example("func foo() async -> ↓()"),
       Example("func foo() async throws -> ↓()"),
+      Example("let callback: (↓Void) -> Void = {}"),
+      Example("typealias Completion = ↓()"),
+      Example("typealias Completion = ↓(Void)"),
+      Example("typealias Completion = ↓(   Void )"),
     ]
   }
 
@@ -52,6 +58,14 @@ struct VoidReturnRule {
       Example("let foo: (ConfigurationTests) -> () throws -> ↓()"):
         Example("let foo: (ConfigurationTests) -> () throws -> Void"),
       Example("func foo() async throws -> ↓()"): Example("func foo() async throws -> Void"),
+      Example("let callback: (↓Void) -> Void = {}"): Example(
+        "let callback: () -> Void = {}",
+      ),
+      Example("typealias Completion = ↓()"): Example("typealias Completion = Void"),
+      Example("typealias Completion = ↓(Void)"): Example("typealias Completion = Void"),
+      Example("typealias Completion = ↓(   Void )"): Example(
+        "typealias Completion = Void",
+      ),
     ]
   }
 
@@ -62,43 +76,62 @@ extension VoidReturnRule: SwiftSyntaxRule {
   func makeVisitor(file: SwiftSource) -> ViolationCollectingVisitor<OptionsType> {
     Visitor(configuration: options, file: file)
   }
-
-  func makeRewriter(file: SwiftSource) -> ViolationCollectingRewriter<OptionsType>? {
-    Rewriter(configuration: options, file: file)
-  }
 }
 
 extension VoidReturnRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     override func visitPost(_ node: ReturnClauseSyntax) {
-      if node.violates {
-        violations.append(node.type.positionAfterSkippingLeadingTrivia)
-      }
-    }
-  }
+      guard let tupleType = node.type.as(TupleTypeSyntax.self),
+        tupleType.isVoidEquivalent
+      else { return }
 
-  fileprivate final class Rewriter: ViolationCollectingRewriter<OptionsType> {
-    override func visit(_ node: ReturnClauseSyntax) -> ReturnClauseSyntax {
-      if node.violates {
-        numberOfCorrections += 1
-        let node =
-          node
-          .with(\.type, TypeSyntax(IdentifierTypeSyntax(name: "Void")))
-          .with(\.trailingTrivia, node.type.trailingTrivia)
-        return super.visit(node)
-      }
-      return super.visit(node)
+      violations.append(
+        at: node.type.positionAfterSkippingLeadingTrivia,
+        correction: .init(
+          start: node.type.positionAfterSkippingLeadingTrivia,
+          end: node.type.endPositionBeforeTrailingTrivia,
+          replacement: "Void",
+        ),
+      )
+    }
+
+    override func visitPost(_ node: FunctionTypeSyntax) {
+      guard let singleParam = node.parameters.onlyElement,
+        singleParam.type.as(IdentifierTypeSyntax.self)?.name.text == "Void"
+      else { return }
+
+      // Replace content between parens with nothing: (Void) → ()
+      violations.append(
+        at: singleParam.type.positionAfterSkippingLeadingTrivia,
+        correction: .init(
+          start: node.leftParen.endPositionBeforeTrailingTrivia,
+          end: node.rightParen.positionAfterSkippingLeadingTrivia,
+          replacement: "",
+        ),
+      )
+    }
+
+    override func visitPost(_ node: TypeAliasDeclSyntax) {
+      guard let tupleType = node.initializer.value.as(TupleTypeSyntax.self),
+        tupleType.isVoidEquivalent
+      else { return }
+
+      violations.append(
+        at: tupleType.positionAfterSkippingLeadingTrivia,
+        correction: .init(
+          start: tupleType.positionAfterSkippingLeadingTrivia,
+          end: tupleType.endPositionBeforeTrailingTrivia,
+          replacement: "Void",
+        ),
+      )
     }
   }
 }
 
-extension ReturnClauseSyntax {
-  fileprivate var violates: Bool {
-    if let type = type.as(TupleTypeSyntax.self) {
-      let elements = type.elements
-      return elements.isEmpty
-        || elements.onlyElement?.type.as(IdentifierTypeSyntax.self)?.name.text == "Void"
-    }
-    return false
+extension TupleTypeSyntax {
+  /// Whether this tuple type is `()` or `(Void)` — both equivalent to `Void`
+  fileprivate var isVoidEquivalent: Bool {
+    elements.isEmpty
+      || elements.onlyElement?.type.as(IdentifierTypeSyntax.self)?.name.text == "Void"
   }
 }

@@ -82,7 +82,7 @@ struct PreferWeakLetRule {
     ]
   }
 
-  static let relatedRuleIDs = ["swift62_modernization"]
+  static let relatedRuleIDs = ["swift_modernization"]
 
   var options = SeverityOption<Self>(.warning)
 }

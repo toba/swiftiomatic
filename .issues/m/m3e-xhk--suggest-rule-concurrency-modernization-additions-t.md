@@ -1,16 +1,16 @@
 ---
 # m3e-xhk
 title: 'Suggest rule: concurrency modernization additions (Task.immediate, SendableMetatype, nonisolated)'
-status: ready
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-04-12T02:27:03Z
-updated_at: 2026-04-12T02:27:03Z
+updated_at: 2026-04-12T21:45:50Z
 parent: ogh-b3l
 sync:
     github:
         issue_number: "207"
-        synced_at: "2026-04-12T03:13:34Z"
+        synced_at: "2026-04-12T22:20:45Z"
 ---
 
 ## Overview
