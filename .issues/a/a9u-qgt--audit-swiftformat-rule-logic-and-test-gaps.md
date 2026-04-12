@@ -1,29 +1,29 @@
 ---
 # a9u-qgt
 title: 'Audit: SwiftFormat rule logic and test gaps'
-status: ready
-type: task
+status: in-progress
+type: epic
 priority: high
 created_at: 2026-04-12T19:05:30Z
-updated_at: 2026-04-12T19:05:30Z
+updated_at: 2026-04-12T20:05:09Z
 sync:
     github:
         issue_number: "229"
-        synced_at: "2026-04-12T19:05:36Z"
+        synced_at: "2026-04-12T20:23:25Z"
 ---
 
 Systematic audit of Swiftiomatic rules mapped from SwiftFormat (via `RuleMapping.swiftformatMapping`) comparing logic completeness and test coverage against the reference at `~/Developer/swiftiomatic-ref/SwiftFormat/`.
 
 ## Mapping Errors
 
-- [ ] **`spaceAroundBraces → SpaceAroundBracketsRule`**: WRONG. SwiftFormat's SpaceAroundBraces handles `{ }` spacing; our SpaceAroundBracketsRule handles `[ ]` spacing. Either create a SpaceAroundBracesRule or remove this mapping entry.
-- [ ] **`spaceInsideBraces → SpaceInsideBracketsRule`**: Same issue. SpaceInsideBraces handles `{ }` interior spacing; our rule handles `[ ]`.
-- [ ] **`linebreakAtEndOfFile → TrailingWhitespaceRule`**: Semantic mismatch. SwiftFormat's rule ensures a trailing newline exists at EOF; our TrailingWhitespaceRule removes trailing whitespace from lines. These are different concerns.
-- [ ] **`indent → IndentationWidthRule`**: Scope mismatch. SwiftFormat's Indent is a full indentation engine; our IndentationWidthRule only checks width violations. Not functionally equivalent.
+- [x] **`spaceAroundBraces → SpaceAroundBracketsRule`**: WRONG. SwiftFormat's SpaceAroundBraces handles `{ }` spacing; our SpaceAroundBracketsRule handles `[ ]` spacing. Either create a SpaceAroundBracesRule or remove this mapping entry.
+- [x] **`spaceInsideBraces → SpaceInsideBracketsRule`**: Same issue. SpaceInsideBraces handles `{ }` interior spacing; our rule handles `[ ]`.
+- [x] **`linebreakAtEndOfFile → TrailingWhitespaceRule`**: Semantic mismatch. SwiftFormat's rule ensures a trailing newline exists at EOF; our TrailingWhitespaceRule removes trailing whitespace from lines. These are different concerns.
+- [x] **`indent → IndentationWidthRule`**: Scope mismatch. SwiftFormat's Indent is a full indentation engine; our IndentationWidthRule only checks width violations. Not functionally equivalent.
 
 ## Critical Logic Gaps
 
-### RedundantBackticks (a88-mbv partially addressed)
+### RedundantBackticks (a88-mbv partially addressed) → child issue vjl-m9o
 SwiftFormat's `backticksRequired(at:)` (~80 lines in `ParsingHelpers.swift:1306`) handles 15+ context-dependent scenarios. Our rule only checks `isSwiftKeyword` + `isValidBareIdentifier`.
 
 Missing scenarios:
@@ -45,9 +45,9 @@ SwiftFormat tests: 369 lines. Our examples: 6.
 SwiftFormat: 200+ lines handling conditionals, closure types, nested parens, operator precedence, `@Test()`, `queue.async() {}`, Selector contexts, unwrap operators.
 
 Our rule: only visits `ConditionElementSyntax` and `ReturnStmtSyntax`. Missing:
-- [ ] Empty attribute parens (`@Test()` → `@Test`)
-- [ ] Trailing closure empty parens (`queue.async() { }` → `queue.async { }`)
-- [ ] Nested redundant parens
+- [x] Empty attribute parens (`@Test()` → `@Test`)
+- [x] Trailing closure empty parens (`queue.async() { }` → `queue.async { }`)
+- [x] Nested redundant parens
 - [ ] Operator precedence parens
 - [ ] Closure argument parens
 
@@ -134,3 +134,8 @@ SwiftFormat: 145+ lines (rule) + 130 lines (helpers).
 | Void | 175 lines, configurable | 104 lines | Medium |
 | RedundantType | 275+ lines, 3 modes | Likely simpler | Medium |
 | Brace spacing (2 rules) | Explicit brace rules | Wrong mapping to bracket rules | Mapping error |
+
+
+## Implementation Guidance
+
+Adapt logic and test cases directly from `~/Developer/swiftiomatic-ref/SwiftFormat/`. Only invent new patterns when the reference approach is incompatible (e.g., SwiftFormat's token-based parsing vs our swift-syntax AST visitors).

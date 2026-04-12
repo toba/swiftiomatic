@@ -4,7 +4,7 @@ nope:
       pattern: 'git\s+.*--no-verify'
       message: "--no-verify is never allowed - fix the issue that's failing the hook instead"
     - name: git-checkout-switch
-      pattern: 'git\s+(checkout|switch|stash|restore)'
+      pattern: 'git\s+.*(checkout|switch|stash|restore)'
       message: "git checkout/switch not allowed - branch changes require user approval"
     - name: altering-jig
       pattern: 'jig.yaml'

@@ -19,6 +19,7 @@
 		8BA05A382AD0FF38284456AF /* SwiftiomaticApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4831E2A3C4C23AEFF4FC23B6 /* SwiftiomaticApp.swift */; };
 		8F9016E4513A14EEB13B13F8 /* XcodeKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 74451B9DAFD7634322EB04B4 /* XcodeKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		96238D6E2F54CC690031E7BE /* SwiftiomaticKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5C3A24064CB44E3ECA06520F /* SwiftiomaticKit */; };
+		9DFB18B93A33E405CA1BE09D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 340FEA820F6BC1C61AD1B9CF /* Assets.xcassets */; };
 		A2C57679828F8F3B16DBC48E /* SwiftiomaticDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F94BD048D488775E64EF29 /* SwiftiomaticDocument.swift */; };
 		A6E1294B2C63820D1F254933 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C39F96F1469B6489D1DDCA /* SharedDefaults.swift */; };
 		A806D875AC9978E3801E7E30 /* XcodeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74451B9DAFD7634322EB04B4 /* XcodeKit.framework */; };
@@ -29,6 +30,7 @@
 		E03F9815386CCFAACABB1F4E /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B66DD048FBC008D5BC66ED1C /* SharedDefaults.swift */; };
 		E2C9421B768338EE3417292E /* XCSourceTextBuffer+Swiftiomatic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D3C4DA88B1B43080C931E91 /* XCSourceTextBuffer+Swiftiomatic.swift */; };
 		E7334B41026487C8C7E6C799 /* FormatOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F55E5982085DEEFEB7CB95E /* FormatOptions.swift */; };
+		ED9D3ED5AC40D9B35684EC29 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 284F7B717D3B0F5C3CEC5E96 /* AppIcon.icon */; };
 		F25C7543CBB44BBAC0347262 /* RuleDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79885F8900E2F7F9506BE0B2 /* RuleDetailView.swift */; };
 		FE8FEE85F5BDEB4CB8C880BC /* FormatFileCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22C5363612C7FB0CFADDBED5 /* FormatFileCommand.swift */; };
 		FF252533FD18C32ABF9D902C /* FormatCommandError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531FCA9452A741FBD889EC07 /* FormatCommandError.swift */; };
@@ -76,6 +78,7 @@
 		15826515C1254BEDABFD2A46 /* RuleRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RuleRow.swift; path = SwiftiomaticApp/Views/RuleRow.swift; sourceTree = "<group>"; };
 		1EC22484CAE196AB22576CCC /* LintFileCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LintFileCommand.swift; path = SwiftiomaticExtension/LintFileCommand.swift; sourceTree = "<group>"; };
 		22C5363612C7FB0CFADDBED5 /* FormatFileCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FormatFileCommand.swift; path = SwiftiomaticExtension/FormatFileCommand.swift; sourceTree = "<group>"; };
+		284F7B717D3B0F5C3CEC5E96 /* AppIcon.icon */ = {isa = PBXFileReference; name = AppIcon.icon; path = /Users/jason/Developer/toba/swiftiomatic/AppIcon.icon; sourceTree = "<absolute>"; };
 		2EB64C472274C585B839F0B9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = SwiftiomaticApp/Info.plist; sourceTree = "<group>"; };
 		2F55E5982085DEEFEB7CB95E /* FormatOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FormatOptions.swift; path = SwiftiomaticApp/Views/FormatOptions.swift; sourceTree = "<group>"; };
 		340FEA820F6BC1C61AD1B9CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = SwiftiomaticApp/Assets.xcassets; sourceTree = "<group>"; };
@@ -178,6 +181,7 @@
 				4831E2A3C4C23AEFF4FC23B6 /* SwiftiomaticApp.swift */,
 				3BFF43A282AC841BC385FEB6 /* SwiftiomaticApp.entitlements */,
 				340FEA820F6BC1C61AD1B9CF /* Assets.xcassets */,
+				284F7B717D3B0F5C3CEC5E96 /* AppIcon.icon */,
 			);
 			name = SwiftiomaticApp;
 			sourceTree = "<group>";
@@ -283,6 +287,10 @@
 		19F379531543E554DDA3B9C7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
+			files = (
+				9DFB18B93A33E405CA1BE09D /* Assets.xcassets in Resources */,
+				ED9D3ED5AC40D9B35684EC29 /* AppIcon.icon in Resources */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A22C7421380097CE2129B701 /* Resources */ = {
@@ -379,6 +387,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				BUNDLE_IDENTIFIER = com.toba.swiftiomatic;
 				CODE_SIGN_ENTITLEMENTS = SwiftiomaticApp/SwiftiomaticApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -404,6 +413,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				BUNDLE_IDENTIFIER = com.toba.swiftiomatic;
 				CODE_SIGN_ENTITLEMENTS = SwiftiomaticApp/SwiftiomaticApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";

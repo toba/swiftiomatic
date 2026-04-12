@@ -107,7 +107,8 @@
       "mcp__xc-build__list_build_phase_status",
       "mcp__xc-build__show_mac_log",
       "Read(//Users/jason/Library/Developer/Xcode/DerivedData/Swiftiomatic-cxckzblcqjjqaogxojygdwrcuyrq/Build/Products/Debug/Swiftiomatic.app/**)",
-      "Read(//Users/jason/Library/Developer/Xcode/DerivedData/Swiftiomatic-cxckzblcqjjqaogxojygdwrcuyrq/Build/Products/Debug/Swiftiomatic.app/Contents/**)"
+      "Read(//Users/jason/Library/Developer/Xcode/DerivedData/Swiftiomatic-cxckzblcqjjqaogxojygdwrcuyrq/Build/Products/Debug/Swiftiomatic.app/Contents/**)",
+      "mcp__xc-project__list_groups"
     ]
   },
   "enableAllProjectMcpServers": true,

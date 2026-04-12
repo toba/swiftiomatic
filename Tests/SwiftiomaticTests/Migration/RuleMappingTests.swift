@@ -86,6 +86,33 @@ import Testing
     #expect(result == .renamed(old: "sortImports", new: "sort_imports"))
   }
 
+  @Test func swiftformatLinebreakAtEndOfFileMapsToTrailingNewline() {
+    let result = RuleMapping.swiftformat("linebreakAtEndOfFile")
+    #expect(result == .renamed(old: "linebreakAtEndOfFile", new: "trailing_newline"))
+  }
+
+  @Test func swiftformatIndentNotMappedToIndentationWidth() {
+    // SwiftFormat's indent is a full indentation engine; our IndentationWidthRule
+    // only checks width — different semantics, so .removed not .renamed
+    let result = RuleMapping.swiftformat("indent")
+    if case .removed = result {} else {
+      Issue.record("Expected .removed for indent, got \(result)")
+    }
+  }
+
+  @Test func swiftformatBraceRulesNotMappedToBrackets() {
+    // spaceAroundBraces/spaceInsideBraces handle { } — NOT [ ]
+    // They must not map to our bracket rules
+    let around = RuleMapping.swiftformat("spaceAroundBraces")
+    if case .removed = around {} else {
+      Issue.record("Expected .removed for spaceAroundBraces, got \(around)")
+    }
+    let inside = RuleMapping.swiftformat("spaceInsideBraces")
+    if case .removed = inside {} else {
+      Issue.record("Expected .removed for spaceInsideBraces, got \(inside)")
+    }
+  }
+
   @Test func swiftformatUnmappedRule() {
     let result = RuleMapping.swiftformat("completelyFakeRule")
     #expect(result == .unmapped)

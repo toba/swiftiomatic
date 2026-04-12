@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import Testing
 
 @testable import SwiftiomaticKit
@@ -7,6 +8,31 @@ import Testing
 /// When true, skip expensive variant tests (emoji, shebang, comment, string, disable, severity).
 /// Variants run only when `SWIFTIOMATIC_FULL_TESTS=1` is set.
 private let fastTests: Bool = ProcessInfo.processInfo.environment["SWIFTIOMATIC_FULL_TESTS"] == nil
+
+// MARK: - Debug Log (temporary — remove after diagnosing cross-rule contamination)
+
+private let _debugLogPath = "/tmp/swiftiomatic-debug.log"
+private let _debugLog = Mutex<[String]>([])
+
+func debugLog(_ msg: String) {
+  _debugLog.withLock { $0.append(msg) }
+  // Also append to file immediately
+  let line = msg + "\n"
+  if let fh = FileHandle(forWritingAtPath: _debugLogPath) {
+    fh.seekToEndOfFile()
+    fh.write(Data(line.utf8))
+    fh.closeFile()
+  } else {
+    FileManager.default.createFile(atPath: _debugLogPath, contents: Data(line.utf8))
+  }
+}
+
+func debugLogDump() -> String {
+  _debugLog.withLock { entries in
+    defer { entries.removeAll() }
+    return entries.joined(separator: "\n")
+  }
+}
 
 // MARK: - File Helpers
 
@@ -91,7 +117,15 @@ func violations(
     let file = SwiftSource.testFile(withContents: stringStrippingMarkers.code)
     let storage = RuleStorage()
     let linter = await Linter(file: file, configuration: config).collect(into: storage)
-    return linter.ruleViolations(using: storage)
+    let result = linter.ruleViolations(using: storage)
+    // DEBUG: detect cross-rule contamination
+    if case .onlyConfiguration(let ids) = config.rulesMode {
+      for v in result where !ids.contains(v.ruleIdentifier) {
+        let activeRules = config.rules.map { type(of: $0).identifier }
+        debugLog("CONTAMINATION: violation=\(v.ruleIdentifier) configIDs=\(ids) activeRules=\(activeRules) example=\(example.code.prefix(50))")
+      }
+    }
+    return result
   }
 
   let file = SwiftSource.testFile(
@@ -305,14 +339,15 @@ private func assertCorrection(
   let collector = Linter(file: file, configuration: config)
   let linter = await collector.collect(into: storage)
   let corrections = linter.correct(using: storage)
+  let activeRules = config.rules.map { type(of: $0).identifier }.joined(separator: ",")
   #expect(
     corrections.count >= (before.code != expected.code ? 1 : 0),
-    "Expected corrections",
+    "Expected corrections [\(activeRules)] before=\(before.code.prefix(80).debugDescription)",
     sourceLocation: sourceLocation,
   )
   #expect(
     file.contents == expected.code,
-    "File contents don't match expected",
+    "File contents don't match expected [\(activeRules)] got=\(file.contents.prefix(80).debugDescription) expected=\(expected.code.prefix(80).debugDescription)",
     sourceLocation: sourceLocation,
   )
 }
@@ -626,15 +661,21 @@ private func verifyExamples(
   requiresFileOnDisk: Bool,
 ) async {
   // Non-triggering examples must not violate
+  let configRuleIDs = config.rules.map { type(of: $0).identifier }
+  debugLog("verifyExamples: configRuleIDs=\(configRuleIDs) rulesMode=\(config.rulesMode) nonTriggers=\(nonTriggers.count)")
   for nonTrigger in nonTriggers {
     let unexpectedViolations = await violations(
       nonTrigger, config: config,
       requiresFileOnDisk: requiresFileOnDisk,
     )
-    #expect(
-      unexpectedViolations.isEmpty,
-      "Non-triggering example had violations: \(unexpectedViolations)",
-    )
+    if !unexpectedViolations.isEmpty {
+      let log = debugLogDump()
+      #expect(
+        unexpectedViolations.isEmpty,
+        "Non-triggering example had violations: \(unexpectedViolations)\nDEBUG LOG:\n\(log)",
+      )
+      return
+    }
   }
 
   // Triggering examples must violate at marked locations

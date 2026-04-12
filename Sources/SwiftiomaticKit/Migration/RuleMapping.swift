@@ -93,10 +93,10 @@ public enum RuleMapping {
     "elseOnSameLine": OpeningBraceRule.id,
     "emptyBraces": EmptyBracesRule.id,
     "hoistPatternLet": PatternMatchingKeywordsRule.id,
-    "indent": IndentationWidthRule.id,
+    // "indent" — see swiftformatRemoved (scope mismatch with IndentationWidthRule)
     "isEmpty": EmptyCountRule.id,
     "leadingDelimiters": LeadingDelimitersRule.id,
-    "linebreakAtEndOfFile": TrailingWhitespaceRule.id,
+    "linebreakAtEndOfFile": TrailingNewlineRule.id,
     "numberFormatting": NumberSeparatorRule.id,
     "privateStateVariables": PrivateSwiftUIStatePropertyRule.id,
     "redundantBackticks": RedundantBackticksRule.id,
@@ -116,13 +116,11 @@ public enum RuleMapping {
     "semicolons": TrailingSemicolonRule.id,
     "sortDeclarations": SortDeclarationsRule.id,
     "sortImports": SortImportsRule.id,
-    "spaceAroundBraces": SpaceAroundBracketsRule.id,
     "spaceAroundBrackets": SpaceAroundBracketsRule.id,
     "spaceAroundComments": SpaceAroundCommentsRule.id,
     "spaceAroundGenerics": SpaceAroundGenericsRule.id,
     "spaceAroundOperators": OperatorUsageSpacingRule.id,
     "spaceAroundParens": SpaceAroundParensRule.id,
-    "spaceInsideBraces": SpaceInsideBracketsRule.id,
     "spaceInsideBrackets": SpaceInsideBracketsRule.id,
     "spaceInsideComments": SpaceAroundCommentsRule.id,
     "spaceInsideGenerics": SpaceInsideGenericsRule.id,
@@ -146,6 +144,10 @@ public enum RuleMapping {
     "assertionFailures": "Use sm:disable assertion_failures if needed",
     "markTypes": "Use sm:disable mark_types if needed",
     "modifierOrder": "Use sm:disable modifier_order if needed",
+    "indent":
+      "Scope mismatch — SwiftFormat's indent reformats all indentation; use indentation_width for width-only checks",
+    "spaceAroundBraces": "No equivalent — SpaceAroundBracketsRule handles square brackets, not braces",
+    "spaceInsideBraces": "No equivalent — SpaceInsideBracketsRule handles square brackets, not braces",
   ]
 
   /// Map a SwiftFormat rule name to a Swiftiomatic rule
