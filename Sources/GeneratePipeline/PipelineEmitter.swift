@@ -126,15 +126,33 @@ enum PipelineEmitter {
 
       out += "    override func visit(_ node: \(nodeType)) -> SyntaxVisitorContinueKind {\n"
 
-      if isSkippableDecl {
+      if isSkippableDecl && hasRuleVisitOverrides {
+        // For skippable decl types that also have rule visit() overrides:
+        // Only apply skippable skip depth for visitors WITHOUT a visit() override.
+        // Visitors with an override control their own skipping via return value.
+        out += "        let visitOverrideSet = Set(\(varName_visit))\n"
+        out += "        for idx in 0..<visitors.count {\n"
+        out += "            if !visitOverrideSet.contains(idx),\n"
+        out += "               skipSets[idx].contains(where: { $0 == \(nodeType).self }) {\n"
+        out += "                skipDepths[idx] += 1\n"
+        out += "            }\n"
+        out += "        }\n"
+        out += "        var skippedByReturn: [Int] = []\n"
+        out += "        for idx in \(varName_visit) where skipDepths[idx] == 0 {\n"
+        out += "            if visitors[idx].visit(node) == .skipChildren {\n"
+        out += "                skipDepths[idx] += 1\n"
+        out += "                skippedByReturn.append(idx)\n"
+        out += "            }\n"
+        out += "        }\n"
+        out += "        visitSkipStack.append(skippedByReturn)\n"
+      } else if isSkippableDecl {
+        // Pure skippable — no rule visit() overrides for this type
         out += "        for idx in 0..<visitors.count {\n"
         out += "            if skipSets[idx].contains(where: { $0 == \(nodeType).self }) {\n"
         out += "                skipDepths[idx] += 1\n"
         out += "            }\n"
         out += "        }\n"
-      }
-
-      if hasRuleVisitOverrides {
+      } else if hasRuleVisitOverrides {
         out += "        var skippedByReturn: [Int] = []\n"
         out += "        for idx in \(varName_visit) where skipDepths[idx] == 0 {\n"
         out += "            if visitors[idx].visit(node) == .skipChildren {\n"
@@ -168,17 +186,31 @@ enum PipelineEmitter {
         out += "        }\n"
       }
 
-      out += "        for idx in \(varName_visitPost) where skipDepths[idx] == 0 {\n"
-      out += "            visitors[idx].visitPost(node)\n"
-      out += "        }\n"
-
-      if isSkippableDecl {
+      // Decrement skippable-declarations depth BEFORE dispatching visitPost
+      // so that rules with the current node type in skippableDeclarations
+      // still receive visitPost for the node itself (skip only applies to children).
+      // Only decrement for visitors that don't have their own visit() override
+      // (those are handled by the visitSkipStack pop above).
+      if isSkippableDecl && hasRuleVisitOverrides {
+        let varName_visit = propertyName(for: nodeType, kind: "visit")
+        out += "        let visitOverrideSetPost = Set(\(varName_visit))\n"
+        out += "        for idx in 0..<visitors.count {\n"
+        out += "            if !visitOverrideSetPost.contains(idx),\n"
+        out += "               skipSets[idx].contains(where: { $0 == \(nodeType).self }) {\n"
+        out += "                skipDepths[idx] -= 1\n"
+        out += "            }\n"
+        out += "        }\n"
+      } else if isSkippableDecl {
         out += "        for idx in 0..<visitors.count {\n"
         out += "            if skipSets[idx].contains(where: { $0 == \(nodeType).self }) {\n"
         out += "                skipDepths[idx] -= 1\n"
         out += "            }\n"
         out += "        }\n"
       }
+
+      out += "        for idx in \(varName_visitPost) where skipDepths[idx] == 0 {\n"
+      out += "            visitors[idx].visitPost(node)\n"
+      out += "        }\n"
 
       out += "    }\n\n"
     }

@@ -25,9 +25,9 @@ struct LazyChainRule {
       Example(
         """
         [1, 2, 3]
-          .↓map { $0 * 2 }
+          .map { $0 * 2 }
           .filter { $0 > 2 }
-          .compactMap { Optional($0) }
+          .↓compactMap { Optional($0) }
         """,
       ),
     ]
@@ -77,7 +77,7 @@ extension LazyChainRule {
 
       violations.append(
         SyntaxViolation(
-          position: node.positionAfterSkippingLeadingTrivia,
+          position: node.declName.baseName.positionAfterSkippingLeadingTrivia,
           reason:
             "Chain of \(chainLength)+ functional transforms without .lazy — creates intermediate arrays",
           severity: .warning,

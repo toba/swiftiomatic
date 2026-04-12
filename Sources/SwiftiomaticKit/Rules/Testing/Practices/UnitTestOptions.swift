@@ -13,7 +13,7 @@ struct UnitTestOptions<Parent: Rule>: SeverityBasedRuleOptions {
     key: "test_parent_classes",
     postprocessor: { $0.formUnion(["QuickSpec", "XCTestCase"]) },
   )
-  private(set) var testParentClasses = Set<String>()
+  private(set) var testParentClasses: Set<String> = ["QuickSpec", "XCTestCase"]
   mutating func apply(configuration: [String: Any]) throws(SwiftiomaticError) {
     try applySeverityIfPresent(configuration)
     if let value = configuration[$testParentClasses.key] {

@@ -46,7 +46,6 @@ extension DateForTimingRule {
           SyntaxViolation(
             position: node.positionAfterSkippingLeadingTrivia,
             reason: "Date() used for timing — can go backwards due to NTP adjustments",
-            severity: .warning,
             confidence: .medium,
             suggestion: "Use ContinuousClock.now for monotonic timing",
           ),

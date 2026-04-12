@@ -992,6 +992,7 @@ final class LintPipeline: SyntaxVisitor {
                 functionDecl_visitPost.append(idx)
 
             case "lock_anti_patterns":
+                functionCallExpr_visit.append(idx)
                 functionCallExpr_visitPost.append(idx)
 
             case "lower_acl_than_parent":
@@ -1728,8 +1729,10 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(actorDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == ActorDeclSyntax.self }) {
+            if !visitOverrideSet.contains(idx),
+               skipSets[idx].contains(where: { $0 == ActorDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
         }
@@ -1757,8 +1760,10 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(classDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == ClassDeclSyntax.self }) {
+            if !visitOverrideSet.contains(idx),
+               skipSets[idx].contains(where: { $0 == ClassDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
         }
@@ -1870,8 +1875,10 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(enumDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == EnumDeclSyntax.self }) {
+            if !visitOverrideSet.contains(idx),
+               skipSets[idx].contains(where: { $0 == EnumDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
         }
@@ -1887,8 +1894,10 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(extensionDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == ExtensionDeclSyntax.self }) {
+            if !visitOverrideSet.contains(idx),
+               skipSets[idx].contains(where: { $0 == ExtensionDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
         }
@@ -1928,8 +1937,10 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(functionDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == FunctionDeclSyntax.self }) {
+            if !visitOverrideSet.contains(idx),
+               skipSets[idx].contains(where: { $0 == FunctionDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
         }
@@ -1993,8 +2004,10 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: InitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(initializerDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == InitializerDeclSyntax.self }) {
+            if !visitOverrideSet.contains(idx),
+               skipSets[idx].contains(where: { $0 == InitializerDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
         }
@@ -2082,8 +2095,10 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(protocolDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == ProtocolDeclSyntax.self }) {
+            if !visitOverrideSet.contains(idx),
+               skipSets[idx].contains(where: { $0 == ProtocolDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
         }
@@ -2135,8 +2150,10 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(structDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == StructDeclSyntax.self }) {
+            if !visitOverrideSet.contains(idx),
+               skipSets[idx].contains(where: { $0 == StructDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
         }
@@ -2152,8 +2169,10 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: SubscriptDeclSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(subscriptDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == SubscriptDeclSyntax.self }) {
+            if !visitOverrideSet.contains(idx),
+               skipSets[idx].contains(where: { $0 == SubscriptDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
         }
@@ -2253,8 +2272,10 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(variableDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == VariableDeclSyntax.self }) {
+            if !visitOverrideSet.contains(idx),
+               skipSets[idx].contains(where: { $0 == VariableDeclSyntax.self }) {
                 skipDepths[idx] += 1
             }
         }
@@ -2303,13 +2324,15 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
-        for idx in actorDecl_visitPost where skipDepths[idx] == 0 {
-            visitors[idx].visitPost(node)
-        }
+        let visitOverrideSetPost = Set(actorDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == ActorDeclSyntax.self }) {
+            if !visitOverrideSetPost.contains(idx),
+               skipSets[idx].contains(where: { $0 == ActorDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
+        }
+        for idx in actorDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
         }
     }
 
@@ -2378,13 +2401,15 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
-        for idx in classDecl_visitPost where skipDepths[idx] == 0 {
-            visitors[idx].visitPost(node)
-        }
+        let visitOverrideSetPost = Set(classDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == ClassDeclSyntax.self }) {
+            if !visitOverrideSetPost.contains(idx),
+               skipSets[idx].contains(where: { $0 == ClassDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
+        }
+        for idx in classDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
         }
     }
 
@@ -2572,13 +2597,15 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
-        for idx in enumDecl_visitPost where skipDepths[idx] == 0 {
-            visitors[idx].visitPost(node)
-        }
+        let visitOverrideSetPost = Set(enumDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == EnumDeclSyntax.self }) {
+            if !visitOverrideSetPost.contains(idx),
+               skipSets[idx].contains(where: { $0 == EnumDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
+        }
+        for idx in enumDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
         }
     }
 
@@ -2594,13 +2621,15 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
-        for idx in extensionDecl_visitPost where skipDepths[idx] == 0 {
-            visitors[idx].visitPost(node)
-        }
+        let visitOverrideSetPost = Set(extensionDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == ExtensionDeclSyntax.self }) {
+            if !visitOverrideSetPost.contains(idx),
+               skipSets[idx].contains(where: { $0 == ExtensionDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
+        }
+        for idx in extensionDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
         }
     }
 
@@ -2650,13 +2679,15 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
-        for idx in functionDecl_visitPost where skipDepths[idx] == 0 {
-            visitors[idx].visitPost(node)
-        }
+        let visitOverrideSetPost = Set(functionDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == FunctionDeclSyntax.self }) {
+            if !visitOverrideSetPost.contains(idx),
+               skipSets[idx].contains(where: { $0 == FunctionDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
+        }
+        for idx in functionDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
         }
     }
 
@@ -2776,13 +2807,15 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
-        for idx in initializerDecl_visitPost where skipDepths[idx] == 0 {
-            visitors[idx].visitPost(node)
-        }
+        let visitOverrideSetPost = Set(initializerDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == InitializerDeclSyntax.self }) {
+            if !visitOverrideSetPost.contains(idx),
+               skipSets[idx].contains(where: { $0 == InitializerDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
+        }
+        for idx in initializerDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
         }
     }
 
@@ -2912,13 +2945,15 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
-        for idx in protocolDecl_visitPost where skipDepths[idx] == 0 {
-            visitors[idx].visitPost(node)
-        }
+        let visitOverrideSetPost = Set(protocolDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == ProtocolDeclSyntax.self }) {
+            if !visitOverrideSetPost.contains(idx),
+               skipSets[idx].contains(where: { $0 == ProtocolDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
+        }
+        for idx in protocolDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
         }
     }
 
@@ -2973,13 +3008,15 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
-        for idx in structDecl_visitPost where skipDepths[idx] == 0 {
-            visitors[idx].visitPost(node)
-        }
+        let visitOverrideSetPost = Set(structDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == StructDeclSyntax.self }) {
+            if !visitOverrideSetPost.contains(idx),
+               skipSets[idx].contains(where: { $0 == StructDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
+        }
+        for idx in structDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
         }
     }
 
@@ -2995,13 +3032,15 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
-        for idx in subscriptDecl_visitPost where skipDepths[idx] == 0 {
-            visitors[idx].visitPost(node)
-        }
+        let visitOverrideSetPost = Set(subscriptDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == SubscriptDeclSyntax.self }) {
+            if !visitOverrideSetPost.contains(idx),
+               skipSets[idx].contains(where: { $0 == SubscriptDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
+        }
+        for idx in subscriptDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
         }
     }
 
@@ -3124,13 +3163,15 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
-        for idx in variableDecl_visitPost where skipDepths[idx] == 0 {
-            visitors[idx].visitPost(node)
-        }
+        let visitOverrideSetPost = Set(variableDecl_visit)
         for idx in 0..<visitors.count {
-            if skipSets[idx].contains(where: { $0 == VariableDeclSyntax.self }) {
+            if !visitOverrideSetPost.contains(idx),
+               skipSets[idx].contains(where: { $0 == VariableDeclSyntax.self }) {
                 skipDepths[idx] -= 1
             }
+        }
+        for idx in variableDecl_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
         }
     }
 

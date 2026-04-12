@@ -28,6 +28,7 @@
 - `sm migrate`; fix wrong rename mappings and add `.swiftformat` config migration ([#198](https://github.com/toba/swiftiomatic/issues/198))
 - Agents push broken releases in a loop; each fix introducing new failures ([#204](https://github.com/toba/swiftiomatic/issues/204))
 - Fix example bugs in `lock_anti_patterns`, `async_stream_safety`, `date_for_timing` rules
+- Fix `LintPipeline` skip-depth ordering bug; `visitPost` never dispatched for rules using `skippableDeclarations` ([#206](https://github.com/toba/swiftiomatic/issues/206))
 
 ### 🗜️ Tweaks
 

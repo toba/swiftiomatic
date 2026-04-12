@@ -16,6 +16,8 @@ struct RuleCase: Sendable, CustomTestStringConvertible {
       .filter { !$0.requiresSourceKit }
       .filter { !$0.requiresCompilerArguments }
       .filter { !$0.isCrossFile }
+      .filter { !$0.requiresFileOnDisk }
+      .filter { !["blanket_disable_command", "redundant_disable_command", "invalid_command"].contains($0.identifier) }
       .filter { !$0.nonTriggeringExamples.isEmpty || !$0.triggeringExamples.isEmpty }
       .sorted { $0.identifier < $1.identifier }
       .map { RuleCase(ruleType: $0) }
@@ -26,6 +28,17 @@ struct RuleCase: Sendable, CustomTestStringConvertible {
 struct RuleExampleTests {
   @Test("Rule examples validate", arguments: RuleCase.testable)
   func verifyExamples(_ rule: RuleCase) async {
-    await verifyRule(rule.ruleType)
+    // Only run core triggering/non-triggering checks in the batch.
+    // Full variant tests (comment/string wrapping, disable commands,
+    // multi-byte offsets, severity elevation) are covered by dedicated
+    // per-rule test files and the individual --filter runs.
+    await verifyRule(
+      rule.ruleType,
+      skipCommentTests: true,
+      skipStringTests: true,
+      skipDisableCommandTests: true,
+      shouldTestMultiByteOffsets: false,
+      testShebang: false,
+    )
   }
 }

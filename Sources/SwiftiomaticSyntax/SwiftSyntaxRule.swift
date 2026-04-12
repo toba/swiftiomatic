@@ -54,7 +54,6 @@ extension SwiftSyntaxRule where OptionsType: SeverityBasedRuleOptions {
 }
 
 extension SwiftSyntaxRule {
-  @inlinable
   package func validate(file: SwiftSource) -> [RuleViolation] {
     guard let syntaxTree = preprocess(file: file) else {
       return []
@@ -74,18 +73,9 @@ extension SwiftSyntaxRule {
   }
 
   package func makeViolation(file: SwiftSource, violation: SyntaxViolation) -> RuleViolation {
-    guard let severity = violation.severity else {
-      // This error will only be thrown in tests. It cannot come up at runtime.
-      Console.fatalError(
-        """
-        A severity must be provided. Either define it in the violation or make the rule configuration \
-        conform to `SeverityBasedRuleOptions` to take the default.
-        """,
-      )
-    }
-    return RuleViolation(
+    RuleViolation(
       ruleType: Self.self,
-      severity: severity,
+      severity: violation.severity ?? .warning,
       location: Location(file: file, position: violation.position),
       message: violation.reason,
       confidence: violation.confidence,

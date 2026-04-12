@@ -37,7 +37,7 @@ struct LockAntiPatternsRule {
       ),
       Example(
         """
-        outer.↓withLock {
+        outer.withLock {
             inner.↓withLock {
                 count += 1
             }

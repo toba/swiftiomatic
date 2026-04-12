@@ -97,6 +97,7 @@ import Testing
 
   @Test func corrects() async throws {
     struct Spec: MockCollectingRule {
+      static let isCorrectable = true
       var options = SeverityOption<Self>(.warning)
 
       func collectInfo(for file: SwiftSource) -> String {
@@ -128,6 +129,7 @@ import Testing
     }
 
     struct AnalyzerSpec: MockCollectingRule {
+      static let isCorrectable = true
       var options = SeverityOption<Self>(.warning)
       static let isOptIn = true
       static let requiresCompilerArguments = true
