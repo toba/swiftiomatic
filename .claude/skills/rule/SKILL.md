@@ -17,6 +17,7 @@ description: >
 | Protocol | Input | Pipeline Eligible | Use Case |
 |----------|-------|-------------------|----------|
 | `SwiftSyntaxRule` | SwiftSyntax AST | Yes | Syntactic checks, formatting, most rules |
+| `SwiftSyntaxRule` + `requiresPostProcessing` | SwiftSyntax AST | No (fallback) | Rules whose `validate(file:)` cross-references visitor data after the walk |
 | `SourceKitASTRule` | SourceKit dictionaries | No | Semantic/type-aware checks |
 | `CollectingRule` | Two-pass (collect + validate) | No | Cross-file analysis (dead symbols, duplication) |
 
@@ -222,6 +223,18 @@ violations.append(SyntaxViolation(
   message: .tooDeep("Type", threshold: 2)
 ))
 ```
+
+## Visitor Skip Gotchas
+
+When overriding `visit()` to return `.skipChildren` for scope boundaries, remember that Swift uses **three distinct block types** for code bodies:
+
+| Syntax Node | Where It Appears |
+|-------------|------------------|
+| `CodeBlockSyntax` | Function/method bodies, `if`/`for`/`while` bodies |
+| `ClosureExprSyntax` | Closure literals `{ ... }` |
+| `AccessorBlockSyntax` | Computed property and subscript bodies (`var foo: T { ... }`) |
+
+If your rule skips `CodeBlockSyntax` to avoid walking into local scopes, you almost certainly need to also skip `AccessorBlockSyntax` and `ClosureExprSyntax`. Missing `AccessorBlockSyntax` is a common bug — the rule works on simple examples but fails on computed properties.
 
 ## Examples
 
@@ -441,7 +454,19 @@ Run tests for a specific rule: filter by rule name (e.g., `--filter AttributePla
 
 1. Run `swift run GeneratePipeline`
 2. Check `RuleRegistry+AllRules.generated.swift` for the rule type
-3. Pipeline-eligible requires: SwiftSyntaxRule, no `preprocess` override, not CollectingRule, not SourceKitASTRule
+3. Pipeline-eligible requires: SwiftSyntaxRule, no `preprocess` override, not CollectingRule, not SourceKitASTRule, not `requiresPostProcessing`
+
+### Rule works alone but fails in full RuleExampleTests suite
+
+Swift Testing misattributes failures from `.serialized` parameterized tests — ALL failures report as `identifier_name` (or whichever case is mid-flight) regardless of which rule actually failed. To diagnose:
+
+1. **Don't trust the `(→ rule_name)` label.** Read the violation message and example code to identify the actual failing rule.
+2. **Write debug state to `/tmp/` files** — the MCP test runner truncates `#expect` messages and swallows `print()` output.
+3. **Common causes of suite-only failures:**
+   - **Visitor skips missing a node type.** `CodeBlockSyntax` ≠ `AccessorBlockSyntax` — computed property bodies use `AccessorBlockSyntax`. If your visitor skips `CodeBlockSyntax` to avoid entering function bodies, also skip `AccessorBlockSyntax` and `ClosureExprSyntax`.
+   - **Two-pass rules in the pipeline.** If a rule's visitor collects data (e.g., type names) but violations are determined in a custom `validate(file:)` override that post-processes after the walk, the pipeline will report 0 violations (it only reads the visitor's `violations` array). Mark with `static let requiresPostProcessing = true` so the generator routes it to the fallback path.
+   - **Check ordering in multi-branch logic.** Context-specific overrides (after `::` module selector, after `.` member access) must precede blanket checks (e.g., `backtickAlwaysRequired`), or the blanket check short-circuits before the override runs.
+4. **`MemberBlockSyntax` vs type declaration nodes.** To check "inside a type body", walk up to `MemberBlockSyntax` — not `ClassDeclSyntax`/`StructDeclSyntax`/`EnumDeclSyntax`, which also match the type NAME position itself.
 
 ## Default Values Reference
 

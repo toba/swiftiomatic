@@ -149,7 +149,6 @@ let pipelineEligibleRuleIDs: Set<String> = [
     "no_fallthrough_only",
     "no_force_try_in_tests",
     "no_force_unwrap_in_tests",
-    "no_grouping_extension",
     "no_guard_in_tests",
     "no_space_in_method_call",
     "non_overridable_class_declaration",
@@ -433,6 +432,7 @@ final class LintPipeline: SyntaxVisitor {
     private var ternaryExpr_visitPost: [Int] = []
     private var token_visitPost: [Int] = []
     private var tryExpr_visitPost: [Int] = []
+    private var tupleExpr_visitPost: [Int] = []
     private var typeAliasDecl_visitPost: [Int] = []
     private var typeAnnotation_visitPost: [Int] = []
     private var unresolvedAsExpr_visitPost: [Int] = []
@@ -1121,18 +1121,6 @@ final class LintPipeline: SyntaxVisitor {
                 forceUnwrapExpr_visitPost.append(idx)
                 functionDecl_visitPost.append(idx)
 
-            case "no_grouping_extension":
-                actorDecl_visit.append(idx)
-                classDecl_visit.append(idx)
-                enumDecl_visit.append(idx)
-                extensionDecl_visit.append(idx)
-                structDecl_visit.append(idx)
-                actorDecl_visitPost.append(idx)
-                classDecl_visitPost.append(idx)
-                enumDecl_visitPost.append(idx)
-                extensionDecl_visitPost.append(idx)
-                structDecl_visitPost.append(idx)
-
             case "no_guard_in_tests":
                 classDecl_visit.append(idx)
                 functionDecl_visit.append(idx)
@@ -1285,6 +1273,7 @@ final class LintPipeline: SyntaxVisitor {
                 variableDecl_visitPost.append(idx)
 
             case "prefixed_toplevel_constant":
+                accessorBlock_visit.append(idx)
                 closureExpr_visit.append(idx)
                 codeBlock_visit.append(idx)
                 variableDecl_visitPost.append(idx)
@@ -1387,8 +1376,11 @@ final class LintPipeline: SyntaxVisitor {
                 initializerDecl_visitPost.append(idx)
 
             case "redundant_parens":
+                attribute_visitPost.append(idx)
                 conditionElement_visitPost.append(idx)
+                functionCallExpr_visitPost.append(idx)
                 returnStmt_visitPost.append(idx)
+                tupleExpr_visitPost.append(idx)
 
             case "redundant_property":
                 codeBlockItemList_visitPost.append(idx)
@@ -3114,6 +3106,12 @@ final class LintPipeline: SyntaxVisitor {
 
     override func visitPost(_ node: TryExprSyntax) {
         for idx in tryExpr_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
+        }
+    }
+
+    override func visitPost(_ node: TupleExprSyntax) {
+        for idx in tupleExpr_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
     }

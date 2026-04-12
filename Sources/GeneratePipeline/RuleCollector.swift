@@ -70,6 +70,8 @@ private final class RuleFileVisitor: SyntaxVisitor {
         isAnalyzer: extractStaticBoolProperty(
           from: node.memberBlock, named: "requiresCompilerArguments") ?? false,
         isSourceKitAST: conformances.contains("SourceKitASTRule"),
+        requiresPostProcessing: extractStaticBoolProperty(
+          from: node.memberBlock, named: "requiresPostProcessing") ?? false,
         conformsToSwiftSyntaxRule: conformances.contains("SwiftSyntaxRule"),
       )
     }
@@ -205,6 +207,7 @@ private final class RuleFileVisitor: SyntaxVisitor {
         && !ruleInfo.isCollecting
         && !ruleInfo.isAnalyzer
         && !ruleInfo.isSourceKitAST
+        && !ruleInfo.requiresPostProcessing
 
       // Merge visit/visitPost node types from the base class handling in
       // ViolationCollectingVisitor (the 10 skippable declaration types are
@@ -290,6 +293,7 @@ private struct RuleStructInfo {
   var isCollecting: Bool
   var isAnalyzer: Bool
   var isSourceKitAST: Bool
+  var requiresPostProcessing: Bool
   var conformsToSwiftSyntaxRule: Bool
 }
 

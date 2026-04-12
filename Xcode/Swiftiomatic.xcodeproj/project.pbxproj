@@ -78,7 +78,7 @@
 		15826515C1254BEDABFD2A46 /* RuleRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RuleRow.swift; path = SwiftiomaticApp/Views/RuleRow.swift; sourceTree = "<group>"; };
 		1EC22484CAE196AB22576CCC /* LintFileCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LintFileCommand.swift; path = SwiftiomaticExtension/LintFileCommand.swift; sourceTree = "<group>"; };
 		22C5363612C7FB0CFADDBED5 /* FormatFileCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FormatFileCommand.swift; path = SwiftiomaticExtension/FormatFileCommand.swift; sourceTree = "<group>"; };
-		284F7B717D3B0F5C3CEC5E96 /* AppIcon.icon */ = {isa = PBXFileReference; name = AppIcon.icon; path = /Users/jason/Developer/toba/swiftiomatic/AppIcon.icon; sourceTree = "<absolute>"; };
+		284F7B717D3B0F5C3CEC5E96 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = ../AppIcon.icon; sourceTree = SOURCE_ROOT; };
 		2EB64C472274C585B839F0B9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = SwiftiomaticApp/Info.plist; sourceTree = "<group>"; };
 		2F55E5982085DEEFEB7CB95E /* FormatOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FormatOptions.swift; path = SwiftiomaticApp/Views/FormatOptions.swift; sourceTree = "<group>"; };
 		340FEA820F6BC1C61AD1B9CF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = SwiftiomaticApp/Assets.xcassets; sourceTree = "<group>"; };

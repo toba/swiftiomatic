@@ -142,5 +142,11 @@ extension PrefixedTopLevelConstantRule {
     override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
       .skipChildren
     }
+
+    // Computed property / subscript bodies use AccessorBlockSyntax, not CodeBlockSyntax.
+    // Constants inside these are local, not top-level.
+    override func visit(_: AccessorBlockSyntax) -> SyntaxVisitorContinueKind {
+      .skipChildren
+    }
   }
 }

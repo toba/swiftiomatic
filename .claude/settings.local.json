@@ -108,7 +108,8 @@
       "mcp__xc-build__show_mac_log",
       "Read(//Users/jason/Library/Developer/Xcode/DerivedData/Swiftiomatic-cxckzblcqjjqaogxojygdwrcuyrq/Build/Products/Debug/Swiftiomatic.app/**)",
       "Read(//Users/jason/Library/Developer/Xcode/DerivedData/Swiftiomatic-cxckzblcqjjqaogxojygdwrcuyrq/Build/Products/Debug/Swiftiomatic.app/Contents/**)",
-      "mcp__xc-project__list_groups"
+      "mcp__xc-project__list_groups",
+      "mcp__xc-build__export_icon"
     ]
   },
   "enableAllProjectMcpServers": true,

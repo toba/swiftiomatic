@@ -108,7 +108,6 @@ extension IdentifierNameRule {
       }
       """,
     ),
-    Example("func ↓√ (arg: Double) -> Double { arg }"),
     Example("class Foo<let ↓max_count: Int> {}"),
     Example("struct Foo<let ↓c: Int> {}"),
   ]

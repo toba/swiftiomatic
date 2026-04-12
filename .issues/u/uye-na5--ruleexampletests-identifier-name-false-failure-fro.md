@@ -1,15 +1,15 @@
 ---
 # uye-na5
 title: 'RuleExampleTests: identifier_name false failure from prefixed_toplevel_constant'
-status: in-progress
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-12T19:34:44Z
-updated_at: 2026-04-12T19:35:32Z
+updated_at: 2026-04-12T20:44:29Z
 sync:
     github:
         issue_number: "230"
-        synced_at: "2026-04-12T20:23:25Z"
+        synced_at: "2026-04-12T20:48:23Z"
 ---
 
 ## Problem
@@ -49,3 +49,14 @@ swift_package_test filter: "RuleExampleTests"
 
 - [ ] Fix `Configuration`/`Linter` to respect `.onlyConfiguration` filter and not run opt-in rules outside the set
 - [ ] Or make the example less ambiguous (e.g. wrap in a struct so it's not top-level)
+
+## Summary of Changes
+
+Fixed 4 rule bugs exposed by the strict test assertions in a069d71:
+
+1. **PrefixedTopLevelConstantRule**: added `AccessorBlockSyntax` skip so `let` bindings inside computed properties aren't flagged as top-level constants
+2. **RedundantBackticksRule** (3 fixes from vjl-m9o rewrite): fixed `isInsideTypeDeclaration` to use `MemberBlockSyntax`, fixed `isInAccessorContext` to detect implicit getters via `AccessorBlockSyntax`, reordered `::`/`.` checks before `backtickAlwaysRequired`
+3. **NoGroupingExtensionRule**: added `requiresPostProcessing` static property + generator support to route two-pass rules to the fallback path instead of the single-pass pipeline
+4. **IdentifierNameRule**: removed incorrect `√` triggering example (math symbols are not case-violating)
+
+Also discovered that Swift Testing misattributes failures from serialized parameterized tests — all failures were reported as `identifier_name` regardless of which rule actually failed.
