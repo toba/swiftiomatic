@@ -88,7 +88,13 @@
       "Bash(gh help:*)",
       "mcp__xc-project__add_file",
       "mcp__xc-project__list_targets",
-      "Bash(~/.claude/skills/gha/scripts/gha.sh:*)"
+      "Bash(~/.claude/skills/gha/scripts/gha.sh:*)",
+      "mcp__xc-project__list_package_products",
+      "mcp__xc-project__add_package_product",
+      "WebFetch(domain:nilcoalescing.com)",
+      "mcp__xc-project__remove_file",
+      "mcp__xc-build__get_mac_bundle_id",
+      "mcp__xc-build__build_run_macos"
     ]
   },
   "enableAllProjectMcpServers": true,

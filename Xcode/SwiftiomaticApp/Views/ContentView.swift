@@ -9,9 +9,6 @@ struct ContentView: View {
       Tab("Options", systemImage: "gearshape") {
         OptionsTab()
       }
-      Tab("About", systemImage: "info.circle") {
-        AboutTab()
-      }
     }
   }
 }

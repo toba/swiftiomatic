@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftiomaticKit
+import SwiftiomaticSyntax
 
 struct ScopeBadge: View {
   let scope: Scope

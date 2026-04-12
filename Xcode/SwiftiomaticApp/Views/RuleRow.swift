@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftiomaticKit
+import SwiftiomaticSyntax
 
 struct RuleRow: View {
   @Environment(AppModel.self) private var model

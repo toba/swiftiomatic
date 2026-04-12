@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftiomaticKit
+import SwiftiomaticSyntax
 import UniformTypeIdentifiers
 
 struct OptionsTab: View {
