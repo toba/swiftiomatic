@@ -4,7 +4,7 @@ import SwiftiomaticSyntax
 ///
 /// Replaces `[String: Any]` in configuration properties where `Sendable` conformance
 /// is required. Converts to/from `Any` at system boundaries (YAML parsing, rule init).
-public enum ConfigValue: Sendable, Equatable {
+public enum ConfigValue: Sendable, Hashable {
   /// A string value
   case string(String)
   /// An integer value

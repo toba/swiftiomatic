@@ -11,9 +11,9 @@ struct AboutView: View {
 
     var body: some View {
         VStack(spacing: 14) {
-            Image(systemName: "swift")
-                .font(.system(size: 64))
-                .foregroundStyle(.orange)
+            Image(nsImage: NSApp.applicationIconImage)
+                .resizable()
+                .frame(width: 96, height: 96)
 
             Text("Swiftiomatic")
                 .font(.title)
@@ -46,4 +46,3 @@ struct AboutView: View {
         .windowMinimizeBehavior(.disabled)
     }
 }
-

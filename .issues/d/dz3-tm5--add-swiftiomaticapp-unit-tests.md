@@ -1,15 +1,15 @@
 ---
 # dz3-tm5
 title: Add SwiftiomaticApp unit tests
-status: ready
+status: scrapped
 type: task
 priority: normal
 created_at: 2026-04-12T15:57:34Z
-updated_at: 2026-04-12T15:57:34Z
+updated_at: 2026-04-12T18:15:03Z
 sync:
     github:
         issue_number: "218"
-        synced_at: "2026-04-12T16:02:57Z"
+        synced_at: "2026-04-12T18:23:35Z"
 ---
 
 The SwiftiomaticApp Xcode target has zero test coverage. There is no test target in the Xcode project and the scheme has an empty `<Testables>` section.
@@ -47,3 +47,8 @@ The SwiftiomaticApp Xcode target has zero test coverage. There is no test target
 - The existing SPM test target (`SwiftiomaticTests`) covers SwiftiomaticKit/SwiftiomaticSyntax only — it does not test the app
 - `AppModel` is `@MainActor` — tests will need `@MainActor` as well
 - Consider whether `AppModel` logic can be tested without a real app group suite (mock `UserDefaults`)
+
+
+## Reasons for Scrapping
+
+The app target is a thin SwiftUI shell around SwiftiomaticKit. The "testable logic" (rule enable/disable, config persistence) is trivial UserDefaults wrapping — tests would just mirror the implementation without catching real bugs. For a small macOS app, this is another thing to update with every UI change for no practical benefit. The core logic lives in SwiftiomaticKit/SwiftiomaticSyntax and is already well-tested.

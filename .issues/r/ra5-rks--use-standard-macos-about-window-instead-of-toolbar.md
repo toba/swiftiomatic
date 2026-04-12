@@ -1,15 +1,15 @@
 ---
 # ra5-rks
 title: Use standard macOS About window instead of toolbar button
-status: review
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-12T15:41:36Z
-updated_at: 2026-04-12T15:54:00Z
+updated_at: 2026-04-12T16:56:40Z
 sync:
     github:
         issue_number: "216"
-        synced_at: "2026-04-12T16:02:57Z"
+        synced_at: "2026-04-12T18:23:35Z"
 ---
 
 The app currently has a custom "About" toolbar button. This is non-standard macOS behavior.

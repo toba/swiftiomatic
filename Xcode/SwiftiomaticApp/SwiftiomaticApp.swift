@@ -1,14 +1,33 @@
+import AppKit
 import SwiftUI
 
 @main
 struct SwiftiomaticApp: App {
     @Environment(\.openWindow) private var openWindow
-    @State private var model = AppModel()
+
+    init() {
+        // Show hidden files in all open panels so `.swiftiomatic.yaml` is visible
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.didUpdateNotification,
+            object: nil,
+            queue: .main
+        ) { notification in
+            if let panel = notification.object as? NSOpenPanel, !panel.showsHiddenFiles {
+                panel.showsHiddenFiles = true
+            }
+        }
+    }
 
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environment(model)
+        DocumentGroup(newDocument: { SwiftiomaticDocument() }) { file in
+            ContentView(document: file.document)
+                .task {
+                    // Replace the default filename title with the parent folder name
+                    if let url = file.fileURL {
+                        let folderName = url.deletingLastPathComponent().lastPathComponent
+                        NSApp.keyWindow?.title = folderName
+                    }
+                }
         }
         .defaultSize(width: 900, height: 600)
         .commands {

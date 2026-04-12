@@ -16,6 +16,8 @@
 - `AssignmentWrappingRule`; keep RHS on the `=` line when it fits ([#201](https://github.com/toba/swiftiomatic/issues/201))
 - Dry-run diff for `--fix` ([#170](https://github.com/toba/swiftiomatic/issues/170))
 - Move format options to sidebar navigation ([#221](https://github.com/toba/swiftiomatic/issues/221))
+- Document-based SwiftUI app; open/create `.swiftiomatic.yaml` ([#223](https://github.com/toba/swiftiomatic/issues/223))
+- Move scope filter from toolbar to picker above rule list ([#219](https://github.com/toba/swiftiomatic/issues/219))
 
 ### 🐞 Fixes
 
@@ -32,6 +34,9 @@
 - Fix `LintPipeline` skip-depth ordering bug; `visitPost` never dispatched for rules using `skippableDeclarations` ([#206](https://github.com/toba/swiftiomatic/issues/206))
 - Fix Xcode app build; add `SwiftiomaticSyntax` dependency after module extraction
 - Replace custom About toolbar button with standard macOS About window ([#216](https://github.com/toba/swiftiomatic/issues/216))
+- Xcode app build fails; `SwiftiomaticKit` types not visible to `SwiftiomaticApp` ([#220](https://github.com/toba/swiftiomatic/issues/220))
+- Search/filter bar missing from above the rule list ([#217](https://github.com/toba/swiftiomatic/issues/217))
+- Fix SF Symbol sizing and placement in rule list
 
 ### 🗜️ Tweaks
 
@@ -64,4 +69,5 @@
 - Correctable lint rule: `@_cdecl` → `@c` ([#214](https://github.com/toba/swiftiomatic/issues/214))
 - Correctable lint rule: `@_specialize` → `@specialize` ([#210](https://github.com/toba/swiftiomatic/issues/210))
 - Correctable lint rule: redundant `@MainActor` on `View` ([#213](https://github.com/toba/swiftiomatic/issues/213))
+- Replace scope badges with SF Symbols
 - Production-ready SwiftLint/SwiftFormat replacement ([#161](https://github.com/toba/swiftiomatic/issues/161))

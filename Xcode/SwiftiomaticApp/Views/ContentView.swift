@@ -8,7 +8,7 @@ enum SidebarSelection: Hashable {
 }
 
 struct ContentView: View {
-    @Environment(AppModel.self) private var model
+    @Bindable var document: SwiftiomaticDocument
     @State private var selection: SidebarSelection? = .options
     @State private var searchText = ""
     @State private var scopeFilter: ScopeFilter = .all
@@ -18,10 +18,19 @@ struct ContentView: View {
         case lint = "Lint"
         case format = "Format"
         case suggest = "Suggest"
+
+        var symbolName: String {
+            switch self {
+            case .all: "list.bullet"
+            case .lint: "exclamationmark.triangle"
+            case .format: "guidepoint.vertical.numbers"
+            case .suggest: "character.textbox.badge.sparkles"
+            }
+        }
     }
 
     private var filteredRules: [RuleConfigurationEntry] {
-        model.rules.filter { entry in
+        document.rules.filter { entry in
             switch scopeFilter {
             case .all: true
             case .lint: entry.scope == .lint
@@ -46,30 +55,36 @@ struct ContentView: View {
 
                 Section("Rules") {
                     ForEach(filteredRules) { entry in
-                        RuleRow(entry: entry)
+                        RuleRow(document: document, entry: entry)
                             .tag(SidebarSelection.rule(entry))
                     }
                 }
             }
-            .searchable(text: $searchText, placement: .sidebar, prompt: "Filter rules")
-            .toolbar {
-                ToolbarItem {
+            .safeAreaInset(edge: .top, spacing: 0) {
+                HStack(spacing: 6) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(.secondary)
+                    TextField("Filter rules", text: $searchText)
+                        .textFieldStyle(.plain)
                     Picker("Scope", selection: $scopeFilter) {
                         ForEach(ScopeFilter.allCases, id: \.self) { filter in
-                            Text(filter.rawValue).tag(filter)
+                            Label(filter.rawValue, systemImage: filter.symbolName).tag(filter)
                         }
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.menu)
+                    .fixedSize()
                 }
+                .padding(8)
+                .background(.bar)
             }
             .navigationTitle("Swiftiomatic")
             .navigationSplitViewColumnWidth(min: 280, ideal: 340, max: 500)
         } detail: {
             switch selection {
             case .options:
-                FormatOptions()
+                FormatOptions(document: document)
             case .rule(let entry):
-                RuleDetailView(entry: entry)
+                RuleDetailView(document: document, entry: entry)
             case nil:
                 ContentUnavailableView(
                     "Select an Item",

@@ -100,7 +100,14 @@
       "mcp__xc-build__stop_mac_log_cap",
       "mcp__xc-build__stop_mac_app",
       "WebFetch(domain:www.createwithswift.com)",
-      "mcp__xc-project__list_test_plans"
+      "mcp__xc-project__list_test_plans",
+      "mcp__xc-project__list_files",
+      "Bash(osascript:*)",
+      "mcp__xc-build__show_build_log",
+      "mcp__xc-build__list_build_phase_status",
+      "mcp__xc-build__show_mac_log",
+      "Read(//Users/jason/Library/Developer/Xcode/DerivedData/Swiftiomatic-cxckzblcqjjqaogxojygdwrcuyrq/Build/Products/Debug/Swiftiomatic.app/**)",
+      "Read(//Users/jason/Library/Developer/Xcode/DerivedData/Swiftiomatic-cxckzblcqjjqaogxojygdwrcuyrq/Build/Products/Debug/Swiftiomatic.app/Contents/**)"
     ]
   },
   "enableAllProjectMcpServers": true,

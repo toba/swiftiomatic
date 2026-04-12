@@ -3,7 +3,7 @@ import SwiftiomaticKit
 import SwiftiomaticSyntax
 
 struct RuleDetailView: View {
-    @Environment(AppModel.self) private var model
+    @Bindable var document: SwiftiomaticDocument
     let entry: RuleConfigurationEntry
 
     var body: some View {
@@ -24,7 +24,7 @@ struct RuleDetailView: View {
                             .foregroundStyle(.green)
                     }
                     Spacer()
-                    Toggle("Enabled", isOn: model.ruleEnabledBinding(for: entry))
+                    Toggle("Enabled", isOn: document.ruleEnabledBinding(for: entry))
                     .toggleStyle(.switch)
                 }
 

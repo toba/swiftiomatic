@@ -2,7 +2,7 @@ import Foundation
 import SwiftiomaticSyntax
 
 /// A semantic version number supporting string-literal initialization and numeric comparison
-public struct Version: RawRepresentable, Comparable, ExpressibleByStringLiteral,
+public struct Version: RawRepresentable, Comparable, Hashable, ExpressibleByStringLiteral,
   CustomStringConvertible,
   Sendable
 {

@@ -448,6 +448,36 @@ extension Configuration {
     return loadUnified(from: dict)
   }
 
+  /// Parse a YAML string as a Swiftiomatic configuration, throwing on invalid input
+  ///
+  /// Unlike ``fromYAMLString(_:)`` this validates that the YAML contains recognized
+  /// Swiftiomatic keys and throws a descriptive error if it doesn't.
+  ///
+  /// - Parameters:
+  ///   - yaml: A YAML string containing configuration values.
+  /// - Returns: The parsed ``Configuration``.
+  public static func parse(yaml: String) throws -> Configuration {
+    let trimmed = yaml.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return .default }
+
+    guard let dict = try Yams.load(yaml: yaml) as? [String: Any] else {
+      throw SwiftiomaticError.yamlParsing("The file is not a valid YAML document.")
+    }
+    guard !dict.isEmpty else { return .default }
+
+    let knownKeys: Set<String> = [
+      "rules", "format", "suggest", "included", "excluded",
+      "opt_in_rules", "disabled_rules", "analyzer_rules",
+      "indentation", "cache_path", "only_rules",
+    ]
+    if dict.keys.allSatisfy({ !knownKeys.contains($0) }) {
+      throw SwiftiomaticError.yamlParsing(
+        "This YAML file is not a Swiftiomatic configuration. Expected top-level keys: rules, format, or suggest."
+      )
+    }
+    return loadUnified(from: dict)
+  }
+
   /// Serialize non-default values back to YAML, writing only sections that differ from defaults
   ///
   /// - Parameters:
@@ -512,6 +542,17 @@ extension Configuration: Hashable {
     hasher.combine(cachePath)
     hasher.combine(rules.map { type(of: $0).identifier })
     hasher.combine(rootDirectory)
+    hasher.combine(enabledLintRules)
+    hasher.combine(disabledLintRules)
+    hasher.combine(lintRuleConfigs)
+    hasher.combine(formatIndent)
+    hasher.combine(formatMaxWidth)
+    hasher.combine(formatSwiftVersion)
+    hasher.combine(formatMaximumBlankLines)
+    hasher.combine(formatLineBreakBeforeControlFlowKeywords)
+    hasher.combine(formatLineBreakBeforeEachArgument)
+    hasher.combine(formatTrailingCommas)
+    hasher.combine(suggestMinConfidence)
   }
 
   public static func == (lhs: Configuration, rhs: Configuration) -> Bool {
@@ -520,6 +561,17 @@ extension Configuration: Hashable {
       && lhs.cachePath == rhs.cachePath && lhs.rules == rhs.rules
       && lhs.rootDirectory == rhs.rootDirectory
       && lhs.rulesMode == rhs.rulesMode
+      && lhs.enabledLintRules == rhs.enabledLintRules
+      && lhs.disabledLintRules == rhs.disabledLintRules
+      && lhs.lintRuleConfigs == rhs.lintRuleConfigs
+      && lhs.formatIndent == rhs.formatIndent
+      && lhs.formatMaxWidth == rhs.formatMaxWidth
+      && lhs.formatSwiftVersion == rhs.formatSwiftVersion
+      && lhs.formatMaximumBlankLines == rhs.formatMaximumBlankLines
+      && lhs.formatLineBreakBeforeControlFlowKeywords == rhs.formatLineBreakBeforeControlFlowKeywords
+      && lhs.formatLineBreakBeforeEachArgument == rhs.formatLineBreakBeforeEachArgument
+      && lhs.formatTrailingCommas == rhs.formatTrailingCommas
+      && lhs.suggestMinConfidence == rhs.suggestMinConfidence
   }
 }
 

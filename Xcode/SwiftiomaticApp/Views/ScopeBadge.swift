@@ -13,13 +13,16 @@ struct ScopeBadge: View {
     }
   }
 
+  private var symbolName: String {
+    switch scope {
+    case .lint: "exclamationmark.triangle"
+    case .format: "guidepoint.vertical.numbers"
+    case .suggest: "character.textbox.badge.sparkles"
+    }
+  }
+
   var body: some View {
-    Text(scope.displayName)
-      .font(.caption2)
-      .fontWeight(.semibold)
-      .padding(.horizontal, 6)
-      .padding(.vertical, 2)
-      .background(color.opacity(0.15), in: .capsule)
+    Image(systemName: symbolName)
       .foregroundStyle(color)
   }
 }
