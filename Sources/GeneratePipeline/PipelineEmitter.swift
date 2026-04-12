@@ -25,10 +25,25 @@ enum PipelineEmitter {
       "VariableDeclSyntax",
     ]
 
+    // The 3 nested-scope types that skipsNestedScopes controls.
+    // These always travel together — ViolationCollectingVisitor.skipsNestedScopes
+    // gates all three via a single Bool, preventing the common bug of skipping
+    // CodeBlockSyntax but forgetting AccessorBlockSyntax.
+    let scopeSkipTypes: [String] = [
+      "AccessorBlockSyntax", "ClosureExprSyntax", "CodeBlockSyntax",
+    ]
+
     // Ensure all skippable decl types appear in both visit and visitPost
     for declType in skippableDeclTypes {
       allVisitNodeTypes.insert(declType)
       allVisitPostNodeTypes.insert(declType)
+    }
+
+    // Ensure all scope-skip types appear in both visit and visitPost so the
+    // pipeline can manage skipDepths for visitors with skipsNestedScopes == true
+    for scopeType in scopeSkipTypes {
+      allVisitNodeTypes.insert(scopeType)
+      allVisitPostNodeTypes.insert(scopeType)
     }
 
     // Node types that have rule-specific visit() overrides need corresponding
@@ -72,6 +87,10 @@ enum PipelineEmitter {
     out += "    private var visitorProtocols: [ViolationCollectingVisitorProtocol] = []\n"
     out += "    private var skipDepths: [Int] = []\n"
     out += "    private var skipSets: [[any DeclSyntaxProtocol.Type]] = []\n"
+    out += "    /// Per-visitor flag: `true` when the visitor's `skipsNestedScopes`\n"
+    out += "    /// property is set, meaning CodeBlock, AccessorBlock, and ClosureExpr\n"
+    out += "    /// children should be auto-skipped via `skipDepths` accounting.\n"
+    out += "    private var scopeSkipFlags: [Bool] = []\n"
     out += "    /// Stack tracking which visitors returned .skipChildren from visit()\n"
     out += "    private var visitSkipStack: [[Int]] = []\n\n"
 
@@ -95,6 +114,7 @@ enum PipelineEmitter {
     out += "            self.visitors.append(entry.visitor)\n"
     out += "            self.visitorProtocols.append(entry.visitor)\n"
     out += "            self.skipSets.append(entry.visitor.skippableDeclarations)\n"
+    out += "            self.scopeSkipFlags.append(entry.visitor.skipsNestedScopes)\n"
     out += "            switch entry.id {\n"
 
     for ruleID in mergedRules.keys.sorted() {
@@ -122,6 +142,7 @@ enum PipelineEmitter {
     for nodeType in sortedVisitNodeTypes {
       let varName_visit = propertyName(for: nodeType, kind: "visit")
       let isSkippableDecl = skippableDeclTypes.contains(nodeType)
+      let isScopeSkip = scopeSkipTypes.contains(nodeType)
       let hasRuleVisitOverrides = ruleVisitNodeTypes.contains(nodeType)
 
       out += "    override func visit(_ node: \(nodeType)) -> SyntaxVisitorContinueKind {\n"
@@ -152,6 +173,30 @@ enum PipelineEmitter {
         out += "                skipDepths[idx] += 1\n"
         out += "            }\n"
         out += "        }\n"
+      } else if isScopeSkip && hasRuleVisitOverrides {
+        // Scope-skip type with rule visit() overrides: auto-skip visitors
+        // that use skipsNestedScopes but don't have their own override,
+        // then dispatch to visitors with explicit overrides.
+        out += "        let visitOverrideSet = Set(\(varName_visit))\n"
+        out += "        for idx in 0..<visitors.count {\n"
+        out += "            if !visitOverrideSet.contains(idx), scopeSkipFlags[idx] {\n"
+        out += "                skipDepths[idx] += 1\n"
+        out += "            }\n"
+        out += "        }\n"
+        out += "        var skippedByReturn: [Int] = []\n"
+        out += "        for idx in \(varName_visit) where skipDepths[idx] == 0 {\n"
+        out += "            if visitors[idx].visit(node) == .skipChildren {\n"
+        out += "                skipDepths[idx] += 1\n"
+        out += "                skippedByReturn.append(idx)\n"
+        out += "            }\n"
+        out += "        }\n"
+        out += "        visitSkipStack.append(skippedByReturn)\n"
+      } else if isScopeSkip {
+        // Pure scope-skip — no rule visit() overrides for this type.
+        // Auto-increment skipDepths for visitors with skipsNestedScopes.
+        out += "        for idx in 0..<visitors.count where scopeSkipFlags[idx] {\n"
+        out += "            skipDepths[idx] += 1\n"
+        out += "        }\n"
       } else if hasRuleVisitOverrides {
         out += "        var skippedByReturn: [Int] = []\n"
         out += "        for idx in \(varName_visit) where skipDepths[idx] == 0 {\n"
@@ -171,6 +216,7 @@ enum PipelineEmitter {
     for nodeType in sortedVisitPostNodeTypes {
       let varName_visitPost = propertyName(for: nodeType, kind: "visitPost")
       let isSkippableDecl = skippableDeclTypes.contains(nodeType)
+      let isScopeSkip = scopeSkipTypes.contains(nodeType)
       let hasRuleVisitOverrides = ruleVisitNodeTypes.contains(nodeType)
 
       out += "    override func visitPost(_ node: \(nodeType)) {\n"
@@ -205,6 +251,21 @@ enum PipelineEmitter {
         out += "            if skipSets[idx].contains(where: { $0 == \(nodeType).self }) {\n"
         out += "                skipDepths[idx] -= 1\n"
         out += "            }\n"
+        out += "        }\n"
+      } else if isScopeSkip && hasRuleVisitOverrides {
+        // Scope-skip type with rule overrides: decrement for auto-skipped
+        // visitors (those are handled by scopeSkipFlags, not visitSkipStack)
+        let varName_visit = propertyName(for: nodeType, kind: "visit")
+        out += "        let visitOverrideSetPost = Set(\(varName_visit))\n"
+        out += "        for idx in 0..<visitors.count {\n"
+        out += "            if !visitOverrideSetPost.contains(idx), scopeSkipFlags[idx] {\n"
+        out += "                skipDepths[idx] -= 1\n"
+        out += "            }\n"
+        out += "        }\n"
+      } else if isScopeSkip {
+        // Pure scope-skip: decrement for all flagged visitors
+        out += "        for idx in 0..<visitors.count where scopeSkipFlags[idx] {\n"
+        out += "            skipDepths[idx] -= 1\n"
         out += "        }\n"
       }
 

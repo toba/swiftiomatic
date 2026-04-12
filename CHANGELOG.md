@@ -40,6 +40,9 @@
 - SourceKit warnings spam stderr when running `sm` with no arguments ([#228](https://github.com/toba/swiftiomatic/issues/228))
 - `sm format` emits SourceKit warnings after formatting ([#226](https://github.com/toba/swiftiomatic/issues/226))
 - Formatter strips backtick-quoted test names ([#227](https://github.com/toba/swiftiomatic/issues/227))
+- Fix 5 test failures; `StatementPositionRule` no-SourceKit fallback, `IdentifierNameRule` emoji length ([#205](https://github.com/toba/swiftiomatic/issues/205))
+- `RuleExampleTests`; `identifier_name` false failure from `prefixed_toplevel_constant` ([#230](https://github.com/toba/swiftiomatic/issues/230))
+- Rules that skip `CodeBlockSyntax` but not `AccessorBlockSyntax`; add structural `skipsNestedScopes` flag ([#235](https://github.com/toba/swiftiomatic/issues/235))
 
 ### 🗜️ Tweaks
 
@@ -74,3 +77,7 @@
 - Correctable lint rule: redundant `@MainActor` on `View` ([#213](https://github.com/toba/swiftiomatic/issues/213))
 - Replace scope badges with SF Symbols
 - Production-ready SwiftLint/SwiftFormat replacement ([#161](https://github.com/toba/swiftiomatic/issues/161))
+- `RedundantBackticks`; context-aware backtick removal ([#232](https://github.com/toba/swiftiomatic/issues/232))
+- Remove padding around app icon for macOS 26 ([#231](https://github.com/toba/swiftiomatic/issues/231))
+- Fix SF Symbol sizing and placement in rule list ([#224](https://github.com/toba/swiftiomatic/issues/224))
+- Replace scope badges with SF Symbols ([#225](https://github.com/toba/swiftiomatic/issues/225))

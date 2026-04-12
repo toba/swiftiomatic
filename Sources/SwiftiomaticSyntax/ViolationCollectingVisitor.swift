@@ -4,6 +4,21 @@ package import SwiftSyntax
 package protocol ViolationCollectingVisitorProtocol: AnyObject {
   var violations: [SyntaxViolation] { get }
   var skippableDeclarations: [any DeclSyntaxProtocol.Type] { get }
+
+  /// When `true`, the visitor automatically skips children of all nested-scope
+  /// node types: ``CodeBlockSyntax`` (function / control-flow bodies),
+  /// ``AccessorBlockSyntax`` (computed property / subscript getters and setters),
+  /// and ``ClosureExprSyntax``.
+  ///
+  /// This is a **structural guarantee** — setting a single flag skips all three
+  /// types together, eliminating the class of bug where a rule skips one scope
+  /// kind but forgets another (e.g. skipping `CodeBlockSyntax` but not
+  /// `AccessorBlockSyntax`).
+  ///
+  /// The lint pipeline reads this flag at registration time and manages
+  /// `skipDepths` accounting automatically, mirroring how
+  /// ``skippableDeclarations`` works for declaration types.
+  var skipsNestedScopes: Bool { get }
 }
 
 /// Base `SyntaxVisitor` that accumulates ``SyntaxViolation`` positions during AST traversal
@@ -44,6 +59,20 @@ open class ViolationCollectingVisitor<Configuration: RuleOptions>: SyntaxVisitor
     []
   }
 
+  /// Skip children of all nested-scope blocks: ``CodeBlockSyntax``,
+  /// ``AccessorBlockSyntax``, and ``ClosureExprSyntax``.
+  ///
+  /// Override and return `true` in visitors that only care about declarations
+  /// at the current scope level (e.g. top-level-only or member-level rules).
+  /// The three scope types always travel together — this prevents the common
+  /// bug of skipping `CodeBlockSyntax` but forgetting `AccessorBlockSyntax`.
+  ///
+  /// For the **direct-walk** path (fallback rules), the default `visit(_:)`
+  /// overrides below handle skipping. For **pipeline** rules, the generated
+  /// ``LintPipeline`` reads this flag at init and manages `skipDepths`
+  /// automatically.
+  open var skipsNestedScopes: Bool { false }
+
   open override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
     shouldSkip(node)
   }
@@ -82,6 +111,26 @@ open class ViolationCollectingVisitor<Configuration: RuleOptions>: SyntaxVisitor
 
   open override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
     shouldSkip(node)
+  }
+
+  // MARK: - Nested-scope skipping (direct-walk path)
+
+  /// Skips function and control-flow bodies when ``skipsNestedScopes`` is set.
+  /// Subclasses may override for custom logic; the override takes precedence.
+  open override func visit(_: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
+    skipsNestedScopes ? .skipChildren : .visitChildren
+  }
+
+  /// Skips computed-property and subscript accessor bodies when
+  /// ``skipsNestedScopes`` is set. This is the scope type most commonly
+  /// forgotten when rules manually skip only ``CodeBlockSyntax``.
+  open override func visit(_: AccessorBlockSyntax) -> SyntaxVisitorContinueKind {
+    skipsNestedScopes ? .skipChildren : .visitChildren
+  }
+
+  /// Skips closure expression bodies when ``skipsNestedScopes`` is set.
+  open override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+    skipsNestedScopes ? .skipChildren : .visitChildren
   }
 
   private func shouldSkip(_ node: some DeclSyntaxProtocol) -> SyntaxVisitorContinueKind {

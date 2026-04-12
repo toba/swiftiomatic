@@ -91,6 +91,24 @@ extension MissingDocsRule {
       #endif
       """, isExcludedFromDocumentation: true,
     ),
+    // Local declarations inside computed property accessors are not top-level
+    Example(
+      """
+      public extension A {
+          /// docs
+          var computed: Int {
+              get {
+                  let undocumented = 1
+                  return undocumented
+              }
+              set {
+                  let local = newValue
+                  print(local)
+              }
+          }
+      }
+      """,
+    ),
   ]
 
   static let triggeringExamples = [

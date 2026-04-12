@@ -142,6 +142,8 @@ extension ExplicitACLRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var declScope = Stack<CheckACLState>()
 
+    override var skipsNestedScopes: Bool { true }
+
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       [
         FunctionDeclSyntax.self,
@@ -170,14 +172,6 @@ extension ExplicitACLRule {
 
     override func visitPost(_: ClassDeclSyntax) {
       declScope.pop()
-    }
-
-    override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-      .skipChildren
-    }
-
-    override func visit(_: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
-      .skipChildren
     }
 
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {

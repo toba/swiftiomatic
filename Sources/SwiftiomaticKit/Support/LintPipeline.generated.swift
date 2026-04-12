@@ -290,6 +290,10 @@ final class LintPipeline: SyntaxVisitor {
     private var visitorProtocols: [ViolationCollectingVisitorProtocol] = []
     private var skipDepths: [Int] = []
     private var skipSets: [[any DeclSyntaxProtocol.Type]] = []
+    /// Per-visitor flag: `true` when the visitor's `skipsNestedScopes`
+    /// property is set, meaning CodeBlock, AccessorBlock, and ClosureExpr
+    /// children should be auto-skipped via `skipDepths` accounting.
+    private var scopeSkipFlags: [Bool] = []
     /// Stack tracking which visitors returned .skipChildren from visit()
     private var visitSkipStack: [[Int]] = []
 
@@ -352,6 +356,7 @@ final class LintPipeline: SyntaxVisitor {
     private var catchClause_visitPost: [Int] = []
     private var classDecl_visitPost: [Int] = []
     private var closureExpr_visitPost: [Int] = []
+    private var closureParameterList_visitPost: [Int] = []
     private var closureParameter_visitPost: [Int] = []
     private var closureShorthandParameter_visitPost: [Int] = []
     private var closureSignature_visitPost: [Int] = []
@@ -384,10 +389,12 @@ final class LintPipeline: SyntaxVisitor {
     private var functionCallExpr_visitPost: [Int] = []
     private var functionDecl_visitPost: [Int] = []
     private var functionParameterClause_visitPost: [Int] = []
+    private var functionParameterList_visitPost: [Int] = []
     private var functionParameter_visitPost: [Int] = []
     private var functionSignature_visitPost: [Int] = []
     private var functionType_visitPost: [Int] = []
     private var genericArgumentList_visitPost: [Int] = []
+    private var genericParameterList_visitPost: [Int] = []
     private var genericParameter_visitPost: [Int] = []
     private var guardStmt_visitPost: [Int] = []
     private var identifierPattern_visitPost: [Int] = []
@@ -400,6 +407,7 @@ final class LintPipeline: SyntaxVisitor {
     private var initializerClause_visitPost: [Int] = []
     private var initializerDecl_visitPost: [Int] = []
     private var integerLiteralExpr_visitPost: [Int] = []
+    private var labeledExprList_visitPost: [Int] = []
     private var labeledStmt_visitPost: [Int] = []
     private var macroExpansionExpr_visitPost: [Int] = []
     private var matchingPatternCondition_visitPost: [Int] = []
@@ -433,6 +441,7 @@ final class LintPipeline: SyntaxVisitor {
     private var token_visitPost: [Int] = []
     private var tryExpr_visitPost: [Int] = []
     private var tupleExpr_visitPost: [Int] = []
+    private var tupleTypeElementList_visitPost: [Int] = []
     private var typeAliasDecl_visitPost: [Int] = []
     private var typeAnnotation_visitPost: [Int] = []
     private var unresolvedAsExpr_visitPost: [Int] = []
@@ -446,6 +455,7 @@ final class LintPipeline: SyntaxVisitor {
             self.visitors.append(entry.visitor)
             self.visitorProtocols.append(entry.visitor)
             self.skipSets.append(entry.visitor.skippableDeclarations)
+            self.scopeSkipFlags.append(entry.visitor.skipsNestedScopes)
             switch entry.id {
             case "acronyms":
                 functionDecl_visitPost.append(idx)
@@ -762,8 +772,6 @@ final class LintPipeline: SyntaxVisitor {
             case "explicit_acl":
                 actorDecl_visit.append(idx)
                 classDecl_visit.append(idx)
-                closureExpr_visit.append(idx)
-                codeBlock_visit.append(idx)
                 enumDecl_visit.append(idx)
                 extensionDecl_visit.append(idx)
                 structDecl_visit.append(idx)
@@ -786,8 +794,6 @@ final class LintPipeline: SyntaxVisitor {
                 functionCallExpr_visitPost.append(idx)
 
             case "explicit_top_level_acl":
-                closureExpr_visit.append(idx)
-                codeBlock_visit.append(idx)
                 actorDecl_visitPost.append(idx)
                 classDecl_visitPost.append(idx)
                 enumDecl_visitPost.append(idx)
@@ -1010,8 +1016,6 @@ final class LintPipeline: SyntaxVisitor {
             case "missing_docs":
                 actorDecl_visit.append(idx)
                 classDecl_visit.append(idx)
-                closureExpr_visit.append(idx)
-                codeBlock_visit.append(idx)
                 enumDecl_visit.append(idx)
                 extensionDecl_visit.append(idx)
                 functionDecl_visit.append(idx)
@@ -1273,9 +1277,6 @@ final class LintPipeline: SyntaxVisitor {
                 variableDecl_visitPost.append(idx)
 
             case "prefixed_toplevel_constant":
-                accessorBlock_visit.append(idx)
-                closureExpr_visit.append(idx)
-                codeBlock_visit.append(idx)
                 variableDecl_visitPost.append(idx)
 
             case "private_over_fileprivate":
@@ -1576,7 +1577,13 @@ final class LintPipeline: SyntaxVisitor {
 
             case "trailing_comma":
                 arrayElementList_visitPost.append(idx)
+                closureParameterList_visitPost.append(idx)
                 dictionaryElementList_visitPost.append(idx)
+                functionParameterList_visitPost.append(idx)
+                genericArgumentList_visitPost.append(idx)
+                genericParameterList_visitPost.append(idx)
+                labeledExprList_visitPost.append(idx)
+                tupleTypeElementList_visitPost.append(idx)
 
             case "trailing_semicolon":
                 token_visitPost.append(idx)
@@ -1697,6 +1704,12 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: AccessorBlockSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(accessorBlock_visit)
+        for idx in 0..<visitors.count {
+            if !visitOverrideSet.contains(idx), scopeSkipFlags[idx] {
+                skipDepths[idx] += 1
+            }
+        }
         var skippedByReturn: [Int] = []
         for idx in accessorBlock_visit where skipDepths[idx] == 0 {
             if visitors[idx].visit(node) == .skipChildren {
@@ -1771,6 +1784,12 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(closureExpr_visit)
+        for idx in 0..<visitors.count {
+            if !visitOverrideSet.contains(idx), scopeSkipFlags[idx] {
+                skipDepths[idx] += 1
+            }
+        }
         var skippedByReturn: [Int] = []
         for idx in closureExpr_visit where skipDepths[idx] == 0 {
             if visitors[idx].visit(node) == .skipChildren {
@@ -1807,6 +1826,12 @@ final class LintPipeline: SyntaxVisitor {
     }
 
     override func visit(_ node: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
+        let visitOverrideSet = Set(codeBlock_visit)
+        for idx in 0..<visitors.count {
+            if !visitOverrideSet.contains(idx), scopeSkipFlags[idx] {
+                skipDepths[idx] += 1
+            }
+        }
         var skippedByReturn: [Int] = []
         for idx in codeBlock_visit where skipDepths[idx] == 0 {
             if visitors[idx].visit(node) == .skipChildren {
@@ -2288,6 +2313,12 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
+        let visitOverrideSetPost = Set(accessorBlock_visit)
+        for idx in 0..<visitors.count {
+            if !visitOverrideSetPost.contains(idx), scopeSkipFlags[idx] {
+                skipDepths[idx] -= 1
+            }
+        }
         for idx in accessorBlock_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
@@ -2411,7 +2442,19 @@ final class LintPipeline: SyntaxVisitor {
                 skipDepths[idx] -= 1
             }
         }
+        let visitOverrideSetPost = Set(closureExpr_visit)
+        for idx in 0..<visitors.count {
+            if !visitOverrideSetPost.contains(idx), scopeSkipFlags[idx] {
+                skipDepths[idx] -= 1
+            }
+        }
         for idx in closureExpr_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
+        }
+    }
+
+    override func visitPost(_ node: ClosureParameterListSyntax) {
+        for idx in closureParameterList_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
     }
@@ -2459,6 +2502,12 @@ final class LintPipeline: SyntaxVisitor {
     override func visitPost(_ node: CodeBlockSyntax) {
         if let skippedByReturn = visitSkipStack.popLast() {
             for idx in skippedByReturn {
+                skipDepths[idx] -= 1
+            }
+        }
+        let visitOverrideSetPost = Set(codeBlock_visit)
+        for idx in 0..<visitors.count {
+            if !visitOverrideSetPost.contains(idx), scopeSkipFlags[idx] {
                 skipDepths[idx] -= 1
             }
         }
@@ -2694,6 +2743,12 @@ final class LintPipeline: SyntaxVisitor {
         }
     }
 
+    override func visitPost(_ node: FunctionParameterListSyntax) {
+        for idx in functionParameterList_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
+        }
+    }
+
     override func visitPost(_ node: FunctionParameterSyntax) {
         if let skippedByReturn = visitSkipStack.popLast() {
             for idx in skippedByReturn {
@@ -2724,6 +2779,12 @@ final class LintPipeline: SyntaxVisitor {
             }
         }
         for idx in genericArgumentList_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
+        }
+    }
+
+    override func visitPost(_ node: GenericParameterListSyntax) {
+        for idx in genericParameterList_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
     }
@@ -2813,6 +2874,12 @@ final class LintPipeline: SyntaxVisitor {
 
     override func visitPost(_ node: IntegerLiteralExprSyntax) {
         for idx in integerLiteralExpr_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
+        }
+    }
+
+    override func visitPost(_ node: LabeledExprListSyntax) {
+        for idx in labeledExprList_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
     }
@@ -3112,6 +3179,12 @@ final class LintPipeline: SyntaxVisitor {
 
     override func visitPost(_ node: TupleExprSyntax) {
         for idx in tupleExpr_visitPost where skipDepths[idx] == 0 {
+            visitors[idx].visitPost(node)
+        }
+    }
+
+    override func visitPost(_ node: TupleTypeElementListSyntax) {
+        for idx in tupleTypeElementList_visitPost where skipDepths[idx] == 0 {
             visitors[idx].visitPost(node)
         }
     }

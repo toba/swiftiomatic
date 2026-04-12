@@ -20,6 +20,21 @@ struct RedundantClosureRule {
         let x = { (a: Int) in a + 1 }(5)
         """,
       ),
+      Example(
+        """
+        let x: Int = { fatalError() }()
+        """,
+      ),
+      Example(
+        """
+        let x: Int = { preconditionFailure() }()
+        """,
+      ),
+      Example(
+        """
+        var x: Void = { doSomething() }()
+        """,
+      ),
     ]
   }
 
@@ -36,6 +51,29 @@ struct RedundantClosureRule {
   }
 
   var options = SeverityOption<Self>(.warning)
+}
+
+extension FunctionCallExprSyntax {
+  /// Whether this call is `{ ... }()` assigned to a property with explicit `Void` type annotation
+  fileprivate var isVoidTypedPropertyInitializer: Bool {
+    // Walk up: FunctionCallExpr → InitializerClause → PatternBinding → check type annotation
+    guard let initClause = parent?.as(InitializerClauseSyntax.self),
+      let binding = initClause.parent?.as(PatternBindingSyntax.self),
+      let typeAnnotation = binding.typeAnnotation
+    else { return false }
+    let typeText = typeAnnotation.type.trimmedDescription
+    return typeText == "Void" || typeText == "()"
+  }
+}
+
+extension ExprSyntax {
+  /// Whether this expression is a call to a known Never-returning function
+  fileprivate var isNeverReturningCall: Bool {
+    guard let call = self.as(FunctionCallExprSyntax.self),
+      let name = call.calledExpression.as(DeclReferenceExprSyntax.self)?.baseName.text
+    else { return false }
+    return name == "fatalError" || name == "preconditionFailure"
+  }
 }
 
 extension RedundantClosureRule: SwiftSyntaxRule {
@@ -64,6 +102,19 @@ extension RedundantClosureRule {
       let isReturn = onlyStmt.item.is(ReturnStmtSyntax.self)
       let isExpr = onlyStmt.item.is(ExprSyntax.self)
       guard isReturn || isExpr else { return }
+
+      // Exclude Void-typed properties — removing closure could break @discardableResult calls
+      if node.isVoidTypedPropertyInitializer {
+        return
+      }
+
+      // Exclude Never-returning functions — removing the closure would lose the Never type
+      let innerExpr: ExprSyntax? =
+        if let ret = onlyStmt.item.as(ReturnStmtSyntax.self) { ret.expression }
+        else { onlyStmt.item.as(ExprSyntax.self) }
+      if let innerExpr, innerExpr.isNeverReturningCall {
+        return
+      }
 
       violations.append(closureExpr.positionAfterSkippingLeadingTrivia)
     }

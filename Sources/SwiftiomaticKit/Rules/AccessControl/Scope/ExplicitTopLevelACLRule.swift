@@ -25,6 +25,15 @@ struct ExplicitTopLevelACLRule {
       Example("extension A {}"),
       Example("f { func f() {} }", isExcludedFromDocumentation: true),
       Example("do { func f() {} }", isExcludedFromDocumentation: true),
+      // Local declarations inside computed property accessors are not top-level
+      Example(
+        """
+        internal var computed: Int {
+            let local = 1
+            return local
+        }
+        """,
+      ),
     ]
   }
 
@@ -49,6 +58,8 @@ extension ExplicitTopLevelACLRule: SwiftSyntaxRule {
 
 extension ExplicitTopLevelACLRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+    override var skipsNestedScopes: Bool { true }
+
     override var skippableDeclarations: [any DeclSyntaxProtocol.Type] {
       .all
     }
@@ -83,14 +94,6 @@ extension ExplicitTopLevelACLRule {
 
     override func visitPost(_ node: VariableDeclSyntax) {
       collectViolations(decl: node, token: node.bindingSpecifier)
-    }
-
-    override func visit(_: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
-      .skipChildren
-    }
-
-    override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-      .skipChildren
     }
 
     private func collectViolations(decl: some WithModifiersSyntax, token: TokenSyntax) {

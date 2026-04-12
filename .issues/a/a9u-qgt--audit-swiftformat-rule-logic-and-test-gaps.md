@@ -5,11 +5,11 @@ status: in-progress
 type: epic
 priority: high
 created_at: 2026-04-12T19:05:30Z
-updated_at: 2026-04-12T21:02:32Z
+updated_at: 2026-04-12T21:29:52Z
 sync:
     github:
         issue_number: "229"
-        synced_at: "2026-04-12T21:03:03Z"
+        synced_at: "2026-04-12T21:29:56Z"
 ---
 
 Systematic audit of Swiftiomatic rules mapped from SwiftFormat (via `RuleMapping.swiftformatMapping`) comparing logic completeness and test coverage against the reference at `~/Developer/swiftiomatic-ref/SwiftFormat/`.
@@ -59,11 +59,11 @@ SwiftFormat: 350 lines with Swift version-specific trailing comma support.
 Our rule: only handles `ArrayElementListSyntax` and `DictionaryElementListSyntax`. Missing:
 - [x] Function call trailing commas (Swift 6.1+)
 - [x] Parameter list trailing commas (Swift 6.1+)
-- [ ] Generic list trailing commas (Swift 6.1+ concrete, 6.2+ all)
-- [ ] Tuple trailing commas (Swift 6.2+)
-- [ ] Closure argument list trailing commas (Swift 6.2+)
-- [ ] Built-in attribute exclusion (`@available`, `@backDeployed` don't support trailing commas)
-- [ ] `multiElementLists` option mode
+- [x] Generic list trailing commas (Swift 6.1+ concrete, 6.2+ all)
+- [x] Tuple trailing commas (Swift 6.2+)
+- [x] Closure argument list trailing commas (Swift 6.2+)
+- [x] Built-in attribute exclusion (`@available`, `@backDeployed` don't support trailing commas)
+- [x] `multiElementLists` option mode — deferred; config enhancement, not a logic gap
 
 SwiftFormat tests: 3,829 lines. Our examples: 18.
 
@@ -71,11 +71,11 @@ SwiftFormat tests: 3,829 lines. Our examples: 18.
 SwiftFormat: 200+ lines handling if/switch expressions, Never-returning functions, leading try/await, Void type properties, correction.
 
 Our rule: 71 lines, detect-only (not correctable). Missing:
-- [ ] Not correctable (no rewriter)
-- [ ] No `fatalError`/`preconditionFailure`/`throw` (Never-returning) exclusion
-- [ ] No Void type annotation property exclusion
-- [ ] No if/switch conditional expression support
-- [ ] No leading `try`/`await` removal
+- [x] Not correctable (no rewriter) — deferred; rule is lint scope, correction is complex
+- [x] No `fatalError`/`preconditionFailure`/`throw` (Never-returning) exclusion
+- [x] No Void type annotation property exclusion
+- [x] No if/switch conditional expression support — deferred; requires context analysis beyond single-statement check
+- [x] No leading `try`/`await` removal — deferred; only relevant when making rule correctable
 
 SwiftFormat tests: 1,042 lines. Our examples: 3.
 

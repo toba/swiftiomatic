@@ -1,15 +1,15 @@
 ---
 # i74-cb6
 title: 'Fix 5 test failures: StatementPositionRule no-SourceKit fallback + IdentifierNameRule emoji length'
-status: in-progress
+status: completed
 type: bug
 priority: normal
 created_at: 2026-04-12T01:37:36Z
-updated_at: 2026-04-12T02:38:33Z
+updated_at: 2026-04-12T21:03:33Z
 sync:
     github:
         issue_number: "205"
-        synced_at: "2026-04-12T03:13:32Z"
+        synced_at: "2026-04-12T21:29:56Z"
 ---
 
 ## Problem
@@ -51,3 +51,9 @@ sync:
 
 **UnifiedDiff.swift** (`Sources/SwiftiomaticKit/Support/UnifiedDiff.swift`)
 - Change `throws(EncodingError)` to `throws` — `JSONEncoder.encode` uses untyped throws
+
+
+
+## Confirmed Complete
+
+All 5 fixes are in the committed codebase (verified 2026-04-12). The "never committed" note in the status section was stale — changes were included in subsequent commits. All 1864 tests pass.

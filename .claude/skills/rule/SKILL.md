@@ -224,9 +224,9 @@ violations.append(SyntaxViolation(
 ))
 ```
 
-## Visitor Skip Gotchas
+## Skipping Nested Scopes
 
-When overriding `visit()` to return `.skipChildren` for scope boundaries, remember that Swift uses **three distinct block types** for code bodies:
+Rules that only care about declarations at the current scope level (top-level, member-level, etc.) must skip three block types that introduce nested local scopes:
 
 | Syntax Node | Where It Appears |
 |-------------|------------------|
@@ -234,7 +234,24 @@ When overriding `visit()` to return `.skipChildren` for scope boundaries, rememb
 | `ClosureExprSyntax` | Closure literals `{ ... }` |
 | `AccessorBlockSyntax` | Computed property and subscript bodies (`var foo: T { ... }`) |
 
-If your rule skips `CodeBlockSyntax` to avoid walking into local scopes, you almost certainly need to also skip `AccessorBlockSyntax` and `ClosureExprSyntax`. Missing `AccessorBlockSyntax` is a common bug — the rule works on simple examples but fails on computed properties.
+**Use `skipsNestedScopes`** — a single `Bool` property on `ViolationCollectingVisitor` that structurally skips all three together. This prevents the common bug of skipping `CodeBlockSyntax` but forgetting `AccessorBlockSyntax`.
+
+```swift
+fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
+    override var skipsNestedScopes: Bool { true }
+
+    override func visitPost(_ node: VariableDeclSyntax) {
+        // Only sees top-level/member-level declarations — code blocks,
+        // accessor blocks, and closures are automatically skipped.
+    }
+}
+```
+
+The flag works for both execution paths:
+- **Pipeline rules**: `LintPipeline` reads the flag at init and manages `skipDepths` automatically (same mechanism as `skippableDeclarations`)
+- **Fallback rules**: Base class provides default `visit(_:)` overrides for all three types
+
+**Do NOT manually override `visit(_: CodeBlockSyntax)` etc. just to return `.skipChildren`.** Use `skipsNestedScopes` instead. Manual overrides are only appropriate when you need custom logic at the scope boundary (e.g., pushing/popping state).
 
 ## Examples
 
@@ -463,7 +480,7 @@ Swift Testing misattributes failures from `.serialized` parameterized tests — 
 1. **Don't trust the `(→ rule_name)` label.** Read the violation message and example code to identify the actual failing rule.
 2. **Write debug state to `/tmp/` files** — the MCP test runner truncates `#expect` messages and swallows `print()` output.
 3. **Common causes of suite-only failures:**
-   - **Visitor skips missing a node type.** `CodeBlockSyntax` ≠ `AccessorBlockSyntax` — computed property bodies use `AccessorBlockSyntax`. If your visitor skips `CodeBlockSyntax` to avoid entering function bodies, also skip `AccessorBlockSyntax` and `ClosureExprSyntax`.
+   - **Visitor scope skipping.** Use `override var skipsNestedScopes: Bool { true }` to skip all nested scope blocks (CodeBlock, AccessorBlock, ClosureExpr) together. Don't manually override individual `visit(_:)` methods just to return `.skipChildren`.
    - **Two-pass rules in the pipeline.** If a rule's visitor collects data (e.g., type names) but violations are determined in a custom `validate(file:)` override that post-processes after the walk, the pipeline will report 0 violations (it only reads the visitor's `violations` array). Mark with `static let requiresPostProcessing = true` so the generator routes it to the fallback path.
    - **Check ordering in multi-branch logic.** Context-specific overrides (after `::` module selector, after `.` member access) must precede blanket checks (e.g., `backtickAlwaysRequired`), or the blanket check short-circuits before the override runs.
 4. **`MemberBlockSyntax` vs type declaration nodes.** To check "inside a type body", walk up to `MemberBlockSyntax` — not `ClassDeclSyntax`/`StructDeclSyntax`/`EnumDeclSyntax`, which also match the type NAME position itself.
@@ -494,7 +511,7 @@ static var corrections: [Example: Example] { [:] }
 | `Rules/RuleOptions.swift` | `RuleOptions`, `SeverityBasedRuleOptions`, `@OptionElement` |
 | `Rules/RuleResolver.swift` | Config injection, `FormatAwareRule` merging logic |
 | `Rules/SwiftSyntaxRule.swift` | `SwiftSyntaxRule` protocol, `ViolationCollectingRewriter` base class |
-| `Support/Visitors/ViolationCollectingVisitor.swift` | `ViolationCollectingVisitor` base class |
+| `Support/Visitors/ViolationCollectingVisitor.swift` | `ViolationCollectingVisitor` base class, `skipsNestedScopes`, `skippableDeclarations` |
 | `Models/SyntaxViolation.swift` | `SyntaxViolation`, `Correction`, append helpers |
 | `Models/Example.swift` | `Example` struct with `configuration:` parameter |
 | `Models/SwiftSource.swift` | `SwiftSource` — `contents`, `lines`, `stringView` |

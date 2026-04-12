@@ -18,6 +18,8 @@ extension MissingDocsRule {
   fileprivate final class Visitor: ViolationCollectingVisitor<OptionsType> {
     private var aclScope = Stack<AccessControlBehavior>()
 
+    override var skipsNestedScopes: Bool { true }
+
     override func visit(_ node: ActorDeclSyntax) -> SyntaxVisitorContinueKind {
       defer {
         aclScope.push(
@@ -56,14 +58,6 @@ extension MissingDocsRule {
 
     override func visitPost(_: ClassDeclSyntax) {
       aclScope.pop()
-    }
-
-    override func visit(_: ClosureExprSyntax) -> SyntaxVisitorContinueKind {
-      .skipChildren
-    }
-
-    override func visit(_: CodeBlockSyntax) -> SyntaxVisitorContinueKind {
-      .skipChildren
     }
 
     override func visitPost(_ node: EnumCaseDeclSyntax) {

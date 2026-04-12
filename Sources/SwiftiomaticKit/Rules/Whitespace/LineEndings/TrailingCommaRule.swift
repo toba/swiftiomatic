@@ -17,6 +17,11 @@ struct TrailingCommaRule {
     Example("DispatchQueue.main.async(execute: work↓,)"),
     Example("func foo(a: Int, b: Int↓,) {}"),
     Example("init(x: Int, y: Int↓,) {}"),
+    Example("let x: Dictionary<String, Int↓,> = [:]"),
+    Example("struct Foo<T, U↓,> {}"),
+    Example("let x = (1, 2↓,)"),
+    Example("let y: (Int, String↓,) = (1, \"a\")"),
+    Example("let f = { (a: Int, b: Int↓,) in a + b }"),
   ]
 
   private static let _corrections: [Example: Example] = {
@@ -48,6 +53,11 @@ struct TrailingCommaRule {
       Example("foo(bar: 1, baz: 2)"),
       Example("@available(iOS 16, *) func foo() {}"),
       Example("func foo(a: Int, b: Int) {}"),
+      Example("let x: Dictionary<String, Int> = [:]"),
+      Example("struct Foo<T, U> {}"),
+      Example("let x = (1, 2)"),
+      Example("let y: (Int, String) = (1, \"a\")"),
+      Example("let f = { (a: Int, b: Int) in a + b }"),
     ]
   }
 
@@ -108,6 +118,39 @@ extension TrailingCommaRule {
       guard let lastElement = node.last else { return }
 
       switch (lastElement.trailingComma, configuration.mandatoryComma) {
+      case (let commaToken?, false):
+        violations.append(violation(for: commaToken.positionAfterSkippingLeadingTrivia))
+      case (nil, true) where !locationConverter.isSingleLine(node: node):
+        violations.append(violation(for: lastElement.endPositionBeforeTrailingTrivia))
+      case (_, true), (nil, false):
+        break
+      }
+    }
+
+    override func visitPost(_ node: ClosureParameterListSyntax) {
+      guard let lastElement = node.last else { return }
+      checkTrailingComma(lastElement.trailingComma, lastElement: lastElement, in: node)
+    }
+
+    override func visitPost(_ node: TupleTypeElementListSyntax) {
+      guard node.count > 1, let lastElement = node.last else { return }
+      checkTrailingComma(lastElement.trailingComma, lastElement: lastElement, in: node)
+    }
+
+    override func visitPost(_ node: GenericArgumentListSyntax) {
+      guard let lastElement = node.last else { return }
+      checkTrailingComma(lastElement.trailingComma, lastElement: lastElement, in: node)
+    }
+
+    override func visitPost(_ node: GenericParameterListSyntax) {
+      guard let lastElement = node.last else { return }
+      checkTrailingComma(lastElement.trailingComma, lastElement: lastElement, in: node)
+    }
+
+    private func checkTrailingComma(
+      _ comma: TokenSyntax?, lastElement: some SyntaxProtocol, in node: some SyntaxProtocol
+    ) {
+      switch (comma, configuration.mandatoryComma) {
       case (let commaToken?, false):
         violations.append(violation(for: commaToken.positionAfterSkippingLeadingTrivia))
       case (nil, true) where !locationConverter.isSingleLine(node: node):
@@ -254,6 +297,117 @@ extension TrailingCommaRule {
       }
     }
 
+    override func visit(_ node: ClosureParameterListSyntax) -> ClosureParameterListSyntax {
+      guard let lastElement = node.last, let index = node.index(of: lastElement) else {
+        return super.visit(node)
+      }
+      switch (lastElement.trailingComma, configuration.mandatoryComma) {
+      case (let commaToken?, false):
+        numberOfCorrections += 1
+        var cleaned = lastElement.with(\.trailingComma, nil)
+        let merged = cleaned.trailingTrivia
+          .appending(trivia: commaToken.leadingTrivia)
+          .appending(trivia: commaToken.trailingTrivia)
+        cleaned = cleaned.with(\.trailingTrivia, merged)
+        return super.visit(node.with(\.[index], cleaned))
+      case (nil, true) where !locationConverter.isSingleLine(node: node):
+        numberOfCorrections += 1
+        let newNode = node.with(
+          \.[index],
+          lastElement
+            .with(\.trailingTrivia, [])
+            .with(\.trailingComma, .commaToken())
+            .with(\.trailingTrivia, lastElement.trailingTrivia))
+        return super.visit(newNode)
+      case (_, true), (nil, false):
+        return super.visit(node)
+      }
+    }
+
+    override func visit(_ node: TupleTypeElementListSyntax) -> TupleTypeElementListSyntax {
+      guard node.count > 1,
+        let lastElement = node.last,
+        let index = node.index(of: lastElement)
+      else {
+        return super.visit(node)
+      }
+      switch (lastElement.trailingComma, configuration.mandatoryComma) {
+      case (let commaToken?, false):
+        numberOfCorrections += 1
+        var cleaned = lastElement.with(\.trailingComma, nil)
+        let merged = cleaned.trailingTrivia
+          .appending(trivia: commaToken.leadingTrivia)
+          .appending(trivia: commaToken.trailingTrivia)
+        cleaned = cleaned.with(\.trailingTrivia, merged)
+        return super.visit(node.with(\.[index], cleaned))
+      case (nil, true) where !locationConverter.isSingleLine(node: node):
+        numberOfCorrections += 1
+        let newNode = node.with(
+          \.[index],
+          lastElement
+            .with(\.trailingTrivia, [])
+            .with(\.trailingComma, .commaToken())
+            .with(\.trailingTrivia, lastElement.trailingTrivia))
+        return super.visit(newNode)
+      case (_, true), (nil, false):
+        return super.visit(node)
+      }
+    }
+
+    override func visit(_ node: GenericArgumentListSyntax) -> GenericArgumentListSyntax {
+      guard let lastElement = node.last, let index = node.index(of: lastElement) else {
+        return super.visit(node)
+      }
+      switch (lastElement.trailingComma, configuration.mandatoryComma) {
+      case (let commaToken?, false):
+        numberOfCorrections += 1
+        var cleaned = lastElement.with(\.trailingComma, nil)
+        let merged = cleaned.trailingTrivia
+          .appending(trivia: commaToken.leadingTrivia)
+          .appending(trivia: commaToken.trailingTrivia)
+        cleaned = cleaned.with(\.trailingTrivia, merged)
+        return super.visit(node.with(\.[index], cleaned))
+      case (nil, true) where !locationConverter.isSingleLine(node: node):
+        numberOfCorrections += 1
+        let newNode = node.with(
+          \.[index],
+          lastElement
+            .with(\.trailingTrivia, [])
+            .with(\.trailingComma, .commaToken())
+            .with(\.trailingTrivia, lastElement.trailingTrivia))
+        return super.visit(newNode)
+      case (_, true), (nil, false):
+        return super.visit(node)
+      }
+    }
+
+    override func visit(_ node: GenericParameterListSyntax) -> GenericParameterListSyntax {
+      guard let lastElement = node.last, let index = node.index(of: lastElement) else {
+        return super.visit(node)
+      }
+      switch (lastElement.trailingComma, configuration.mandatoryComma) {
+      case (let commaToken?, false):
+        numberOfCorrections += 1
+        var cleaned = lastElement.with(\.trailingComma, nil)
+        let merged = cleaned.trailingTrivia
+          .appending(trivia: commaToken.leadingTrivia)
+          .appending(trivia: commaToken.trailingTrivia)
+        cleaned = cleaned.with(\.trailingTrivia, merged)
+        return super.visit(node.with(\.[index], cleaned))
+      case (nil, true) where !locationConverter.isSingleLine(node: node):
+        numberOfCorrections += 1
+        let newNode = node.with(
+          \.[index],
+          lastElement
+            .with(\.trailingTrivia, [])
+            .with(\.trailingComma, .commaToken())
+            .with(\.trailingTrivia, lastElement.trailingTrivia))
+        return super.visit(newNode)
+      case (_, true), (nil, false):
+        return super.visit(node)
+      }
+    }
+
     override func visit(_ node: ArrayElementListSyntax) -> ArrayElementListSyntax {
       guard let lastElement = node.last, let index = node.index(of: lastElement) else {
         return super.visit(node)
@@ -314,6 +468,11 @@ extension LabeledExprListSyntax {
       || parent?.is(MacroExpansionDeclSyntax.self) == true
       || parent?.is(SubscriptCallExprSyntax.self) == true
     {
+      return true
+    }
+    // Tuple expressions with >1 element support trailing commas (Swift 6.2+).
+    // Single-element (x,) changes semantics, so only multi-element tuples.
+    if parent?.is(TupleExprSyntax.self) == true, count > 1 {
       return true
     }
     // User-defined attributes (uppercase first letter) support trailing commas;
