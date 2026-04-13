@@ -221,7 +221,7 @@ struct FormatCommand: ParsableCommand {
     // Collect phase for collecting rules
     for file in lintFiles {
       for rule in collectingRules {
-        CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+        CurrentRule.withContext(of: rule) {
           rule.collectInfo(for: file, into: storage, compilerArguments: [])
         }
       }
@@ -234,7 +234,7 @@ struct FormatCommand: ParsableCommand {
       var fileCorrections = 0
 
       for rule in correctableRules {
-        fileCorrections += CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+        fileCorrections += CurrentRule.withContext(of: rule) {
           rule.correct(file: file, using: storage, compilerArguments: [])
         }
       }

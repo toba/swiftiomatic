@@ -104,10 +104,8 @@ extension Rule {
     redundantDisableCommandRule: RedundantDisableCommandRule?,
     compilerArguments: [String],
   ) -> LintResult {
-    let ruleID = Self.identifier
-
     // Wrap entire lint process including shouldRun check in rule context
-    return CurrentRule.$identifier.withValue(ruleID) {
+    return CurrentRule.withContext(of: self) {
       guard shouldRun(onFile: file) else {
         return LintResult(violations: [], ruleTime: nil, deprecatedToValidIDPairs: [])
       }
@@ -315,8 +313,7 @@ struct Linter: Sendable {
       for idx in rules.indices {
         group.addTask {
           let rule = rules[idx]
-          let ruleID = type(of: rule).identifier
-          CurrentRule.$identifier.withValue(ruleID) {
+          CurrentRule.withContext(of: rule) {
             rule.collectInfo(
               for: file,
               into: storage,
@@ -476,7 +473,7 @@ struct CollectedLinter: Sendable {
 
     for rule in rules {
       let ruleID = type(of: rule).identifier
-      let shouldRun = CurrentRule.$identifier.withValue(ruleID) {
+      let shouldRun = CurrentRule.withContext(of: rule) {
         rule.shouldRun(onFile: file)
       }
       ruleForIndex.append((rule, shouldRun))
@@ -543,7 +540,7 @@ struct CollectedLinter: Sendable {
       }
 
       // Run region filtering via existing logic
-      let lintResult = CurrentRule.$identifier.withValue(ruleID) {
+      let lintResult = CurrentRule.withContext(of: rule) {
         rule.filterViolations(
           ruleViolations,
           file: file,
@@ -605,7 +602,7 @@ struct CollectedLinter: Sendable {
     var corrections = [String: Int]()
     for rule in rules where type(of: rule).isCorrectable {
       // Set rule context before checking shouldRun to allow file property access
-      let ruleCorrections = CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+      let ruleCorrections = CurrentRule.withContext(of: rule) {
         () -> Int? in
         guard rule.shouldRun(onFile: file) else {
           return nil

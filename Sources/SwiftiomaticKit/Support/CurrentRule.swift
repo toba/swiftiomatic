@@ -1,4 +1,4 @@
-import SwiftiomaticSyntax
+package import SwiftiomaticSyntax
 
 /// Task-local storage for the currently executing rule
 ///
@@ -15,7 +15,7 @@ package enum CurrentRule {
   /// Should only be set for essential operations like querying the Swift version.
   @TaskLocal package static var allowSourceKitRequestWithoutRule = false
 
-  /// Executes a closure with the rule's identifier set as the current rule context.
+  /// Executes a closure with a rule's identifier set as the current rule context.
   package static func withContext<T>(
     of rule: any Rule,
     _ body: () throws -> T,
@@ -23,7 +23,7 @@ package enum CurrentRule {
     try $identifier.withValue(type(of: rule).identifier, operation: body)
   }
 
-  /// Executes an async closure with the rule's identifier set as the current rule context.
+  /// Executes an async closure with a rule's identifier set as the current rule context.
   package static func withContext<T>(
     of rule: any Rule,
     _ body: () async throws -> T,

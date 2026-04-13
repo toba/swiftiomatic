@@ -20,7 +20,7 @@ Instead, *Swiftiomatic* has a single set of rules, each configured either to
 |---|---|---|
 | `.lint` | Xcode Build Phase, `sm lint` | Wrong code, anti-patterns, style violations. Shows warnings and errors in the editor. |
 | `.format` | Xcode Editor Extension, `sm format` | Formatting only; whitespace, indentation, brace placement. Never surfaces as a lint warning. |
-| `.suggest` | `sm analyze` | Research patterns for nvestigation. Identifies code worth reviewing, not definitive errors. |
+| `.suggest` | `sm analyze` | Research patterns for investigation. Identifies code worth reviewing, not definitive errors. |
 
 Each rule has a separate *auto-fix* property. All `.format` rules are auto-fixable (of course) whereas not all `.lint` rules are auto-fixable.
 
@@ -41,7 +41,7 @@ brew install toba/tap/sm
 Add to your `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/toba/swiftiomatic.git", from: "0.18.3")
+.package(url: "https://github.com/toba/swiftiomatic.git", from: "0.22.0")
 ```
 
 SPM plugins are included for both formatting and linting — usable from Xcode or the command line without installing the CLI separately.
@@ -141,25 +141,25 @@ The interaction between these two properties is the whole trick:
 
 ### Categories
 
-The 336 rules span 15 categories:
+The 337 rules span 15 categories:
 
 | Category | Rules | Covers |
 |---|---|---|
-| Redundancy | 59 | Unnecessary overrides, redundant types, unneeded modifiers |
-| Whitespace | 59 | Braces, spacing, line endings, punctuation |
-| ControlFlow | 51 | Closures, conditionals, pattern matching, returns |
-| Frameworks | 40 | Foundation, SwiftUI, UIKit patterns |
-| TypeSafety | 32 | Optionals, correctness, type usage |
-| Ordering | 31 | Import sorting, file structure, declaration order |
-| Modernization | 31 | Concurrency, legacy API replacement |
-| Testing | 31 | XCTest, Swift Testing, Quick/Nimble |
-| Multiline | 29 | Alignment, argument wrapping |
-| Naming | 23 | Identifier and file naming conventions |
-| AccessControl | 23 | Visibility modifiers, access scope |
-| Documentation | 21 | Comments, doc annotations, MARK usage |
-| Metrics | 19 | Complexity, length thresholds |
-| DeadCode | 19 | Unused declarations, duplicate imports |
-| Performance | 16 | Collection algorithms, reduce patterns |
+| Redundancy | 42 | Unnecessary overrides, redundant types, unneeded modifiers |
+| Whitespace | 42 | Braces, spacing, line endings, punctuation |
+| ControlFlow | 38 | Closures, conditionals, pattern matching, returns |
+| Modernization | 28 | Concurrency, legacy API replacement |
+| TypeSafety | 25 | Optionals, correctness, type usage |
+| Frameworks | 23 | Foundation, SwiftUI, UIKit patterns |
+| Performance | 20 | Collection algorithms, reduce patterns |
+| Multiline | 19 | Alignment, argument wrapping |
+| Testing | 17 | XCTest, Swift Testing, Quick/Nimble |
+| AccessControl | 17 | Visibility modifiers, access scope |
+| Ordering | 16 | Import sorting, file structure, declaration order |
+| Documentation | 16 | Comments, doc annotations, MARK usage |
+| DeadCode | 12 | Unused declarations, duplicate imports |
+| Naming | 12 | Identifier and file naming conventions |
+| Metrics | 10 | Complexity, length thresholds |
 
 ### Cross-File Analysis
 
@@ -199,9 +199,9 @@ Every rule has a scope (where it runs) and a correctable flag (whether it can au
 
 | | **Correctable** | **Not correctable** |
 |---|---|---|
-| **Lint** (~92 / ~168 rules) | `sm lint` warns in Xcode. `sm format` silently fixes. Same rule, both audiences. | `sm lint` warns in Xcode. Human fixes manually. |
-| **Format** (~32 rules) | `sm format` rewrites the file. Never surfaces as a warning. | *(no: formatting without fixing is just linting)* |
-| **Suggest** (~38 rules) | *(no: suggestions are for judgment, not auto-fix)* | `sm analyze` flags for human/agent review with confidence levels. |
+| **Lint** (53 / 213 rules) | `sm lint` warns in Xcode. `sm format` silently fixes. Same rule, both audiences. | `sm lint` warns in Xcode. Human fixes manually. |
+| **Format** (32 rules) | `sm format` rewrites the file. Never surfaces as a warning. | *(no: formatting without fixing is just linting)* |
+| **Suggest** (39 rules) | *(no: suggestions are for judgment, not auto-fix)* | `sm analyze` flags for human/agent review with confidence levels. |
 
 Commands: `sm lint` runs lint-scoped rules. `sm format` applies correctable lint + all format rules. `sm analyze` runs everything.
 

@@ -227,7 +227,7 @@ struct Analyze: AsyncParsableCommand {
 
     for file in lintFiles {
       for rule in collectingRules {
-        CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+        CurrentRule.withContext(of: rule) {
           rule.collectInfo(
             for: file, into: storage, compilerArguments: analyzer.compilerArguments,
           )
@@ -237,7 +237,7 @@ struct Analyze: AsyncParsableCommand {
 
     for file in lintFiles {
       for rule in correctableRules {
-        let corrections = CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+        let corrections = CurrentRule.withContext(of: rule) {
           rule.correct(
             file: file, using: storage, compilerArguments: analyzer.compilerArguments,
           )

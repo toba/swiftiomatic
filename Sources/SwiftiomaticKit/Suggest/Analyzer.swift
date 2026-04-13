@@ -45,7 +45,7 @@ public struct Analyzer: Sendable {
       if !enrichableRules.isEmpty {
         for file in sources {
           for rule in enrichableRules {
-            let extra = await CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+            let extra = await CurrentRule.withContext(of: rule) {
               await rule.enrich(file: file, typeResolver: resolver)
             }
             diagnostics += extra.map { $0.toDiagnostic() }
@@ -74,7 +74,7 @@ public struct Analyzer: Sendable {
     // Pass 1: collect cross-file info for CollectingRules
     for file in lintFiles {
       for rule in collectingRules {
-        CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+        CurrentRule.withContext(of: rule) {
           rule.collectInfo(for: file, into: storage, compilerArguments: compilerArguments)
         }
       }
@@ -84,13 +84,13 @@ public struct Analyzer: Sendable {
     var diagnostics: [Diagnostic] = []
     for file in lintFiles {
       for rule in singlePassRules {
-        let violations = CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+        let violations = CurrentRule.withContext(of: rule) {
           rule.validate(file: file)
         }
         diagnostics += violations.map { $0.toDiagnostic() }
       }
       for rule in collectingRules {
-        let violations = CurrentRule.$identifier.withValue(type(of: rule).identifier) {
+        let violations = CurrentRule.withContext(of: rule) {
           rule.validate(
             file: file,
             using: storage,
