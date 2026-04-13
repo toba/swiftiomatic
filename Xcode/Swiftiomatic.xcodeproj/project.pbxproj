@@ -9,8 +9,10 @@
 /* Begin PBXBuildFile section */
 		038458AB629699369CD0565D /* ScopeBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BF4E93983E00BCB0B50F5E /* ScopeBadge.swift */; };
 		0C2E778E37A8A7A630D86A80 /* SelectionSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA94BF388A12820A5E1597C6 /* SelectionSnapshot.swift */; };
+		0F750BB5D24709A31823A284 /* DisplayCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51B87763BCA86D5766125AA0 /* DisplayCategory.swift */; };
 		1BBED5ADBBC5CBEC6C35A565 /* FormatSelectionCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6610B8742E60BB8F47EC4DA /* FormatSelectionCommand.swift */; };
 		442A015E239C8324635F9471 /* RuleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15826515C1254BEDABFD2A46 /* RuleRow.swift */; };
+		697E01C13242B5A5FF896BE4 /* CategoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7B35F6B909417070283DC48 /* CategoryDetailView.swift */; };
 		7FED0BB65F174A26DDE860E5 /* SourceEditorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC80A0FBEE4DCB483B684BC /* SourceEditorExtension.swift */; };
 		83FD3E22AF06488263FDEFF0 /* SwiftiomaticSyntax in Frameworks */ = {isa = PBXBuildFile; productRef = FF42C1289549FC8FD144F7C7 /* SwiftiomaticSyntax */; };
 		88063A7B28B5F4317ACB67C4 /* SwiftiomaticKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1F8AFAD6B56A0C0649D9AD51 /* SwiftiomaticKit */; };
@@ -23,6 +25,7 @@
 		A2C57679828F8F3B16DBC48E /* SwiftiomaticDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F94BD048D488775E64EF29 /* SwiftiomaticDocument.swift */; };
 		A6E1294B2C63820D1F254933 /* SharedDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C39F96F1469B6489D1DDCA /* SharedDefaults.swift */; };
 		A806D875AC9978E3801E7E30 /* XcodeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74451B9DAFD7634322EB04B4 /* XcodeKit.framework */; };
+		B6EB88811C3A7C14799CD639 /* WindowAccessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B453071DF6D3D76F08A8834F /* WindowAccessor.swift */; };
 		BE85A48090D395DD9B79914F /* SwiftiomaticSyntax in Frameworks */ = {isa = PBXBuildFile; productRef = E975100317BF23502015F459 /* SwiftiomaticSyntax */; };
 		BFF939B02D309CB2F33D5E38 /* LintFileCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EC22484CAE196AB22576CCC /* LintFileCommand.swift */; };
 		CF78E67EAFA0890522B97DA4 /* SwiftiomaticExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 04BBAECB177391FD3173F5DF /* SwiftiomaticExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -85,6 +88,7 @@
 		37EDBEB9DB4D7A72F60130F8 /* AboutView.swift */ = {isa = PBXFileReference; name = AboutView.swift; path = SwiftiomaticApp/Views/AboutView.swift; sourceTree = "<group>"; };
 		3BFF43A282AC841BC385FEB6 /* SwiftiomaticApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SwiftiomaticApp.entitlements; path = SwiftiomaticApp/SwiftiomaticApp.entitlements; sourceTree = "<group>"; };
 		4831E2A3C4C23AEFF4FC23B6 /* SwiftiomaticApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwiftiomaticApp.swift; path = SwiftiomaticApp/SwiftiomaticApp.swift; sourceTree = "<group>"; };
+		51B87763BCA86D5766125AA0 /* DisplayCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DisplayCategory.swift; path = SwiftiomaticApp/Models/DisplayCategory.swift; sourceTree = "<group>"; };
 		531FCA9452A741FBD889EC07 /* FormatCommandError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FormatCommandError.swift; path = SwiftiomaticExtension/FormatCommandError.swift; sourceTree = "<group>"; };
 		6AC80A0FBEE4DCB483B684BC /* SourceEditorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SourceEditorExtension.swift; path = SwiftiomaticExtension/SourceEditorExtension.swift; sourceTree = "<group>"; };
 		6D3C4DA88B1B43080C931E91 /* XCSourceTextBuffer+Swiftiomatic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "XCSourceTextBuffer+Swiftiomatic.swift"; path = "SwiftiomaticExtension/XCSourceTextBuffer+Swiftiomatic.swift"; sourceTree = "<group>"; };
@@ -93,8 +97,10 @@
 		7ACCDA67ED5C4A4D564DF33C /* SwiftiomaticExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = SwiftiomaticExtension.entitlements; path = SwiftiomaticExtension/SwiftiomaticExtension.entitlements; sourceTree = "<group>"; };
 		86C39F96F1469B6489D1DDCA /* SharedDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SharedDefaults.swift; path = SwiftiomaticExtension/SharedDefaults.swift; sourceTree = "<group>"; };
 		AD60A865C86BE3D473E1626F /* ConfigurationLoading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ConfigurationLoading.swift; path = SwiftiomaticExtension/ConfigurationLoading.swift; sourceTree = "<group>"; };
+		B453071DF6D3D76F08A8834F /* WindowAccessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WindowAccessor.swift; path = SwiftiomaticApp/Views/WindowAccessor.swift; sourceTree = "<group>"; };
 		B66DD048FBC008D5BC66ED1C /* SharedDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SharedDefaults.swift; path = SwiftiomaticApp/Models/SharedDefaults.swift; sourceTree = "<group>"; };
 		D4BF4E93983E00BCB0B50F5E /* ScopeBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ScopeBadge.swift; path = SwiftiomaticApp/Views/ScopeBadge.swift; sourceTree = "<group>"; };
+		D7B35F6B909417070283DC48 /* CategoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CategoryDetailView.swift; path = SwiftiomaticApp/Views/CategoryDetailView.swift; sourceTree = "<group>"; };
 		DA94BF388A12820A5E1597C6 /* SelectionSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SelectionSnapshot.swift; path = SwiftiomaticExtension/SelectionSnapshot.swift; sourceTree = "<group>"; };
 		F0F94BD048D488775E64EF29 /* SwiftiomaticDocument.swift */ = {isa = PBXFileReference; name = SwiftiomaticDocument.swift; path = SwiftiomaticApp/Models/SwiftiomaticDocument.swift; sourceTree = "<group>"; };
 		F2BACA1AD327A1773988F8E0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = SwiftiomaticApp/Views/ContentView.swift; sourceTree = "<group>"; };
@@ -129,6 +135,7 @@
 			children = (
 				B66DD048FBC008D5BC66ED1C /* SharedDefaults.swift */,
 				F0F94BD048D488775E64EF29 /* SwiftiomaticDocument.swift */,
+				51B87763BCA86D5766125AA0 /* DisplayCategory.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -159,6 +166,8 @@
 				D4BF4E93983E00BCB0B50F5E /* ScopeBadge.swift */,
 				2F55E5982085DEEFEB7CB95E /* FormatOptions.swift */,
 				37EDBEB9DB4D7A72F60130F8 /* AboutView.swift */,
+				B453071DF6D3D76F08A8834F /* WindowAccessor.swift */,
+				D7B35F6B909417070283DC48 /* CategoryDetailView.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -316,6 +325,9 @@
 				E7334B41026487C8C7E6C799 /* FormatOptions.swift in Sources */,
 				89084640799C8BFE46F6910C /* AboutView.swift in Sources */,
 				A2C57679828F8F3B16DBC48E /* SwiftiomaticDocument.swift in Sources */,
+				B6EB88811C3A7C14799CD639 /* WindowAccessor.swift in Sources */,
+				0F750BB5D24709A31823A284 /* DisplayCategory.swift in Sources */,
+				697E01C13242B5A5FF896BE4 /* CategoryDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

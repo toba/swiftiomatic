@@ -1,5 +1,16 @@
 # Changelog
 
+## Week of Apr 13 – Apr 19, 2026
+
+### ✨ Features
+
+- Redesign rule nav; category list → detail rule list ([#259](https://github.com/toba/swiftiomatic/issues/259))
+
+### 🐞 Fixes
+
+- Window title shows folder name instead of `.swiftiomatic.yaml` ([#260](https://github.com/toba/swiftiomatic/issues/260))
+- Pin `Format Options` above the rule list in sidebar ([#258](https://github.com/toba/swiftiomatic/issues/258))
+
 ## Week of Apr 6 – Apr 12, 2026
 
 ### ✨ Features

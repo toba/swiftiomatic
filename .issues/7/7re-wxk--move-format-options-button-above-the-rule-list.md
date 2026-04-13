@@ -5,11 +5,11 @@ status: completed
 type: bug
 priority: normal
 created_at: 2026-04-13T13:35:44Z
-updated_at: 2026-04-13T13:39:31Z
+updated_at: 2026-04-13T16:35:43Z
 sync:
     github:
         issue_number: "258"
-        synced_at: "2026-04-13T13:40:14Z"
+        synced_at: "2026-04-13T16:41:18Z"
 ---
 
 ## Problem
@@ -26,3 +26,8 @@ The "Format Options" button currently appears within the rule list. It should be
 ## Summary of Changes
 
 Moved the Format Options button out of the `List` and into the `.safeAreaInset(edge: .top)` area in `ContentView.swift`. It now sits between the search/filter bar and the scrollable rule list, pinned in place so it never scrolls out of view. Selection highlighting uses a tinted rounded rectangle background.
+
+
+## Summary of Changes
+
+Resolved as part of rfb-kgu (category nav redesign). The Format Options button is now clearly above the category list in the sidebar's top safe area inset, separated by dividers from the sectioned category list below.

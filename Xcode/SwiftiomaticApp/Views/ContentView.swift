@@ -4,7 +4,7 @@ import SwiftiomaticSyntax
 
 enum SidebarSelection: Hashable {
     case options
-    case rule(RuleConfigurationEntry)
+    case category(DisplayCategory)
 }
 
 struct ContentView: View {
@@ -45,12 +45,36 @@ struct ContentView: View {
         }
     }
 
+    private var rulesByCategory: [DisplayCategory: [RuleConfigurationEntry]] {
+        Dictionary(grouping: filteredRules) { DisplayCategory.from($0.category) }
+    }
+
     var body: some View {
         NavigationSplitView {
+            let grouped = rulesByCategory
             List(selection: $selection) {
-                ForEach(filteredRules) { entry in
-                    RuleRow(document: document, entry: entry)
-                        .tag(SidebarSelection.rule(entry))
+                ForEach(CategoryGroup.allCases) { group in
+                    let groupCategories = DisplayCategory.categories(in: group)
+                        .filter { grouped[$0] != nil }
+                    if !groupCategories.isEmpty {
+                        Section(group.rawValue) {
+                            ForEach(groupCategories) { category in
+                                let count = grouped[category]?.count ?? 0
+                                Label {
+                                    HStack {
+                                        Text(category.displayName)
+                                        Spacer()
+                                        Text("\(count)")
+                                            .foregroundStyle(.secondary)
+                                            .font(.callout)
+                                    }
+                                } icon: {
+                                    Image(systemName: category.symbolName)
+                                }
+                                .tag(SidebarSelection.category(category))
+                            }
+                        }
+                    }
                 }
             }
             .safeAreaInset(edge: .top, spacing: 0) {
@@ -100,16 +124,19 @@ struct ContentView: View {
             switch selection {
             case .options:
                 FormatOptions(document: document)
-            case .rule(let entry):
-                RuleDetailView(document: document, entry: entry)
+            case .category(let category):
+                CategoryDetailView(
+                    document: document,
+                    category: category,
+                    rules: rulesByCategory[category] ?? []
+                )
             case nil:
                 ContentUnavailableView(
-                    "Select an Item",
+                    "Select a Category",
                     systemImage: "doc.text.magnifyingglass",
-                    description: Text("Choose a rule or Format Options from the sidebar.")
+                    description: Text("Choose a rule category or Format Options from the sidebar.")
                 )
             }
         }
     }
 }
-

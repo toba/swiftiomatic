@@ -21,13 +21,7 @@ struct SwiftiomaticApp: App {
     var body: some Scene {
         DocumentGroup(newDocument: { SwiftiomaticDocument() }) { file in
             ContentView(document: file.document)
-                .task {
-                    // Replace the default filename title with the parent folder name
-                    if let url = file.fileURL {
-                        let folderName = url.deletingLastPathComponent().lastPathComponent
-                        NSApp.keyWindow?.title = folderName
-                    }
-                }
+                .parentFolderWindowTitle(fileURL: file.fileURL)
         }
         .defaultSize(width: 900, height: 600)
         .commands {
