@@ -18,7 +18,9 @@ jobs:
     - name: Run tests
       env:
         SWIFTIOMATIC_FULL_TESTS: "1"
-      run: xcodebuild test -scheme swiftiomaticPackageTests -destination 'platform=macOS' -skipPackagePluginValidation
+      run: |
+        xcodebuild -list -json | python3 -c "import sys,json; [print(s) for s in json.load(sys.stdin)['workspace']['schemes']]"
+        xcodebuild test -scheme swiftiomatic-Package -destination 'platform=macOS' -skipPackagePluginValidation
 
   build:
     needs: test

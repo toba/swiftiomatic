@@ -33,7 +33,7 @@ xcodebuild -project "$PROJECT" \
     -scheme Swiftiomatic \
     -configuration Release \
     -derivedDataPath .build/xcode \
-    -quiet
+    ONLY_ACTIVE_ARCH=YES
 
 app="$(find .build/xcode/Build/Products/Release -name 'Swiftiomatic.app' -maxdepth 1 | head -1)"
 if [[ -z "$app" ]]; then
