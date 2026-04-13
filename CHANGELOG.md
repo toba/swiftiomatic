@@ -21,6 +21,7 @@
 
 ### 🐞 Fixes
 
+- CI blind spot; agent never catches batch `RuleExampleTests` failures ([#255](https://github.com/toba/swiftiomatic/issues/255))
 - Fix 7 test failures in Swiftiomatic test suite ([#126](https://github.com/toba/swiftiomatic/issues/126))
 - Xcode cannot compile swiftiomatic; module resolution failure due to case-insensitive FS collision ([#173](https://github.com/toba/swiftiomatic/issues/173))
 - Config file selected via file importer not loaded into app ([#184](https://github.com/toba/swiftiomatic/issues/184))
@@ -106,3 +107,5 @@
 - `UseEarlyExits` rule ([#248](https://github.com/toba/swiftiomatic/issues/248))
 - Use `SwiftSyntaxBuilder` result builders for correction node construction ([#251](https://github.com/toba/swiftiomatic/issues/251))
 - Evaluate `BasicFormat` token-pair abstraction for format rules ([#246](https://github.com/toba/swiftiomatic/issues/246))
+- New suggestion rules from `/swift` skill gap analysis ([#200](https://github.com/toba/swiftiomatic/issues/200))
+- Infrastructure review; modernize support patterns ([#257](https://github.com/toba/swiftiomatic/issues/257))

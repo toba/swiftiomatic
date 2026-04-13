@@ -2,13 +2,13 @@
 
 # Swiftiomatic
 
-AST-accurate Swift linting, formatting, and code analysis, usable from Xcode, command line, and your LLM agent frenemy. This tool derives directly from, and aspires to combine the best of,
+AST-accurate Swift linting, formatting, and code analysis, usable from Xcode, command line, and your LLM frenemy. This tool derives directly from, and aspires to combine the best of,
 
 - **[SwiftLint](https://github.com/realm/SwiftLint)**
 - Nick Lockwood's **[SwiftFormat](https://github.com/nicklockwood/SwiftFormat)**
 - Apple's **[swift-format](https://github.com/apple/swift-format)**
 
-My goal here was to address the overlap between linting and formatting. Using *SwiftLint* and *SwiftFormat*, I had to configure and exclude similar rules twice.
+My goal here was to address the overlap between linting and formatting and, increasingly, wanting. Using *SwiftLint* and *SwiftFormat*, I had to configure and exclude similar rules twice.
 ```swift
 // swiftlint:disable async_without_await
 // swiftformat:disable redundantAsync redundantThrows
