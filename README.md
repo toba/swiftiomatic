@@ -1,3 +1,5 @@
+<img src="AppIcon.icon/Assets/logo.png" style="width: 100px; height: 100px; float: right;"/>
+
 # Swiftiomatic
 
 AST-accurate Swift linting, formatting, and code analysis, usable from Xcode, command line, and your LLM agent frenemy. This tool derives directly from, and aspires to combine the best of,

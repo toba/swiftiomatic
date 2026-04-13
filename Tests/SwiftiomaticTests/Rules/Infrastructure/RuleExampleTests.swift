@@ -22,16 +22,26 @@ struct RuleCase: Sendable, CustomTestStringConvertible {
       .sorted { $0.identifier < $1.identifier }
       .map { RuleCase(ruleType: $0) }
   }
+
+  /// Rules A–M (reduces parameterized test size to avoid SIGBUS on CI runners).
+  static var firstHalf: [RuleCase] {
+    testable.filter { $0.ruleType.identifier < "n" }
+  }
+
+  /// Rules N–Z.
+  static var secondHalf: [RuleCase] {
+    testable.filter { $0.ruleType.identifier >= "n" }
+  }
 }
 
+// Split into two suites to avoid SIGBUS (signal 10) on CI runners.
+// A single ~300-case parameterized test crashes the swift-testing helper
+// process mid-run due to memory pressure (see 2sx-3uj).
+
 @Suite(.rulesRegistered, .serialized)
-struct RuleExampleTests {
-  @Test("Rule examples validate", arguments: RuleCase.testable)
+struct RuleExampleTestsAM {
+  @Test("Rule examples validate (A–M)", arguments: RuleCase.firstHalf)
   func verifyExamples(_ rule: RuleCase) async {
-    // Only run core triggering/non-triggering checks in the batch.
-    // Full variant tests (comment/string wrapping, disable commands,
-    // multi-byte offsets, severity elevation) are covered by dedicated
-    // per-rule test files and the individual --filter runs.
     await verifyRule(
       rule.ruleType,
       skipCommentTests: true,
@@ -40,7 +50,23 @@ struct RuleExampleTests {
       shouldTestMultiByteOffsets: false,
       testShebang: false,
     )
-    // Prevent memory buildup across ~290 parameterized cases (CI SIGBUS).
+    // Prevent memory buildup across parameterized cases (CI SIGBUS).
+    SwiftSource.clearCaches()
+  }
+}
+
+@Suite(.rulesRegistered, .serialized)
+struct RuleExampleTestsNZ {
+  @Test("Rule examples validate (N–Z)", arguments: RuleCase.secondHalf)
+  func verifyExamples(_ rule: RuleCase) async {
+    await verifyRule(
+      rule.ruleType,
+      skipCommentTests: true,
+      skipStringTests: true,
+      skipDisableCommandTests: true,
+      shouldTestMultiByteOffsets: false,
+      testShebang: false,
+    )
     SwiftSource.clearCaches()
   }
 }
