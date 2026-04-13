@@ -8,7 +8,7 @@ AST-accurate Swift linting, formatting, and code analysis, usable from Xcode, co
 - Nick Lockwood's **[SwiftFormat](https://github.com/nicklockwood/SwiftFormat)**
 - Apple's **[swift-format](https://github.com/apple/swift-format)**
 
-My goal here was to address the overlap between linting and formatting and, increasingly, wanting. Using *SwiftLint* and *SwiftFormat*, I had to configure and exclude similar rules twice.
+My goal here was to lint, format and provide an LLM tool with areas of *possible* concern for deeper inquiry, without processing the code three times, and without having to configure the same rules in different ways.
 ```swift
 // swiftlint:disable async_without_await
 // swiftformat:disable redundantAsync redundantThrows

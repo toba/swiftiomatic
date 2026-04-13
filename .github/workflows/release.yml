@@ -13,12 +13,12 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Select Xcode version
-      run: sudo xcode-select -s /Applications/Xcode_26.5.app/Contents/Developer
+      run: sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer
 
     - name: Run tests
       env:
         SWIFTIOMATIC_FULL_TESTS: "1"
-      run: swift test --disable-sandbox
+      run: xcodebuild test -scheme swiftiomatic -destination 'platform=macOS' -skipPackagePluginValidation
 
   build:
     needs: test
@@ -28,7 +28,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Select Xcode version
-      run: sudo xcode-select -s /Applications/Xcode_26.5.app/Contents/Developer
+      run: sudo xcode-select -s /Applications/Xcode_26.4.app/Contents/Developer
 
     - name: Build release binary
       run: swift build -c release --disable-sandbox
