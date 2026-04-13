@@ -48,33 +48,50 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $selection) {
-                Section {
-                    Label("Format Options", systemImage: "gearshape")
-                        .tag(SidebarSelection.options)
-                }
-
-                Section("Rules") {
-                    ForEach(filteredRules) { entry in
-                        RuleRow(document: document, entry: entry)
-                            .tag(SidebarSelection.rule(entry))
-                    }
+                ForEach(filteredRules) { entry in
+                    RuleRow(document: document, entry: entry)
+                        .tag(SidebarSelection.rule(entry))
                 }
             }
             .safeAreaInset(edge: .top, spacing: 0) {
-                HStack(spacing: 6) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundStyle(.secondary)
-                    TextField("Filter rules", text: $searchText)
-                        .textFieldStyle(.plain)
-                    Picker("Scope", selection: $scopeFilter) {
-                        ForEach(ScopeFilter.allCases, id: \.self) { filter in
-                            Label(filter.rawValue, systemImage: filter.symbolName).tag(filter)
+                VStack(spacing: 0) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundStyle(.secondary)
+                        TextField("Filter rules", text: $searchText)
+                            .textFieldStyle(.plain)
+                        Picker("Scope", selection: $scopeFilter) {
+                            ForEach(ScopeFilter.allCases, id: \.self) { filter in
+                                Label(filter.rawValue, systemImage: filter.symbolName).tag(filter)
+                            }
                         }
+                        .pickerStyle(.menu)
+                        .fixedSize()
                     }
-                    .pickerStyle(.menu)
-                    .fixedSize()
+                    .padding(8)
+
+                    Divider()
+
+                    Button {
+                        selection = .options
+                    } label: {
+                        Label("Format Options", systemImage: "gearshape")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background {
+                                if selection == .options {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(.tint.opacity(0.15))
+                                }
+                            }
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+
+                    Divider()
                 }
-                .padding(8)
                 .background(.bar)
             }
             .navigationTitle("Swiftiomatic")
