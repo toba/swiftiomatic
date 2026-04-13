@@ -408,7 +408,7 @@ extension SwitchCaseAlignmentRule {
             }
 
             if numberOfCorrections > 0 {
-                return super.visit(ExprSyntax(node.with(\.cases, newCases)))
+                return super.visit(node.with(\.cases, newCases))
             }
             return super.visit(node)
         }

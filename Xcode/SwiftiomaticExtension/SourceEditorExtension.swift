@@ -3,7 +3,7 @@ import XcodeKit
 
 final class SourceEditorExtension: NSObject, XCSourceEditorExtension {
   func extensionDidFinishLaunching() {
-    // Warm the rule registry on extension launch rather than first command.
-    _ = Swiftiomatic.ruleCatalog()
+    // The extension sandbox can't load sourcekitdInProc.framework.
+    disableSourceKitForTesting()
   }
 }

@@ -155,4 +155,41 @@ struct FormatEngineTests {
     let engine = cfg.makeFormatEngine()
     #expect(engine.engineConfiguration.useTabs)
   }
+
+  // MARK: - Extension lifecycle (correctable rules pass)
+
+  @Test("Extension lifecycle: catalog warmup then format with corrections")
+  func extensionLifecycleFormatWithCorrections() throws {
+    // Simulate extension environment: no SourceKit
+    disableSourceKitForTesting()
+
+    // extensionDidFinishLaunching warmup
+    _ = Swiftiomatic.ruleCatalog()
+
+    // Format request with correctable rule (trailing comma removal)
+    let source = "let x = [1, 2, 3,]\n"
+    let result = try Swiftiomatic.format(source, configuration: .default)
+    #expect(!result.contains("[1, 2, 3,]"), "Correctable rule should remove trailing comma")
+    #expect(result.contains("[1, 2, 3]"))
+  }
+
+  @Test("Extension lifecycle: switch_case_alignment correction")
+  func extensionLifecycleSwitchCaseAlignment() throws {
+    disableSourceKitForTesting()
+    _ = Swiftiomatic.ruleCatalog()
+
+    let source = """
+      switch someBool {
+          case true:
+              print("red")
+          case false:
+              print("blue")
+      }
+
+      """
+    let result = try Swiftiomatic.format(source, configuration: .default)
+    // Cases should be aligned with closing brace, not indented
+    #expect(result.contains("case true:"))
+    #expect(!result.contains("    case true:"), "Cases should not be indented past the brace")
+  }
 }
