@@ -7,15 +7,16 @@ public enum Confidence: String, Codable, CaseIterable, Comparable, Sendable {
   case low
   case medium
   case high
-}
 
-extension CaseIterable where Self: Equatable & Comparable {
-  public static func < (lhs: Self, rhs: Self) -> Bool {
-    guard let lhsIndex = allCases.firstIndex(of: lhs),
-      let rhsIndex = allCases.firstIndex(of: rhs)
-    else {
-      return false
+  private var order: Int {
+    switch self {
+    case .low: 0
+    case .medium: 1
+    case .high: 2
     }
-    return lhsIndex < rhsIndex
+  }
+
+  public static func < (lhs: Self, rhs: Self) -> Bool {
+    lhs.order < rhs.order
   }
 }

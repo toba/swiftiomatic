@@ -266,7 +266,7 @@ extension [Region] {
 }
 
 /// Represents a file that can be linted for style violations and corrections after being collected.
-struct Linter: @unchecked Sendable {
+struct Linter: Sendable {
   /// The file to lint with this linter.
   let file: SwiftSource
   /// Whether or not this linter will be used to collect information from several files.
@@ -333,7 +333,7 @@ struct Linter: @unchecked Sendable {
 /// Represents a file that can compute style violations and corrections for a list of rules.
 ///
 /// A `CollectedLinter` is only created after a `Linter` has run its collection steps in `Linter.collect(into:)`.
-struct CollectedLinter: @unchecked Sendable {
+struct CollectedLinter: Sendable {
   /// The file to lint with this linter.
   let file: SwiftSource
   private let rules: [any Rule]

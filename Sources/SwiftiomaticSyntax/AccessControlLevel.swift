@@ -51,4 +51,20 @@ package enum AccessControlLevel: String, CustomStringConvertible, Sendable {
   }
 }
 
-extension AccessControlLevel: CaseIterable, Comparable {}
+extension AccessControlLevel: CaseIterable, Comparable {
+  /// Ordered from most restrictive (`private`) to least restrictive (`open`).
+  package static func < (lhs: Self, rhs: Self) -> Bool {
+    lhs.order < rhs.order
+  }
+
+  private var order: Int {
+    switch self {
+    case .private: 0
+    case .fileprivate: 1
+    case .internal: 2
+    case .package: 3
+    case .public: 4
+    case .open: 5
+    }
+  }
+}

@@ -6,7 +6,7 @@ extension Configuration {
   /// Manages which rules are active based on the configured ``RulesMode``
   ///
   /// All mutable state is protected by `Mutex`, making concurrent access safe.
-  public final class RuleSelection: @unchecked Sendable {
+  public final class RuleSelection: Sendable {
     // MARK: - Properties
 
     let allRulesWrapped: [ConfiguredRule]
