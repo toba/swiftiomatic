@@ -6,6 +6,7 @@
     {
       "layers" : [
         {
+          "blend-mode" : "normal",
           "glass" : false,
           "image-name" : "logo.png",
           "name" : "logo"

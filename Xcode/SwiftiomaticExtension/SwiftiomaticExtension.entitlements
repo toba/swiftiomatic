@@ -6,7 +6,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.toba.swiftiomatic</string>
+		<string>group.app.toba.swiftiomatic</string>
 	</array>
 </dict>
 </plist>

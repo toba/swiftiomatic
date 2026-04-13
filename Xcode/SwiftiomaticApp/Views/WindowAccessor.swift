@@ -59,3 +59,4 @@ extension View {
         modifier(ParentFolderTitleModifier(fileURL: fileURL))
     }
 }
+

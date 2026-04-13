@@ -23,8 +23,7 @@ struct CategoryDetailView: View {
                             .padding(.vertical, 10)
 
                         if entry.id != rules.last?.id {
-                            Divider()
-                                .padding(.horizontal)
+                            Divider().padding(.horizontal)
                         }
                     }
                 }
@@ -33,3 +32,4 @@ struct CategoryDetailView: View {
         }
     }
 }
+

@@ -109,7 +109,11 @@
       "Read(//Users/jason/Library/Developer/Xcode/DerivedData/Swiftiomatic-cxckzblcqjjqaogxojygdwrcuyrq/Build/Products/Debug/Swiftiomatic.app/**)",
       "Read(//Users/jason/Library/Developer/Xcode/DerivedData/Swiftiomatic-cxckzblcqjjqaogxojygdwrcuyrq/Build/Products/Debug/Swiftiomatic.app/Contents/**)",
       "mcp__xc-project__list_groups",
-      "mcp__xc-build__export_icon"
+      "mcp__xc-build__export_icon",
+      "mcp__xc-project__add_synchronized_folder",
+      "mcp__xc-project__add_synchronized_folder_exception",
+      "mcp__xc-project__validate_project",
+      "mcp__xc-build__show_build_settings"
     ]
   },
   "enableAllProjectMcpServers": true,

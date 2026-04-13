@@ -5,6 +5,7 @@
 ### ✨ Features
 
 - Redesign rule nav; category list → detail rule list ([#259](https://github.com/toba/swiftiomatic/issues/259))
+- Rule options UX; inline configuration controls per rule ([#261](https://github.com/toba/swiftiomatic/issues/261))
 
 ### 🐞 Fixes
 
